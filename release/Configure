@@ -18,18 +18,18 @@ fi
 
 ################################################################################
 ### Ask config questions
-if [ -z $MOLOCH_INTERFACE ]; then
+if [ -z "$MOLOCH_INTERFACE" ]; then
     echo -n "Found interfaces: "
     /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d","
     echo -n "Single interface to monitor [eth1] "
-    read MOLOCH_INTERFACE
+    read -r MOLOCH_INTERFACE
 fi
-if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth1"; fi
+if [ -z "$MOLOCH_INTERFACE" ]; then MOLOCH_INTERFACE="eth1"; fi
 
 MOLOCH_LOCALELASTICSEARCH=not-set
-until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" -o "$MOLOCH_LOCALELASTICSEARCH" == "" ]; do
+until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ] || [ "$MOLOCH_LOCALELASTICSEARCH" == "no" ] || [ "$MOLOCH_LOCALELASTICSEARCH" == "" ]; do
     echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
-    read MOLOCH_LOCALELASTICSEARCH
+    read -r MOLOCH_LOCALELASTICSEARCH
 done
 
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
@@ -41,16 +41,16 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
         echo "java command not found, make sure java is installed and in the path and run again"
     fi
 else
-    if [ -z $MOLOCH_ELASTICSEARCH ]; then
+    if [ -z "$MOLOCH_ELASTICSEARCH" ]; then
         echo -n "Elasticsearch server URL [http://localhost:9200] "
-        read MOLOCH_ELASTICSEARCH
+        read -r MOLOCH_ELASTICSEARCH
     fi
-    if [ -z $MOLOCH_ELASTICSEARCH ]; then MOLOCH_ELASTICSEARCH="http://localhost:9200"; fi
+    if [ -z "$MOLOCH_ELASTICSEARCH" ]; then MOLOCH_ELASTICSEARCH="http://localhost:9200"; fi
 fi
 
-while [ -z $MOLOCH_PASSWORD ]; do
+while [ -z "$MOLOCH_PASSWORD" ]; do
     echo -n "Password to encrypt S2S and other things [no-default] "
-    read MOLOCH_PASSWORD
+    read -r MOLOCH_PASSWORD
 done
 if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
 
@@ -96,7 +96,7 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
         chown nobody $MOLOCH_INSTALL_DIR/data $MOLOCH_INSTALL_DIR/etc/scripts
     fi
 
-    HOSTNAME=`hostname -s`
+    HOSTNAME=$(hostname -s)
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
     elif [ -d "/etc/init" ]; then
@@ -110,7 +110,7 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
 fi
 
 ################################################################################
-if [ -d "/etc/logrotate.d" -a ! -f "/etc/logrotate.d/$MOLOCH_NAME" ]; then
+if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$MOLOCH_NAME" ]; then
     echo "Moloch - Installing /etc/logrotate.d/$MOLOCH_NAME to rotate files after 7 days"
     cat << EOF > /etc/logrotate.d/$MOLOCH_NAME
 $MOLOCH_INSTALL_DIR/logs/capture.log
@@ -132,7 +132,7 @@ EOF
 chmod a+x $MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
 
 ################################################################################
-if [ -d "/etc/security/limits.d" -a ! -f "/etc/security/limits.d/99-moloch.conf" ]; then
+if [ -d "/etc/security/limits.d" ] && [ ! -f "/etc/security/limits.d/99-moloch.conf" ]; then
     echo "Moloch - Installing /etc/security/limits.d/99-moloch.conf to make core and memlock unlimited"
     cat << EOF > /etc/security/limits.d/99-moloch.conf
 nobody  -       core    unlimited

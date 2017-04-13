@@ -84,7 +84,7 @@ echo "MOLOCH: Downloading and building static thirdparty libraries"
 if [ ! -d "thirdparty" ]; then
   mkdir thirdparty
 fi
-cd thirdparty
+cd thirdparty || exit
 
 PWD=`pwd`
 
@@ -96,10 +96,10 @@ else
   WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
   if [ ! -f "glib-$GLIB.tar.xz" ]; then
     GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-    wget http://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz
+    wget "http://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
   fi
 
-  if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
+  if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
     xzcat glib-$GLIB.tar.xz | tar xf -
     (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; $MAKE)
     if [ $? -ne 0 ]; then
