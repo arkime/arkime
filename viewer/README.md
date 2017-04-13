@@ -3,7 +3,8 @@
 Moloch viewer is an [AngularJS][angularjs] web app.
 
 Read the main Moloch README for more information on how to build and run the app
-for demo or production.
+for demo or production. These instructions are for running in development mode out
+of the source tree.
 
 
 ## Development
