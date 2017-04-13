@@ -12,6 +12,7 @@ moloch-connections #networkLabel {
   font-size : smaller;
   padding   : 4px 8px;
   width     : 170px;
+  z-index   : 9999;
   border    : solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
 

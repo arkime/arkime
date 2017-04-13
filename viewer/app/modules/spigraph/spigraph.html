@@ -19,7 +19,7 @@
             typeahead-min-length="0"
             typeahead-on-select="$ctrl.loadData()"
             typeahead-input-formatter="$ctrl.formatField($model)"
-            uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:20">
+            uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue">
         </div>
       </div> <!-- /field select -->
 

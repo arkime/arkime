@@ -429,11 +429,7 @@
       let content = that.$compile(template)(that.$scope);
       that.$scope.$apply();
 
-      networkLabelElem.html(content)
-        .css({ left: that.trans[0] + (node.px*that.scale) + 25,
-                top: that.trans[1] + (node.py*that.scale) + networkLabelElem.height()/2
-            })
-        .show();
+      that.positionPopup(node.px, node.py, content);
     }
 
     showLinkPopup(that, link, mouse) {
@@ -447,11 +443,27 @@
       let content = that.$compile(template)(that.$scope);
       that.$scope.$apply();
 
+      that.positionPopup(mouse[0], mouse[1], content);
+    }
+
+    /**
+     * Positions and displays a popup on the connections graph within the view
+     * @param {num} px      The x coordinate of the mouse/node
+     * @param {num} py      The y coordinate of the mouse/node
+     * @param {obj} content The content to display in the popup
+     */
+    positionPopup(px, py, content) {
+      let x = -180; // 180 = width of popup + 10 padding
+
+      // if the position node is too far to the left to accommodate the popup,
+      // render it on the right of the node instead of the left
+      if (this.trans[0] + (px * this.scale) < 180) { x = 10; }
+
       networkLabelElem.html(content)
-        .css({ left: that.trans[0] + (mouse[0]*that.scale) + 25,
-                top: that.trans[1] + (mouse[1]*that.scale) + networkLabelElem.height()/2
-            })
-        .show();
+        .css({
+          left: this.trans[0] + (px * this.scale) + x,
+          top : this.trans[1] + (py * this.scale) -20
+        }).show();
     }
 
     /**
