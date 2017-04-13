@@ -61,7 +61,7 @@ static int MHS_new(lua_State *L)
         return luaL_error(L, "usage: <hosts:ports> <maxConnections> <maxRequests>");
     }
 
-    void *server = moloch_http_create_server(lua_tostring(L, 1), 80, lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
+    void *server = moloch_http_create_server(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
     pushMHS(L, server);
     return 1;
 }

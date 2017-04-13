@@ -93,8 +93,6 @@ struct molochhttpserver_t {
     int                   namesCnt;
     int                   namesPos;
     char                  compress;
-    char                  https;
-    int                   defaultPort;
     uint16_t              maxConns;
     uint16_t              maxOutstandingRequests;
     uint16_t              outstanding;
@@ -180,11 +178,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     char *host = server->names[server->namesPos];
     server->namesPos = (server->namesPos + 1) % server->namesCnt;
 
-    if (strchr(host, ':') == 0) {
-        snprintf(url, sizeof(url), "%s://%s:%d%.*s", (server->https?"https":"http"), host, server->defaultPort, key_len, key);
-    } else {
-        snprintf(url, sizeof(url), "%s://%s%.*s", (server->https?"https":"http"), host, key_len, key);
-    }
+    snprintf(url, sizeof(url), "%s%.*s", host, key_len, key);
     curl_easy_setopt(easy, CURLOPT_URL, url);
 
     server->syncRequest.used = 0;
@@ -464,7 +458,7 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
     MolochHttpServer_t        *server = serverV;
 
     if (! BIT_ISSET(fd, connectionsSet)) {
-        LOG("Couldn't connect %s defaultPort: %d", server->names[0], server->defaultPort);
+        LOG("Couldn't connect %s", server->names[0]);
         return 0;
     }
 
@@ -647,11 +641,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     char *host = server->names[server->namesPos];
     server->namesPos = (server->namesPos + 1) % server->namesCnt;
 
-    if (strchr(host, ':') == 0) {
-        snprintf(request->url, sizeof(request->url), "%s://%s:%d%.*s", (server->https?"https":"http"), host, server->defaultPort, key_len, key);
-    } else {
-        snprintf(request->url, sizeof(request->url), "%s://%s%.*s", (server->https?"https":"http"), host, key_len, key);
-    }
+    snprintf(request->url, sizeof(request->url), "%s%.*s", host, key_len, key);
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
 
@@ -742,26 +732,16 @@ gboolean moloch_http_is_moloch(uint32_t hash, char *key)
     return (conn?1:0);
 }
 /******************************************************************************/
-void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
+void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress)
 {
     MolochHttpServer_t *server = MOLOCH_TYPE_ALLOC0(MolochHttpServer_t);
 
     server->names = g_strsplit(hostnames, ",", 0);
     uint32_t i;
     for (i = 0; server->names[i]; i++) {
-        if (strncmp(server->names[i], "http://", 7) == 0) {
-            char *tmp = g_strdup(server->names[i] + 7);
-            g_free(server->names[i]);
-            server->names[i] = tmp;
-        } else if (strncmp(server->names[i], "https://", 8) == 0) {
-            char *tmp = g_strdup(server->names[i] + 8);
-            g_free(server->names[i]);
-            server->names[i] = tmp;
-            server->https = TRUE;
-        }
+        // Count entries
     }
     server->namesCnt = i;
-    server->defaultPort = defaultPort;
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;

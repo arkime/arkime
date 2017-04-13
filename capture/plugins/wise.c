@@ -646,7 +646,9 @@ void moloch_plugin_init()
     httpUrlField   = moloch_field_by_db("us");
     protocolField  = moloch_field_by_db("prot-term");
 
-    wiseService = moloch_http_create_server(host, port, maxConns, maxRequests, 0);
+    char hoststr[200];
+    snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);
+    wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
     g_free(host);
 
     moloch_plugins_register("wise", FALSE);

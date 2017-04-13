@@ -499,7 +499,7 @@ void writer_s3_init(char *UNUSED(name))
 
     char host[200];
     snprintf(host, sizeof(host), "https://%s", s3Host);
-    s3Server = moloch_http_create_server(host, 443, s3MaxConns, s3MaxRequests, s3Compress);
+    s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     checksum = g_checksum_new(G_CHECKSUM_SHA256);
