@@ -73,10 +73,10 @@
       this.minConn    = _query.minConn    = parseInt(this.$routeParams.minConn || '1');
 
       let styles = window.getComputedStyle(document.body);
-      let primary   = styles.getPropertyValue('--color-primary').trim();
-      let secondary = styles.getPropertyValue('--color-tertiary').trim();
-      let tertiary  = styles.getPropertyValue('--color-quaternary').trim();
-      this.colors = ['', primary, tertiary, secondary];
+      this.primaryColor   = styles.getPropertyValue('--color-primary').trim();
+      this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
+      this.tertiaryColor  = styles.getPropertyValue('--color-quaternary').trim();
+      this.colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
       this.startD3();
 

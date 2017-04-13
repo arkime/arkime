@@ -31,9 +31,10 @@
         <!-- src select -->
         <div class="form-group margined-bottom">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon cursor-help"
+            <span class="input-group-addon legend cursor-help"
               tooltip-placement="bottom"
-              uib-tooltip="Source field">
+              ng-style="{'background-color':$ctrl.primaryColor}"
+              uib-tooltip="Select a field for the source nodes">
               Src:
             </span>
             <input type="text" ng-model="$ctrl.srcField"
@@ -48,9 +49,10 @@
         <!-- dst select -->
         <div class="form-group margined-bottom">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon cursor-help"
+            <span class="input-group-addon legend cursor-help"
               tooltip-placement="bottom"
-              uib-tooltip="Destination Field">
+              ng-style="{'background-color':$ctrl.tertiaryColor}"
+              uib-tooltip="Select a field for the destination nodes">
               Dst:
             </span>
             <input type="text" ng-model="$ctrl.dstField"
@@ -62,6 +64,19 @@
           </div>
         </div> <!-- /dst select -->
       </span>
+
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon legend cursor-help"
+            tooltip-placement="bottom"
+            tooltip-append-to-body="true"
+            style="border-radius:4px;"
+            ng-style="{'background-color':$ctrl.secondaryColor}"
+            uib-tooltip="This is the color of a node that is both a source and destination node">
+            Src & Dst
+          </span>
+        </div>
+      </div>
 
       <!-- min connections select -->
       <div class="form-group margined-bottom">

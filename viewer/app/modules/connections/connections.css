@@ -38,6 +38,11 @@ moloch-connections form.connections-form {
           box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
 }
 
+moloch-connections form.connections-form .input-group-addon.legend {
+  font-weight : 700;
+  color       : white;
+}
+
 moloch-connections .dl-horizontal {
   margin-bottom: var(--px-md);
 }
