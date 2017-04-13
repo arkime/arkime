@@ -1,8 +1,0 @@
-#!/bin/sh
-# Add to /etc/inittab something like 
-# m1:2345:respawn:/home/moloch/capture/run.sh
-
-cd /home/moloch/capture
-/bin/rm -f OUT.old
-/bin/mv OUT OUT.old
-exec taskset -c 7 ./moloch-capture -c ../config.ini > OUT 2>&1

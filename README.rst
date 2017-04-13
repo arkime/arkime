@@ -31,7 +31,10 @@ SPI View Tab
 RPM & DEB Downloads
 ===================
 
-Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in /data/moloch/README.txt after installing.
+Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in
+`/data/moloch/README.txt <https://raw.githubusercontent.com/aol/moloch/master/release/README.txt>`_
+after installing.
+
 
 http://molo.ch/#downloads
 
@@ -195,12 +198,7 @@ Get it Running
 
 If you've made it this far, you are awesome!
 
-On each ``capture`` machine you need to run at least one ``moloch-capture`` and one ``moloch-viewer``. You may use the good old inittab. Add this to ``/etc/inittab`` (where ``/home/moloch`` is the prefix where Moloch is installed)::
-
-    m1:2345:respawn:/home/moloch/capture/run.sh
-    v1:2345:respawn:/home/moloch/viewer/run.sh
-
-Sample versions can be found in ``capture/run.sh.sample`` and ``viewer/run.sh.sample`` in the Moloch source distribution.
+On each ``capture`` machine you need to run at least one ``moloch-capture`` and one ``moloch-viewer``. Using ``make config`` will create startup files, or you can find the source files for ``make config`` in the release directory.
 
 .. _test:
 
