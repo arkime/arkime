@@ -14,6 +14,9 @@ use MolochTest;
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
+my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
+#my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://elastic:changeme\@127.0.0.1:9200";
+
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
@@ -220,29 +223,29 @@ my ($cmd) = @_;
     } else {
         print ("Initializing ES\n");
         if ($main::debug) {
-            system("../db/db.pl --prefix tests localhost:9200 initnoprompt");
-            system("../db/db.pl --prefix tests2 localhost:9200 initnoprompt");
+            system("../db/db.pl --prefix tests $ELASTICSEARCH initnoprompt");
+            system("../db/db.pl --prefix tests2 $ELASTICSEARCH initnoprompt");
         } else {
-            system("../db/db.pl --prefix tests localhost:9200 initnoprompt 2>&1 1>/dev/null");
-            system("../db/db.pl --prefix tests2 localhost:9200 initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl --prefix tests2 $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
         }
 
         print ("Loading tagger\n");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger1.json iptaggertest1");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger1.json hosttaggertest1");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger1.json md5taggertest1");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger2.json iptaggertest2");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger2.json hosttaggertest2");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger2.json md5taggertest2");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 email email.tagger2.json emailtaggertest2");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 uri uri.tagger2.json uritaggertest2");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH host host.tagger1.json hosttaggertest1");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH md5 md5.tagger1.json md5taggertest1");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH ip ip.tagger2.json iptaggertest2");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH host host.tagger2.json hosttaggertest2");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
+        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
 
         # Start Wise
         system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
 
         sleep 1;
-        $main::userAgent->get("http://localhost:9200/_flush");
-        $main::userAgent->get("http://localhost:9200/_refresh");
+        $main::userAgent->get("$ELASTICSEARCH/_flush");
+        $main::userAgent->get("$ELASTICSEARCH/_refresh");
 
         print ("Loading PCAP\n");
 
@@ -278,8 +281,8 @@ my ($cmd) = @_;
         sleep 1;
     }
 
-    $main::userAgent->get("http://localhost:9200/_flush");
-    $main::userAgent->get("http://localhost:9200/_refresh");
+    $main::userAgent->get("$ELASTICSEARCH/_flush");
+    $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
     my $harness = TAP::Harness->new();
