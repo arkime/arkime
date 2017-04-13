@@ -66,7 +66,7 @@ else
 fi
 
 
-if [ -d "/etc/systemd" ]; then
+if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
     echo "Installing systemd start files, use systemctl"
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
@@ -97,7 +97,7 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     fi
 
     HOSTNAME=`hostname -s`
-    if [ -d "/etc/systemd" ]; then
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
     elif [ -d "/etc/init" ]; then
         sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
