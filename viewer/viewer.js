@@ -2455,7 +2455,6 @@ app.get('/stats.json', function(req, res) {
   }
 
   if (req.query.sortField !== undefined || req.query.desc !== undefined) {
-    console.log("DESC", req.query.desc, typeof req.query.desc);
     query.sort = {};
     req.query.sortField = req.query.sortField || "nodeName";
     query.sort[req.query.sortField] = { order: req.query.desc === "true" ? "desc": "asc"};
