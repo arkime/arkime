@@ -364,10 +364,16 @@
           
           scope.renderPackets = function() {
             // render session packets (don't compile!)
+            // if there are lots of packets, rendering could take a while
+            // so display a message (the user cannot cancel this action)
+            scope.renderingPackets = true;
+
             let template = `<div class="inner">${scope.packetHtml}</div>`;
             element.find('.packet-container > .inner').replaceWith(template);
 
             $timeout(function() { // wait until session packets are rendered
+              scope.renderingPackets = false;
+
               let i, len, time, value, timeEl;
 
               // modify the packet timestamp values

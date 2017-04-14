@@ -20,7 +20,7 @@
 <!-- packet options -->
 <div class="packet-options" ng-if="!$ctrl.loading">
   <form class="form-inline margined-bottom-lg">
-    <fieldset ng-disabled="$ctrl.loading || $ctrl.loadingPackets || $ctrl.errorPackets">
+    <fieldset ng-disabled="$ctrl.loading || $ctrl.loadingPackets || $ctrl.errorPacket || renderingPackets">
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
@@ -104,6 +104,13 @@
   </a>
 </div>
 
+<!-- packets rendering -->
+<div ng-if="!$ctrl.loading && renderingPackets"
+  class="margined-top-xxxlg margined-bottom-xxxlg large">
+  <span class="fa fa-spinner fa-spin"></span>&nbsp;
+  Rendering session packets
+</div>
+
 <!-- packets error -->
 <div ng-if="!$ctrl.error && $ctrl.errorPackets"
   class="text-danger margined-top-xxxlg margined-bottom-xxxlg large">
@@ -118,6 +125,6 @@
 
 <!-- packets -->
 <div class="packet-container"
-  ng-hide="$ctrl.loadingPackets || $ctrl.errorPackets">
+  ng-hide="$ctrl.loadingPackets || $ctrl.errorPackets || renderingPackets">
   <div class="inner"></div>
 </div>
