@@ -38,8 +38,8 @@
         <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
           ng-click="$ctrl.columnClick(column.sort)">
           {{::column.name}}
-          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
           <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
         </th>
       </tr>

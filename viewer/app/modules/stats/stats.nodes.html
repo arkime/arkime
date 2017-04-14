@@ -29,8 +29,8 @@
           ng-click="$ctrl.columnClick(column.sort)">
           {{::column.name}}
           <span ng-if="column.sort !== undefined">
-            <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+            <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
+            <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
             <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
           </span>
         </th>
