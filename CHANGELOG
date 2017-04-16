@@ -16,7 +16,14 @@
   - viewer - fix broken node display in stats (issue #672)
   - viewer - permalink fixes (issue #673)
   - viewer - spigraph field typeahead fixes (issues #647)
-
+  - viewer - connections field typeahead fixes (issues #675)
+  - viewer - display when packets are rendering
+  - viewer - make sorting icons consistent
+  - viewer - connections tab links are rendered correctly (issue #641)
+  - viewer - make sure connections popup renders inside view (issue #644)
+  - capture - support ES basic auth (issue #679)
+  - release - Configure supports multiple interfaces
+  - release - only use systemd files if systemctl and /etc/systemd exists
 
 0.18.1 2017/03/28
   - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl

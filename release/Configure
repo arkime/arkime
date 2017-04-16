@@ -20,8 +20,8 @@ fi
 ### Ask config questions
 if [ -z "$MOLOCH_INTERFACE" ]; then
     echo -n "Found interfaces: "
-    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d","
-    echo -n "Single interface to monitor [eth1] "
+    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
+    echo -n "Semicolon ';' seperated list of interfaces to monitor [eth1] "
     read -r MOLOCH_INTERFACE
 fi
 if [ -z "$MOLOCH_INTERFACE" ]; then MOLOCH_INTERFACE="eth1"; fi
@@ -124,10 +124,15 @@ EOF
 fi
 
 ################################################################################
+INTERFACES=${MOLOCH_INTERFACE//;/ }
 cat << EOF > $MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
 #!/bin/sh
-/sbin/ethtool -G $MOLOCH_INTERFACE rx 4096 tx 4096 || true
-for i in rx tx sg tso ufo gso gro lro; do /sbin/ethtool -K $MOLOCH_INTERFACE \$i off || true; done
+for interface in $INTERFACES; do
+  /sbin/ethtool -G \$interface rx 4096 tx 4096 || true
+  for i in rx tx sg tso ufo gso gro lro; do
+      /sbin/ethtool -K \$interface \$i off || true
+  done
+done
 EOF
 chmod a+x $MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
 
