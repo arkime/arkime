@@ -85,16 +85,21 @@
           </a>
           <a class="btn btn-sm btn-danger"
             ng-click="$ctrl.deleteUser(user)"
-            uib-tooltip="Delete {{user.userId}}"
-            >
+            uib-tooltip="Delete {{user.userId}}">
             <span class="fa fa-trash-o"></span>
           </a>
         </td>
       </tr>
-      <tr ng-if="$ctrl.searchUsers !== undefined && !$ctrl.filteredUsers.length">
-        <td colspan="10" class="text-danger">
+      <tr ng-if="$ctrl.searchUsers !== undefined && !$ctrl.filteredUsers.length && $ctrl.users.data.length > 0">
+        <td colspan="10" class="text-danger text-center">
           <span class="fa fa-warning"></span>&nbsp;
-          No results match your search
+          <strong>No results match your search</strong>
+        </td>
+      </tr>
+      <tr ng-if="$ctrl.users.data.length === 0">
+        <td colspan="10" class="text-danger text-center">
+          <span class="fa fa-warning"></span>&nbsp;
+          <strong>No users. Create one by filling out the form below.</strong>
         </td>
       </tr>
     </tbody>
