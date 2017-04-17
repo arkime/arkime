@@ -4,6 +4,15 @@ session session-detail {
   margin-right: var(--px-md);
 }
 
+session session-detail hr {
+  border-color: var(--color-gray);
+}
+
+session session-detail h4.sessionDetailMeta {
+  padding-top : 10px;
+  border-top  : 1px solid var(--color-gray);
+}
+
 session session-detail .packet-options .btn.active {
   font-weight: bolder;
 }
@@ -82,7 +91,7 @@ session session-detail .show-more-items {
 
 /* top navigation links */
 session session-detail .nav-pills {
-  border-bottom : 1px solid var(--color-gray-light);
+  border-bottom : 1px solid var(--color-gray);
   padding-bottom: 4px;
   padding-top   : 4px;
 }

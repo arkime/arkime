@@ -447,7 +447,7 @@ function createSessionDetailNew() {
       internals.sessionDetailNew += found[k];
     });
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, "h4")
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, "h4.sessionDetailMeta")
                                                            .replace(/dl.sessionDetailMeta/g, "dl")
                                                            .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
                                                            ;
