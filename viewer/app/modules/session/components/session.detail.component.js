@@ -426,6 +426,9 @@
                 $(imgs[i]).tooltip('destroy');
               }
             }
+
+            // cancel server request for packets
+            if (ctrl.packetPromise) { ctrl.cancelPacketLoad(); }
           });
 
         }
