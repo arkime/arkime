@@ -1,3 +1,8 @@
+0.18.3 2017/04/XX
+  - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
+            db.pl upgrade (~5 min) see the 0.18.0 notes below.
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
+
 0.18.2 2017/04/16
   - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
             db.pl upgrade (~5 min) see the 0.18.0 notes below.
