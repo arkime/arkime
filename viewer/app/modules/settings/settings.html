@@ -423,9 +423,9 @@
               <td>
                 <select class="form-control" ng-model="$ctrl.newCronQueryAction">
                   <option value="tag">Tag</option>
-                  <option ng-repeat="cluster in ::$ctrl.molochClusters"
-                    value="forward:{{::cluster.name | lowercase}}">
-                    Tag & Export to {{::cluster.name}}
+                  <option ng-repeat="(key, value) in ::$ctrl.molochClusters"
+                    value="forward:{{::key}}">
+                    Tag & Export to {{::value.name}}
                   </option>
                 </select>
               </td>

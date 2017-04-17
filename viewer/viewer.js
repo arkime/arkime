@@ -825,6 +825,22 @@ app.get('/about', checkWebEnabled, function(req, res) {
 });
 
 app.get('/molochclusters', function(req, res) {
+  function cloneClusters(clusters) {
+    var clone = {};
+
+    for (var key in app.locals.molochClusters) {
+      if (app.locals.molochClusters.hasOwnProperty(key)) {
+        var cluster = app.locals.molochClusters[key];
+        clone[key] = {
+          name: cluster.name,
+          url : cluster.url
+        };
+      }
+    }
+
+    return clone;
+  }
+
   if(!app.locals.molochClusters) {
     var molochClusters = Config.configMap("moloch-clusters");
 
@@ -833,10 +849,14 @@ app.get('/molochclusters', function(req, res) {
       return res.send('Cannot locate right clicks');
     }
 
-    return res.send(molochClusters);
+    var clustersClone = cloneClusters(molochClusters);
+
+    return res.send(clustersClone);
   }
 
-  return res.send(app.locals.molochClusters);
+  var clustersClone = cloneClusters(app.locals.molochClusters);
+
+  return res.send(clustersClone);
 });
 
 app.get('/stats.old', checkWebEnabled, function(req, res) {
