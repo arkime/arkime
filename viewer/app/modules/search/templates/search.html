@@ -227,7 +227,13 @@
     <!-- human readable time range -->
     <div class="margined-top margined-left-lg display-inline">
       <strong class="small text-theme-accent no-wrap">
-        Time Range: {{$ctrl.deltaTime | readableTime}}
+        <span ng-if="$ctrl.deltaTime && !$ctrl.timeError">
+          Time Range: {{$ctrl.deltaTime | readableTime}}
+        </span>
+        <span ng-if="$ctrl.timeError">
+          <span class="fa fa-exclamation-triangle"></span>&nbsp;
+          {{$ctrl.timeError}}
+        </span>
       </strong>
     </div>
 

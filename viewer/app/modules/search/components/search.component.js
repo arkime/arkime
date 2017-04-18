@@ -66,6 +66,9 @@
           this.timeRange  = '0'; // custom time range
           this.stopTime   = stop;
           this.startTime  = start;
+          if (stop < start) {
+            this.timeError = 'Stop time cannot be before start time';
+          }
         } else { // if we can't parse stop or start time, set default
           this.timeRange = '1'; // default to 1 hour
           this.$location.search('date', this.timeRange);
@@ -134,6 +137,8 @@
      * Fired when the time range value changes
      */
     changeTimeRange() {
+      this.timeError = false;
+
       this.$location.search('date', this.timeRange);
       this.$location.search('stopTime', null);
       this.$location.search('startTime', null);
@@ -146,6 +151,7 @@
      * @param {bool} loadData Whether to issue query after updating time
      */
      changeDate(loadData) {
+       this.timeError = false;
        this.timeRange = '0'; // custom time range
 
        let stopSec  = (this.stopTime / 1000).toFixed();
@@ -155,6 +161,11 @@
        if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
          return;
        }
+
+      if (stopSec < startSec) { // don't continue if stop < start
+        this.timeError = 'Stop time cannot be before start time';
+        return;
+      }
 
        this.$location.search('date', null);
        this.$location.search('stopTime', (this.stopTime / 1000).toFixed());

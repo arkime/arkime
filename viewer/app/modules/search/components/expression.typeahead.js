@@ -369,6 +369,8 @@
     cancelPromise() {
       this.promise.abort();
       this.promise = null;
+
+      this.loadingValues = false;
     }
 
     /**
