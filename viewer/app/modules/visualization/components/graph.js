@@ -18,7 +18,7 @@
       function($filter, $timeout, $document, $window) {
       return {
         template: require('html!../templates/graph.html'),
-        scope   : { graphData: '=', type: '@' },
+        scope   : { graphData: '=', type: '@', timezone: '@' },
         link    : function(scope, element, attrs) {
 
           let body = $document[0].body;
@@ -74,7 +74,7 @@
                 min   : data.xmin || null,
                 max   : data.xmax || null,
                 tickFormatter: function(v, axis) {
-                  return $filter('date')(v, 'yyyy/MM/dd HH:mm:ss');
+                  return $filter('timezoneDateString')(v/1000, scope.timezone || 'local');
                 }
               },
               yaxis   : {

@@ -98,7 +98,8 @@
       class="well well-sm margined-left margined-right margined-bottom-xxlg no-overflow">
       <div class="row margined-bottom-xxxlg">
         <moloch-graph-map open="{{$ctrl.openMaps}}" graph-type="{{::$ctrl.sort}}"
-          graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
+          graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true"
+          timezone="{{::$ctrl.settings.timezone}}">
         </moloch-graph-map>
       </div>
     </div>
@@ -127,7 +128,8 @@
       <div class="row padded-bottom-lg">
         <div class="col-md-12">
           <moloch-graph-map graph-data="item.graph" open="{{$ctrl.openMaps}}"
-            map-data="item.map" graph-type="{{::$ctrl.sort}}"></moloch-graph-map>
+            map-data="item.map" graph-type="{{::$ctrl.sort}}"
+            timezone="{{::$ctrl.settings.timezone}}"></moloch-graph-map>
         </div>
       </div>
     </div>

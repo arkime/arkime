@@ -72,7 +72,8 @@
         graphType : '@',
         mapData   : '<',
         primary   : '@',
-        open      : '@'
+        open      : '@',
+        timezone  : '@'
       }
     });
 

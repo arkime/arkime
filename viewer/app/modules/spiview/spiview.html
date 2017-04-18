@@ -28,7 +28,8 @@
   <!-- graph/map visualizations -->
   <div class="row margin-for-search-navbar">
     <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
-      graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
+      graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true"
+      timezone="{{::$ctrl.settings.timezone}}">
     </moloch-graph-map>
     <div class="col-md-12 margined-top-xxxxlg margined-bottom-xxxxlg text-center text-theme-accent"
       ng-if="!$ctrl.loadingVisualizations && !$ctrl.mapData && !$ctrl.graphData">
