@@ -287,7 +287,10 @@ function processQuery(req, query, cb) {
 
         // First query for this value
         src.srcInProgress[typeName][query.value] = [cb];
+        let startTime = Date.now();
         src[funcName](src.fullQuery===true?query:query.value, function (err, result) {
+          src.average100MS = (99.0 * src.average100MS + (Date.now() - startTime))/100.0;
+
           if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
             cacheResult[src.section] = {ts:now, result:result};
             cacheChanged = true;
@@ -508,8 +511,9 @@ function printStats()
       internals.cacheSrcRefreshStats[1], internals.cacheSrcRefreshStats[0], internals.cacheSrcRefreshStats[3], internals.cacheSrcRefreshStats[2], internals.cacheSrcRefreshStats[4], internals.cacheSrcRefreshStats[5]));
 
   for (var section in internals.sources) {
-    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d dropped: %7d",
-      section, internals.sources[section].cacheHitStat, internals.sources[section].cacheMissStat, internals.sources[section].cacheRefreshStat, internals.sources[section].cacheDroppedStat));
+    let src = internals.sources[section];
+    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d dropped: %7d avgMS: %7d",
+      section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.cacheDroppedStat, src.average100MS));
   }
 }
 //////////////////////////////////////////////////////////////////////////////////

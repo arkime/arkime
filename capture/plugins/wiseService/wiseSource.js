@@ -34,6 +34,7 @@ function WISESource (api, section) {
   self.cacheMissStat = 0;
   self.cacheRefreshStat = 0;
   self.cacheDroppedStat = 0;
+  self.average100MS = 0;
 
   // Domain and Email wildcards to exclude from source
   ["excludeDomains", "excludeEmails", "excludeURLs"].forEach(function(type) {
