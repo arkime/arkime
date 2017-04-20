@@ -69,6 +69,8 @@
           if (stop < start) {
             this.timeError = 'Stop time cannot be before start time';
           }
+          // update the displayed time range
+          this.deltaTime = this.stopTime - this.startTime;
         } else { // if we can't parse stop or start time, set default
           this.timeRange = '1'; // default to 1 hour
           this.$location.search('date', this.timeRange);
@@ -154,22 +156,25 @@
        this.timeError = false;
        this.timeRange = '0'; // custom time range
 
-       let stopSec  = (this.stopTime / 1000).toFixed();
-       let startSec = (this.startTime / 1000).toFixed();
+       let stopSec  = parseInt((this.stopTime / 1000).toFixed());
+       let startSec = parseInt((this.startTime / 1000).toFixed());
 
        // only continue if start and stop are valid numbers
        if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
          return;
        }
 
-      if (stopSec < startSec) { // don't continue if stop < start
-        this.timeError = 'Stop time cannot be before start time';
-        return;
-      }
+       if (stopSec < startSec) { // don't continue if stop < start
+         this.timeError = 'Stop time cannot be before start time';
+         return;
+       }
+
+       // update the displayed time range
+       this.deltaTime = this.stopTime - this.startTime;
 
        this.$location.search('date', null);
-       this.$location.search('stopTime', (this.stopTime / 1000).toFixed());
-       this.$location.search('startTime', (this.startTime / 1000).toFixed());
+       this.$location.search('stopTime', stopSec);
+       this.$location.search('startTime', startSec);
 
        if (loadData) { this.change(); }
      }
@@ -275,9 +280,6 @@
         this.stopTime   = currentTime;
         useDateRange    = true;
       }
-
-      // update the displayed time range
-      this.deltaTime = this.stopTime - this.startTime;
 
       // always use startTime and stopTime instead of date range (except for all)
       // querying with date range causes unexpected paging behavior

@@ -132,8 +132,8 @@
         search.changeDate();
 
         expect(scope.$emit).toHaveBeenCalled();
-        expect(search.$location.search).toHaveBeenCalledWith('startTime', (startTime/1000).toFixed());
-        expect(search.$location.search).toHaveBeenCalledWith('stopTime', (stopTime/1000).toFixed());
+        expect(search.$location.search).toHaveBeenCalledWith('startTime', parseInt((startTime/1000).toFixed()));
+        expect(search.$location.search).toHaveBeenCalledWith('stopTime', parseInt((stopTime/1000).toFixed()));
       }
 
       changeDate(1473775168701, 1473773809000);
