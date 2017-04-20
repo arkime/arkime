@@ -251,7 +251,7 @@
       this.errorPackets   = 'Request canceled.';
     }
 
-    // TODO ECR
+    /* other decodings */
     toggleUnbase64() {
       this.unbase64 = !this.unbase64;
 
@@ -264,6 +264,7 @@
 
       this.getPackets();
     }
+
     toggleUnxorBruteGz() {
       this.unxorBruteGz = !this.unxorBruteGz;
 
@@ -276,11 +277,13 @@
 
       this.getPackets();
     }
+
     toggleUnxor() {
       this.unxor = !this.unxor;
 
       if (!this.unxor && appliedUnxor) { this.applyUnxor(); }
     }
+
     applyUnxor() {
       if ((!this.keyLength && !this.key) || (this.keyLength && this.key)) {
         return; // don't issue invalid query
