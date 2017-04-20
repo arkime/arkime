@@ -83,12 +83,80 @@
         <span class="fa fa-clock-o"></span>&nbsp;
         Show Timestamps
       </button>
-      <button type="button" class="btn btn-default btn-sm" disabled
-        title="Under construction...">
-        Other Decodings &nbsp;
-        <span class="fa fa-caret-down"></span>
+      <button type="button" class="btn btn-default btn-sm"
+        ng-class="{'active':$ctrl.unbase64}"
+        ng-click="$ctrl.toggleUnbase64()">
+        Unbase64
+      </button>
+      <button type="button" class="btn btn-default btn-sm"
+        ng-class="{'active':$ctrl.unxorBruteGz}"
+        ng-click="$ctrl.toggleUnxorBruteGz()">
+        UnXOR Brute GZip Header
+      </button>
+      <button type="button" class="btn btn-default btn-sm"
+        ng-class="{'active':$ctrl.unxor}"
+        ng-click="$ctrl.toggleUnxor()">
+        UnXOR
       </button>
     </fieldset>
+    <div class="well well-sm margined-top" ng-if="$ctrl.unxor">
+      <div class="row padded-top">
+        <div class="col-md-2">
+          <label>XOR Decoding</label>
+          <p class="help-block text-theme-accent"
+            ng-if="$ctrl.key && $ctrl.keyLength">
+            <span class="fa fa-exclamation-triangle"></span>&nbsp;
+            Set key length OR key
+          </p>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon">
+                Skip Bytes
+              </span>
+              <input ng-model="$ctrl.skip" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon">
+                Key is in data length
+              </span>
+              <input ng-model="$ctrl.keyLength" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon">
+                Fixed key in hex
+              </span>
+              <input ng-model="$ctrl.key" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-warning"
+              uib-tooltip="cancel"
+              tooltip-append-to-body="true"
+              ng-click="$ctrl.toggleUnxor()">
+              <span class="fa fa-ban"></span>
+            </button>
+            <button class="btn btn-theme-primary"
+              uib-tooltip="apply"
+              tooltip-append-to-body="true"
+              ng-click="$ctrl.applyUnxor()" ng-class="{'disabled': ($ctrl.keyLength && $ctrl.key) || (!$ctrl.keyLength && !$ctrl.key)}">
+              <span class="fa fa-check"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </form>
 </div> <!-- /packet options -->
 

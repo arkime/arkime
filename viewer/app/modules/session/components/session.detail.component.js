@@ -8,6 +8,8 @@
     showTimestamps: 'last'
   };
 
+  let appliedUnxor = false;
+
   /**
    * @class SessionDetailController
    * @classdesc Interacts with session details
@@ -247,6 +249,62 @@
       this.packetPromise.abort();
       this.packetPromise  = null;
       this.errorPackets   = 'Request canceled.';
+    }
+
+    // TODO ECR
+    toggleUnbase64() {
+      this.unbase64 = !this.unbase64;
+
+      if (this.unbase64) {
+        this.$scope.params.decode['BODY-UNBASE64'] = {};
+      } else {
+        this.$scope.params.decode['BODY-UNBASE64'] = null;
+        delete this.$scope.params.decode['BODY-UNBASE64'];
+      }
+
+      this.getPackets();
+    }
+    toggleUnxorBruteGz() {
+      this.unxorBruteGz = !this.unxorBruteGz;
+
+      if (this.unxorBruteGz) {
+        this.$scope.params.decode['BODY-UNXORBRUTEGZ'] = {};
+      } else {
+        this.$scope.params.decode['BODY-UNXORBRUTEGZ'] = null;
+        delete this.$scope.params.decode['BODY-UNXORBRUTEGZ'];
+      }
+
+      this.getPackets();
+    }
+    toggleUnxor() {
+      this.unxor = !this.unxor;
+
+      if (!this.unxor && appliedUnxor) { this.applyUnxor(); }
+    }
+    applyUnxor() {
+      if ((!this.keyLength && !this.key) || (this.keyLength && this.key)) {
+        return; // don't issue invalid query
+      }
+
+      if (this.unxor) {
+        appliedUnxor = true;
+        this.$scope.params.decode['BODY-UNXOR'] = {};
+        if (this.skip) {
+          this.$scope.params.decode['BODY-UNXOR'].skip = this.skip;
+        }
+        if (this.keyLength) {
+          this.$scope.params.decode['BODY-UNXOR'].keyLength = this.keyLength;
+        }
+        if (this.key) {
+          this.$scope.params.decode['BODY-UNXOR'].key = this.key;
+        }
+      } else {
+        appliedUnxor = false;
+        this.$scope.params.decode['BODY-UNXOR'] = null;
+        delete this.$scope.params.decode['BODY-UNXOR'];
+      }
+
+      this.getPackets();
     }
 
   }
