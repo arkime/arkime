@@ -8,8 +8,6 @@
     showTimestamps: 'last'
   };
 
-  let appliedUnxor = false;
-
   /**
    * @class SessionDetailController
    * @classdesc Interacts with session details

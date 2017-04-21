@@ -763,7 +763,6 @@ function sessionsOld (req, res) {
       decodeItems[key+":enabled"] = obj;
     }
   }
-  console.log(decodeItems);
 
   res.render('index.jade', {
     user: req.user,
