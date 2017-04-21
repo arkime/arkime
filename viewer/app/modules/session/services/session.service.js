@@ -393,6 +393,26 @@
       this.$window.open(url, '_blank');
     }
 
+    /**
+     * Gets other decodings for session pcap data
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getDecodings() {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'decodings', method:'GET', cache:true };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
 
     /* internal functions -------------------------------------------------- */
     /**

@@ -45,6 +45,7 @@
     let sessionDtlsEndpoint = 'node/session/sessionid/detail';
     let configEndpoint      = 'molochRightClick';
     let fieldEndpoint       = 'fields';
+    let decodingsEndpoint   = 'decodings';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -73,7 +74,11 @@
 
       // query for moloch fields
       $httpBackend.expectGET(fieldEndpoint)
-         .respond(200, {});
+        .respond(200, {});
+
+      // query for other decodings
+      $httpBackend.expectGET(decodingsEndpoint)
+        .respond(200, {});
 
       scope = $rootScope.$new();
 

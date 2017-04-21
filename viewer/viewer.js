@@ -763,6 +763,7 @@ function sessionsOld (req, res) {
       decodeItems[key+":enabled"] = obj;
     }
   }
+  console.log(decodeItems);
 
   res.render('index.jade', {
     user: req.user,
@@ -1668,6 +1669,11 @@ app.post('/user/columns/delete', checkCookieToken, function(req, res) {
       }));
     });
   });
+});
+
+app.get('/decodings', function(req, res) {
+  var decodings = decode.settings();
+  res.send(decodings);
 });
 
 
