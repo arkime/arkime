@@ -216,18 +216,20 @@
               </div> <!-- /column dropdown menu -->
 
               <!-- sortable column -->
-              <div ng-if="::((header.exp || header.sortBy) && header.dbField !== 'info')"
+              <span ng-if="::((header.exp || header.sortBy) && header.dbField !== 'info')"
                 ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
                 ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
                 class="cursor-pointer">
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
-                  class="fa fa-sort text-muted-more"></span>
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                  class="fa fa-sort-asc"></span>
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                  class="fa fa-sort-desc"></span>
-                {{::header.friendlyName}}
-              </div>
+                <div style="display:inline-block;width:8px;vertical-align:top;">
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
+                    class="fa fa-sort text-muted-more"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                    class="fa fa-sort-asc"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                    class="fa fa-sort-desc"></span>
+                </div>
+                <div style="display:inline-block;width:60%">{{::header.friendlyName}}</div>
+              </span>
 
               <!-- non-sortable column -->
               <div ng-if="::(header.dbField === 'info')" class="cursor-pointer">
