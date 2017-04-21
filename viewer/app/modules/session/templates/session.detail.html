@@ -83,12 +83,41 @@
         <span class="fa fa-clock-o"></span>&nbsp;
         Show Timestamps
       </button>
-      <button type="button" class="btn btn-default btn-sm" disabled
-        title="Under construction...">
-        Other Decodings &nbsp;
-        <span class="fa fa-caret-down"></span>
+      <!-- other decodings -->
+      <button ng-repeat="(key, value) in $ctrl.decodings"
+        type="button" class="btn btn-default btn-sm margined-right"
+        ng-class="{'active':params.decode[key]}"
+        ng-click="$ctrl.toggleDecoding(key)">
+        {{::value.name}}
       </button>
     </fieldset>
+    <div class="well well-sm margined-top" ng-if="$ctrl.decodingForm">
+      <span ng-repeat="field in $ctrl.decodings[$ctrl.decodingForm].fields">
+        <div class="form-group">
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">
+              {{field.name}}
+            </span>
+            <input ng-model="field.value" class="form-control" type="field.type">
+          </div>
+        </div>
+      </span>
+      <div class="btn-group btn-group-sm pull-right">
+        <button class="btn btn-warning"
+          uib-tooltip="cancel"
+          tooltip-append-to-body="true"
+          ng-click="$ctrl.closeDecodingForm(false)">
+          <span class="fa fa-ban"></span>
+        </button>
+        <button class="btn btn-theme-primary"
+          uib-tooltip="apply"
+          tooltip-append-to-body="true"
+          ng-click="$ctrl.applyDecoding($ctrl.decodingForm)">
+          <span class="fa fa-check"></span>
+        </button>
+      </div>
+    </div>
+    </div>
   </form>
 </div> <!-- /packet options -->
 

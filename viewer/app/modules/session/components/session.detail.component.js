@@ -61,14 +61,13 @@
         .then((response) => {
           this.userSettings = response;
 
-          this.setParameters();
-          this.getPackets();
+          this.setUserParams();
+          this.getDecodings(); // IMPORTANT: kicks of packet request
         })
         .catch((error) => {
           // can't get user, so use defaults
           this.userSettings = defaultUserSettings;
-          // but still get the packets
-          this.getPackets();
+          this.getDecodings(); // IMPORTANT: kicks of packet request
         });
 
       this.getDetailData(); // get SPI data
@@ -102,10 +101,9 @@
       });
     }
 
-    /* sets the session detail query parameters based on user settings and
-       browser saved options */
-    setParameters() {
-      if (localStorage) { // display user and browser saved options
+    /* sets some of the session detail query parameters based on user settings */
+    setUserParams() {
+      if (localStorage && this.userSettings) { // display user saved options
         if (this.userSettings.detailFormat === 'last' && localStorage['moloch-base']) {
           this.$scope.params.base = localStorage['moloch-base'];
         } else if (this.userSettings.detailFormat) {
@@ -121,6 +119,13 @@
         } else if (this.userSettings.showTimestamps) {
           this.$scope.params.ts = this.userSettings.showTimestamps === 'on';
         }
+      }
+    }
+
+    /* sets some of the session detail query parameters based on browser saved
+     * options */
+    setBrowserParams() {
+      if (localStorage) { // display browser saved options
         if (localStorage['moloch-line']) {
           this.$scope.params.line = JSON.parse(localStorage['moloch-line']);
         }
@@ -130,11 +135,45 @@
         if (localStorage['moloch-image']) {
           this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
         }
+        if (localStorage['moloch-decode']) {
+          this.$scope.params.decode = JSON.parse(localStorage['moloch-decode']);
+          for (let key in this.decodings) {
+            if (this.decodings.hasOwnProperty(key)) {
+              if (this.$scope.params.decode[key]) {
+                this.decodings[key].active = true;
+                for (let field in this.$scope.params.decode[key]) {
+                  for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
+                    if (this.decodings[key].fields[i].key === field) {
+                      this.decodings[key].fields[i].value = this.$scope.params.decode[key][field];
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
 
 
     /* exposed functions --------------------------------------------------- */
+    /* gets other decodings for packet data
+     * IMPORTANT: kicks of packet request */
+    getDecodings() {
+      this.SessionService.getDecodings()
+        .then((response) => {
+          this.decodings = response;
+
+          this.setBrowserParams();
+          this.getPackets();
+        })
+        .catch((error) => {
+          this.setBrowserParams();
+          // still get the packets
+          this.getPackets();
+        });
+    }
+
     /**
      * Gets the session detail from the server
      * @param {string} message An optional message to display to the user
@@ -247,6 +286,64 @@
       this.packetPromise.abort();
       this.packetPromise  = null;
       this.errorPackets   = 'Request canceled.';
+    }
+
+    /* other decodings */
+    /**
+     * Toggles a decoding on or off
+     * If a decoding needs more input, shows form
+     * @param {string} key Identifier of the decoding to toggle
+     */
+    toggleDecoding(key) {
+      let decoding = this.decodings[key];
+
+      decoding.active = !decoding.active;
+
+      if (decoding.fields && decoding.active) {
+        this.decodingForm = key;
+      } else {
+        this.decodingForm = false;
+        this.applyDecoding(key);
+      }
+    }
+
+    /**
+     * Closes the form for additional decoding input
+     * @param {bool} active The active state of the decoding
+     */
+    closeDecodingForm(active) {
+      if (this.decodingForm) {
+        this.decodings[this.decodingForm].active = active;
+      }
+
+      this.decodingForm = false;
+    }
+
+    /**
+     * Sets the decode param, issues query, and closes form if necessary
+     * @param {key} key Identifier of the decoding to apply
+     */
+    applyDecoding(key) {
+      this.$scope.params.decode[key] = {};
+      let decoding = this.decodings[key];
+
+      if (decoding.active) {
+        if (decoding.fields) {
+          for (let i = 0, len = decoding.fields.length; i < len; ++i) {
+            let field = decoding.fields[i];
+            this.$scope.params.decode[key][field.key] = field.value;
+          }
+        }
+      } else {
+        this.$scope.params.decode[key] = null;
+        delete this.$scope.params.decode[key];
+      }
+
+      this.getPackets();
+      this.closeDecodingForm(decoding.active);
+
+      // update local storage
+      localStorage['moloch-decode'] = JSON.stringify(this.$scope.params.decode);
     }
 
   }

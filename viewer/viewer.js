@@ -1670,6 +1670,11 @@ app.post('/user/columns/delete', checkCookieToken, function(req, res) {
   });
 });
 
+app.get('/decodings', function(req, res) {
+  var decodings = decode.settings();
+  res.send(decodings);
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING
