@@ -2,6 +2,12 @@
   - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
             db.pl upgrade (~5 min) see the 0.18.0 notes below.
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
+  - viewer - Other decodings (issues #684, #670)
+  - viewer - Text lineup (issue #598)
+  - wise - track average running time
+  - viewer - session graph uses timezone setting
+  - viewer - fixed cron query creation with forwarding failures
+  - viewer - new serverSecret instead of passwordSecret for S2S
 
 0.18.2 2017/04/16
   - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 

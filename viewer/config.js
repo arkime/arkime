@@ -88,7 +88,7 @@ exports.store2ha1 = function(passstore) {
 };
 
 exports.obj2auth = function(obj, secret) {
-  secret = secret || exports.getFull("default", "passwordSecret", "password");
+  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
   var c = crypto.createCipher('aes192', secret);
   var e = c.update(JSON.stringify(obj), "binary", "hex");
   e += c.final("hex");
@@ -96,7 +96,7 @@ exports.obj2auth = function(obj, secret) {
 };
 
 exports.auth2obj = function(auth, secret) {
-  secret = secret || exports.getFull("default", "passwordSecret", "password");
+  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
   var c = crypto.createDecipher('aes192', secret);
   var d = c.update(auth, "hex", "binary");
   d += c.final("binary");

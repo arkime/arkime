@@ -5403,7 +5403,7 @@ function sendSessionWorker(options, cb) {
     }
 
     var info = url.parse(sobj.url + "/receiveSession?saveId=" + options.saveId);
-    addAuth(info, options.user, options.nodeName, sobj.passwordSecret);
+    addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
     info.method = "POST";
 
     var result = "";

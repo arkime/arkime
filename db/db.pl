@@ -100,8 +100,8 @@ sub showHelp($)
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
-    print "  field disable <exp >         - disable a field from being indexed\n";
-    print "  field enable <exp >          - enable a field from being indexed\n";
+    print "  field disable <exp>          - disable a field from being indexed\n";
+    print "  field enable <exp>           - enable a field from being indexed\n";
     exit 1;
 }
 ################################################################################
