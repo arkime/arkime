@@ -5454,7 +5454,9 @@ app.get('/:nodeName/sendSession/:id', checkProxyRequest, function(req, res) {
     nodeName: req.params.nodeName
   };
 
-  internals.sendSessionQueue.push(options, res.end);
+  internals.sendSessionQueue.push(options, function () {
+    res.end();
+  });
 });
 
 app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
