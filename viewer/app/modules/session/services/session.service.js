@@ -291,6 +291,11 @@
 
       url += `&segments=${params.segments}`;
 
+      if (params.fields && params.fields.length) {
+        let fields = params.fields.join(',');
+        url += `&fields=${fields}`;
+      }
+
       this.$window.location = url;
     }
 

@@ -45,8 +45,23 @@
         segments    : this.segments,
         sessions    : this.sessions,
         numVisible  : this.numVisible,
-        numMatching : this.numMatching
+        numMatching : this.numMatching,
+        fields      : []
       };
+
+      if (this.fields) {
+        for (let i = 0; i < this.fields.length; ++i) {
+          let field = this.fields[i];
+          if (field.children) {
+            for (let j = 0; j < field.children.length; ++j) {
+              let child = field.children[j];
+              if (child) { data.fields.push(child.dbField); }
+            }
+          } else {
+            data.fields.push(field.dbField);
+          }
+        }
+      }
 
       this.SessionService.exportCSV(data);
       this.$scope.$emit('close:form:container');
@@ -73,7 +88,8 @@
         applyTo     : '<', // what to apply the action to [open,visible,matching]
         sessions    : '<', // sessions to apply the action to
         numVisible  : '<', // number of visible sessions to apply action to
-        numMatching : '<'  // number of matching sessions to apply action to
+        numMatching : '<', // number of matching sessions to apply action to
+        fields      : '<'  // the fields to display in the csv (same as column headers)
       }
     });
 

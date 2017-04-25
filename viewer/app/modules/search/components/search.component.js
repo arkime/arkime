@@ -384,7 +384,8 @@
         numVisibleSessions  : '<',
         numMatchingSessions : '<',
         start               : '<',
-        timezone            : '<'
+        timezone            : '<',
+        fields              : '<'
       }
     });
 

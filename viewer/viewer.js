@@ -3418,56 +3418,82 @@ app.get('/connections.csv', function(req, res) {
   });
 });
 
-function csvListWriter(req, res, list, pcapWriter, extension) {
+function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   if (list.length > 0 && list[0].fields) {
     list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
   } else if (list.length > 0 && list[0]._source) {
     list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
   }
 
-  res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
-
-  for (var i = 0, ilen = list.length; i < ilen; i++) {
-    var fields = list[i]._source || list[i].fields;
-
-    if (!fields) {
-      continue;
-    }
-    var pr;
-    switch (fields.pr) {
-    case 1:
-      pr = "icmp";
-      break;
-    case 6:
-      pr = "tcp";
-      break;
-    case 17:
-      pr =  "udp";
-      break;
-    case 58:
-      pr =  "icmpv6";
-      break;
-    }
-
-
-    res.write(pr + ", " + fields.fp + ", " + fields.lp + ", " + Pcap.inet_ntoa(fields.a1) + ", " + fields.p1 + ", " + (fields.g1||"") + ", "  + Pcap.inet_ntoa(fields.a2) + ", " + fields.p2 + ", " + (fields.g2||"") + ", " + fields.pa + ", " + fields.by + ", " + fields.db + ", " + fields.no + "\r\n");
+  var fieldObjects  = Config.getDBFieldsMap();
+  var columnHeaders = [];
+  for (var i = 0, len = fields.length; i < len; ++i) {
+    columnHeaders.push(fieldObjects[fields[i]].friendlyName);
   }
+  res.write(columnHeaders.join(', '));
+  res.write('\r\n');
+
+  for (var j = 0, jlen = list.length; j < jlen; j++) {
+    var sessionData = list[j]._source || list[j].fields;
+
+    if (!fields) { continue; }
+
+    var values = [];
+    for (var k = 0, len = fields.length; k < len; ++k) {
+      let value = sessionData[fields[k]];
+      if (fields[k] === 'pr' && value) {
+        switch (value) {
+          case 1:
+            value = 'icmp';
+            break;
+          case 6:
+            value = 'tcp';
+            break;
+          case 17:
+            value =  'udp';
+            break;
+          case 58:
+            value =  'icmpv6';
+            break;
+        }
+      } else if (fieldObjects[fields[k]].type === 'ip' && value) {
+        value = Pcap.inet_ntoa(value);
+      }
+
+      if (Array.isArray(value)) {
+        let singleValue = '"' + value.join(', ') +  '"';
+        values.push(singleValue);
+      } else {
+        if (value === undefined) { value = ''; }
+        values.push(value);
+      }
+    }
+
+    res.write(values.join(','));
+    res.write('\r\n');
+  }
+
   res.end();
 }
 
 app.get(/\/sessions.csv.*/, function(req, res) {
   noCache(req, res, "text/csv");
+  // default fields to display in csv
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
+  var reqFields; // save requested fields because sessionsListFromQuery appends "ro"
 
+  if (req.query.fields) {
+    fields = req.query.fields.split(',');
+    reqFields = req.query.fields.split(',');
+  }
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
-
     sessionsListFromIds(req, ids, fields, function(err, list) {
-      csvListWriter(req, res, list);
+      csvListWriter(req, res, list, reqFields);
     });
   } else {
     sessionsListFromQuery(req, res, fields, function(err, list) {
-      csvListWriter(req, res, list);
+      csvListWriter(req, res, list, reqFields);
     });
   }
 });

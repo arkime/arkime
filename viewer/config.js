@@ -310,6 +310,10 @@ exports.getFieldsMap = function() {
   return internals.fieldsMap;
 };
 
+exports.getDBFieldsMap = function() {
+  return internals.dbFieldsMap;
+};
+
 exports.getCategories = function() {
   return internals.categories;
 };

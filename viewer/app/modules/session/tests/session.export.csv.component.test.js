@@ -68,7 +68,8 @@
         segments    : sessionExportCSVComponent.segments,
         sessions    : sessionExportCSVComponent.sessions,
         numVisible  : sessionExportCSVComponent.numVisible,
-        numMatching : sessionExportCSVComponent.numMatching
+        numMatching : sessionExportCSVComponent.numMatching,
+        fields      : []
       };
 
       sessionExportCSVComponent.exportCSV();
