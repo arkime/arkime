@@ -8,6 +8,7 @@
   - viewer - session graph uses timezone setting
   - viewer - fixed cron query creation with forwarding failures
   - viewer - new serverSecret instead of passwordSecret for S2S
+  - viewer - csv export uses visible columns in session table (issue #601)
 
 0.18.2 2017/04/16
   - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
