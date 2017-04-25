@@ -689,7 +689,7 @@ exports.settings = function() {
 exports.register("BODY-UNXORBRUTEGZ", createUnxorBruteGzip, {name: "UnXOR Brute GZip Header"});
 exports.register("BODY-UNXOR", createKeyUnxorStream,
   {name: "UnXOR",
-   title: "XOR decoding<br>Only set keyLength or key",
+   title: "Only set keyLength or key",
   fields: [{key: "skip", name: "Skip Bytes", type: "text"},
            {key:"keyLength", name:"Key is in data length", type: "text"},
            {key:"key", name:"Fixed key in hex", type: "text"}

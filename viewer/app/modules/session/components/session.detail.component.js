@@ -135,8 +135,8 @@
         if (localStorage['moloch-image']) {
           this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
         }
-        if (localStorage['moloch-decode']) {
-          this.$scope.params.decode = JSON.parse(localStorage['moloch-decode']);
+        if (localStorage['moloch-decodings']) {
+          this.$scope.params.decode = JSON.parse(localStorage['moloch-decodings']);
           for (let key in this.decodings) {
             if (this.decodings.hasOwnProperty(key)) {
               if (this.$scope.params.decode[key]) {
@@ -343,7 +343,7 @@
       this.closeDecodingForm(decoding.active);
 
       // update local storage
-      localStorage['moloch-decode'] = JSON.stringify(this.$scope.params.decode);
+      localStorage['moloch-decodings'] = JSON.stringify(this.$scope.params.decode);
     }
 
   }
