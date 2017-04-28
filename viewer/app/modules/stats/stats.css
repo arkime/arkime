@@ -1,5 +1,20 @@
-moloch-stats #statsGraph {
-  margin-bottom: 5px;
+moloch-stats .container-fluid {
+  margin-top: 90px;
+}
+
+moloch-stats .panel-heading {
+  padding         : 0;
+  background-color: var(--color-gray-light) !important;
+}
+
+moloch-stats .panel-title a.accordion-toggle {
+  display         : block;
+  padding         : 10px 15px;
+  text-decoration : none;
+}
+moloch-stats .panel-body {
+  padding: 0;
+  overflow:hidden;
 }
 
 moloch-stats #statsGraphOptions {
@@ -19,6 +34,22 @@ moloch-stats table.table > tfoot > tr:first-child > td {
   border-top: 2px solid var(--color-gray-light);
 }
 
+moloch-stats form.stats-form {
+  position: fixed;
+  top     : 36px;
+  left    : 0;
+  right   : 0;
+  z-index : 4;
+  padding : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+}
+moloch-stats select {
+  -webkit-appearance: none;
+}
 
 /* Cubism stuff -------------------- */
 moloch-stats .axis path, moloch-stats .axis line {
