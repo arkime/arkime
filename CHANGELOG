@@ -1,6 +1,6 @@
 0.18.3 2017/04/XX
-  - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
-            db.pl upgrade (~5 min) see the 0.18.0 notes below.
+  - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
+            outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
   - viewer - Other decodings (issues #684, #670)
   - viewer - Text lineup (issue #598)
@@ -9,9 +9,10 @@
   - viewer - fixed cron query creation with forwarding failures
   - viewer - new serverSecret instead of passwordSecret for S2S
   - viewer - csv export uses visible columns in session table (issue #601)
+  - viewer - stats page improvements (issue #682)
 
 0.18.2 2017/04/16
-  - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for 
+  - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for
             db.pl upgrade (~5 min) see the 0.18.0 notes below.
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
   - capture - New snapLen variable, by default 16384
@@ -72,7 +73,7 @@
   - viewer - spiview tab uses new ui (/spiview.old available temporarily)
   - viewer - connections tab uses new ui (/connections.old available temporarily)
   - capture - pcapWriteMethod=simple-nodirect uses the simple writer without direct
-              writes.  Required for some file systems like zfs 
+              writes.  Required for some file systems like zfs
   - viewer - spigraph tab uses new ui (/spigraph.old available temporarily)
   - capture - tpacketv3 handles multiple interfaces correctly (issue #658)
   - easybutton - singlehost and config removed, build remains for now
@@ -208,7 +209,7 @@
   - capture - aerospike protocol detection
   - capture - cassandra protocol detection
   - viewer - spiview now sorts better when session vs packets is used
-  - capture - minPacketsSaveBPFs which skips saving SPI data for matching sessions, 
+  - capture - minPacketsSaveBPFs which skips saving SPI data for matching sessions,
               useful for known internal scanning hosts
   - wise - threatstream includes source now (issue #491)
   - capture - simple quic parser
@@ -236,7 +237,7 @@
   - capture - basic thrift detection
   - wise - new json format for file/url file types
   - wise - passivetotal tagging support
-  - wise - new source that proxies to another wise 
+  - wise - new source that proxies to another wise
   - all - support https elasticsearch
 
 0.14.0 2016/05/08
@@ -257,7 +258,7 @@
   - dns - parse multi packet tcp requests
   - capture - gre support
   - all - memory/free space percentage (issue #164)
-  - addUser - New option --webauthonly 
+  - addUser - New option --webauthonly
   - capture - Added readTruncatedPackets config option
   - capture - truncate urls at 4096 bytes and mid save sessions with large fields (issue #458)
   - capture - warn if hostname isn't a FQDN (issue #459)
@@ -267,7 +268,7 @@
   - easybutton - node 0.10.45
 
 0.12.3 2016/03/28
-  - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 
+  - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version.
   - NOTICE: Requires running npm update
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
             to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
@@ -287,7 +288,7 @@
   - easybutton - disable bluetooth in libpcap (issue #445)
 
 0.12.2 2016/01/15
-  - NOTICE: Only ES 1.[67].x is supported by this version. 
+  - NOTICE: Only ES 1.[67].x is supported by this version.
   - capture - basic redis detection
   - viewer - connections node distance (issue #428)
   - easybutton - glib 2.47.4 (issue #423)
@@ -306,13 +307,13 @@
 0.12.0 2015/11/09
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
   - NOTICE: db.pl upgrade is required
-  - NOTICE: duplicate items in available both in tags and elsewhere have been 
+  - NOTICE: duplicate items in available both in tags and elsewhere have been
             removed from tags for future data
   - capture - http module rewritten to use libcurl, woot!
   - capture/s3 - S3 traffic now sent over https
   - viewer - upgraded to DataTables 1.10.7 (issue #379)
   - viewer - add search to files tab (issue #70)
-  - viewer - handle older indexes without bytes/databytes/packets 
+  - viewer - handle older indexes without bytes/databytes/packets
              per src/dst (issue #396)
   - viewer - upgrade D3 to 3.5.5 and switch to min version
   - viewer - upgrade jquery to 2.1.4
@@ -341,7 +342,7 @@
   - capture - --quiet flag (issue #427)
 
 0.11.5 2015/06/02
-  - NOTICE: Only ES 1.[45].x is supported by this version. 
+  - NOTICE: Only ES 1.[45].x is supported by this version.
             Restart viewer AFTER upgrading ES versions
   - NOTICE: If using multies all viewers must be upgraded at once
   - NOTICE: Requires running npm update
@@ -358,7 +359,7 @@
   - viewer - Fixed incorrect expression for http.cookie.key
   - viewer - Added --debug to viewer
   - viewer - Only keep 10 files on expire instead of 100, delete up to 200 at a time
-  - viewer - Switched hacking viewer 
+  - viewer - Switched hacking viewer
   - viewer - Decoding is now handled with node streams which will allow
              chaining and plugin decoders eventually - npm update required
   - capture - Added cookie value parsing, default off controled by
@@ -378,8 +379,8 @@
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required
-  - NOTICE: Only ES 1.4.x is supported by this version. 
-                 ES 1.[23] may still work 
+  - NOTICE: Only ES 1.4.x is supported by this version.
+                 ES 1.[23] may still work
             Restart viewer AFTER upgrading ES versions
   - http connection handling rework, hopefully better
   - moloch-capture will no longer monitor itself even if it uses the same interface to talk to ES
@@ -397,20 +398,20 @@
   - connections.csv returns session count (issue #356)
   - Expose the id/rootId in SPI Meta (issue #355)
   - WISE - right click loading from files
-  - spiview improvements - collapsible sections, sorting, 
+  - spiview improvements - collapsible sections, sorting,
     right click to set load on default (issue #360)
   - db.pl for ES >= 1.4 now issues _upgrade on optimize/expire
   - WISE - configurable reversedns stripDomains (issue #365)
-  
+
 
 0.11.3 2015/02/26
-  - NOTICE: Only 1.[234].x are supported by this version. 
+  - NOTICE: Only 1.[234].x are supported by this version.
             Restart viewer AFTER upgrading ES versions
   - NOTICE: Requires running npm update for ES 1.3 and moment support
   - NOTICE: Requires running db.pl host:port upgrade
-  - For NEW installs can now set a prefix= config variable and 
-    db.pl --prefix option that will prefix all ES tables.  This makes 
-    it easier for Moloch to share ES with other services OR multiple 
+  - For NEW installs can now set a prefix= config variable and
+    db.pl --prefix option that will prefix all ES tables.  This makes
+    it easier for Moloch to share ES with other services OR multiple
     Moloch clusters can use 1 ES cluster with different prefixes.
   - New usersElasticsearch= and usersPrefix= config that make it possible
     for multiple Moloch clusters to share a single users table.
@@ -449,7 +450,7 @@
   - WISE - Tagger files can have views defined with #view:
   - New cert.notbefore, cert.notafter, cert.validfor fields (issue #329)
   - New starttime, stoptime, view fields (issue #307)
-  - New tls.sessionid.dst, tls.sessionid.src, tls.sessionid fields (issue #326) 
+  - New tls.sessionid.dst, tls.sessionid.src, tls.sessionid fields (issue #326)
   - Use ELS doc_values for some fields to reduce ES memory
   - Added cert.cnt back
   - Handle bad ip.protocol strings better (issue #330)
@@ -457,17 +458,17 @@
   - Switched capture memory reporting to more accurate getrusage
   - Added capture cpu reporting to stats (requires db.pl upgrade)
 
-  
+
 
 0.11.2 2014/10/16
-  - NOTICE: ES 1.1.x, 1.2.x, 1.3.x are supported by this version. 
+  - NOTICE: ES 1.1.x, 1.2.x, 1.3.x are supported by this version.
             ES 0.90.12 still works but will no longer be supported.
             Restart viewer AFTER upgrading ES versions
   - NOTICE: Requires running db.pl upgrade
   - NOTICE: Requires running npm update for ES 1.3 support
   - New experimental "Cron Queries" feature
     * ONE and ONLY one viewer should have "cronQueries=true"
-    * New [moloch-clusters] config section to send sessions 
+    * New [moloch-clusters] config section to send sessions
       from one cluster to another
   - Doubled the number of sockets from viewer to ES, now 20
   - Regex and wildcard support for file expression
@@ -479,7 +480,7 @@
   - Fixed update vs upgrade message (issue #287)
   - Fixed expression errors not displayed on connections tab (issue #288)
   - Added vlan and mac.src, mac.dst, mac indexing/expressions (issue #284)
-  - Can disable/enable fields from being indexed with 
+  - Can disable/enable fields from being indexed with
     './db.pl <host:port> field disable <expression>'
   - Directory monitoring support (issue #191)
     * --monitor (-m) to enable
@@ -497,11 +498,11 @@
   - New tls.version and tls.cipher fields
 
 0.11.1 2014/08/07
-  - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 
+  - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version.
             ES 1.0 is NOT supported.
             This is the LAST version to support 0.90.x
             Restart viewer AFTER upgrading ES versions
-  - NOTICE: When upgrading your runes.sh for 1.x add a -d to the 
+  - NOTICE: When upgrading your runes.sh for 1.x add a -d to the
             command, ES no longer runs in background by default
   - Parsers can register for session save events (issue #248)
   - Fix compressES check with ES 1.x (issue #255)
@@ -524,19 +525,19 @@
   - List queries can now have wildcard and regex items.
     example: http.uri = [term, w*ldcard, /.*regex/]
   - freeSpaceG now supports a percentage
-  - Show up to 25 items of each SPI data field with a ... 
+  - Show up to 25 items of each SPI data field with a ...
     to show more (issue #262)
   - If a http header went across two packets the leading piece
     would be chopped
 
 0.11.0 2014/05/08
-  - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 
+  - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+,
     1.x not supported yet
   - BREAKING: node 0.10.20 or newer required, 0.11+ not supported yet
-  - BREAKING: Many of the older expression that were kept for backwards 
+  - BREAKING: Many of the older expression that were kept for backwards
     compatibility no longer work
   - BREAKING: All plugins need to be updated and rebuilt
-  - BREAKING: Glib 2.30 or newer is now required, short term workaround is 
+  - BREAKING: Glib 2.30 or newer is now required, short term workaround is
     adding "#define G_VALUE_INIT  { 0, { { 0 } } }" to moloch.h, but please upgrade
   - BREAKING: switched to official elasticsearch javascript client,
     npm update required (issue #222)
@@ -570,7 +571,7 @@
   - New email.hasheader
   - New packets.(src|dst), bytes.(src|dst), databytes.(src|dst) (issue #206)
   - New payload8.(src|dst), payload.(hex|utf8), payload.(src|dst).(hex|utf8) (issue #209)
-  - pcapDir can now be a semicolon seperated list of directories, currently just 
+  - pcapDir can now be a semicolon seperated list of directories, currently just
     round robin is supported
   - UI: Fix Search/Actions showing up on second line on page load
   - capture now does memlock and max schedule priority on startup (issue #199)
@@ -639,14 +640,14 @@
 
 0.9.2 2013/11/14
   - BREAKING: nodejs 0.8 is no longer supported
-  - Upgrade d3 and cubism 
+  - Upgrade d3 and cubism
   - Fixed searches so numbers don't have to be quoted
   - Fixed export hitting max number of stack frames
   - Connections tab new UI
   - Connections tab allows any field for src/dst
   - More user settings
   - Fixed unique.txt to deal with multi value fields
-  - viewer.js now uses forever-agent package to help multi 
+  - viewer.js now uses forever-agent package to help multi
     machine communication.  (npm install required)
   - easybutton installs node 0.10.20 now
   - fixed race condition with tag lookup rate limiting
@@ -656,7 +657,7 @@
   - New views concept (issue #146), created in settings tab
   - settings tab improvements
   - Ability to search for http.uri.path, http.uri.key,http.uri.value for
-    uri path, query string key, and query string value (parseQSValue must 
+    uri path, query string key, and query string value (parseQSValue must
     be set to true)
   - --dryrun doesn't use ES for anything now
   - New session hash algorithm
@@ -749,7 +750,7 @@
 
 0.8.7 2013/07/12
   - Use recent versions of express which REQUIRES "npm install" in viewer directory
-  - Use recent version of jade which requires extra spaces, use "git diff -w" to 
+  - Use recent version of jade which requires extra spaces, use "git diff -w" to
   - Now index Host headers with and without port
   - pcapng exporting with meta data
   - Basic upload feature, doesn't support transfers of meta data yet
@@ -772,7 +773,7 @@
   - minor ui improvements
 
 0.8.5 2013/06/14
-  - NOTICE: Requires at least 0.90.1 ES 
+  - NOTICE: Requires at least 0.90.1 ES
   - New export dialog that asks for filename and number selection
   - spigraph shows health, decodes tags/ips, has sort by name
   - spigraph/spiview show total counts
@@ -799,7 +800,7 @@
   - Now possible to chose which http request, response and smtp headers
     to index using headers-http-request, headers-http-response,
     headers-email sections
-  - Session Graph now shows the full queried range instead of data 
+  - Session Graph now shows the full queried range instead of data
     available range
   - Fixed db.pl wipe error
   - Added density to db.pl info
@@ -808,7 +809,7 @@
   - Clean up add users UI a little, and clear fields on successful add
 
 
-0.8.3 2013/05/09 
+0.8.3 2013/05/09
   - full text for uri is now available
   - regex searches using == /REGEXHERE/
     regex can be slow so be careful
@@ -834,7 +835,7 @@
   - record capture memory in stats
   - record filesize for offline pcap
   - remove port from http host header (issue #63)
-  - db.pl prints more info by default,  multiple -v even more 
+  - db.pl prints more info by default,  multiple -v even more
     information, and new info command
   - fixed viewer crashes if pcap can't be read (issue #67)
   - minor css cleanup
@@ -851,7 +852,7 @@
 
 
 0.8.0 2013/04/17
-  - New SPI View tab, REQUIRES elasticsearch 0.90 RC2 or later 
+  - New SPI View tab, REQUIRES elasticsearch 0.90 RC2 or later
   - config spiDataMaxIndices controls how many indices to run against since
     spiview feature can cause elastic search to blowup memory.
   - display date as year/mon/day
@@ -864,7 +865,7 @@
   - verify the config file has a defaults section
   - display elastic search health for admin users on pages
   - display elastic search stats on stats page
-  - display ip protocol friendly name 
+  - display ip protocol friendly name
   - display simple png view of raw session data and attachments on mouseover,
     requires "npm install" in viewer directory
   - new much more accurate world map [thanks Dave]
