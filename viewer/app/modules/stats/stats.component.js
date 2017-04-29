@@ -41,7 +41,7 @@
       this.currentPage = 1; // always start on first page
 
       this.query = {
-        length    : this.$routeParams.length || 10,
+        length    : this.$routeParams.length || 50,
         start     : 0,
         filter    : null,
         sortField : 'nodeName',
