@@ -48,6 +48,26 @@
     "sortBy": "by",
     "children": ["pa1", "pa2"]
   },
+  "db1db2": {
+    "width": 140,
+    "dbField": "db1db2",
+    "exp": "db1db2",
+    "group": "general",
+    "friendlyName": "Src Databytes / Dst Databytes",
+    "help": "Src Databytes & Dst Databytes",
+    "sortBy": "db1",
+    "children": ["db1", "db2"]
+  },
+  "by1by2": {
+    "width": 120,
+    "dbField": "by1by2",
+    "exp": "by1by2",
+    "group": "general",
+    "friendlyName": "Src Bytes / Dst Bytes",
+    "help": "Src Bytes & Dst Bytes",
+    "sortBy": "by1",
+    "children": ["by1", "by2"]
+  },
   "db1by1": {
     "width": 140,
     "dbField": "db1by1",
