@@ -95,7 +95,7 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
       }
     },
     sort: {},
-    fields: this.sourceFields  // ALW: Need to change to docs_values for ES 5
+    _source: this.sourceFields  // ALW: Need to change to docs_values for ES 5
   };
 
   query.query.bool.filter[0].range[this.esTimestampField] = {gte: new Date() - this.esMaxTimeMS};
@@ -111,7 +111,7 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
     if (err || result.error || !result.hits || result.hits.hits.length === 0) {
       return cb(null, undefined);
     }
-    var json = result.hits.hits[0].fields;
+    var json = result.hits.hits[0]._source;
     var key = json[self.esResultField];
     if (key === undefined) {
       return cb(null, undefined);
