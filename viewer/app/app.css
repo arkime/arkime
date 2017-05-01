@@ -158,6 +158,9 @@ body {
 .cursor-help      { cursor: help; }
 .help-cursor      { cursor: help; }
 
+.cursor-text      { cursor: text; }
+.text-cursor      { cursor: text; }
+
 .cursor-pointer   { cursor: pointer; }
 .pointer-cursor   { cursor: pointer; }
 

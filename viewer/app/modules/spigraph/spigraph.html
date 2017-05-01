@@ -108,10 +108,12 @@
       class="margined-top-lg margined-bottom spi-graph-item padded-top">
       <div class="row">
         <div class="col-md-12">
-          <div class="btn-group margined-left-xlg" uib-dropdown>
-            <button class="btn btn-sm btn-theme-primary field-btn" uib-dropdown-toggle>
-              <strong>{{::item.name}}</strong>
-              <sup class="spicount">({{::item.count | number}})</sup>&nbsp;
+          <label class="cursor-text margined-left-xlg">
+            <strong>{{::item.name}}</strong>
+            <sup class="spicount">({{::item.count | number}})</sup>
+          </label>
+          <div class="btn-group btn-group-xs" uib-dropdown>
+            <button class="btn btn-theme-primary field-btn" uib-dropdown-toggle>
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu">
