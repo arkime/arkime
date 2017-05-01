@@ -115,6 +115,9 @@
         this.openMaps = false;
         this.$scope.$broadcast('close:map');
       });
+      this.$scope.$on('toggle:src:dst', (event, state) => {
+        this.$scope.$broadcast('update:src:dst', state);
+      });
     }
 
     loadData(reload) {

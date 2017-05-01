@@ -11,14 +11,15 @@
      * uses Angular Flot
      *
      * @example
-     * <session-graph graph-data="$ctrl.graphData" graph-type="'lpHisto'">
+     * <session-graph graph-data="$ctrl.graphData" graph-type="'lpHisto'"
+     *   timezone="{{::$ctrl.timezone}}" primary="{{::$ctrl.primary}}">
      * </session-graph>
      */
     .directive('sessionGraph', ['$filter', '$timeout', '$document', '$window',
       function($filter, $timeout, $document, $window) {
       return {
         template: require('html!../templates/graph.html'),
-        scope   : { graphData: '=', type: '@', timezone: '@' },
+        scope   : { graphData: '=', type: '@', timezone: '@', primary: '@' },
         link    : function(scope, element, attrs) {
 
           let body = $document[0].body;
@@ -188,7 +189,9 @@
             plot.setupGrid();
             plot.draw();
 
-            scope.$emit('change:histo:type', scope.type);
+            if (scope.primary) { // primary graph sets all graph's histo type
+              scope.$emit('change:histo:type', scope.type);
+            }
           };
 
           scope.zoomOut = function() {

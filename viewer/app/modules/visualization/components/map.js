@@ -9,12 +9,14 @@
      * uses JQuery Vector Map
      *
      * @example
-     * <moloch-map ng-if="$ctrl.mapData" map-data="$ctrl.mapData"></moloch-map>
+     * <moloch-map ng-if="$ctrl.mapData" map-data="$ctrl.mapData"
+     *   toggle-map="$ctrl.toggleMap()" primary="{{::$ctrl.primary}}">
+     * </moloch-map>
      */
     .directive('molochMap', ['FieldService', '$filter', '$document', '$timeout', '$window',
     function(FieldService, $filter, $document, $timeout, $window) {
       return {
-        scope   : { 'mapData': '=', 'toggleMap': '&' },
+        scope   : { 'mapData': '=', 'toggleMap': '&', 'primary': '@' },
         template: require('html!../templates/map.html'),
         link    : function(scope, element, attrs) {
           /* setup --------------------------------------------------------- */
@@ -96,6 +98,23 @@
             setup(data);
           });
 
+          /* watch for toggle event from primary map */
+          scope.$on('update:src:dst', (event, state) => {
+            let changed = false;
+
+            if (scope.state.src !== state.src) {
+              scope.state.src = state.src;
+              changed = true;
+            }
+
+            if (scope.state.dst !== state.dst) {
+              scope.state.dst = state.dst;
+              changed = true;
+            }
+
+            if (changed) { setup(scope.mapData); }
+          });
+
 
           /* utility functions --------------------------------------------- */
           /* shrinks the map element and resizes the map */
@@ -169,6 +188,10 @@
           scope.toggleSrcDst = function(type) {
             scope.state[type] = !scope.state[type];
             setup(scope.mapData);
+
+            if (scope.primary) { // primary map sets all other map's src/dst
+              scope.$emit('toggle:src:dst', scope.state);
+            }
           };
 
         }

@@ -12,14 +12,15 @@
       <div ng-if="::($ctrl.graphData)">
         <session-graph graph-data="$ctrl.graphData"
           type="{{::$ctrl.graphType || 'lpHisto'}}"
-          timezone="{{::$ctrl.timezone}}">
+          timezone="{{::$ctrl.timezone}}" primary="{{::$ctrl.primary}}">
         </session-graph>
       </div>
     </div>
 
     <div ng-if="$ctrl.showMap" class="inline-map">
       <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"
-        toggle-map="$ctrl.toggleMap()"></moloch-map>
+        toggle-map="$ctrl.toggleMap()" primary="{{::$ctrl.primary}}">
+      </moloch-map>
     </div>
 
   </div>
