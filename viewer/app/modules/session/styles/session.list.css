@@ -53,6 +53,17 @@ session .moloch-col-header .btn-group {
   margin-left: -8px;
 }
 
+session .moloch-col-header .header-text {
+  display : inline-block;
+  width   : calc(100% - 24px);
+}
+
+session .moloch-col-header .header-sort {
+  display       : inline-block;
+  width         : 8px;
+  vertical-align: top;
+}
+
 
 /* draggable table column headers ---------- */
 session [ng-drag] {

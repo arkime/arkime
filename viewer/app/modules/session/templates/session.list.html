@@ -221,7 +221,7 @@
                 ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
                 ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
                 class="cursor-pointer">
-                <div style="display:inline-block;width:8px;vertical-align:top;">
+                <div class="header-sort">
                   <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
                     class="fa fa-sort text-muted-more"></span>
                   <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
@@ -229,7 +229,7 @@
                   <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
                     class="fa fa-sort-desc"></span>
                 </div>
-                <div style="display:inline-block;width:60%">{{::header.friendlyName}}</div>
+                <div class="header-text">{{::header.friendlyName}}</div>
               </span>
 
               <!-- non-sortable column -->
