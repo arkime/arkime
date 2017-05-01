@@ -103,6 +103,11 @@
       $('footer').hide();
     }
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      d3.select(window).off('resize', this.resize);
+    }
+
     /* sets up d3 graph and saves variables for use in other functions */
     startD3() {
       let self = this;
@@ -151,6 +156,17 @@
         .distance(self.nodeDist)
         .charge(-300)
         .size([self.width, self.height]);
+
+      d3.select(window).on('resize', this.resize);
+    }
+
+    /* resizes the graph by setting new width and height */
+    resize() {
+      let width  = $(window).width();
+      let height = $(window).height() - 166;
+
+      svgMain.attr('width', width).attr('height', height);
+      force.size([width, height]).resume();
     }
 
     /* removes existing nodes, update url parameters and retrieves data from
