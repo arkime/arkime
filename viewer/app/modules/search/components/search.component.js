@@ -94,7 +94,9 @@
       // load user's previous view choice
       if (sessionStorage && sessionStorage['moloch-view']) {
         this.view = sessionStorage['moloch-view'];
-        this.$location.search('view', this.view); // update url params
+      }
+      if (this.$routeParams.view) { // url param trumps storage
+        this.view = this.$routeParams.view;
       }
 
       // date picker popups hidden to start
