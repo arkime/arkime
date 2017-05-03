@@ -161,10 +161,10 @@
           <label class="col-sm-3 control-label">Default SPI Graph</label>
           <div class="col-sm-9">
             <input type="text" ng-model="$ctrl.settings.spiGraph"
-              class="form-control short-control"
+              class="form-control short-control field-typeahead"
               typeahead-on-select="$ctrl.update()"
               typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.spiGraph).help}}">
               {{$ctrl.formatField($ctrl.settings.spiGraph) || 'unknown field'}}
@@ -179,10 +179,10 @@
           <label class="col-sm-3 control-label">Connections Src Field</label>
           <div class="col-sm-9">
             <input type="text" ng-model="$ctrl.settings.connSrcField"
-              class="form-control short-control"
+              class="form-control short-control field-typeahead"
               typeahead-on-select="$ctrl.update()"
               typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.connSrcField).help}}">
               {{$ctrl.formatField($ctrl.settings.connSrcField) || 'unknown field'}}
@@ -195,10 +195,10 @@
           <label class="col-sm-3 control-label">Connections Dst Field</label>
           <div class="col-sm-9">
             <input type="text" ng-model="$ctrl.settings.connDstField"
-              class="form-control short-control"
+              class="form-control short-control field-typeahead"
               typeahead-on-select="$ctrl.update()"
               typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.dbField as field.exp for field in $ctrl.fieldsPlus | filter:$viewValue | limitTo:10">
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fieldsPlus | filter:{exp:$viewValue}">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.connDstField).help}}">
               {{$ctrl.formatField($ctrl.settings.connDstField) || 'unknown field'}}
