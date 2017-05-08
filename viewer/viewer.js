@@ -3426,12 +3426,15 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   }
 
   var fieldObjects  = Config.getDBFieldsMap();
-  var columnHeaders = [];
-  for (var i = 0, len = fields.length; i < len; ++i) {
-    columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+
+  if (fields) {
+    var columnHeaders = [];
+    for (var i = 0, len = fields.length; i < len; ++i) {
+      columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+    }
+    res.write(columnHeaders.join(', '));
+    res.write('\r\n');
   }
-  res.write(columnHeaders.join(', '));
-  res.write('\r\n');
 
   for (var j = 0, jlen = list.length; j < jlen; j++) {
     var sessionData = list[j]._source || list[j].fields;
@@ -3480,12 +3483,14 @@ app.get(/\/sessions.csv.*/, function(req, res) {
   noCache(req, res, "text/csv");
   // default fields to display in csv
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
-  var reqFields; // save requested fields because sessionsListFromQuery appends "ro"
+  // save requested fields because sessionsListFromQuery returns fields with
+  // "ro" appended onto the end
+  var reqFields = fields;
 
   if (req.query.fields) {
-    fields = req.query.fields.split(',');
-    reqFields = req.query.fields.split(',');
+    fields = reqFields = req.query.fields.split(',');
   }
+
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
     sessionsListFromIds(req, ids, fields, function(err, list) {
