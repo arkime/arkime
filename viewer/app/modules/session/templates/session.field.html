@@ -36,3 +36,8 @@
   </span>
 
 </span>
+
+<!-- value does not correspond to a field; display it but it's not clickable -->
+<span ng-if="::(!$ctrl.field)">
+  {{::$ctrl.value}}&nbsp;&nbsp;
+</span>
