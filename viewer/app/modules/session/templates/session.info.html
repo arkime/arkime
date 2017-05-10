@@ -18,14 +18,14 @@
   <div ng-if="::($ctrl.session.esrc)">
     <strong>From:</strong>
     <span ng-repeat="value in ::$ctrl.session.esrc track by $index">
-      <session-field  expr="email.dst" field="::$ctrl.fieldMap['email.dst']"
+      <session-field  expr="email.src" field="::$ctrl.fieldMap['email.src']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
     </span>
     <br>
     <div ng-if="::($ctrl.session.edst)">
       <strong>To:</strong>
       <span ng-repeat="value in ::$ctrl.session.edst track by $index">
-      <session-field  expr="email.src" field="::$ctrl.fieldMap['email.src']"
+      <session-field  expr="email.dst" field="::$ctrl.fieldMap['email.dst']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
       </span>
       <br>
