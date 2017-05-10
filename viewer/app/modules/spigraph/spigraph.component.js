@@ -120,6 +120,12 @@
       });
     }
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      if (interval) { this.$interval.cancel(interval); }
+    }
+
+
     loadData(reload) {
       this.loading  = true;
       this.error    = false;

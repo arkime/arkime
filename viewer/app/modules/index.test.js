@@ -33,3 +33,11 @@ require('./help/help.test');
 
 require('./visualization/tests/graph.test');
 require('./visualization/tests/map.test');
+
+// define test constants
+angular.module('moloch.Constants', [])
+   .constant('Constants', Object.freeze({
+     demoMode: false,
+     devMode : false,
+     version : 'test'
+   }));

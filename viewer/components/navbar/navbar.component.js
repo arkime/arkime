@@ -12,21 +12,22 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $location     Exposes browser address bar URL
-     *                      (based on the window.location)
-     * @param $window       Angular reference to the browser's window object
-     * @param molochVersion The installed version of moloch
+     * @param $location Exposes browser address bar URL
+     *                  (based on the window.location)
+     * @param Constants Moloch UI global constants
      *
      * @ngInject
      */
-    constructor($location, $window, molochVersion) {
+    constructor($location, Constants) {
       this.$location      = $location;
-      this.$window        = $window;
-      this.molochVersion  = molochVersion.version;
+      this.molochVersion  = Constants.version;
+      this.demoMode       = Constants.demoMode;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.activeTab = this.$location.path().split('/')[1];
+
       this.menu = {
         sessions    : { title: 'Sessions',    link: 'sessions' },
         spiview     : { title: 'SPI View',    link: 'spiview' },
@@ -34,20 +35,23 @@
         connections : { title: 'Connections', link: 'connections' },
         files       : { title: 'Files',       link: 'files' },
         stats       : { title: 'Stats',       link: 'stats' },
-        settings    : { title: 'Settings',    link: 'settings' },
-        users       : { title: 'Users',       link: 'users', permission: 'createEnabled' },
         upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' }
       };
+
+      if (!this.demoMode) {
+        this.menu.settings  = { title: 'Settings', link: 'settings' };
+        this.menu.users     = { title: 'Users', link: 'users', permission: 'createEnabled' };
+      }
     }
 
 
     /* exposed functions --------------------------------------------------- */
     /**
-     * Determines the active nav item based on the page route
+     * Determines whether a tab is active based on it's link
      * @param {string} route The route of the nav item
      */
-    isActive(route) {
-      return route === this.$location.path().split('/')[1];
+    isActive(link) {
+      return this.activeTab === link;
     }
 
     /**
@@ -55,22 +59,19 @@
      * @param {string} link The link to redirect to
      */
     navTabClick(link) {
-      let path = this.$location.path();
-
-      let basePath = path.split('/')[1];
-      if (this.menu[basePath] && link.contains('help')) {
+      if (link === 'help') {
         // going to help page, so set section of help to navigate to
-        this.$location.hash(basePath);
-      } else {
-        this.$location.hash(null);
+        this.$location.hash(this.activeTab);
       }
 
-      this.$window.location.href = this.$location.url().replace(path, link);
+      this.activeTab = link;
+
+      this.$location.path(link);
     }
 
   }
 
-  NavbarController.$inject = ['$location','$window','molochVersion'];
+  NavbarController.$inject = ['$location','Constants'];
 
   /**
    * Navbar Directive

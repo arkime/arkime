@@ -713,7 +713,6 @@ function checkWebEnabled(req, res, next) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
-
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log("WARNING - Starting in demo mode, some APIs disabled");
@@ -901,39 +900,6 @@ app.get('/style.css', function(req, res) {
       res.send(css);
     });
   });
-});
-
-// angular app pages
-app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/spigraph', '/connections', '/upload'], checkWebEnabled, function(req, res) {
-  // send cookie for basic, non admin functions
-  res.cookie(
-     'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
-  );
-
-  var theme = req.user.settings.theme || 'default-theme';
-  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
-
-  res.render('app.pug', { theme:theme });
-});
-
-app.get(['/users'], checkWebEnabled, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.status(404).send("Not found");
-  }
-
-  // send cookie for basic, non admin functions
-  res.cookie(
-     'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
-  );
-
-  var theme = req.user.settings.theme || 'default-theme';
-  if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
-
-  res.render('app.pug', { theme:theme });
 });
 
 // angular app bundles
@@ -5868,13 +5834,34 @@ if (Config.get("regressionTests")) {
   });
 }
 
-app.use(function(req,res) {
-  res.status(404);
-  // respond with html page
-  if (req.accepts('html')) {
-    return res.render('404.pug');
+
+app.use(express.static(__dirname + '/views'));
+app.use(express.static(__dirname + '/bundle'));
+app.use(function (req, res) {
+  if (req.path === '/users' && !req.user.createEnabled) {
+    return res.status(403).send('Permission denied');
   }
-  res.type('txt').send('Page not found');
+
+  if (req.path === '/settings' && Config.get('demoMode', false)) {
+    return res.status(403).send('Permission denied');
+  }
+
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
+  var theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
+
+  res.render('app.pug', {
+    theme   : theme,
+    demoMode: Config.get('demoMode', false),
+    devMode : Config.get('devMode', false),
+    version : app.locals.molochversion
+  });
 });
 
 

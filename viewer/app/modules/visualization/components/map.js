@@ -18,7 +18,7 @@
       return {
         scope   : { 'mapData': '=', 'toggleMap': '&', 'primary': '@' },
         template: require('html!../templates/map.html'),
-        link    : function(scope, element, attrs) {
+        link    : function(scope, element) {
           /* setup --------------------------------------------------------- */
           scope.state = { open:false, src:true, dst:true };
 
@@ -139,9 +139,10 @@
            * and then closes the map if click was outside map
            * @param {Object} e The click event
            */
+          let timeout;
           function isOutsideClick(e) {
             if (!element.is(e.target) && element.has(e.target).length === 0) {
-              $timeout(() => {
+              timeout = $timeout(() => {
                 scope.status.expanded = false;
                 shrinkMapElement();
               });
@@ -193,6 +194,16 @@
               scope.$emit('toggle:src:dst', scope.state);
             }
           };
+
+
+          /* cleanup ------------------------------------------------------- */
+          element.on('$destroy', function onDestroy () {
+            $document.off('mouseup', isOutsideClick);
+
+            if (timeout) { $timeout.cancel(timeout); }
+
+            mapEl.remove();
+          });
 
         }
       };

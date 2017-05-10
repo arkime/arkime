@@ -2,6 +2,8 @@
 
   'use strict';
 
+  let timeout;
+
   /**
    * @class UserListController
    * @classdesc Interacts with moloch users page
@@ -65,6 +67,11 @@
       ];
     }
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      if (timeout) { this.$timeout.cancel(timeout); }
+    }
+
     /* remove the message when user is done with it or duration ends */
     messageDone() {
       this.msg = null;
@@ -81,7 +88,7 @@
       // reset to old to keep any additional routing logic from kicking in
       this.$location.hash(old);
 
-      this.$timeout(() => {
+      timeout = this.$timeout(() => {
         this.focusInput = false;
       });
     }

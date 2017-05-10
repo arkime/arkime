@@ -50,6 +50,8 @@
 @import './modules/visualization/styles/graph.css';
 @import './modules/visualization/styles/map.css';
 
+@import './modules/404/404.css';
+
 
 
 /* appwide styles ============================ */

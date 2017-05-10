@@ -6,6 +6,8 @@
 
   let bodyElem = $(document.body);
 
+  let interval;
+
   /**
    * @class SettingsController
    * @classdesc Interacts with moloch settings page
@@ -139,6 +141,11 @@
         });
     }
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      if (interval) { this.$interval.cancel(interval); }
+    }
+
 
     /* service functions --------------------------------------------------- */
     /* retrieves the specified user's settings */
@@ -209,7 +216,7 @@
     /* starts the clock for the timezone setting */
     startClock() {
       this.tick();
-      this.$interval(() => { this.tick(); }, 1000);
+      interval = this.$interval(() => { this.tick(); }, 1000);
     }
 
 

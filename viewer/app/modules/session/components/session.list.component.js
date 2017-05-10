@@ -127,6 +127,13 @@
       });
     } /* /$onInit */
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      holdingClick = false;
+
+      if (timeout) { this.$timeout.cancel(timeout); }
+    }
+
 
     /* data retrieve/setup/update ------------------------------------------ */
     /**

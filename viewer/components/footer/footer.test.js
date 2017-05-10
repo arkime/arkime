@@ -15,7 +15,7 @@
       $componentController,
       $rootScope,
       $compile,
-      molochVersion) {
+      Constants) {
 
       scope = $rootScope.$new();
 
@@ -23,7 +23,7 @@
       var template = $compile(element)(scope);
 
       footer = $componentController('footer', {
-        molochVersion: molochVersion
+        Constants: Constants
       });
 
       scope.$digest();

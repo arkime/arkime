@@ -10,8 +10,7 @@
 
         // bind the content to the scope
         return function($scope, element) {
-
-          let addMenu = function(event) {
+          let addMenu = function() {
             let item = $(this).closest('span');
 
             // add menu to the DOM tree
@@ -25,8 +24,11 @@
 
           // when clickable field element is clicked, inject the menu
           element.on('mousedown', 'a.value', addMenu);
-        };
 
+          $scope.$on('$destroy', () => {
+            element.off('mousedown', 'a.value', addMenu);
+          });
+        };
       }
 
       // return the directive configuration

@@ -16,6 +16,8 @@
   // save currently executing promise
   let pendingPromise;
 
+  let timeout;
+
   /**
    * @class SpiviewController
    * @classdesc Interacts with moloch spiview page
@@ -93,7 +95,7 @@
 
         if (pendingPromise) {   // if there's already a req (or series of reqs)
           this.cancelLoading(); // cancel any current requests
-          this.$timeout(() => { // wait for promise abort to complete
+          timeout = this.$timeout(() => { // wait for promise abort to complete
             this.getSpiData(this.query.spi);
           }, 100);
         } else {
@@ -112,6 +114,21 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
+    }
+
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      // reset state variables
+      newQuery = true;
+      openedCategories = false;
+      categoryLoadingCounts = {};
+
+      if (timeout) { this.$timeout.cancel(timeout); }
+
+      if (pendingPromise) {     // if there's  a req (or series of reqs)
+        pendingPromise.abort(); // cancel current server request
+        pendingPromise  = null; // reset
+      }
     }
 
 
@@ -249,7 +266,7 @@
       return () => {
         let taskDeferred = this.$q.defer();
 
-        this.$timeout(() => { // timeout for angular to render previous data
+        timeout = this.$timeout(() => { // timeout for angular to render previous data
           if (this.canceled) { taskDeferred.promise.then(angular.noop); }
           else { taskDeferred.resolve(this.getSingleSpiData(field, count)); }
         }, 100);

@@ -45,6 +45,11 @@
       }
     }
 
+    /* fired when controller's containing scope is destroyed */
+    $onDestroy() {
+      if (timeout) { this.$timeout.cancel(timeout); }
+    }
+
 
     /* exposed functions --------------------------------------------------- */
     /* Dismisses/closes the toast */

@@ -79,7 +79,7 @@
         <td class="no-wrap"><input type="checkbox" ng-model="user.removeEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap">
           <a class="btn btn-sm btn-theme-tertiary"
-            href="settings?userId={{user.userId}}"
+            ng-href="settings?userId={{user.userId}}"
             uib-tooltip="Settings for {{user.userId}}">
             <span class="fa fa-gear"></span>
           </a>

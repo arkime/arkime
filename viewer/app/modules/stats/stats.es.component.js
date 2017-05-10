@@ -72,8 +72,10 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      this.$interval.cancel(reqPromise);
-      reqPromise = null;
+      if (reqPromise) {
+        this.$interval.cancel(reqPromise);
+        reqPromise = null;
+      }
     }
 
     /**

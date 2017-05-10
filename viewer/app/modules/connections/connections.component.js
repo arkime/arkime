@@ -104,8 +104,42 @@
     }
 
     /* fired when controller's containing scope is destroyed */
-    $onDestroy() {
-      d3.select(window).off('resize', this.resize);
+    $onDestroy() { // cleanup all the d3 stuffs!
+      // d3 doesn't have .off function to remove listeners, so use .on('listener', null)
+      // http://stackoverflow.com/questions/20269384/how-do-you-remove-a-handler-using-a-d3-js-selector
+      d3.behavior.zoom().on('zoom', null);
+      d3.select(window).on('resize', null);
+      d3.select(window).on('mouseup', null);
+
+      this.svgRect.on('mousedown', null);
+      this.svgRect.remove();
+
+      this.node.on('mouseover', null);
+      this.node.on('mousedown', null);
+      this.node.on('mouseout', null);
+      this.node = null;
+
+      this.link.on('mouseover', null);
+      this.link.on('mouseout', null);
+      this.link = null;
+
+      this.drag.on('drag', null);
+      this.drag = null;
+
+      force.on('tick', null);
+      force = null;
+
+      this.svg.selectAll('.link').remove();
+      this.svg.selectAll('.node').remove();
+
+      networkLabelElem.remove();
+      networkLabelElem = null;
+
+      svgMain.remove();
+      svgMain = null;
+
+      this.svg.remove();
+      this.svg = null;
     }
 
     /* sets up d3 graph and saves variables for use in other functions */
@@ -142,7 +176,7 @@
         .call(self.zoom)
         .append('svg:g');
 
-      self.svg.append('svg:rect')
+      self.svgRect = self.svg.append('svg:rect')
         .attr('width', networkElem.width() + 1000)
         .attr('height', networkElem.height() + 1000)
         .attr('fill', 'white')
@@ -275,8 +309,6 @@
           focus_node = null,
           highlight_node = null;
 
-      let node, link;
-
       // Highlighting helpers
       let linkedByIndex = {};
       json.links.forEach(function(d) {
@@ -289,15 +321,15 @@
 
       function set_focus(d) {
         if (highlight_trans<1)  {
-          node.selectAll('circle').style('opacity', function(o) {
+          self.node.selectAll('circle').style('opacity', function(o) {
             return isConnected(d, o) ? 1 : highlight_trans;
           });
 
-          node.selectAll('text').style('opacity', function(o) {
+          self.node.selectAll('text').style('opacity', function(o) {
             return isConnected(d, o) ? 1 : highlight_trans;
           });
 
-          link.style('opacity', function(o) {
+          self.link.style('opacity', function(o) {
             return o.source.index === d.index || o.target.index === d.index ? 1 : highlight_trans;
           });
         }
@@ -310,13 +342,13 @@
         highlight_node = d;
 
         if (highlight_color !== 'white') {
-          node.selectAll('circle').style('stroke', function(o) {
+          self.node.selectAll('circle').style('stroke', function(o) {
             return isConnected(d, o) ? highlight_color : '#333';
           });
-          node.selectAll('text').style('font-weight', function(o) {
+          self.node.selectAll('text').style('font-weight', function(o) {
             return isConnected(d, o) ? 'bold' : 'normal';
           });
-          link.style('stroke', function(o) {
+          self.link.style('stroke', function(o) {
             return o.source.index === d.index || o.target.index === d.index ? highlight_color : '#ccc';
           });
         }
@@ -326,14 +358,14 @@
         highlight_node = null;
         if (focus_node === null) {
           if (highlight_color !== 'white') {
-            node.selectAll('circle').style('stroke', '#333');
-            node.selectAll('text').style('font-weight', 'normal');
-            link.style('stroke', '#ccc');
+            self.node.selectAll('circle').style('stroke', '#333');
+            self.node.selectAll('text').style('font-weight', 'normal');
+            self.link.style('stroke', '#ccc');
           }
         }
       }
 
-      link = self.svg.selectAll('.link')
+      self.link = self.svg.selectAll('.link')
         .data(json.links)
         .enter().append('line')
         .attr('class', 'link')
@@ -348,7 +380,7 @@
           window.clearTimeout(self.popupTimer);
         });
 
-      let drag = d3.behavior.drag()
+      self.drag = d3.behavior.drag()
         .origin(function(d) { return d; })
         .on('dragstart', function (d) {
           networkLabelElem.hide();
@@ -361,13 +393,13 @@
           d3.select(this).classed('dragging', false);
         });
 
-      node = self.svg.selectAll('.node')
+      self.node = self.svg.selectAll('.node')
         .data(json.nodes)
         .enter().append('g')
         .attr('class', 'node')
         .attr('id', function(d) {return 'id' + d.id.replace(/[:\.]/g,'_');})
         //.attr('y', function (d,i) {return i;})
-        .call(drag)
+        .call(self.drag)
         .on('mouseover',function(d) {
           if (d3.select(this).classed('dragging')) {
             return;
@@ -392,38 +424,38 @@
           exit_highlight();
         });
 
-      node.append('svg:circle')
+      self.node.append('svg:circle')
         .attr('class', 'node')
         .attr('r', function(d) { return Math.min(3+Math.log(d.sessions), 12); })
         .style('fill', function(d) { return self.colors[d.type];});
 
-      node.append('svg:text')
+      self.node.append('svg:text')
         .attr('dx', 12)
         .attr('dy', '.35em')
         .attr('class', 'connshadow')
         .text(function(d) { return d.id;});
 
-      node.append('svg:text')
+      self.node.append('svg:text')
         .attr('dx', 12)
         .attr('dy', '.35em')
         .text(function(d) { return d.id;});
 
       force.on('tick', function() {
-        link.attr('x1', function(d) { return d.source.x; })
+        self.link.attr('x1', function(d) { return d.source.x; })
             .attr('y1', function(d) { return d.source.y; })
             .attr('x2', function(d) { return d.target.x; })
             .attr('y2', function(d) { return d.target.y; });
 
-        node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+        self.node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
       });
 
       d3.select(window).on('mouseup', function() {
         if(focus_node !== null) {
           focus_node = null;
           if (highlight_trans < 1) {
-            node.selectAll('circle').style('opacity', 1);
-            node.selectAll('text').style('opacity', 1);
-            link.style('opacity', 1);
+            self.node.selectAll('circle').style('opacity', 1);
+            self.node.selectAll('text').style('opacity', 1);
+            self.link.style('opacity', 1);
           }
         }
         if (highlight_node === null) {

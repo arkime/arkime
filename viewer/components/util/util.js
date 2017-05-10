@@ -297,10 +297,11 @@
       return {
         restrict: 'A',
         scope   : { caretPos: '=', },
-        link    : function(scope, element, attrs) {
+        link    : function(scope, element) {
           if (!scope.caretPos) { scope.caretPos = 0; }
-          element.on('keydown keyup click', function(event) {
-            scope.$apply(function() {
+
+          let setCaretPos = () => {
+            scope.$apply(function () {
               if ('selectionStart' in element[0]) {
                 scope.caretPos = element[0].selectionStart;
               } else if (document.selection) {
@@ -312,6 +313,14 @@
                 scope.caretPos = selection.text.length - selectionLen;
               }
             });
+          };
+
+          // register listener
+          element.on('keydown keyup click', setCaretPos);
+
+          // cleanup listener
+          scope.$on('$destroy', () => {
+            element.off('keydown keyup click', setCaretPos);
           });
         }
       };

@@ -37,10 +37,11 @@
     'directives.toast',
 
     // utilities
-    'moloch.util', 'moloch.config'
-  ])
+    'moloch.util', 'moloch.config',
 
-  .constant('molochVersion', require('../version'))
+    // moloch ui constants
+    'moloch.Constants'
+  ])
 
   // watch for rejection status -1 to let the user know the server is down
   .factory('myHttpInterceptor', ['$q', function($q) {
@@ -54,8 +55,8 @@
     };
   }])
 
-  .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider',
-    function($routeProvider, $locationProvider, $httpProvider, $compileProvider) {
+  .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider','Constants',
+    function($routeProvider, $locationProvider, $httpProvider, $compileProvider, Constants) {
       $routeProvider
         .when('/sessions', {
           title         : 'Sessions',
@@ -67,8 +68,9 @@
           template : '<moloch-help></moloch-help>'
         })
         .when('/settings', {
-          title    : 'Settings',
-          template : '<moloch-settings></moloch-settings>'
+          title         : 'Settings',
+          template      : '<moloch-settings></moloch-settings>',
+          reloadOnSearch: false
         })
         .when('/files', {
           title         : 'Files',
@@ -91,19 +93,26 @@
           reloadOnSearch: false
         })
         .when('/connections', {
-          title    : 'Connections',
-          template : '<moloch-connections></moloch-connections>',
+          title         : 'Connections',
+          template      : '<moloch-connections></moloch-connections>',
           reloadOnSearch: false
         })
         .when('/spigraph', {
-          title    : 'SPIGraph',
-          template : '<moloch-spigraph></moloch-spigraph>',
+          title         : 'SPIGraph',
+          template      : '<moloch-spigraph></moloch-spigraph>',
           reloadOnSearch: false
-        });
+        })
+         .otherwise({
+           title    : 'Not Found',
+           template : '<moloch-404></moloch-404>'
+         });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
 
-      $compileProvider.debugInfoEnabled(false);
+      if (Constants) {
+        if (!Constants.devMode) { $compileProvider.debugInfoEnabled(false); }
+        else { console.log('%c Moloch Develoment Mode (>^_^)> ','background:#cc0863;color:white'); }
+      }
 
       $httpProvider.interceptors.push('myHttpInterceptor');
 

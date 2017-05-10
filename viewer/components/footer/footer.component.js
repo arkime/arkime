@@ -12,17 +12,17 @@
 
     /**
      * Initialize global variables for this controller
-     * @param molochVersion The installed version of moloch
+     * @param Constants Moloch UI global constants
      *
      * @ngInject
      */
-    constructor(molochVersion) {
-      this.molochVersion = molochVersion.version;
+    constructor(Constants) {
+      this.molochVersion = Constants.version;
     }
 
   }
 
-  FooterController.$inject = ['molochVersion'];
+  FooterController.$inject = ['Constants'];
 
   /**
    * Footer Directive

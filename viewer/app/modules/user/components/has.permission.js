@@ -20,6 +20,8 @@
       return {
         scope : { hasPermission: '@' },
         link  : function(scope, element, attrs) {
+          if (!scope.hasPermission) { return; }
+
           element.hide(); // hide element by default
 
           UserService.hasPermission(scope.hasPermission)

@@ -132,8 +132,18 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      this.$interval.cancel(reqPromise);
-      reqPromise = null;
+      initialized = false;
+
+      if (reqPromise) {
+        this.$interval.cancel(reqPromise);
+        reqPromise = null;
+      }
+
+      this.context.on('focus', null);
+
+      this.context.stop(); // stop cubism context from continuing to issue reqs
+
+      $('#statsGraph').empty();
     }
 
     /* exposed methods ----------------------------------------------------- */
@@ -275,7 +285,7 @@
      */
     makeStatsGraph(metricName, interval) {
       var self = this;
-      if (self.context) {self.context.stop();} // Stop old context
+      if (self.context) { self.context.stop(); } // Stop old context
       self.context = cubism.context()
         .step(interval * 1000)
         .size(1440);

@@ -167,7 +167,7 @@
           this.setBrowserParams();
           this.getPackets();
         })
-        .catch((error) => {
+        .catch(() => {
           this.setBrowserParams();
           // still get the packets
           this.getPackets();
@@ -362,6 +362,7 @@
         controllerAs: '$ctrl',
         scope       : { session: '=' },
         link        : function SessionDetailLink(scope, element, attrs, ctrl) {
+          let timeout;
 
           /* exposed functions --------------------------------------------- */
           let formHTMLs = {
@@ -405,7 +406,7 @@
           };
 
           scope.displayMessage = function(message) {
-            $timeout(function() { // timeout to wait for detail to render
+            timeout = $timeout(function() { // timeout to wait for detail to render
               // display a message to the user (overrides form)
               let formContainer = element.find('.form-container');
               let html = `<div class="form-container">
@@ -446,7 +447,7 @@
             let compiled = $compile(template)(scope);
             element.find('.detail-container').replaceWith(compiled);
 
-            $timeout(function() { // wait until session detail is rendered
+            timeout = $timeout(function() { // wait until session detail is rendered
               let i, len, time, value, timeEl;
 
               // display session actions dropdown
@@ -468,7 +469,7 @@
             let template = `<div class="inner">${scope.packetHtml}</div>`;
             element.find('.packet-container > .inner').replaceWith(template);
 
-            $timeout(function() { // wait until session packets are rendered
+            timeout = $timeout(function() { // wait until session packets are rendered
               scope.renderingPackets = false;
 
               let i, len, time, value, timeEl;
@@ -526,6 +527,10 @@
 
             // cancel server request for packets
             if (ctrl.packetPromise) { ctrl.cancelPacketLoad(); }
+
+            if (timeout) { $timeout.cancel(timeout); }
+
+            element.remove();
           });
 
         }

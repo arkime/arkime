@@ -41,7 +41,6 @@ require('./stats/stats.service');
 require('./stats/stats.component');
 require('./stats/stats.es.component');
 
-
 require('./spigraph/spigraph.component');
 require('./spigraph/spigraph.service');
 
@@ -56,3 +55,5 @@ require('./connections/connections.linkpopup.component');
 require('./visualization/components/graph.map');
 require('./visualization/components/graph');
 require('./visualization/components/map');
+
+require('./404/404');

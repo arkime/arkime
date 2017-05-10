@@ -20,7 +20,7 @@
       return {
         template: require('html!../templates/graph.html'),
         scope   : { graphData: '=', type: '@', timezone: '@', primary: '@' },
-        link    : function(scope, element, attrs) {
+        link    : function(scope, element) {
 
           let body = $document[0].body;
 
@@ -219,6 +219,8 @@
           element.on('$destroy', function onDestroy () {
             plotArea.off('plothover');
             plotArea.off('plotselected');
+
+            if (timeout) { $timeout.cancel(timeout); }
           });
 
         }
