@@ -66,7 +66,7 @@
         .catch((error) => { this.settings = { timezone: 'local' }; });
 
       // load route params
-      this.querySize  = _query.querySize  = this.$routeParams.length   || 100;
+      this.querySize  = _query.querySize  = this.$routeParams.connLength || 100;
       this.srcField   = _query.srcField   = this.$routeParams.srcField || 'a1';
       this.dstField   = _query.srcField   = this.$routeParams.dstField || 'a2';
       this.nodeDist   = _query.nodeDist   = parseInt(this.$routeParams.nodeDist || '125');
@@ -216,7 +216,7 @@
 
       // build new query and save values in url parameters
       _query.length   = this.querySize;
-      this.$location.search('length', this.querySize);
+      this.$location.search('connLength', this.querySize);
 
       _query.srcField = this.srcField;
       this.$location.search('srcField', this.srcField);
