@@ -4,6 +4,7 @@
 
   const hourMS    = 3600000;
   let currentTime = new Date().getTime();
+  let initialized;
 
   /**
    * @class SearchController
@@ -84,9 +85,11 @@
         this.$location.search('date', this.timeRange); // update url params
       }
 
-      if (this.$routeParams.expression) {
-        this.expression = { value: this.$routeParams.expression };
-      } else { this.expression = { value: null }; }
+      // load routeParameter expression on initialization
+      if (!initialized && this.$routeParams.expression) {
+        this.$rootScope.expression = this.$routeParams.expression;
+      }
+      initialized = true;
 
       this.timeBounding = 'last'; // default to lastPacket
       if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
@@ -211,12 +214,12 @@
        }
 
        this.$scope.$emit('change:search', {
-         expression : this.expression.value,
+         expression : this.$rootScope.expression,
          view       : this.view
        });
 
        this.$rootScope.$broadcast('issue:search', {
-         expression : this.expression.value,
+         expression : this.$rootScope.expression,
          view       : this.view
        });
      }
@@ -258,15 +261,18 @@
     /**
      * Fired when a search control value is changed
      * (startTime, stopTime, timeRange, expression, bounding)
+     * @param {bool} apply Whether to apply the expression to the query
      */
-    change() {
+    change(apply) {
       let useDateRange = false;
 
-      // update the parameters with the expression
-      if (this.expression.value && this.expression.value !== '') {
-        this.$location.search('expression', this.expression.value);
-      } else {
-        this.$location.search('expression', null);
+      if (apply) { // if the search expression is being applied to the query
+        // update the parameters with the expression
+        if (this.$rootScope.expression && this.$rootScope.expression !== '') {
+          this.$location.search('expression', this.$rootScope.expression);
+        } else {
+          this.$location.search('expression', null);
+        }
       }
 
       if (this.timeRange > 0) {
@@ -287,8 +293,13 @@
       // querying with date range causes unexpected paging behavior
       // because there are always new sessions
       if (this.startTime && this.stopTime) {
+        let expression = this.$rootScope.expression;
+        // send the expression in the url params instead of what's in the search
+        // input box, if the expression has not been applied to the search query
+        if (!apply) { expression = this.$routeParams.expression; }
+
         let args = {
-          expression: this.expression.value,
+          expression: expression,
           bounding  : this.timeBounding,
           view      : this.view
         };
@@ -302,7 +313,7 @@
         this.$scope.$emit('change:search', args);
 
         this.$rootScope.$broadcast('issue:search', {
-          expression: this.expression.value,
+          expression: expression,
           view      : this.view
         });
       }

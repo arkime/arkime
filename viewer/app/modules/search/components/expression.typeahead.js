@@ -23,10 +23,11 @@
      *
      * @ngInject
      */
-    constructor($scope, $timeout, $location, $routeParams, FieldService) {
+    constructor($scope, $timeout, $location, $rootScope, $routeParams, FieldService) {
       this.$scope       = $scope;
       this.$timeout     = $timeout;
       this.$location    = $location;
+      this.$rootScope   = $rootScope;
       this.$routeParams = $routeParams;
       this.FieldService = FieldService;
     }
@@ -39,7 +40,7 @@
       // the typeahead results menu
       this.resultsElement = angular.element(document.getElementById('typeahead-results'));
 
-      if (!this.query) { this.query = { value: '' }; }
+      if (!this.$rootScope.expression) { this.$rootScope.expression = ''; }
 
       // get the available fields for autocompleting
       this.FieldService.get()
@@ -65,10 +66,10 @@
       this.$scope.$on('add:to:typeahead', (event, args) => {
         let newExpr = '';
 
-        if (!this.query.value) { this.query.value = ''; }
+        if (!this.$rootScope.expression) { this.$rootScope.expression = ''; }
 
-        if (this.query.value && this.query.value !== '') {
-          if (this.query.value[this.query.value.length - 1] !== ' ') {
+        if (this.$rootScope.expression && this.$rootScope.expression !== '') {
+          if (this.$rootScope.expression[this.$rootScope.expression.length - 1] !== ' ') {
             // if last char is not a space, add it
             newExpr += ' ';
           }
@@ -77,9 +78,7 @@
 
         newExpr += args.expression;
 
-        this.query.value += newExpr;
-
-        this.updateUrl();
+        this.$rootScope.expression += newExpr;
       });
     }
 
@@ -108,17 +107,7 @@
       if (timeout) { this.$timeout.cancel(timeout); }
       timeout = this.$timeout(() => {
         this.changeExpression();
-        this.updateUrl();
       }, 300);
-    }
-
-    /* Apply the search expression value to the expression url parameter */
-    updateUrl() {
-      if (this.query.value && this.query.value !== '') {
-        this.$location.search('expression', this.query.value);
-      } else {
-        this.$location.search('expression', null);
-      }
     }
 
     /* Displays appropriate autocomplete suggestions */
@@ -131,18 +120,18 @@
 
        // if the cursor is at a space
        let spaceCP = (this.caretPos > 0 &&
-         this.caretPos === this.query.value.length &&
-         this.query.value[this.caretPos - 1] === ' ');
+         this.caretPos === this.$rootScope.expression.length &&
+         this.$rootScope.expression[this.caretPos - 1] === ' ');
 
        let end    = this.caretPos;
-       let endLen = this.query.value.length;
+       let endLen = this.$rootScope.expression.length;
        for (end; end < endLen; ++end) {
-         if (this.query.value[end] === ' ') {
+         if (this.$rootScope.expression[end] === ' ') {
            break;
          }
        }
 
-       let currentInput = this.query.value.substr(0, end);
+       let currentInput = this.$rootScope.expression.substr(0, end);
        tokens = ExpressionController.splitExpression(currentInput);
 
        // add the space to the tokens
@@ -290,21 +279,18 @@
       let str = val;
       if (val.exp) { str = val.exp; }
 
-      this.query.value = ExpressionController.rebuildQuery(this.query.value, str);
+      this.$rootScope.expression = ExpressionController.rebuildQuery(this.$rootScope.expression, str);
 
       this.results     = null;
       this.focusInput  = true; // re-focus on input
       this.activeIdx   = -1;
-
-      this.updateUrl();
     }
 
     /**
      * Removes the query text from the input
      */
     clear() {
-      this.query.value = null;
-      this.updateUrl();
+      this.$rootScope.expression = null;
     }
 
     /**
@@ -500,8 +486,8 @@
      }
   }
 
-  ExpressionController.$inject = ['$scope','$timeout','$location','$routeParams',
-    'FieldService'];
+  ExpressionController.$inject = ['$scope','$timeout','$location','$rootScope',
+    '$routeParams','FieldService'];
 
   /**
    * Expression Typeahead Directive
@@ -510,8 +496,7 @@
   angular.module('directives.search')
     .component('expressionTypeahead', {
       template  : require('html!../templates/expression.typeahead.html'),
-      controller: ExpressionController,
-      bindings  : { query: '<' }
+      controller: ExpressionController
     });
 
 })();

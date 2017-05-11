@@ -16,6 +16,7 @@
       _$httpBackend_,
       $componentController,
       $rootScope,
+      $location,
       $timeout,
       $compile,
       FieldService) {
@@ -42,6 +43,8 @@
         {
           $scope      : scope,
           $timeout    : $timeout,
+          $location   : $location,
+          $rootScope  : $rootScope,
           $routeParams: {},
           FieldService: FieldService
         },
@@ -72,113 +75,112 @@
     });
 
     it('should be able to clear query', function() {
-      typeahead.query.value = 'asdf';
-      expect(typeahead.query.value).toEqual('asdf');
+      rootScope.expression = 'asdf';
 
       typeahead.clear();
-      expect(typeahead.query.value).toBe(null);
+      expect(rootScope.expression).toBe(null);
     });
 
     it('should be able to add field to blank query', function() {
-      typeahead.query.value = 'co';
+      rootScope.expression = 'co';
       typeahead.caretPos = 2;
 
       typeahead.changeExpression();
       typeahead.addToQuery({exp:'country'});
 
-      expect(typeahead.query.value).toEqual('country ');
+      expect(rootScope.expression).toEqual('country ');
     });
 
     it('should be able to add operator to end of query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
 
-      typeahead.query.value = 'country =';
+      rootScope.expression = 'country =';
       typeahead.caretPos = 9;
 
       typeahead.changeExpression();
       typeahead.addToQuery('==');
 
-      expect(typeahead.query.value).toEqual('country == ');
+      expect(rootScope.expression).toEqual('country == ');
     });
 
     it('should be able to add value to end of query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
 
-      typeahead.query.value = 'country == U';
+      rootScope.expression = 'country == U';
       typeahead.caretPos = 12;
 
       typeahead.changeExpression();
       typeahead.addToQuery({exp:'USA'});
 
-      expect(typeahead.query.value).toEqual('country == USA ');
+      expect(rootScope.expression).toEqual('country == USA ');
     });
 
     it('should be able to change field in query', function() {
-      typeahead.query.value = 'country == USA';
+      rootScope.expression = 'country == USA';
       typeahead.caretPos = 7;
 
       typeahead.changeExpression();
       typeahead.addToQuery({exp:'country.src'});
 
-      expect(typeahead.query.value).toEqual('country.src == USA ');
+      expect(rootScope.expression).toEqual('country.src == USA ');
     });
 
     it('should be able to change query and preserve spaces', function() {
-      typeahead.query.value = 'asn.dst == "value with spaces in it"';
+      rootScope.expression = 'asn.dst == "value with spaces in it"';
       typeahead.caretPos = 7;
 
       typeahead.changeExpression();
       typeahead.addToQuery({exp:'asn.dst'});
 
-      expect(typeahead.query.value).toEqual('asn.dst == "value with spaces in it" ');
+      expect(rootScope.expression).toEqual('asn.dst == "value with spaces in it" ');
     });
 
     it('should be able to change operation in query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
 
-      typeahead.query.value = 'country = USA';
+      rootScope.expression = 'country = USA';
       typeahead.caretPos = 9;
 
       typeahead.changeExpression();
       typeahead.addToQuery('!=');
 
-      expect(typeahead.query.value).toEqual('country != USA ');
+      expect(rootScope.expression).toEqual('country != USA ');
     });
 
     it('should be able to change value in query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
 
-      typeahead.query.value = 'country != U';
+      rootScope.expression = 'country != U';
       typeahead.caretPos = 11;
 
       typeahead.changeExpression();
       typeahead.addToQuery({exp:'AUS'});
 
-      expect(typeahead.query.value).toEqual('country != AUS ');
+      expect(rootScope.expression).toEqual('country != AUS ');
     });
 
     it('should be able to add a value with a "-" in it', function() {
       let expression = 'rootId == "rootId-1234567890"';
       rootScope.$broadcast('add:to:typeahead', { expression: expression });
 
-      expect(typeahead.query.value).toEqual(expression);
+      expect(rootScope.expression).toEqual(expression);
     });
 
     it('should be able to add EXISTS! to end of query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
 
-      typeahead.query.value = 'country == EXIS';
+      rootScope.expression = 'country == EXIS';
       typeahead.caretPos = 12;
 
       typeahead.changeExpression();
       typeahead.addToQuery('EXISTS!');
 
-      expect(typeahead.query.value).toEqual('country == EXISTS! ');
+      expect(rootScope.expression).toEqual('country == EXISTS! ');
     });
 
   });

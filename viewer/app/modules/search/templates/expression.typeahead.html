@@ -7,20 +7,20 @@
       <span class="fa fa-search"></span>
     </span>
     <input caret-pos="$ctrl.caretPos" focus-input="$ctrl.focusInput"
-      ng-model="$ctrl.query.value" ng-trim="false"
+      ng-model="$root.expression" ng-trim="false"
       ng-blur="$ctrl.onOffFocus()"
       ng-change="$ctrl.debounceExprChange()"
       ng-keydown="$ctrl.keydown($event);$event.stopPropagation();"
       type="text" placeholder="Search"
       class="form-control search-control" />
-      <span ng-click="$ctrl.clear()" ng-if="$ctrl.query.value"
+      <span ng-click="$ctrl.clear()" ng-if="$root.expression"
         class="fa fa-close text-muted clear-input cursor-pointer"></span>
   </div>
 
   <!-- results dropdown -->
   <ul id="typeahead-results" uib-dropdown-menu
     class="dropdown-menu typeahead-results"
-    ng-show="$ctrl.query.value && $ctrl.results && $ctrl.results.length">
+    ng-show="$root.expression && $ctrl.results && $ctrl.results.length">
     <li ng-repeat="(key, value) in $ctrl.results track by key"
       ng-class="{'active':key === $ctrl.activeIdx}"
       ng-click="$ctrl.addToQuery(value)" class="cursor-pointer"
@@ -36,7 +36,7 @@
 
   <!-- error -->
   <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
-    ng-show="$ctrl.query.value && $ctrl.loadingError">
+    ng-show="$root.expression && $ctrl.loadingError">
     <li><a><span class="text-danger">
       <span class="fa fa-warning"></span>&nbsp;
       Error: {{$ctrl.loadingError}}
@@ -45,7 +45,7 @@
 
   <!-- loading -->
   <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
-    ng-show="$ctrl.query.value && $ctrl.loadingValues">
+    ng-show="$root.expression && $ctrl.loadingValues">
     <li><a>
       <span class="fa fa-spinner fa-spin"></span>&nbsp;
       Loading...
