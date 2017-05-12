@@ -26,8 +26,6 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.activeTab = this.$location.path().split('/')[1];
-
       this.menu = {
         sessions    : { title: 'Sessions',    link: 'sessions' },
         spiview     : { title: 'SPI View',    link: 'spiview' },
@@ -48,10 +46,10 @@
     /* exposed functions --------------------------------------------------- */
     /**
      * Determines whether a tab is active based on it's link
-     * @param {string} route The route of the nav item
+     * @param {string} link The link of the nav item
      */
     isActive(link) {
-      return this.activeTab === link;
+      return link === this.$location.path().split('/')[1];
     }
 
     /**
@@ -61,10 +59,8 @@
     navTabClick(link) {
       if (link === 'help') {
         // going to help page, so set section of help to navigate to
-        this.$location.hash(this.activeTab);
+        this.$location.hash(this.$location.path().split('/')[1]);
       }
-
-      this.activeTab = link;
 
       this.$location.path(link);
     }
