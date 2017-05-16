@@ -209,10 +209,10 @@ if (Config.get("passwordSecret")) {
     if (internals.userNameHeader !== undefined && req.headers[internals.userNameHeader] !== undefined) {
       var userName = req.headers[internals.userNameHeader];
       Db.getUserCache(userName, function(err, suser) {
-        if (err) {return res.send("ERROR - " +  err);}
         if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
         if (!suser._source.enabled) {return res.send(userName + " not enabled");}
         if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+        if (err) {return res.send("ERROR - " +  err);}
 
         userCleanup(suser._source);
         req.user = suser._source;
