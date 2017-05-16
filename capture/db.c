@@ -2285,7 +2285,7 @@ void moloch_db_init()
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
     if (config.geoipFile) {
-        gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);
+        gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE | GEOIP_CHECK_CACHE);
         if (!gi) {
             printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoipFile);
             exit(1);
@@ -2294,7 +2294,7 @@ void moloch_db_init()
     }
 
     if (config.geoip6File) {
-        gi6 = GeoIP_open(config.geoip6File, GEOIP_MEMORY_CACHE);
+        gi6 = GeoIP_open(config.geoip6File, GEOIP_MEMORY_CACHE | GEOIP_CHECK_CACHE);
         if (!gi6) {
             printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoip6File);
             exit(1);
@@ -2303,7 +2303,7 @@ void moloch_db_init()
     }
 
     if (config.geoipASNFile) {
-        giASN = GeoIP_open(config.geoipASNFile, GEOIP_MEMORY_CACHE);
+        giASN = GeoIP_open(config.geoipASNFile, GEOIP_MEMORY_CACHE | GEOIP_CHECK_CACHE);
         if (!giASN) {
             printf("Couldn't initialize GeoIP ASN %s from %s", strerror(errno), config.geoipASNFile);
             exit(1);
@@ -2312,7 +2312,7 @@ void moloch_db_init()
     }
 
     if (config.geoipASN6File) {
-        giASN6 = GeoIP_open(config.geoipASN6File, GEOIP_MEMORY_CACHE);
+        giASN6 = GeoIP_open(config.geoipASN6File, GEOIP_MEMORY_CACHE | GEOIP_CHECK_CACHE);
         if (!giASN6) {
             printf("Couldn't initialize GeoIP ASN 6 %s from %s", strerror(errno), config.geoipASN6File);
             exit(1);
