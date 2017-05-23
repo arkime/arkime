@@ -2509,6 +2509,8 @@ app.get('/stats.json', function(req, res) {
 app.get('/dstats.json', function(req, res) {
   noCache(req, res);
 
+  var nodeName = req.query.nodeName;
+
   var query = {
                query: {
                  bool: {
@@ -2524,10 +2526,10 @@ app.get('/dstats.json', function(req, res) {
                }
               };
 
-  if (req.query.nodeName !== undefined) {
+  if (nodeName !== undefined && nodeName !== 'Total' && nodeName !== 'Average') {
     query.sort = {currentTime: {order: 'desc' }};
     query.size = req.query.size || 1440;
-    query.query.bool.filter.push({term: { nodeName: req.query.nodeName}});
+    query.query.bool.filter.push({term: { nodeName: nodeName}});
   } else {
     query.size = 100000;
   }
@@ -2578,13 +2580,31 @@ app.get('/dstats.json', function(req, res) {
         data[fields.nodeName][pos] = mult * func(fields);
       }
     }
-    if (req.query.nodeName === undefined) {
+    if (nodeName === undefined) {
       res.send(data);
     } else {
-      if (data[req.query.nodeName] === undefined) {
-        data[req.query.nodeName] = arrayZeroFill(num);
+      if (data[nodeName] === undefined) {
+        data[nodeName] = arrayZeroFill(num);
       }
-      res.send(data[req.query.nodeName]);
+      if (nodeName === 'Total' || nodeName === 'Average') {
+        delete data[nodeName];
+        var data2 = arrayZeroFill(num);
+        var cnt = 0;
+        for (var key in data) {
+          for (i = 0; i < num; i++) {
+            data2[i] += data[key][i];
+          }
+          cnt++;
+        }
+        if (nodeName === 'Average') {
+          for (i = 0; i < num; i++) {
+            data2[i] /= cnt;
+          }
+        }
+        res.send(data2);
+      } else {
+        res.send(data[req.query.nodeName]);
+      }
     }
   });
 });

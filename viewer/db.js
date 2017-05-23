@@ -178,7 +178,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
           Array.prototype.push.apply(totalResults.hits.hits, response.hits.hits);
         }
 
-        if (!error && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
+        if (!error && totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
             scrollId: response._scroll_id,
             scroll: '1m'
