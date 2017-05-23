@@ -316,8 +316,6 @@
         for (var i = 0, ilen = nodes.length; i < ilen; i++) {
           metrics.push(metric(nodes[i]));
         }
-        metrics.push(metric("Average"));
-        metrics.push(metric("Total"));
 
         div.append('div')
           .attr('class', 'axis')
