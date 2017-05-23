@@ -64,8 +64,9 @@
           reloadOnSearch: false
         })
         .when('/help', {
-          title    : 'Help',
-          template : '<moloch-help></moloch-help>'
+          title         : 'Help',
+          template      : '<moloch-help></moloch-help>',
+          reloadOnSearch: false
         })
         .when('/settings', {
           title         : 'Settings',

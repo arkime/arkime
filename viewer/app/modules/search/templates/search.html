@@ -118,14 +118,14 @@
 
   <!-- search button -->
   <a class="btn btn-sm btn-theme-tertiary pull-right margined-left"
-    ng-click="$ctrl.change()">Search</a>
+    ng-click="$ctrl.applyParams()">Search</a>
 
   <!-- search box typeahead -->
-  <expression-typeahead enter-click="$ctrl.change()">
+  <expression-typeahead enter-click="$ctrl.applyParams()">
   </expression-typeahead>
 
   <!-- time inputs -->
-  <div class="form-inline" enter-click="$ctrl.change()">
+  <div class="form-inline" enter-click="$ctrl.applyParams()">
 
     <!-- time range select -->
     <div class="form-group margined-bottom">
@@ -165,7 +165,7 @@
         <input type="text" class="form-control date-control"
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
-          close-text="Close" enter-click="$ctrl.changeDate()"
+          close-text="Close" enter-click="$ctrl.applyDate()"
           ng-change="$ctrl.changeDate()"
           ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />
@@ -191,7 +191,7 @@
         <input type="text" class="form-control date-control"
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
-          close-text="Close" enter-click="$ctrl.changeDate()"
+          close-text="Close" enter-click="$ctrl.applyDate()"
           ng-change="$ctrl.changeDate()"
           ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />

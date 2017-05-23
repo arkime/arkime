@@ -77,7 +77,7 @@
     it('should add #settings to the url', function() {
       // navigating from the settings page to the help page should append
       // #settings to the url
-      navbar.navTabClick('settings');
+      navbar.$location.url('settings');
       navbar.navTabClick('help');
 
       expect(navbar.$location.hash()).toEqual('settings');

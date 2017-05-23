@@ -2,10 +2,12 @@
 
   'use strict';
 
+  const defaultSpi = 'a2:100,prot-term:100,a1:100';
+
   // local variable to save query state
   let _query = {  // set query defaults:
     facets: 1,    // facets
-    spi   : 'a2:100,prot-term:100,a1:100' // which spi data values to query for
+    spi   : defaultSpi // which spi data values to query for
   };
 
   let newQuery = true, openedCategories = false;
@@ -63,8 +65,6 @@
       if (this.$routeParams.spi) {
         // if there's a spi param use it
         this.query.spi = _query.spi = this.$routeParams.spi;
-      } else { // if there isn't, set it for future use
-        this.$location.search('spi', this.query.spi);
       }
 
       this.getFields(); // IMPORTANT: kicks off initial query for spi data!
@@ -113,6 +113,29 @@
       this.$scope.$on('change:time', (event, args) => {
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
+      });
+
+      this.$scope.$on('$routeUpdate', (event, current) => {
+        let spiParams = current.params.spi || defaultSpi;
+
+        if (spiParams !== this.query.spi) {
+          this.query.spi = spiParams;
+
+          newQuery = true;
+          openedCategories = false;
+          categoryLoadingCounts = {};
+
+          this.deactivateSpiData(); // hide any removed fields from spi url param
+
+          if (pendingPromise) {   // if there's already a req (or series of reqs)
+            this.cancelLoading(); // cancel any current requests
+            timeout = this.$timeout(() => { // wait for promise abort to complete
+              this.getSpiData(this.query.spi);
+            }, 100);
+          } else {
+            this.getSpiData(this.query.spi);
+          }
+        }
       });
     }
 
@@ -461,6 +484,30 @@
             category.protocols[key] = this.protocols[key];
           }
 
+        }
+      }
+    }
+
+    /* deactivate spi data that is no longer in url params */
+    deactivateSpiData() {
+      let spiParamsArray = this.query.spi.split(',');
+      for (let key in this.categoryObjects) {
+        if (this.categoryObjects.hasOwnProperty(key)) {
+          let category = this.categoryObjects[key];
+          for (let k in category.spi) {
+            if (category.spi.hasOwnProperty(k)) {
+              let spiData = category.spi[k];
+              if (spiData.active) {
+                let inactive = true;
+                for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+                  // if it exists in spi url param, it's still active
+                  if (spiParamsArray[i] === k) { inactive = false; }
+                }
+                // it's no longer in the spi url param, so it's not active
+                if (inactive) { spiData.active = false; }
+              }
+            }
+          }
         }
       }
     }

@@ -14,8 +14,8 @@
             Query Size
           </span>
           <select class="form-control" convert-to-number
-            ng-change="$ctrl.loadData()"
-            ng-model="$ctrl.querySize">
+            ng-change="$ctrl.changeLength()"
+            ng-model="$ctrl.query.length">
             <option value="100">100</option>
             <option value="500">500</option>
             <option value="1000">1,000</option>
@@ -37,10 +37,10 @@
               uib-tooltip="Select a field for the source nodes">
               Src:
             </span>
-            <input type="text" ng-model="$ctrl.srcField"
+            <input type="text" ng-model="$ctrl.query.srcField"
               class="form-control field-typeahead"
               typeahead-min-length="0"
-              typeahead-on-select="$ctrl.loadData()"
+              typeahead-on-select="$ctrl.changeSrcField()"
               typeahead-input-formatter="$ctrl.formatField($model)"
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
           </div>
@@ -55,10 +55,10 @@
               uib-tooltip="Select a field for the destination nodes">
               Dst:
             </span>
-            <input type="text" ng-model="$ctrl.dstField"
+            <input type="text" ng-model="$ctrl.query.dstField"
               class="form-control field-typeahead"
               typeahead-min-length="0"
-              typeahead-on-select="$ctrl.loadData()"
+              typeahead-on-select="$ctrl.changeDstField()"
               typeahead-input-formatter="$ctrl.formatField($model)"
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
           </div>
@@ -87,8 +87,8 @@
             Min. Connections
           </span>
           <select class="form-control" convert-to-number
-            ng-change="$ctrl.loadData()"
-            ng-model="$ctrl.minConn">
+            ng-change="$ctrl.changeMinConn()"
+            ng-model="$ctrl.query.minConn">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -108,7 +108,7 @@
           </span>
           <select class="form-control" convert-to-number
             ng-change="$ctrl.changeNodeDist()"
-            ng-model="$ctrl.nodeDist">
+            ng-model="$ctrl.query.nodeDist">
             <option value="75">75</option>
             <option value="100">100</option>
             <option value="125">125</option>

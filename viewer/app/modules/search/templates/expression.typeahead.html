@@ -9,8 +9,8 @@
     <input caret-pos="$ctrl.caretPos" focus-input="$ctrl.focusInput"
       ng-model="$root.expression" ng-trim="false"
       ng-blur="$ctrl.onOffFocus()"
+      ng-keydown="$ctrl.keydown($event);"
       ng-change="$ctrl.debounceExprChange()"
-      ng-keydown="$ctrl.keydown($event);$event.stopPropagation();"
       type="text" placeholder="Search"
       class="form-control search-control" />
       <span ng-click="$ctrl.clear()" ng-if="$root.expression"

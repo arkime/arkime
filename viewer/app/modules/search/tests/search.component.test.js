@@ -129,7 +129,7 @@
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;
         search.startTime  = startTime;
-        search.changeDate();
+        search.changeDate(true);
 
         expect(scope.$emit).toHaveBeenCalled();
         expect(search.$location.search).toHaveBeenCalledWith('startTime', parseInt((startTime/1000).toFixed()));
@@ -185,13 +185,13 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        expression: '',
+        expression: undefined,
         view      : 'viewy'
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        expression: '',
+        expression: undefined,
         view      : 'viewy'
       });
     });
@@ -227,13 +227,13 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        expression: '',
+        expression: undefined,
         view      : undefined
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        expression: '',
+        expression: undefined,
         view      : undefined
       });
     });
@@ -266,13 +266,13 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        expression: '',
+        expression: undefined,
         view      : 'viewy'
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        expression: '',
+        expression: undefined,
         view      : 'viewy'
       });
 
@@ -300,13 +300,13 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        expression: '',
+        expression: undefined,
         view      : undefined
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        expression: '',
+        expression: undefined,
         view      : undefined
       });
     });

@@ -107,6 +107,7 @@
         this.$scope.$broadcast('add:to:typeahead', args);
       });
 
+      // watch for map events
       this.$scope.$on('open:maps', () => {
         this.openMaps = true;
         this.$scope.$broadcast('open:map');
@@ -118,6 +119,32 @@
       this.$scope.$on('toggle:src:dst', (event, state) => {
         this.$scope.$broadcast('update:src:dst', state);
       });
+
+      // watch for the url parameters to change and update the page
+      // size, field, and sort parameters are managed by the spigraph component
+      this.$scope.$on('$routeUpdate', (event, current) => {
+        let change = false;
+
+        let size = current.params.size || '20';
+        if (size !== this.maxElements) {
+          change = true;
+          this.maxElements = _query.size = size;
+        }
+
+        let field = current.params.field || 'no';
+        if (field !== this.field) {
+          change = true;
+          this.field = _query.field = field;
+        }
+
+        let sort = current.params.sort || 'lpHisto';
+        if (current.params.sort !== this.sort) {
+          this.sort = _query.sort = sort;
+          this.$scope.$broadcast('update:histo:type', this.sort);
+        }
+
+        if (change) { this.loadData(true); }
+      });
     }
 
     /* fired when controller's containing scope is destroyed */
@@ -125,19 +152,11 @@
       if (interval) { this.$interval.cancel(interval); }
     }
 
-
     loadData(reload) {
       this.loading  = true;
       this.error    = false;
 
       if (reload && interval) { this.$interval.cancel(interval); }
-
-      // build new query and save values in url parameters
-      _query.size   = this.maxElements;
-      this.$location.search('size', this.maxElements);
-
-      _query.field  = this.field;
-      this.$location.search('field', this.field);
 
       this.SpigraphService.get(_query)
         .then((response) => {
@@ -157,6 +176,22 @@
           this.loading  = false;
           this.error    = error.text;
         });
+    }
+
+
+    /* exposed functions --------------------------------------------------- */
+    /* fired when a field is selected from the typeahead */
+    changeField() {
+      _query.field = this.field;
+      this.$location.search('field', this.field);
+      this.loadData();
+    }
+
+    /* fired when max elements input is changed */
+    changeMaxElements() {
+      _query.size = this.maxElements;
+      this.$location.search('size', this.maxElements);
+      this.loadData();
     }
 
     changeSortBy() {
@@ -225,10 +260,11 @@
         }
       }
     }
+
   }
 
-SpigraphController.$inject = ['$scope','$interval','$location','$routeParams',
-  'SpigraphService','FieldService','UserService'];
+  SpigraphController.$inject = ['$scope','$interval','$location','$routeParams',
+    'SpigraphService','FieldService','UserService'];
 
   /**
    * Moloch Spigraph Directive

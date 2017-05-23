@@ -40,8 +40,6 @@
       // the typeahead results menu
       this.resultsElement = angular.element(document.getElementById('typeahead-results'));
 
-      if (!this.$rootScope.expression) { this.$rootScope.expression = ''; }
-
       // get the available fields for autocompleting
       this.FieldService.get()
         .then((result) => {
@@ -301,6 +299,8 @@
      * @param {Object} event The keydown event fired by the input
      */
     keydown(event) {
+      event.stopPropagation();
+
       let target;
 
       // always check for escape before anything else

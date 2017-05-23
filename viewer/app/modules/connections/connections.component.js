@@ -5,9 +5,6 @@
   // save frequently accessed elements
   let networkLabelElem, networkElem;
 
-  // save query parameters
-  let _query = {};
-
   // save visualization data
   let force, svgMain;
 
@@ -46,8 +43,6 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.loading = true;
-
       this.UserService.getSettings()
         .then((response) => {
           this.settings = response;
@@ -66,11 +61,12 @@
         .catch((error) => { this.settings = { timezone: 'local' }; });
 
       // load route params
-      this.querySize  = _query.querySize  = this.$routeParams.connLength || 100;
-      this.srcField   = _query.srcField   = this.$routeParams.srcField || 'a1';
-      this.dstField   = _query.srcField   = this.$routeParams.dstField || 'a2';
-      this.nodeDist   = _query.nodeDist   = parseInt(this.$routeParams.nodeDist || '125');
-      this.minConn    = _query.minConn    = parseInt(this.$routeParams.minConn || '1');
+      this.query = {};
+      this.query.length   = this.$routeParams.connLength || 100;
+      this.query.srcField = this.$routeParams.srcField || 'a1';
+      this.query.dstField = this.$routeParams.dstField || 'a2';
+      this.query.nodeDist = parseInt(this.$routeParams.nodeDist || '125');
+      this.query.minConn  = parseInt(this.$routeParams.minConn || '1');
 
       let styles = window.getComputedStyle(document.body);
       this.primaryColor   = styles.getPropertyValue('--color-primary').trim();
@@ -80,27 +76,68 @@
 
       this.startD3();
 
-      this.$scope.$on('change:search', (event, args) => {
-        if (args.startTime && args.stopTime) {
-          _query.startTime  = args.startTime;
-          _query.stopTime   = args.stopTime;
-          _query.date       = null;
-        } else if (args.date) {
-          _query.date      = args.date;
-          _query.startTime = null;
-          _query.stopTime  = null;
-        }
-
-        _query.expression = args.expression;
-        if (args.bounding) {_query.bounding = args.bounding;}
-
-        this.loadData();
-      });
-
       networkLabelElem = $('#networkLabel');
 
       // hide the footer so that there is more space for the graph
       $('footer').hide();
+
+      /* LISTEN! */
+      this.$scope.$on('change:search', (event, args) => {
+        if (args.startTime && args.stopTime) {
+          this.query.startTime  = args.startTime;
+          this.query.stopTime   = args.stopTime;
+          this.query.date       = null;
+        } else if (args.date) {
+          this.query.date      = args.date;
+          this.query.startTime = null;
+          this.query.stopTime  = null;
+        }
+
+        this.query.expression = args.expression;
+        if (args.bounding) {this.query.bounding = args.bounding;}
+
+        // don't load data if it's already loading
+        if (!this.loading) { this.loadData(); }
+      });
+
+      // watch for the url parameters to change and update the page
+      // connLength, srcField, dstField, minConn, and nodeDist parameters
+      // are managed by the connections component
+      this.$scope.$on('$routeUpdate', (event, current) => {
+        let change = false;
+
+        let size = current.params.connLength || 100;
+        if (size !== this.query.length) {
+          change = true;
+          this.query.length = size;
+        }
+
+        let srcField = current.params.srcField || 'a1';
+        if (srcField !== this.query.srcField) {
+          change = true;
+          this.query.srcField = srcField;
+        }
+
+        let dstField = current.params.dstField || 'a2';
+        if (dstField !== this.query.dstField) {
+          change = true;
+          this.query.dstField = dstField;
+        }
+
+        let nodeDist = current.params.nodeDist || 125;
+        if (nodeDist !== this.query.nodeDist) {
+          this.query.nodeDist = nodeDist;
+          force.distance(this.query.nodeDist).start();
+        }
+
+        let minConn = current.params.minConn || 1;
+        if (minConn !== this.query.minConn) {
+          change = true;
+          this.query.minConn = minConn;
+        }
+
+        if (change) { this.loadData(); }
+      });
     }
 
     /* fired when controller's containing scope is destroyed */
@@ -187,7 +224,7 @@
 
       force = d3.layout.force()
         .gravity(0.05)
-        .distance(self.nodeDist)
+        .distance(self.query.nodeDist)
         .charge(-300)
         .size([self.width, self.height]);
 
@@ -214,23 +251,7 @@
       this.svg.selectAll('.link').remove();
       this.svg.selectAll('.node').remove();
 
-      // build new query and save values in url parameters
-      _query.length   = this.querySize;
-      this.$location.search('connLength', this.querySize);
-
-      _query.srcField = this.srcField;
-      this.$location.search('srcField', this.srcField);
-
-      _query.dstField = this.dstField;
-      this.$location.search('dstField', this.dstField);
-
-      _query.minConn  = this.minConn;
-      this.$location.search('minConn', this.minConn);
-
-      _query.nodeDist = this.nodeDist;
-      this.$location.search('nodeDist', this.nodeDist);
-
-      this.ConnectionsService.get(_query)
+      this.ConnectionsService.get(this.query)
         .then((response) => {
           this.loading = false;
           this.processData(response);
@@ -242,12 +263,30 @@
         });
     }
 
+    changeLength() {
+      this.$location.search('connLength', this.query.length);
+      this.loadData();
+    }
+
+    changeSrcField() {
+      this.$location.search('srcField', this.query.srcField);
+      this.loadData();
+    }
+
+    changeDstField() {
+      this.$location.search('dstField', this.query.dstField);
+      this.loadData();
+    }
+
+    changeMinConn() {
+      this.$location.search('minConn', this.query.minConn);
+      this.loadData();
+    }
+
     /* changes distance between the nodes and saves it in a url parameter */
     changeNodeDist() {
-      force.distance(this.nodeDist).start();
-
-      _query.nodeDist = this.nodeDist;
-      this.$location.search('nodeDist', this.nodeDist);
+      force.distance(this.query.nodeDist).start();
+      this.$location.search('nodeDist', this.query.nodeDist);
     }
 
     /* unlocks nodes in the graph */
@@ -286,8 +325,8 @@
 
       let self = this;
       let doConvert = 0;
-      doConvert |= (self.dbField2Type(self.srcField) === 'seconds')?1:0;
-      doConvert |= (self.dbField2Type(self.dstField) === 'seconds')?2:0;
+      doConvert |= (self.dbField2Type(self.query.srcField) === 'seconds')?1:0;
+      doConvert |= (self.dbField2Type(self.query.dstField) === 'seconds')?2:0;
 
       if (doConvert) {
         let dateFilter = this.$filter('date');
@@ -468,9 +507,9 @@
       let template = `<connections-node-popup node="node" svg="svg"></connections-node-popup>`;
 
       if (node.type === 2) {
-        node.exp = that.dbField2Exp(that.dstField);
+        node.exp = that.dbField2Exp(that.query.dstField);
       } else {
-        node.exp = that.dbField2Exp(that.srcField);
+        node.exp = that.dbField2Exp(that.query.srcField);
       }
       that.$scope.node = node;
       that.$scope.svg  = that.svg;
@@ -483,8 +522,8 @@
     showLinkPopup(that, link, mouse) {
       let template = `<connections-link-popup link="link" svg="svg"></connections-link-popup>`;
 
-      link.dstExp = that.dbField2Exp(that.dstField);
-      link.srcExp = that.dbField2Exp(that.srcField);
+      link.dstExp = that.dbField2Exp(that.query.dstField);
+      link.srcExp = that.dbField2Exp(that.query.srcField);
 
       that.$scope.link = link;
       that.$scope.svg  = that.svg;

@@ -428,8 +428,6 @@
               .search('startTime', scope.session.fp)
               .search('stopTime', scope.session.lp)
               .search('openAll', 1);
-
-            $route.reload();
           };
 
           /**

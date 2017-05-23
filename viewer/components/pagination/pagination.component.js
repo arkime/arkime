@@ -23,14 +23,14 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $scope    Angular application model object
-     * @param $location Exposes browser address bar URL (based on the window.location)
+     * @param $scope        Angular application model object
+     * @param $location     Exposes browser address bar URL (based on the window.location)
      *
      * @ngInject
      */
     constructor($scope, $location) {
-      this.$scope     = $scope;
-      this.$location  = $location;
+      this.$scope       = $scope;
+      this.$location    = $location;
     }
 
     /* Callback when component is mounted and ready */
@@ -52,17 +52,30 @@
       // update page length if length parameter exists
       let lenParam = this.$location.search().length;
       if (lenParam) { this.length = parseInt(lenParam); }
+
+      // watch for the url parameters to change and update the page
+      this.$scope.$on('$routeUpdate', (event, current) => {
+        if (current.params.length) { // paging only uses length from url params
+          let len = parseInt(current.params.length);
+          if (len !== this.length) {
+            this.length       = len;
+            this.start        = 0; // reset to beginning
+            this.currentPage  = 1; // reset to beginning
+            this.notifyOfChange();
+          }
+        }
+      });
     }
 
     /* Creates page length options. Adds a custom value if the page length
      * specified in the url does not exist in the default options */
     setupLengthOptions() {
       this.options = [
-        { value: 10, label: '10 per page' },
-        { value: 50, label: '50 per page' },
+        { value: 10,  label: '10 per page'  },
+        { value: 50,  label: '50 per page'  },
         { value: 100, label: '100 per page' },
         { value: 200, label: '200 per page' },
-        { value: 500, label: '500 per page' },
+        { value: 500, label: '500 per page' }
       ];
 
       let exists = false;
@@ -81,23 +94,26 @@
       }
     }
 
+    /* let parent controller know about pagination change */
+    notifyOfChange() {
+      this.$scope.$emit('change:pagination', {
+        start       : this.start,
+        length      : this.length,
+        currentPage : this.currentPage
+      });
+    }
 
     /* exposed functions --------------------------------------------------- */
     /**
      * Fired when a pagination control value is changed
      */
     change() {
-      // calculate new starting item
+      // calculate new starting item index
       this.start = (this.currentPage - 1) * this.length;
 
       this.$location.search('length', this.length);
 
-      // let parent know about pagination change
-      this.$scope.$emit('change:pagination', {
-        start       : this.start,
-        length      : this.length,
-        currentPage : this.currentPage
-      });
+      this.notifyOfChange();
     }
 
   }

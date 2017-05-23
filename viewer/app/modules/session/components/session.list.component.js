@@ -16,7 +16,7 @@
 
   let customCols = require('json!./custom.columns.json');
 
-  let holdingClick = false, timeout;
+  let holdingClick = false, initialized = false, timeout;
 
   /**
    * @class SessionListController
@@ -76,17 +76,22 @@
       // watch for pagination changes (from pagination.component)
       this.$scope.$on('change:pagination', (event, args) => {
         // pagination affects length, currentPage, and start
-        _query.length = this.query.length = args.length;
-        _query.start  = this.query.start  = args.start;
+        // only update vars and get data if something has changed
+        // this can be fired twice because there are 2 pagination controls
+        if (this.query.length !== args.length ||
+            this.query.start !== args.start ||
+            this.currentPage !== args.currentPage) {
+          _query.length = this.query.length = args.length;
+          _query.start  = this.query.start  = args.start;
 
-        this.currentPage = args.currentPage;
+          this.currentPage = args.currentPage;
 
-        this.getData();
+          this.getData();
+        }
       });
 
       // watch for search expression and date range changes
       // (from search.component)
-      let initialized;
       this.$scope.$on('change:search', (event, args) => {
         // either (startTime && stopTime) || date
         if (args.startTime && args.stopTime) {
@@ -109,7 +114,7 @@
         this.query.view = args.view;
 
         // don't issue search when the first change:search event is fired
-        if (!initialized) { initialized = true; return; }
+        if (!initialized || this.loading) { initialized = true; return; }
 
         this.getData();
       });
@@ -129,7 +134,8 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      holdingClick = false;
+      initialized   = false;
+      holdingClick  = false;
 
       if (timeout) { this.$timeout.cancel(timeout); }
     }
@@ -362,7 +368,7 @@
       }
 
       // unset open all for future queries
-      this.$location.search('openAll', null);
+      this.$location.search('openAll', null).replace();
     }
 
 

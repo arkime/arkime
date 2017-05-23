@@ -17,7 +17,7 @@
           <input type="text" ng-model="$ctrl.field"
             class="form-control field-typeahead"
             typeahead-min-length="0"
-            typeahead-on-select="$ctrl.loadData()"
+            typeahead-on-select="$ctrl.changeField()"
             typeahead-input-formatter="$ctrl.formatField($model)"
             uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
         </div>
@@ -32,7 +32,7 @@
             Max Elements:
           </span>
           <select class="form-control" convert-to-number
-            ng-model="$ctrl.maxElements" ng-change="$ctrl.loadData()">
+            ng-model="$ctrl.maxElements" ng-change="$ctrl.changeMaxElements()">
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>

@@ -138,7 +138,9 @@
             };
 
             if (result.start && result.stop) {
-              scope.$emit('change:time', result);
+              scope.$apply(() => {
+                scope.$emit('change:time', result);
+              });
             }
       		});
 
