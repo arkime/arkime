@@ -317,20 +317,21 @@
           metrics.push(metric(nodes[i]));
         }
 
-        div.append('div')
-          .attr('class', 'axis')
-          .call(context.axis().orient('top'));
+        if (div[0][0]) {
+          div.append('div')
+             .attr('class', 'axis')
+             .call(context.axis().orient('top'));
 
-        div.selectAll('.horizon')
-          .data(metrics)
-          .enter().append('div')
-          .attr('class', 'horizon')
-          .call(context.horizon().colors(self.colors));
+          div.selectAll('.horizon')
+             .data(metrics)
+             .enter().append('div')
+             .attr('class', 'horizon')
+             .call(context.horizon().colors(self.colors));
 
-        div.append('div')
-          .attr('class', 'rule')
-          .call(context.rule());
-
+          div.append('div')
+             .attr('class', 'rule')
+             .call(context.rule());
+        }
       });
     }
 
@@ -381,20 +382,21 @@
       }
 
       d3.select('#statsGraph-' + id).call(function(div) {
-        div.append('div')
-           .attr('class', 'axis')
-           .call(dcontext.axis().orient('top'));
+        if (div[0][0]) {
+          div.append('div')
+             .attr('class', 'axis')
+             .call(dcontext.axis().orient('top'));
 
-        div.selectAll('.horizon')
-           .data(metrics)
-           .enter().append('div')
-           .attr('class', 'horizon')
-           .call(dcontext.horizon().colors(self.colors));
+          div.selectAll('.horizon')
+             .data(metrics)
+             .enter().append('div')
+             .attr('class', 'horizon')
+             .call(dcontext.horizon().colors(self.colors));
 
-        div.append('div')
-           .attr('class', 'rule')
-           .call(dcontext.rule());
-
+          div.append('div')
+             .attr('class', 'rule')
+             .call(dcontext.rule());
+        }
       });
 
       dcontext.on('focus', function(i) {
