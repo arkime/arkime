@@ -419,13 +419,14 @@ function createSessionDetailNew() {
       var files = fs.readdirSync(dir);
       // sort().reverse() so in this dir pug is processed before jade
       files.sort().reverse().forEach(function(file) {
-        if (found[file]) {
+        var sfile = file.replace(/\.(pug|jade)/, "");
+        if (found[sfile]) {
           return;
         }
         if (file.match(/\.detail\.jade$/i)) {
-          found[file] = fs.readFileSync(dir + "/" + file, 'utf8').replace(/^/mg, "  ") + "\n";
+          found[sfile] = fs.readFileSync(dir + "/" + file, 'utf8').replace(/^/mg, "  ") + "\n";
         } else if (file.match(/\.detail\.pug$/i)) {
-          found[file] = "  include " + dir + "/" + file + "\n";
+          found[sfile] = "  include " + dir + "/" + file + "\n";
         }
       });
     } catch (e) {}
