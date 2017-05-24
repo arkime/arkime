@@ -71,19 +71,29 @@
 }
 
 
-/* give nav-pills theme color */
-.nav-pills > li > a {
-  color: var(--color-foreground, #333);
-}
+/* give navs theme color */
 .nav > li > a:hover,
 .nav > li > a:focus {
+  color           : var(--color-black);
   background-color: var(--color-gray-light);
+}
+
+.nav-pills > li > a {
+  color: var(--color-foreground, #333);
 }
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
   color           : var(--color-foreground, #FFF);
   background-color: var(--color-primary);
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color               : var(--color-foreground);
+  background-color    : var(--color-background);
+  border-bottom-color : var(--color-background, #fff);
 }
 
 
