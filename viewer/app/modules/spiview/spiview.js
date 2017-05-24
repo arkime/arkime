@@ -359,10 +359,12 @@
         .then((response) => { // returns the last result in the series
           if (response && response.bsqErr) { this.error = response.bsqErr; }
           this.dataLoading = false;
+          pendingPromise = null;
         })
         .catch((error) => {
           this.error = error;
           this.dataLoading = false;
+          pendingPromise = null;
         });
     }
 
