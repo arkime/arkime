@@ -72,15 +72,12 @@
 
       this.UserService.getCurrent()
         .then((response) => {
-          let isAdminEdit = false;
-
           // only admins can edit other users' settings
           if (response.createEnabled && this.$routeParams.userId) {
             if (response.userId === this.$routeParams.userId) {
               // admin editing their own user so the routeParam is unnecessary
               this.$location.search('userId', null);
             } else { // admin editing another user
-              isAdminEdit = true;
               this.userId = this.$routeParams.userId;
             }
           } else { // normal user has no permission, so remove the routeParam
@@ -88,17 +85,9 @@
             this.$location.search('userId', null);
           }
 
-          // set the settings
-          if (isAdminEdit) { // get settings if it's for a different user
-            this.getSettings();
-          } else { // we already have the current user's settings
-            this.loading  = false;
-            this.settings = response.settings;
-
-            this.setTheme();
-
-            this.startClock();
-          }
+          // always get the user's settings because current user is cached
+          // so response.settings might be stale
+          this.getSettings();
 
           // get all the other things!
           this.getViews();
