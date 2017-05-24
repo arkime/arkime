@@ -25,10 +25,10 @@ div.form-container
 dl
   dt Id:
   dd
-    +clickableValue('id', session.id, true)
+    +clickableValue('id', session.id)
     if (session.ro)
       strong.margined-left-xxxxlg Root Id:
-      +clickableValue('rootId', session.ro, true)
+      +clickableValue('rootId', session.ro)
     else
       | &nbsp;
 
@@ -36,9 +36,9 @@ dl
 
   dt Start:
   dd
-    + clickableValue('stoptime', session.lp, false, true)
+    + clickableValue('starttime', session.lp, true)
     strong.margined-left-xxxxlg Stop:
-    + clickableValue('stoptime', session.lp, false, true)
+    + clickableValue('stoptime', session.lp, true)
 
     strong.margined-left-xxxxlg Node:
     +clickableValue('node', session.no, true)
@@ -46,7 +46,7 @@ dl
     strong.margined-left-lg IP Protocol:
     +clickableValue('ip.protocol', session.pr)
 
-  +arrayList(session, "user", "Users", "user", null, null, true)
+  +arrayList(session, "user", "Users", "user")
   +arrayList(session, "asset-term", "Assets", "asset")
 
   if (session.by1 || session.by2)
@@ -104,17 +104,17 @@ dl
       if (session.fb1)
         strong.medium.margined-left Src
         - var fb1a = new Buffer(session.fb1, "hex").toString();
-        +clickableValue('payload8.src.hex', session.fb1, true, false)
+        +clickableValue('payload8.src.hex', session.fb1)
         | (
-        +clickableValue('payload8.src.utf8', fb1a, true, false)
+        +clickableValue('payload8.src.utf8', fb1a)
         |)
 
       if (session.fb2)
         strong.medium.margined-left Dst
         - var fb2a = new Buffer(session.fb2, "hex").toString();
-        +clickableValue('payload8.dst.hex', session.fb2, true, false)
+        +clickableValue('payload8.dst.hex', session.fb2)
         | (
-        +clickableValue('payload8.dst.utf8', fb2a, true, false)
+        +clickableValue('payload8.dst.utf8', fb2a)
         |)
 
   div.tag-list

@@ -1,5 +1,5 @@
 if (session.ldap)
   div.sessionDetailMeta.bold ldap
   dl.sessionDetailMeta
-    +arrayList(session.ldap, "bindname-term", "BindNames", "ldap.bindname", null, null, true)
+    +arrayList(session.ldap, "bindname-term", "BindNames", "ldap.bindname")
     +arrayList(session.ldap, "authtype-term", "AuthTypes", "ldap.authtype")

@@ -9,7 +9,7 @@
    * @example
    * '<session-field field="::fieldObj" expr="src.ip"
    *   value="{{::sessionObj.field}}" session="::sessionObj"
-   *   parse="true" stringify="true"></session-field>'
+   *   parse="true"></session-field>'
    */
   class SessionFieldController {
 
@@ -44,11 +44,6 @@
         this.parse = this.parse === 'true';
       }
 
-      // setup stringify flag if it's a string
-      if (typeof this.stringify === 'string') {
-        this.stringify = this.stringify === 'true';
-      }
-
       // only parse values if we know how to (requires field param)
       if (this.field) { this.parseValue(); }
       // otherwise get the corresponding field definition before parsing
@@ -72,7 +67,10 @@
       this.isopen = false;
 
       // for values required to be strings in the search expression
-      if (this.stringify) { value = `"${value}"`; }
+      let str = /[^-+a-zA-Z0-9_.@:*?/]+/.test(value);
+      // escape unescaped quotes
+      value = value.replace(/\\([\s\S])|(")/g, "\\$1$2");
+      if (str) { value = `"${value}"`; }
 
       let fullExpression = `${field} ${op} ${value}`;
 
@@ -182,6 +180,11 @@
             this.time = true;
             qVal  = val; // save original value as the query value
             val   = this.$filter('timezoneDateString')(parseInt(val), this.timezone);
+            if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
+              // only starttime and stoptime fields are applied to time inputs
+              this.time = false;
+              qVal = val;
+            }
             break;
           case 'ip':
             val   = this.$filter('extractIPString')(val);
@@ -320,10 +323,6 @@
         // whether to parse the value
         // [optional, default is false]
         parse     : '@',
-
-        // whether to stringify the value in the search expression
-        // [optional, default is false]
-        stringify : '@',
 
         //  whether the dropdown should drop down from the left
         // [optional, default is false]

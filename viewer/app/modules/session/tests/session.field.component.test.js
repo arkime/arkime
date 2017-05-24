@@ -120,14 +120,6 @@
       expect(sessionField.parsed[0].queryVal).toEqual(sessionField.value);
     });
 
-    it('should be able to click the field', function() {
-      sessionField.fieldClick('ip.src', session.a1, '==', { preventDefault:()=>{}, stopPropagation:()=>{} });
-
-      expect(sessionField.$scope.$emit).toHaveBeenCalled();
-      expect(sessionField.$scope.$emit).toHaveBeenCalledWith('add:to:search', {
-        expression: `ip.src == ${session.a1}` });
-    });
-
     it('should be able to click a time field', function() {
       sessionField.timeClick('starttime', session.fp);
 
