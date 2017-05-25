@@ -1053,6 +1053,12 @@ app.get('/user/settings', function(req, res) {
 
     var settings = user._source.settings || settingDefaults;
 
+    res.cookie(
+       'MOLOCH-COOKIE',
+       Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+       { path: app.locals.basePath }
+    );
+
     return res.send(settings);
   });
 });
