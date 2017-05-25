@@ -1153,7 +1153,7 @@ uint64_t moloch_db_memory_size()
     close(fd);
 
     if (len <= 10) {
-        LOG("/proc/self/statm file too small - %d '%.*s', len, len, buf);
+        LOG("/proc/self/statm file too small - %d '%.*s'", len, len, buf);
 
         return 0;
     }
@@ -1164,7 +1164,7 @@ uint64_t moloch_db_memory_size()
     sscanf(buf, "%ld", &size);
 
     if (size == 0) {
-        LOG("/proc/self/statm size 0 - %d '%.*s', len, len, buf);
+        LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);
     }
 
     return getpagesize() * size;
