@@ -10,6 +10,10 @@
   - viewer - new serverSecret instead of passwordSecret for S2S
   - viewer - csv export uses visible columns in session table (issue #601)
   - viewer - stats page improvements (issue #682)
+  - viewer - do a better job on quoting expressions (issue #694)
+  - viewer - remove duplicate TLS section
+  - viewer - back button works better with new UI
+  - db - handle _optimize vs _forcemerge
 
 0.18.2 2017/04/16
   - NOTICE: Upgrading from versions prior to 0.18.0 require an outage for
