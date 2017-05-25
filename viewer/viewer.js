@@ -3497,7 +3497,13 @@ app.get(/\/sessions.csv.*/, function(req, res) {
 });
 
 app.get('/uniqueValue.json', function(req, res) {
+  if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
+    res.send([]);
+    return;
+  }
+
   noCache(req, res);
+
   var query;
 
   if (req.query.type === "tags") {
@@ -3539,6 +3545,11 @@ app.get('/unique.txt', function(req, res) {
   var items = [];
   var aggSize = 1000000;
   if (req.query.autocomplete !== undefined) {
+    if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
+      res.send([]);
+      return;
+    }
+
     var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 3);
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
