@@ -24,7 +24,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
-		@DL_LIB@ -lpthread -lssl -lcrypto
+		@DL_LIB@ -lpthread -lssl -lcrypto -lyaml
 
 C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c packet.c session.c molochmagic.c rules.c
 O_FILES         = $(C_FILES:.c=.o)

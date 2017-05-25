@@ -65,7 +65,6 @@ LOCAL MolochTPacketV3_t infos[MAX_INTERFACES];
 LOCAL int numThreads;
 
 extern MolochPcapFileHdr_t   pcapFileHeader;
-LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 LOCAL struct bpf_program     bpf;
 
 LOCAL MolochReaderStats_t gStats;
@@ -168,7 +167,7 @@ static void *reader_tpacketv3_thread(gpointer infov)
 }
 /******************************************************************************/
 void reader_tpacketv3_start() {
-    int i;
+    int i, t;
     char name[100];
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (t = 0; t < numThreads; t++) {
