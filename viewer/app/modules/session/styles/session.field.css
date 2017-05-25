@@ -76,7 +76,7 @@ session-field .field-children:not(:first-child) {
 session-field ul.session-field-dropdown {
   opacity         : 0;
   visibility      : hidden;
-  max-width       : 100%;
+  max-width       : 200%;
   min-width       : 160px;
   font-size       : 1.25rem;
   position        : absolute;
@@ -99,6 +99,11 @@ session-field ul.session-field-dropdown {
 session-field ul.session-field-dropdown.pull-right {
   right: 0;
   left : auto;
+}
+session-field ul.session-field-dropdown.pull-left {
+  left      : 0;
+  right     : auto;
+  margin-top: 2px;
 }
 
 session-field ul.session-field-dropdown div > li > a {
