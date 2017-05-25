@@ -119,14 +119,8 @@
       // cubism requires little error in the timing of requests
       // for more info, view the "reasons for delays longer than specified" section of:
       // https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout#Inactive_tabs
-      if(document.addEventListener) {
-        document.addEventListener('visibilitychange', () => {
-          if (!this.context) { return; }
-          if (document.hidden) { this.context.stop(); }
-          else if (this.graphInterval !== '0' && this.graphsOpen && this.selectedTab === 0) {
-            this.context.start();
-          }
-        });
+      if (document.addEventListener) {
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
       }
     }
 
@@ -144,6 +138,20 @@
       this.context.stop(); // stop cubism context from continuing to issue reqs
 
       $('#statsGraph').empty();
+
+      if (document.removeEventListener) {
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+      }
+    }
+
+    /* stop the requests if the user is not looking at the stats page,
+       otherwise start the requests */
+    handleVisibilityChange() {
+      if (!this.context) { return; }
+      if (document.hidden) { this.context.stop(); }
+      else if (this.graphInterval !== '0' && this.graphsOpen && this.selectedTab === 0) {
+        this.context.start();
+      }
     }
 
     /* exposed methods ----------------------------------------------------- */
