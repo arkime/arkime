@@ -299,6 +299,8 @@ LOCAL void moloch_session_save(MolochSession_t *session)
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, TRUE);
 
+    moloch_rules_run_before_save(session, 1);
+
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ[session->thread], session);
     }
@@ -325,6 +327,8 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
 
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, FALSE);
+
+    moloch_rules_run_before_save(session, 0);
 
 #ifdef FIXLATER
     /* If we are parsing pcap its ok to pause and make sure all tags are loaded */

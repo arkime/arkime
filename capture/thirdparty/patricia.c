@@ -843,6 +843,7 @@ make_and_lookup(patricia_tree_t * tree, char *string)
     return (node);
 }
 
+#ifdef NOTUSED
 patricia_node_t *
 try_search_best(patricia_tree_t * tree, char *string)
 {
@@ -854,4 +855,4 @@ try_search_best(patricia_tree_t * tree, char *string)
         Deref_Prefix(prefix);
     return (node);
 }
-
+#endif

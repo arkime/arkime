@@ -631,6 +631,7 @@ int main(int argc, char **argv)
     moloch_parsers_init();
     moloch_session_init();
     moloch_plugins_load(config.plugins);
+    moloch_rules_init();
     g_timeout_add(1, moloch_ready_gfunc, 0);
 
     g_main_loop_run(mainLoop);
@@ -643,6 +644,7 @@ int main(int argc, char **argv)
     moloch_http_exit();
     moloch_field_exit();
     moloch_config_exit();
+    moloch_rules_exit();
 
     g_main_loop_unref(mainLoop);
 

@@ -28,8 +28,6 @@ extern MolochConfig_t        config;
 
 static pcap_t               *pcaps[MAX_INTERFACES];
 
-static struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
-
 /******************************************************************************/
 int reader_libpcap_stats(MolochReaderStats_t *stats)
 {
@@ -91,49 +89,12 @@ static void *reader_libpcap_thread(gpointer pcapv)
     return NULL;
 }
 /******************************************************************************/
-int reader_libpcap_should_filter(const MolochPacket_t *packet, enum MolochFilterType *type, int *index)
-{
-    int t, i;
-    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
-        for (i = 0; i < config.bpfsNum[t]; i++) {
-            if (bpf_filter(bpf_programs[t][i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-                *type = t;
-                *index = i;
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-/******************************************************************************/
 void reader_libpcap_start() {
     int dlt_to_linktype(int dlt);
 
     //ALW - Bug: assumes all linktypes are the same
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(pcaps[0])) | pcap_datalink_ext(pcaps[0]);
     pcapFileHeader.snaplen = pcap_snapshot(pcaps[0]);
-
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
-    int t;
-    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
-        if (config.bpfsNum[t]) {
-            int i;
-            if (bpf_programs[t]) {
-                for (i = 0; i < config.bpfsNum[t]; i++) {
-                    pcap_freecode(&bpf_programs[t][i]);
-                }
-            } else {
-                bpf_programs[t] = malloc(config.bpfsNum[t]*sizeof(struct bpf_program));
-            }
-            for (i = 0; i < config.bpfsNum[t]; i++) {
-                if (pcap_compile(dpcap, &bpf_programs[t][i], config.bpfs[t][i], 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                    LOG("ERROR - Couldn't compile filter: '%s' with %s", config.bpfs[t][i], pcap_geterr(dpcap));
-                    exit(1);
-                }
-            }
-            moloch_reader_should_filter = reader_libpcap_should_filter;
-        }
-    }
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

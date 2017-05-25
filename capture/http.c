@@ -83,9 +83,6 @@ static int                     requestsTimer;
 static MOLOCH_LOCK_DEFINE(requests);
 
 uint64_t connectionsSet[2048];
-#define BIT_ISSET(bit, bits) ((bits[bit/64] & (1 << (bit % 64))) != 0)
-#define BIT_SET(bit, bits) bits[bit/64] |= (1 << (bit % 64))
-#define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit % 64))
 
 struct molochhttpserver_t {
     uint64_t              dropped;
