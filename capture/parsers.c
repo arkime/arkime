@@ -1075,6 +1075,8 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
             c->func(session, data, remaining, which, c->uw);
         }
     }
+
+    moloch_rules_run_after_classify(session);
 }
 /******************************************************************************/
 void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which)
@@ -1114,4 +1116,6 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
             c->func(session, data, remaining, which, c->uw);
         }
     }
+
+    moloch_rules_run_after_classify(session);
 }

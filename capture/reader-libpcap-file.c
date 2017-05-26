@@ -37,7 +37,6 @@ LOCAL  char                 *offlinePcapName;
 
 void reader_libpcapfile_opened();
 
-LOCAL struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
 LOCAL MolochPacketBatch_t   batch;
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -429,27 +428,13 @@ gboolean reader_libpcapfile_read()
     return TRUE;
 }
 /******************************************************************************/
-int reader_libpcapfile_should_filter(const MolochPacket_t *packet, enum MolochFilterType *type, int *index)
-{
-    int t, i;
-    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
-        for (i = 0; i < config.bpfsNum[t]; i++) {
-            if (bpf_filter(bpf_programs[t][i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-                *type = t;
-                *index = i;
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-/******************************************************************************/
 void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
 
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap);
     pcapFileHeader.snaplen = pcap_snapshot(pcap);
+    moloch_rules_recompile();
 
     offlineFile = pcap_file(pcap);
 
@@ -464,30 +449,6 @@ void reader_libpcapfile_opened()
 	if (pcap_setfilter(pcap, &bpf) == -1) {
             LOG("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
             exit(1);
-        }
-    }
-
-    int t;
-    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
-        if (pcapFileHeader.linktype == 239) {
-            continue;
-        }
-        if (config.bpfsNum[t]) {
-            int i;
-            if (bpf_programs[t]) {
-                for (i = 0; i < config.bpfsNum[t]; i++) {
-                    pcap_freecode(&bpf_programs[t][i]);
-                }
-            } else {
-                bpf_programs[t] = malloc(config.bpfsNum[t]*sizeof(struct bpf_program));
-            }
-            for (i = 0; i < config.bpfsNum[t]; i++) {
-                if (pcap_compile(pcap, &bpf_programs[t][i], config.bpfs[t][i], 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                    LOG("ERROR - Couldn't compile filter: '%s' with %s", config.bpfs[t][i], pcap_geterr(pcap));
-                    exit(1);
-                }
-            }
-            moloch_reader_should_filter = reader_libpcapfile_should_filter;
         }
     }
 

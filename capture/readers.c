@@ -28,7 +28,6 @@ void reader_tpacketv3_init(char*);
 
 MolochReaderStart  moloch_reader_start;
 MolochReaderStats  moloch_reader_stats;
-MolochReaderFilter moloch_reader_should_filter;
 MolochReaderStop   moloch_reader_stop;
 
 

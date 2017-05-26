@@ -193,6 +193,7 @@ typedef struct moloch_field_info {
     int                       pos;
     uint16_t                  type;
     uint16_t                  flags;
+    char                      ruleEnabled;
 } MolochFieldInfo_t;
 
 typedef struct {
@@ -258,7 +259,8 @@ typedef struct {
  * Configuration Information
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
-enum MolochFilterType { MOLOCH_FILTER_DONT_SAVE, MOLOCH_FILTER_MIN_SAVE, MOLOCH_FILTER_MAX};
+
+#define MOLOCH_FIELDS_MAX 256
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -289,7 +291,7 @@ typedef struct moloch_config {
     int       writeMethod;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
-    MolochFieldInfo_t *fields[256];
+    MolochFieldInfo_t *fields[MOLOCH_FIELDS_MAX];
     int                maxField;
     int                tagsField;
     int                tagsStringField;
@@ -316,9 +318,6 @@ typedef struct moloch_config {
     char     *dropGroup;
     char    **pluginsDir;
     char    **parsersDir;
-    char    **bpfs[MOLOCH_FILTER_MAX];
-    int      *bpfsVal[MOLOCH_FILTER_MAX];
-    int       bpfsNum[MOLOCH_FILTER_MAX];
 
     char    **rootPlugins;
     char    **plugins;
@@ -615,6 +614,13 @@ extern MOLOCH_LOCK_EXTERN(LOG);
 
 #define LOGEXIT(...) do { LOG(__VA_ARGS__); exit(1); } while(0) /* no trailing ; */
 
+
+/******************************************************************************/
+/* Simple bit macros, assuming uint64_t */
+
+#define BIT_ISSET(bit, bits) ((bits[bit/64] & (1 << (bit & 0x3f))) != 0)
+#define BIT_SET(bit, bits) bits[bit/64] |= (1 << (bit & 0x3f))
+#define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit & 0x3f))
 
 /******************************************************************************/
 /*
@@ -1007,12 +1013,10 @@ typedef struct {
 typedef void (*MolochReaderInit)(char *name);
 typedef int  (*MolochReaderStats)(MolochReaderStats_t *stats);
 typedef void (*MolochReaderStart)();
-typedef int  (*MolochReaderFilter)(const MolochPacket_t *packet, enum MolochFilterType *type, int *index);
 typedef void (*MolochReaderStop)();
 
 extern MolochReaderStart moloch_reader_start;
 extern MolochReaderStats moloch_reader_stats;
-extern MolochReaderFilter moloch_reader_should_filter;
 extern MolochReaderStop moloch_reader_stop;
 
 
@@ -1021,6 +1025,29 @@ void moloch_readers_set(char *name);
 void moloch_readers_start();
 void moloch_readers_add(char *name, MolochReaderInit func);
 void moloch_readers_exit();
+
+/******************************************************************************/
+/*
+ * rules.c
+ */
+typedef enum {
+    MOLOCH_RULE_TYPE_EVERY_PACKET,
+    MOLOCH_RULE_TYPE_SESSION_SETUP,
+    MOLOCH_RULE_TYPE_AFTER_CLASSIFY,
+    MOLOCH_RULE_TYPE_FIELD_SET,
+    MOLOCH_RULE_TYPE_BEFORE_SAVE,
+    MOLOCH_RULE_TYPE_NUM
+
+} MolochRuleType;
+
+void moloch_rules_init();
+void moloch_rules_recompile();
+void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value);
+int moloch_rules_run_every_packet(MolochPacket_t *packet);
+void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet);
+void moloch_rules_run_after_classify(MolochSession_t *session);
+void moloch_rules_run_before_save(MolochSession_t *session, int final);
+void moloch_rules_exit();
 
 /******************************************************************************/
 /*
@@ -1043,3 +1070,4 @@ void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len
  * js0n.c
  */
 int js0n(unsigned char *js, unsigned int len, unsigned int *out);
+

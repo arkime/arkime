@@ -25,8 +25,10 @@ extern MolochConfig_t        config;
 HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 13);
 HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
 
-#define MOLOCH_FIELD_SPECIAL_NOT_FOUND -1
-#define MOLOCH_FIELD_SPECIAL_STOP_SPI  -2
+#define MOLOCH_FIELD_SPECIAL_NOT_FOUND  -1
+#define MOLOCH_FIELD_SPECIAL_STOP_SPI   -2
+#define MOLOCH_FIELD_SPECIAL_STOP_PCAP  -3
+#define MOLOCH_FIELD_SPECIAL_MIN_SAVE   -4
 
 LOCAL va_list empty_va_list;
 
@@ -442,6 +444,9 @@ void moloch_field_init()
     HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
 
     moloch_field_by_exp_add_special("dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
+    moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
+    moloch_field_by_exp_add_special("_maxPacketsToSave", MOLOCH_FIELD_SPECIAL_STOP_PCAP);
+    moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
 }
 /******************************************************************************/
 void moloch_field_exit()
@@ -483,11 +488,11 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_STR:
             field->str = (char*)string;
-            return string;
+            goto added;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             field->sarray = g_ptr_array_new_with_free_func(g_free);
             g_ptr_array_add(field->sarray, (char*)string);
-            return string;
+            goto added;
         case MOLOCH_FIELD_TYPE_STR_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
             HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_ncmp);
@@ -497,7 +502,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->len = len;
             hstring->utf8 = 0;
             HASH_ADD(s_, *hash, hstring->str, hstring);
-            return string;
+            goto added;
         default:
             LOG("Not a string %s", config.fields[pos]->dbField);
             exit (1);
@@ -519,12 +524,12 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             string = g_strndup(string, len);
         g_free(field->str);
         field->str = (char*)string;
-        return string;
+        goto added;
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
         if (copy)
             string = g_strndup(string, len);
         g_ptr_array_add(field->sarray, (char*)string);
-        return string;
+        goto added;
     case MOLOCH_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
 
@@ -543,11 +548,17 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->utf8 = 0;
         }
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
-        return string;
+        goto added;
     default:
         LOG("Not a string %s", config.fields[pos]->dbField);
         exit (1);
     }
+
+added:
+    if (config.fields[pos]->ruleEnabled)
+      moloch_rules_run_field_set(session, pos, (const gpointer) string);
+
+    return string;
 }
 /******************************************************************************/
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy)
@@ -578,6 +589,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             hstring->utf8 = 0;
             hstring->uw = uw;
             HASH_ADD(s_, *hash, hstring->str, hstring);
+            moloch_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
         default:
             LOG("Not a string hash %s", config.fields[pos]->dbField);
@@ -612,6 +624,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
         hstring->utf8 = 0;
         hstring->uw = uw;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
         LOG("Not a string hash %s", config.fields[pos]->dbField);
@@ -637,11 +650,11 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT:
             field->i = i;
-            return TRUE;
+            goto added;
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             field->iarray = g_array_new(FALSE, FALSE, 4);
             g_array_append_val(field->iarray, i);
-            return TRUE;
+            goto added;
         case MOLOCH_FIELD_TYPE_IP_HASH:
             field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_HASH:
@@ -650,13 +663,13 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             field->ihash = hash;
             hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
             HASH_ADD(i_, *hash, (void *)(long)i, hint);
-            return TRUE;
+            goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             field->ghash = g_hash_table_new(NULL, NULL);
-            g_hash_table_insert(field->ghash, (void *)(long)i, NULL);
-            return TRUE;
+            g_hash_table_add(field->ghash, (void *)(long)i);
+            goto added;
         default:
             LOG("Not a int %s", config.fields[pos]->dbField);
             exit (1);
@@ -670,10 +683,10 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT:
         field->i = i;
-        return TRUE;
+        goto added;
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
         g_array_append_val(field->iarray, i);
-        return TRUE;
+        goto added;
     case MOLOCH_FIELD_TYPE_IP_HASH:
         field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT_HASH:
@@ -684,25 +697,31 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         }
         hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
-        return TRUE;
+        goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
-        if (!g_hash_table_insert(field->ghash, (void *)(long)i, NULL)) {
+        if (!g_hash_table_add(field->ghash, (void *)(long)i)) {
             field->jsonSize -= 13;
             return FALSE;
         } else {
             field->jsonSize += 100;
-            return TRUE;
+            goto added;
         }
     case MOLOCH_FIELD_TYPE_INT_GHASH:
-        if (!g_hash_table_insert(field->ghash, (void *)(long)i, NULL)) {
+        if (!g_hash_table_add(field->ghash, (void *)(long)i)) {
             field->jsonSize -= 13;
             return FALSE;
         }
-        return TRUE;
+        goto added;
     default:
         LOG("Not a int %s", config.fields[pos]->dbField);
         exit (1);
     }
+
+added:
+    if (config.fields[pos]->ruleEnabled)
+      moloch_rules_run_field_set(session, pos, (gpointer)(long)i);
+
+    return TRUE;
 }
 /******************************************************************************/
 uint32_t moloch_field_certsinfo_hash(const void *key)
@@ -930,6 +949,12 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_SPECIAL_STOP_SPI:
                 session->stopSPI = op->strLenOrInt;
                 break;
+            case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
+                session->stopSaving = op->strLenOrInt;
+                break;
+            case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
+                session->minSaving = op->strLenOrInt;
+                break;
             }
             continue;
         }
@@ -1002,6 +1027,10 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
     if (fieldPos < 0) {
         switch (op->fieldPos) {
         case MOLOCH_FIELD_SPECIAL_STOP_SPI:
+            op->strLenOrInt = atoi(value);
+            op->str = 0;
+            break;
+        case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
             op->strLenOrInt = atoi(value);
             op->str = 0;
             break;
