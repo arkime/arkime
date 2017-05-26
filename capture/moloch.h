@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 18
+#define MOLOCH_API_VERSION 19
 
 #define MOLOCH_SESSIONID_LEN 37
 
