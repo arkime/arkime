@@ -5872,6 +5872,21 @@ if (Config.get("regressionTests")) {
   });
 }
 
+/* cyberchef endpoint - loads the src or dst packets for a session and
+ * sends them to cyberchef */
+app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, function(req, res) {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) { return res.send("Error"); }
+
+    let data = '';
+    for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      data += results[i].data.toString('hex');
+    }
+
+    res.render('cyberchef.pug', { value: data });
+  });
+});
+
 
 app.use(express.static(__dirname + '/views'));
 app.use(express.static(__dirname + '/bundle'));

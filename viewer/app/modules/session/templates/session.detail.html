@@ -94,6 +94,25 @@
           {{::value.name}}
         </button>
       </div>
+      <div class="btn-group" uib-dropdown>
+        <button type="button" class="btn btn-default btn-sm" uib-dropdown-toggle>
+          CyberChef <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+          <li role="menuitem">
+            <a ng-href="{{::session.no}}/session/{{session.id}}/cyberchef?type=src"
+              target="_blank">
+              Open src packets with CyberChef
+            </a>
+          </li>
+          <li role="menuitem">
+            <a ng-href="{{::session.no}}/session/{{session.id}}/cyberchef?type=dst"
+              target="_blank">
+              Open dst packets with CyberChef
+            </a>
+          </li>
+        </ul>
+      </div>
     </fieldset>
     <div class="well well-sm margined-top" ng-if="$ctrl.decodingForm">
       <span ng-repeat="field in $ctrl.decodings[$ctrl.decodingForm].fields"
