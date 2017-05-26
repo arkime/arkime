@@ -369,44 +369,6 @@ function dot2value(obj, str) {
       return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
-function createSessionDetailOld() {
-  var found = {};
-  var dirs = [];
-
-  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
-  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
-
-  dirs.forEach(function(dir) {
-    try {
-      var files = fs.readdirSync(dir);
-      files.forEach(function(file) {
-        if (file.match(/\.detail\.jade$/i) && !found[file]) {
-          found[file] = "  include " + dir + "/" + file + "\n";
-        }
-      });
-    } catch (e) {}
-  });
-
-  var makers = internals.pluginEmitter.listeners("makeSessionDetail");
-  async.each(makers, function(cb, nextCb) {
-    cb(function (err, items) {
-      for (var k in items) {
-        found[k] = items[k].replace(/^/mg, "  ") + "\n";
-      }
-      return nextCb();
-    });
-  }, function () {
-    internals.sessionDetailOld =    "include views/mixins.jade\n" +
-                                    "div.sessionDetail(sessionid='#{session.id}')\n" +
-                                    "  include views/sessionDetail-standard.jade\n";
-    Object.keys(found).sort().forEach(function(k) {
-      internals.sessionDetailOld += found[k];
-    });
-    internals.sessionDetailOld +=   "  include views/sessionDetail-body.jade\n";
-    internals.sessionDetailOld +=   "include views/sessionDetail-footer.jade\n";
-  });
-}
-
 function createSessionDetailNew() {
   var found = {};
   var dirs = [];
@@ -456,7 +418,6 @@ function createSessionDetailNew() {
 }
 
 function createSessionDetail() {
-  createSessionDetailOld();
   createSessionDetailNew();
 }
 
@@ -742,38 +703,6 @@ function makeTitle(req, page) {
   return title;
 }
 
-function sessionsOld (req, res) {
-  var settings = decode.settings();
-  var decodeItems = {};
-  for (var key in settings) {
-    var setting = settings[key];
-    var obj = {name: setting.name || key};
-    if (setting.title || setting.fields) {
-      obj.items = {};
-      if (setting.title) {
-        obj.items.title = {name: setting.title, disabled: true};
-      }
-      obj.items[key + ":enabled"] = {name: "Enable", type: "checkbox"};
-      setting.fields.forEach(function(field) {
-        obj.items[key + ":" + field.key] = {name: field.name || field.key, type: field.type};
-      });
-      decodeItems[key] = obj;
-    } else {
-      obj.type = "checkbox";
-      decodeItems[key+":enabled"] = obj;
-    }
-  }
-
-  res.render('index.jade', {
-    user: req.user,
-    title: makeTitle(req, 'Sessions'),
-    titleLink: 'sessionsLink',
-    helpLink: 'sessions',
-    isIndex: true,
-    decodeItems: JSON.stringify(decodeItems)
-  });
-}
-
 app.get(['/', '/app'], function(req, res) {
   var question = req.url.indexOf("?");
   if (question === -1) {
@@ -781,43 +710,6 @@ app.get(['/', '/app'], function(req, res) {
   } else {
     res.redirect("sessions" + req.url.substring(question));
   }
-});
-
-app.get("/sessions.old", checkWebEnabled, sessionsOld);
-
-app.get("/spiview.old", checkWebEnabled, function(req, res) {
-  res.render('spiview.jade', {
-    user: req.user,
-    title: makeTitle(req, 'SPI View'),
-    titleLink: 'spiLink',
-    helpLink: 'spiview',
-    isIndex: true,
-    reqFields: Config.headers("headers-http-request"),
-    resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email"),
-    categories: Config.getCategories(),
-    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: req.user.userId})
-  });
-});
-
-app.get("/spigraph.old", checkWebEnabled, function(req, res) {
-  res.render('spigraph.jade', {
-    user: req.user,
-    title: makeTitle(req, 'SPI Graph'),
-    titleLink: 'spigraphLink',
-    helpLink: 'spigraph',
-    isIndex: true
-  });
-});
-
-app.get("/connections.old", checkWebEnabled, function(req, res) {
-  res.render('connections.jade', {
-    user: req.user,
-    title: makeTitle(req, 'Connections'),
-    titleLink: 'connectionsLink',
-    helpLink: 'connections',
-    isIndex: true
-  });
 });
 
 app.get('/about', checkWebEnabled, function(req, res) {
@@ -857,50 +749,6 @@ app.get('/molochclusters', function(req, res) {
   var clustersClone = cloneClusters(app.locals.molochClusters);
 
   return res.send(clustersClone);
-});
-
-app.get('/stats.old', checkWebEnabled, function(req, res) {
-  var query = {size: 100};
-
-  Db.search('stats', 'stat', query, function(err, data) {
-    var hits = data.hits.hits;
-    var nodes = [];
-    hits.forEach(function(hit) {
-      nodes.push(hit._id);
-    });
-    nodes.sort();
-    res.render('stats.jade', {
-      user: req.user,
-      title: makeTitle(req, 'Stats'),
-      titleLink: 'statsLink',
-      helpLink: 'stats',
-      nodes: nodes
-    });
-  });
-});
-
-app.get('/:nodeName/statsDetail', checkWebEnabled, function(req, res) {
-  res.render('statsDetail.jade', {
-    user: req.user,
-    nodeName: req.params.nodeName
-  });
-});
-
-fs.unlink("./public/style.css", function () {}); // Remove old style.css file
-app.get('/style.css', function(req, res) {
-  fs.readFile("./views/style.styl", 'utf8', function(err, str) {
-    if (err) {return console.log("ERROR - ", err);}
-    var style = stylus(str);
-    style.render(function(err, css){
-      if (err) {return console.log("ERROR - ", err);}
-      var date = new Date().toUTCString();
-      res.setHeader('Content-Type', 'text/css');
-      res.setHeader('Date', date);
-      res.setHeader('Cache-Control', 'public, max-age=600');
-      res.setHeader('Last-Modified', date);
-      res.send(css);
-    });
-  });
 });
 
 // angular app bundles
@@ -3971,23 +3819,8 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       res.send(data);
     });
   } else { // return SPI data and packets
-    jade.render(internals.sessionDetailOld, {
-      filename: "sessionDetail",
-      user: req.user,
-      session: session,
-      data: incoming,
-      query: req.query,
-      basedir: "/",
-      reqFields: Config.headers("headers-http-request"),
-      resFields: Config.headers("headers-http-response"),
-      emailFields: Config.headers("headers-email")
-    }, function(err, data) {
-      if (err) {
-        console.trace("ERROR - ", err);
-        return req.next(err);
-      }
-      res.send(data);
-    });
+    res.send("HOW DID I GET HERE?");
+    console.trace("HOW DID I GET HERE");
   }
 }
 
@@ -4227,22 +4060,6 @@ app.get('/:nodeName/session/:id/packets', function(req, res) {
        });
      });
    });
-});
-
-app.get('/:nodeName/:id/sessionDetail', function(req, res) {
-  isLocalView(req.params.nodeName, function () {
-    noCache(req, res);
-    localSessionDetail(req, res);
-  },
-  function () {
-    return proxyRequest(req, res, function (err) {
-      Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
-        var fields = session._source || session.fields;
-        fields._err = "Couldn't connect to remote viewer, only displaying SPI data";
-        localSessionDetailReturnFull(req, res, fields, []);
-      });
-    });
-  });
 });
 
 function reqGetRawBody(req, cb) {
