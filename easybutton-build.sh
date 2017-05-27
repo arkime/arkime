@@ -86,7 +86,7 @@ if [ ! -d "thirdparty" ]; then
 fi
 cd thirdparty || exit
 
-PWD=`pwd`
+TPWD=`pwd`
 
 # glib
 if [ "$(uname)" = "FreeBSD" ]; then
@@ -130,7 +130,6 @@ fi
 # GeoIP
 if [ ! -f "GeoIP-$GEOIP.tar.gz" ]; then
   wget https://github.com/maxmind/geoip-api-c/releases/download/v$GEOIP/GeoIP-$GEOIP.tar.gz
-  wget http://www.maxmind.com/download/geoip/api/c/GeoIP-$GEOIP.tar.gz
 fi
 
 if [ ! -f "GeoIP-$GEOIP/libGeoIP/.libs/libGeoIP.a" ]; then
@@ -166,7 +165,7 @@ if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
 else
   echo "MOLOCH: NOT rebuilding libpcap";
 fi
-PCAPDIR=$PWD/libpcap-$PCAP
+PCAPDIR=$TPWD/libpcap-$PCAP
 PCAPBUILD="--with-libpcap=$PCAPDIR"
 
 # curl
@@ -209,7 +208,7 @@ if [ $DODAQ -eq 1 ]; then
 
   if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
     tar zxf daq-$DAQ.tar.gz
-    ( cd daq-$DAQ; ./configure --with-libpcap-includes=$PWD/libpcap-$PCAP/ --with-libpcap-libraries=$PWD/libpcap-$PCAP; make; sudo make install)
+    ( cd daq-$DAQ; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
     if [ $? -ne 0 ]; then
       echo "MOLOCH: $MAKE failed"
       exit 1
