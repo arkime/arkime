@@ -48,7 +48,7 @@ int reader_daq_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-DAQ_Verdict reader_daq_packet_cb(void *UNUSED(user), const DAQ_PktHdr_t *h, const uint8_t *data)
+DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8_t *data)
 {
     if (unlikely(h->caplen != h->pktlen)) {
         LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
@@ -61,15 +61,17 @@ DAQ_Verdict reader_daq_packet_cb(void *UNUSED(user), const DAQ_PktHdr_t *h, cons
     packet->ts            = h->ts;
     packet->pktlen        = h->pktlen;
 
-    moloch_packet(packet);
+    moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
     return DAQ_VERDICT_PASS;
 }
 /******************************************************************************/
 static void *reader_daq_thread(gpointer handle)
 {
     while (1) {
-        int r = daq_acquire(module, handle, -1, reader_daq_packet_cb, NULL);
-        if (r)
+        MolochPacketBatch_t   batch;
+        moloch_packet_batch_init(&batch);
+        int r = daq_acquire(module, handle, 10000, reader_daq_packet_cb, &batch);
+        moloch_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r)) {
