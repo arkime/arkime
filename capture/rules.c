@@ -25,7 +25,7 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 
-#define RULES_DEBUG 1
+//#define RULES_DEBUG 1
 
 #ifdef RULES_DEBUG
 LOCAL char *yaml_names[] = {
@@ -477,10 +477,15 @@ void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule
     int                    f;
     int                    good = 1;
 
-    for (f = 0; f < good && rule->fieldsLen; f++) {
+    for (f = 0; good && f < rule->fieldsLen; f++) {
         if (rule->fields[f] == skipPos)
             continue;
         int p = rule->fields[f];
+
+        if (!session->fields[p]) {
+            good = 0;
+            break;
+        }
 
         switch (config.fields[p]->type) {
         case MOLOCH_FIELD_TYPE_IP:
@@ -544,8 +549,9 @@ void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule
             break;
         } /* switch */
     }
-    if (good)
+    if (good) {
         moloch_field_ops_run(session, &rule->ops);
+    }
 }
 /******************************************************************************/
 void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value)

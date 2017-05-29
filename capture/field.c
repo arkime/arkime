@@ -618,7 +618,8 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
         hstring->utf8 = 0;
         hstring->uw = uw;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
-        moloch_rules_run_field_set(session, pos, (const gpointer) string);
+        if (config.fields[pos]->ruleEnabled)
+            moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
         LOGEXIT("Not a string hash %s", config.fields[pos]->dbField);
