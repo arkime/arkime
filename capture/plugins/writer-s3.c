@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* writer-s3.c  -- S3 Writer Plugin
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -174,8 +174,7 @@ void writer_s3_init_cb (int UNUSED(code), unsigned char *data, int len, gpointer
         file->partNumber = 1;
         file->partNumberResponses = 1;
     } else {
-        LOG("Unknown s3 response: %.*s", len, data);
-        exit(1);
+        LOGEXIT("Unknown s3 response: %.*s", len, data);
     }
     g_match_info_free(match_info);
 

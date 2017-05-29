@@ -3,7 +3,7 @@
  * https://www.plixer.com/support/netflow_v5.html
  * https://www.plixer.com/support/netflow_v7.html
  *     
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -260,8 +260,7 @@ void moloch_plugin_init()
     netflowVersion = moloch_config_int(NULL, "netflowVersion", 5, 1, 7);
     LOG("version = %d", netflowVersion);
     if (netflowVersion != 1 && netflowVersion != 5 && netflowVersion != 7) {
-        LOG("Unsupported netflowVersion: %d", netflowVersion);
-        exit(0);
+        LOGEXIT("Unsupported netflowVersion: %d", netflowVersion);
     }
 
     if (netflowVersion == 1)
@@ -271,16 +270,14 @@ void moloch_plugin_init()
 
     char **dsts = moloch_config_str_list(NULL, "netflowDestinations", NULL);
     if (dsts == NULL || dsts[0] == NULL || dsts[0][0] == 0){
-        LOG("Unsupport netflowDestinations must be set");
-        exit(0);
+        LOGEXIT("Unsupport netflowDestinations must be set");
     }
 
     int i;
     for (i = 0; i < 100 && dsts[i]; i++) {
         char *colon = strchr(dsts[i], ':');
         if (!colon) {
-            LOG("netflowDestination (%s) needs a destination port", dsts[i]);
-            exit(0);
+            LOGEXIT("netflowDestination (%s) needs a destination port", dsts[i]);
         }
         *colon = 0;
 
@@ -290,21 +287,18 @@ void moloch_plugin_init()
 	hints.ai_socktype = SOCK_DGRAM;
 
         if (getaddrinfo(dsts[i], colon+1, &hints, &res)) {
-            LOG("Failed looking up %s:%s", dsts[i], colon+1);
-            exit(0);
+            LOGEXIT("Failed looking up %s:%s", dsts[i], colon+1);
         }
 
         dests[numDests].addr = *((struct sockaddr_in *) res->ai_addr);
         dests[numDests].seq = 0;
 
         if ((dests[numDests].fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-            LOG("Socket failed: %s", strerror(errno));
-            exit(1);
+            LOGEXIT("Socket failed: %s", strerror(errno));
         }
 
         if (connect(dests[numDests].fd, (struct sockaddr *) &dests[numDests].addr, sizeof(struct sockaddr_in))) {
-            LOG("Connect failed: %s", strerror(errno));
-            exit(1);
+            LOGEXIT("Connect failed: %s", strerror(errno));
         }
         numDests++;
         freeaddrinfo(res);

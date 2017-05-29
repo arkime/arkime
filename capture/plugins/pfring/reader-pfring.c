@@ -1,6 +1,6 @@
 /* reader-pfring.c  -- pfring instead of libpcap
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -50,8 +50,7 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
     MolochPacketBatch_t *batch = (MolochPacketBatch_t *)user_bytes;
 
     if (unlikely(h->caplen != h->len)) {
-        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
-        exit (0);
+        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
     }
 
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
@@ -125,15 +124,13 @@ void reader_pfring_init(char *UNUSED(name))
             int err = pfring_set_bpf_filter(rings[i], config.bpf);
 
             if (err < 0) {
-                LOG("pfring set filter error %d  for  %s", err, config.bpf);
-                exit (1);
+                LOGEXIT("pfring set filter error %d  for  %s", err, config.bpf);
             }
         }
 
 
         if (!rings[i]) {
-            LOG("pfring open failed! - %s", config.interface[i]);
-            exit(1);
+            LOGEXIT("pfring open failed! - %s", config.interface[i]);
         }
 
         pfring_set_cluster(rings[i], clusterId, cluster_per_flow_5_tuple);

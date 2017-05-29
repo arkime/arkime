@@ -1,6 +1,6 @@
 /* reader-snf.c  -- snf instead of libpcap
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -114,13 +114,11 @@ void reader_snf_init(char *UNUSED(name))
 
     int err;
     if ( (err = snf_init(SNF_VERSION_API)) != 0) {
-        LOG("Myricom: failed in snf_init(%d) = %d", SNF_VERSION_API, err);
-        exit(0);
+        LOGEXIT("Myricom: failed in snf_init(%d) = %d", SNF_VERSION_API, err);
     }
 
     if ((err = snf_getifaddrs(&ifaddrs)) || ifaddrs == NULL) {
-        LOG("Myricom: failed in snf_getifaddrs %d", err);
-        exit(0);
+        LOGEXIT("Myricom: failed in snf_getifaddrs %d", err);
     }
 
     int i, r;
@@ -137,15 +135,13 @@ void reader_snf_init(char *UNUSED(name))
         }
 
         if (portnums[i] == -1 && sscanf(config.interface[i], "snf%d", &portnums[i]) != 1) {
-            LOG("Myricom: Couldn't find interface '%s'", config.interface[i]);
-            exit(0);
+            LOGEXIT("Myricom: Couldn't find interface '%s'", config.interface[i]);
         }
 
         int err;
         err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, 0, &handles[i]);
         if (err != 0) {
-            LOG("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
-            exit(0);
+            LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
 
         for (r = 0; r < snfNumRings; r++) {

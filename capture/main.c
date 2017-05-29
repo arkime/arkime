@@ -419,13 +419,11 @@ void moloch_drop_privileges()
         struct group   *grp;
         grp = getgrnam(config.dropGroup);
         if (!grp) {
-            LOG("ERROR: Group '%s' not found", config.dropGroup);
-            exit(1);
+            LOGEXIT("ERROR: Group '%s' not found", config.dropGroup);
         }
 
         if (setgid(grp->gr_gid) != 0) {
-            LOG("ERROR: Couldn't change group - %s", strerror(errno));
-            exit(1);
+            LOGEXIT("ERROR: Couldn't change group - %s", strerror(errno));
         }
     }
 
@@ -433,13 +431,11 @@ void moloch_drop_privileges()
         struct passwd   *usr;
         usr = getpwnam(config.dropUser);
         if (!usr) {
-            LOG("ERROR: User '%s' not found", config.dropUser);
-            exit(1);
+            LOGEXIT("ERROR: User '%s' not found", config.dropUser);
         }
 
         if (setuid(usr->pw_uid) != 0) {
-            LOG("ERROR: Couldn't change user - %s", strerror(errno));
-            exit(1);
+            LOGEXIT("ERROR: Couldn't change user - %s", strerror(errno));
         }
     }
 
@@ -453,8 +449,7 @@ int                       canQuitFuncsNum;
 void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
-        LOG("Can't add canQuitFunc");
-        exit(1);
+        LOGEXIT("Can't add canQuitFunc");
         return;
     }
     canQuitFuncs[canQuitFuncsNum] = func;

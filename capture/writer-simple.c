@@ -4,7 +4,7 @@
  * This writer just creates a file per packet thread and queues buffers
  * to be written to disk in a single output thread.
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -241,8 +241,7 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
 
         currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         if (currentInfo[thread]->file->fd < 0) {
-            LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", name, strerror(errno), errno);
-            exit(2);
+            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", name, strerror(errno), errno);
         }
         info->file->pos = currentInfo[thread]->bufpos = 24;
         memcpy(info->buf, &pcapFileHeader, 24);

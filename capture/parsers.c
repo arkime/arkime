@@ -943,13 +943,11 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
 void moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOG("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOG("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
@@ -974,13 +972,11 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOG("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOG("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
@@ -1008,13 +1004,11 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
 void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);

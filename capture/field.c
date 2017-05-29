@@ -49,9 +49,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
 
     memset(out, 0, sizeof(out));
     if (js0n(data, data_len, out) != 0) {
-        LOG("ERROR: Parse error for >%.*s<\n", data_len, data);
-        fflush(stdout);
-        exit(0);
+        LOGEXIT("ERROR: Parse error for >%.*s<\n", data_len, data);
     }
 
     info->expression = g_strndup((char*)expression, expression_len);
@@ -146,8 +144,7 @@ int moloch_field_define_text(char *text, int *shortcut)
     }
 
     if (strstr(kind, "termfield") != 0 && strstr(db, "-term") == 0) {
-        LOG("ERROR - db field %s for %s should end with -term in '%s'", kind, db, text);
-        exit(1);
+        LOGEXIT("ERROR - db field %s for %s should end with -term in '%s'", kind, db, text);
     }
 
     char groupbuf[100];
@@ -261,8 +258,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         if (minfo->pos == -1) {
             minfo->pos = config.maxField++;
             if (config.maxField > 255) {
-                LOG("ERROR - Max Fields is too large %d", config.maxField);
-                exit(0);
+                LOGEXIT("ERROR - Max Fields is too large %d", config.maxField);
             }
         }
 
@@ -504,8 +500,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             HASH_ADD(s_, *hash, hstring->str, hstring);
             goto added;
         default:
-            LOG("Not a string %s", config.fields[pos]->dbField);
-            exit (1);
+            LOGEXIT("Not a string %s", config.fields[pos]->dbField);
         }
     }
 
@@ -550,8 +545,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
         goto added;
     default:
-        LOG("Not a string %s", config.fields[pos]->dbField);
-        exit (1);
+        LOGEXIT("Not a string %s", config.fields[pos]->dbField);
     }
 
 added:
@@ -589,11 +583,11 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             hstring->utf8 = 0;
             hstring->uw = uw;
             HASH_ADD(s_, *hash, hstring->str, hstring);
-            moloch_rules_run_field_set(session, pos, (const gpointer) string);
+            if (config.fields[pos]->ruleEnabled)
+                moloch_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
         default:
-            LOG("Not a string hash %s", config.fields[pos]->dbField);
-            exit (1);
+            LOGEXIT("Not a string hash %s", config.fields[pos]->dbField);
         }
     }
 
@@ -627,8 +621,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
         moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
-        LOG("Not a string hash %s", config.fields[pos]->dbField);
-        exit (1);
+        LOGEXIT("Not a string hash %s", config.fields[pos]->dbField);
     }
 }
 /******************************************************************************/
@@ -671,8 +664,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             g_hash_table_add(field->ghash, (void *)(long)i);
             goto added;
         default:
-            LOG("Not a int %s", config.fields[pos]->dbField);
-            exit (1);
+            LOGEXIT("Not a int %s", config.fields[pos]->dbField);
         }
     }
 
@@ -713,8 +705,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         }
         goto added;
     default:
-        LOG("Not a int %s", config.fields[pos]->dbField);
-        exit (1);
+        LOGEXIT("Not a int %s", config.fields[pos]->dbField);
     }
 
 added:
@@ -792,8 +783,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
             HASH_ADD(t_, *hash, certs, certs);
             return TRUE;
         default:
-            LOG("Not a certsinfo %s", config.fields[pos]->dbField);
-            exit (1);
+            LOGEXIT("Not a certsinfo %s", config.fields[pos]->dbField);
         }
     }
 
@@ -807,8 +797,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
         HASH_ADD(t_, *(field->cihash), certs, certs);
         return TRUE;
     default:
-        LOG("Not a certsinfo %s", config.fields[pos]->dbField);
-        exit (1);
+        LOGEXIT("Not a certsinfo %s", config.fields[pos]->dbField);
     }
 }
 /******************************************************************************/
@@ -931,8 +920,7 @@ int moloch_field_count(int pos, MolochSession_t *session)
     case MOLOCH_FIELD_TYPE_CERTSINFO:
         return HASH_COUNT(s_, *(field->cihash));
     default:
-        LOG("ERROR - Unknown field type for counting %s %d", config.fields[pos]->dbField, config.fields[pos]->type);
-        exit (1);
+        LOGEXIT("ERROR - Unknown field type for counting %s %d", config.fields[pos]->dbField, config.fields[pos]->type);
     }
 }
 /******************************************************************************/

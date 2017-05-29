@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* reader-libpcap.c  -- Reader using libpcap
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -51,10 +51,9 @@ int reader_libpcap_stats(MolochReaderStats_t *stats)
 void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_char *bytes)
 {
     if (unlikely(h->caplen != h->len)) {
-        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
+        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
             "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'", 
             h->caplen, h->len);
-        exit (0);
     }
 
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
@@ -103,13 +102,11 @@ void reader_libpcap_start() {
             struct bpf_program   bpf;
 
             if (pcap_compile(pcaps[i], &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOG("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
-                exit(1);
+                LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
 
             if (pcap_setfilter(pcaps[i], &bpf) == -1) {
-                LOG("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
-                exit(1);
+                LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
         }
 
@@ -189,16 +186,14 @@ void reader_libpcap_init(char *UNUSED(name))
 #endif
 
         if (!pcaps[i]) {
-            LOG("pcap open live failed! %s", errbuf);
-            exit(1);
+            LOGEXIT("pcap open live failed! %s", errbuf);
         }
 
         pcap_setnonblock(pcaps[i], FALSE, errbuf);
     }
 
     if (i == MAX_INTERFACES) {
-        LOG("Only support up to %d interfaces", MAX_INTERFACES);
-        exit(1);
+        LOGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }
 
     moloch_reader_start         = reader_libpcap_start;

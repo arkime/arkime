@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* writer-disk.c  -- Default pcap disk writer
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -152,8 +152,7 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
     if (writeMethod == MOLOCH_WRITE_NORMAL) {
         len = write(outputFd, out->buf+out->pos, (out->max - out->pos));
         if (len < 0) {
-            LOG("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
-            exit (0);
+            LOGEXIT("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
         }
     } else {
         int wlen = (out->max - out->pos);
@@ -163,8 +162,7 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
         }
         len = write(outputFd, out->buf+out->pos, wlen);
         if (len < 0) {
-            LOG("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
-            exit (0);
+            LOGEXIT("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
         }
     }
 
@@ -227,8 +225,7 @@ void *writer_disk_output_thread(void *UNUSED(arg))
 #endif
             outputFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
             if (outputFd < 0) {
-                LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
-                exit (2);
+                LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
             }
         }
 
@@ -243,8 +240,7 @@ void *writer_disk_output_thread(void *UNUSED(arg))
             int len = write(outputFd, out->buf+out->pos, wlen);
             out->pos += len;
             if (len < 0) {
-                LOG("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
-                exit (0);
+                LOGEXIT("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
             }
         }
 

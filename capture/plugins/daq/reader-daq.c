@@ -1,6 +1,6 @@
 /* reader-daq.c  -- daq instead of libpcap
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -51,8 +51,7 @@ int reader_daq_stats(MolochReaderStats_t *stats)
 DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8_t *data)
 {
     if (unlikely(h->caplen != h->pktlen)) {
-        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
-        exit (0);
+        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
     }
 
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
@@ -98,16 +97,14 @@ void reader_daq_start() {
             err = daq_set_filter(module, handles[i], config.bpf);
 
             if (err) {
-                LOG("DAQ set filter error %d %s for  %s", err, daq_get_error(module, handles[i]), config.bpf);
-                exit (1);
+                LOGEXIT("DAQ set filter error %d %s for  %s", err, daq_get_error(module, handles[i]), config.bpf);
             }
         }
 
         err = daq_start(module, handles[i]);
 
         if (err) {
-            LOG("DAQ start error %d %s", err, daq_get_error(module, handles[i]));
-            exit (1);
+            LOGEXIT("DAQ start error %d %s", err, daq_get_error(module, handles[i]));
         }
 
         char name[100];
@@ -136,14 +133,12 @@ void reader_daq_init(char *UNUSED(name))
 
     err = daq_load_modules((const char **)dirs);
     if (err) {
-        LOG("Can't load DAQ modules = %d\n", err);
-        exit(1);
+        LOGEXIT("Can't load DAQ modules = %d\n", err);
     }
 
     module = daq_find_module(moduleName);
     if (!module) {
-        LOG("Can't find %s DAQ module\n", moduleName);
-        exit(1);
+        LOGEXIT("Can't find %s DAQ module\n", moduleName);
     }
 
 
@@ -159,8 +154,7 @@ void reader_daq_init(char *UNUSED(name))
         err = daq_initialize(module, &cfg, &handles[i], buf, sizeof(buf));
 
         if (err) {
-            LOG("Can't initialize DAQ %s %d %s\n", config.interface[i], err, buf);
-            exit(1);
+            LOGEXIT("Can't initialize DAQ %s %d %s\n", config.interface[i], err, buf);
         }
     }
 

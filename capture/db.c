@@ -1494,8 +1494,7 @@ void moloch_db_load_file_num()
     if ((value = moloch_js0n_get(source, source_len, "num", &len))) {
         fileNum = atoi((char*)value);
     } else {
-        LOG("ERROR - No num field in %.*s", source_len, source);
-        exit (0);
+        LOGEXIT("ERROR - No num field in %.*s", source_len, source);
     }
     free(data);
 
@@ -1534,12 +1533,10 @@ void moloch_db_mkpath(char *path)
                 LOG("mkdir(%s)", path);
             }
             if (errno != ENOENT || (mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP) && errno != EEXIST)) {
-                LOG("mkdir() error for '%s': %s\n", path, strerror(errno));
-                exit(1);
+                LOGEXIT("mkdir() error for '%s': %s\n", path, strerror(errno));
             }
         } else if (!S_ISDIR(sb.st_mode)) {
-            LOG("Path '%s': %s ", path, strerror(ENOTDIR));
-            exit(1);
+            LOGEXIT("Path '%s': %s ", path, strerror(ENOTDIR));
         }
 
         if (!done)
@@ -1597,8 +1594,7 @@ char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, 
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
         if (flen >= sizeof(filename)-1) {
-            LOG("pcapDir %s is too large", config.pcapDir[config.pcapDirPos]);
-            exit(1);
+            LOGEXIT("pcapDir %s is too large", config.pcapDir[config.pcapDirPos]);
         }
 
         strcpy(filename, config.pcapDir[config.pcapDirPos]);
@@ -1613,8 +1609,7 @@ char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, 
                 flen--;
 
             if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, tmp)) == 0) {
-                LOG("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
-                exit(1);
+                LOGEXIT("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
             }
             flen += tlen;
         }
@@ -1720,8 +1715,7 @@ void moloch_db_check()
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
-        LOG("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-        exit(1);
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
     uint32_t           version_len;
@@ -1730,8 +1724,7 @@ void moloch_db_check()
     version = moloch_js0n_get(data, data_len, "version", &version_len);
 
     if (!version || atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
-        LOG("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
-        exit(1);
+        LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
     }
     free(data);
 
@@ -1739,8 +1732,7 @@ void moloch_db_check()
         key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process&flat_settings");
         data = moloch_http_get(esServer, key, key_len, &data_len);
         if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
-            LOG("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
-            exit(1);
+            LOGEXIT("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
         }
         free(data);
     }

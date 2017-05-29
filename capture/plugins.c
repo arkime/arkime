@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* plugins.c  -- Functions dealing with plugins
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -131,19 +131,16 @@ int moloch_plugins_register_internal(const char *            name,
     MolochPlugin_t *plugin;
 
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
-        exit(-1);
+        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
     }
 
     HASH_FIND(p_, plugins, name, plugin);
     if (plugin) {
-        LOG("Plugin %s is already registered", name);
-        exit(-1);
+        LOGEXIT("Plugin %s is already registered", name);
     }
 
     plugin = MOLOCH_TYPE_ALLOC0(MolochPlugin_t);

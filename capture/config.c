@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* config.c  -- Functions dealing with the config file
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -459,8 +459,7 @@ void moloch_config_load_local_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "override-ips", &keys_len, &error);
     if (error) {
-        LOG("Error with override-ips: %s", error->message);
-        exit(1);
+        LOGEXIT("Error with override-ips: %s", error->message);
     }
 
     gsize k, v;
@@ -499,8 +498,7 @@ void moloch_config_load_packet_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
-        LOG("Error with packet-drop-ips: %s", error->message);
-        exit(1);
+        LOGEXIT("Error with packet-drop-ips: %s", error->message);
     }
 
     gsize k, v;
@@ -549,8 +547,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, section, &keys_len, &error);
     if (error) {
-        LOG("Error with %s: %s", section, error->message);
-        exit(1);
+        LOGEXIT("Error with %s: %s", section, error->message);
     }
 
     gsize k, v;

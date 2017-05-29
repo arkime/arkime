@@ -1,6 +1,6 @@
 /* packet.c  -- Functions for acquiring data
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -1302,8 +1302,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
-        LOG("ERROR - Unsupported pcap link type %d", pcapFileHeader.linktype);
-        exit (0);
+        LOGEXIT("ERROR - Unsupported pcap link type %d", pcapFileHeader.linktype);
     }
     if (rc) {
         moloch_packet_free(packet);

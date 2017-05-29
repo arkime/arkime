@@ -1,6 +1,6 @@
 /* molua.c  -- lua interface
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -66,8 +66,7 @@ void lua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), con
     molua_pushMolochData(L, at, length);
 
     if (lua_pcall(L, 2, 0, 0) != 0) {
-       LOG("error running http callback function %s", lua_tostring(L, -1));
-       exit(0);
+       LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 }
 /******************************************************************************/
@@ -140,13 +139,11 @@ void moloch_plugin_init()
             luaopen_molochdata(L);
 
             if (luaL_loadfile(L, names[i])) {
-                LOG("Error loading %s: %s", names[i], lua_tostring(L, -1));
-                exit(0);
+                LOGEXIT("Error loading %s: %s", names[i], lua_tostring(L, -1));
             }
 
             if (lua_pcall(L, 0, 0, 0)) {
-                LOG("Error initing %s: %s", names[i], lua_tostring(L, -1));
-                exit(0);
+                LOGEXIT("Error initing %s: %s", names[i], lua_tostring(L, -1));
             }
         }
     }
