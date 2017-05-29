@@ -92,6 +92,7 @@ LOCAL void *reader_snf_thread(gpointer ring)
 void reader_snf_start() {
     pcapFileHeader.linktype = DLT_EN10MB;
     pcapFileHeader.snaplen = config.snapLen;
+    moloch_rules_recompile();
 
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

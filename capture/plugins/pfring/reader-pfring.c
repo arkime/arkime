@@ -92,7 +92,7 @@ void reader_pfring_start() {
 
     pcapFileHeader.linktype = 1;
     pcapFileHeader.snaplen = config.snapLen;
-
+    moloch_rules_recompile();
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

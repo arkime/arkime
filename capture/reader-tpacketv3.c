@@ -201,6 +201,8 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     pcapFileHeader.linktype = 1;
     pcapFileHeader.snaplen = config.snapLen;
+    moloch_rules_recompile();
+
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
 
     if (config.bpf) {

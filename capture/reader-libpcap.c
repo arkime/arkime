@@ -95,6 +95,7 @@ void reader_libpcap_start() {
     //ALW - Bug: assumes all linktypes are the same
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(pcaps[0])) | pcap_datalink_ext(pcaps[0]);
     pcapFileHeader.snaplen = pcap_snapshot(pcaps[0]);
+    moloch_rules_recompile();
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

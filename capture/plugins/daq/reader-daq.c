@@ -90,6 +90,7 @@ void reader_daq_start() {
     //ALW - Bug: assumes all linktypes are the same
     pcapFileHeader.linktype = daq_get_datalink_type(module, handles[0]);
     pcapFileHeader.snaplen = config.snapLen;
+    moloch_rules_recompile();
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
