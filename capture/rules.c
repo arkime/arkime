@@ -426,7 +426,7 @@ void moloch_rules_recompile()
                     LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rules[t][i]->filename, rules[t][i]->bpf, pcap_geterr(deadPcap));
                 }
             } else {
-                rules[t][i]->bpf = NULL;
+                rules[t][i]->bpfp.bf_len = 0;
             }
         }
     }
@@ -545,7 +545,7 @@ void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *pa
         MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r];
         if (rule->fieldsLen) {
             moloch_rules_check_rule_fields(session, rule, -1);
-        } else if (bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+        } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
             moloch_field_ops_run(session, &rule->ops);
         }
     }
