@@ -1027,10 +1027,8 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
     if (fieldPos < 0) {
         switch (op->fieldPos) {
         case MOLOCH_FIELD_SPECIAL_STOP_SPI:
-            op->strLenOrInt = atoi(value);
-            op->str = 0;
-            break;
         case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
+        case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
             op->strLenOrInt = atoi(value);
             op->str = 0;
             break;

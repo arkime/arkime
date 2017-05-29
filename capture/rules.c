@@ -540,14 +540,14 @@ int moloch_rules_run_every_packet(MolochPacket_t *UNUSED(packet))
 /******************************************************************************/
 void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet)
 {
-   int r;
-   for (r = 0; r < rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]; r++) {
-       MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r];
-       if (rule->fieldsLen) {
-           moloch_rules_check_rule_fields(session, rule, -1);
-       } else if (bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-           moloch_field_ops_run(session, &rule->ops);
-       }
+    int r;
+    for (r = 0; r < rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]; r++) {
+        MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r];
+        if (rule->fieldsLen) {
+            moloch_rules_check_rule_fields(session, rule, -1);
+        } else if (bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            moloch_field_ops_run(session, &rule->ops);
+        }
     }
 }
 /******************************************************************************/
@@ -581,23 +581,24 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
 void moloch_rules_init()
 {
     char **rulesFiles = moloch_config_str_list(NULL, "rulesFiles", NULL);
-    if (!rulesFiles)
-        return;
-    int i;
-    for (i = 0; rulesFiles[i]; i++) {
-        yaml_parser_t parser;
-        yaml_parser_initialize(&parser);
-        FILE *input = fopen(rulesFiles[i], "rb");
-        if (!input)
-            LOGEXIT("ERROR - can not open rules file %s", rulesFiles[i]);
+    int    i;
 
-        yaml_parser_set_input_file(&parser, input);
-        YamlNode_t *parent = moloch_rules_parse_yaml(rulesFiles[i], NULL, &parser, FALSE);
-        yaml_parser_delete(&parser);
-        moloch_rules_print(parent, 0);
-        moloch_rules_process(rulesFiles[i], parent);
-        moloch_rules_free_node(parent);
-        fclose(input);
+    if (rulesFiles) {
+        for (i = 0; rulesFiles[i]; i++) {
+            yaml_parser_t parser;
+            yaml_parser_initialize(&parser);
+            FILE *input = fopen(rulesFiles[i], "rb");
+            if (!input)
+                LOGEXIT("ERROR - can not open rules file %s", rulesFiles[i]);
+
+            yaml_parser_set_input_file(&parser, input);
+            YamlNode_t *parent = moloch_rules_parse_yaml(rulesFiles[i], NULL, &parser, FALSE);
+            yaml_parser_delete(&parser);
+            moloch_rules_print(parent, 0);
+            moloch_rules_process(rulesFiles[i], parent);
+            moloch_rules_free_node(parent);
+            fclose(input);
+        }
     }
     // g_strfreev(rulesFiles); - Don't free
 
@@ -609,13 +610,13 @@ void moloch_rules_init()
     int pos = moloch_field_by_exp("_dontSaveSPI");
     gint start_pos;
     if (bpfs) {
-        GMatchInfo *match_info;
         for (i = 0; bpfs[i]; i++) {
             int n = rulesLen[type]++;
             MolochRule_t *rule = rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
             rule->filename = "dontSaveBPFs";
             moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
+            GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
@@ -627,19 +628,18 @@ void moloch_rules_init()
             }
             g_match_info_free(match_info);
         }
-        g_regex_unref(regex);
     }
 
     bpfs = moloch_config_str_list(NULL, "minPacketsSaveBPFs", NULL);
     pos = moloch_field_by_exp("_minPacketsBeforeSavingSPI");
     if (bpfs) {
-        GMatchInfo *match_info;
         for (i = 0; bpfs[i]; i++) {
             int n = rulesLen[type]++;
             MolochRule_t *rule = rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
             rule->filename = "dontSaveBPFs";
             moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
+            GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
@@ -651,8 +651,8 @@ void moloch_rules_init()
             }
             g_match_info_free(match_info);
         }
-        g_regex_unref(regex);
     }
+    g_regex_unref(regex);
 }
 /******************************************************************************/
 void moloch_rules_exit()
