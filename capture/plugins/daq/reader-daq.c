@@ -23,7 +23,6 @@
 #include "pcap.h"
 
 extern MolochConfig_t        config;
-extern MolochPcapFileHdr_t   pcapFileHeader;
 
 LOCAL const DAQ_Module_t    *module;
 LOCAL void                  *handles[MAX_INTERFACES];
@@ -87,9 +86,7 @@ void reader_daq_start() {
     int err;
 
     //ALW - Bug: assumes all linktypes are the same
-    pcapFileHeader.linktype = daq_get_datalink_type(module, handles[0]);
-    pcapFileHeader.snaplen = config.snapLen;
-    moloch_rules_recompile();
+    moloch_packet_set_linksnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

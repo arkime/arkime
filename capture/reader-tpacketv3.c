@@ -199,9 +199,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         LOGEXIT("block size %d not divisible by %d", blocksize, config.snapLen);
     }
 
-    pcapFileHeader.linktype = 1;
-    pcapFileHeader.snaplen = config.snapLen;
-    moloch_rules_recompile();
+    moloch_packet_set_linksnap(1, config.snapLen);
 
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
 

@@ -42,6 +42,7 @@ unsigned char          moloch_char_to_hexstr[256][3];
 unsigned char          moloch_hex_to_char[256][256];
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
+extern MolochPcapFileHdr_t     pcapFileHeader;
 
 MOLOCH_LOCK_DEFINE(LOG);
 
@@ -526,6 +527,8 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
         }
     }
     moloch_reader_start();
+    if (pcapFileHeader.linktype == 0 || pcapFileHeader.snaplen == 0)
+        LOGEXIT("Reader didn't call moloch_packet_set_linksnap");
     return FALSE;
 }
 /******************************************************************************/

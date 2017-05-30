@@ -1489,6 +1489,13 @@ void moloch_packet_add_packet_ip(char *ipstr, int mode)
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
+void moloch_packet_set_linksnap(int linktype, int snaplen)
+{
+    pcapFileHeader.linktype = linktype;
+    pcapFileHeader.snaplen = snaplen;
+    moloch_rules_recompile();
+}
+/******************************************************************************/
 void moloch_packet_exit()
 {
     if (ipTree) {

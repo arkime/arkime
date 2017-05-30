@@ -24,7 +24,6 @@
 #include "pcap.h"
 
 extern MolochConfig_t        config;
-extern MolochPcapFileHdr_t   pcapFileHeader;
 
 #define MAX_RINGS 10
 
@@ -90,9 +89,7 @@ LOCAL void *reader_snf_thread(gpointer ring)
 }
 /******************************************************************************/
 void reader_snf_start() {
-    pcapFileHeader.linktype = DLT_EN10MB;
-    pcapFileHeader.snaplen = config.snapLen;
-    moloch_rules_recompile();
+    moloch_packet_set_linksnap(DLT_EN10MB, config.snapLen);
 
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

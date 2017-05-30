@@ -429,9 +429,7 @@ void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
 
-    pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap);
-    pcapFileHeader.snaplen = pcap_snapshot(pcap);
-    moloch_rules_recompile();
+    moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap), pcap_snapshot(pcap));
 
     offlineFile = pcap_file(pcap);
 

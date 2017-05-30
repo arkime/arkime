@@ -850,6 +850,8 @@ void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
 
+void     moloch_packet_set_linksnap(int linktype, int snaplen);
+
 
 /******************************************************************************/
 /*

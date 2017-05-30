@@ -23,7 +23,6 @@
 #include "pcap.h"
 
 extern MolochConfig_t        config;
-extern MolochPcapFileHdr_t   pcapFileHeader;
 
 LOCAL pfring                *rings[MAX_INTERFACES];
 LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
@@ -89,9 +88,7 @@ static void *reader_pfring_thread(void *ringv)
 void reader_pfring_start() {
     int dlt_to_linktype(int dlt);
 
-    pcapFileHeader.linktype = 1;
-    pcapFileHeader.snaplen = config.snapLen;
-    moloch_rules_recompile();
+    moloch_packet_set_linksnap(1, config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
