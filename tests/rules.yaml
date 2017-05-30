@@ -1,0 +1,46 @@
+---
+# version: 1  - Must be set
+# rules:
+#   name:       - Friendly name for stats
+
+#   when:       - must be one of the three
+#     sessionSetup     - first few packets
+#     afterClassify    - classify stage
+#     fieldSet         - check when a field is set
+#     beforeMiddleSave - before doing a mid save
+#     beforeFinalSave  - before doing a final save
+#     beforBothSave    - before either a mid or final save
+#
+#One of the following 2:
+#   bpf:               - A bpf expression
+#   fields:            - A list of field expressions and values for each field,
+#                        one from each field expression must be set
+#   <field expression1>:
+#     - <value1>
+#     - <vaule2>
+#   <field expression2>:
+#     - <value1>
+#     - <vaule2>
+#
+#   ops:                          - List of ops, 1 per line
+#     _dontSaveSPI                - Don't save SPI data for session
+#     _maxPacketsToSave           - Don't save more then X packets
+#     _minPacketsBeforeSavingSPI  - Don't save SPI data unless this many packets
+#     <fieldname>                 - Add value to field
+#     -<fieldname>                - Remove value from field
+
+version: 1
+rules:
+  - name: "Don't save fields example2"
+    when: "fieldSet"
+    fields:
+      protocols: 
+        - tls
+      host.http: 
+        - www.aol.com
+        - mail.yandex.com
+        - foo.bar.com
+#      mac.src:
+#        - 00:11:f5:13:d7:a3
+    ops:
+      "protocols": "tlsrulestest"
