@@ -10,6 +10,12 @@
           </a>
         </li>
         <li role="presentation">
+          <a href="#links">
+            <span class="fa fa-fw fa-link"></span>&nbsp;
+            Links
+          </a>
+        </li>
+        <li role="presentation">
           <a href="#search">
             <span class="fa fa-fw fa-search"></span>&nbsp;
             Search Bar
@@ -99,12 +105,6 @@
             Fields
           </a>
         </li>
-        <li role="presentation">
-          <a href="#links">
-            <span class="fa fa-fw fa-link"></span>&nbsp;
-            Links
-          </a>
-        </li>
       </ul>
     </div>
 
@@ -125,6 +125,22 @@
         fast indexed access. Moloch is built with an intuitive UI/UX which
         reduces the analysis time of suspected incidents.
       </p>
+
+      <hr>
+
+      <h3 id="links">
+        <span class="fa fa-fw fa-link"></span>&nbsp;
+        Links
+      </h3>
+      <div class="row">
+        <div class="col-sm-12">
+          <a class="btn btn-link" href="http://molo.ch">Home Page</a> |
+          <a class="btn btn-link" href="http://github.com/aol/moloch/wiki/FAQ">FAQ</a> |
+          <a class="btn btn-link" href="http://github.com/aol/moloch/wiki">Wiki</a> |
+          <a class="btn btn-link" href="http://github.com/aol/moloch">GitHub</a> |
+          <a class="btn btn-link" href="https://slackinvite.molo.ch/">Request Slack Invite</a>
+        </div>
+      </div>
 
       <hr>
 
@@ -444,8 +460,8 @@
         Users
       </h3>
       <p has-permission="createEnabled">
-        The Users tab, as you may have guess, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
-        These options in include : The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), An Account enabled toggle, An Admin toggle,
+        The Users tab, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
+        These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), An Account enabled toggle, An Admin toggle,
         if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
         This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users Settings tab. (see above)
       </p>
@@ -497,22 +513,6 @@
         <span class="fa fa-warning"></span>&nbsp;
         Error retrieving fields: {{::$ctrl.error}}
       </div>
-
-      <hr>
-
-      <h3 id="links">
-        <span class="fa fa-fw fa-link"></span>&nbsp;
-       Links
-      </h3>
-      <p>
-        <ul>
-          <li> <a href="http://molo.ch">Home Page</a>
-          <li> <a href="http://github.com/aol/moloch/wiki/FAQ">FAQ</a>
-          <li> <a href="http://github.com/aol/moloch/wiki">Wiki</a>
-          <li> <a href="http://github.com/aol/moloch">github</a>
-          <li> <a href="https://slackinvite.molo.ch/">Request Slack Invite</a>
-        </ul>
-      </p>
 
       <hr>
 
