@@ -259,6 +259,8 @@
           columnNames.push('memoryP');
           columnNames.push('freeSpaceP');
 
+          if (!stats) { return; }
+
           for (var i = 3; i < columnNames.length; i++) {
             var columnName = columnNames[i];
 

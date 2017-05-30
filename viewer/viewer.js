@@ -2296,8 +2296,17 @@ app.get('/stats.json', function(req, res) {
                size: Math.min(10000, +req.query.length || 500)
               };
 
-  if (req.query.filter !== undefined) {
-    query.query = {wildcard: {nodeName: "*" + req.query.filter + "*"}};
+  if (req.query.filter !== undefined && req.query.filter !== '') {
+    let names = req.query.filter.split(',');
+    query.query = { bool: { should: [] } };
+    for (let i = 0, len = names.length; i < len; ++i) {
+      let name = names[i].trim();
+      if (name !== '') {
+        query.query.bool.should.push({
+          wildcard: {nodeName: '*' + name + '*'}
+        });
+      }
+    }
   }
 
   if (req.query.sortField !== undefined || req.query.desc !== undefined) {
