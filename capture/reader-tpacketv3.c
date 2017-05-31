@@ -252,7 +252,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         if (unlikely(infos[i].map == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap64 failure in reader_tpacketv3_init, %d: %s",errno, strerror(errno));
         }
-        infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(sizeof(struct iovec)));
+        infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(struct iovec));
 
         uint16_t j;
         for (j = 0; j < infos[i].req.tp_block_nr; j++) {
