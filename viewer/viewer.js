@@ -5872,6 +5872,10 @@ if (Config.get("regressionTests")) {
   });
 }
 
+app.use('/cyberchef.htm', function(req, res) {
+  res.sendFile('./public/cyberchef.htm');
+});
+
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
 app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, function(req, res) {

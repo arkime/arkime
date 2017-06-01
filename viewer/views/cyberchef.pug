@@ -1,6 +1,29 @@
 doctype html
 html
-  include ../public/cyberchef.htm
+  head
+    title CyberChef
+    style(type='text/css').
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      #content {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0px;
+      }
 
-  script.
-    document.getElementById('input-text').value = '#{value}';
+  body
+    div#content
+      iframe#iframe(width='100%', height='100%', frameborder='0', src='/cyberchef.htm')
+
+    script.
+      var iframe = document.getElementById('iframe');
+      iframe.addEventListener('load', function () {
+        var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+        innerDoc.getElementById('input-text').value = '#{value}';
+      });
