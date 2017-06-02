@@ -16,14 +16,16 @@
      * @param $window   Angular reference to the browser's window object
      * @param $location Exposes browser address bar URL
      *                  (based on the window.location)
+     * @param $httpParamSerializer Converts objects to strings
      *
      * @ngInject
      */
-    constructor($q, $http, $window, $location) {
-      this.$q         = $q;
-      this.$http      = $http;
-      this.$window    = $window;
-      this.$location  = $location;
+    constructor($q, $http, $window, $location, $httpParamSerializer) {
+      this.$q                   = $q;
+      this.$http                = $http;
+      this.$window              = $window;
+      this.$location            = $location;
+      this.$httpParamSerializer = $httpParamSerializer;
     }
 
 
@@ -215,8 +217,7 @@
     addTags(params) {
       return this.$q((resolve, reject) => {
 
-        let options = SessionService
-           .getReqOptions('addTags', 'POST', params, this.$location.search());
+        let options = this.getReqOptions('addTags', 'POST', params);
 
         // add tag data
         options.data.tags = params.tags;
@@ -240,8 +241,7 @@
     removeTags(params) {
       return this.$q((resolve, reject) => {
 
-        let options = SessionService
-           .getReqOptions('removeTags', 'POST', params, this.$location.search());
+        let options = this.getReqOptions('removeTags', 'POST', params);
 
         // add tag data
         options.data.tags = params.tags;
@@ -263,8 +263,7 @@
     exportPCAP(params) {
       let baseUrl = `sessions.pcap/${params.filename}`;
 
-      let options = SessionService
-         .getReqOptions(baseUrl, '', params, this.$location.search());
+      let options = this.getReqOptions(baseUrl, '', params);
 
       let url = options.url;
 
@@ -282,8 +281,7 @@
     exportCSV(params) {
       let baseUrl = `sessions.csv/${params.filename}`;
 
-      let options = SessionService
-         .getReqOptions(baseUrl, '', params, this.$location.search());
+      let options = this.getReqOptions(baseUrl, '', params);
 
       let url = options.url;
 
@@ -308,8 +306,7 @@
     scrubPCAP(params) {
       return this.$q((resolve, reject) => {
 
-        let options = SessionService
-           .getReqOptions('scrub', 'POST', params, this.$location.search());
+        let options = this.getReqOptions('scrub', 'POST', params);
 
         this.$http(options)
           .then((response) => {
@@ -330,8 +327,7 @@
     remove(params) {
       return this.$q((resolve, reject) => {
 
-        let options = SessionService
-           .getReqOptions('delete', 'POST', params, this.$location.search());
+        let options = this.getReqOptions('delete', 'POST', params);
 
         this.$http(options)
           .then((response) => {
@@ -352,8 +348,7 @@
     send(params) {
       return this.$q((resolve, reject) => {
 
-        let options = SessionService
-           .getReqOptions('sendSessions', 'POST', params, this.$location.search());
+        let options = this.getReqOptions('sendSessions', 'POST', params);
 
         // add tag and cluster data
         options.data.tags     = params.tags;
@@ -377,9 +372,15 @@
     exportUniqueValues(dbField, counts) {
       let url = 'unique.txt';
 
-      url = SessionService.urlWithParams(url, this.$location.search());
+      let paramObj    = this.$location.search();
+      paramObj.field  = dbField;
+      paramObj.counts = counts;
 
-      url += `&field=${dbField}&counts=${counts}`;
+      let paramString = this.getParamString(paramObj);
+
+      if (paramString && paramString !== '') {
+        url += `?${paramString}`;
+      }
 
       this.$window.open(url, '_blank');
     }
@@ -391,9 +392,14 @@
     openSpiGraph(dbField) {
       let url = 'spigraph';
 
-      url = SessionService.urlWithParams(url, this.$location.search());
+      let paramObj    = this.$location.search();
+      paramObj.field  = dbField;
 
-      url += `&field=${dbField}`;
+      let paramString = this.getParamString(paramObj);
+
+      if (paramString && paramString !== '') {
+        url += `?${paramString}`;
+      }
 
       this.$window.open(url, '_blank');
     }
@@ -421,23 +427,11 @@
 
     /* internal functions -------------------------------------------------- */
     /**
-     * Adds date and expression parameters to a given base url without parameters
-     * @param {string} baseUrl The url (without params) to append the params to
-     * @param {Object} params  The params object where date params may exist
+     * Gets the string representation of a object containing url parameters
+     * @param {Object} paramsObj The params object to stringify
      */
-    static urlWithParams(baseUrl, params) {
-      if (params.date) {
-        baseUrl += '?date=' + params.date;
-      } else if (params.startTime && params.stopTime) {
-        baseUrl += '?startTime='  + params.startTime;
-        baseUrl += '&stopTime='   + params.stopTime;
-      }
-
-      if (params.expression) {
-        baseUrl += '&expression=' + encodeURIComponent(params.expression);
-      }
-
-      return baseUrl;
+    getParamString(paramsObj) {
+      return this.$httpParamSerializer(paramsObj);
     }
 
     /**
@@ -445,12 +439,12 @@
      * @param {string} baseUrl        The base url to append params to
      * @param {string} method         The HTTP method (POST, GET, PUT, DELETE, etc)
      * @param {object} params         The parameters to be applied to url or data
-     * @param {object} existingParams The parameters existing in the url bar
      * @returns { url: {string}, method: {string}, data: {object} }
      */
-    static getReqOptions(baseUrl, method, params, existingParams) {
-      let data  = { segments: params.segments };
-      let url   = SessionService.urlWithParams(baseUrl, existingParams);
+    getReqOptions(baseUrl, method, params) {
+      let data      = { segments: params.segments };
+      let url       = baseUrl;
+      let paramObj  = this.$location.search(); // existing params in url
 
       if (!params.applyTo || params.applyTo === 'open') {
         // specific sessions
@@ -461,11 +455,18 @@
         data.ids = data.ids.join(',');
       } else if (params.applyTo === 'visible') {
         // sessions on the open page
-        url += '&start='  + params.start;
-        url += '&length=' + params.numVisible;
+        paramObj.start  = params.start;
+        paramObj.length = params.numVisible;
       } else if (params.applyTo === 'matching') {
         // all sessions in query results
-        url += '&start=0&length=' + params.numMatching;
+        paramObj.start  = 0;
+        paramObj.length = params.numMatching;
+      }
+
+      let paramString = this.getParamString(paramObj);
+
+      if (paramString && paramString !== '') {
+        url += `?${paramString}`;
       }
 
       return { url:url, method:method, data:data };
@@ -474,7 +475,8 @@
   }
 
 
-  SessionService.$inject = ['$q', '$http', '$window', '$location'];
+  SessionService.$inject = ['$q','$http','$window','$location',
+    '$httpParamSerializer'];
 
 
   angular.module('moloch')

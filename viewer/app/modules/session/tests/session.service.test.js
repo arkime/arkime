@@ -75,7 +75,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'addTags&start=1&length=100',
+        $httpBackend.when('POST', 'addTags?start=1&length=100',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -84,7 +84,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'addTags&start=0&length=500',
+        $httpBackend.when('POST', 'addTags?start=0&length=500',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -104,7 +104,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'removeTags&start=1&length=100',
+        $httpBackend.when('POST', 'removeTags?start=1&length=100',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -113,7 +113,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'removeTags&start=0&length=500',
+        $httpBackend.when('POST', 'removeTags?start=0&length=500',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -132,7 +132,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'scrub&start=1&length=100',
+        $httpBackend.when('POST', 'scrub?start=1&length=100',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -140,7 +140,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'scrub&start=0&length=500',
+        $httpBackend.when('POST', 'scrub?start=0&length=500',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -158,7 +158,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'delete&start=1&length=100',
+        $httpBackend.when('POST', 'delete?start=1&length=100',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -166,7 +166,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'delete&start=0&length=500',
+        $httpBackend.when('POST', 'delete?start=0&length=500',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -184,7 +184,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'sendSessions&start=1&length=100',
+        $httpBackend.when('POST', 'sendSessions?start=1&length=100',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -192,7 +192,7 @@
              return true;
            }
         ).respond(200);
-        $httpBackend.when('POST', 'sendSessions&start=0&length=500',
+        $httpBackend.when('POST', 'sendSessions?start=0&length=500',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.ids).not.toBeDefined();
@@ -277,11 +277,11 @@
 
         visibleSessionsParams.tags = tags;
         SessionService.addTags(visibleSessionsParams);
-        $httpBackend.expectPOST('addTags&start=1&length=100');
+        $httpBackend.expectPOST('addTags?start=1&length=100');
 
         matchingSessionsParams.tags = tags;
         SessionService.addTags(matchingSessionsParams);
-        $httpBackend.expectPOST('addTags&start=0&length=500');
+        $httpBackend.expectPOST('addTags?start=0&length=500');
 
         $httpBackend.flush();
 
@@ -303,11 +303,11 @@
 
         visibleSessionsParams.tags = tags;
         SessionService.removeTags(visibleSessionsParams);
-        $httpBackend.expectPOST('removeTags&start=1&length=100');
+        $httpBackend.expectPOST('removeTags?start=1&length=100');
 
         matchingSessionsParams.tags = tags;
         SessionService.removeTags(matchingSessionsParams);
-        $httpBackend.expectPOST('removeTags&start=0&length=500');
+        $httpBackend.expectPOST('removeTags?start=0&length=500');
 
         $httpBackend.flush();
 
@@ -327,10 +327,10 @@
         $httpBackend.expectPOST('scrub');
 
         SessionService.scrubPCAP(visibleSessionsParams);
-        $httpBackend.expectPOST('scrub&start=1&length=100');
+        $httpBackend.expectPOST('scrub?start=1&length=100');
 
         SessionService.scrubPCAP(matchingSessionsParams);
-        $httpBackend.expectPOST('scrub&start=0&length=500');
+        $httpBackend.expectPOST('scrub?start=0&length=500');
 
         $httpBackend.flush();
       });
@@ -340,10 +340,10 @@
         $httpBackend.expectPOST('delete');
 
         SessionService.remove(visibleSessionsParams);
-        $httpBackend.expectPOST('delete&start=1&length=100');
+        $httpBackend.expectPOST('delete?start=1&length=100');
 
         SessionService.remove(matchingSessionsParams);
-        $httpBackend.expectPOST('delete&start=0&length=500');
+        $httpBackend.expectPOST('delete?start=0&length=500');
 
         $httpBackend.flush();
       });
@@ -353,10 +353,10 @@
         $httpBackend.expectPOST('sendSessions');
 
         SessionService.send(visibleSessionsParams);
-        $httpBackend.expectPOST('sendSessions&start=1&length=100');
+        $httpBackend.expectPOST('sendSessions?start=1&length=100');
 
         SessionService.send(matchingSessionsParams);
-        $httpBackend.expectPOST('sendSessions&start=0&length=500');
+        $httpBackend.expectPOST('sendSessions?start=0&length=500');
 
         $httpBackend.flush();
       });
