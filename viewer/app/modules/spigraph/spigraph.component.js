@@ -94,8 +94,10 @@
       });
 
       this.$scope.$on('change:histo:type', (event, newType) => {
-        this.sort = newType;
+        _query.sort = this.sort = newType;
         this.$location.search('sort', this.sort);
+
+        this.loadData(true);
 
         // update all the other graphs
         this.$scope.$broadcast('update:histo:type', newType);
@@ -139,6 +141,7 @@
 
         let sort = current.params.sort || 'lpHisto';
         if (current.params.sort !== this.sort) {
+          change = true;
           this.sort = _query.sort = sort;
           this.$scope.$broadcast('update:histo:type', this.sort);
         }
