@@ -162,6 +162,12 @@ app.use(methodOverride());
 app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
 
+app.use('/cyberchef.htm', function(req, res, next) {
+  res.setHeader("Vary", "Accept-Encoding");
+  res.setHeader("Content-Encoding", "gzip");
+  res.sendFile(__dirname + "/public/cyberchef.htm.gz");
+});
+
 
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 if (Config.get("passwordSecret")) {
@@ -5697,6 +5703,25 @@ if (Config.get("regressionTests")) {
     res.send("{}");
   });
 }
+
+app.use('/cyberchef.htm', function(req, res) {
+  res.sendFile('./public/cyberchef.htm');
+});
+
+/* cyberchef endpoint - loads the src or dst packets for a session and
+ * sends them to cyberchef */
+app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, function(req, res) {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) { return res.send("Error"); }
+
+    let data = '';
+    for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      data += results[i].data.toString('hex');
+    }
+
+    res.render('cyberchef.pug', { value: data });
+  });
+});
 
 
 app.use(express.static(__dirname + '/views'));
