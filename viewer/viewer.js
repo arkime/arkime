@@ -5710,7 +5710,7 @@ app.use('/cyberchef.htm', function(req, res) {
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
-app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, function(req, res) {
+app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, function(req, res) {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) { return res.send("Error"); }
 
