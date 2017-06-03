@@ -1,13 +1,19 @@
 0.19.0 2017/06/XX
   - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
             outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
-  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, 5.3.1, 5.4.x
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
   - viewer - remove old UI
+  - viewer - CyberChef integration (must always add hex decoding)
+  - viewer - spigraph sort and refreshing improvements
+  - viewer - spiview fixed unique malform url
+  - viewer - stats allow comma separated list
+  - capture - rulesFiles and rules support
+  - capture - fixed daq building
 
 0.18.3 2017/05/25
   - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
             outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
-  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
   - viewer - Other decodings (issues #684, #670)
   - viewer - Text lineup (issue #598)
   - wise - track average running time
