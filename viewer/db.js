@@ -34,7 +34,7 @@ var internals = {tagId2Name: {},
                  healthCache: {},
                  usersCache: {},
                  qInProgress: 0,
-                 apiVersion: "1.6",
+                 apiVersion: "2.x",
                  q: []};
 
 exports.initialize = function (info, cb) {
@@ -181,7 +181,10 @@ exports.searchScroll = function (index, type, query, options, cb) {
         if (!error && totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
             scrollId: response._scroll_id,
-            scroll: '1m'
+            scroll: '1m',
+            body: { // ALW - Remove someday - https://github.com/elastic/elasticsearch-php/issues/564
+              scroll_id: response._scroll_id,
+            }
           }, getMoreUntilDone);
         } else {
             cb(error, totalResults);
