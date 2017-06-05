@@ -153,6 +153,10 @@
 
         this.cloneParams();
       });
+
+      this.$scope.$on('apply:expression', (event, args) => {
+        this.applyExpression();
+      });
     } /* /onInit */
 
     /**

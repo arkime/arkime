@@ -190,17 +190,22 @@
     changeField() {
       _query.field = this.field;
       this.$location.search('field', this.field);
-      this.loadData();
+      this.$scope.$broadcast('apply:expression');
     }
 
     /* fired when max elements input is changed */
     changeMaxElements() {
       _query.size = this.maxElements;
       this.$location.search('size', this.maxElements);
-      this.loadData();
+      this.$scope.$broadcast('apply:expression');
     }
 
     changeSortBy() {
+      this.$scope.$broadcast('apply:expression');
+      this.sortItems();
+    }
+
+    sortItems() {
       if (!this.items) { return; }
 
       if (this.sortBy === 'name') {
@@ -209,11 +214,11 @@
         });
       } else if (this.sortBy === 'count') {
         this.items = this.items.sort(function (a, b) {
-          return a.count < b.count;
+          return b.count - a.count;
         });
       } else { // sort by dbHisto, lpHisto, paHisto
         this.items = this.items.sort((a, b) => {
-          return a[this.sort] < b[this.sort];
+          return b[this.sort] - a[this.sort];
         });
       }
     }
@@ -221,7 +226,9 @@
     changeRefreshInterval() {
       if (interval) { this.$interval.cancel(interval); }
 
-      if (this.refresh && this.refresh > 0) { this.loadData(true); }
+      if (this.refresh && this.refresh > 0) {
+        this.$scope.$broadcast('apply:expression');
+      }
     }
 
     db2Field(dbField) {
@@ -239,7 +246,7 @@
       this.mapData    = json.map;
       this.graphData  = json.graph;
 
-      this.changeSortBy();
+      this.sortItems();
 
       let finfo = this.db2Field(this.filed);
 
