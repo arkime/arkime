@@ -95,7 +95,7 @@
 
   <div class="spigraph-content no-overflow">
 
-    <div ng-if="::($ctrl.mapData && $ctrl.graphData)"
+    <div ng-if="$ctrl.mapData && $ctrl.graphData"
       class="well well-sm margined-left margined-right margined-bottom-xxlg no-overflow">
       <div class="row margined-bottom-xxxlg">
         <moloch-graph-map open="{{$ctrl.openMaps}}" graph-type="{{::$ctrl.sort}}"

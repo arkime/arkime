@@ -176,8 +176,11 @@
           }
         })
         .catch((error) => {
-          this.loading  = false;
-          this.error    = error.text;
+          this.loading    = false;
+          this.error      = error.text || error;
+          this.items      = null;
+          this.mapData    = null;
+          this.graphData  = null;
         });
     }
 
@@ -198,6 +201,8 @@
     }
 
     changeSortBy() {
+      if (!this.items) { return; }
+
       if (this.sortBy === 'name') {
         this.items = this.items.sort(function (a, b) {
           return a.name.localeCompare(b.name);
