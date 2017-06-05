@@ -686,7 +686,7 @@ function fixResult(node, result, doField, doneCb) {
       }
       aggTags(result.aggregations, "field", parallelCb);
     }], function () {
-      doneCb();
+      return setImmediate(doneCb);
     });
 }
 function combineResults(obj, result) {
