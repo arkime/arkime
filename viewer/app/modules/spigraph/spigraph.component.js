@@ -202,9 +202,13 @@
         this.items = this.items.sort(function (a, b) {
           return a.name.localeCompare(b.name);
         });
-      } else {
+      } else if (this.sortBy === 'count') {
         this.items = this.items.sort(function (a, b) {
           return a.count < b.count;
+        });
+      } else { // sort by dbHisto, lpHisto, paHisto
+        this.items = this.items.sort((a, b) => {
+          return a[this.sort] < b[this.sort];
         });
       }
     }
@@ -230,11 +234,7 @@
       this.mapData    = json.map;
       this.graphData  = json.graph;
 
-      if (this.sortBy === 'name') {
-        json.items = json.items.sort(function (a, b) {
-          return a.name.localeCompare(b.name);
-        });
-      }
+      this.changeSortBy();
 
       let finfo = this.db2Field(this.filed);
 
