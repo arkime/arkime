@@ -17,15 +17,18 @@
      * @param $location     Exposes browser address bar URL
      *                      (based on the window.location)
      * @param $rootScope    Angular application main scope
+     * @param $routeParams  Retrieves the current set of route parameters
      * @param Constants     Moloch UI global constants
      *
      * @ngInject
      */
-    constructor($filter, $window, $location, $rootScope, Constants) {
+    constructor($filter, $window, $location, $rootScope, $routeParams,
+                Constants) {
       this.$filter        = $filter;
       this.$window        = $window;
       this.$location      = $location;
       this.$rootScope     = $rootScope;
+      this.$routeParams   = $routeParams;
       this.molochVersion  = Constants.version;
       this.demoMode       = Constants.demoMode;
     }
@@ -83,7 +86,7 @@
   }
 
   NavbarController.$inject = ['$filter','$window','$location','$rootScope',
-    'Constants'];
+    '$routeParams','Constants'];
 
   /**
    * Navbar Directive
