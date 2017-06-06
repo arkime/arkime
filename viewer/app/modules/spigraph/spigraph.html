@@ -109,22 +109,11 @@
       class="margined-top-lg margined-bottom spi-graph-item padded-top">
       <div class="row">
         <div class="col-md-12">
-          <label class="cursor-text margined-left-xlg">
-            <strong>{{::item.name}}</strong>
-            <sup class="spicount">({{::item.count | number}})</sup>
-          </label>
-          <div class="btn-group btn-group-xs" uib-dropdown>
-            <button class="btn btn-theme-primary field-btn" uib-dropdown-toggle>
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-              <li role="menuitem">
-                <a class="cursor-pointer"
-                  ng-click="$ctrl.addExpression(item)">
-                  and {{::item.name}}
-                </a>
-              </li>
-            </ul>
+          <div class="spi-bucket margined-left-xxlg">
+            <session-field value="{{::item.name}}" expr="{{::$ctrl.fieldObj.exp}}"
+              parse="true" pull-left="true" session-btn="true">
+            </session-field>
+            <sup>({{::item.count | number}})</sup>
           </div>
         </div>
       </div>

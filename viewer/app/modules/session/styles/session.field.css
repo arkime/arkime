@@ -101,9 +101,8 @@ session-field ul.session-field-dropdown.pull-right {
   left : auto;
 }
 session-field ul.session-field-dropdown.pull-left {
-  left      : 0;
-  right     : auto;
-  margin-top: 2px;
+  left : 0;
+  right: auto;
 }
 
 session-field ul.session-field-dropdown div > li > a {

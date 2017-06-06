@@ -271,6 +271,7 @@
     formatField(value) {
       for (let i = 0, len = this.fields.length; i < len; i++) {
         if (value === this.fields[i].dbField) {
+          this.fieldObj = this.fields[i];
           return this.fields[i].exp;
         }
       }
