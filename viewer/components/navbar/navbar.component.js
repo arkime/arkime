@@ -12,20 +12,20 @@
 
     /**
      * Initialize global variables for this controller
+     * @param $filter       Filters format the value of an expression
      * @param $window       Angular's reference to the browser's window object
      * @param $location     Exposes browser address bar URL
      *                      (based on the window.location)
      * @param $rootScope    Angular application main scope
-     * @param $routeParams  Retrieves the current set of route parameters
      * @param Constants     Moloch UI global constants
      *
      * @ngInject
      */
-    constructor($window, $location, $rootScope, $routeParams, Constants) {
+    constructor($filter, $window, $location, $rootScope, Constants) {
+      this.$filter        = $filter;
       this.$window        = $window;
       this.$location      = $location;
       this.$rootScope     = $rootScope;
-      this.$routeParams   = $routeParams;
       this.molochVersion  = Constants.version;
       this.demoMode       = Constants.demoMode;
     }
@@ -72,34 +72,9 @@
           // if the expression input doesn't match the expression url parameter,
           // the url needs to be constructed so that there is only one entry
           // in the browser history
-          let newUrl = link;
-          let paramLen = Object.keys(this.$routeParams).length;
-          let count = 1;
-          if (paramLen > 0) {
-            newUrl += '?';
-            for (let key in this.$routeParams) {
-              if (this.$routeParams.hasOwnProperty(key)) {
-                let param = this.$routeParams[key];
-                if (key !== 'expression') {
-                  newUrl += `${key}=${encodeURIComponent(param)}`;
-                  if (count !== paramLen) {
-                    newUrl += '&';
-                  }
-                }
-                ++count;
-              }
-            }
-          }
-
-          if (this.$rootScope.expression) {
-            if (paramLen > 0) { newUrl += '&'; }
-            else { newUrl += '?'; }
-            newUrl += `expression=${encodeURIComponent(this.$rootScope.expression)}`;
-          }
-
+          let newUrl = this.$filter('buildUrl')(link);
           this.$window.location.href = newUrl;
-        } else {
-          // the expression hasn't changed, so just go to the link
+        } else { // the expression hasn't changed, so just go to the link
           this.$location.path(link);
         }
       }
@@ -107,7 +82,7 @@
 
   }
 
-  NavbarController.$inject = ['$window','$location','$rootScope','$routeParams',
+  NavbarController.$inject = ['$filter','$window','$location','$rootScope',
     'Constants'];
 
   /**

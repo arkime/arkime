@@ -76,7 +76,8 @@
               <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
                 class="protocol-value">
                 <session-field value="{{::key}}" expr="protocols"
-                  parse="false" pull-left="true"></session-field>
+                  parse="false" pull-left="true" session-btn="true">
+                </session-field>
                 <sup>({{value | number}})</sup>
               </span>
             </span>
@@ -177,7 +178,7 @@
                 <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
                   <session-field field="::value.field"
                     value="{{::bucket.key}}" expr="{{::value.field.exp}}"
-                    parse="true" pull-left="true"
+                    parse="true" pull-left="true" session-btn="true"
                     timezone="{{::$ctrl.settings.timezone}}">
                   </session-field>
                   <sup>({{bucket.doc_count | number}})</sup>

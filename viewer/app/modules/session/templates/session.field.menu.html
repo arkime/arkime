@@ -40,4 +40,10 @@
       </a>
     </li>
   </div>
+  <div ng-if="::$ctrl.sessionBtn">
+    <li title="Open in Sessions with {{::$ctrl.expr}} == {{::parsed.value}} added to the search expression"
+      ng-click="$ctrl.goToSessions($ctrl.expr, parsed.queryVal, '==', $event)">
+      <a href>Open in Sessions</a>
+    </li>
+  </div>
 </ul>

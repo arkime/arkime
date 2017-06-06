@@ -9,6 +9,7 @@
   angular.module('moloch.util', [])
 
 
+   /* FILTERS -------------------------------------------------------------- */
    .filter('commaString', () => {
      return (input) => {
        if (isNaN(input)) { return '0'; }
@@ -82,7 +83,6 @@
       };
     })
 
-
     /**
      * Turns milliseconds into a human readable time range
      * Output example: 1 day 10:42:01
@@ -118,7 +118,6 @@
         return result || '0';
       };
     })
-
 
     /**
      * Field filter
@@ -160,7 +159,7 @@
      * Sets every letter to lower case in a string
      *
      * @example
-     * '{{someString | capitalize}}'
+     * '{{someString | lowercase}}'
      */
      .filter('lowercase', function() {
        return function(input) {
@@ -229,6 +228,54 @@
        };
      })
 
+    /**
+     * Builds a url with the existing parameters and updates the expression
+     * parameter with what's in the search expression input box.
+     * The url needs to be constructed this way so that there is only one entry
+     * in the browser history (rather than two, one for updating the expression
+     * parameter and one for changing the tab/page).
+     *
+     * @example
+     * $filter('buildUrl')('sessions')
+     * '{{'sessions' | buildUrl}}'
+     *
+     * @param {string} link The base url to send the user to
+     */
+     .filter('buildUrl', ['$rootScope','$routeParams',
+      function($rootScope, $routeParams) {
+        return function (link) {
+          let newUrl = link;
+          let paramLen = Object.keys($routeParams).length;
+          let count = 1;
+          if (paramLen > 0) {
+            newUrl += '?';
+            for (let key in $routeParams) {
+              if ($routeParams.hasOwnProperty(key)) {
+                let param = $routeParams[key];
+                if (key !== 'expression') {
+                  newUrl += `${key}=${encodeURIComponent(param)}`;
+                  if (count !== paramLen) {
+                    newUrl += '&';
+                  }
+                }
+                ++count;
+              }
+            }
+          }
+
+          if ($rootScope.expression) {
+            if (paramLen > 0) { newUrl += '&'; }
+            else { newUrl += '?'; }
+            newUrl += `expression=${encodeURIComponent($rootScope.expression)}`;
+          }
+
+          return newUrl;
+        };
+      }
+    ])
+
+
+    /* DIRECTIVES ---------------------------------------------------------- */
     /**
      * Convert To Number Directive
      * Parses strings to integers

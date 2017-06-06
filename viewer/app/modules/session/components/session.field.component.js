@@ -9,7 +9,7 @@
    * @example
    * '<session-field field="::fieldObj" expr="src.ip"
    *   value="{{::sessionObj.field}}" session="::sessionObj"
-   *   parse="true"></session-field>'
+   *   parse="true" session-btn="true"></session-field>'
    */
   class SessionFieldController {
 
@@ -17,6 +17,7 @@
      * Initialize global variables for this controller
      * @param $scope          Angular application model object
      * @param $filter         Filters format the value of an expression
+     * @param $window         Angular's reference to the browser's window object
      * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param FieldService    Retrieves available fields from the server
      * @param ConfigService   Transacts app configurations with the server
@@ -24,9 +25,11 @@
      *
      * @ngInject
      */
-    constructor($scope, $filter, $location, FieldService, ConfigService, SessionService) {
+    constructor($scope, $filter, $window, $location,
+                FieldService, ConfigService, SessionService) {
       this.$scope         = $scope;
       this.$filter        = $filter;
+      this.$window        = $window;
       this.$location      = $location;
       this.FieldService   = FieldService;
       this.ConfigService  = ConfigService;
@@ -75,6 +78,22 @@
       let fullExpression = `${field} ${op} ${value}`;
 
       this.$scope.$emit('add:to:search', { expression: fullExpression });
+    }
+
+    /**
+     * Triggered when a the Open in Sessions menu item is clicked for a field
+     * Redirects the user to the sessions page with the new expression
+     * The url needs to be constructed so there is only one browser history entry
+     * @param {string} field  The field name
+     * @param {string} value  The field value
+     * @param {string} op     The relational operator
+     * @param {object} $event The click event that triggered this function
+     */
+    goToSessions(field, value, op, $event) {
+      this.fieldClick(field, value, op, $event);
+
+      let newUrl = this.$filter('buildUrl')('sessions');
+      this.$window.location.href = newUrl;
     }
 
     /**
@@ -291,7 +310,7 @@
 
   }
 
-  SessionFieldController.$inject = ['$scope','$filter','$location',
+  SessionFieldController.$inject = ['$scope','$filter','$window','$location',
     'FieldService','ConfigService','SessionService'];
 
 
@@ -330,7 +349,12 @@
 
         // what timezone date fields should be in ('gmt' or 'local')
         // [required for time values]
-        timezone  : '@'
+        timezone  : '@',
+
+        // whether to display a button to add the field value to
+        // the expression and open the sessions tab
+        // [optional, default is false]
+        sessionBtn: '@'
       }
     });
 
