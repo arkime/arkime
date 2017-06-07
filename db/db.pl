@@ -55,6 +55,7 @@ my $PREFIX = "";
 my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
+my $NOOPTIMIZE = 0;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -100,6 +101,7 @@ sub showHelp($)
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
+    print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "  field disable <exp>          - disable a field from being indexed\n";
     print "  field enable <exp>           - enable a field from being indexed\n";
     exit 1;
@@ -1978,6 +1980,8 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--nooptimize") {
+	    $NOOPTIMIZE = 1;
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }
