@@ -2075,11 +2075,11 @@ if ($ARGV[1] =~ /^users-?import$/) {
     dbESVersion();
     $main::userAgent->timeout(3600);
     optimizeOther();
-    printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
+    printf ("Expiring %s indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esGet("/$i/$main::OPTIMIZE?max_num_segments=4", 1);
+            esGet("/$i/$main::OPTIMIZE?max_num_segments=4", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esGet("/$i/_flush", 1);
                 esPut("/$i/_settings", '{index: {"number_of_replicas":' . $REPLICAS . '}}', 1);
