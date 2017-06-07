@@ -648,7 +648,7 @@ void moloch_rules_init()
 
     int type = MOLOCH_RULE_TYPE_SESSION_SETUP;
     bpfs = moloch_config_str_list(NULL, "dontSaveBPFs", NULL);
-    int pos = moloch_field_by_exp("_dontSaveSPI");
+    int pos = moloch_field_by_exp("_maxPacketsToSave");
     gint start_pos;
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
