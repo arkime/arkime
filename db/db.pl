@@ -2074,7 +2074,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     dbESVersion();
     $main::userAgent->timeout(3600);
-    optimizeOther();
+    optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
