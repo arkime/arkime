@@ -14,7 +14,7 @@
             uib-tooltip="SPI Graph Field">
             SPI Graph:
           </span>
-          <input type="text" ng-model="$ctrl.field"
+          <input type="text" ng-model="$ctrl.query.field"
             class="form-control field-typeahead"
             typeahead-min-length="0"
             typeahead-on-select="$ctrl.changeField()"
@@ -32,7 +32,7 @@
             Max Elements:
           </span>
           <select class="form-control" convert-to-number
-            ng-model="$ctrl.maxElements" ng-change="$ctrl.changeMaxElements()">
+            ng-model="$ctrl.query.size" ng-change="$ctrl.changeMaxElements()">
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
@@ -54,7 +54,6 @@
           <select class="form-control"
             ng-model="$ctrl.sortBy" ng-change="$ctrl.changeSortBy()">
             <option value="name">name</option>
-            <option value="count">count</option>
             <option value="graph">graph</option>
           </select>
         </div>
@@ -98,7 +97,7 @@
     <div ng-if="$ctrl.mapData && $ctrl.graphData"
       class="well well-sm margined-left margined-right margined-bottom-xxlg no-overflow">
       <div class="row margined-bottom-xxxlg">
-        <moloch-graph-map open="{{$ctrl.openMaps}}" graph-type="{{::$ctrl.sort}}"
+        <moloch-graph-map open="{{$ctrl.openMaps}}" graph-type="{{::$ctrl.graphType}}"
           graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true"
           timezone="{{::$ctrl.settings.timezone}}">
         </moloch-graph-map>
@@ -120,7 +119,7 @@
       <div class="row padded-bottom-lg">
         <div class="col-md-12">
           <moloch-graph-map graph-data="item.graph" open="{{$ctrl.openMaps}}"
-            map-data="item.map" graph-type="{{::$ctrl.sort}}"
+            map-data="item.map" graph-type="{{::$ctrl.graphType}}"
             timezone="{{::$ctrl.settings.timezone}}"></moloch-graph-map>
         </div>
       </div>

@@ -2869,8 +2869,12 @@ app.get('/spigraph.json', function(req, res) {
             }
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || "lpHisto";
-              results.items = results.items.sort(function(a,b) {return b[s]- a[s];});
-              //console.log("results", util.inspect(results, false, 50));
+              results.items = results.items.sort(function (a, b) {
+                var result;
+                if (s === 'name') { result = a.name.localeCompare(b.name); }
+                else { result = b[s] - a[s]; }
+                return result;
+              });
               return res.send(results);
             }
           });

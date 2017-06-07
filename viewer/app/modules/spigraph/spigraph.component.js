@@ -2,9 +2,6 @@
 
   'use strict';
 
-  // save query parameters
-  let _query = {};
-
   let interval;
 
   /**
@@ -57,35 +54,39 @@
         });
 
       // load route params
-      this.sort         = _query.sort   = this.$routeParams.sort  || 'lpHisto';
-      this.field        = _query.field  = this.$routeParams.field || 'no';
-      this.maxElements  = _query.size   = this.$routeParams.size  || '20';
+      this.query        = {};
+      this.query.field  = this.$routeParams.field     || 'no';
+      this.query.size   = this.$routeParams.size      || '20';
+      this.sortBy       = this.$routeParams.sort      || 'graph';
+      this.graphType    = this.$routeParams.graphType || 'lpHisto';
 
-      this.sortBy       = 'count';
+      if (this.sortBy === 'graph') { this.query.sort = this.graphType; }
+      else { this.query.sort = this.sortBy; }
+
       this.refresh      = '0';
       this.items        = [];
 
       this.$scope.$on('change:search', (event, args) => {
         if (args.startTime && args.stopTime) {
-          _query.startTime  = args.startTime;
-          _query.stopTime   = args.stopTime;
-          _query.date       = null;
+          this.query.startTime  = args.startTime;
+          this.query.stopTime   = args.stopTime;
+          this.query.date       = null;
         } else if (args.date) {
-          _query.date      = args.date;
-          _query.startTime = null;
-          _query.stopTime  = null;
+          this.query.startTime  = null;
+          this.query.stopTime   = null;
+          this.query.date       = args.date;
         }
 
-        _query.expression = args.expression;
-        if (args.bounding) {_query.bounding = args.bounding;}
+        this.query.expression = args.expression;
+        if (args.bounding) { this.query.bounding = args.bounding; }
 
         this.loadData();
       });
 
       this.$scope.$on('change:time', (event, args) => {
-        _query.startTime  = args.start;
-        _query.stopTime   = args.stop;
-        _query.date       = null;
+        this.query.startTime  = args.start;
+        this.query.stopTime   = args.stop;
+        this.query.date       = null;
 
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
@@ -94,8 +95,11 @@
       });
 
       this.$scope.$on('change:histo:type', (event, newType) => {
-        _query.sort = this.sort = newType;
-        this.$location.search('sort', this.sort);
+        this.graphType = newType;
+        if (this.sortBy === 'graph') {
+          this.query.sort = this.graphType;
+        }
+        this.$location.search('graphType', this.graphType);
 
         this.loadData(true);
 
@@ -130,20 +134,35 @@
         let size = current.params.size || '20';
         if (size !== this.maxElements) {
           change = true;
-          this.maxElements = _query.size = size;
+          this.query.size = size;
         }
 
         let field = current.params.field || 'no';
         if (field !== this.field) {
           change = true;
-          this.field = _query.field = field;
+          this.query.field = field;
         }
 
-        let sort = current.params.sort || 'lpHisto';
+        let sort = current.params.sort || 'graph';
         if (current.params.sort !== this.sort) {
           change = true;
-          this.sort = _query.sort = sort;
-          this.$scope.$broadcast('update:histo:type', this.sort);
+          this.sortBy = sort;
+          if (sort === 'graph') {
+            this.query.sort = this.graphType;
+          } else {
+            this.query.sort = sort;
+          }
+        }
+
+        let graphType = current.params.graphType || 'lpHisto';
+        if (current.params.graphType !== this.graphType) {
+          change = true;
+          this.graphType = graphType;
+          // update sort parameter if sorting on graph
+          if (this.sortBy === 'graph') {
+            this.query.sort = this.graphType;
+          }
+          this.$scope.$broadcast('update:histo:type', this.graphType);
         }
 
         if (change) { this.loadData(true); }
@@ -161,7 +180,7 @@
 
       if (reload && interval) { this.$interval.cancel(interval); }
 
-      this.SpigraphService.get(_query)
+      this.SpigraphService.get(this.query)
         .then((response) => {
           this.loading = false;
           this.processData(response);
@@ -188,39 +207,26 @@
     /* exposed functions --------------------------------------------------- */
     /* fired when a field is selected from the typeahead */
     changeField() {
-      _query.field = this.field;
-      this.$location.search('field', this.field);
+      this.$location.search('field', this.query.field);
       this.$scope.$broadcast('apply:expression');
     }
 
     /* fired when max elements input is changed */
     changeMaxElements() {
-      _query.size = this.maxElements;
-      this.$location.search('size', this.maxElements);
+      this.$location.search('size', this.query.size);
       this.$scope.$broadcast('apply:expression');
     }
 
     changeSortBy() {
-      this.$scope.$broadcast('apply:expression');
-      this.sortItems();
-    }
-
-    sortItems() {
-      if (!this.items) { return; }
-
-      if (this.sortBy === 'name') {
-        this.items = this.items.sort(function (a, b) {
-          return a.name.localeCompare(b.name);
-        });
-      } else if (this.sortBy === 'count') {
-        this.items = this.items.sort(function (a, b) {
-          return b.count - a.count;
-        });
-      } else { // sort by dbHisto, lpHisto, paHisto
-        this.items = this.items.sort((a, b) => {
-          return b[this.sort] - a[this.sort];
-        });
+      if (this.sortBy === 'graph') {
+        this.query.sort = this.graphType;
+      } else {
+        this.query.sort = this.sortBy;
       }
+
+      this.$location.search('sort', this.sortBy);
+
+      this.$scope.$broadcast('apply:expression');
     }
 
     changeRefreshInterval() {
@@ -245,8 +251,6 @@
     processData(json) {
       this.mapData    = json.map;
       this.graphData  = json.graph;
-
-      this.sortItems();
 
       let finfo = this.db2Field(this.filed);
 
