@@ -2,7 +2,7 @@
 
   'use strict';
 
-  let interval;
+  let timeout;
 
   /**
    * @class SpigraphController
@@ -15,7 +15,7 @@
     /**
      * Initialize global variables for this controller
      * @param $scope          Angular application model object
-     * @param $interval     Angular's wrapper for window.setInterval
+     * @param $timeout        Angular's wrapper for window.setTimeout
      * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
      * @param SpigraphService Transacts stats with the server
@@ -24,10 +24,10 @@
      *
      * @ngInject
      */
-    constructor($scope, $interval, $location, $routeParams,
+    constructor($scope, $timeout, $location, $routeParams,
                 SpigraphService, FieldService, UserService) {
       this.$scope             = $scope;
-      this.$interval          = $interval;
+      this.$timeout           = $timeout;
       this.$location          = $location;
       this.$routeParams       = $routeParams;
       this.SpigraphService    = SpigraphService;
@@ -171,14 +171,20 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      if (interval) { this.$interval.cancel(interval); }
+      if (timeout) {
+        this.$timeout.cancel(timeout);
+        timeout = null;
+      }
     }
 
     loadData(reload) {
       this.loading  = true;
       this.error    = false;
 
-      if (reload && interval) { this.$interval.cancel(interval); }
+      if (reload && timeout) {
+        this.$timeout.cancel(timeout);
+        timeout = null;
+      }
 
       this.SpigraphService.get(this.query)
         .then((response) => {
@@ -189,7 +195,8 @@
           this.recordsFiltered  = response.recordsFiltered;
 
           if (reload && this.refresh && this.refresh > 0) {
-            interval = this.$interval(() => {
+            // reset the timeout for the request interval
+            timeout = this.$timeout(() => {
               this.shiftTime();
             }, this.refresh * 1000);
           }
@@ -230,14 +237,13 @@
     }
 
     changeRefreshInterval() {
-      if (interval) { this.$interval.cancel(interval); }
+      if (timeout) {
+        this.$timeout.cancel(timeout);
+        timeout = null;
+      }
 
       if (this.refresh && this.refresh > 0) {
         this.shiftTime();
-
-        interval = this.$interval(() => {
-          this.shiftTime();
-        }, this.refresh * 1000);
       }
     }
 
@@ -291,7 +297,7 @@
 
   }
 
-  SpigraphController.$inject = ['$scope','$interval','$location','$routeParams',
+  SpigraphController.$inject = ['$scope','$timeout','$location','$routeParams',
     'SpigraphService','FieldService','UserService'];
 
   /**
