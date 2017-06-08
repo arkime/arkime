@@ -80,7 +80,7 @@
         this.query.expression = args.expression;
         if (args.bounding) { this.query.bounding = args.bounding; }
 
-        this.loadData();
+        this.loadData(true);
       });
 
       this.$scope.$on('change:time', (event, args) => {
@@ -91,7 +91,7 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
 
-        this.loadData();
+        this.loadData(true);
       });
 
       this.$scope.$on('change:histo:type', (event, newType) => {
@@ -132,19 +132,19 @@
         let change = false;
 
         let size = current.params.size || '20';
-        if (size !== this.maxElements) {
+        if (size !== this.query.size) {
           change = true;
           this.query.size = size;
         }
 
         let field = current.params.field || 'no';
-        if (field !== this.field) {
+        if (field !== this.query.field) {
           change = true;
           this.query.field = field;
         }
 
         let sort = current.params.sort || 'graph';
-        if (current.params.sort !== this.sort) {
+        if (current.params.sort !== this.sortBy) {
           change = true;
           this.sortBy = sort;
           if (sort === 'graph') {
@@ -190,7 +190,7 @@
 
           if (reload && this.refresh && this.refresh > 0) {
             interval = this.$interval(() => {
-              this.loadData();
+              this.shiftTime();
             }, this.refresh * 1000);
           }
         })
@@ -233,8 +233,16 @@
       if (interval) { this.$interval.cancel(interval); }
 
       if (this.refresh && this.refresh > 0) {
-        this.$scope.$broadcast('apply:expression');
+        this.shiftTime();
+
+        interval = this.$interval(() => {
+          this.shiftTime();
+        }, this.refresh * 1000);
       }
+    }
+
+    shiftTime() {
+      this.$scope.$broadcast('shift:time');
     }
 
     db2Field(dbField) {
@@ -262,7 +270,7 @@
     }
 
     addExpression(item) {
-      let field = this.db2Field(this.field);
+      let field = this.db2Field(this.query.field);
       let fullExpression = `${field.exp} == ${item.name}`;
 
       this.$scope.$broadcast('add:to:typeahead', { expression: fullExpression});

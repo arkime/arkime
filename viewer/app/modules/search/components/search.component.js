@@ -154,8 +154,13 @@
         this.cloneParams();
       });
 
-      this.$scope.$on('apply:expression', (event, args) => {
+      this.$scope.$on('apply:expression', () => {
         this.applyExpression();
+        this.change();
+      });
+
+      this.$scope.$on('shift:time', () => {
+        this.change();
       });
     } /* /onInit */
 
