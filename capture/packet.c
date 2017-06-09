@@ -536,7 +536,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
                     session->port1 = ntohs(tcphdr->th_sport);
                     session->port2 = ntohs(tcphdr->th_dport);
                 }
-                if (moloch_http_is_moloch(session->h_hash, sessionId)) {
+                if (moloch_http_is_moloch(session->hash, sessionId)) {
                     if (config.debug) {
                         char buf[1000];
                         LOG("Ignoring connection %s", moloch_session_id_string(session->sessionId, buf));

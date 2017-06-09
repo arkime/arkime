@@ -465,9 +465,6 @@ typedef enum {
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
-    struct moloch_session *h_next, *h_prev;
-    int                    h_bucket;
-    uint32_t               h_hash;
 
     char                   sessionId[MOLOCH_SESSIONID_LEN];
 
@@ -500,6 +497,7 @@ typedef struct moloch_session {
     struct in6_addr        addr1;
     struct in6_addr        addr2;
     uint32_t               packets[2];
+    uint32_t               hash;
 
     uint16_t               port1;
     uint16_t               port2;
@@ -529,16 +527,14 @@ typedef struct moloch_session {
     uint16_t               midSave:1;
     uint16_t               outOfOrder:2;
     uint16_t               ackedUnseenSegment:2;
+    uint16_t               inHash:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
-    struct moloch_session *h_next, *h_prev;
-    int                    h_bucket;
     int                    tcp_count;
     int                    q_count;
-    int                    h_count;
 } MolochSessionHead_t;
 
 

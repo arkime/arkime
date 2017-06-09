@@ -32,8 +32,8 @@ MolochSessionHead_t         tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
 
 typedef HASHP_VAR(h_, MolochSessionHash_t, MolochSessionHead_t);
 
+LOCAL GHashTable           *sessions[MOLOCH_MAX_PACKET_THREADS][SESSION_MAX];
 LOCAL MolochSessionHead_t   sessionsQ[MOLOCH_MAX_PACKET_THREADS][SESSION_MAX];
-LOCAL MolochSessionHash_t   sessions[MOLOCH_MAX_PACKET_THREADS][SESSION_MAX];
 LOCAL int needSave[MOLOCH_MAX_PACKET_THREADS];
 
 typedef struct molochsescmd {
@@ -140,6 +140,11 @@ int moloch_session_cmp(const void *keyv, const void *elementv)
     MolochSession_t *session = (MolochSession_t *)elementv;
 
     return memcmp(keyv, session->sessionId, MIN(((uint8_t *)keyv)[0], session->sessionId[0])) == 0;
+}
+/******************************************************************************/
+int moloch_session_gcmp(const void *a, const void *b)
+{
+    return memcmp(a, b, MIN(((uint8_t *)a)[0], ((uint8_t *)b)[0])) == 0;
 }
 /******************************************************************************/
 void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointer uw1, gpointer uw2, MolochCmd_func func)
@@ -277,8 +282,9 @@ void moloch_session_free (MolochSession_t *session)
 /******************************************************************************/
 LOCAL void moloch_session_save(MolochSession_t *session)
 {
-    if (session->h_next) {
-        HASH_REMOVE(h_, sessions[session->thread][session->ses], session);
+    if (session->inHash) {
+        g_hash_table_remove(sessions[session->thread][session->ses], session->sessionId);
+        session->inHash = 0;
     }
 
     if (session->closingQ) {
@@ -419,13 +425,10 @@ int moloch_session_thread_outstanding(int thread)
 /******************************************************************************/
 MolochSession_t *moloch_session_find(int ses, char *sessionId)
 {
-    MolochSession_t *session;
-
     uint32_t hash = moloch_session_hash(sessionId);
     int      thread = hash % config.packetThreads;
 
-    HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
-    return session;
+    return g_hash_table_lookup(sessions[thread][ses], sessionId);
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
@@ -439,7 +442,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     int      thread = hash % config.packetThreads;
 
-    HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
+    session = g_hash_table_lookup(sessions[thread][ses], sessionId);
 
     if (session) {
         if (!session->closingQ) {
@@ -452,10 +455,13 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
     session->ses = ses;
+    session->hash = hash;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);
 
-    HASH_ADD_HASH(h_, sessions[thread][ses], hash, sessionId, session);
+    session->inHash = 1;
+    g_hash_table_insert(sessions[thread][ses], session->sessionId, session);
+
     DLL_PUSH_TAIL(q_, &sessionsQ[thread][ses], session);
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
@@ -477,7 +483,7 @@ uint32_t moloch_session_monitoring()
     int      i;
 
     for (i = 0; i < config.packetThreads; i++) {
-        count += HASH_COUNT(h_, sessions[i][SESSION_TCP]) + HASH_COUNT(h_, sessions[i][SESSION_UDP]) + HASH_COUNT(h_, sessions[i][SESSION_ICMP]);
+        count += g_hash_table_size(sessions[i][SESSION_TCP]) + g_hash_table_size(sessions[i][SESSION_UDP]) + g_hash_table_size(sessions[i][SESSION_ICMP]);
     }
     return count;
 }
@@ -601,12 +607,14 @@ void moloch_session_init()
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {
-        HASHP_INIT(h_, sessions[t][SESSION_UDP], primes[p], moloch_session_hash, moloch_session_cmp);
-        HASHP_INIT(h_, sessions[t][SESSION_TCP], primes[p], moloch_session_hash, moloch_session_cmp);
-        HASHP_INIT(h_, sessions[t][SESSION_ICMP], primes[p], moloch_session_hash, moloch_session_cmp);
+        sessions[t][SESSION_UDP] = g_hash_table_new (moloch_session_hash, moloch_session_gcmp);
+        sessions[t][SESSION_TCP] = g_hash_table_new (moloch_session_hash, moloch_session_gcmp);
+        sessions[t][SESSION_ICMP] = g_hash_table_new (moloch_session_hash, moloch_session_gcmp);
+
         DLL_INIT(q_, &sessionsQ[t][SESSION_UDP]);
         DLL_INIT(q_, &sessionsQ[t][SESSION_TCP]);
         DLL_INIT(q_, &sessionsQ[t][SESSION_ICMP]);
+
         DLL_INIT(tcp_, &tcpWriteQ[t]);
         DLL_INIT(q_, &closingQ[t]);
         DLL_INIT(cmd_, &sessionCmds[t]);
@@ -622,11 +630,15 @@ static void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED
 {
     int thread = session->thread;
     int i;
+    gpointer key;
 
     for (i = 0; i < SESSION_MAX; i++) {
-        HASH_FORALL_POP_HEAD(h_, sessions[thread][i], session,
+        GHashTableIter iter;
+        g_hash_table_iter_init (&iter, sessions[thread][i]);
+        while (g_hash_table_iter_next (&iter, &key, (gpointer)&session)) {
+            g_hash_table_iter_remove(&iter);
             moloch_session_save(session);
-        );
+        }
     }
 }
 /******************************************************************************/
