@@ -5664,9 +5664,9 @@ app.post('/sendSessions', function(req, res) {
   }
 });
 
-app.post('/upload', function(req, res) {
+app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
   var exec = require('child_process').exec,
-      child;
+     child;
 
   var tags = "";
   if (req.body.tag) {
@@ -5679,10 +5679,10 @@ app.post('/upload', function(req, res) {
   }
 
   var cmd = Config.get("uploadCommand")
-              .replace("{TAGS}", tags)
-              .replace("{NODE}", Config.nodeName())
-              .replace("{TMPFILE}", req.files.file.path)
-              .replace("{CONFIG}", Config.getConfigFile());
+     .replace("{TAGS}", tags)
+     .replace("{NODE}", Config.nodeName())
+     .replace("{TMPFILE}", req.file.path)
+     .replace("{CONFIG}", Config.getConfigFile());
   console.log("upload command: ", cmd);
   child = exec(cmd, function (error, stdout, stderr) {
     res.write("<b>" + cmd + "</b><br>");
@@ -5692,7 +5692,7 @@ app.post('/upload', function(req, res) {
     if (error !== null) {
       console.log("exec error: " + error);
     }
-    fs.unlink(req.files.file.path);
+    fs.unlink(req.file.path);
   });
 });
 

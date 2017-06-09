@@ -1,0 +1,74 @@
+<div class="container-fluid margin-for-main-and-sub-navbar">
+
+  <div class="sub-navbar">
+    <span class="sub-navbar-title">
+      <span class="fa-stack">
+        <span class="fa fa-upload fa-stack-1x"></span>
+        <span class="fa fa-square-o fa-stack-2x"></span>
+      </span>&nbsp;
+      Upload File
+    </span>
+    <div class="pull-right small toast-container">
+      <toast message="$ctrl.msg" type="$ctrl.msgType"
+        done="$ctrl.messageDone()"></toast>
+    </div>
+  </div>
+
+  <!-- upload form -->
+  <form class="container-fluid form-horizontal margined-bottom-xxxxlg margined-top-xxxxlg">
+
+    <!-- file -->
+    <div class="form-group">
+      <label for="file" class="col-md-2 control-label">File</label>
+      <div class="col-md-8">
+        <div class="input-group">
+          <input type="file" nv-file-select uploader="$ctrl.uploader"
+            name="file" id="file" class="form-control" />
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button"
+              ng-disabled="!$ctrl.uploader.queue[0]"
+              ng-click="$ctrl.remove()">
+              <span class="fa fa-trash-o"></span>&nbsp;
+              Remove
+            </button>
+          </span>
+        </div>
+      </div>
+    </div> <!-- /file -->
+
+    <!-- tag(s) -->
+    <div class="form-group">
+      <label for="tag" class="col-md-2 control-label">Tag(s)</label>
+      <div class="col-md-8">
+        <input type="text" class="form-control" id="tag" name="tag"
+          placeholder="Comma separated list of tags" ng-model="$ctrl.tag">
+      </div>
+    </div> <!-- /tag(s) -->
+
+    <!-- submit btn -->
+    <div class="form-group">
+      <div class="col-md-10">
+        <button class="btn btn-theme-primary pull-right margined-left" type="submit"
+          ng-disabled="!$ctrl.uploader.queue[0]"
+          ng-click="$ctrl.upload()">
+          <span ng-if="!$ctrl.uploading">
+            <span class="fa fa-upload"></span>&nbsp;
+            Upload
+          </span>
+          <span ng-if="$ctrl.uploading">
+            <span class="fa fa-spinner fa-spin"></span>&nbsp;
+            Uploading...
+          </span>
+        </button>
+        <button class="btn btn-warning pull-right" type="submit"
+          ng-disabled="!$ctrl.uploader.queue[0].isUploading"
+          ng-click="$ctrl.cancel()">
+          <span class="fa fa-ban"></span>&nbsp;
+          Cancel
+        </button>
+      </div>
+    </div> <!-- /submit btn -->
+
+  </form> <!-- /upload form -->
+
+</div>

@@ -52,6 +52,7 @@
     "angular-animate": "^1.5.8",
     "angular-bind-notifier": "^1.1.7",
     "angular-bootstrap-colorpicker": "^3.0.25",
+    "angular-file-upload": "^2.5.0",
     "angular-filter": "^0.5.11",
     "angular-mocks": "^1.5.8",
     "angular-resource": "^1.5.8",
