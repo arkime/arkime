@@ -25,7 +25,6 @@
 extern MolochConfig_t        config;
 
 LOCAL pfring                *rings[MAX_INTERFACES];
-LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 
 /******************************************************************************/
 int reader_pfring_stats(MolochReaderStats_t *stats)
