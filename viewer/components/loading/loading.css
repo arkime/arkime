@@ -1,13 +1,4 @@
 /* loading overlay */
-loading .loading {
-  position: fixed;
-  top     : 0;
-  left    : 0;
-  width   : 100%;
-  height  : 100%;
-  z-index : 1001;
-}
-
 loading .loading img {
   display     : flex;
   z-index     : 1499;
@@ -25,6 +16,7 @@ loading .loading .im-hootin {
   width       : 100%;
   z-index     : 1499;
   position    : fixed;
+  margin-left : -15px;
   top         : calc(50% + 80px);
   color       : var(--color-gray-dark);
   font-weight : bold;
@@ -115,6 +107,7 @@ loading .loading .loader.planets:after {
 
 /* spinning circles animation */
 loading .loading .loader.circles {
+  position        : fixed;
   width           : 150px;
   height          : 150px;
   margin          : -100px 0 0 -75px;
