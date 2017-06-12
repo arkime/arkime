@@ -114,6 +114,7 @@ char *moloch_session_id_string (char *sessionId, char *buf)
     // ALW: Rewrite to make pretty
     return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
 }
+#ifdef OLDHASH
 /******************************************************************************/
 /* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
  * MurmurHash based
@@ -133,6 +134,25 @@ uint32_t moloch_session_hash(const void *key)
 
     return h;
 }
+#else
+/* http://academic-pub.org/ojs/index.php/ijecs/article/viewFile/1346/297
+ * XOR32
+ */
+uint32_t moloch_session_hash(const void *key)
+{
+    uint32_t *p = (uint32_t *)key;
+    const uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
+    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
+    
+
+    while (p < end) {
+        h ^= *p;
+        p += 1;
+    }
+
+    return h;
+}
+#endif
 
 /******************************************************************************/
 int moloch_session_cmp(const void *keyv, const void *elementv)
@@ -457,6 +477,11 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     HASH_ADD_HASH(h_, sessions[thread][ses], hash, sessionId, session);
     DLL_PUSH_TAIL(q_, &sessionsQ[thread][ses], session);
+
+    if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
+        char buf[100];
+        LOG("Large number of chains: %s %u %u %u %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+    }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
     session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);

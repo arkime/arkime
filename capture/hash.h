@@ -116,6 +116,8 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_COUNT(name, varname) ((varname).count)
 
+#define HASH_BUCKET_COUNT(name, varname, h) ((varname).buckets[((uint32_t)h) % (varname).size].name##count)
+
 #define HASH_FORALL_POP_HEAD(name, varname, element, code) \
   do { \
       int  _##name##b; \
