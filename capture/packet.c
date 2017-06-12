@@ -202,8 +202,7 @@ void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t *
         session->firstBytesLen[packet->direction] = MIN(8, len);
         memcpy(session->firstBytes[packet->direction], data, session->firstBytesLen[packet->direction]);
 
-        if (!session->stopSPI)
-            moloch_parsers_classify_udp(session, data, len, packet->direction);
+        moloch_parsers_classify_udp(session, data, len, packet->direction);
     }
 
     int i;
@@ -216,7 +215,7 @@ void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t *
 /******************************************************************************/
 int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    if (session->stopSPI || session->stopTCP)
+    if (session->stopTCP)
         return 1;
 
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
@@ -542,7 +541,8 @@ LOCAL void *moloch_packet_thread(void *threadp)
                         LOG("Ignoring connection %s", moloch_session_id_string(session->sessionId, buf));
                     }
                     session->stopSPI = 1;
-                    session->stopSaving = 1;
+                    moloch_packet_free(packet);
+                    continue;
                 }
                 break;
             case IPPROTO_UDP:
@@ -555,6 +555,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
             if (pluginsCbs & MOLOCH_PLUGIN_NEW)
                 moloch_plugins_cb_new(session);
+        } else if (session->stopSPI) {
+            moloch_packet_free(packet);
+            continue;
         }
 
         int dir;
