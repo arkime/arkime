@@ -114,20 +114,19 @@ char *moloch_session_id_string (char *sessionId, char *buf)
     // ALW: Rewrite to make pretty
     return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
 }
-#ifdef OLDHASH
+#ifndef NEWHASH
 /******************************************************************************/
 /* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
  * MurmurHash based
  */
 uint32_t moloch_session_hash(const void *key)
 {
-    const uint32_t m = 0xc6a4a793;
     uint32_t *p = (uint32_t *)key;
     uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
-    uint32_t h = m;
+    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
 
     while (p < end) {
-        h = (h + *p) * m;
+        h = (h + *p) * 0xc6a4a793;
         h ^= h >> 16;
         p += 1;
     }
