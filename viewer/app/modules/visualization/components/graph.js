@@ -12,14 +12,21 @@
      *
      * @example
      * <session-graph graph-data="$ctrl.graphData" graph-type="'lpHisto'"
-     *   timezone="{{::$ctrl.timezone}}" primary="{{::$ctrl.primary}}">
+     *   timezone="{{::$ctrl.timezone}}" primary="{{::$ctrl.primary}}"
+     *   series-type="'bars'">
      * </session-graph>
      */
     .directive('sessionGraph', ['$filter', '$timeout', '$document', '$window',
       function($filter, $timeout, $document, $window) {
       return {
         template: require('html!../templates/graph.html'),
-        scope   : { graphData: '=', type: '@', timezone: '@', primary: '@' },
+        scope   : {
+          graphData : '=',
+          type      : '@',
+          timezone  : '@',
+          primary   : '@',
+          seriesType: '@'
+        },
         link    : function(scope, element) {
 
           let body = $document[0].body;
@@ -47,6 +54,23 @@
             }
           }
 
+          scope.setSeriesType = function() {
+            if (scope.seriesType === 'lines') {
+              scope.graphOptions.series.bars = false;
+              scope.graphOptions.series.lines = {
+                show: true,
+                fill: true
+              };
+            } else {
+              scope.graphOptions.series.lines = false;
+              scope.graphOptions.series.bars  = {
+                show    : true,
+                fill    : 1,
+                barWidth: (scope.graphData.interval * 1000) / 1.7
+              };
+            }
+          };
+
           function setup(data) {
             let styles = $window.getComputedStyle(body);
             let foregroundColor = styles.getPropertyValue('--color-foreground').trim();
@@ -57,11 +81,6 @@
 
             scope.graphOptions  = { // flot graph options
               series  : {
-                bars  : {
-                  show: true,
-                  fill: 1,
-                  barWidth: (data.interval * 1000) / 1.7
-                },
                 color : primaryColor
               },
               selection : {
@@ -104,6 +123,8 @@
                 frameRate   : 20
               }
             };
+
+            scope.setSeriesType();
           }
 
 
@@ -173,12 +194,20 @@
 
           scope.$on('update:histo:type', (event, newType) => {
             if (scope.type !== newType) {
-              scope.type = newType;
+              scope.type  = newType;
               scope.graph = [{data: scope.graphData[scope.type]}];
 
               plot.setData(scope.graph);
               plot.setupGrid();
               plot.draw();
+            }
+          });
+
+          scope.$on('update:series:type', (event, newType) => {
+            if (scope.seriesType !== newType) {
+              scope.seriesType = newType;
+              scope.setSeriesType();
+              plot = $.plot(plotArea, scope.graph, scope.graphOptions);
             }
           });
 
@@ -214,6 +243,16 @@
           scope.panRight = function() {
             plot.pan({left: 100});
             debounce(updateResults, plot, 400);
+          };
+
+          scope.changeSeriesType = function() {
+            scope.setSeriesType();
+
+            plot = $.plot(plotArea, scope.graph, scope.graphOptions);
+
+            if (scope.primary) { // primary graph sets all graph's histo type
+              scope.$emit('change:series:type', scope.seriesType);
+            }
           };
 
 

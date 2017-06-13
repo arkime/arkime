@@ -55,10 +55,11 @@
 
       // load route params
       this.query        = {};
-      this.query.field  = this.$routeParams.field     || 'no';
-      this.query.size   = this.$routeParams.size      || '20';
-      this.sortBy       = this.$routeParams.sort      || 'graph';
-      this.graphType    = this.$routeParams.graphType || 'lpHisto';
+      this.query.field  = this.$routeParams.field       || 'no';
+      this.query.size   = this.$routeParams.size        || '20';
+      this.sortBy       = this.$routeParams.sort        || 'graph';
+      this.graphType    = this.$routeParams.graphType   || 'lpHisto';
+      this.seriesType   = this.$routeParams.seriesType  || 'bars';
 
       if (this.sortBy === 'graph') { this.query.sort = this.graphType; }
       else { this.query.sort = this.sortBy; }
@@ -107,6 +108,14 @@
         this.$scope.$broadcast('update:histo:type', newType);
       });
 
+      this.$scope.$on('change:series:type', (event, newType) => {
+        this.seriesType = newType;
+        this.$location.search('seriesType', this.seriesType);
+
+        // update all the other graphs
+        this.$scope.$broadcast('update:series:type', newType);
+      });
+
       // watch for additions to search parameters from session detail or map
       this.$scope.$on('add:to:search', (event, args) => {
         // notify children (namely expression typeahead)
@@ -144,7 +153,7 @@
         }
 
         let sort = current.params.sort || 'graph';
-        if (current.params.sort !== this.sortBy) {
+        if (sort !== this.sortBy) {
           change = true;
           this.sortBy = sort;
           if (sort === 'graph') {

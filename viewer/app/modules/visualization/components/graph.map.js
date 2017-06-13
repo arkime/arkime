@@ -69,8 +69,9 @@
       controller  : GraphMapController,
       bindings    : {
         graphData : '<',
-        graphType : '@',
         mapData   : '<',
+        graphType : '@',
+        seriesType: '@',
         primary   : '@',
         open      : '@',
         timezone  : '@'
