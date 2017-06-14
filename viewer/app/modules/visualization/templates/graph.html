@@ -1,7 +1,6 @@
 <div class="margined-top-lg">
 
-  <div class="session-graph-btn-container">
-    <div>
+  <div class="session-graph-btn-container" ng-if="primary">
 
       <div class="btn-group btn-group-xs">
         <label class="btn btn-default" ng-click="zoomOut()"
@@ -30,32 +29,31 @@
       </div>
 
       <div class="btn-group btn-group-xs margined-left-lg">
-        <label class="btn btn-default" ng-model="type"
+        <label class="btn btn-default" ng-model="$parent.type"
           uib-btn-radio="'lpHisto'" ng-click="changeHistoType()">
           Session
         </label>
-        <label class="btn btn-default" ng-model="type"
+        <label class="btn btn-default" ng-model="$parent.type"
           uib-btn-radio="'paHisto'" ng-click="changeHistoType()">
           Packets
         </label>
-        <label class="btn btn-default" ng-model="type"
+        <label class="btn btn-default" ng-model="$parent.type"
           uib-btn-radio="'dbHisto'" ng-click="changeHistoType()">
           Databytes
         </label>
       </div>
 
       <div class="btn-group btn-group-xs margined-left-lg">
-        <label class="btn btn-default" ng-model="seriesType"
+        <label class="btn btn-default" ng-model="$parent.seriesType"
           uib-btn-radio="'lines'" ng-click="changeSeriesType()">
           Lines
         </label>
-        <label class="btn btn-default" ng-model="seriesType"
+        <label class="btn btn-default" ng-model="$parent.seriesType"
           uib-btn-radio="'bars'" ng-click="changeSeriesType()">
           Bars
         </label>
       </div>
 
-    </div>
   </div>
 
   <div class="plot-area" style="width:100%;height:150px;"></div>

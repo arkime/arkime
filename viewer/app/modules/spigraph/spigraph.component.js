@@ -109,9 +109,6 @@
       });
 
       this.$scope.$on('change:series:type', (event, newType) => {
-        this.seriesType = newType;
-        this.$location.search('seriesType', this.seriesType);
-
         // update all the other graphs
         this.$scope.$broadcast('update:series:type', newType);
       });

@@ -1927,20 +1927,20 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-
   if (req.query.facets) {
     query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}
-                 };
+                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}};
+    query.aggregations.dbHisto = {aggregations: {db1: {sum: {field:"db1"}}, db2: {sum: {field:"db2"}}, pa1: {sum: {field:"pa1"}}, pa2: {sum: {field:"pa2"}}}};
+
     switch (req.query.bounding) {
     case "first":
-      query.aggregations.dbHisto = {histogram : {field: "fp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+       query.aggregations.dbHisto.histogram = { field:'fp', interval:interval, min_doc_count:1 };
       break;
     case "database":
-      query.aggregations.dbHisto = {histogram : {field: "timestamp", interval: interval*1000, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      query.aggregations.dbHisto.histogram = { field:'timestamp', interval:interval*1000, min_doc_count:1 };
       break;
     default:
-      query.aggregations.dbHisto = {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      query.aggregations.dbHisto.histogram = { field:'lp', interval:interval, min_doc_count:1 };
       break;
     }
   }
@@ -2515,8 +2515,10 @@ function mapMerge(aggregations) {
 function graphMerge(req, query, aggregations) {
   var graph = {
     lpHisto: [],
-    dbHisto: [],
-    paHisto: [],
+    db1Histo: [],
+    db2Histo: [],
+    pa1Histo: [],
+    pa2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
@@ -2531,15 +2533,19 @@ function graphMerge(req, query, aggregations) {
     aggregations.dbHisto.buckets.forEach(function (item) {
       var key = item.key;
       graph.lpHisto.push([key, item.doc_count]);
-      graph.paHisto.push([key, item.pa.value]);
-      graph.dbHisto.push([key, item.db.value]);
+      graph.pa1Histo.push([key, item.pa1.value]);
+      graph.pa2Histo.push([key, item.pa2.value]);
+      graph.db1Histo.push([key, item.db1.value]);
+      graph.db2Histo.push([key, item.db2.value]);
     });
   } else {
     aggregations.dbHisto.buckets.forEach(function (item) {
       var key = item.key*1000;
       graph.lpHisto.push([key, item.doc_count]);
-      graph.paHisto.push([key, item.pa.value]);
-      graph.dbHisto.push([key, item.db.value]);
+      graph.pa1Histo.push([key, item.pa1.value]);
+      graph.pa2Histo.push([key, item.pa2.value]);
+      graph.db1Histo.push([key, item.db1.value]);
+      graph.db2Histo.push([key, item.db2.value]);
     });
   }
   return graph;
@@ -2864,8 +2870,8 @@ app.get('/spigraph.json', function(req, res) {
             var graph = r.graph;
             for (var i = 0; i < graph.lpHisto.length; i++) {
               r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.dbHisto[i][1];
-              r.paHisto += graph.paHisto[i][1];
+              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+              r.paHisto += graph.pa2Histo[i][1] + graph.pa2Histo[i][1];
             }
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || "lpHisto";

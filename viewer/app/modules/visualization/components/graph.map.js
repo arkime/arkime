@@ -71,7 +71,6 @@
         graphData : '<',
         mapData   : '<',
         graphType : '@',
-        seriesType: '@',
         primary   : '@',
         open      : '@',
         timezone  : '@'
