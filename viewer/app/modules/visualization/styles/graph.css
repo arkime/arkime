@@ -21,7 +21,7 @@
   top         : 20px;
   border-style: solid;
   border-width: 8px 8px 0 8px;
-  border-color: black transparent transparent transparent;
+  border-color: var(--color-black) transparent transparent transparent;
 }
 
 /* make graph labels smaller */

@@ -178,18 +178,24 @@
               if (!previousPoint ||
                  previousPoint.dataIndex !== item.dataIndex ||
                  previousPoint.seriesIndex !== item.seriesIndex) {
+
+                $(body).find('#tooltip').remove();
+
                 previousPoint = {
                   dataIndex:item.dataIndex,
                   seriesIndex:item.seriesIndex
                 };
 
-                $(body).find('#tooltip').remove();
+                let type;
+                if (scope.type === 'dbHisto' || scope.type === 'paHisto') {
+                  type = item.seriesIndex === 0 ? 'Src' : 'Dst';
+                }
 
                 let val = $filter('commaString')(Math.round(item.series.data[item.dataIndex][1]*100)/100);
-                let d = $filter('date')(item.datapoint[0].toFixed(0),
-                                        'yyyy/MM/dd HH:mm:ss');
+                let d = $filter('date')(item.datapoint[0].toFixed(0), 'yyyy/MM/dd HH:mm:ss');
 
                 let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                                    <strong>${type || ''}</strong>
                                     ${val} <strong>at</strong> ${d}
                                   </div>`;
 
