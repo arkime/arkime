@@ -203,6 +203,10 @@ void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t *
         memcpy(session->firstBytes[packet->direction], data, session->firstBytesLen[packet->direction]);
 
         moloch_parsers_classify_udp(session, data, len, packet->direction);
+
+        if (config.yara) {
+            moloch_yara_execute(session, data, len, 0);
+        }
     }
 
     int i;
