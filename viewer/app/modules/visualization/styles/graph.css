@@ -35,6 +35,7 @@ session-graph .tickLabel {
 session-graph .session-graph-btn-container {
   position: absolute;
   left    : 50%;
+  top     : 0;
 }
 session-graph .session-graph-btn-container > div {
   position: relative;
