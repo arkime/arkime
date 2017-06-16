@@ -9,8 +9,8 @@
 # * build moloch-capture
 
 
-GLIB=2.52.0
-YARA=1.7
+GLIB=2.52.2
+YARA=3.6.1
 GEOIP=1.6.11
 PCAP=1.8.1
 CURL=7.54.1
@@ -113,7 +113,8 @@ fi
 
 # yara
 if [ ! -f "yara-$YARA.tar.gz" ]; then
-  wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-$YARA.tar.gz
+  wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara-$YARA.tar.gz
+  #wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-$YARA.tar.gz
 fi
 
 if [ ! -f "yara-$YARA/libyara/.libs/libyara.a" ]; then
