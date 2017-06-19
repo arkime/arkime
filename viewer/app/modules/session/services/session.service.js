@@ -444,7 +444,13 @@
     getReqOptions(baseUrl, method, params) {
       let data      = { segments: params.segments };
       let url       = baseUrl;
-      let paramObj  = this.$location.search(); // existing params in url
+
+      let paramObj = {}; // clone existing params in url
+      for (let param in this.$location.search()) {
+        if (this.$location.search().hasOwnProperty(param)) {
+          paramObj[param] = this.$location.search()[param];
+        }
+      }
 
       if (!params.applyTo || params.applyTo === 'open') {
         // specific sessions
