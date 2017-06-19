@@ -2855,11 +2855,11 @@ app.get('/spigraph.json', function(req, res) {
 
           r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
-            r.graph.xmin = results.graph.xmin || results.graph.paHisto[0][0];
+            r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
           }
 
           if (r.graph.xmax === null) {
-            r.graph.xmax = results.graph.xmax || results.graph.paHisto[results.graph.paHisto.length-1][0];
+            r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length-1][0];
           }
 
           r.map = mapMerge(result.responses[i].aggregations);
@@ -2987,7 +2987,6 @@ app.get('/spiview.json', function(req, res) {
             });
 
             delete result.aggregations.dbHisto;
-            delete result.aggregations.paHisto;
             delete result.aggregations.mapG1;
             delete result.aggregations.mapG2;
             delete result.aggregations.protocols;
