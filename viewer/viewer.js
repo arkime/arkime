@@ -2022,7 +2022,6 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     processedRo[fields.ro] = true;
 
     query.query.bool.filter.push({term: {ro: fields.ro}});
-
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
         console.log("ERROR fetching matching sessions", err, result);
@@ -2036,13 +2035,15 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
       });
       return nextCb(null);
     });
+    query.query.bool.filter.pop();
+
   }, function (err) {
     cb(err, list);
   });
 }
 
 function sessionsListFromQuery(req, res, fields, cb) {
-  if (req.query.segments && fields.indexOf("ro") === -1) {
+  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("ro") === -1) {
     fields.push("ro");
   }
 
@@ -2054,7 +2055,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
           return res.send("Could not fetch list of sessions.  Err: " + err + " Result: " + result);
       }
       var list = result.hits.hits;
-      if (req.query.segments) {
+      if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
           cb(err, list);
         });
@@ -2092,7 +2093,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
       nextCb(null);
     });
   }, function(err) {
-    if (req && req.query.segments) {
+    if (req && req.query.segments && req.query.segments.match(/^(time|all)$/)) {
       buildSessionQuery(req, function(err, query, indices) {
         query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
