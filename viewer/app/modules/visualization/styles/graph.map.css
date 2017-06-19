@@ -1,7 +1,7 @@
 moloch-graph-map .inline-graph {
   position: relative;
   display : inline-block;
-  width   : calc(100% - 420px);
+  width   : calc(100% - 425px);
 }
 moloch-graph-map .whole-graph {
   position: relative;

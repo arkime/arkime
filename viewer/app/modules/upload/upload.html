@@ -20,19 +20,17 @@
     <!-- file -->
     <div class="form-group">
       <label for="file" class="col-md-2 control-label">File</label>
-      <div class="col-md-8">
-        <div class="input-group">
-          <input type="file" nv-file-select uploader="$ctrl.uploader"
-            name="file" id="file" class="form-control" />
-          <span class="input-group-btn">
-            <button class="btn btn-default" type="button"
-              ng-disabled="!$ctrl.uploader.queue[0]"
-              ng-click="$ctrl.remove()">
-              <span class="fa fa-trash-o"></span>&nbsp;
-              Remove
-            </button>
-          </span>
-        </div>
+      <div class="col-md-6">
+        <input type="file" nv-file-select uploader="$ctrl.uploader"
+          name="file" id="file" />
+      </div>
+      <div class="col-md-2 control-label">
+        <button class="btn btn-danger" type="button"
+          ng-disabled="!$ctrl.uploader.queue[0]"
+          ng-click="$ctrl.remove()">
+          <span class="fa fa-trash-o"></span>&nbsp;
+          Remove
+        </button>
       </div>
     </div> <!-- /file -->
 
