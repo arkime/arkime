@@ -3,6 +3,15 @@ moloch-graph-map .inline-graph {
   display : inline-block;
   width   : calc(100% - 420px);
 }
+moloch-graph-map .whole-graph {
+  position: relative;
+  width   : 100%;
+}
+moloch-graph-map .whole-graph session-graph .session-graph-btn-container {
+  position: absolute;
+  left    : 50%;
+  top     : -8px;
+}
 
 moloch-graph-map .inline-map {
   width   : 400px;

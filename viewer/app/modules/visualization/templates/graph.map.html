@@ -8,7 +8,7 @@
 
   <div class="margined-left-xxlg margined-right-xxlg">
 
-    <div ng-class="{'inline-graph':$ctrl.showMap}">
+    <div ng-class="{'inline-graph':$ctrl.showMap,'whole-graph':!$ctrl.showMap}">
       <div ng-if="::($ctrl.graphData)">
         <session-graph graph-data="$ctrl.graphData"
           type="{{::$ctrl.graphType || 'lpHisto'}}"
