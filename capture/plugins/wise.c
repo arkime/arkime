@@ -115,6 +115,11 @@ WiseItemHead_t itemList[INTEL_TYPE_SIZE];
 LOCAL MOLOCH_LOCK_DEFINE(item);
 
 /******************************************************************************/
+LOCAL WiseRequest_t *iRequest = 0;
+LOCAL MOLOCH_LOCK_DEFINE(iRequest);
+LOCAL char          *iBuf = 0;
+
+/******************************************************************************/
 int wise_item_cmp(const void *keyv, const void *elementv)
 {
     char *key = (char*)keyv;
@@ -191,6 +196,7 @@ void wise_free_item_unlocked(WiseItem_t *wi)
             moloch_session_add_cmd(wi->sessions[i], MOLOCH_SES_CMD_FUNC, NULL, NULL, wise_session_cmd_cb);
         }
         g_free(wi->sessions);
+        wi->sessions = 0;
     }
     g_free(wi->key);
     moloch_field_ops_free(&wi->ops);
@@ -204,7 +210,9 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
     WiseRequest_t *request = uw;
     int             i;
 
+    MOLOCH_LOCK(iRequest);
     inflight -= request->numItems;
+    MOLOCH_UNLOCK(iRequest);
 
     BSB_INIT(bsb, data, data_len);
 
@@ -303,10 +311,12 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
     if (wi) {
         // Already being looked up
         if (wi->sessions) {
-            if (wi->numSessions < wi->sessionsSize) {
-                wi->sessions[wi->numSessions++] = session;
-                moloch_session_incr_outstanding(session);
+            if (wi->numSessions >= wi->sessionsSize) {
+                wi->sessionsSize *= 2;
+                wi->sessions = realloc(wi->sessions, sizeof(MolochSession_t *) * wi->sessionsSize);
             }
+            wi->sessions[wi->numSessions++] = session;
+            moloch_session_incr_outstanding(session);
             stats[type][INTEL_STAT_INPROGRESS]++;
             goto cleanup;
         }
@@ -328,7 +338,7 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
         wi = MOLOCH_TYPE_ALLOC0(WiseItem_t);
         wi->key          = g_strdup(value);
         wi->type         = type;
-        wi->sessionsSize = 20;
+        wi->sessionsSize = 4;
         HASH_ADD(wih_, itemHash[type], wi->key, wi);
     }
 
@@ -451,10 +461,6 @@ void wise_lookup_url(MolochSession_t *session, WiseRequest_t *request, char *url
         wise_lookup(session, request, url, INTEL_TYPE_URL);
     }
 }
-/******************************************************************************/
-LOCAL WiseRequest_t *iRequest = 0;
-LOCAL MOLOCH_LOCK_DEFINE(iRequest);
-LOCAL char          *iBuf = 0;
 /******************************************************************************/
 LOCAL void wise_flush_locked()
 {

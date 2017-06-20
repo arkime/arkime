@@ -263,7 +263,7 @@ void moloch_session_mark_for_close (MolochSession_t *session, int ses)
     }
 }
 /******************************************************************************/
-void moloch_session_free (MolochSession_t *session)
+LOCAL void moloch_session_free (MolochSession_t *session)
 {
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ[session->thread], session);
