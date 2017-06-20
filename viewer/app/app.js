@@ -13,6 +13,7 @@
   require('angular-bind-notifier');
   require('angular-bootstrap-colorpicker');
   require('ngdraggable');
+  require('ngclipboard');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
   require('../public/flot-0.7/jquery.flot.js');
@@ -31,7 +32,7 @@
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate', 'colorpicker.module',
     'angular.filter', 'ngDraggable', 'ngSanitize', 'angular.bind.notifier',
-    'angularFileUpload',
+    'angularFileUpload', 'ngclipboard',
 
     // custom directives
     'directives.navbar', 'directives.footer',
