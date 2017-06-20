@@ -46,4 +46,13 @@
       <a href>Open in Sessions</a>
     </li>
   </div>
+  <div>
+    <li title="Copy value to clipboard" data-clipboard-text="{{::parsed.value}}"
+      ngclipboard-success="$ctrl.isopen = false" ngclipboard>
+      <a href>
+        <span class="fa fa-clipboard"></span>&nbsp;
+        <strong>Copy</strong>
+      </a>
+    </li>
+  </div>
 </ul>
