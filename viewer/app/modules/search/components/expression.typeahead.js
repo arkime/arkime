@@ -93,7 +93,7 @@
         if (timeout) { this.$timeout.cancel(timeout); }
 
         // if there's a request in progress, cancel it
-        if (this.promise) { this.cancelPromise(); }
+        this.cancelPromise();
 
         this.results    = null;
         this.activeIdx  = -1;
@@ -102,171 +102,171 @@
 
     /* Fired when the search input is changed */
     debounceExprChange() {
+      this.cancelPromise();
       if (timeout) { this.$timeout.cancel(timeout); }
       timeout = this.$timeout(() => {
         this.changeExpression();
-      }, 300);
+      }, 500);
     }
 
     /* Displays appropriate autocomplete suggestions */
     changeExpression() {
-       this.activeIdx     = -1;
-       this.results       = null;
-       this.focusInput    = false;
-       this.loadingValues = false;
-       this.loadingError  = false;
+      this.activeIdx     = -1;
+      this.results       = null;
+      this.focusInput    = false;
+      this.loadingValues = false;
+      this.loadingError  = false;
 
-       // if the cursor is at a space
-       let spaceCP = (this.caretPos > 0 &&
-         this.caretPos === this.$rootScope.expression.length &&
-         this.$rootScope.expression[this.caretPos - 1] === ' ');
+      // if the cursor is at a space
+      let spaceCP = (this.caretPos > 0 &&
+        this.caretPos === this.$rootScope.expression.length &&
+        this.$rootScope.expression[this.caretPos - 1] === ' ');
 
-       let end    = this.caretPos;
-       let endLen = this.$rootScope.expression.length;
-       for (end; end < endLen; ++end) {
-         if (this.$rootScope.expression[end] === ' ') {
-           break;
-         }
-       }
+      let end    = this.caretPos;
+      let endLen = this.$rootScope.expression.length;
+      for (end; end < endLen; ++end) {
+        if (this.$rootScope.expression[end] === ' ') {
+          break;
+        }
+      }
 
-       let currentInput = this.$rootScope.expression.substr(0, end);
-       tokens = ExpressionController.splitExpression(currentInput);
+      let currentInput = this.$rootScope.expression.substr(0, end);
+      tokens = ExpressionController.splitExpression(currentInput);
 
-       // add the space to the tokens
-       if (spaceCP) { tokens.push(' '); }
+      // add the space to the tokens
+      if (spaceCP) { tokens.push(' '); }
 
-       let lastToken = tokens[tokens.length - 1];
+      let lastToken = tokens[tokens.length - 1];
 
-       // display fields
-       if (tokens.length <= 1) {
-         this.results = ExpressionController.findMatch(lastToken, this.fields);
-         return;
-       }
+      // display fields
+      if (tokens.length <= 1) {
+        this.results = ExpressionController.findMatch(lastToken, this.fields);
+        return;
+      }
 
-       // display operators (depending on field type)
-       let token = tokens[tokens.length - 2];
-       let field = this.fields[token];
-       if (field) {
-         if (field.type === 'integer') {
-           // if at a space, show all operators
-           if(tokens[tokens.length - 1] === ' ') {
-             this.results = operations;
-           } else {
-             this.results = ExpressionController.findMatch(lastToken, operations);
-           }
-         } else { this.results = ['!=', '==']; }
+      // display operators (depending on field type)
+      let token = tokens[tokens.length - 2];
+      let field = this.fields[token];
+      if (field) {
+        if (field.type === 'integer') {
+          // if at a space, show all operators
+          if(tokens[tokens.length - 1] === ' ') {
+            this.results = operations;
+          } else {
+            this.results = ExpressionController.findMatch(lastToken, operations);
+          }
+        } else { this.results = ['!=', '==']; }
 
-         return;
-       }
+        return;
+      }
 
-       // save the operator token for possibly adding 'EXISTS!' result
-       let operatorToken = token;
+      // save the operator token for possibly adding 'EXISTS!' result
+      let operatorToken = token;
 
-       token = tokens[tokens.length - 3];
-       field = this.fields[token];
+      token = tokens[tokens.length - 3];
+      field = this.fields[token];
 
-       if (!field) {
-         if (/^[!<=>]/.test(token)) {
-           // if at a space, show all operators
-           if(tokens[tokens.length - 1] === ' ') {
-             this.results = ['&&', '||'];
-           } else {
-             this.results = ExpressionController.findMatch(lastToken, ['&&', '||']);
-           }
-         } else {
-           this.results = ExpressionController.findMatch(lastToken, this.fields);
-         }
+      if (!field) {
+        if (/^[!<=>]/.test(token)) {
+          // if at a space, show all operators
+          if(tokens[tokens.length - 1] === ' ') {
+            this.results = ['&&', '||'];
+          } else {
+            this.results = ExpressionController.findMatch(lastToken, ['&&', '||']);
+          }
+        } else {
+          this.results = ExpressionController.findMatch(lastToken, this.fields);
+        }
 
-         return;
-       }
+        return;
+      }
 
-       // display values
-       // autocomplete country values
-       if (/^(country)/.test(token)) {
-         this.loadingValues = true;
-         this.FieldService.getCountryCodes()
-           .then((result) => {
-             this.loadingValues = false;
-             this.results = ExpressionController.findMatch(lastToken, result);
-             this.addExistsItem(lastToken, operatorToken);
-           })
-           .catch((error) => {
-             this.loadingValues = false;
-             this.loadingError  = error;
-           });
+      // regular expressions start with a forward slash
+      // lists start with an open square bracket
+      // don't issue query for these types of values
+      if (/^(\/|\[)/.test(lastToken)) { return; }
 
-         return;
-       }
+      // display values
+      // autocomplete country values
+      if (/^(country)/.test(token)) {
+        this.loadingValues = true;
+        this.FieldService.getCountryCodes()
+          .then((result) => {
+            this.loadingValues = false;
+            this.results = ExpressionController.findMatch(lastToken, result);
+            this.addExistsItem(lastToken, operatorToken);
+          })
+          .catch((error) => {
+            this.loadingValues = false;
+            this.loadingError  = error;
+          });
 
-       // autocomplete http.hasheader values after 1 char
-       if (lastToken.trim().length >= 1) {
-         if (/^(tags|http.hasheader)/.test(token)) {
-           // if there's a request in progress, cancel it
-           if (this.promise) { this.cancelPromise(); }
+        return;
+      }
 
-           this.loadingValues = true;
+      // autocomplete http.hasheader values after 1 char
+      if (lastToken.trim().length >= 1) {
+        if (/^(tags|http.hasheader)/.test(token)) {
+          this.loadingValues = true;
 
-           this.promise = this.FieldService.getHasheaderValues({
-             type:token, filter:lastToken
-           });
+          this.promise = this.FieldService.getHasheaderValues({
+            type:token, filter:lastToken
+          });
 
-           this.promise.then((result) => {
-             this.promise         = null;
-             if (result) {
-               this.loadingValues = false;
-               this.results       = result;
-               this.addExistsItem(lastToken, operatorToken);
-             }
-           }).catch((error) => {
-             this.promise       = null;
-             this.loadingValues = false;
-             this.loadingError  = error;
-           });
+          this.promise.then((result) => {
+            this.promise         = null;
+            if (result) {
+              this.loadingValues = false;
+              this.results       = result;
+              this.addExistsItem(lastToken, operatorToken);
+            }
+          }).catch((error) => {
+            this.promise       = null;
+            this.loadingValues = false;
+            this.loadingError  = error;
+          });
 
-           return;
-         }
-       }
+          return;
+        }
+      }
 
-       // autocomplete other values after 2 chars
-       if (lastToken.trim().length >= 2) {
-         let params = { // build parameters for getting value(s)
-           autocomplete : true,
-           field        : field.dbField
-         };
+      // autocomplete other values after 2 chars
+      if (lastToken.trim().length >= 2) {
+        let params = { // build parameters for getting value(s)
+          autocomplete : true,
+          field        : field.dbField
+        };
 
-         if (this.$routeParams && this.$routeParams.date) {
-           params.date = this.$routeParams.date;
-         } else if (this.$routeParams.startTime && this.$routeParams.stopTime) {
-           params.startTime = this.$routeParams.startTime;
-           params.stopTime  = this.$routeParams.stopTime;
-         }
+        if (this.$routeParams && this.$routeParams.date) {
+          params.date = this.$routeParams.date;
+        } else if (this.$routeParams.startTime && this.$routeParams.stopTime) {
+          params.startTime = this.$routeParams.startTime;
+          params.stopTime  = this.$routeParams.stopTime;
+        }
 
-         if (field.type === 'ip') {
-           params.expression = token + '==' + lastToken;
-         } else {
-           params.expression = token + '==' + lastToken + '*';
-         }
+        if (field.type === 'ip') {
+          params.expression = token + '==' + lastToken;
+        } else {
+          params.expression = token + '==' + lastToken + '*';
+        }
 
-         // if there's a request in progress, cancel it
-         if (this.promise) { this.cancelPromise(); }
+        this.loadingValues = true;
 
-         this.loadingValues = true;
+        this.promise = this.FieldService.getValues(params);
 
-         this.promise = this.FieldService.getValues(params);
-
-         this.promise.then((result) => {
-           this.promise         = null;
-           if (result) {
-             this.loadingValues = false;
-             this.results       = result;
-             this.addExistsItem(lastToken, operatorToken);
-           }
-         }).catch((error) => {
-           this.promise       = null;
-           this.loadingValues = false;
-           this.loadingError  = error;
-         });
-       }
+        this.promise.then((result) => {
+          this.promise         = null;
+          if (result) {
+            this.loadingValues = false;
+            this.results       = result;
+            this.addExistsItem(lastToken, operatorToken);
+          }
+        }).catch((error) => {
+          this.promise       = null;
+          this.loadingValues = false;
+          this.loadingError  = error;
+        });
+      }
      }
 
     /**
@@ -306,7 +306,7 @@
       // always check for escape before anything else
       if (event.keyCode === 27) {
         // if there's a request in progress, cancel it
-        if (this.promise) { this.cancelPromise(); }
+        this.cancelPromise();
 
         this.loadingValues = false;
         this.loadingError  = false;
@@ -319,7 +319,7 @@
       // if there are no results, just check for enter click to remove typeahead
       if (!this.results || this.results.length === 0) {
         if (event.keyCode === 13) {
-          if (this.promise) { this.cancelPromise(); }
+          this.cancelPromise();
 
           this.loadingValues = false;
           this.loadingError  = false;
@@ -358,10 +358,12 @@
 
     /* aborts a pending promise */
     cancelPromise() {
-      this.promise.abort();
-      this.promise = null;
+      if (this.promise) {
+        this.promise.abort();
+        this.promise = null;
 
-      this.loadingValues = false;
+        this.loadingValues = false;
+      }
     }
 
     /**
