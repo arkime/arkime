@@ -156,6 +156,29 @@
 
         <hr>
 
+        <!-- session sort -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Sort Sessions By</label>
+          <div class="col-sm-9">
+            <select class="form-control short-control" ng-model="$ctrl.settings.sortColumn"
+              ng-change="$ctrl.update();">
+              <option value="last">Last Used</option>
+              <option ng-repeat="field in ::$ctrl.columns"
+                value="{{::field.dbField}}" ng-if="!field.unsortable">
+                {{::field.friendlyName}}
+              </option>
+            </select>
+            <div class="btn-group margined-left-xxlg" ng-if="$ctrl.settings.sortColumn !== 'last'">
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.sortDirection"
+                uib-btn-radio="'asc'" ng-change="$ctrl.update()">asc</label>
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.sortDirection"
+                uib-btn-radio="'desc'" ng-change="$ctrl.update()">desc</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
         <!-- default spi graph -->
         <div class="form-group" ng-if="$ctrl.fields">
           <label class="col-sm-3 control-label">Default SPI Graph</label>

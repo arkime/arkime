@@ -11,7 +11,7 @@
 
   const defaultTableState = {
     order         : [['fp', 'asc']],
-    visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+    visibleHeaders: ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
   };
 
   let customCols = require('json!./custom.columns.json');
@@ -63,8 +63,6 @@
       this.stickySessions = [];     // array of open sessions
 
       this.getTableState(); // IMPORTANT: kicks off the initial search query!
-
-      this.getUserSettings();
 
       this.getCustomColumnConfigurations();
 
@@ -199,6 +197,15 @@
       this.UserService.getSettings()
          .then((settings) => {
            this.settings = settings;
+
+           // if settings has custom sort field, apply it
+           if (this.settings && this.settings.sortColumn !== 'last') {
+             this.query.sorts = [[this.settings.sortColumn, this.settings.sortDirection]];
+             this.tableState.order = this.query.sorts;
+           }
+
+           // IMPORTANT: kicks off the initial search query
+           this.getData();
          })
          .catch((error) => {
            this.error = error;
@@ -225,8 +232,7 @@
 
                 this.setupFields();
 
-                // IMPORTANT: kicks off the initial search query
-                this.getData();
+                this.getUserSettings();
               }).catch((error) => { this.error = error; });
          }).catch((error) => { this.error = error; });
     }

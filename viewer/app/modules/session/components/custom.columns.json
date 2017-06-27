@@ -6,6 +6,7 @@
     "group": "general",
     "friendlyName": "Info",
     "help": "Information",
+    "unsortable": true,
     "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
   },
   "src": {

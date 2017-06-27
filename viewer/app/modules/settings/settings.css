@@ -8,7 +8,7 @@ moloch-settings .label-md {
   font-size: 85%;
 }
 
-moloch-settings input.short-control {
+moloch-settings input.short-control,select.short-control {
   width   : 50%;
   display : inline-block;
 }
