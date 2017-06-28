@@ -62,7 +62,7 @@
      * @param {string} op     The relational operator
      * @param {object} $event The click event that triggered this function
      */
-    fieldClick(field, value, op, $event) {
+    fieldClick(field, value, op, andor, $event) {
       $event.preventDefault();
       $event.stopPropagation();
 
@@ -77,7 +77,7 @@
 
       let fullExpression = `${field} ${op} ${value}`;
 
-      this.$scope.$emit('add:to:search', { expression: fullExpression });
+      this.$scope.$emit('add:to:search', { expression: fullExpression, op: andor });
     }
 
     /**

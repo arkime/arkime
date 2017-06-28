@@ -78,6 +78,8 @@ session-field ul.session-field-dropdown {
   visibility      : hidden;
   max-width       : 200%;
   min-width       : 160px;
+  max-height      : 300px;
+  overflow-y      : auto;
   font-size       : 1.25rem;
   position        : absolute;
   z-index         : 1000;
