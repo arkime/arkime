@@ -79,6 +79,16 @@
     </button>
     <ul class="dropdown-menu" uib-dropdown-menu role="menu">
       <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.createView()"
+        uib-tooltip="Create a new view"
+        tooltip-placement="left">
+        <div><a>
+          <span class="fa fa-plus-circle"></span>&nbsp;
+          New View
+        </a></div>
+      </li>
+      <li class="divider"></li>
+      <li role="menuitem" class="cursor-pointer"
         ng-click="$ctrl.setView(null)"
         ng-class="{'active':!$ctrl.view}"
         uib-tooltip="Apply no view"
@@ -102,16 +112,6 @@
             </button>
           </div>
         </div>
-      </li>
-      <li class="divider"></li>
-      <li role="menuitem" class="cursor-pointer"
-        ng-click="$ctrl.createView()"
-        uib-tooltip="Create a new view"
-        tooltip-placement="left">
-        <div><a>
-          <span class="fa fa-plus-circle"></span>&nbsp;
-          Create View
-        </a></div>
       </li>
     </ul>
   </div> <!-- /views dropdown -->

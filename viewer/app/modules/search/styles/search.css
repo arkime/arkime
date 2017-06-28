@@ -27,7 +27,9 @@ moloch-search .action-form-separator {
 
 /* dropdown menus in search bar */
 moloch-search .dropdown-menu {
-  min-width: 200px;
+  min-width : 200px;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 moloch-search .dropdown-menu > li > div {
