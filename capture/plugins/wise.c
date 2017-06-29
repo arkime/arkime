@@ -210,9 +210,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
     WiseRequest_t *request = uw;
     int             i;
 
-    MOLOCH_LOCK(iRequest);
     inflight -= request->numItems;
-    MOLOCH_UNLOCK(iRequest);
 
     BSB_INIT(bsb, data, data_len);
 
