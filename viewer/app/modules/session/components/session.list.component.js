@@ -198,8 +198,10 @@
          .then((settings) => {
            this.settings = settings;
 
-           // if settings has custom sort field, apply it
-           if (this.settings && this.settings.sortColumn !== 'last') {
+           // if settings has custom sort field and the custom sort field
+           // exists in the table headers, apply it
+           if (this.settings && this.settings.sortColumn !== 'last' &&
+              this.tableState.visibleHeaders.indexOf(this.settings.sortColumn) > -1) {
              this.query.sorts = [[this.settings.sortColumn, this.settings.sortDirection]];
              this.tableState.order = this.query.sorts;
            }
