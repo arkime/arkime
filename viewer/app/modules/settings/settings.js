@@ -129,14 +129,19 @@
             let field = this.fields[i];
             this.fieldsMap[field.dbField] = field;
           }
-        });
 
-      this.SessionService.getTableState()
-        .then((response) => {
-          this.setupColumns(response.data.visibleHeaders);
-        })
-        .catch(() => {
-          this.setupColumns(['fp','lp','src','p1','dst','p2','pa','dbby','no','info']);
+          this.SessionService.getTableState()
+             .then((response) => {
+               this.setupColumns(response.data.visibleHeaders);
+               // if the sort column setting does not match any of the visible
+               // headers, set the sort column setting to last
+               if (response.data.visibleHeaders.indexOf(this.settings.sortColumn === -1)) {
+                 this.settings.sortColumn = 'last';
+               }
+             })
+             .catch(() => {
+               this.setupColumns(['fp','lp','src','p1','dst','p2','pa','dbby','no','info']);
+             });
         });
     }
 
