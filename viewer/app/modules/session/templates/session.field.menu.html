@@ -1,4 +1,4 @@
-<ul class="session-field-dropdown" ng-if="$ctrl.isopen"
+<ul class="session-field-dropdown dropdown-menu" ng-if="$ctrl.isopen"
   ng-class="::{'pull-left':$ctrl.pullLeft, 'pull-right':!$ctrl.pullLeft}">
   <div>
     <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '==', '&&', $event)"
@@ -8,6 +8,8 @@
         {{::parsed.value}}
       </a>
     </li>
+  </div>
+  <div>
     <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '!=', '&&', $event)"
       title="&& {{::$ctrl.expr}} != {{::parsed.value}}">
       <a href>
@@ -62,6 +64,7 @@
       </a>
     </li>
   </div>
+  <div><li class="divider"></li></div>
   <div>
     <li ng-repeat="item in ::$ctrl.menuItems track by $index"
       title="{{::item.name}} {{::item.value}}">
@@ -73,7 +76,19 @@
   <div ng-if="::$ctrl.sessionBtn">
     <li title="Open in Sessions with {{::$ctrl.expr}} == {{::parsed.value}} added to the search expression"
       ng-click="$ctrl.goToSessions($ctrl.expr, parsed.queryVal, '==', $event)">
-      <a href>Open in Sessions</a>
+      <a href>
+        <span class="fa fa-folder-open-o"></span>&nbsp;
+        Sessions
+      </a>
+    </li>
+  </div>
+  <div>
+    <li title="Open in Sessions in new tab with && {{::$ctrl.expr}} == {{::parsed.value}} added to the search expression"
+      ng-click="$ctrl.newTabSessions($ctrl.expr, parsed.queryVal, '==', $event)">
+      <a href>
+        <span class="fa fa-external-link-square"></span>&nbsp;
+        Sessions New Tab
+      </a>
     </li>
   </div>
   <div>
@@ -81,7 +96,7 @@
       ngclipboard-success="$ctrl.isopen = false" ngclipboard>
       <a href>
         <span class="fa fa-clipboard"></span>&nbsp;
-        <strong>Copy</strong>
+        Copy value
       </a>
     </li>
   </div>

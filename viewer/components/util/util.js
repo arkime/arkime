@@ -239,11 +239,12 @@
      * $filter('buildUrl')('sessions')
      * '{{'sessions' | buildUrl}}'
      *
-     * @param {string} link The base url to send the user to
+     * @param {string} link             The base url to send the user to
+     * @param {string} additionalExpr   Expression to add to query
      */
      .filter('buildUrl', ['$rootScope','$routeParams',
       function($rootScope, $routeParams) {
-        return function (link) {
+        return function (link, additionalExpr) {
           let newUrl = link;
           let paramLen = Object.keys($routeParams).length;
           let count = 1;
@@ -266,7 +267,15 @@
           if ($rootScope.expression) {
             if (paramLen > 0) { newUrl += '&'; }
             else { newUrl += '?'; }
-            newUrl += `expression=${encodeURIComponent($rootScope.expression)}`;
+
+            let expression = $rootScope.expression;
+            if (additionalExpr) { expression += ` && ${additionalExpr}`; }
+
+            newUrl += `expression=${encodeURIComponent(expression)}`;
+          } else if (additionalExpr) {
+            if (paramLen > 0) { newUrl += '&'; }
+            else { newUrl += '?'; }
+            newUrl += `expression=${encodeURIComponent(additionalExpr)}`;
           }
 
           return newUrl;

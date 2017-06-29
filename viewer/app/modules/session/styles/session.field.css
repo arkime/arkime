@@ -90,12 +90,17 @@ session-field ul.session-field-dropdown {
   border-radius   : 4px;
   background-color: var(--color-white);
   border          : 1px solid var(--color-gray-light);
+  margin-top      : 0;
 
           background-clip: padding-box;
   -webkit-background-clip: padding-box;
 
           box-shadow: 0 6px 12px -3px #333;
   -webkit-box-shadow: 0 6px 12px -3px #333;
+}
+
+session-field ul.session-field-dropdown div .divider {
+  margin: 2px 0;
 }
 
 session-field ul.session-field-dropdown.pull-right {
