@@ -62,6 +62,36 @@
           scope.state.open = !scope.state.open;
         };
 
+        /* Sorting */
+        scope.sortOrder = 'desc';
+        /* Orders the sessions by start or stop time
+         * Triggered when sortBy/sortOrder is changed and when a session
+         * is added to the sticky sessions list*/
+        scope.sort = function() {
+          if (scope.sortBy) {
+            scope.sessions = scope.sessions.sort(function (a, b) {
+              let result;
+              if (scope.sortOrder === 'desc') {
+                result = b[scope.sortBy] - a[scope.sortBy];
+              } else {
+                result = a[scope.sortBy] - b[scope.sortBy];
+              }
+              return result;
+            });
+          }
+        };
+        /* Orders the sessions ascending or descending
+         * Triggered when sortOrder is changed */
+        scope.toggleSortOrder = function() {
+          if (scope.sortOrder === 'asc') {
+            scope.sortOrder = 'desc';
+          } else {
+            scope.sortOrder = 'asc';
+          }
+
+          scope.sort();
+        };
+
 
         /* LISTEN! */
         // watch for session array to change -> bounces button
@@ -78,6 +108,8 @@
             $timeout(() => {
               element.removeClass('bounce');
             }, 1000);
+
+            scope.sort();
           } else {
             if (!scope.sessions || scope.sessions.length <= 0) {
               scope.state.open = false;

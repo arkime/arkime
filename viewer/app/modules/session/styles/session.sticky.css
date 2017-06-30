@@ -20,6 +20,11 @@ sticky-sessions .sticky-session-btn {
   color           : #FFFFFF;
 }
 
+sticky-sessions .sort-by-select {
+  width : 90px;
+  height: 31px;
+}
+
 sticky-sessions .sticky-session-detail {
   overflow-y      : auto;
   position        : fixed;
@@ -89,7 +94,6 @@ sticky-sessions .sticky-session-detail .list-group-item:first-child {
   padding                 : 12px 8px;
   background-color        : var(--color-gray-lighter);
 }
-
 
 /* bounces item to the left */
 @keyframes bounce {
