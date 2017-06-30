@@ -1,3 +1,18 @@
+/* navbar with pagination */
+session form.sessions-nav {
+  z-index         : 999;
+  position        : fixed;
+  top             : 115px;
+  left            : 0;
+  right           : 0;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
 /* sessions table -------------------------- */
 session .table-responsive {
   overflow: visible;

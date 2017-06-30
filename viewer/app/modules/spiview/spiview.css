@@ -1,5 +1,5 @@
 /* loading navbar ------------------ */
-moloch-spiview form.loading-nav {
+moloch-spiview form.info-nav {
   z-index         : 999;
   position        : fixed;
   top             : 115px;
@@ -11,6 +11,10 @@ moloch-spiview form.loading-nav {
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
      -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
           box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+moloch-spiview form.info-nav .info-nav-loading {
+  margin-top: -3px;
 }
 
 

@@ -122,6 +122,7 @@ body {
 .margin-for-main-navbar         { margin-top: 36px; }
 .margin-for-search-navbar       { margin-top: 85px; }
 .margin-for-main-and-sub-navbar { margin-top: 100px; }
+.margin-for-main-search-sub-nav { margin-top: 130px; }
 
 
 /* padding */

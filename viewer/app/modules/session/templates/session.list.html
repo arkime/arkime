@@ -7,8 +7,18 @@
     fields="$ctrl.headers">
   </moloch-search>
 
+  <form class="sessions-nav">
+    <div class="form-inline">
+      <moloch-pagination length="$ctrl.query.length"
+        records-total="$ctrl.sessions.recordsTotal"
+        records-filtered="$ctrl.sessions.recordsFiltered"
+        current-page="$ctrl.currentPage"
+        start="$ctrl.query.start"></moloch-pagination>
+    </div>
+  </form>
+
   <!-- session visualizations -->
-  <div class="row margin-for-search-navbar">
+  <div class="row margin-for-main-search-sub-nav">
     <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
       graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true"
       timezone="{{::$ctrl.settings.timezone}}">
@@ -16,13 +26,6 @@
   </div>
 
   <div class="margined-top-lg">
-
-    <!-- top pagination controls -->
-    <moloch-pagination length="$ctrl.query.length"
-      records-total="$ctrl.sessions.recordsTotal"
-      records-filtered="$ctrl.sessions.recordsFiltered"
-      current-page="$ctrl.currentPage"
-      start="$ctrl.query.start"></moloch-pagination>
 
     <!-- open sessions -->
     <sticky-sessions ng-if="$ctrl.stickySessions.length"
@@ -307,13 +310,5 @@
     </div> <!-- /no results -->
 
   </div>
-
-  <!-- bottom pagination controls -->
-  <moloch-pagination ng-if="!$ctrl.loading && !$ctrl.error"
-    length="$ctrl.query.length"
-    records-total="$ctrl.sessions.recordsTotal"
-    records-filtered="$ctrl.sessions.recordsFiltered"
-    current-page="$ctrl.currentPage"
-    start="$ctrl.query.start"></moloch-pagination>
 
 </div>

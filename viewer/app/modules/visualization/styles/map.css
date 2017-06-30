@@ -1,6 +1,6 @@
 moloch-map .moloch-map-container #moloch-map {
   z-index       : 996;
-  height        : 180px;
+  height        : 160px;
   width         : 100%;
   margin-bottom : -25px;
 }

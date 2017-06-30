@@ -41,11 +41,11 @@ moloch-spigraph .spi-graph-item:nth-child(odd) {
 }
 
 moloch-spigraph .spi-graph-item .moloch-map-container {
-  margin-top: -25px;
+  margin-top: -10px;
 }
 
 moloch-spigraph .spi-graph-item .moloch-map-container .btn-fw {
-  margin-top: -25px;
+  margin-top: -10px;
 }
 
 moloch-spigraph .spi-graph-item .session-graph-btn-container {

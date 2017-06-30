@@ -3,15 +3,24 @@
   <moloch-search num-matching-sessions="$ctrl.filtered"
     timezone="$ctrl.settings.timezone"></moloch-search>
 
-  <form class="loading-nav" ng-if="$ctrl.dataLoading">
-    <div class="form-inline" ng-if="$ctrl.dataLoading">
-      <span class="fa fa-spinner fa-lg fa-spin"></span>&nbsp;
-      <em>Loading SPI data</em>
-      <a class="btn btn-warning btn-sm pull-right"
-        ng-click="$ctrl.cancelLoading()">
-        <span class="fa fa-ban"></span>&nbsp;
-        cancel
-      </a>
+  <form class="info-nav">
+    <div class="form-inline">
+      <div ng-if="!$ctrl.dataLoading"
+        class="small margined-top-sm margined-bottom text-theme-accent">
+        <strong>
+          Showing {{$ctrl.filtered | number}} entries filtered from
+          {{$ctrl.total | number}} total entries
+        </strong>
+      </div>
+      <div ng-if="$ctrl.dataLoading" class="info-nav-loading">
+        <span class="fa fa-spinner fa-lg fa-spin"></span>&nbsp;
+        <em>Loading SPI data</em>
+        <a class="btn btn-warning btn-sm pull-right"
+          ng-click="$ctrl.cancelLoading()">
+          <span class="fa fa-ban"></span>&nbsp;
+          cancel
+        </a>
+      </div>
     </div>
   </form>
   <form class="loading-nav" ng-if="$ctrl.staleData && !$ctrl.dataLoading">
@@ -26,7 +35,7 @@
   </form>
 
   <!-- graph/map visualizations -->
-  <div class="row margin-for-search-navbar">
+  <div class="row margin-for-main-search-sub-nav">
     <moloch-graph-map ng-if="$ctrl.mapData && $ctrl.graphData"
       graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true"
       timezone="{{::$ctrl.settings.timezone}}">
@@ -38,11 +47,6 @@
       <span ng-if="$ctrl.canceled">(request was canceled)</span>
     </div>
   </div>
-
-  <label class="label label-theme-primary" ng-if="!$ctrl.error && $ctrl.filtered !== undefined">
-    Showing {{$ctrl.filtered | number}} entries filtered from
-    {{$ctrl.total | number}} total entries
-  </label>
 
   <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
 
