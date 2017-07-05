@@ -602,7 +602,7 @@
 
       it('should listen for "change:search" event', function() {
         let newParameters = '?date=-1&facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
-        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+        $httpBackend.whenGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
         sub_scope.$emit('change:search', {
@@ -622,7 +622,7 @@
 
       it('should listen for "change:pagination" event', function() {
         let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=200&order=fp:asc&start=200';
-        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+        $httpBackend.whenGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
         sub_scope.$emit('change:pagination',

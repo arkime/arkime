@@ -297,6 +297,14 @@ a.no-decoration { text-decoration: none; }
   flex-direction  : column;
 }
 
+.vertical-center {
+  min-height      : 40vh;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  flex-direction  : column;
+}
+
 
 /* displays large text for important information
  * note: must contain an inner div with the text

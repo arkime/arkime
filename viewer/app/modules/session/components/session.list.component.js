@@ -112,7 +112,7 @@
         this.query.view = args.view;
 
         // don't issue search when the first change:search event is fired
-        if (!initialized || this.loading) { initialized = true; return; }
+        if (!initialized || this.loading) { return; }
 
         this.getData();
       });
@@ -132,8 +132,7 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      initialized   = false;
-      holdingClick  = false;
+      holdingClick = false;
 
       if (timeout) { this.$timeout.cancel(timeout); }
     }
@@ -207,7 +206,13 @@
            }
 
            // IMPORTANT: kicks off the initial search query
-           this.getData();
+           if (!this.settings.manualQuery || initialized) { this.getData(); }
+           else {
+             this.loading  = false;
+             this.error    = 'Now, issue a query!';
+           }
+
+           initialized = true;
          })
          .catch((error) => {
            this.error = error;
