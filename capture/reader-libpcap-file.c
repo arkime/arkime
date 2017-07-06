@@ -28,6 +28,7 @@ extern MolochConfig_t        config;
 
 static pcap_t               *pcap;
 static FILE                 *offlineFile = 0;
+static int                  pkts_to_read;
 
 extern void                 *esServer;
 LOCAL  MolochStringHead_t    monitorQ;
@@ -186,6 +187,7 @@ int reader_libpcapfile_next()
 
         LOG ("Processing %s", fullfilename);
         pcap = pcap_open_offline(fullfilename, errbuf);
+        pkts_to_read = config.pcapFilePktsToRead;
 
         if (!pcap) {
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
@@ -396,9 +398,26 @@ gboolean reader_libpcapfile_read()
     if (moloch_packet_outstanding() > (int32_t)(config.maxPacketsInQueue/3)) {
         return TRUE;
     }
-
     moloch_packet_batch_init(&batch);
-    int r = pcap_dispatch(pcap, 5000, reader_libpcapfile_pcap_cb, NULL);
+    int pkts_to_read_this_time;
+    //If this config value wasn't set then read to the end of the file
+    if(config.pcapFilePktsToRead == 0){
+        pkts_to_read_this_time = 5000;
+        pkts_to_read = 5000;
+    //Otherwise read --pcapFilePktsToRead number of packets
+    }else{
+        if(pkts_to_read >= 5000){
+            pkts_to_read_this_time = 5000;
+            pkts_to_read -= 5000;
+        }else{
+            pkts_to_read_this_time = pkts_to_read;
+            pkts_to_read = 0;
+        }
+    }
+    int r = pcap_dispatch(pcap, pkts_to_read_this_time, reader_libpcapfile_pcap_cb, NULL);
+    if(pkts_to_read == 0){
+        r = 0;
+    }
     moloch_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
