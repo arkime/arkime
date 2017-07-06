@@ -156,6 +156,21 @@
 
         <hr>
 
+        <!-- issue query on initial page load -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Issue Query on Page Load</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.manualQuery"
+                uib-btn-radio="" ng-change="$ctrl.update()">yes</label>
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.manualQuery"
+                uib-btn-radio="true" ng-change="$ctrl.update()">no</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
         <!-- session sort -->
         <div class="form-group">
           <label class="col-sm-3 control-label">Sort Sessions By</label>

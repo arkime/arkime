@@ -220,7 +220,7 @@
               </div> <!-- /column dropdown menu -->
 
               <!-- sortable column -->
-              <span ng-if="::((header.exp || header.sortBy) && header.dbField !== 'info')"
+              <span ng-if="::((header.exp || header.sortBy) && !header.unsortable)"
                 ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
                 ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
                 class="cursor-pointer">
