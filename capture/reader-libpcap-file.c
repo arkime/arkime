@@ -404,7 +404,7 @@ gboolean reader_libpcapfile_read()
     if(config.pcapFilePktsToRead == 0){
         pkts_to_read_this_time = 5000;
         pkts_to_read = 5000;
-    //Otherwise read --pcapFilePktsToRead number of packets
+    //Otherwise read --pktcnt number of packets
     }else{
         if(pkts_to_read >= 5000){
             pkts_to_read_this_time = 5000;
