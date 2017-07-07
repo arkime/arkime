@@ -87,6 +87,10 @@
 
   <div class="container-fluid">
 
+    <span class="fa fa-lg fa-question-circle-o pull-right margined-top-lg cursor-help"
+      uib-tooltip="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing."
+      tooltip-placement="left"></span>
+
     <uib-tabset ng-if="!$ctrl.error">
 
       <uib-tab index="0" heading="Nodes" select="$ctrl.selectTab(0)">
@@ -114,7 +118,7 @@
           </div>
 
           <!-- stats graphs -->
-          <div uib-accordion-group class="panel-default"
+          <div uib-accordion-group class="panel-default" id="statsGraphPanel"
             is-open="$ctrl.graphsOpen">
             <uib-accordion-heading>
               <div ng-click="$ctrl.toggleGraphSection()">
@@ -123,11 +127,11 @@
                   ng-class="{'fa-minus':$ctrl.graphsOpen, 'fa-plus':!$ctrl.graphsOpen}"></span>
               </div>
             </uib-accordion-heading>
-            <div id="statsGraph"></div>
+            <div id="statsGraph" style="width: 1440px;"></div>
           </div> <!-- /stats graphs -->
 
           <!-- node stats table -->
-          <div uib-accordion-group class="panel-default"
+          <div uib-accordion-group class="panel-default" id="nodeStatsPanel"
             is-open="$ctrl.nodeStatsOpen">
             <uib-accordion-heading>
               Node Stats
@@ -177,7 +181,7 @@
               </tr>
               <tr ng-repeat-end ng-show="$ctrl.expandedNodeStats[stat.id]">
                 <td colspan="{{::$ctrl.columns.length}}">
-                  <div id="statsGraph-{{stat.id}}">
+                  <div id="statsGraph-{{stat.id}}" style="width: 1440px;">
                   </div>
                 </td>
               </tr>

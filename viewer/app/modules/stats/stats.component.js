@@ -63,14 +63,14 @@
 
       // build colors array from css variables
       let styles = window.getComputedStyle(document.body);
-      let primaryLighter  = styles.getPropertyValue('--color-primary-lighter').trim();
-      let primaryLight    = styles.getPropertyValue('--color-primary-light').trim();
-      let primary         = styles.getPropertyValue('--color-primary').trim();
-      let primaryDark     = styles.getPropertyValue('--color-primary-dark').trim();
-      let secondaryLighter= styles.getPropertyValue('--color-tertiary-lighter').trim();
-      let secondaryLight  = styles.getPropertyValue('--color-tertiary-light').trim();
-      let secondary       = styles.getPropertyValue('--color-tertiary').trim();
-      let secondaryDark   = styles.getPropertyValue('--color-tertiary-dark').trim();
+      let primaryLighter  = styles.getPropertyValue('--color-primary-light').trim();
+      let primaryLight    = styles.getPropertyValue('--color-primary').trim();
+      let primary         = styles.getPropertyValue('--color-primary-dark').trim();
+      let primaryDark     = styles.getPropertyValue('--color-primary-darker').trim();
+      let secondaryLighter= styles.getPropertyValue('--color-tertiary-light').trim();
+      let secondaryLight  = styles.getPropertyValue('--color-tertiary').trim();
+      let secondary       = styles.getPropertyValue('--color-tertiary-dark').trim();
+      let secondaryDark   = styles.getPropertyValue('--color-tertiary-darker').trim();
       this.colors = [primaryDark, primary, primaryLight, primaryLighter,
                      secondaryLighter, secondaryLight, secondary, secondaryDark];
 
@@ -317,7 +317,17 @@
 
 
       context.on('focus', function(i) {
-        d3.selectAll('.value').style('right', i === null ? null : context.size() - i + 'px');
+        d3.selectAll('#statsGraph .value').style('right', i === null ? null : context.size() - i + 'px');
+        let panel = $('#statsGraphPanel .panel-body');
+        if (panel && panel.length) {
+          let scrollPx = panel[0].scrollLeft;
+          if (scrollPx) {
+            scrollPx = scrollPx - 12;
+            d3.selectAll('#statsGraph .rule').style('left', '-' + scrollPx + 'px');
+          } else {
+            d3.selectAll('#statsGraph .rule').style('left', '12px');
+          }
+        }
       });
 
       $('#statsGraph').empty();
@@ -410,7 +420,17 @@
       });
 
       dcontext.on('focus', function(i) {
-        d3.selectAll('.value').style('right', i === null ? null : dcontext.size() - i + 'px');
+        d3.selectAll('#statsGraph-' + id + ' .value').style('right', i === null ? null : dcontext.size() - i + 'px');
+        let panel = $('#nodeStatsPanel .panel-body');
+        if (panel && panel.length) {
+          let scrollPx = panel[0].scrollLeft;
+          if (scrollPx) {
+            scrollPx = scrollPx - 16;
+            d3.selectAll('#statsGraph-' + id + ' .rule').style('left', '-' + scrollPx + 'px');
+          } else {
+            d3.selectAll('#statsGraph-' + id + ' .rule').style('left', '16px');
+          }
+        }
       });
     }
 

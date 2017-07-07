@@ -13,8 +13,9 @@ moloch-stats .panel-title a.accordion-toggle {
   text-decoration : none;
 }
 moloch-stats .panel-body {
-  padding: 0;
-  overflow:hidden;
+  padding   : 0;
+  overflow  : hidden;
+  overflow-x: auto;
 }
 
 moloch-stats #statsGraphOptions {
@@ -77,7 +78,7 @@ moloch-stats .axis line {
 }
 
 moloch-stats .horizon {
-  border-bottom : solid 1px #000;
+  border-bottom : solid 1px var(--color-black);
   overflow      : hidden;
   position      : relative;
 }
@@ -95,8 +96,10 @@ moloch-stats .horizon .title, moloch-stats .horizon .value {
   line-height : 30px;
   margin      : 0 6px;
   position    : absolute;
-  text-shadow : 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-shadow : 0 1px 0 var(--color-white);
+  color       : var(--color-black);
   white-space : nowrap;
+  font-weight : 600;
 }
 
 moloch-stats .horizon .title {
@@ -107,9 +110,15 @@ moloch-stats .horizon .value {
   right: 0;
 }
 
+moloch-stats .rule {
+  position: fixed;
+  z-index : 3;
+  bottom  : 0;
+  top     : 0;
+}
+
 moloch-stats .line {
   background: var(--color-black);
-  opacity   : .2;
-  z-index   : 2;
-  right     : 0;
+  position  : absolute;
+  opacity   : .4;
 }

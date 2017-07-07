@@ -29,6 +29,7 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.loading      = true;
       this.sortField    = 'nodeName';
       this.sortReverse  = false;
 
@@ -91,9 +92,12 @@
 
     /* loads the es stats data and computes the total and average values */
     loadData() {
+      this.loading = true;
+
       this.StatsService.getElasticsearchStats({filter: this.searchStats, sortField: this.sortField, desc: this.sortReverse})
         .then((response) => {
-          this.stats = response; 
+          this.loading  = false;
+          this.stats    = response;
 
           this.averageValues = {};
           this.totalValues = {};
@@ -112,7 +116,8 @@
           }
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
   }
