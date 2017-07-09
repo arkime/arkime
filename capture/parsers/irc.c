@@ -36,7 +36,7 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 irc->ircState &= ~ 0x1;
                 remaining -= (newline - data) +1;
                 data = newline+1;
-                while (*data == 0 && remaining > 0) { // Some irc clients have 0's after new lines
+                while (remaining > 0 && *data == 0) { // Some irc clients have 0's after new lines
                     remaining--;
                     data++;
                 }
