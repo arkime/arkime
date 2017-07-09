@@ -646,11 +646,16 @@ int main(int argc, char **argv)
 
     g_main_loop_run(mainLoop);
 
+    if (!config.dryRun && config.copyPcap) {
+        moloch_writer_exit();
+    }
+
     LOG("Final cleanup");
     moloch_plugins_exit();
     moloch_parsers_exit();
     moloch_db_exit();
     moloch_http_exit();
+    moloch_yara_exit();
     moloch_field_exit();
     moloch_config_exit();
     moloch_rules_exit();
