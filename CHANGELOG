@@ -11,6 +11,7 @@
   - capture - fixed daq building
   - viewer - ES scrolling didn't work (issue #697)
   - easybutton - Upgrade yara, glib, geoip, curl versions
+  - capture - fixed writer crash with --copy (issue #711)
 
 0.18.3 2017/05/25
   - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an

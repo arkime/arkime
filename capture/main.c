@@ -465,11 +465,12 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
-static gboolean firstRun   = TRUE;
+static gboolean readerExit   = TRUE;
+static gboolean writerExit   = TRUE;
 
-// On the first run shutdown reader and stuff
-    if (firstRun) {
-        firstRun = FALSE;
+// On the first run shutdown reader and sessions
+    if (readerExit) {
+        readerExit = FALSE;
         if (moloch_reader_stop)
             moloch_reader_stop();
         moloch_readers_exit();
@@ -478,6 +479,7 @@ static gboolean firstRun   = TRUE;
         return TRUE;
     }
 
+// Wait for all the can quits to signal all clear
     int i;
     for (i = 0; i < canQuitFuncsNum; i++) {
         int val = canQuitFuncs[i]();
@@ -489,6 +491,16 @@ static gboolean firstRun   = TRUE;
         }
     }
 
+// Once all clear stop the writer and wait for all clears again
+    if (writerExit) {
+        writerExit = FALSE;
+        if (!config.dryRun && config.copyPcap) {
+            moloch_writer_exit();
+            return TRUE;
+        }
+    }
+
+// Can quit the main loop now
     g_main_loop_quit(mainLoop);
     return FALSE;
 }
@@ -637,19 +649,14 @@ int main(int argc, char **argv)
     LOG("Final cleanup");
     moloch_plugins_exit();
     moloch_parsers_exit();
-    moloch_yara_exit();
     moloch_db_exit();
     moloch_http_exit();
     moloch_field_exit();
     moloch_config_exit();
     moloch_rules_exit();
+    moloch_yara_exit();
 
     g_main_loop_unref(mainLoop);
-
-    if (!config.dryRun && config.copyPcap) {
-        moloch_writer_exit();
-    }
-
 
     free_args();
     exit(0);
