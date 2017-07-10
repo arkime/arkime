@@ -23,7 +23,7 @@ moloch-spigraph form.spigraph-form .form-inline {
 
 /* fixes to compensate for second fixed position form */
 moloch-spigraph moloch-search {
-  margin-top: -135px;
+  margin-top: -134px;
 }
 
 moloch-spigraph .map-btn {
