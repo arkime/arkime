@@ -9,7 +9,7 @@
   become: true
   become_method: sudo
   vars:
-    - node_version: 4.8.1
+    - node_version: 4.8.3
     - rvm1_rubies:
       - ruby-1.9.3
     - rvm1_user: root

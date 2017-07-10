@@ -86,7 +86,7 @@ chmod 0700 $MOLOCH_INSTALL_DIR/raw
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
-    ES_VERSION=2.4.4
+    ES_VERSION=2.4.5
     if [ ! -f "$MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION}.tar.gz" ]; then
         wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz -O $MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION}.tar.gz
         (cd $MOLOCH_INSTALL_DIR ; tar xf elasticsearch-${ES_VERSION}.tar.gz)
