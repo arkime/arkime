@@ -5,6 +5,7 @@ moloch-spiview form.info-nav {
   top             : 115px;
   left            : 0;
   right           : 0;
+  height          : 42px;
   padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
   background-color: var(--color-quaternary-lightest);
 

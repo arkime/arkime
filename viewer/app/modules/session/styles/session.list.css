@@ -5,12 +5,17 @@ session form.sessions-nav {
   top             : 115px;
   left            : 0;
   right           : 0;
+  height          : 42px;
   padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
      -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
           box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+session form.sessions-nav .form-inline {
+  margin-top: -3px;
 }
 
 /* sessions table -------------------------- */
