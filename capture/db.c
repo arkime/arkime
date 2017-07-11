@@ -1861,12 +1861,18 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
     }
 }
 /******************************************************************************/
-
-void moloch_db_tag_create_cb(int UNUSED(code), unsigned char *data, int UNUSED(data_len), gpointer uw)
+void moloch_db_tag_seq_cb(uint32_t newSeq, gpointer uw);
+void moloch_db_tag_create_cb(int code, unsigned char *data, int UNUSED(data_len), gpointer uw)
 {
     MolochTagRequest_t *r = uw;
     char                key[500];
     int                 key_len;
+
+    // Try again on error
+    if (code == 0) {
+        moloch_db_tag_seq_cb(r->newSeq, uw);
+        return;
+    }
 
     if (strstr((char *)data, "{\"error\":") != 0) {
         key_len = snprintf(key, sizeof(key), "/%stags/tag/%s", config.prefix, r->escaped);
