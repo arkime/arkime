@@ -119,14 +119,18 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         }
 
         guchar *tagDataStart = dbsb.buf + tagLen*8 + 8;
+        uint32_t dlen = BSB_REMAINING(dbsb);
 
-        int start = 0;
+        uint32_t start = 0;
         while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
-            guchar *subTag = 0;
-            int     endOffset = 0;
+            guchar   *subTag = 0;
+            uint32_t  endOffset = 0;
 
             BSB_LIMPORT_ptr(dbsb, subTag, 4);
             BSB_LIMPORT_u32(dbsb, endOffset);
+
+            if (endOffset > dlen || start > dlen || start > endOffset)
+                return 0;
 
             if (!subTag)
                 return 0;
