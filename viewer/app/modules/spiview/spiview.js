@@ -69,6 +69,7 @@
 
       this.getFields(); // IMPORTANT: kicks off initial query for spi data!
       this.getUserSettings();
+      this.getSpiviewFieldConfigs();
 
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
@@ -704,6 +705,91 @@
           }
         }
       }
+    }
+
+    /* Gets the current user's custom spiview fields configurations */
+    getSpiviewFieldConfigs() {
+      this.UserService.getSpiviewFields()
+         .then((response) => {
+           this.fieldConfigs = response;
+         })
+         .catch((error) => {
+           this.fieldConfigError = error.text;
+         });
+    }
+
+    /* Saves a custom spiview fields configuration */
+    saveFieldConfiguration() {
+      if (!this.newFieldConfigName) {
+        this.fieldConfigError = 'You must name your new spiview field configuration';
+        return;
+      }
+
+      let data = {
+        name  : this.newFieldConfigName,
+        fields: this.query.spi
+      };
+
+      this.UserService.createSpiviewFieldConfig(data)
+        .then((response) => {
+          data.name = response.name; // update column config name
+
+          this.fieldConfigs.push(data);
+
+          this.newFieldConfigName = null;
+          this.fieldConfigsOpen   = false;
+          this.fieldConfigError   = false;
+        })
+        .catch((error) => {
+          this.fieldConfigError = error.text;
+        });
+    }
+
+    /**
+     * Deletes a previously saved custom spiview fields configuration
+     * @param {string} name The name of the spiview fields config to remove
+     * @param {int} index   The index in the array of the spiview fields config to remove
+     */
+    deleteFieldConfiguration(name, index) {
+      this.UserService.deleteSpiviewFieldConfig(name)
+         .then(() => {
+           this.fieldConfigs.splice(index, 1);
+           this.fieldConfigError = false;
+         })
+         .catch((error) => {
+           this.fieldConfigError = error.text;
+         });
+    }
+
+    /**
+     * Loads a previously saved custom spiview fields configuration and
+     * reloads the fields
+     * If no index is given, loads the default spiview fields
+     * @param {int} index The index in the array of the spiview fields configs to load
+     */
+    loadFieldConfiguration(index) {
+      this.fieldConfigsOpen = false;  // close the field config dropdown
+
+      if (!index && index !== 0) {
+        this.query.spi = defaultSpi;
+      } else {
+        this.query.spi = this.fieldConfigs[index].fields;
+      }
+
+      this.$location.search('spi', this.query.spi); // update url param
+
+      newQuery = true;
+      openedCategories = false;
+      categoryLoadingCounts = {};
+
+      if (timeout) { this.$timeout.cancel(timeout); }
+
+      if (pendingPromise) {     // if there's  a req (or series of reqs)
+        pendingPromise.abort(); // cancel current server request
+        pendingPromise  = null; // reset
+      }
+
+      this.getFields();
     }
 
   }

@@ -1497,6 +1497,134 @@ app.post('/user/columns/delete', checkCookieToken, function(req, res) {
   });
 });
 
+// gets custom spiview fields configurations for a user
+app.get('/user/spiview/fields', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's opened fields
+        return res.send('[]');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('[]');
+      }
+    }
+
+    var fieldConfigurations = user._source.spiviewFieldConfigs || [];
+
+    return res.send(fieldConfigurations);
+  });
+});
+
+// creates a new custom spiview fields configuration for a user
+app.post('/user/spiview/fields/create', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name)   { return error(403, 'Missing custom spiview field configuration name'); }
+  if (!req.body.fields) { return error(403, 'Missing fields'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/columns/create failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+
+    if (req.body.name.length < 1) {
+      return error(403, 'Invalid custom spiview fields configuration name');
+    }
+
+    user = user._source;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    var duplicate = false;
+    // don't let user use duplicate names
+    for (var i = 0, len = user.spiviewFieldConfigs.length; i < len; ++i) {
+      if (req.body.name === user.spiviewFieldConfigs[i].name) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) { return error(403, 'There is already a custom spiview fields configuration with that name'); }
+
+    user.spiviewFieldConfigs.push({
+      name  : req.body.name,
+      fields: req.body.fields
+    });
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/spiview/fields/create error', err, info);
+        return error(500, 'Create custom spiview fields configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created custom spiview fields configuration successfully',
+        name    : req.body.name
+      }));
+    });
+  });
+});
+
+// deletes a user's specified custom spiview fields configuration
+app.post('/user/spiview/fields/delete', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name) { return error(403, 'Missing custom spiview fields configuration name'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/spiview/fields/delete failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    for (var i = 0, len = user.spiviewFieldConfigs.length; i < len; ++i) {
+      if (req.body.name === user.spiviewFieldConfigs[i].name) {
+        user.spiviewFieldConfigs.splice(i, 1);
+        break;
+      }
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/spiview/fields/delete failed', err, info);
+        return error(500, 'Delete custom spiview fields configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted custom spiview fields configuration successfully'
+      }));
+    });
+  });
+});
+
+
 app.get('/decodings', function(req, res) {
   var decodeItems = decode.settings();
   res.send(JSON.stringify(decodeItems));

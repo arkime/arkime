@@ -41,6 +41,7 @@
 # 32 - Require ES >= 2.4 or ES >= 5.1.2, tags_v3, queries_v1, fields_v1, users_v4, files_v4, sequence_v1
 # 33 - user columnConfigs
 # 34 - stats_v2
+# 35 - user spiviewFieldConfigs
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -49,7 +50,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 34;
+my $VERSION = 35;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1734,6 +1735,10 @@ sub usersUpdate
         "type": "object",
         "dynamic": "true"
       },
+      "spiviewFieldConfigs": {
+        "type": "object",
+        "dynamic": "true"
+      },
       "tableStates": {
         "type": "object",
         "dynamic": "true"
@@ -2437,7 +2442,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         usersUpdate();
         sessionsUpdate();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 34) {
+    } elsif ($main::versionNumber <= 35) {
+        usersUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } else {

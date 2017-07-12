@@ -1,4 +1,4 @@
-/* loading navbar ------------------ */
+/* info navbar --------------------- */
 moloch-spiview form.info-nav {
   z-index         : 999;
   position        : fixed;
@@ -14,8 +14,18 @@ moloch-spiview form.info-nav {
           box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
 }
 
-moloch-spiview form.info-nav .info-nav-loading {
+moloch-spiview form.info-nav .info-nav-loading,
+moloch-spiview form.info-nav .field-config-btn {
   margin-top: -3px;
+}
+
+moloch-spiview form.info-nav .field-config-menu {
+  min-width: 300px;
+  max-width: 400px;
+}
+
+moloch-spiview form.info-nav .field-config-menu .input-group {
+  width: 105%;
 }
 
 
