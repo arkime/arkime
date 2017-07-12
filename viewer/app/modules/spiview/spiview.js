@@ -117,25 +117,9 @@
       });
 
       this.$scope.$on('$routeUpdate', (event, current) => {
-        let spiParams = current.params.spi || defaultSpi;
-
-        if (spiParams !== this.query.spi) {
-          this.query.spi = spiParams;
-
-          newQuery = true;
-          openedCategories = false;
-          categoryLoadingCounts = {};
-
-          this.deactivateSpiData(); // hide any removed fields from spi url param
-
-          if (pendingPromise) {   // if there's already a req (or series of reqs)
-            this.cancelLoading(); // cancel any current requests
-            timeout = this.$timeout(() => { // wait for promise abort to complete
-              this.getSpiData(this.query.spi);
-            }, 100);
-          } else {
-            this.getSpiData(this.query.spi);
-          }
+        if (current.params.spi !== this.query.spi) {
+          this.query.spi = current.params.spi;
+          this.restart();
         }
       });
     }
@@ -216,6 +200,25 @@
           this.loading  = false;
           this.error    = error.text;
         });
+    }
+
+    /* restarts the page with a new query by deactivating unnecessary spi data,
+       canceling any pending promises/timeouts, and issuing a new query */
+    restart() {
+      newQuery = true;
+      openedCategories = false;
+      categoryLoadingCounts = {};
+
+      this.deactivateSpiData(); // hide any removed fields from spi url param
+
+      if (pendingPromise) {   // if there's already a req (or series of reqs)
+        this.cancelLoading(); // cancel any current requests
+        timeout = this.$timeout(() => { // wait for promise abort to complete
+          this.getSpiData(this.query.spi);
+        }, 100);
+      } else {
+        this.getSpiData(this.query.spi);
+      }
     }
 
     /**
@@ -778,18 +781,7 @@
 
       this.$location.search('spi', this.query.spi); // update url param
 
-      newQuery = true;
-      openedCategories = false;
-      categoryLoadingCounts = {};
-
-      if (timeout) { this.$timeout.cancel(timeout); }
-
-      if (pendingPromise) {     // if there's  a req (or series of reqs)
-        pendingPromise.abort(); // cancel current server request
-        pendingPromise  = null; // reset
-      }
-
-      this.getFields();
+      this.restart();
     }
 
   }
