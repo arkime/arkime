@@ -340,7 +340,9 @@
 
         if (field) {
           category = SpiviewController.setupCategory(this.categoryObjects, field);
-          category.loading = true; // loading is set to false in getSingleSpiData
+          
+          category.isopen   = true; // open the category to display the field
+          category.loading  = true; // loading is set to false in getSingleSpiData
 
           // count the number of fields fetched for each category
           SpiviewController.countCategoryFieldsLoading(category, true);
