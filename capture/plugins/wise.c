@@ -264,6 +264,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 
         wi->loadTime = currentTime.tv_sec;
 
+        MOLOCH_LOCK(item);
         int s;
         for (s = 0; s < wi->numSessions; s++) {
             moloch_session_add_cmd(wi->sessions[s], MOLOCH_SES_CMD_FUNC, wi, NULL, wise_session_cmd_cb);
@@ -272,7 +273,6 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
         wi->sessions = 0;
         wi->numSessions = 0;
 
-        MOLOCH_LOCK(item);
         DLL_PUSH_HEAD(wil_, &itemList[(int)wi->type], wi);
         // Cache needs to be reduced
         if (itemList[(int)wi->type].wil_count > maxCache) {
