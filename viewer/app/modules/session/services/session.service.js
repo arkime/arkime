@@ -145,6 +145,43 @@
       });
     }
 
+    // TODO ECR - use these methods in session.list.component too
+    saveState(tableState, endpoint) {
+      return this.$q((resolve, reject) => {
+
+        let options = {
+          url   : `tableState/${endpoint}`,
+          method: 'POST',
+          data  : tableState
+        };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+    getState(endpoint) {
+      return this.$q((resolve, reject) => {
+
+        let options = {
+          url   : `tableState/${endpoint}`,
+          method: 'GET'
+        };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
     /**
      * Gets details about the session
      * @param {string} id         The unique id of the session

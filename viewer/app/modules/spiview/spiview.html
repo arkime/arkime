@@ -41,7 +41,7 @@
                   uib-tooltip="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols"
                   tooltip-placement="right"
                   tooltip-append-to-body="true">
-                  <a>Default</a>
+                  <a>Moloch Default</a>
                 </li>
               </div>
               <div ng-repeat="config in $ctrl.fieldConfigs track by $index">
@@ -160,7 +160,7 @@
                   ng-repeat="field in $ctrl.categoryObjects[category].filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.categoryObjects[category].fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
                   <button class="btn btn-xs btn-default field-btn"
                     ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
-                    ng-click="$ctrl.toggleSpiData(field, true)">
+                    ng-click="$ctrl.toggleSpiData(field, true, true)">
                     {{field.friendlyName}}
                   </button>
                   <button class="btn btn-xs btn-default" uib-dropdown-toggle>
@@ -227,7 +227,7 @@
                   </li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.toggleSpiData(value.field, true)">
+                      ng-click="$ctrl.toggleSpiData(value.field, true, true)">
                       Hide {{::value.field.friendlyName}}
                     </a>
                   </li>

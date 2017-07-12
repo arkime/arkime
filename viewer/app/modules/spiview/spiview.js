@@ -34,7 +34,6 @@
      * @param $q              Service to run functions asynchronously
      * @param $scope          Angular application model object
      * @param $timeout        Angular's wrapper for window.setTimeout
-     * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
      * @param UserService     Transacts users and user data with the server
      * @param FieldService    Retrieves available fields from the server
@@ -42,12 +41,11 @@
      * @param SessionService  Transacts sessions with the server
      * @ngInject
      */
-    constructor($q, $scope, $timeout, $location, $routeParams,
+    constructor($q, $scope, $timeout, $routeParams,
       UserService, FieldService, SpiviewService, SessionService) {
       this.$q             = $q;
       this.$scope         = $scope;
       this.$timeout       = $timeout;
-      this.$location      = $location;
       this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.FieldService   = FieldService;
@@ -62,14 +60,22 @@
       this.loading  = true;
       this.query    = _query; // load saved query
 
+
       if (this.$routeParams.spi) {
         // if there's a spi param use it
         this.query.spi = _query.spi = this.$routeParams.spi;
+        this.issueQueries();
+      } else { // use what's saved in the database
+        this.SessionService.getState('spiview')
+          .then((response) => {
+            this.query.spi = response.data.visibleFields;
+            this.issueQueries();
+          })
+          .catch((error) => {
+            this.query.spi = defaultSpi;
+            this.issueQueries();
+          });
       }
-
-      this.getFields(); // IMPORTANT: kicks off initial query for spi data!
-      this.getUserSettings();
-      this.getSpiviewFieldConfigs();
 
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
@@ -115,13 +121,6 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
-
-      this.$scope.$on('$routeUpdate', (event, current) => {
-        if (current.params.spi !== this.query.spi) {
-          this.query.spi = current.params.spi;
-          this.restart();
-        }
-      });
     }
 
     /* fired when controller's containing scope is destroyed */
@@ -141,6 +140,14 @@
 
 
     /* data retrieve/setup/update ------------------------------------------ */
+    /* issues queries to populate the page
+     * IMPORTANT: kicks off initial query for spi data! */
+    issueQueries() {
+      this.getFields(); // IMPORTANT: kicks off initial query for spi data!
+      this.getUserSettings();
+      this.getSpiviewFieldConfigs();
+    }
+
     /* Retrieves the list of fields from the server and groups them into
      * categories, then kicks of the query for spi data */
     getFields() {
@@ -528,10 +535,11 @@
      * Also updates the spi query parameter in the url
      * @param {object} field      The field to get spi data for
      * @param {bool} issueQuery   Whether to issue query for the data
+     * @param {bool} saveFields   Whether to save the visible fields
      * @returns {string} spiQuery The query string for the toggled on fields
      *                            e.g. 'lp:200,fp:100'
      */
-    toggleSpiData(field, issueQuery) {
+    toggleSpiData(field, issueQuery, saveFields) {
       field.active = !field.active;
 
       let spiData;
@@ -570,7 +578,9 @@
       }
 
       _query.spi = this.query.spi;
-      this.$location.search('spi', this.query.spi); // update url param
+
+      // save field state if method was invoked from field button click
+      if (saveFields) { this.saveFieldState(); }
 
       return spiQuery;
     }
@@ -631,7 +641,8 @@
       value.count = count;
 
       _query.spi = this.query.spi;
-      this.$location.search('spi', this.query.spi); // update url param
+
+      this.saveFieldState();
 
       this.getSingleSpiData(field, count);
     }
@@ -666,6 +677,8 @@
       }
 
       if (load && query) { this.getSpiData(query); }
+
+      this.saveFieldState();
     }
 
     /**
@@ -781,14 +794,18 @@
         this.query.spi = this.fieldConfigs[index].fields;
       }
 
-      this.$location.search('spi', this.query.spi); // update url param
-
+      this.saveFieldState();
       this.restart();
+    }
+
+    /* saves the visible fields */
+    saveFieldState() {
+      this.SessionService.saveState({visibleFields:this.query.spi}, 'spiview');
     }
 
   }
 
-  SpiviewController.$inject = ['$q','$scope','$timeout','$location','$routeParams',
+  SpiviewController.$inject = ['$q','$scope','$timeout','$routeParams',
     'UserService','FieldService','SpiviewService','SessionService'];
 
   /**
