@@ -1,4 +1,9 @@
 0.19.1 2017/07/xx
+  - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
+            outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
+  - viewer - stats bytes human readable format
+ 
 
 0.19.0 2017/07/11
   - NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an

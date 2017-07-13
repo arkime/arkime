@@ -173,7 +173,7 @@
                 <td class="no-wrap">{{stat.memory|humanReadable}} ({{stat.memoryP|number:1}}%)</td>
                 <td class="no-wrap">{{stat.packetQueue|number:0}}</td>
                 <td class="no-wrap">{{stat.deltaPacketsPerSec|number:0}}</td>
-                <td class="no-wrap">{{stat.deltaBytesPerSec|number:0}}</td>
+                <td class="no-wrap">{{stat.deltaBytesPerSec|humanReadable}}</td>
                 <td class="no-wrap">{{stat.deltaSessionsPerSec|number:0}}</td>
                 <td class="no-wrap">{{stat.deltaDroppedPerSec|number:0}}</td>
                 <td class="no-wrap">{{stat.deltaOverloadDroppedPerSec|number:0}}</td>
@@ -203,7 +203,7 @@
                 <td class="no-wrap">{{$ctrl.averageValues.memory|humanReadable}} ({{$ctrl.averageValues.memoryP|number:1}}%)</td>
                 <td class="no-wrap">{{$ctrl.averageValues.packetQueue|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.averageValues.deltaPacketsPerSec|number:0}}</td>
-                <td class="no-wrap">{{$ctrl.averageValues.deltaBytesPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaBytesPerSec|humanReadable}}</td>
                 <td class="no-wrap">{{$ctrl.averageValues.deltaSessionsPerSec|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.averageValues.deltaDroppedPerSec|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.averageValues.deltaOverloadDroppedPerSec|number:0}}</td>
@@ -219,7 +219,7 @@
                 <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>
                 <td class="no-wrap">{{$ctrl.totalValues.packetQueue|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.totalValues.deltaPacketsPerSec|number:0}}</td>
-                <td class="no-wrap">{{$ctrl.totalValues.deltaBytesPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaBytesPerSec|humanReadable}}</td>
                 <td class="no-wrap">{{$ctrl.totalValues.deltaSessionsPerSec|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.totalValues.deltaDroppedPerSec|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.totalValues.deltaOverloadDroppedPerSec|number:0}}</td>
