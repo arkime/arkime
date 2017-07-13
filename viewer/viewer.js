@@ -776,14 +776,29 @@ app.get('/vendor.bundle.js.map', function(req, res) {
 // custom user css
 app.get('/user.css', function(req, res) {
   fs.readFile("./views/user.styl", 'utf8', function(err, str) {
-    if (err) { return console.log("ERROR - ", err); }
-    if (!req.user.settings.theme) {
-      return console.log("ERROR - no custom theme defined");
+    function error(msg) {
+      console.log('ERROR -', msg);
+      return res.status(404).end();
     }
+
+    var date = new Date().toUTCString();
+    res.setHeader('Content-Type', 'text/css');
+    res.setHeader('Date', date);
+    res.setHeader('Cache-Control', 'public, max-age=0');
+    res.setHeader('Last-Modified', date);
+
+    if (err) { return error(err) }
+    if (!req.user.settings.theme) { return error('no custom theme defined'); }
+
+    var theme = req.user.settings.theme.split(':');
+
+    if (!theme[1]) { return error('custom theme corrupted'); }
 
     var style = stylus(str);
 
-    var colors = req.user.settings.theme.split(':')[1].split(',');
+    var colors = theme[1].split(',');
+
+    if (!colors) { return error('custom theme corrupted'); }
 
     style.define('colorBackground', new stylus.nodes.Literal(colors[0]));
     style.define('colorForeground', new stylus.nodes.Literal(colors[1]));
@@ -812,13 +827,8 @@ app.get('/user.css', function(req, res) {
     style.define('colorDst', new stylus.nodes.Literal(colors[14]));
 
     style.render(function(err, css){
-      if (err) {return console.log("ERROR - ", err);}
-      var date = new Date().toUTCString();
-      res.setHeader('Content-Type', 'text/css');
-      res.setHeader('Date', date);
-      res.setHeader('Cache-Control', 'public, max-age=0');
-      res.setHeader('Last-Modified', date);
-      res.send(css);
+      if (err) { return error(err); }
+      return res.send(css);
     });
   });
 });
