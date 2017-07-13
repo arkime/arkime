@@ -4859,14 +4859,14 @@ app.post('/user/update', checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/tableState/:tablename', function(req, res) {
+app.post('/state/:name', function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
-      console.log("save tableState failed", err, user);
+      console.log("save state failed", err, user);
       return error("Unknown user");
     }
     user = user._source;
@@ -4874,28 +4874,28 @@ app.post('/tableState/:tablename', function(req, res) {
     if (!user.tableStates) {
       user.tableStates = {};
     }
-    user.tableStates[req.params.tablename] = req.body;
+    user.tableStates[req.params.name] = req.body;
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
-        console.log("tableState error", err, info);
-        return error("tableState update failed");
+        console.log("state error", err, info);
+        return error("state update failed");
       }
-      return res.send(JSON.stringify({success: true, text: "updated table state successfully"}));
+      return res.send(JSON.stringify({success: true, text: "updated state successfully"}));
     });
   });
 });
 
-app.get('/tableState/:tablename', function(req, res) {
+app.get('/state/:name', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("Unknown user", err, user);
       return res.send("{}");
     }
     user = user._source;
-    if (!user.tableStates || !user.tableStates[req.params.tablename]) {
+    if (!user.tableStates || !user.tableStates[req.params.name]) {
       return res.send("{}");
     }
-    return res.send(user.tableStates[req.params.tablename]);
+    return res.send(user.tableStates[req.params.name]);
   });
 });
 

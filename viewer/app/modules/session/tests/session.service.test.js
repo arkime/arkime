@@ -59,10 +59,10 @@
         $httpBackend.when('GET', 'node/session/sessionid/packets?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&packets=200&ts=false')
            .respond(200, '');
 
-        $httpBackend.when('GET', 'tableState/sessionsNew')
+        $httpBackend.when('GET', 'state/sessionsNew')
           .respond(200, {});
 
-        $httpBackend.when('POST', 'tableState/sessionsNew')
+        $httpBackend.when('POST', 'state/sessionsNew')
           .respond(200, {});
 
         // add tags posts
@@ -258,15 +258,15 @@
         promise.abort();
       });
 
-      it('should send a GET request for tablestate', function() {
-        SessionService.getTableState();
-        $httpBackend.expectGET('tableState/sessionsNew');
+      it('should send a GET request for state', function() {
+        SessionService.getState('sessionsNew');
+        $httpBackend.expectGET('state/sessionsNew');
         $httpBackend.flush();
       });
 
-      it('should send a POST request for tablestate', function() {
-        SessionService.saveTableState({});
-        $httpBackend.expectPOST('tableState/sessionsNew');
+      it('should send a POST request for state', function() {
+        SessionService.saveState({}, 'sessionsNew');
+        $httpBackend.expectPOST('state/sessionsNew');
         $httpBackend.flush();
       });
 
