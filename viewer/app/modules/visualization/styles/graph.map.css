@@ -5,7 +5,7 @@ moloch-graph-map .inline-graph {
 }
 moloch-graph-map .whole-graph {
   position: relative;
-  width   : 100%;
+  width   : 99%;
 }
 moloch-graph-map .whole-graph session-graph .session-graph-btn-container {
   position: absolute;
@@ -28,7 +28,7 @@ moloch-graph-map .map-btn {
   width           : 40px;
   display         : block;
   position        : absolute;
-  top             : 115px;
+  top             : 157px;
   right           : 0;
   z-index         : 997;
   margin-top      : 6px;
