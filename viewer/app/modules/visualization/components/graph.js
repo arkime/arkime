@@ -109,8 +109,12 @@
                 color : foregroundColor,
                 zoomRange       : false,
                 autoscaleMargin : 0.2,
-                tickFormatter   : function(v, axis) {
-                  return $filter('commaString')(v);
+                tickFormatter   : function(v) {
+                  if (scope.type === 'dbHisto') {
+                    return $filter('humanReadable')(v);
+                  } else {
+                    return $filter('commaString')(v);
+                  }
                 }
               },
               grid          : {
