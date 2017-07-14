@@ -60,7 +60,6 @@
       this.loading  = true;
       this.query    = _query; // load saved query
 
-
       if (this.$routeParams.spi) {
         // if there's a spi param use it
         this.query.spi = _query.spi = this.$routeParams.spi;
@@ -69,6 +68,7 @@
         this.SessionService.getState('spiview')
           .then((response) => {
             this.query.spi = response.data.visibleFields;
+            if (!this.query.spi) { this.query.spi = defaultSpi; }
             this.issueQueries();
           })
           .catch((error) => {
@@ -316,6 +316,8 @@
      *                          e.g. 'fp:100,lp:200'
      */
     getSpiData(spiQuery) {
+      if (!spiQuery) { return; }
+
       // reset loading counts for categories
       categoryLoadingCounts = {};
 
