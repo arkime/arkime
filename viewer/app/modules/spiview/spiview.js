@@ -369,18 +369,26 @@
 
       if (!openedCategories) { this.openCategories(); }
 
-      // start processing tasks serially
-      SpiviewController.serial(tasks)
-        .then((response) => { // returns the last result in the series
-          if (response && response.bsqErr) { this.error = response.bsqErr; }
-          this.dataLoading = false;
-          pendingPromise = null;
-        })
-        .catch((error) => {
-          this.error = error;
-          this.dataLoading = false;
-          pendingPromise = null;
-        });
+      if (tasks.length) {
+        // start processing tasks serially
+        SpiviewController.serial(tasks)
+          .then((response) => { // returns the last result in the series
+            if (response && response.bsqErr) {
+              this.error = response.bsqErr;
+            }
+            this.dataLoading = false;
+            pendingPromise = null;
+          })
+          .catch((error) => {
+            this.error = error;
+            this.dataLoading = false;
+            pendingPromise = null;
+          });
+      } else {
+        // if we couldn't figure out the fields to request,
+        // request the default ones
+        this.getSpiData(defaultSpi);
+      }
     }
 
     /**
@@ -702,14 +710,14 @@
 
     /* Cancels the loading of all server requests */
     cancelLoading() {
-      pendingPromise.abort(); // cancel current server request
-      pendingPromise  = null; // reset
+      if (pendingPromise) {
+        pendingPromise.abort(); // cancel current server request
+        pendingPromise = null; // reset
+      }
 
-      this.canceled = true;   // indicate cancellation for future requests
-
-      this.dataLoading = false;
-
-      this.staleData = newQuery;
+      this.canceled     = true;   // indicate cancellation for future requests
+      this.dataLoading  = false;
+      this.staleData    = newQuery;
 
       // set loading to false for all categories and fields
       for (let key in this.categoryObjects) {
