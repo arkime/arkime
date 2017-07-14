@@ -99,48 +99,51 @@
     }
 
     /**
-     * Gets info about the session table columns and sorting order
+     * Gets a state
+     * @param {string} name       The name of the state to get
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getTableState() {
+    getState(name) {
       return this.$q((resolve, reject) => {
 
         let options = {
-          url   : 'tableState/sessionsNew',
+          url   : `state/${name}`,
           method: 'GET'
         };
 
         this.$http(options)
-          .then((response) => {
-            resolve(response);
-          }, (error) => {
-            reject(error);
-          });
+           .then((response) => {
+             resolve(response);
+           }, (error) => {
+             reject(error);
+           });
 
       });
     }
 
     /**
-     * Saves info about the session table columns and sorting order
+     * Saves a state
+     * @param {object} state      The object to save as the state
+     * @param {string} name       The name of the state to save
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    saveTableState(tableState) {
+    saveState(state, name) {
       return this.$q((resolve, reject) => {
 
         let options = {
-          url   : 'tableState/sessionsNew',
+          url   : `state/${name}`,
           method: 'POST',
-          data  : tableState
+          data  : state
         };
 
         this.$http(options)
-          .then((response) => {
-            resolve(response);
-          }, (error) => {
-            reject(error);
-          });
+           .then((response) => {
+             resolve(response);
+           }, (error) => {
+             reject(error);
+           });
 
       });
     }

@@ -174,7 +174,7 @@
     let scope, sessionComponent, sessionService, $httpBackend;
     let sessionsEndpoint    = 'sessions.json';
     let defaultParameters   = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
-    let tableStateEndpoint  = 'tableState/sessionsNew';
+    let tableStateEndpoint  = 'state/sessionsNew';
 
     // Initialize and a mock scope
     beforeEach(inject(function(

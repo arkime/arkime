@@ -130,7 +130,7 @@
             this.fieldsMap[field.dbField] = field;
           }
 
-          this.SessionService.getTableState()
+          this.SessionService.getState('sessionsNew')
              .then((response) => {
                this.setupColumns(response.data.visibleHeaders);
                // if the sort column setting does not match any of the visible

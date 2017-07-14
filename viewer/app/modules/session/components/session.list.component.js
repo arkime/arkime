@@ -221,7 +221,7 @@
 
     /* Gets the state of the table (sort order and column order/visibility) */
     getTableState() {
-      this.SessionService.getTableState()
+      this.SessionService.getState('sessionsNew')
          .then((response) => {
            this.tableState = response.data;
            if (Object.keys(this.tableState).length === 0) {
@@ -260,7 +260,7 @@
      * @param {bool} stopLoading Whether to stop the loading state when promise returns
      */
     saveTableState(stopLoading) {
-      this.SessionService.saveTableState(this.tableState)
+      this.SessionService.saveState(this.tableState, 'sessionsNew')
          .then(() => {
            if (stopLoading) { this.loading = false; }
          })

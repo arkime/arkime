@@ -457,6 +457,82 @@
     }
 
     /**
+     * Gets a user's custom spiview fields configurations
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getSpiviewFields(userId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/spiview/fields', method:'GET' };
+
+        if (userId) { options.url += `?userId=${userId}`; }
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error.data);
+           });
+
+      });
+    }
+
+    /**
+     * Creates a specified custom spiview fields configuration for a user
+     * @param {Object} data       The data to pass to the server
+     *                            { name: 'namey', fields: ['field1', 'field2', ... , 'fieldN']}
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    createSpiviewFieldConfig(data, userId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/spiview/fields/create', method:'POST', data:data };
+
+        if (userId) { options.url += `?userId=${userId}`; }
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error.data);
+           });
+
+      });
+    }
+
+    /**
+     * Deletes a user's specified custom spiview fields configuration
+     * @param {string} name       The name of the spiview fields configuration to be removed
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    deleteSpiviewFieldConfig(name, userId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/spiview/fields/delete', method:'POST', data:{ name:name } };
+
+        if (userId) { options.url += `?userId=${userId}`; }
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error.data);
+           });
+
+      });
+    }
+
+
+    /**
      * Changes current user's password
      * @param {object} data       The data to send to the server
      *                            { userId, currentPassword, newPassword }

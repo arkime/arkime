@@ -34,7 +34,6 @@
      * @param $q              Service to run functions asynchronously
      * @param $scope          Angular application model object
      * @param $timeout        Angular's wrapper for window.setTimeout
-     * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
      * @param UserService     Transacts users and user data with the server
      * @param FieldService    Retrieves available fields from the server
@@ -42,12 +41,11 @@
      * @param SessionService  Transacts sessions with the server
      * @ngInject
      */
-    constructor($q, $scope, $timeout, $location, $routeParams,
+    constructor($q, $scope, $timeout, $routeParams,
       UserService, FieldService, SpiviewService, SessionService) {
       this.$q             = $q;
       this.$scope         = $scope;
       this.$timeout       = $timeout;
-      this.$location      = $location;
       this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.FieldService   = FieldService;
@@ -65,10 +63,19 @@
       if (this.$routeParams.spi) {
         // if there's a spi param use it
         this.query.spi = _query.spi = this.$routeParams.spi;
+        this.issueQueries();
+      } else { // use what's saved in the database
+        this.SessionService.getState('spiview')
+          .then((response) => {
+            this.query.spi = response.data.visibleFields;
+            if (!this.query.spi) { this.query.spi = defaultSpi; }
+            this.issueQueries();
+          })
+          .catch((error) => {
+            this.query.spi = defaultSpi;
+            this.issueQueries();
+          });
       }
-
-      this.getFields(); // IMPORTANT: kicks off initial query for spi data!
-      this.getUserSettings();
 
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
@@ -114,29 +121,6 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
-
-      this.$scope.$on('$routeUpdate', (event, current) => {
-        let spiParams = current.params.spi || defaultSpi;
-
-        if (spiParams !== this.query.spi) {
-          this.query.spi = spiParams;
-
-          newQuery = true;
-          openedCategories = false;
-          categoryLoadingCounts = {};
-
-          this.deactivateSpiData(); // hide any removed fields from spi url param
-
-          if (pendingPromise) {   // if there's already a req (or series of reqs)
-            this.cancelLoading(); // cancel any current requests
-            timeout = this.$timeout(() => { // wait for promise abort to complete
-              this.getSpiData(this.query.spi);
-            }, 100);
-          } else {
-            this.getSpiData(this.query.spi);
-          }
-        }
-      });
     }
 
     /* fired when controller's containing scope is destroyed */
@@ -156,6 +140,14 @@
 
 
     /* data retrieve/setup/update ------------------------------------------ */
+    /* issues queries to populate the page
+     * IMPORTANT: kicks off initial query for spi data! */
+    issueQueries() {
+      this.getFields(); // IMPORTANT: kicks off initial query for spi data!
+      this.getUserSettings();
+      this.getSpiviewFieldConfigs();
+    }
+
     /* Retrieves the list of fields from the server and groups them into
      * categories, then kicks of the query for spi data */
     getFields() {
@@ -215,6 +207,25 @@
           this.loading  = false;
           this.error    = error.text;
         });
+    }
+
+    /* restarts the page with a new query by deactivating unnecessary spi data,
+       canceling any pending promises/timeouts, and issuing a new query */
+    restart() {
+      newQuery = true;
+      openedCategories = false;
+      categoryLoadingCounts = {};
+
+      this.deactivateSpiData(); // hide any removed fields from spi url param
+
+      if (pendingPromise) {   // if there's already a req (or series of reqs)
+        this.cancelLoading(); // cancel any current requests
+        timeout = this.$timeout(() => { // wait for promise abort to complete
+          this.getSpiData(this.query.spi);
+        }, 100);
+      } else {
+        this.getSpiData(this.query.spi);
+      }
     }
 
     /**
@@ -305,6 +316,8 @@
      *                          e.g. 'fp:100,lp:200'
      */
     getSpiData(spiQuery) {
+      if (!spiQuery) { return; }
+
       // reset loading counts for categories
       categoryLoadingCounts = {};
 
@@ -336,7 +349,9 @@
 
         if (field) {
           category = SpiviewController.setupCategory(this.categoryObjects, field);
-          category.loading = true; // loading is set to false in getSingleSpiData
+          
+          category.isopen   = true; // open the category to display the field
+          category.loading  = true; // loading is set to false in getSingleSpiData
 
           // count the number of fields fetched for each category
           SpiviewController.countCategoryFieldsLoading(category, true);
@@ -354,18 +369,26 @@
 
       if (!openedCategories) { this.openCategories(); }
 
-      // start processing tasks serially
-      SpiviewController.serial(tasks)
-        .then((response) => { // returns the last result in the series
-          if (response && response.bsqErr) { this.error = response.bsqErr; }
-          this.dataLoading = false;
-          pendingPromise = null;
-        })
-        .catch((error) => {
-          this.error = error;
-          this.dataLoading = false;
-          pendingPromise = null;
-        });
+      if (tasks.length) {
+        // start processing tasks serially
+        SpiviewController.serial(tasks)
+          .then((response) => { // returns the last result in the series
+            if (response && response.bsqErr) {
+              this.error = response.bsqErr;
+            }
+            this.dataLoading = false;
+            pendingPromise = null;
+          })
+          .catch((error) => {
+            this.error = error;
+            this.dataLoading = false;
+            pendingPromise = null;
+          });
+      } else {
+        // if we couldn't figure out the fields to request,
+        // request the default ones
+        this.getSpiData(defaultSpi);
+      }
     }
 
     /**
@@ -522,10 +545,11 @@
      * Also updates the spi query parameter in the url
      * @param {object} field      The field to get spi data for
      * @param {bool} issueQuery   Whether to issue query for the data
+     * @param {bool} saveFields   Whether to save the visible fields
      * @returns {string} spiQuery The query string for the toggled on fields
      *                            e.g. 'lp:200,fp:100'
      */
-    toggleSpiData(field, issueQuery) {
+    toggleSpiData(field, issueQuery, saveFields) {
       field.active = !field.active;
 
       let spiData;
@@ -564,7 +588,9 @@
       }
 
       _query.spi = this.query.spi;
-      this.$location.search('spi', this.query.spi); // update url param
+
+      // save field state if method was invoked from field button click
+      if (saveFields) { this.saveFieldState(); }
 
       return spiQuery;
     }
@@ -625,7 +651,8 @@
       value.count = count;
 
       _query.spi = this.query.spi;
-      this.$location.search('spi', this.query.spi); // update url param
+
+      this.saveFieldState();
 
       this.getSingleSpiData(field, count);
     }
@@ -660,6 +687,8 @@
       }
 
       if (load && query) { this.getSpiData(query); }
+
+      this.saveFieldState();
     }
 
     /**
@@ -681,14 +710,14 @@
 
     /* Cancels the loading of all server requests */
     cancelLoading() {
-      pendingPromise.abort(); // cancel current server request
-      pendingPromise  = null; // reset
+      if (pendingPromise) {
+        pendingPromise.abort(); // cancel current server request
+        pendingPromise = null; // reset
+      }
 
-      this.canceled = true;   // indicate cancellation for future requests
-
-      this.dataLoading = false;
-
-      this.staleData = newQuery;
+      this.canceled     = true;   // indicate cancellation for future requests
+      this.dataLoading  = false;
+      this.staleData    = newQuery;
 
       // set loading to false for all categories and fields
       for (let key in this.categoryObjects) {
@@ -706,9 +735,87 @@
       }
     }
 
+    /* Gets the current user's custom spiview fields configurations */
+    getSpiviewFieldConfigs() {
+      this.UserService.getSpiviewFields()
+         .then((response) => {
+           this.fieldConfigs = response;
+         })
+         .catch((error) => {
+           this.fieldConfigError = error.text;
+         });
+    }
+
+    /* Saves a custom spiview fields configuration */
+    saveFieldConfiguration() {
+      if (!this.newFieldConfigName) {
+        this.fieldConfigError = 'You must name your new spiview field configuration';
+        return;
+      }
+
+      let data = {
+        name  : this.newFieldConfigName,
+        fields: this.query.spi
+      };
+
+      this.UserService.createSpiviewFieldConfig(data)
+        .then((response) => {
+          data.name = response.name; // update column config name
+
+          this.fieldConfigs.push(data);
+
+          this.newFieldConfigName = null;
+          this.fieldConfigsOpen   = false;
+          this.fieldConfigError   = false;
+        })
+        .catch((error) => {
+          this.fieldConfigError = error.text;
+        });
+    }
+
+    /**
+     * Deletes a previously saved custom spiview fields configuration
+     * @param {string} name The name of the spiview fields config to remove
+     * @param {int} index   The index in the array of the spiview fields config to remove
+     */
+    deleteFieldConfiguration(name, index) {
+      this.UserService.deleteSpiviewFieldConfig(name)
+         .then(() => {
+           this.fieldConfigs.splice(index, 1);
+           this.fieldConfigError = false;
+         })
+         .catch((error) => {
+           this.fieldConfigError = error.text;
+         });
+    }
+
+    /**
+     * Loads a previously saved custom spiview fields configuration and
+     * reloads the fields
+     * If no index is given, loads the default spiview fields
+     * @param {int} index The index in the array of the spiview fields configs to load
+     */
+    loadFieldConfiguration(index) {
+      this.fieldConfigsOpen = false;  // close the field config dropdown
+
+      if (!index && index !== 0) {
+        this.query.spi = defaultSpi;
+      } else {
+        this.query.spi = this.fieldConfigs[index].fields;
+      }
+
+      this.saveFieldState();
+      this.restart();
+    }
+
+    /* saves the visible fields */
+    saveFieldState() {
+      this.SessionService.saveState({visibleFields:this.query.spi}, 'spiview');
+    }
+
   }
 
-  SpiviewController.$inject = ['$q','$scope','$timeout','$location','$routeParams',
+  SpiviewController.$inject = ['$q','$scope','$timeout','$routeParams',
     'UserService','FieldService','SpiviewService','SessionService'];
 
   /**
