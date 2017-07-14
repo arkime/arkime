@@ -62,10 +62,23 @@
     }
 
     /**
-     * Redirects to the desired link preserving query parameters
-     * @param {string} link The link to redirect to
+     * Creates an href for the tab buttons
+     * @param {string} link The link of the nav item
+     * @returns {string} href
      */
-    navTabClick(link) {
+    createHref(link) {
+      return this.$filter('buildUrl')(link);
+    }
+
+    /**
+     * Redirects to the desired link preserving query parameters
+     * @param {string} link   The link to redirect to
+     * @param {object} event  The click event that triggered this function
+     */
+    navTabClick(link, $event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+
       if (link === 'help') { // help link is special!
         // must set the section of the help page to navigate to
         this.$location.hash(this.$location.path().split('/')[1]);

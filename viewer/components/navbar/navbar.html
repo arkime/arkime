@@ -1,7 +1,9 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
 
-    <a ng-click="$ctrl.navTabClick('help')" class="cursor-pointer pull-left">
+    <a ng-href="{{$ctrl.createHref('help')}}"
+      ng-click="$ctrl.navTabClick('help', $event)"
+      class="cursor-pointer pull-left">
       <img ng-src="header_logo.png" class="moloch-logo">
     </a>
 
@@ -24,8 +26,8 @@
       <ul class="nav navbar-nav">
         <li ng-repeat="item in ::$ctrl.menu" class="cursor-pointer"
           ng-class="{active: $ctrl.isActive(item.link)}">
-          <a has-permission="{{::item.permission}}"
-            ng-click="$ctrl.navTabClick(item.link)">{{::item.title}}</a>
+          <a has-permission="{{::item.permission}}" ng-href="{{$ctrl.createHref(item.link)}}"
+            ng-click="$ctrl.navTabClick(item.link, $event)">{{::item.title}}</a>
         </li>
       </ul>
     </div>

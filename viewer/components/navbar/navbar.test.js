@@ -78,7 +78,7 @@
       // navigating from the settings page to the help page should append
       // #settings to the url
       navbar.$location.url('settings');
-      navbar.navTabClick('help');
+      navbar.navTabClick('help', { preventDefault: () => {}, stopPropagation: () => {} });
 
       expect(navbar.$location.hash()).toEqual('settings');
     });
