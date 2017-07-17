@@ -118,7 +118,7 @@
 
   <!-- search button -->
   <a class="btn btn-sm btn-theme-tertiary pull-right margined-left"
-    ng-click="$ctrl.applyParams()">Search</a>
+    ng-click="$ctrl.applyParams()" tabindex="2">Search</a>
 
   <!-- search box typeahead -->
   <expression-typeahead enter-click="$ctrl.applyParams()">
@@ -136,6 +136,7 @@
           <span class="fa fa-clock-o"></span>
         </span>
         <select class="form-control time-range-control" convert-to-number
+          tabindex="3"
           ng-model="$ctrl.timeRange"
           ng-change="$ctrl.changeTimeRange()">
           <option value="1">Last hour</option>
@@ -166,11 +167,11 @@
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
           close-text="Close" enter-click="$ctrl.applyDate()"
-          ng-change="$ctrl.changeDate()"
+          ng-change="$ctrl.changeDate()" tabindex="4"
           ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default"
+          <button type="button" class="btn btn-default" tabindex="-1"
             ng-click="$ctrl.startTimePopup.opened = !$ctrl.startTimePopup.opened">
             <span class="fa fa-calendar-o"></span>
           </button>
@@ -192,11 +193,11 @@
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
           close-text="Close" enter-click="$ctrl.applyDate()"
-          ng-change="$ctrl.changeDate()"
+          ng-change="$ctrl.changeDate()" tabindex="5"
           ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default"
+          <button type="button" class="btn btn-default" tabindex="-1"
             ng-click="$ctrl.stopTimePopup.opened = !$ctrl.stopTimePopup.opened">
             <span class="fa fa-calendar-o"></span>
           </button>
@@ -213,7 +214,7 @@
           Bounding
         </span>
         <select class="form-control time-range-control"
-          ng-model="$ctrl.timeBounding"
+          ng-model="$ctrl.timeBounding" tabindex="6"
           ng-change="$ctrl.changeTimeBounding()">
           <option value="first">First Packet</option>
           <option value="last">Last Packet</option>

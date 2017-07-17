@@ -11,7 +11,7 @@
       ng-blur="$ctrl.onOffFocus()"
       ng-keydown="$ctrl.keydown($event);"
       ng-change="$ctrl.debounceExprChange()"
-      type="text" placeholder="Search"
+      type="text" placeholder="Search" tabindex="1"
       class="form-control search-control" />
       <span ng-click="$ctrl.clear()" ng-if="$root.expression"
         class="fa fa-close text-muted clear-input cursor-pointer"></span>

@@ -155,7 +155,7 @@
           } else {
             this.results = ExpressionController.findMatch(lastToken, operations);
           }
-        } else { this.results = ['!=', '==']; }
+        } else { this.results = ExpressionController.findMatch(lastToken, ['!=', '==']); }
 
         return;
       }
@@ -306,6 +306,26 @@
       // always check for escape before anything else
       if (event.keyCode === 27) {
         // if there's a request in progress, cancel it
+        this.cancelPromise();
+
+        this.loadingValues = false;
+        this.loadingError  = false;
+        this.results       = null;
+        this.activeIdx     = -1;
+
+        return;
+      }
+
+      // check for tab click when results are visible
+      if (this.results && this.results.length && event.keyCode === 9) {
+        event.preventDefault();
+
+        // if there is no item in the results is selected, use the first one
+        if (this.activeIdx < 0) { this.activeIdx = 0; }
+
+        let result = this.results[this.activeIdx];
+        if (result) { this.addToQuery(result); }
+
         this.cancelPromise();
 
         this.loadingValues = false;
