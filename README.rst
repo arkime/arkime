@@ -43,7 +43,7 @@ http://molo.ch/#downloads
 Building
 ========
 
-If you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ```make config`` can be used to install and configure moloch.
+If you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.
 
 .. _components:
 
