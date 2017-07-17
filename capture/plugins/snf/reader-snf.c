@@ -32,8 +32,6 @@ LOCAL snf_ring_t             rings[MAX_INTERFACES][MAX_RINGS];
 LOCAL int                    portnums[MAX_INTERFACES];
 LOCAL int                    snfNumRings;
 
-LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
-
 /******************************************************************************/
 int reader_snf_stats(MolochReaderStats_t *stats)
 {
