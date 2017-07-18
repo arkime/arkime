@@ -660,6 +660,11 @@ void moloch_config_init()
         LOG("maxFileSizeB: %" PRIu64, config.maxFileSizeB);
     }
 
+    if (config.interface && !config.interface[0]) {
+        printf("interface set in config file, but it is empty\n");
+        exit (1);
+    }
+
     if (!config.interface && !config.pcapReadOffline) {
         printf("Need to set interface, pcap file (-r) or pcap directory (-R) \n");
         exit (1);

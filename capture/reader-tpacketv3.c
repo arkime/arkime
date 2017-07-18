@@ -144,7 +144,7 @@ static void *reader_tpacketv3_thread(gpointer infov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-                    "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'",
+                    "See https://github.com/aol/moloch/wiki/FAQ#Moloch_requires_full_packet_captures_error",
                     th->tp_snaplen, th->tp_len);
             }
 
