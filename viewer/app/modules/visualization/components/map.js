@@ -34,6 +34,21 @@
             landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
           }
 
+          let initialized = false;
+          $(window).on('resize', () => {
+            if(initialized && mapEl.closest('moloch-graph-map').hasClass('expanded')) {
+              mapEl.css({
+                position  : 'fixed',
+                right     : '15px',
+                'z-index' : 998,
+                top       : '166px',
+                width     : $(window).width() * 0.95,
+                height    : $(window).height() - 175
+              });
+            }
+            initialized = true;
+          })
+
           mapEl.vectorMap({ // setup map
             map             : 'world_en',
             backgroundColor : waterColor,
@@ -213,6 +228,8 @@
           /* cleanup ------------------------------------------------------- */
           element.on('$destroy', function onDestroy () {
             $document.off('mouseup', isOutsideClick);
+
+            $(window).off('resize');
 
             if (timeout) { $timeout.cancel(timeout); }
 
