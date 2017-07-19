@@ -386,6 +386,20 @@ a.no-decoration { text-decoration: none; }
 
 
 
+/* condense dropdown menus =================== */
+ul.dropdown-menu {
+  font-size: 1.25rem;
+}
+
+ul.dropdown-menu li a,
+ul.dropdown-menu div li a {
+  padding         : 2px 8px;
+  line-height     : 1.42857143;
+  color           : var(--color-black);
+  text-decoration : none;
+}
+
+
 /* animations ================================ */
 .animate-opacity { opacity: 1; }
 
@@ -432,8 +446,6 @@ table tr.ng-move.ng-move-active,
 table tr.ng-enter.ng-enter-active {
   opacity: 1;
 }
-
-
 
 
 
