@@ -47,7 +47,7 @@
               });
             }
             initialized = true;
-          })
+          });
 
           mapEl.vectorMap({ // setup map
             map             : 'world_en',
