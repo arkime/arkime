@@ -784,7 +784,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
-    ja3Field = moloch_field_define("tls", "ja3",
+    ja3Field = moloch_field_define("tls", "lotermfield",
         "tls.ja3", "JA3", "tlsja3-term",
         "SSL/TLS JA3 field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,

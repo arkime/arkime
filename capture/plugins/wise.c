@@ -88,8 +88,8 @@ typedef struct wiseitem {
     char                 *key;
 
     uint32_t              loadTime;
-    short                 sessionsSize;
-    short                 numSessions;
+    uint16_t              sessionsSize;
+    uint16_t              numSessions;
     char                  type;
 } WiseItem_t;
 
@@ -309,8 +309,13 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
     if (wi) {
         // Already being looked up
         if (wi->sessions) {
+            if (wi->numSessions >= 4096) {
+                stats[type][INTEL_STAT_FAIL]++;
+                goto cleanup;
+            }
+
             if (wi->numSessions >= wi->sessionsSize) {
-                wi->sessionsSize *= 2;
+                wi->sessionsSize = MIN(wi->sessionsSize*2, 4096);
                 wi->sessions = realloc(wi->sessions, sizeof(MolochSession_t *) * wi->sessionsSize);
             }
             wi->sessions[wi->numSessions++] = session;
