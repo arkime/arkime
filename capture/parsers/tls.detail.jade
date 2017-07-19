@@ -5,6 +5,7 @@ if (session.tls || session["tlsver-term"])
     +arrayList(session, "tlscipher-term", "Cipher", "tls.cipher")
     +arrayList(session, "tlssrcid-term", "Src Session Id", "tls.sessionid.src")
     +arrayList(session, "tlsdstid-term", "Dst Session Id", "tls.sessionid.dst")
+    +arrayList(session, "tlsja3-term", "JA3", "tls.ja3")
     if (session.tls)
       each cert in session.tls
         dt Certificate

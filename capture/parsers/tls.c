@@ -20,6 +20,7 @@ LOCAL  int                   certsField;
 LOCAL  int                   hostField;
 LOCAL  int                   verField;
 LOCAL  int                   cipherField;
+LOCAL  int                   ja3Field;
 LOCAL  int                   srcIdField;
 LOCAL  int                   dstIdField;
 
@@ -428,16 +429,41 @@ tls_process_server_handshake_record(MolochSession_t *session, const unsigned cha
     return 0;
 }
 /******************************************************************************/
+// https://tools.ietf.org/html/draft-davidben-tls-grease-00
+int
+tls_is_grease_value(uint32_t val)
+{
+    if ((val & 0x0f) != 0x0a)
+        return 0;
+
+    if ((val & 0xff) != ((val >> 8) & 0xff))
+        return 0;
+
+    return 1;
+}
+/******************************************************************************/
 void
 tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB sslbsb;
+    char ja3[30000];
+    BSB ja3bsb;
+    char ecfja3[10];
+    char eja3[10000];
+    BSB eja3bsb;
+    char ecja3[10000];
+    BSB ecja3bsb;
 
+    ecfja3[0] = 0;
     BSB_INIT(sslbsb, data, len);
+    BSB_INIT(ja3bsb, ja3, sizeof(ja3));
+    BSB_INIT(ecja3bsb, ecja3, sizeof(ecja3));
+    BSB_INIT(eja3bsb, eja3, sizeof(eja3));
 
     if (BSB_REMAINING(sslbsb) > 5) {
         unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
+
 
         BSB pbsb;
         BSB_INIT(pbsb, ssldata+5, ssllen);
@@ -445,6 +471,12 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
         if (BSB_REMAINING(pbsb) > 7) {
             unsigned char *pdata = BSB_WORK_PTR(pbsb);
             int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
+
+            uint16_t ver = 0;
+            BSB_IMPORT_skip(pbsb, 4); // type + len
+            BSB_IMPORT_u16(pbsb, ver);
+
+            BSB_EXPORT_sprintf(ja3bsb, "%d,", ver);
 
             BSB cbsb;
             BSB_INIT(cbsb, pdata+6, plen-2); // The - 4 for plen is done above, confusing
@@ -469,7 +501,16 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
                 BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
                 BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
-                BSB_IMPORT_skip(cbsb, skiplen);  // Ciper Suites
+                while (skiplen > 0) {
+                    uint16_t c = 0;
+                    BSB_IMPORT_u16(cbsb, c);
+                    if (!tls_is_grease_value(c)) {
+                        BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
+                    }
+                    skiplen -= 2;
+                }
+                BSB_EXPORT_rewind(ja3bsb, 1); // Remove last -
+                BSB_EXPORT_u08(ja3bsb, ',');
 
                 BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
                 BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
@@ -488,38 +529,71 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 
                         BSB_IMPORT_u16 (ebsb, etype);
                         BSB_IMPORT_u16 (ebsb, elen);
-                        if (etype != 0) {
-                            BSB_IMPORT_skip (ebsb, elen);
-                            continue;
-                        }
+
+                        if (!tls_is_grease_value(etype))
+                            BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
                         if (elen > BSB_REMAINING(ebsb))
                             break;
 
-                        BSB snibsb;
-                        BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
-                        BSB_IMPORT_skip (ebsb, elen);
+                        if (etype == 0) { // SNI
+                            BSB snibsb;
+                            BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
+                            BSB_IMPORT_skip (ebsb, elen);
 
-                        int sni = 0;
-                        BSB_IMPORT_u16(snibsb, sni); // list len
-                        if (sni != BSB_REMAINING(snibsb))
-                            continue;
+                            int sni = 0;
+                            BSB_IMPORT_u16(snibsb, sni); // list len
+                            if (sni != BSB_REMAINING(snibsb))
+                                continue;
 
-                        BSB_IMPORT_u08(snibsb, sni); // type
-                        if (sni != 0)
-                            continue;
+                            BSB_IMPORT_u08(snibsb, sni); // type
+                            if (sni != 0)
+                                continue;
 
-                        BSB_IMPORT_u16(snibsb, sni); // len
-                        if (sni != BSB_REMAINING(snibsb))
-                            continue;
+                            BSB_IMPORT_u16(snibsb, sni); // len
+                            if (sni != BSB_REMAINING(snibsb))
+                                continue;
 
-                        moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                            moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                        } else if (etype == 0x000a) { // Elliptic Curves
+                            BSB bsb;
+                            BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
+                            BSB_IMPORT_skip (ebsb, elen);
+
+                            int len = 0;
+                            BSB_IMPORT_u16(bsb, len); // list len
+                            while (len) {
+                                uint16_t c = 0;
+                                BSB_IMPORT_u16(bsb, c);
+                                if (!tls_is_grease_value(c)) {
+                                    BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
+                                }
+                                len -= 2;
+                            }
+                            BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
+                        } else if (etype == 0x000b && elen == 2) { // Elliptic Curves point formats
+                            uint8_t ecf = 0;
+                            BSB_IMPORT_skip(ebsb, 1); // formats length
+                            BSB_IMPORT_u08(ebsb, ecf);
+                            sprintf(ecfja3, "%d", ecf);
+                        } else {
+                            BSB_IMPORT_skip (ebsb, elen);
+                        }
                     }
+                    BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
                 }
             }
         }
-
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
+
+        if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb)) {
+            BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, ecfja3);
+
+            gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
+            if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
+                g_free(md5);
+            }
+        }
     }
 }
 
@@ -693,33 +767,39 @@ void moloch_parser_init()
         NULL);
 
     hostField = moloch_field_define("http", "lotermfield",
-        "host.http", "Hostname", "ho", 
-        "HTTP host header field", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "host.http", "Hostname", "ho",
+        "HTTP host header field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"http.host\"]", NULL);
 
     verField = moloch_field_define("tls", "termfield",
-        "tls.version", "Version", "tlsver-term", 
-        "SSL/TLS version field", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "tls.version", "Version", "tlsver-term",
+        "SSL/TLS version field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     cipherField = moloch_field_define("tls", "uptermfield",
-        "tls.cipher", "Cipher", "tlscipher-term", 
-        "SSL/TLS cipher field", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "tls.cipher", "Cipher", "tlscipher-term",
+        "SSL/TLS cipher field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+
+    ja3Field = moloch_field_define("tls", "ja3",
+        "tls.ja3", "JA3", "tlsja3-term",
+        "SSL/TLS JA3 field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     dstIdField = moloch_field_define("tls", "lotermfield",
-        "tls.sessionid.dst", "Dst Session Id", "tlsdstid-term", 
-        "SSL/TLS Dst Session Id", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  0, 
+        "tls.sessionid.dst", "Dst Session Id", "tlsdstid-term",
+        "SSL/TLS Dst Session Id",
+        MOLOCH_FIELD_TYPE_STR_HASH,  0,
         NULL);
 
     srcIdField = moloch_field_define("tls", "lotermfield",
-        "tls.sessionid.src", "Src Session Id", "tlssrcid-term", 
-        "SSL/TLS Src Session Id", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  0, 
+        "tls.sessionid.src", "Src Session Id", "tlssrcid-term",
+        "SSL/TLS Src Session Id",
+        MOLOCH_FIELD_TYPE_STR_HASH,  0,
         NULL);
 
     moloch_field_define("general", "lotermfield",

@@ -2,98 +2,17 @@
    "sessions" : [
       {
          "body" : {
-            "lastPacket" : 1482552218503,
-            "sl" : 4,
-            "fpd" : 1482552218498,
-            "pa1" : 5,
-            "by1" : 550,
-            "tlsver-termcnt" : 1,
-            "vlan-cnt" : 1,
-            "tls" : [
-               {
-                  "notAfter" : 1779463436,
-                  "sn" : "02",
-                  "notBefore" : 1464103436,
-                  "iCn" : [
-                     "mysql_server_5.7.12_auto_generated_ca_certificate"
-                  ],
-                  "sCn" : [
-                     "mysql_server_5.7.12_auto_generated_server_certificate"
-                  ],
-                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
-                  "diffDays" : 3650
-               }
-            ],
-            "firstPacket" : 1482552218498,
-            "ipSrc" : "10.10.10.10",
-            "mac2-term" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "by2" : 1309,
-            "timestamp" : "SET",
-            "p2" : 3306,
-            "ss" : 1,
-            "tlscnt" : 1,
-            "by" : 1859,
-            "tlscipher-termcnt" : 1,
             "lpd" : 1482552218503,
-            "portDst" : 3306,
-            "db" : 1143,
-            "mysql" : {
-               "ver-term" : "5.7.16"
-            },
-            "fp" : 1482552218,
-            "prot-term" : [
-               "tls",
-               "mysql",
-               "tcp"
-            ],
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_AES_256_CBC_SHA"
-            ],
-            "mac2-term-cnt" : 2,
-            "ps" : [
-               24,
-               118,
-               212,
-               298,
-               462,
-               548,
-               670,
-               756,
-               998,
-               1084
-            ],
+            "vlan-cnt" : 1,
+            "a1" : "10.10.10.10",
+            "sl" : 4,
+            "portSrc" : 41324,
             "mac1-term-cnt" : 2,
-            "p1" : 41324,
-            "fb2" : "4a0000000a352e37",
-            "a2" : "10.10.10.11",
+            "tlscipher-termcnt" : 1,
             "mac1-term" : [
                "00:22:83:3f:17:c5",
                "2c:6b:f5:d6:17:c5"
             ],
-            "pa2" : 5,
-            "tlsver-term" : [
-               "TLSv1.1"
-            ],
-            "ipDst" : "10.10.10.11",
-            "db2" : 951,
-            "lp" : 1482552218,
-            "portSrc" : 41324,
-            "pa" : 10,
-            "a1" : "10.10.10.10",
-            "db1" : 192,
-            "tcpflags" : {
-               "psh" : 4,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "ack" : 4,
-               "fin" : 0
-            },
-            "fs" : [],
             "psl" : [
                94,
                94,
@@ -106,21 +25,106 @@
                86,
                959
             ],
-            "pr" : 6,
+            "fb2" : "4a0000000a352e37",
+            "fs" : [],
+            "fpd" : 1482552218498,
+            "p1" : 41324,
+            "mac2-term" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "tlsja3-termcnt" : 1,
             "fb1" : "200000018faa3a00",
+            "ps" : [
+               24,
+               118,
+               212,
+               298,
+               462,
+               548,
+               670,
+               756,
+               998,
+               1084
+            ],
+            "prot-term-cnt" : 3,
+            "mysql" : {
+               "ver-term" : "5.7.16"
+            },
+            "timestamp" : "SET",
+            "pa" : 10,
+            "portDst" : 3306,
             "vlan" : [
                50
             ],
-            "prot-term-cnt" : 3,
+            "by" : 1859,
+            "prot-term" : [
+               "tls",
+               "mysql",
+               "tcp"
+            ],
+            "ss" : 1,
+            "tls" : [
+               {
+                  "diffDays" : 3650,
+                  "iCn" : [
+                     "mysql_server_5.7.12_auto_generated_ca_certificate"
+                  ],
+                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
+                  "sCn" : [
+                     "mysql_server_5.7.12_auto_generated_server_certificate"
+                  ],
+                  "notAfter" : 1779463436,
+                  "sn" : "02",
+                  "notBefore" : 1464103436
+               }
+            ],
+            "pr" : 6,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_AES_256_CBC_SHA"
+            ],
+            "tcpflags" : {
+               "fin" : 0,
+               "psh" : 4,
+               "syn" : 1,
+               "urg" : 0,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "ack" : 4
+            },
+            "db1" : 192,
+            "ipDst" : "10.10.10.11",
+            "fp" : 1482552218,
+            "firstPacket" : 1482552218498,
+            "p2" : 3306,
+            "by2" : 1309,
+            "lp" : 1482552218,
+            "a2" : "10.10.10.11",
+            "pa1" : 5,
+            "tlscnt" : 1,
+            "mac2-term-cnt" : 2,
+            "by1" : 550,
+            "tlsja3-term" : [
+               "3509fd9d38bde48d8abc69cd321c0ba0"
+            ],
+            "tlsver-term" : [
+               "TLSv1.1"
+            ],
+            "lastPacket" : 1482552218503,
+            "db" : 1143,
             "no" : "test",
+            "ipSrc" : "10.10.10.10",
+            "tlsver-termcnt" : 1,
+            "pa2" : 5,
             "tlsdstid-term" : [
                "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
-            ]
+            ],
+            "db2" : 951
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-161224"
+               "_index" : "tests_sessions-161224",
+               "_type" : "session"
             }
          }
       }

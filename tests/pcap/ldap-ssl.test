@@ -2,45 +2,69 @@
    "sessions" : [
       {
          "body" : {
-            "fb1" : "301d020101771880",
-            "firstPacket" : 1422673532664,
-            "fs" : [],
-            "tipv61-term" : "00000000000000000000000000000001",
-            "lastPacket" : 1422673558484,
-            "mac1-term-cnt" : 1,
+            "portSrc" : 37386,
             "tls" : [
                {
-                  "notAfter" : 1738030709,
                   "sn" : "008a07e08d4ab50a7b",
-                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
-                  "sCn" : [
-                     "ldap ssl test"
-                  ],
+                  "notBefore" : 1422670709,
+                  "notAfter" : 1738030709,
                   "iCn" : [
                      "ldap ssl test"
                   ],
+                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
                   "diffDays" : 3650,
-                  "notBefore" : 1422670709
+                  "sCn" : [
+                     "ldap ssl test"
+                  ]
                }
             ],
             "fp" : 1422673532,
-            "by" : 6801,
-            "mac2-term-cnt" : 1,
+            "lpd" : 1422673558484,
+            "fb2" : "300c02010178070a",
+            "portDst" : 389,
+            "p2" : 389,
             "tlsdstid-term" : [
                "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
             ],
+            "ipSrc" : "0.0.0.0",
+            "a2" : "0.0.0.1",
             "no" : "test",
-            "pa1" : 20,
-            "pa" : 36,
             "tlsver-termcnt" : 1,
-            "prot-term-cnt" : 3,
-            "p2" : 389,
-            "p1" : 37386,
-            "fpd" : 1422673532664,
+            "tcpflags" : {
+               "psh" : 21,
+               "fin" : 1,
+               "urg" : 0,
+               "syn" : 1,
+               "rst" : 1,
+               "ack" : 11,
+               "syn-ack" : 1
+            },
+            "pa1" : 20,
+            "fb1" : "301d020101771880",
             "db2" : 2050,
-            "tlsver-term" : [
-               "TLSv1.2"
+            "tlscipher-termcnt" : 1,
+            "firstPacket" : 1422673532664,
+            "by" : 6801,
+            "tlscnt" : 1,
+            "lp" : 1422673558,
+            "timestamp" : "SET",
+            "db" : 3701,
+            "p1" : 37386,
+            "pr" : 6,
+            "mac1-term-cnt" : 1,
+            "tlsja3-term" : [
+               "3f8b7a5c41878630f67e660533be80fc"
             ],
+            "lastPacket" : 1422673558484,
+            "prot-term-cnt" : 3,
+            "pa" : 36,
+            "tlsja3-termcnt" : 1,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_AES_128_CBC_SHA"
+            ],
+            "tipv62-term" : "00000000000000000000000000000001",
+            "ss" : 1,
+            "sl" : 25820,
             "ps" : [
                24,
                134,
@@ -79,24 +103,12 @@
                6980,
                7311
             ],
-            "ss" : 1,
-            "db" : 3701,
-            "portSrc" : 37386,
-            "mac1-term" : [
+            "pa2" : 16,
+            "mac2-term" : [
                "00:00:00:00:00:00"
             ],
-            "a2" : "0.0.0.1",
-            "a1" : "0.0.0.1",
-            "lpd" : 1422673558484,
-            "db1" : 1651,
-            "prot-term" : [
-               "tls",
-               "ldap",
-               "tcp"
-            ],
-            "tlscnt" : 1,
-            "fb2" : "300c02010178070a",
-            "pr" : 6,
+            "by2" : 3422,
+            "by1" : 3379,
             "psl" : [
                110,
                110,
@@ -135,37 +147,29 @@
                331,
                90
             ],
-            "ipSrc" : "0.0.0.0",
-            "tipv62-term" : "00000000000000000000000000000001",
-            "tlscipher-termcnt" : 1,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_AES_128_CBC_SHA"
-            ],
-            "ipDst" : "0.0.0.0",
-            "by2" : 3422,
-            "by1" : 3379,
-            "lp" : 1422673558,
-            "pa2" : 16,
-            "portDst" : 389,
-            "mac2-term" : [
+            "fs" : [],
+            "mac1-term" : [
                "00:00:00:00:00:00"
             ],
-            "sl" : 25820,
-            "timestamp" : "SET",
-            "tcpflags" : {
-               "fin" : 1,
-               "rst" : 1,
-               "psh" : 21,
-               "syn-ack" : 1,
-               "ack" : 11,
-               "urg" : 0,
-               "syn" : 1
-            }
+            "a1" : "0.0.0.1",
+            "tlsver-term" : [
+               "TLSv1.2"
+            ],
+            "db1" : 1651,
+            "fpd" : 1422673532664,
+            "tipv61-term" : "00000000000000000000000000000001",
+            "ipDst" : "0.0.0.0",
+            "mac2-term-cnt" : 1,
+            "prot-term" : [
+               "tls",
+               "ldap",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-150131"
+               "_index" : "tests_sessions-150131",
+               "_type" : "session"
             }
          }
       }

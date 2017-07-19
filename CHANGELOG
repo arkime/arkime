@@ -4,6 +4,7 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 0.19.2 2017/07/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
+  - capture - ja3 support (https://github.com/salesforce/ja3/)
 
 0.19.1 2017/07/13
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
