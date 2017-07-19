@@ -172,8 +172,8 @@
               right     : '15px',
               'z-index' : 998,
               top       : '166px',
-              width     : $(window).width()*0.95,
-              height    : $(window).height()*0.75
+              width     : $(window).width() * 0.95,
+              height    : $(window).height() - 175
             });
 
             mapEl.closest('moloch-graph-map').addClass('expanded');

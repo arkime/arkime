@@ -60,7 +60,7 @@ moloch-map .jvectormap-zoomout {
   margin-left     : 4px;
   font-size       : 1.3rem;
   position        : fixed;
-  bottom          : 50px;
+  bottom          : 14px;
   right           : 20px;
   z-index         : 999;
   padding         : 0 0 2px 4px;
