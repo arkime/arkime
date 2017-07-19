@@ -53,3 +53,35 @@ moloch-map .jvectormap-zoomout {
   padding       : var(--px-none) var(--px-sm);
   border-radius : 3px;
 }
+
+/* legend (top 10) */
+.moloch-map-container .map-legend {
+  max-width       : 94%;
+  margin-left     : 4px;
+  font-size       : 1.3rem;
+  position        : fixed;
+  bottom          : 50px;
+  right           : 20px;
+  z-index         : 999;
+  padding         : 0 0 2px 4px;
+  border-radius   : 4px;
+  background-color: #fff;
+}
+
+.moloch-map-container .map-legend .legend-item {
+  display       : inline-block;
+  margin-right  : 4px;
+  margin-top    : 2px;
+  border-radius : 2px;
+  padding       : 2px 4px;
+  color         : #fff;
+  text-shadow   : 1px 1px 0 #333,
+    -1px -1px 0 #333,
+    1px -1px 0 #333,
+    -1px 1px 0 #333,
+    1px 1px 3px rgba(0,0,0,0.65);
+}
+
+.moloch-map-container .map-legend strong {
+  color: #000;
+}

@@ -61,7 +61,6 @@
           // save reference to the map
           map = mapEl.children('.jvectormap-container').data('mapObject');
 
-
           function setup(data) {
             map.series.regions[0].clear();
             delete map.series.regions[0].params.min;
@@ -89,6 +88,23 @@
             } else if (scope.state.dst) {
               map.series.regions[0].setValues(data.dst);
             }
+
+            let region = map.series.regions[0];
+            scope.legend = [];
+            for (var key in region.values) {
+              if (region.values.hasOwnProperty(key) &&
+                 region.elements.hasOwnProperty(key)) {
+                scope.legend.push({
+                  name  : key,
+                  value : region.values[key],
+                  color : region.elements[key].element.properties.fill
+                });
+              }
+            }
+
+            scope.legend.sort((a, b) => {
+              return b.value - a.value;
+            });
           }
 
 
@@ -123,7 +139,7 @@
               position  : 'relative',
               top       : '0',
               right     : '0',
-              height    : '180px',
+              height    : '160px',
               width     : '100%',
               'z-index' : 996,
               'margin-bottom': '-25px'
@@ -151,15 +167,13 @@
 
           /* expands the map element and resizes the map */
           function expandMapElement() {
-            let top = Math.max(mapEl.offset().top - $(window).scrollTop(), 0);
-
             mapEl.css({
-              position: 'fixed',
-              right   : '15px',
+              position  : 'fixed',
+              right     : '15px',
               'z-index' : 998,
-              top     : Math.min(top, $(window).height() * 0.25),
-              width   : $(window).width()*0.75,
-              height  : $(window).height()*0.75
+              top       : '166px',
+              width     : $(window).width()*0.95,
+              height    : $(window).height()*0.75
             });
 
             mapEl.closest('moloch-graph-map').addClass('expanded');

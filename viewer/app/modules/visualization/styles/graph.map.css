@@ -65,5 +65,19 @@ moloch-graph-map .src-dst-btns {
 moloch-graph-map.expanded .src-dst-btns,
 moloch-graph-map.expanded .btn-close-map,
 moloch-graph-map.expanded .btn-expand-map {
-  z-index: 999;
+  z-index : 999;
+  position: fixed;
+}
+
+moloch-graph-map.expanded .btn-close-map {
+  top   : 168px;
+  right : 17px;
+}
+moloch-graph-map.expanded .btn-expand-map {
+  top   : 192px;
+  right : 17px;
+}
+moloch-graph-map.expanded .src-dst-btns {
+  top   : 220px;
+  right : 17px;
 }

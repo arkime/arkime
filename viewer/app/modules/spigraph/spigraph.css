@@ -45,14 +45,6 @@ moloch-spigraph .spi-graph-item:nth-child(odd) {
   background-color: var(--color-quaternary-lightest);
 }
 
-moloch-spigraph .spi-graph-item .moloch-map-container {
-  margin-top: -10px;
-}
-
-moloch-spigraph .spi-graph-item .moloch-map-container .btn-fw {
-  margin-top: -10px;
-}
-
 moloch-spigraph .spi-graph-item .session-graph-btn-container {
   margin-top: -28px;
 }
