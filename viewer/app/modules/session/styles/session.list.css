@@ -84,6 +84,11 @@ session .moloch-col-header .header-sort {
   vertical-align: top;
 }
 
+session .moloch-col-header ul.dropdown-menu {
+  max-height: 250px;
+  overflow  : auto;
+}
+
 
 /* draggable table column headers ---------- */
 session [ng-drag] {
