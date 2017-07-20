@@ -452,7 +452,7 @@ writer_s3_write(const MolochSession_t *const UNUSED(session), MolochPacket_t * c
     if (outputFilePos >= config.maxFileSizeB) {
         writer_s3_flush(TRUE);
     }
-    MOLOCH_LOCK(output);
+    MOLOCH_UNLOCK(output);
 }
 /******************************************************************************/
 void writer_s3_init(char *UNUSED(name))
