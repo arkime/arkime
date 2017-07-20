@@ -166,6 +166,7 @@
                   </div>
                   <!-- single field column -->
                   <div ng-if="::(!header.children && header.type !== 'seconds')">
+                    <li class="divider"></li>
                     <li role="menuitem">
                       <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField, 0)">
                         Export Unique {{::header.friendlyName}}
@@ -188,10 +189,16 @@
                         </a>
                       </li>
                     </span>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.openSpiGraph(header.dbField)">
+                        Open {{::header.friendlyName}} in SPI Graph
+                      </a>
+                    </li>
                   </div> <!-- /single field column -->
                   <!-- multiple field column -->
                   <div ng-if="::(header.children && header.type !== 'seconds')">
                     <span ng-repeat="child in ::header.children track by child.dbField">
+                      <li class="divider"></li>
                       <li role="menuitem">
                         <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 0)">
                           Export Unique {{::child.friendlyName}}
@@ -214,6 +221,11 @@
                           </a>
                         </li>
                       </span>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.openSpiGraph(child.dbField)">
+                        Open {{::child.friendlyName}} in SPI Graph
+                      </a>
+                    </li>
                     </span>
                   </div>
                 </ul> <!-- /multiple field column -->

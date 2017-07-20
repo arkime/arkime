@@ -399,6 +399,11 @@ ul.dropdown-menu div li a {
   text-decoration : none;
 }
 
+ul.dropdown-menu .divider {
+  margin: 2px 0;
+}
+
+
 
 /* animations ================================ */
 .animate-opacity { opacity: 1; }

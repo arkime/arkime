@@ -170,12 +170,6 @@
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu">
                     <li role="menuitem">
                       <a class="cursor-pointer"
-                        ng-click="$ctrl.openSpiGraph(field.dbField)">
-                        Open {{field.friendlyName}} SPI Graph
-                      </a>
-                    </li>
-                    <li role="menuitem">
-                      <a class="cursor-pointer"
                         ng-click="$ctrl.exportUnique(field.dbField, 0)">
                         Export Unique {{field.friendlyName}}
                       </a>
@@ -184,6 +178,12 @@
                       <a class="cursor-pointer"
                         ng-click="$ctrl.exportUnique(field.dbField, 1)">
                         Export Unique {{field.friendlyName}} with counts
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="cursor-pointer"
+                        ng-click="$ctrl.openSpiGraph(field.dbField)">
+                        Open {{field.friendlyName}} SPI Graph
                       </a>
                     </li>
                   </ul>
@@ -210,10 +210,11 @@
                 <ul class="dropdown-menu" uib-dropdown-menu role="menu">
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.openSpiGraph(value.field.dbField)">
-                      Open {{::value.field.friendlyName}} SPI Graph
+                      ng-click="$ctrl.toggleSpiData(value.field, true, true)">
+                      Hide {{::value.field.friendlyName}}
                     </a>
                   </li>
+                  <li class="divider"></li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
                       ng-click="$ctrl.exportUnique(value.field.dbField, 0)">
@@ -228,8 +229,8 @@
                   </li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.toggleSpiData(value.field, true, true)">
-                      Hide {{::value.field.friendlyName}}
+                      ng-click="$ctrl.openSpiGraph(value.field.dbField)">
+                      Open {{::value.field.friendlyName}} SPI Graph
                     </a>
                   </li>
                 </ul>

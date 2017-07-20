@@ -99,10 +99,6 @@ session-field ul.session-field-dropdown {
   -webkit-box-shadow: 0 6px 12px -3px #333;
 }
 
-session-field ul.session-field-dropdown div .divider {
-  margin: 2px 0;
-}
-
 session-field ul.session-field-dropdown.pull-right {
   right: 0;
   left : auto;

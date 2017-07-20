@@ -708,6 +708,14 @@
       return true;
     }
 
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
+    openSpiGraph(fieldID) {
+      this.SessionService.openSpiGraph(fieldID);
+    }
+
 
     /* UNIQUE VALUES */
     /**
