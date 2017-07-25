@@ -701,11 +701,11 @@
 
     /**
      * Opens a new browser tab containing all the unique values for a given field
-     * @param {string} fieldID  The field id (dbField) to display unique values for
-     * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+     * @param {string} exp  The field id to display unique values for
+     * @param {int} counts  Whether to display the unique values with counts (1 or 0)
      */
-    exportUnique(fieldID, counts) {
-      this.SessionService.exportUniqueValues(fieldID, counts);
+    exportUnique(exp, counts) {
+      this.SessionService.exportUniqueValues(exp, counts);
     }
 
     /* Cancels the loading of all server requests */

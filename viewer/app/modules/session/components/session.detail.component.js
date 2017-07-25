@@ -346,6 +346,23 @@
       localStorage['moloch-decodings'] = JSON.stringify(this.$scope.params.decode);
     }
 
+    /**
+     * Opens a new browser tab containing all the unique values for a given field
+     * @param {string} fieldID  The field id to display unique values for
+     * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+     */
+    exportUnique(fieldID, counts) {
+      this.SessionService.exportUniqueValues(fieldID, counts);
+    }
+
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
+    openSpiGraph(fieldID) {
+      this.SessionService.openSpiGraph(fieldID);
+    }
+
   }
 
   SessionDetailController.$inject = ['$sce','$scope','$sanitize','$routeParams',

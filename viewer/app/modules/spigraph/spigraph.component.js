@@ -50,12 +50,13 @@
         .then((response) => {
           this.fields = response.concat([{dbField: 'ip.dst:port', exp: 'ip.dst:port'}])
                                 .filter(function(a) {return a.dbField !== undefined;})
-                                .sort(function(a,b) {return (a.exp > b.exp?1:-1);}); 
+                                .sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+          this.loadData(); /* IMPORTANT! kicks off initial data retrieval */
         });
 
       // load route params
       this.query        = {};
-      this.query.field  = this.$routeParams.field       || 'no';
+      this.query.field  = this.$routeParams.field       || 'node';
       this.query.size   = this.$routeParams.size        || '20';
       this.sortBy       = this.$routeParams.sort        || 'graph';
       this.graphType    = this.$routeParams.graphType   || 'lpHisto';
@@ -67,6 +68,7 @@
       this.refresh      = '0';
       this.items        = [];
 
+      let initialized = false;
       this.$scope.$on('change:search', (event, args) => {
         if (args.startTime && args.stopTime) {
           this.query.startTime  = args.startTime;
@@ -81,7 +83,9 @@
         this.query.expression = args.expression;
         if (args.bounding) { this.query.bounding = args.bounding; }
 
-        this.loadData(true);
+        if (initialized) { this.loadData(true); }
+
+        initialized = true;
       });
 
       this.$scope.$on('change:time', (event, args) => {
@@ -190,6 +194,14 @@
       if (reload && timeout) {
         this.$timeout.cancel(timeout);
         timeout = null;
+      }
+
+      // server takes the dbField value
+      for (let i = 0, len = this.fields.length; i < len; ++i) {
+        if (this.fields[i].exp === this.query.field) {
+          this.query.field = this.fields[i].dbField;
+          break;
+        }
       }
 
       this.SpigraphService.get(this.query)

@@ -168,23 +168,23 @@
                   <div ng-if="::(!header.children && header.type !== 'seconds')">
                     <li class="divider"></li>
                     <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField, 0)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 0)">
                         Export Unique {{::header.friendlyName}}
                       </a>
                     </li>
                     <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField, 1)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 1)">
                         Export Unique {{::header.friendlyName}} with counts
                       </a>
                     </li>
                     <span ng-if="::(header.portField)">
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField + ':' + header.portField, 0)">
+                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
                           Export Unique {{::header.friendlyName}}:Ports
                         </a>
                       </li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField + ':' + header.portField, 1)">
+                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
                           Export Unique {{::header.friendlyName}}:Ports with counts
                         </a>
                       </li>
@@ -200,23 +200,23 @@
                     <span ng-repeat="child in ::header.children track by child.dbField">
                       <li class="divider"></li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 0)">
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 0)">
                           Export Unique {{::child.friendlyName}}
                         </a>
                       </li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 1)">
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 1)">
                           Export Unique {{::child.friendlyName}} with counts
                         </a>
                       </li>
                       <span ng-if="::(child.portField)">
                         <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 0)">
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
                             Export Unique {{::child.friendlyName}}:Ports
                           </a>
                         </li>
                         <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 1)">
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
                             Export Unique {{::child.friendlyName}}:Ports with counts
                           </a>
                         </li>

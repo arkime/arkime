@@ -3543,11 +3543,18 @@ app.get('/uniqueValue.json', function(req, res) {
 });
 
 app.get('/unique.txt', function(req, res) {
-  if (req.query.field === undefined) {
-    return res.send("Missing field parameter");
+  if (req.query.field === undefined && req.query.exp === undefined) {
+    return res.send("Missing field or exp parameter");
   }
 
   noCache(req, res);
+
+  // look up the field based on the expression
+  if (req.query.exp && !req.query.field) {
+    var field = Config.getFieldsMap()[req.query.exp];
+    if (field) { req.query.field = field.dbField; }
+    else { req.query.field = req.query.exp; }
+  }
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;
@@ -3635,7 +3642,7 @@ app.get('/unique.txt', function(req, res) {
     break;
   }
 
-  if (req.query.field === "a1:p1" || req.query.field === "a2:p2") {
+  if (req.query.field === "ip.src:p1" || req.query.field === "ip.dst:p2") {
     eachCb = function(item, cb) {
       var key = Pcap.inet_ntoa(item.key);
       item.field2.buckets.forEach(function (item2) {
@@ -3689,9 +3696,9 @@ app.get('/unique.txt', function(req, res) {
         });
       });
     } else {
-      if (req.query.field === "a1:p1") {
+      if (req.query.field === "ip.src:p1") {
         query.aggregations = {field: { terms : {field : "a1", size: aggSize}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
-      } else if (req.query.field === "a2:p2") {
+      } else if (req.query.field === "ip.dst:p2") {
         query.aggregations = {field: { terms : {field : "a2", size: aggSize}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
       } else  {
         query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};

@@ -79,6 +79,11 @@ session session-detail dd > strong {
   font-size: 16px;
 }
 
+session session-detail .tag-list {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
 
 /* more items link */
 session session-detail .show-more-items {
@@ -104,4 +109,13 @@ session session-detail .nav-pills > li > a:hover,
 session session-detail .nav-pills > li.open > a,
 session session-detail .nav-pills > li.open > a:hover {
   background-color: var(--color-quaternary-lighter);
+}
+
+
+/* clickable labels */
+session-detail .clickable-label {
+  margin-top: -2px;
+}
+session-detail .clickable-label .btn {
+  height: 23px;
 }

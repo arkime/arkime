@@ -369,15 +369,15 @@
 
     /**
      * Open a new page to view unique values for different fields
-     * @param {string} dbField  The field to get unique values for
-     * @param {number} counts   1 or 0 whether to include counts of the values
+     * @param {string} exp    The field to get unique values for
+     * @param {number} counts 1 or 0 whether to include counts of the values
      */
-    exportUniqueValues(dbField, counts) {
+    exportUniqueValues(exp, counts) {
       let url = 'unique.txt';
 
-      let paramObj    = this.$location.search();
-      paramObj.field  = dbField;
+      let paramObj    = this.getRouteParams();
       paramObj.counts = counts;
+      paramObj.exp    = exp;
 
       let paramString = this.getParamString(paramObj);
 
@@ -395,7 +395,7 @@
     openSpiGraph(dbField) {
       let url = 'spigraph';
 
-      let paramObj    = this.$location.search();
+      let paramObj    = this.getRouteParams();
       paramObj.field  = dbField;
 
       let paramString = this.getParamString(paramObj);
@@ -438,6 +438,23 @@
     }
 
     /**
+     * Clones the existing object containing the route parameters
+     * Uses $location.search()
+     * @returns {Object} paramObj Key, value pairs describing the route params
+     */
+    getRouteParams() {
+      let paramObj = {};
+
+      for (let param in this.$location.search()) {
+        if (this.$location.search().hasOwnProperty(param)) {
+          paramObj[param] = this.$location.search()[param];
+        }
+      }
+
+      return paramObj;
+    }
+
+    /**
      * Get Request Options
      * @param {string} baseUrl        The base url to append params to
      * @param {string} method         The HTTP method (POST, GET, PUT, DELETE, etc)
@@ -447,13 +464,7 @@
     getReqOptions(baseUrl, method, params) {
       let data      = { segments: params.segments };
       let url       = baseUrl;
-
-      let paramObj = {}; // clone existing params in url
-      for (let param in this.$location.search()) {
-        if (this.$location.search().hasOwnProperty(param)) {
-          paramObj[param] = this.$location.search()[param];
-        }
-      }
+      let paramObj  = this.getRouteParams();
 
       if (!params.applyTo || params.applyTo === 'open') {
         // specific sessions
