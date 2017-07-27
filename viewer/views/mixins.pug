@@ -68,7 +68,7 @@ mixin stringList(container, field, title, expr, extra)
         if (value.length == 0)
           span &lt;empty&gt;
         else
-          +clickableValue(field, value)
+          +clickableValue(expr, value)
       if (extra)
         if (container && container[field] && container[field].length > 0)
           |, 
@@ -140,7 +140,51 @@ mixin ipArrayListPre(session, field, title, expr, max)
   if (!max)
     - max = 25
   if (session[field])
-    dt #{title}
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong #{title}&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('ip." + expr + "', 0)")
+              | Export Unique #{title}
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('ip." + expr + "', 1)")
+              | Export Unique #{title} with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('ip." + expr + "')")
+              | Open #{title} SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('country." + expr + "', 0)")
+              | Export Unique #{title} Country
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('country." + expr + "', 1)")
+              | Export Unique #{title} Country with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('country." + expr + "')")
+              | Open #{title} Country SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('asn." + expr + "', 0)")
+              | Export Unique #{title} ASN
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('asn." + expr + "', 1)")
+              | Export Unique #{title} ASN with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('asn." + expr + "')")
+              | Open #{title} ASN SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('rir." + expr + "', 0)")
+              | Export Unique #{title} RIR
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('rir." + expr + "', 1)")
+              | Export Unique #{title} RIR with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('rir." + expr + "')")
+              | Open #{title} RIR SPI Graph
     dd
       each ip,i in session[field]
         if (i == max)
@@ -179,7 +223,7 @@ mixin ipArrayList(container, field, title, expr, max)
               | Export Unique #{title} Country with counts
           li
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".country')")
-              | Open Socks #{title} SPI Graph
+              | Open #{title} Country SPI Graph
           li.divider
           li
             a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".asn', 0)")

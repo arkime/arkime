@@ -1,6 +1,6 @@
 if (session.tls || session["tlsver-term"])
-  h4 TLS
-  dl
+  h4.sessionDetailMeta.bold TLS
+  dl.sessionDetailMeta
     +arrayList(session, "tlsver-term", "Version", "tls.version")
     +arrayList(session, "tlscipher-term", "Cipher", "tls.cipher")
     +arrayList(session, "tlssrcid-term", "Src Session Id", "tls.sessionid.src")

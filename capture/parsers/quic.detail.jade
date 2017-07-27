@@ -1,6 +1,6 @@
 if (session.quic)
   div.sessionDetailMeta.bold quic
   dl.sessionDetailMeta
-    +stringList(session.quic, "host-term", "Hosts", "host.quic")
-    +stringList(session.quic, "ua-term", "User-Agents", "quic.user-agent")
-    +stringList(session.quic, "version-term", "Versions", "quic.version")
+    +arrayList(session.quic, "host-term", "Hosts", "host.quic")
+    +arrayList(session.quic, "ua-term", "User-Agents", "quic.user-agent")
+    +arrayList(session.quic, "version-term", "Versions", "quic.version")
