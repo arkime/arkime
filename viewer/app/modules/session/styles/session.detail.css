@@ -79,11 +79,6 @@ session session-detail dd > strong {
   font-size: 16px;
 }
 
-session session-detail .tag-list {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
 
 /* more items link */
 session session-detail .show-more-items {
@@ -116,6 +111,12 @@ session session-detail .nav-pills > li.open > a:hover {
 session-detail .clickable-label {
   margin-top: -2px;
 }
+
 session-detail .clickable-label .btn {
   height: 23px;
+}
+
+session-detail .clickable-label .dropdown-menu {
+  max-height: 280px;
+  overflow-y: auto;
 }

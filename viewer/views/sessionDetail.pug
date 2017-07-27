@@ -32,68 +32,163 @@ dl
     else
       | &nbsp;
 
-  +arrayList(session, "prot-term", "Protocols", "protocols")
-
   dt Start
   dd
     + clickableValue('starttime', session.lp, true)
     strong.margined-left-xxxxlg Stop
     + clickableValue('stoptime', session.lp, true)
 
-    span.margined-left-xxxxlg
-      +clickableLabel('node', 'Node')
+  dt
+    +clickableLabel('node', 'Node')
+  dd
     +clickableValue('node', session.no, true)
 
-    span.margined-left-lg
-      +clickableLabel('ip.protocol', 'IP Protocol')
+  +arrayList(session, "prot-term", "Protocols", "protocols")
+
+  dt
+   +clickableLabel('ip.protocol', 'IP Protocol')
+  dd
     +clickableValue('ip.protocol', session.pr)
 
   +arrayList(session, "user", "Users", "user")
   +arrayList(session, "asset-term", "Assets", "asset")
 
   if (session.by1 || session.by2)
-    dt Src
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong Src&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('packets.src', 0)")
+              | Export Unique Src Packets
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('packets.src', 1)")
+              | Export Unique Src Packets with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('packets.src')")
+              | Open Src Packets SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('bytes.src', 0)")
+              | Export Unique Src Bytes
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('bytes.src', 1)")
+              | Export Unique Src Bytes with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('bytes.src')")
+              | Open Src Bytes SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('databytes.src', 0)")
+              | Export Unique Src Databytes
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('databytes.src', 1)")
+              | Export Unique Src Databytes with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('databytes.src')")
+              | Open Src Databytes SPI Graph
     dd
-      span.medium
-        +clickableLabel('packets.src', 'Src Packets')
+      strong.medium Packets
       +clickableValue('packets.src', session.pa1)
 
-      span.medium.margined-left-lg
-        +clickableLabel('bytes.src', 'Src Bytes')
+      strong.medium.margined-left-xxlg Bytes
       +clickableValue('bytes.src', session.by1)
 
-      span.medium.margined-left-lg
-        +clickableLabel('databytes.src', 'Src Databytes')
+      strong.medium.margined-left-xxlg Databytes
       +clickableValue('databytes.src', session.db1)
 
-    dt Dst
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong Dst&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('packets.dst', 0)")
+              | Export Unique Dst Packets
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('packets.dst', 1)")
+              | Export Unique Dst Packets with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('packets.dst')")
+              | Open Dst Packets SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('bytes.dst', 0)")
+              | Export Unique Dst Bytes
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('bytes.dst', 1)")
+              | Export Unique Dst Bytes with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('bytes.dst')")
+              | Open Dst Bytes SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('databytes.dst', 0)")
+              | Export Unique Dst Databytes
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('databytes.dst', 1)")
+              | Export Unique Dst Databytes with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('databytes.dst')")
+              | Open Dst Databytes SPI Graph
     dd
-      span.medium
-        +clickableLabel('packets.dst', 'Dst Packets')
+      strong.medium Packets
       +clickableValue('packets.dst', session.pa2)
 
-      span.medium.margined-left-lg
-        +clickableLabel('bytes.dst', 'Dst Bytes')
+      strong.medium.margined-left-xxlg Bytes
       +clickableValue('bytes.dst', session.by2)
 
-      span.medium.margined-left-lg
-        +clickableLabel('databytes.dst', 'Dst Databytes')
+      strong.medium.margined-left-xxlg Databytes
       +clickableValue('databytes.dst', session.db2)
 
   if (session["mac1-term"])
-    dt Ethernet
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong Ethernet&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('mac.src', 0)")
+              | Export Unique Src Mac
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('mac.src', 1)")
+              | Export Unique Src Mac with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('mac.src')")
+              | Open Src Mac SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('mac.dst', 0)")
+              | Export Unique Dst Mac
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('mac.dst', 1)")
+              | Export Unique Dst Mac with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('mac.dst')")
+              | Open Dst Mac SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('vlan', 0)")
+              | Export Unique VLan
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('vlan', 1)")
+              | Export Unique VLan with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('vlan')")
+              | Open VLan SPI Graph
     dd
-      strong.medium
-        +clickableLabel('mac.src', 'Src Mac')
+      strong.medium Src Mac
       +arrayPrint(session, "mac1-term", "mac.src", true)
 
-      strong.medium.margined-left-lg
-        +clickableLabel('mac.dst', 'Dst Mac')
+      strong.medium.margined-left-xxlg Dst Mac
       +arrayPrint(session, "mac2-term", "mac.dst", true)
 
       if (session.vlan)
-        strong.medium.margined-left-lg VLan
-          +clickableLabel('vlan', 'VLan')
+        strong.medium.margined-left-xxlg VLan
         +arrayPrint(session, "vlan", "vlan")
 
   dt
@@ -253,20 +348,44 @@ dl
       +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
 
   if (session.fb1 || session.fb2)
-    dt Payload8
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong Payload8&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('payload8.src.hex', 0)")
+              | Export Unique Src Payload8
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('payload8.src.hex', 1)")
+              | Export Unique Src Payload8 with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('payload8.src.hex')")
+              | Open Src Payload8 SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('payload8.dst.hex', 0)")
+              | Export Unique Dst Payload8
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('payload8.dst.hex', 1)")
+              | Export Unique Dst Payload8 with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('payload8.dst.hex')")
+              | Open Dst Payload8 SPI Graph
     dd
       if (session.fb1)
-        strong.medium.margined-left
-          +clickableLabel('payload8.src.hex', 'Src Payload8')
+        strong.medium Src Payload8
         - var fb1a = new Buffer(session.fb1, "hex").toString();
         +clickableValue('payload8.src.hex', session.fb1)
         | (
         +clickableValue('payload8.src.utf8', fb1a)
         |)
-
       if (session.fb2)
-        strong.medium.margined-left
-          +clickableLabel('payload8.dst.hex', 'Dst Payload8')
+        if (session.fb1)
+          strong.medium.margined-left-xxlg Dst Payload8
+        else
+          strong.medium Dst Payload8
         - var fb2a = new Buffer(session.fb2, "hex").toString();
         +clickableValue('payload8.dst.hex', session.fb2)
         | (
@@ -280,8 +399,11 @@ dl
     +arrayList(session, "fs", "Files", "file")
 
   if (session.scrubby)
-    dt Scrubbed
-    dd By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
+    dt
+      +clickableLabel('scrubbed.by', 'Scrubbed')
+    dd
+      div.margined-top-sm.margined-bottom-sm
+        | By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
 
   if (session.socksip)
     dt
@@ -382,26 +504,93 @@ dl
     dd
       +clickableValue('socks.user', session.socksuser)
   if (session.tcpflags)
-    dt TCP Flags
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong TCP Flags&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.syn', 0)")
+              | Export Unique SYN
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.syn', 1)")
+              | Export Unique SYN with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.syn')")
+              | Open SYN SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.syn-ack', 0)")
+              | Export Unique SYN-ACK
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.syn-ack', 1)")
+              | Export Unique SYN-ACK with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.syn-ack')")
+              | Open SYN-ACK SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.ack', 0)")
+              | Export Unique ACK
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.ack', 1)")
+              | Export Unique ACK with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.ack')")
+              | Open ACK SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.psh', 0)")
+              | Export Unique PSH
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.psh', 1)")
+              | Export Unique PSH with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.psh')")
+              | Open PSH SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.rst', 0)")
+              | Export Unique RST
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.rst', 1)")
+              | Export Unique RST with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.rst')")
+              | Open RST SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.fin', 0)")
+              | Export Unique FIN
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.fin', 1)")
+              | Export Unique FIN with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.fin')")
+              | Open FIN SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.urg', 0)")
+              | Export Unique URG
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('tcpflags.urg', 1)")
+              | Export Unique URG with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('tcpflags.urg')")
+              | Open URG SPI Graph
     dd
-      span.medium
-        +clickableLabel('tcpflags.syn', 'SYN')
+      strong.medium SYN
       +clickableValue('tcpflags.syn', session.tcpflags.syn)
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.syn-ack', 'SYN-ACK')
+      strong.medium.margined-left-xxlg SYN-ACK
       +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.ack', 'ACK')
+      strong.medium.margined-left-xxlg ACK
       +clickableValue('tcpflags.ack', session.tcpflags.ack)
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.psh', 'PSH')
+      strong.medium.margined-left-xxlg PSH
       +clickableValue('tcpflags.psh', session.tcpflags.psh)
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.rst', 'RST')
+      strong.medium.margined-left-xxlg RST
       +clickableValue('tcpflags.rst', session.tcpflags.rst)
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.fin', 'FIN')
+      strong.medium.margined-left-xxlg FIN
       +clickableValue('tcpflags.fin', session.tcpflags.fin)
-      span.medium.margined-left-lg
-        +clickableLabel('tcpflags.urg', 'URG')
+      strong.medium.margined-left-xxlg URG
       +clickableValue('tcpflags.urg', session.tcpflags.urg)

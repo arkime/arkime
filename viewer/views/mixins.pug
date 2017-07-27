@@ -55,6 +55,7 @@ mixin arrayList(container, field, title, expr, extra, max)
           a.cursor-pointer.show-more-items(ng-click="$ctrl.showMoreItems($event)") more...
       if (extra)
         |!{extra}
+      div(style="display:inline-block;margin-top:3px") &nbsp;
 
 //- Standard method to print an array of values with commas
 mixin stringList(container, field, title, expr, extra)
