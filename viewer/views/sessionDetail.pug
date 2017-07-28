@@ -375,7 +375,7 @@ dl
               | Open Dst Payload8 SPI Graph
     dd
       if (session.fb1)
-        strong.medium Src Payload8
+        strong.medium Src
         - var fb1a = new Buffer(session.fb1, "hex").toString();
         +clickableValue('payload8.src.hex', session.fb1)
         | (
@@ -383,9 +383,9 @@ dl
         |)
       if (session.fb2)
         if (session.fb1)
-          strong.medium.margined-left-xxlg Dst Payload8
+          strong.medium.margined-left-xxlg Dst
         else
-          strong.medium Dst Payload8
+          strong.medium Dst
         - var fb2a = new Buffer(session.fb2, "hex").toString();
         +clickableValue('payload8.dst.hex', session.fb2)
         | (
