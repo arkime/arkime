@@ -1,5 +1,5 @@
 # Tests on a fresh install
-use Test::More tests => 39;
+use Test::More tests => 45;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -39,8 +39,10 @@ my $json;
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct sessions.json health number_of_data_nodes");
     is ($json->{graph}->{interval}, 60, "Correct sessions.json graph interval");
     is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct sessions.json graph lpHisto");
-    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct sessions.json graph paHisto");
-    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct sessions.json graph lpHisto");
+    is (scalar @{$json->{graph}->{pa1Histo}}, 0, "Correct sessions.json graph pa1Histo");
+    is (scalar @{$json->{graph}->{pa2Histo}}, 0, "Correct sessions.json graph pa2Histo");
+    is (scalar @{$json->{graph}->{db1Histo}}, 0, "Correct sessions.json graph db1Histo");
+    is (scalar @{$json->{graph}->{db2Histo}}, 0, "Correct sessions.json graph db2Histo");
     is (scalar keys %{$json->{map}}, 0, "Correct sessions.json map");
 
     $json = viewerGet2("/spigraph.json");
@@ -48,8 +50,10 @@ my $json;
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spigraph.json health number_of_data_nodes");
     is ($json->{graph}->{interval}, 60, "Correct spigraph.json graph interval");
     is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spigraph.json graph lpHisto");
-    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct spigraph.json graph paHisto");
-    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spigraph.json graph lpHisto");
+    is (scalar @{$json->{graph}->{pa1Histo}}, 0, "Correct spigraph.json graph pa1Histo");
+    is (scalar @{$json->{graph}->{pa2Histo}}, 0, "Correct spigraph.json graph pa2Histo");
+    is (scalar @{$json->{graph}->{db1Histo}}, 0, "Correct spigraph.json graph db1Histo");
+    is (scalar @{$json->{graph}->{db2Histo}}, 0, "Correct spigraph.json graph db2Histo");
     is (scalar keys %{$json->{map}}, 0, "Correct spigraph.json map");
 
     $json = viewerGet2("/spiview.json");
@@ -65,8 +69,10 @@ my $json;
     is ($json->{recordsTotal}, 0, "Correct spiview.json recordsTotal");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spiview.json health number_of_data_nodes");
     is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
-    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct spiview.json graph paHisto");
-    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
+    is (scalar @{$json->{graph}->{pa1Histo}}, 0, "Correct spiview.json graph pa1Histo");
+    is (scalar @{$json->{graph}->{pa2Histo}}, 0, "Correct spiview.json graph pa2Histo");
+    is (scalar @{$json->{graph}->{db1Histo}}, 0, "Correct spiview.json graph db1Histo");
+    is (scalar @{$json->{graph}->{db2Histo}}, 0, "Correct spiview.json graph db2Histo");
     is (scalar keys %{$json->{map}}, 2, "Correct spiview.json map");
 
     $json = viewerGet2("/connections.json");

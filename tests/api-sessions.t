@@ -1,4 +1,4 @@
-use Test::More tests => 54;
+use Test::More tests => 66;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -26,8 +26,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "map short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004309000", 14], ["1386004312000", 15], [1386004317000, 17]]'), "paHisto short");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004309000", 1754], ["1386004312000", 1770], [1386004317000, 1763]]'), "dbHisto short");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "pa1Histo short");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "pa2Histo short");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "db1Histo short");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "db2Histo short");
     is ($json->{recordsFiltered}, 3, "records short");
     is ($json->{graph}->{interval}, 1, "correct interval short");
     is ($json->{graph}->{xmax}, 1386004400000, "correct xmax short");
@@ -38,8 +40,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "multi map short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "multi lpHisto short");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004309000", 14], ["1386004312000", 15], [1386004317000, 17]]'), "multi paHisto short");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004309000", 1754], ["1386004312000", 1770], [1386004317000, 1763]]'), "multi dbHisto short");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "multi pa1Histo short");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "multi pa2Histo short");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "multi db1Histo short");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "multi db2Histo short");
     is ($json->{recordsFiltered}, 3, "multi records short");
     is ($json->{graph}->{interval}, 1, "multi correct interval short");
     is ($json->{graph}->{xmax}, 1386004400000, "multi correct xmax short");
@@ -50,8 +54,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "map medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004260000", 46]]'), "paHisto medium");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004260000", 5287]]'), "dbHisto medium");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "pa1Histo medium");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004260000", 20]]'), "pa2Histo medium");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004260000", 486]]'), "db1Histo medium");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004260000", 4801]]'), "db2Histo medium");
     is ($json->{recordsFiltered}, 3, "records medium");
     is ($json->{graph}->{interval}, 60, "correct interval medium");
     is ($json->{graph}->{xmax}, 1386349908000, "correct xmax medium");
@@ -62,8 +68,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "multi map medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "multi lpHisto medium");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004260000", 46]]'), "multi paHisto medium");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004260000", 5287]]'), "multi dbHisto medium");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "multi pa1Histo medium");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004260000", 20]]'), "multi pa2Histo medium");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004260000", 486]]'), "multi db1Histo medium");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004260000", 4801]]'), "multi db2Histo medium");
     is ($json->{recordsFiltered}, 3, "multi records medium");
     is ($json->{graph}->{interval}, 60, "multi correct interval medium");
     is ($json->{graph}->{xmax}, 1386349908000, "multi correct xmax medium");
@@ -74,8 +82,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4], [1482552000000,4]]'), "paHisto ALL");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68], [1482552000000,68]]'), "dbHisto ALL");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "pa1Histo ALL");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "pa2Histo ALL");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1335956400000", 0], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "db1Histo ALL");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "db2Histo ALL");
     is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
@@ -84,8 +94,10 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "multi map ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "multi lpHisto ALL");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4], [1482552000000,4]]'), "multi paHisto ALL");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68], [1482552000000,68]]'), "multi dbHisto ALL");
+    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "multi pa1Histo ALL");
+    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "multi pa2Histo ALL");
+    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1335956400000", 0], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "multi db1Histo ALL");
+    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "multi db2Histo ALL");
     is ($json->{recordsFiltered}, 6, "multi records ALL");
     is ($json->{graph}->{interval}, 3600, "multi correct interval ALL");
 
