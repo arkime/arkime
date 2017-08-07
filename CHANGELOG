@@ -2,9 +2,22 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
         outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
 
 
-0.19.2 2017/07/xx
+0.19.2 2017/08/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
   - capture - ja3 support (https://github.com/salesforce/ja3/)
+  - viewer - remove jade dependency since using pug now
+  - release - node 6.x
+  - viewer - fix world map button
+  - tests - viewer tests are updated and all passing again
+  - viewer - most session detail labels now have menus
+  - s3 - fixed deadlock
+  - wise - only allow 4096 waiting sessions
+  - viewer - add top 10 countries to map (#564)
+  - viewer - type ahead improvements, disable by default for multiviewer
+  - snf - fix build
+  - viewer - abbreviate large unites for data bytes (issue #680)
+  - viewer - add href to nav tab links (issue #651)
+  - viewer - save spiview fields (issue #715)
 
 0.19.1 2017/07/13
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
