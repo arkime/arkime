@@ -42,7 +42,6 @@ var Config         = require('./config.js'),
     molochversion  = require('./version'),
     http           = require('http'),
     pug            = require('pug'),
-    jade           = require('jade'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
     decode         = require('./decode.js');
