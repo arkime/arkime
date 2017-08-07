@@ -44,8 +44,8 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 #
 $txt = get("date=-1&field=no&autocomplete=1&expression=" . uri_escape("node=te*"));
 $mtxt = get("date=-1&field=no&autocomplete=1&expression=" . uri_escape("node=te*"), 1);
-eq_or_diff($txt, "[\"test\"]\n", "Nodes", { context => 3 });
-eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
+eq_or_diff($txt, "[\"test\"]\n", "Autocomplete Nodes", { context => 3 });
+eq_or_diff($mtxt, "[]\n", "Multi Autocomplete Nodes", { context => 3 });
 
 #
 $txt = get("date=-1&field=no&expression=$files&counts=1");
@@ -67,8 +67,8 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 #
 $txt = get("date=-1&field=a1&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"));
 $mtxt = get("date=-1&field=a1&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"), 1);
-eq_or_diff($txt, "[\"10.180.156.185\"]\n", "IPs", { context => 3 });
-eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
+eq_or_diff($txt, "[\"10.180.156.185\"]\n", "Autocomplete IPs", { context => 3 });
+eq_or_diff($mtxt, "[]\n", "Multi Autocomplete IPs", { context => 3 });
 
 #
 $txt = get("date=-1&field=ta&expression=$files&counts=1");
@@ -121,8 +121,8 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 #
 $txt = get("date=-1&field=hmd5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"));
 $mtxt = get("date=-1&field=hmd5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"), 1);
-eq_or_diff($txt, "[\"2069181ae704855f29caf964ca52ec49\",\"222315d36e1313774cb1c2f0eb06864f\",\"b0cecae354b9eab1f04f70e46a612cb1\"]\n", "HTTP md5s", { context => 3 });
-eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
+eq_or_diff($txt, "[\"2069181ae704855f29caf964ca52ec49\",\"222315d36e1313774cb1c2f0eb06864f\",\"b0cecae354b9eab1f04f70e46a612cb1\"]\n", "Autocomplete HTTP md5s", { context => 3 });
+eq_or_diff($mtxt, "[]\n", "Multi Autocomplete HTTP md5s", { context => 3 });
 
 #
 $txt = get("date=-1&field=hmd5&expression=$files&counts=1");
