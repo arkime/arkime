@@ -341,3 +341,8 @@ interface = eth4
 #[moloch-clusters]
 #forensics=url:https://viewer1.host.domain:8005;passwordSecret:password4moloch;name:Forensics Cluster
 #shortname2=url:http://viewer2.host.domain:8123;passwordSecret:password4moloch;name:Testing Cluster
+
+
+
+# WARNING: This is an ini file with sections, most likely you don't want to put a setting here.
+#          New settings usually go near the top in the [default] section, or in [nodename] sections.
