@@ -289,8 +289,7 @@ my ($cmd) = @_;
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
-    $harness->runtests(@tests);
-
+    my $parser = $harness->runtests(@tests);
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
@@ -300,6 +299,8 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8200/shutdown");
         $main::userAgent->post("http://localhost:8081/shutdown");
     }
+
+    exit(1) if ( $parser->has_errors );
 }
 ################################################################################
 $main::debug = 0;
