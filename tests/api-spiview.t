@@ -106,6 +106,11 @@ my $pwd = getcwd() . "/pcap";
     $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand,ta:3,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     $djson = viewerGet("/spiview.json?startTime=1332734457&stopTime=1482563001&facets=1&spi=a1,a2,pr,fileand,ta:3,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
+    # Sort alpha since counts are the same and could come back in random order
+    @{$json->{spi}->{hh1}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$json->{spi}->{hh1}->{buckets}});
+    @{$mjson->{spi}->{hh1}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$mjson->{spi}->{hh1}->{buckets}});
+    @{$djson->{spi}->{hh1}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$djson->{spi}->{hh1}->{buckets}});
+
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
     eq_or_diff($json->{protocols}, from_json('{"tcp": 5, "http": 3, "socks": 3, "bittorrent": 2, "icmp": 1}'), "protocols ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
@@ -137,13 +142,14 @@ my $pwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{spi}->{ta}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 14,
             "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"}]}'), "ALL ta");
+
     eq_or_diff($json->{spi}->{hh1}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-            "buckets":[{"doc_count":3, "key":"user-agent"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"accept"}]}'), "ALL hh1");
+            "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL hh1");
 
     delete $json->{health};
     delete $mjson->{health};
     delete $djson->{health};
     $djson->{graph}->{xmax} = undef;
     $djson->{graph}->{xmin} = undef;
-    eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
-    eq_or_diff($json, $djson, "single doesn't match date", { context => 3 });
+    eq_or_diff($mjson, $json, "single doesn't match multi", { context => 3 });
+    eq_or_diff($djson, $json, "single doesn't match date", { context => 3 });
