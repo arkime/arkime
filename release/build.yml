@@ -136,8 +136,8 @@
         - node
         - npm
 
-# Actually build 
-    - block: 
+# Actually build
+    - block:
       - name: git clone
         git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
 
@@ -162,6 +162,13 @@
 
     - set_fact:
         moloch_version: "stoperrors"
+
+# NOTICE.txt
+    - name: license check
+      command: /data/{{moloch_name}}/node-v{{node_version}}-linux-x64/bin/npm -g install license-checker
+
+    - name: build notice.txt
+      shell: {{moloch_name}}/release/notice.txt.pl {{moloch_name}}/NOTICE /data/{{moloch_name}} > /data/{{moloch_name}}/NOTICE.txt
 
 # CentOS package
     - block:

@@ -2,6 +2,7 @@
   "name": "WISE",
   "version": "0.16.0",
   "private": true,
+  "license": "Apache-2.0",
   "dependencies": {
     "async": "^2.0.1",
     "bson": "^0.5.5",
