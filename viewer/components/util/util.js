@@ -208,13 +208,14 @@
     /**
      * humanReadable filter
      * Returns the <=4 char human readable version of bytes
+     * (Should be called humanReadableBytes)
      *
      * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
      */
     .filter('humanReadable', function () {
       return function (fileSizeInBytes) {
         var i = 0;
-        var byteUnits = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        var byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
         while (fileSizeInBytes >= 1000) {
             fileSizeInBytes = fileSizeInBytes / 1024;
             i++;
@@ -224,6 +225,29 @@
           return fileSizeInBytes.toFixed(0) + byteUnits[i];
         } else {
           return fileSizeInBytes.toFixed(1) + byteUnits[i];
+        }
+       };
+     })
+
+    /**
+     * humanReadableNumber filter
+     * Returns the <=4 char human readable version of bytes
+     *
+     * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+     */
+    .filter('humanReadableNumber', function () {
+      return function (num) {
+        var i = 0;
+        var units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        while (num >= 1000) {
+            num = num / 1000;
+            i++;
+        }
+
+        if (i === 0 || num >= 10) {
+          return num.toFixed(0) + units[i];
+        } else {
+          return num.toFixed(1) + units[i];
         }
        };
      })

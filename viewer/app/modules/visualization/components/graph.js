@@ -113,7 +113,7 @@
                   if (scope.type === 'dbHisto') {
                     return $filter('humanReadable')(v);
                   } else {
-                    return $filter('commaString')(v);
+                    return $filter('humanReadableNumber')(v);
                   }
                 }
               },
