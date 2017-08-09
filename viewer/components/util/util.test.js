@@ -219,19 +219,39 @@
 
       it('should return a string with correct human readable format', function() {
         let result = $filter('humanReadable')(0);
-        expect(result).toEqual('0B');
+        expect(result).toEqual('0Bi');
 
         result = $filter('humanReadable')(1);
-        expect(result).toEqual('1B');
+        expect(result).toEqual('1Bi');
 
         result = $filter('humanReadable')(1024);
-        expect(result).toEqual('1.0K');
+        expect(result).toEqual('1.0Ki');
 
         result = $filter('humanReadable')(33643982848);
-        expect(result).toEqual('31G');
+        expect(result).toEqual('31Gi');
 
         result = $filter('humanReadable')(2146435072000);
-        expect(result).toEqual('2.0T');
+        expect(result).toEqual('2.0Ti');
+      });
+    });
+
+    describe('Human Readable Number Filter ->', function() {
+
+      it('should return a string with correct human readable format', function() {
+        let result = $filter('humanReadableNumber')(0);
+        expect(result).toEqual('0 ');
+
+        result = $filter('humanReadableNumber')(1);
+        expect(result).toEqual('1 ');
+
+        result = $filter('humanReadableNumber')(1024);
+        expect(result).toEqual('1.0k');
+
+        result = $filter('humanReadableNumber')(33643982848);
+        expect(result).toEqual('34G');
+
+        result = $filter('humanReadableNumber')(2146435072000);
+        expect(result).toEqual('2.1T');
       });
     });
 
