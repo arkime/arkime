@@ -165,10 +165,14 @@
 
 # NOTICE.txt
     - name: license check
-      command: /data/{{moloch_name}}/node-v{{node_version}}-linux-x64/bin/npm -g install license-checker
+      command: npm install license-checker
+      environment:
+        PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
 
     - name: build notice.txt
-      shell: {{moloch_name}}/release/notice.txt.pl {{moloch_name}}/NOTICE /data/{{moloch_name}} > /data/{{moloch_name}}/NOTICE.txt
+      shell: "echo $PATH; {{moloch_name}}/release/notice.txt.pl {{moloch_name}}/NOTICE /data/{{moloch_name}} > /data/{{moloch_name}}/NOTICE.txt"
+      environment:
+        PATH: "/data/{{moloch_name}}/bin:/home/vagrant/node_modules/.bin/:{{ansible_env.PATH}}"
 
 # CentOS package
     - block:
