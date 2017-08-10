@@ -170,7 +170,7 @@
         PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
 
     - name: build notice.txt
-      shell: "echo $PATH; {{moloch_name}}/release/notice.txt.pl {{moloch_name}}/NOTICE /data/{{moloch_name}} > /data/{{moloch_name}}/NOTICE.txt"
+      shell: "echo $PATH; {{moloch_name}}/release/notice.txt.pl /data/{{moloch_name}} {{moloch_name}}/NOTICE {{moloch_name}}/release/CAPTURENOTICE > /data/{{moloch_name}}/NOTICE.txt"
       environment:
         PATH: "/data/{{moloch_name}}/bin:/home/vagrant/node_modules/.bin/:{{ansible_env.PATH}}"
 
