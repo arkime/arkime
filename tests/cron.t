@@ -22,10 +22,14 @@ $json = viewerPostToken("/user/create", '{"userId": "anonymous", "userName": "an
 
 my $json = viewerPostToken("/user/cron/create", "since=-1&name=test1&tags=cron&action=forward:test2&query=$files", $token);
 my $key = $json->{key};
+sleep 5;
 esGet("/_refresh");
+esGet("/_flush");
 
+viewerGet("/processCronQueries");
 
 sleep 5;
+
 esGet("/_refresh");
 esGet("/_flush");
 

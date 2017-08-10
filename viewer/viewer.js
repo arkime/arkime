@@ -5857,6 +5857,10 @@ if (Config.get("regressionTests")) {
     Db.flushCache();
     res.send("{}");
   });
+  app.get('/processCronQueries', function(req, res) {
+    processCronQueries();
+    res.send("{}");
+  });
 }
 
 app.use('/cyberchef.htm', function(req, res) {
