@@ -180,7 +180,6 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
         if (!error && totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
-            scrollId: response._scroll_id,
             scroll: '2m',
             body: {
               scroll_id: response._scroll_id,

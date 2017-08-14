@@ -260,6 +260,11 @@ app.use(function(req, res, next) {
   }
 
   var mrc = {};
+
+  /*mrc['http.authorization'] = {func: function(key, value) {
+    return {name: key, value: value};
+  }.toString()};*/
+
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];
     if (!rc.users || rc.users[req.user.userId]) {
@@ -5958,10 +5963,14 @@ function processCronQuery(cq, options, query, endTime, cb) {
             Db.update("queries", "query", options.qid, document, {refresh: 1}, function () {});
           }
 
-          Db.scroll({
-            body: result._scroll_id,
+          query = {
+            body: {
+              scroll_id: result._scroll_id,
+            },
             scroll: '600s'
-          }, getMoreUntilDone);
+          };
+
+          Db.scroll(query, getMoreUntilDone);
         }
 
         if (err || result.error) {
