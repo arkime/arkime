@@ -166,7 +166,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
   if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
     var totalResults;
-    var params = {scroll: '1m'};
+    var params = {scroll: '2m'};
     exports.merge(params, options);
     var querySize = query.size;
     delete query.size
@@ -181,8 +181,8 @@ exports.searchScroll = function (index, type, query, options, cb) {
         if (!error && totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
             scrollId: response._scroll_id,
-            scroll: '1m',
-            body: { // ALW - Remove someday - https://github.com/elastic/elasticsearch-php/issues/564
+            scroll: '2m',
+            body: {
               scroll_id: response._scroll_id,
             }
           }, getMoreUntilDone);
