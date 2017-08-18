@@ -20,15 +20,12 @@ fi
 ### Ask config questions
 if [ -z "$MOLOCH_INTERFACE" ]; then
     echo -n "Found interfaces: "
-    if [ -f /etc/redhat-release ];
+    if ! [ -f /sbin/ifconfig ];
     then
-        if grep -q "7." /etc/redhat-release;
-        then
-            ip -o link | cut -f2 -d: | tr '\n' ' ' | sed 's/ \+/ /ig' | sed 's/ //1' | sed 's/[[:blank:]]*$//' | tr ' ' ';' | sed 's/$/\n/'
-        fi
+        ip -o link | cut -f2 -d: | tr '\n' ' ' | sed 's/ \+/ /ig' | sed 's/ //1' | sed 's/[[:blank:]]*$//' | tr ' ' ';' | sed 's/$/\n/'
     else
         /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
-    fi    
+    fi
     echo -n "Semicolon ';' seperated list of interfaces to monitor [eth1] "
     read -r MOLOCH_INTERFACE
 fi
