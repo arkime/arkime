@@ -727,11 +727,13 @@
         this.tableState.order           = this.colConfigs[index].order.slice();
       }
 
+      this.reloadTable();
+
       this.query.sorts = this.tableState.order;
 
       this.saveTableState();
 
-      this.getData(true); // this reloads the table too
+      this.getData();
     }
 
     /* Saves a custom column configuration */
