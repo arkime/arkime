@@ -24,6 +24,7 @@
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
   require('../public/d3.min.js');
+  require('../public/colResizable.js');
 
   /**
    * Moloch Angular Application Definition

@@ -410,3 +410,10 @@ viewer/public/cyberchef.htm.gz - Apache License 2.0 - https://gchq.github.io/Cyb
     limitations under the License.
 --->
 ================================================================================
+viewer/public/colResizable.js - MIT - http://www.bacubacu.com/colresizable/
+
+v1.7 - jQuery plugin created by Alvaro Prieto Lauroba
+
+Licences: MIT & GPL
+Feel free to use or modify this plugin as far as my full name is kept
+================================================================================

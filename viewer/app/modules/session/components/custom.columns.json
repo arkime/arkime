@@ -7,7 +7,16 @@
     "friendlyName": "Info",
     "help": "Information",
     "unsortable": true,
-    "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
+    "children": [
+      "us",
+      "esrc",
+      "edst",
+      "esub",
+      "efn",
+      "dnsho",
+      "tls.alt",
+      "ircch"
+    ]
   },
   "src": {
     "width": 140,
@@ -17,7 +26,10 @@
     "friendlyName": "Src IP / Country",
     "help": "Src IP & Country",
     "sortBy": "a1",
-    "children": ["a1", "g1"]
+    "children": [
+      "a1",
+      "g1"
+    ]
   },
   "dst": {
     "width": 140,
@@ -27,7 +39,10 @@
     "friendlyName": "Dst IP / Country",
     "help": "Dst IP & Country",
     "sortBy": "a2",
-    "children": ["a2", "g2"]
+    "children": [
+      "a2",
+      "g2"
+    ]
   },
   "dbby": {
     "width": 120,
@@ -37,7 +52,10 @@
     "friendlyName": "Databytes / Bytes",
     "help": "Data Bytes & Bytes",
     "sortBy": "by",
-    "children": ["db", "by"]
+    "children": [
+      "db",
+      "by"
+    ]
   },
   "pa1pa2": {
     "width": 120,
@@ -47,7 +65,10 @@
     "friendlyName": "Src Packets / Dst Packets",
     "help": "Src Packets & Dst Packets",
     "sortBy": "by",
-    "children": ["pa1", "pa2"]
+    "children": [
+      "pa1",
+      "pa2"
+    ]
   },
   "db1db2": {
     "width": 140,
@@ -57,7 +78,10 @@
     "friendlyName": "Src Databytes / Dst Databytes",
     "help": "Src Databytes & Dst Databytes",
     "sortBy": "db1",
-    "children": ["db1", "db2"]
+    "children": [
+      "db1",
+      "db2"
+    ]
   },
   "by1by2": {
     "width": 120,
@@ -67,7 +91,10 @@
     "friendlyName": "Src Bytes / Dst Bytes",
     "help": "Src Bytes & Dst Bytes",
     "sortBy": "by1",
-    "children": ["by1", "by2"]
+    "children": [
+      "by1",
+      "by2"
+    ]
   },
   "db1by1": {
     "width": 140,
@@ -77,7 +104,10 @@
     "friendlyName": "Src Databytes / Src Bytes",
     "help": "Src Databytes & Src Bytes",
     "sortBy": "db1",
-    "children": ["db1", "by1"]
+    "children": [
+      "db1",
+      "by1"
+    ]
   },
   "db2by2": {
     "width": 140,
@@ -87,6 +117,9 @@
     "friendlyName": "Dst Databytes / Dst Bytes",
     "help": "Dst Databytes & Dst Bytes",
     "sortBy": "db2",
-    "children": ["db2", "by2"]
+    "children": [
+      "db2",
+      "by2"
+    ]
   }
 }

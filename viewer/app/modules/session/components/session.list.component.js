@@ -18,6 +18,9 @@
 
   let holdingClick = false, initialized = false, timeout;
 
+  // window/table resize variables
+  let resizeTimeout, windowResizeEvent, defaultInfoColWidth = 250;
+
   /**
    * @class SessionListController
    * @classdesc Interacts with session list
@@ -28,6 +31,7 @@
     /**
      * Initialize global variables for this controller
      * @param $scope          Angular application model object
+     * @param $window         Angular reference to the browser's window object
      * @param $timeout        Angular's wrapper for window.setTimeout
      * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
@@ -38,10 +42,11 @@
      *
      * @ngInject
      */
-    constructor($scope, $timeout, $location, $routeParams, $anchorScroll,
+    constructor($scope, $window, $timeout, $location, $routeParams, $anchorScroll,
       SessionService, FieldService, UserService) {
 
       this.$scope         = $scope;
+      this.$window        = $window;
       this.$timeout       = $timeout;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
@@ -128,13 +133,50 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
+
+      // watch for window resizing and update the info column width
+      // this is only registered when the user has not set widths for any
+      // columns && the info column is visible
+      windowResizeEvent = () => {
+        if (resizeTimeout) { this.$timeout.cancel(resizeTimeout); }
+        resizeTimeout = this.$timeout(() => {
+          this.mapHeadersToFields();
+        }, 300);
+      };
     } /* /$onInit */
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      holdingClick = false;
+      holdingClick  = false;
+      initialized   = false;
 
       if (timeout) { this.$timeout.cancel(timeout); }
+
+      $('#sessionsTable').colResizable({ disable:true });
+
+      this.$window.removeEventListener('resize', windowResizeEvent);
+    }
+
+    /* Initializes resizable columns */
+    initializeColResizable() {
+     $('#sessionsTable').colResizable({
+        minWidth        : 50,
+        headerOnly      : true,
+        resizeMode      : 'overflow',
+        disabledColumns : [0],
+        hoverCursor     : 'col-resize',
+        onResize        : (event, column, colIdx) => {
+          this.$scope.$apply(() => {
+            let header = this.headers[colIdx-1];
+            if (header) {
+              header.width = column.w;
+              this.colWidths[header.dbField] = column.w;
+              localStorage['session-column-widths'] = JSON.stringify(this.colWidths);
+              this.mapHeadersToFields();
+            }
+          });
+        }
+      });
     }
 
 
@@ -184,6 +226,11 @@
           if (parseInt(this.$routeParams.openAll) === 1) {
             this.openAll();
           }
+
+          // initialize resizable columns now that there is data
+          if (!initialized) { this.initializeColResizable(); }
+
+          initialized = true;
         })
         .catch((error) => {
           this.error    = error;
@@ -211,8 +258,6 @@
              this.loading  = false;
              this.error    = 'Now, issue a query!';
            }
-
-           initialized = true;
          })
          .catch((error) => {
            this.error = error;
@@ -290,11 +335,58 @@
      */
     mapHeadersToFields() {
       this.headers = [];
+      this.colWidths = {};
+      this.sumOfColWidths = 80;
+
+      if (localStorage['session-column-widths']) {
+        this.colWidths = JSON.parse(localStorage['session-column-widths']);
+      }
+
       for (let i = 0, len = this.tableState.visibleHeaders.length; i < len; ++i) {
         let headerId  = this.tableState.visibleHeaders[i];
         let field     = this.getField(headerId);
 
-        if (field) { this.headers.push(field); }
+        if (field) {
+          field.width = this.colWidths[headerId] || field.width || 100;
+          if (field.dbField === 'info') { // info column is super special
+            // reset info field width to default so it can always be recalculated
+            // to take up all of the rest of the space that it can
+            field.width = defaultInfoColWidth;
+          } else { // don't account for info column's width because it changes
+            this.sumOfColWidths += field.width;
+          }
+          this.headers.push(field);
+        }
+      }
+
+      this.calculateInfoColumnWidth(defaultInfoColWidth);
+    }
+
+    /**
+     * Calculates the info column's width based on the width of the window
+     * If the info column is visible, it should take up whatever space is left
+     * @param infoColWidth
+     */
+    calculateInfoColumnWidth(infoColWidth) {
+      if (!this.colWidths) { return; }
+      if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
+        // register listener to update info column width on window resize
+        this.$window.addEventListener('resize', windowResizeEvent);
+        let windowWidth  = window.innerWidth - 45; // account for right and left margins
+        let fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        let newTableWidth = this.sumOfColWidths;
+        for (let i = 0, len = this.headers.length; i < len; ++i) {
+          if (this.headers[i].dbField === 'info') {
+            let newInfoColWidth = Math.max(fillWithInfoCol, infoColWidth);
+            this.headers[i].width = newInfoColWidth;
+            newTableWidth += newInfoColWidth;
+          }
+        }
+        this.tableWidth = newTableWidth;
+      } else {
+        this.tableWidth = this.sumOfColWidths;
+        // there is no info column, so no need to watch for window resize
+        this.$window.removeEventListener('resize', windowResizeEvent);
       }
     }
 
@@ -336,16 +428,19 @@
 
     /* reloads the data in the table (even one time bindings) */
     reloadTable() {
+      // disable resizable columns so it can be initialized after table reloads
+      $('#sessionsTable').colResizable({ disable:true });
+
       this.loading      = true;
       this.showSessions = false;
       this.$scope.$broadcast('$$rebind::refresh');
-
-      this.mapHeadersToFields();
 
       this.$timeout(() => {
         this.loading      = false;
         this.showSessions = true;
         this.$scope.$broadcast('$$rebind::refresh');
+
+        this.initializeColResizable();
       });
     }
 
@@ -564,6 +659,8 @@
       this.tableState.visibleHeaders.splice(newIndex, 0,
          this.tableState.visibleHeaders.splice(draggedIndex, 1)[0]);
 
+      this.mapHeadersToFields();
+
       this.reloadTable();
 
       this.saveTableState();
@@ -600,9 +697,11 @@
         this.tableState.visibleHeaders.push(id);
       }
 
-      this.reloadTable();
-
-      if (reloadData) { this.getData(true); } // need data from the server
+      if (reloadData) { this.getData(true); } // need data from the server (reloads table)
+      else {
+        this.mapHeadersToFields();
+        this.reloadTable();
+      }
 
       this.saveTableState(true);
     }
@@ -630,11 +729,9 @@
 
       this.query.sorts = this.tableState.order;
 
-      this.reloadTable();
-
       this.saveTableState();
 
-      this.getData(true);
+      this.getData(true); // this reloads the table too
     }
 
     /* Saves a custom column configuration */
@@ -740,7 +837,7 @@
 
   }
 
-  SessionListController.$inject = ['$scope', '$timeout', '$location',
+  SessionListController.$inject = ['$scope', '$window', '$timeout', '$location',
     '$routeParams', '$anchorScroll', 'SessionService', 'FieldService', 'UserService'];
 
 

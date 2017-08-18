@@ -17,9 +17,12 @@ session-field .field {
   margin        : 0 -4px 0 0;
   border-radius : 3px;
   border        : 1px solid transparent;
-  overflow-wrap : break-word;
   max-width     : 100%;
   line-height   : 1.3;
+}
+
+session-field .field:not(.time-field) {
+  word-break: break-all;
 }
 
 session-field .field a {
@@ -76,7 +79,7 @@ session-field .field-children:not(:first-child) {
 session-field ul.session-field-dropdown {
   opacity         : 0;
   visibility      : hidden;
-  max-width       : 200%;
+  max-width       : 700px;
   min-width       : 160px;
   max-height      : 300px;
   overflow-y      : auto;
