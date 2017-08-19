@@ -20,7 +20,11 @@ fi
 ### Ask config questions
 if [ -z "$MOLOCH_INTERFACE" ]; then
     echo -n "Found interfaces: "
-    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
+    if [ ! -f /sbin/ifconfig ]; then
+        ip -o link | cut -f2 -d: | tr '\n' ' ' | sed 's/ \+/ /ig' | sed 's/ //1' | sed 's/[[:blank:]]*$//' | tr ' ' ';' | sed 's/$/\n/'
+    else
+        /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
+    fi
     echo -n "Semicolon ';' seperated list of interfaces to monitor [eth1] "
     read -r MOLOCH_INTERFACE
 fi
