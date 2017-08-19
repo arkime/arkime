@@ -20,8 +20,7 @@ fi
 ### Ask config questions
 if [ -z "$MOLOCH_INTERFACE" ]; then
     echo -n "Found interfaces: "
-    if ! [ -f /sbin/ifconfig ];
-    then
+    if [ ! -f /sbin/ifconfig ]; then
         ip -o link | cut -f2 -d: | tr '\n' ' ' | sed 's/ \+/ /ig' | sed 's/ //1' | sed 's/[[:blank:]]*$//' | tr ' ' ';' | sed 's/$/\n/'
     else
         /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
