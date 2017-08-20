@@ -261,9 +261,11 @@ app.use(function(req, res, next) {
 
   var mrc = {};
 
-  /*mrc['http.authorization'] = {func: function(key, value) {
-    return {name: key, value: value};
-  }.toString()};*/
+  mrc['httpAuthorizationDecode'] = {fields: "http.authorization", func: "{\
+    if (value.substring(0,5) === \"Basic\") \
+      return {name: \"Decoded:\", value: atob(value.substring(6))};\
+    return undefined;\
+  }"};
 
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];

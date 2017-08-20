@@ -298,6 +298,14 @@
             continue;
           }
 
+          if (this.molochClickables[key].func !== undefined) {
+            let v = this.molochClickables[key].func(key, text);
+            if (v !== undefined) {
+              this.menuItems[key] = v;
+            }
+            continue;
+          }
+
           let result = this.molochClickables[key].url
              .replace('%EXPRESSION%', encodeURIComponent(urlParams.expression))
              .replace('%DATE%', dateparams)
