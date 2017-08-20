@@ -92,6 +92,7 @@
             for (var key in response.data) {
               var item = response.data[key];
               if (item.func !== undefined) {
+                /*jslint evil: true */
                 item.func = new Function("key", "value", item.func);
               }
             }
