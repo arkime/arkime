@@ -31,7 +31,7 @@ var LRU = require('lru-cache')
 function WISEMemoryCache (options) {
   var cacheSize =  +options.cacheSize || 100000;
   var self = this;
-  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
+  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
 }
 
 //////////////////////////////////////////////////////////////////////////////////

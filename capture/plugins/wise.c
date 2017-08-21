@@ -44,6 +44,7 @@ LOCAL int                   dnsHostField;
 LOCAL int                   tagsField;
 LOCAL int                   httpUrlField;
 LOCAL int                   protocolField;
+LOCAL int                   ja3Field;
 
 LOCAL uint32_t              fieldsTS;
 LOCAL int                   fieldsMap[256];
@@ -64,9 +65,10 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_EMAIL   3
 #define INTEL_TYPE_URL     4
 #define INTEL_TYPE_TUPLE   5
-#define INTEL_TYPE_SIZE    6
+#define INTEL_TYPE_JA3     6
+#define INTEL_TYPE_SIZE    7
 
-LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple"};
+LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple", "ja3"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -595,6 +597,14 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         wise_lookup_tuple(session, iRequest);
     }
 
+    // JA3
+    if (session->fields[ja3Field]) {
+        MolochStringHashStd_t *shash = session->fields[ja3Field]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_JA3);
+        );
+    }
+
     if (iRequest->numItems > 128) {
         wise_flush_locked();
     }
@@ -654,6 +664,7 @@ void moloch_plugin_init()
     tagsField      = moloch_field_by_db("ta");
     httpUrlField   = moloch_field_by_db("us");
     protocolField  = moloch_field_by_db("prot-term");
+    ja3Field       = moloch_field_by_db("tlsja3-term");
 
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);

@@ -345,7 +345,7 @@ WISESource.prototype.formatSetting = function () {
   return true;
 }
 //////////////////////////////////////////////////////////////////////////////////
-var typeName2Func = {ip: "getIp", domain: "getDomain", md5: "getMd5", email: "getEmail", url: "getURL", tuple: "getTuple"};
+var typeName2Func = {ip: "getIp", domain: "getDomain", md5: "getMd5", email: "getEmail", url: "getURL", tuple: "getTuple", ja3: "getJa3"};
 WISESource.prototype.typeSetting = function ()
 {
   this.type     = this.api.getConfig(this.section, "type");
