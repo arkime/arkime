@@ -63,11 +63,11 @@ var internals = {
     sources: []
   },
   sources: [],
-  requestStats: [0,0,0,0,0,0],
-  foundStats: [0,0,0,0,0,0],
-  cacheHitStats: [0,0,0,0,0,0],
-  cacheSrcHitStats: [0,0,0,0,0,0],
-  cacheSrcRefreshStats: [0,0,0,0,0,0],
+  requestStats: [0,0,0,0,0,0,0],
+  foundStats: [0,0,0,0,0,0,0],
+  cacheHitStats: [0,0,0,0,0,0,0],
+  cacheSrcHitStats: [0,0,0,0,0,0,0],
+  cacheSrcRefreshStats: [0,0,0,0,0,0,0],
   views: {},
   rightClicks: {},
   workers: 1
