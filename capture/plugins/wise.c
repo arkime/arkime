@@ -250,15 +250,15 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
                 BSB_IMPORT_u08(bsb, rfield);
                 int fieldPos = fieldsMap[rfield];
 
-                if (fieldPos == -1) {
-                    LOG("Couldn't find pos %d", rfield);
-                    continue;
-                }
-
                 int len = 0;
                 BSB_IMPORT_u08(bsb, len);
                 char *str = (char*)BSB_WORK_PTR(bsb);
                 BSB_IMPORT_skip(bsb, len);
+
+                if (fieldPos == -1) {
+                    LOG("Couldn't find pos %d", rfield);
+                    continue;
+                }
 
                 moloch_field_ops_add(&wi->ops, fieldPos, str, len - 1);
             }
