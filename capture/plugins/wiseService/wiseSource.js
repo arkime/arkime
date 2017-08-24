@@ -205,7 +205,7 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
       continue;
     }
     for (var k in self.shortcuts) {
-      if (json[i][k] !== undefined) {
+      if (json[i][k] !== undefined && json[i][k] !== null) {
         args.push(self.shortcuts[k]);
         args.push(json[i][k]);
       }
