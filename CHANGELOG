@@ -1,11 +1,15 @@
+NOTICE: 0.20.x will be the last series to support ES 2.
+
 NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
-        outage for for db.pl upgrade (~5 min) see the 0.18.0 notes below.
+        outage for for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
 
 NOTICE: Upgrade wiseService before capture
 
+0.20.0 2017/09/xx
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x
 
 0.19.2 2017/08/25
-  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x
   - NOTICE: Requires wiseService upgrade if using wise
   - capture - ja3 support (https://github.com/salesforce/ja3/) (issue #706)
   - viewer - spi view column sets (issue #713)
