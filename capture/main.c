@@ -78,6 +78,7 @@ static GOptionEntry entries[] =
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
     { "noLoadTags",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noLoadTags,    "Don't load tags at startup", NULL },
+    { "pktcnt",      0,                    0, G_OPTION_ARG_INT,            &config.pcapFilePktsToRead, "Number of pkts to read from each offline file", NULL},
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -107,6 +108,7 @@ void parse_args(int argc, char **argv)
     extern char *pcre_version(void);
     extern char *GeoIP_lib_version(void);
 
+    config.pcapFilePktsToRead = 0;
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
     if (!g_option_context_parse (context, &argc, &argv, &error))
