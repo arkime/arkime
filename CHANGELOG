@@ -5,8 +5,11 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Upgrade wiseService before capture
 
+NOTICE: 0.20 and above require nodejs 6.x
+
 0.20.0 2017/09/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x
+  - capture - added --packetcnt from @jmd1212
 
 0.19.2 2017/08/25
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x

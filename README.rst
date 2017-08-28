@@ -70,47 +70,11 @@ Moloch is a complex system to build and install manually. The following are roug
 Installing Elasticsearch
 ------------------------
 
-Recommended version **2.4.4** for Moloch 0.17 and **5.2** for Moloch 0.18 and later.
-
-1. Prep the ``elasticsearch`` machines by increasing max file descriptors and allowing memory locking. 
-   On CentOS and others this is done by adding the following to bottom of: 
-   ``/etc/security/limits.conf``::
-
-    *                -      nofile          128000
-    *                -      memlock         unlimited
-
-2. If this is a dedicated machine, disable swap by commenting out the ``swap`` lines in ``/etc/fstab`` and either reboot or use the ``swapoff`` command.
-
-3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
+Recommended version **5.5.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   5.2.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-2-2>`_.
+   5.5.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-5-1>`_.
 
-4. Uncompress the archive you downloaded.
-
-5. Create or modify ``elasticsearch.yml`` and push it to all machines. (See ``db/elasticsearch.yml.sample`` in the Moloch source distribution for an example.)
-   
-   - set ``cluster.name`` to something unique
-   - set ``node.name`` to ``${ES_HOSTNAME}``
-   - set ``node.max_local_storage_nodes`` to number of nodes per machine
-   - set ``index.fielddata.cache: node``
-   - set ``path.data`` and ``path.logs``
-   - set ``gateway.type: local``
-   - set ``gateway.recover_after_nodes`` should match the number of nodes you
-     will run 
-   - set ``gateway.expected_nodes`` to the number of nodes you will run
-   - disable ``zen.ping.multicast``
-   - enable ``zen.ping.unicast`` and set the list of hosts
-
-6. Create an ``elasticsearch`` launch script or use `one of the ones out there <https://gist.github.com/3569769>`_. (See ``db/runes.sh.sample`` in the Moloch source distribution for a simple one.)
-
-   - Make sure you call ``ulimit -a`` first 
-   - set ``ES_HEAP_SIZE=20G`` (or whatever number you are using, less then 32G) 
-   - set ``JAVA_OPTS="-XX:+UseCompressedOops"`` if using real Java
-   - set ``ES_HOSTNAME`` to ```hostname -s```
-
-7. Start the cluster, waiting ~5s between starting each node to give them time to properly mesh.
-
-8. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
+Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
 
 .. _building-capture:
@@ -167,7 +131,7 @@ Building Capture
 
 Building Viewer
 ---------------
-1. Install `Node.js <http://nodejs.org/>`_ version 4.6.0, currently 6.x is not supported.  (Moloch versions before 0.16 required 0.10.x)
+1. Install `Node.js <http://nodejs.org/>`_ version 6.x, currently 8.x is not supported.  (Moloch versions before 0.18 required 4)
 
 2. In the ``viewer`` directory run ``npm update``.
 
