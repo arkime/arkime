@@ -402,7 +402,7 @@ int moloch_yara_callback(RULE* rule, MolochSession_t* session)
 /******************************************************************************/
 int yr_scan_mem_blocks(MEMORY_BLOCK* block, YARA_CONTEXT* context, YARACALLBACK callback, void* user_data);
 
-void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int first)
+void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     MEMORY_BLOCK block;
 
@@ -415,7 +415,7 @@ void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len
     return;
 }
 /******************************************************************************/
-void moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int first)
+void moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     MEMORY_BLOCK block;
 
