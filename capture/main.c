@@ -540,7 +540,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
         }
     }
     moloch_reader_start();
-    if (pcapFileHeader.linktype == 0 || pcapFileHeader.snaplen == 0)
+    if (!config.pcapReadOffline && (pcapFileHeader.linktype == 0 || pcapFileHeader.snaplen == 0))
         LOGEXIT("Reader didn't call moloch_packet_set_linksnap");
     return FALSE;
 }

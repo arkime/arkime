@@ -10,6 +10,7 @@ NOTICE: 0.20 and above require nodejs 6.x
 0.20.0 2017/09/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x
   - capture - added --packetcnt from @jmd1212
+  - capture - handle monitor directory being empty
 
 0.19.2 2017/08/25
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x
