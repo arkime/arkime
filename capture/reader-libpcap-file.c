@@ -26,14 +26,15 @@ extern MolochPcapFileHdr_t   pcapFileHeader;
 
 extern MolochConfig_t        config;
 
-static pcap_t               *pcap;
-static FILE                 *offlineFile = 0;
+LOCAL  pcap_t               *pcap;
+LOCAL  FILE                 *offlineFile = 0;
 
 extern void                 *esServer;
 LOCAL  MolochStringHead_t    monitorQ;
 
 LOCAL  char                  offlinePcapFilename[PATH_MAX+1];
 LOCAL  char                 *offlinePcapName;
+LOCAL  int                   pktsToRead;
 
 void reader_libpcapfile_opened();
 
@@ -186,6 +187,7 @@ int reader_libpcapfile_next()
 
         LOG ("Processing %s", fullfilename);
         pcap = pcap_open_offline(fullfilename, errbuf);
+        pktsToRead = config.pktsToRead;
 
         if (!pcap) {
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
@@ -397,8 +399,19 @@ gboolean reader_libpcapfile_read()
         return TRUE;
     }
 
+    int r;
     moloch_packet_batch_init(&batch);
-    int r = pcap_dispatch(pcap, 5000, reader_libpcapfile_pcap_cb, NULL);
+    if (pktsToRead > 0) {
+        r = pcap_dispatch(pcap, MIN(pktsToRead, 5000), reader_libpcapfile_pcap_cb, NULL);
+
+        if (r > 0)
+            pktsToRead -= r;
+
+        if (pktsToRead == 0)
+            r = 0;
+    } else {
+        r = pcap_dispatch(pcap, 5000, reader_libpcapfile_pcap_cb, NULL);
+    }
     moloch_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
