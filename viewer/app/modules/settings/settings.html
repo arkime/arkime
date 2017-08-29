@@ -82,9 +82,9 @@
           <label class="col-sm-3 control-label">Timezone Format</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.timezone"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.timezone"
                 uib-btn-radio="'local'" ng-change="$ctrl.updateTime()">local</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.timezone"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.timezone"
                 uib-btn-radio="'gmt'" ng-change="$ctrl.updateTime()">gmt</label>
             </div>
             <label class="margined-left-xxlg text-theme-primary">
@@ -100,15 +100,15 @@
           <label class="col-sm-3 control-label">Session Detail Format</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'natural'" ng-change="$ctrl.update()">natural</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'ascii'" ng-change="$ctrl.update()">ascii</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'utf8'" ng-change="$ctrl.update()">utf8</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'hex'" ng-change="$ctrl.update()">hex</label>
             </div>
           </div>
@@ -121,17 +121,17 @@
           <label class="col-sm-3 control-label">Number of Packets</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'50'" ng-change="$ctrl.update()">50</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'200'" ng-change="$ctrl.update()">200</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'500'" ng-change="$ctrl.update()">500</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'1000'" ng-change="$ctrl.update()">1,000</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'2000'" ng-change="$ctrl.update()">2,000</label>
             </div>
           </div>
@@ -144,11 +144,11 @@
           <label class="col-sm-3 control-label">Show Packet Timestamps</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'on'" ng-change="$ctrl.update()">on</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'off'" ng-change="$ctrl.update()">off</label>
             </div>
           </div>
@@ -161,9 +161,9 @@
           <label class="col-sm-3 control-label">Issue Query on Page Load</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.manualQuery"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.manualQuery"
                 uib-btn-radio="" ng-change="$ctrl.update()">yes</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.manualQuery"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.manualQuery"
                 uib-btn-radio="true" ng-change="$ctrl.update()">no</label>
             </div>
           </div>
@@ -184,9 +184,9 @@
               </option>
             </select>
             <div class="btn-group margined-left-xxlg" ng-if="$ctrl.settings.sortColumn !== 'last'">
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.sortDirection"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.sortDirection"
                 uib-btn-radio="'asc'" ng-change="$ctrl.update()">asc</label>
-              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.sortDirection"
+              <label class="btn btn-radio" ng-model="$ctrl.settings.sortDirection"
                 uib-btn-radio="'desc'" ng-change="$ctrl.update()">desc</label>
             </div>
           </div>

@@ -262,6 +262,23 @@ a.no-decoration { text-decoration: none; }
 }
 
 
+/* themed radio/checkbox buttons */
+label.btn-radio, button.btn-checkbox {
+  background-image: none;
+  background-color: transparent;
+  border-color    : var(--color-primary);
+  color           : var(--color-primary);
+}
+label.btn-radio:hover, button.btn-checkbox:hover {
+  color: var(--color-primary-dark);
+}
+label.btn-radio.active, button.btn-checkbox.active {
+  color           : var(--color-white);
+  border-color    : var(--color-primary);
+  background-color: var(--color-primary);
+}
+
+
 /* themed labels */
 .label.label-theme-primary {
   background-color: var(--color-primary);

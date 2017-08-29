@@ -41,43 +41,43 @@
         </div>
       </div>
       <div class="btn-group btn-group-sm">
-        <label class="btn btn-default" ng-model="params.base"
+        <label class="btn btn-radio" ng-model="params.base"
           ng-click="$ctrl.getPackets()" uib-btn-radio="'natural'">
           natural
         </label>
-        <label class="btn btn-default" ng-model="params.base"
+        <label class="btn btn-radio" ng-model="params.base"
           ng-click="$ctrl.getPackets()" uib-btn-radio="'ascii'">
           ascii
         </label>
-        <label class="btn btn-default" ng-model="params.base"
+        <label class="btn btn-radio" ng-model="params.base"
           ng-click="$ctrl.getPackets()" uib-btn-radio="'utf8'">
           utf8
         </label>
-        <label class="btn btn-default" ng-model="params.base"
+        <label class="btn btn-radio" ng-model="params.base"
           ng-click="$ctrl.getPackets()" uib-btn-radio="'hex'">
           hex
         </label>
       </div>
-      <button type="button" class="btn btn-default btn-sm"
+      <button type="button" class="btn btn-checkbox btn-sm"
         ng-model="params.line" uib-btn-checkbox ng-click="$ctrl.getPackets()"
         btn-checkbox-true="true" btn-checkbox-false="false"
         ng-disabled="params.base !== 'hex'">
         <span class="fa fa-list-ol"></span>&nbsp;
         Line Numbers
       </button>
-      <button type="button" class="btn btn-default btn-sm"
+      <button type="button" class="btn btn-checkbox btn-sm"
         ng-model="params.gzip" uib-btn-checkbox ng-click="$ctrl.getPackets()"
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span class="fa fa-file-archive-o"></span>&nbsp;
         Uncompress
       </button>
-      <button type="button" class="btn btn-default btn-sm"
+      <button type="button" class="btn btn-checkbox btn-sm"
         ng-model="params.image" uib-btn-checkbox ng-click="$ctrl.getPackets()"
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span class="fa fa-file-image-o"></span>&nbsp;
         Show Image &amp; Files
       </button>
-      <button type="button" class="btn btn-default btn-sm"
+      <button type="button" class="btn btn-checkbox btn-sm"
         ng-model="params.ts" uib-btn-checkbox ng-click="$ctrl.toggleTimeStamps()"
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span class="fa fa-clock-o"></span>&nbsp;
@@ -85,14 +85,14 @@
       </button>
       <!-- other decodings -->
       <div class="btn-group" role="group">
-        <button ng-repeat="(key, value) in $ctrl.decodings"
-          type="button" class="btn btn-default btn-sm"
+        <label ng-repeat="(key, value) in $ctrl.decodings"
+          type="button" class="btn btn-radio btn-sm"
           uib-tooltip="{{::value.name}} Decoding"
           tooltip-append-to-body="true"
           ng-class="{'active':params.decode[key]}"
           ng-click="$ctrl.toggleDecoding(key)">
           {{::value.name}}
-        </button>
+        </label>
       </div>
       <div class="btn-group" uib-dropdown>
         <button type="button" class="btn btn-default btn-sm" uib-dropdown-toggle>
