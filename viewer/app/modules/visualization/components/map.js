@@ -35,8 +35,8 @@
           }
 
           let initialized = false;
-          $(window).on('resize', () => {
-            if(initialized && mapEl.closest('moloch-graph-map').hasClass('expanded')) {
+          $(mapEl).on('resize', () => {
+            if(initialized && scope.state.expanded) {
               mapEl.css({
                 position  : 'fixed',
                 right     : '15px',
@@ -146,6 +146,11 @@
             if (changed) { setup(scope.mapData); }
           });
 
+          /* watch for map close event to make sure the map is not expanded */
+          scope.$on('close:map', () => {
+            if (scope.status.expanded) { scope.toggleMapSize(); }
+          });
+
 
           /* utility functions --------------------------------------------- */
           /* shrinks the map element and resizes the map */
@@ -202,7 +207,7 @@
           scope.status = { expanded:false };
 
           /* Expands/shrinks the opened map panel */
-          scope.expandMap = function() {
+          scope.toggleMapSize = function() {
             scope.status.expanded = !scope.status.expanded;
 
             if (scope.status.expanded) {
@@ -229,7 +234,7 @@
           element.on('$destroy', function onDestroy () {
             $document.off('mouseup', isOutsideClick);
 
-            $(window).off('resize');
+            $(mapEl).off('resize');
 
             if (timeout) { $timeout.cancel(timeout); }
 

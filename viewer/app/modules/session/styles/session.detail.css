@@ -63,20 +63,16 @@ session session-detail .detail-container.show-ts ~ .packet-container .session-de
 
 /* list values */
 session session-detail dt {
-  font-size   : 16px;
   float       : left;
   clear       : left;
   width       : 160px;
   text-align  : right;
   margin-right: 6px;
+  line-height : 1.7;
 }
 
 session session-detail dd {
   margin: 0 0 0 165px;
-}
-
-session session-detail dd > strong {
-  font-size: 16px;
 }
 
 
@@ -114,6 +110,7 @@ session-detail .clickable-label {
 
 session-detail .clickable-label .btn {
   height: 23px;
+  background-color: transparent;
 }
 
 session-detail .clickable-label .dropdown-menu {

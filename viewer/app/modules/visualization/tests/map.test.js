@@ -7,7 +7,7 @@
     src: { IRL: 4, USA: 9 }
   };
 
-  describe('Session Map Component ->', function() {
+  describe('Map Component ->', function() {
 
     // load the module and enable debug info (to access isolateScope)
     beforeEach(function() {
@@ -70,10 +70,10 @@
     });
 
     it('should be able to expand map', function() {
-      isolateScope.expandMap();
+      isolateScope.toggleMapSize();
       expect(isolateScope.status.expanded).toBeTruthy();
 
-      isolateScope.expandMap();
+      isolateScope.toggleMapSize();
       expect(isolateScope.status.expanded).toBeFalsy();
     });
 
