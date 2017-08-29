@@ -633,6 +633,10 @@ void moloch_rules_init()
             yaml_parser_set_input_file(&parser, input);
             YamlNode_t *parent = moloch_rules_parse_yaml(rulesFiles[i], NULL, &parser, FALSE);
             yaml_parser_delete(&parser);
+            if (!parent) {
+                LOG("WARNING %s - has no rules", rulesFiles[i]);
+                continue;
+            }
 #ifdef RULES_DEBUG
             moloch_rules_parse_print(parent, 0);
 #endif
