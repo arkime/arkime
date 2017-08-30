@@ -16,7 +16,8 @@
 
   let customCols = require('json!./custom.columns.json');
 
-  let holdingClick = false, initialized = false, timeout;
+  let componentInitialized = false, colResizeInitialized = false;
+  let holdingClick = false, timeout;
 
   // window/table resize variables
   let resizeTimeout, windowResizeEvent, defaultInfoColWidth = 250;
@@ -117,7 +118,7 @@
         this.query.view = args.view;
 
         // don't issue search when the first change:search event is fired
-        if (!initialized || this.loading) { return; }
+        if (!componentInitialized || this.loading) { return; }
 
         this.getData();
       });
@@ -147,8 +148,9 @@
 
     /* fired when controller's containing scope is destroyed */
     $onDestroy() {
-      holdingClick  = false;
-      initialized   = false;
+      holdingClick = false;
+      componentInitialized = false;
+      colResizeInitialized = false;
 
       if (timeout) { this.$timeout.cancel(timeout); }
 
@@ -159,7 +161,8 @@
 
     /* Initializes resizable columns */
     initializeColResizable() {
-     $('#sessionsTable').colResizable({
+      colResizeInitialized = true;
+      $('#sessionsTable').colResizable({
         minWidth        : 50,
         headerOnly      : true,
         resizeMode      : 'overflow',
@@ -228,9 +231,7 @@
           }
 
           // initialize resizable columns now that there is data
-          if (!initialized) { this.initializeColResizable(); }
-
-          initialized = true;
+          if (!colResizeInitialized) { this.initializeColResizable(); }
         })
         .catch((error) => {
           this.error    = error;
@@ -253,11 +254,13 @@
            }
 
            // IMPORTANT: kicks off the initial search query
-           if (!this.settings.manualQuery || initialized) { this.getData(); }
+           if (!this.settings.manualQuery || componentInitialized) { this.getData(); }
            else {
              this.loading  = false;
              this.error    = 'Now, issue a query!';
            }
+
+           componentInitialized = true;
          })
          .catch((error) => {
            this.error = error;
@@ -430,6 +433,7 @@
     reloadTable() {
       // disable resizable columns so it can be initialized after table reloads
       $('#sessionsTable').colResizable({ disable:true });
+      colResizeInitialized = false;
 
       this.loading      = true;
       this.showSessions = false;
