@@ -7,7 +7,7 @@
     <div class="form-inline">
       <!-- graph type select -->
       <div class="form-group margined-bottom">
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm" ng-if="$ctrl.selectedTab === 0">
           <span class="input-group-addon help-cursor"
             uib-tooltip="The type of graph data to display"
             tooltip-placement="bottom-left">
@@ -45,7 +45,7 @@
       </div> <!-- /graph type select -->
 
       <!-- graph interval select -->
-      <div class="form-group margined-bottom">
+      <div class="form-group margined-bottom" ng-if="$ctrl.selectedTab === 0">
         <div class="input-group input-group-sm">
           <span class="input-group-addon help-cursor"
             uib-tooltip="Graph data bins and graph data refresh interval"
@@ -62,7 +62,7 @@
         </div>
       </div> <!-- /graph interval select -->
 
-      <!-- graph interval select -->
+      <!-- table data interval select -->
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon help-cursor"
@@ -80,7 +80,7 @@
             <option value="0">None</option>
           </select>
         </div>
-      </div> <!-- /graph interval select -->
+      </div> <!-- /table data interval select -->
 
     </div> <!-- /form-inlne -->
   </form>
@@ -91,7 +91,7 @@
       uib-tooltip="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing."
       tooltip-placement="left"></span>
 
-    <uib-tabset ng-if="!$ctrl.error">
+    <uib-tabset ng-if="!$ctrl.error" active="$ctrl.selectedTab">
 
       <uib-tab index="0" heading="Nodes" select="$ctrl.selectTab(0)">
 

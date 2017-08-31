@@ -53,9 +53,14 @@
       this.dataInterval   = this.$routeParams.interval ||'5000';
       this.graphsOpen     = true;
       this.nodeStatsOpen  = true;
-      this.selectedTab    = 0; // select the first tab
+      this.selectedTab    = 0; // select the first tab by default
 
       this.expandedNodeStats = {};
+
+      // open up requested tab
+      if (this.$routeParams.statsTab) {
+        this.selectedTab = parseInt(this.$routeParams.statsTab) || 0;
+      }
 
       this.UserService.getSettings()
         .then((response) => { this.settings = response; })
@@ -217,13 +222,14 @@
      */
     selectTab(index) {
       this.selectedTab = index;
+      this.$location.search('statsTab', index);
 
       if (index !== 0) { // not on the nodes tab
         this.$interval.cancel(reqPromise); // cancel the node req interval
         reqPromise = null;
         // stop the graph from loading data
         if (this.context) { this.context.stop(); }
-      } else if (index === 0 && initialized) {
+      } else if (index === 0) {
         // on the nodes tab and the graph has already been initialized
         initialized = false; // reinitialize the graph
         this.loadData();
