@@ -586,7 +586,6 @@ function proxyRequest (req, res, errCb) {
     var info = url.parse(viewUrl);
     info.path = req.url;
     info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-    info.rejectUnauthorized = true;
     addAuth(info, req.user, req.params.nodeName);
     addCaTrust(info, req.params.nodeName);
 
