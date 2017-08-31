@@ -24,6 +24,58 @@ static int hostField;
 static int uaField;
 static int versionField;
 
+#define FBZERO_MAX_SIZE 4096
+typedef struct {
+    unsigned char  data[FBZERO_MAX_SIZE];
+    int            pos;
+} FBZeroInfo_t;
+
+/******************************************************************************/
+int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
+
+    guchar *tag = 0;
+    int     tagLen = 0;
+    BSB_LIMPORT_ptr(dbsb, tag, 4);
+    BSB_LIMPORT_u16(dbsb, tagLen);
+    BSB_LIMPORT_skip(dbsb, 2);
+
+    if (tag && memcmp(tag, "CHLO", 4) == 0) {
+        moloch_session_add_protocol(session, "quic");
+    } else {
+        return 0;
+    }
+
+    guchar *tagDataStart = dbsb.buf + tagLen*8 + 8;
+    uint32_t dlen = BSB_REMAINING(dbsb);
+
+    uint32_t start = 0;
+    while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
+        guchar   *subTag = 0;
+        uint32_t  endOffset = 0;
+
+        BSB_LIMPORT_ptr(dbsb, subTag, 4);
+        BSB_LIMPORT_u32(dbsb, endOffset);
+
+        if (endOffset > dlen || start > dlen || start > endOffset)
+            return 1;
+
+        if (!subTag)
+            return 1;
+
+        if (memcmp(subTag, "SNI\x00", 4) == 0) {
+            moloch_field_string_add(hostField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+        } else if (memcmp(subTag, "UAID", 4) == 0) {
+            moloch_field_string_add(uaField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+        } else if (memcmp(subTag, "VER\x00", 4) == 0) {
+            moloch_field_string_add(versionField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+        } else {
+            //LOG("Subtag: %4.4s len: %d %.*s", subTag, endOffset-start, endOffset-start, tagDataStart+start);
+        }
+        start = endOffset;
+        tagLen--;
+    }
+    return 1;
+}
 /******************************************************************************/
 int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
@@ -106,47 +158,8 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         BSB_INIT(dbsb, BSB_WORK_PTR(bsb), MIN(dataLen, BSB_REMAINING(bsb)));
         BSB_IMPORT_skip(bsb, dataLen);
 
-        guchar *tag = 0;
-        int     tagLen = 0;
-        BSB_LIMPORT_ptr(dbsb, tag, 4);
-        BSB_LIMPORT_u16(dbsb, tagLen);
-        BSB_LIMPORT_skip(dbsb, 2);
-
-        if (tag && memcmp(tag, "CHLO", 4) == 0) {
-            moloch_session_add_protocol(session, "quic");
-        } else {
-            return 0;
-        }
-
-        guchar *tagDataStart = dbsb.buf + tagLen*8 + 8;
-        uint32_t dlen = BSB_REMAINING(dbsb);
-
-        uint32_t start = 0;
-        while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
-            guchar   *subTag = 0;
-            uint32_t  endOffset = 0;
-
-            BSB_LIMPORT_ptr(dbsb, subTag, 4);
-            BSB_LIMPORT_u32(dbsb, endOffset);
-
-            if (endOffset > dlen || start > dlen || start > endOffset)
-                return 0;
-
-            if (!subTag)
-                return 0;
-
-            if (memcmp(subTag, "SNI\x00", 4) == 0) {
-                moloch_field_string_add(hostField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
-            } else if (memcmp(subTag, "UAID", 4) == 0) {
-                moloch_field_string_add(uaField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
-            } else if (memcmp(subTag, "VER\x00", 4) == 0) {
-                moloch_field_string_add(versionField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
-            } else {
-                //LOG("Subtag: %4.4s len: %d %.*s", subTag, endOffset-start, endOffset-start, tagDataStart+start);
-            }
-            start = endOffset;
-            tagLen--;
-        }
+        quic_chlo_parser(session,dbsb);
+        return 0;
     }
 
     return 0;
@@ -159,10 +172,56 @@ void quic_udp_classify(MolochSession_t *session, const unsigned char *data, int 
     }
 }
 /******************************************************************************/
+void quic_fbzero_free(MolochSession_t UNUSED(*session), void *uw)
+{
+    FBZeroInfo_t            *fbzero          = uw;
+
+    MOLOCH_TYPE_FREE(FBZeroInfo_t, fbzero);
+}
+/******************************************************************************/
+int quic_fb_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+{
+    if (which != 0)
+        return 0;
+
+    FBZeroInfo_t *fbzero = uw;
+
+    remaining = MIN(remaining, FBZERO_MAX_SIZE - fbzero->pos);
+    memcpy(fbzero->data + fbzero->pos, data, remaining);
+    fbzero->pos += remaining;
+
+    if (fbzero->pos < 7)
+        return 0;
+
+    int len = (fbzero->data[6] << 8) | fbzero->data[5];
+    if (fbzero->pos < len + 9)
+        return 0;
+
+    BSB dbsb;
+    BSB_INIT(dbsb, fbzero->data+9, len);
+
+    if (quic_chlo_parser(session, dbsb))
+        moloch_session_add_protocol(session, "fbzero");
+
+    moloch_parsers_unregister(session, uw);
+    return 0;
+}
+
+/******************************************************************************/
+void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
+{
+    if (which == 0 && len > 13) {
+        FBZeroInfo_t *fbzero = MOLOCH_TYPE_ALLOC(FBZeroInfo_t);
+        fbzero->pos = 0;
+        moloch_parsers_register(session, quic_fb_tcp_parser, fbzero, quic_fbzero_free);
+    }
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_udp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_udp_classify);
+    moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
 
     hostField = moloch_field_define("quic", "lotermfield",
         "host.quic", "Hostname", "quic.host-term", 
