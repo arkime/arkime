@@ -311,6 +311,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("pjl", "pjl", 0, (unsigned char*)"\x1b\x25\x2d\x31\x32\x33\x34\x35", 8, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("pjl", "pjl", 0, (unsigned char*)"\x40\x50\x4a\x4c\x20", 5, misc_add_protocol_classify);
 
+    moloch_parsers_classifier_register_tcp("dcerpc", "dcerpc", 0, (unsigned char*)"\x05\x00\x0b", 3, misc_add_protocol_classify);
+
     userField = moloch_field_by_db("user");
 }
 
