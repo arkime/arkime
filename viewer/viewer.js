@@ -3890,7 +3890,7 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
     } else if (packets[0].ip === undefined) {
       return doneCb(null, session, []);
     } else if (packets[0].ip.p === 1) {
-      Pcap.reassemble_icmp(packets, function(err, results) {
+      Pcap.reassemble_icmp(packets, numPackets, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 6) {
@@ -3900,11 +3900,11 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
       } else {
         key = Pcap.inet_ntoa(session.a1);
       }
-      Pcap.reassemble_tcp(packets, key + ':' + session.p1, function(err, results) {
+      Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.p1, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 17) {
-      Pcap.reassemble_udp(packets, function(err, results) {
+      Pcap.reassemble_udp(packets, numPackets, function(err, results) {
         return doneCb(err, session, results);
       });
     } else {
@@ -4135,7 +4135,7 @@ function localSessionDetail(req, res) {
       session._err = "Couldn't decode pcap file, check viewer log";
       localSessionDetailReturn(req, res, session, []);
     } else if (packets[0].ip.p === 1) {
-      Pcap.reassemble_icmp(packets, function(err, results) {
+      Pcap.reassemble_icmp(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -4146,17 +4146,17 @@ function localSessionDetail(req, res) {
       } else {
         key = Pcap.inet_ntoa(session.a1);
       }
-      Pcap.reassemble_tcp(packets, key + ':' + session.p1, function(err, results) {
+      Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.p1, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 17) {
-      Pcap.reassemble_udp(packets, function(err, results) {
+      Pcap.reassemble_udp(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 58) {
-      Pcap.reassemble_icmp(packets, function(err, results) {
+      Pcap.reassemble_icmp(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -4450,7 +4450,7 @@ app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
     return res.send (internals.emptyPNG);
   }
 
-  processSessionIdAndDecode(req.params.id, 100, function(err, session, results) {
+  processSessionIdAndDecode(req.params.id, 1000, function(err, session, results) {
     if (err) {
       return res.send (internals.emptyPNG);
     }

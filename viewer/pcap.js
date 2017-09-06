@@ -586,8 +586,9 @@ Pcap.prototype.getHeaderNg = function () {
 //// Reassembly array of packets
 //////////////////////////////////////////////////////////////////////////////////
 
-exports.reassemble_icmp = function (packets, cb) {
+exports.reassemble_icmp = function (packets, numPackets, cb) {
   var results = [];
+  packets.length = Math.min(packets.length, numPackets);
   packets.forEach(function (item) {
     var key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length-1].key) {
@@ -607,9 +608,10 @@ exports.reassemble_icmp = function (packets, cb) {
   cb(null, results);
 };
 
-exports.reassemble_udp = function (packets, cb) {
+exports.reassemble_udp = function (packets, numPackets, cb) {
   try {
   var results = [];
+  packets.length = Math.min(packets.length, numPackets);
   packets.forEach(function (item) {
     var key = item.ip.addr1 + ':' + item.udp.sport;
     if (results.length === 0 || key !== results[results.length-1].key) {
@@ -635,7 +637,7 @@ exports.reassemble_udp = function (packets, cb) {
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
 // If multiple tcp sessions in one moloch session display can be wacky/wrong.
-exports.reassemble_tcp = function (packets, skey, cb) {
+exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
 
     // Remove syn, rst, 0 length packets and figure out min/max seq number
@@ -708,6 +710,9 @@ exports.reassemble_tcp = function (packets, skey, cb) {
 
       return (a.tcp.ack - (b.tcp.seq + b.tcp.data.length-1) );
     });
+
+    // Truncate
+    packets.length = Math.min(packets.length, numPackets);
 
     // Now divide up conversation
     var clientSeq = 0;
