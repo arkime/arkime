@@ -14,7 +14,7 @@ SRCS=$(wildcard *.c)
 SOS=$(patsubst %.c,../%.so,$(SRCS))
 
 ../%.so : %.c ../../moloch.h ../../hash.h ../../dll.h
-	$(CC) @SHARED_FLAGS@ -I$(SNFDIR)/include -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) -Wl,-rpath=$(SNFDIR)/lib -L$(SNFDIR)/lib -lsnf $<
+	$(CC) @SHARED_FLAGS@ -I$(SNFDIR)/include -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $< -Wl,-rpath=$(SNFDIR)/lib -L$(SNFDIR)/lib -lsnf
 
 all:$(SOS)
 
