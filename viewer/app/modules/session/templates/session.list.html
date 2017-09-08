@@ -25,287 +25,279 @@
     </moloch-graph-map>
   </div>
 
-  <div class="margined-top-lg">
+  <!-- open sessions -->
+  <sticky-sessions ng-if="$ctrl.stickySessions.length"
+    sessions="$ctrl.stickySessions"></sticky-sessions>
 
-    <!-- open sessions -->
-    <sticky-sessions ng-if="$ctrl.stickySessions.length"
-      sessions="$ctrl.stickySessions"></sticky-sessions>
+  <div class="margined-top-lg" style="min-height:300px;">
 
-    <div class="margined-top-lg">
+    <!-- session data table -->
+    <table ng-if=":refreshHeaders:($ctrl.headers && $ctrl.headers.length)" id="sessionsTable"
+      border="0" cellpadding="0" cellspacing="0" ng-style="{width:$ctrl.tableWidth+'px'}"
+      class="table-striped">
 
-      <!-- session data table -->
-      <table ng-if="$ctrl.headers && $ctrl.headers.length" id="sessionsTable"
-        border="0" cellpadding="0" cellspacing="0" ng-style="{width:$ctrl.tableWidth+'px'}"
-        class="table-striped">
+      <thead>
+        <tr>
 
-        <thead>
-          <tr>
+          <th ng-drop="true" draggable="false" style="white-space:nowrap;width:80px!important;"
+            ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
 
-            <th ng-drop="true" draggable="false" style="white-space:nowrap;width:80px!important;"
-              ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
+            <!-- column visibility button -->
+            <div class="btn-group" uib-dropdown is-open="$ctrl.colVisOpen"
+              dropdown-append-to-body="true" auto-close="outsideClick">
+              <button id="visibility-button" type="button"
+                class="btn btn-sm btn-theme-primary" tooltip-append-to-body="true"
+                uib-dropdown-toggle tooltip-placement="top-left"
+                uib-tooltip="Column Visibility">
+                <span class="fa fa-th"></span>
+              </button>
+              <ul class="dropdown-menu col-vis-menu"
+                uib-dropdown-menu role="menu"
+                aria-labelledby="visibility-button">
+                <span ng-if="$ctrl.colVisOpen">
+                  <input type="text" focus-input="true"
+                    class="form-control input-sm dropdown-typeahead"
+                    ng-model="$ctrl.colQuery"
+                    placeholder="Search for columns...">
+                  <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
+                    <div class="group-header">{{key | capitalize}}</div>
+                    <li ng-repeat="field in value track by $index"
+                      ng-click="$ctrl.toggleVisibility(field.dbField)"
+                      ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
+                      uib-tooltip="{{field.help}}"
+                      tooltip-placement="right"
+                      tooltip-append-to-body="true">
+                      <a>{{field.friendlyName}}</a>
+                    </li>
+                  </div>
+                  <div class="margined-top">
+                    <li ng-hide="$ctrl.filteredFields.length">
+                      <a>
+                        <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
+                        No results
+                      </a>
+                    </li>
+                  </div>
+                </span>
+              </ul>
+            </div> <!-- /column visibility button -->
 
-              <!-- column visibility button -->
-              <div class="btn-group" uib-dropdown is-open="$ctrl.colVisOpen"
-                dropdown-append-to-body="true" auto-close="outsideClick">
-                <button id="visibility-button" type="button"
-                  class="btn btn-sm btn-theme-primary" tooltip-append-to-body="true"
-                  uib-dropdown-toggle tooltip-placement="top-left"
-                  uib-tooltip="Column Visibility">
-                  <span class="fa fa-th"></span>
-                </button>
-                <ul class="dropdown-menu col-vis-menu"
-                  uib-dropdown-menu role="menu"
-                  aria-labelledby="visibility-button">
-                  <span ng-if="$ctrl.colVisOpen">
-                    <input type="text" focus-input="true"
-                      class="form-control input-sm dropdown-typeahead"
-                      ng-model="$ctrl.colQuery"
-                      placeholder="Search for columns...">
-                    <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
-                      <div class="group-header">{{key | capitalize}}</div>
-                      <li ng-repeat="field in value track by $index"
-                        ng-click="$ctrl.toggleVisibility(field.dbField)"
-                        ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
-                        uib-tooltip="{{field.help}}"
-                        tooltip-placement="right"
-                        tooltip-append-to-body="true">
-                        <a>{{field.friendlyName}}</a>
-                      </li>
-                    </div>
-                    <div class="margined-top">
-                      <li ng-hide="$ctrl.filteredFields.length">
-                        <a>
-                          <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
-                          No results
-                        </a>
-                      </li>
-                    </div>
-                  </span>
-                </ul>
-              </div> <!-- /column visibility button -->
-
-              <!-- column save button -->
-              <div class="btn-group margined-right-lg" uib-dropdown is-open="$ctrl.colConfigsOpen"
-                 dropdown-append-to-body="true" auto-close="outsideClick">
-                <button class="btn btn-sm btn-theme-secondary dropdown-toggle" uib-dropdown-toggle
-                  tooltip-append-to-body="true" tooltip-placement="top-left"
-                  uib-tooltip="Save or load custom column configuration">
-                  <span class="fa fa-columns"></span>
-                </button>
-                <ul class="dropdown-menu col-config-menu"
-                  uib-dropdown-menu role="menu">
-                  <span ng-if="$ctrl.colConfigsOpen">
-                    <div class="input-group input-group-sm margined-bottom margined-right margined-left">
-                      <input type="text" focus-input="true" maxlength="30"
-                        class="form-control" ng-model="$ctrl.newColConfigName"
-                        placeholder="Enter new column configuration name"
-                        enter-click="$ctrl.saveColumnConfiguration()">
-                      <span class="input-group-btn">
-                        <button class="btn btn-theme-secondary" type="button"
-                          ng-disabled="!$ctrl.newColConfigName"
-                          ng-click="$ctrl.saveColumnConfiguration()"
-                          tooltip-placement="right" tooltip-append-to-body="true"
-                          uib-tooltip="Save this custom column configuration">
-                          <span class="fa fa-save"></span>
-                        </button>
-                      </span>
-                    </div>
-                    <div class="small text-danger margined-right margined-left margined-bottom"
-                      ng-if="$ctrl.colConfigError">
-                      {{$ctrl.colConfigError}}
-                    </div>
-                    <div>
-                      <li ng-click="$ctrl.loadColumnConfiguration()"
-                        ng-class="{'active':$ctrl.isSameAsVisible()}"
-                        uib-tooltip="Reset columns to the default columns"
-                        tooltip-placement="right"
-                        tooltip-append-to-body="true">
-                        <a>Moloch Default</a>
-                      </li>
-                    </div>
-                    <div ng-repeat="config in $ctrl.colConfigs track by $index">
-                      <li ng-class="{'active':$ctrl.isSameAsVisible($index)}">
-                        <div class="row">
-                          <div class="col-xs-10">
-                            <a ng-click="$ctrl.loadColumnConfiguration($index)">
-                              {{config.name}}
-                            </a>
-                          </div>
-                          <div class="col-xs-2">
-                            <button class="btn btn-xs btn-default pull-right margined-right"
-                              ng-click="$ctrl.deleteColumnConfiguration(config.name, $index)">
-                              <span class="fa fa-trash-o"></span>
-                            </button>
-                          </div>
+            <!-- column save button -->
+            <div class="btn-group margined-right-lg" uib-dropdown is-open="$ctrl.colConfigsOpen"
+               dropdown-append-to-body="true" auto-close="outsideClick">
+              <button class="btn btn-sm btn-theme-secondary dropdown-toggle" uib-dropdown-toggle
+                tooltip-append-to-body="true" tooltip-placement="top-left"
+                uib-tooltip="Save or load custom column configuration">
+                <span class="fa fa-columns"></span>
+              </button>
+              <ul class="dropdown-menu col-config-menu"
+                uib-dropdown-menu role="menu">
+                <span ng-if="$ctrl.colConfigsOpen">
+                  <div class="input-group input-group-sm margined-bottom margined-right margined-left">
+                    <input type="text" focus-input="true" maxlength="30"
+                      class="form-control" ng-model="$ctrl.newColConfigName"
+                      placeholder="Enter new column configuration name"
+                      enter-click="$ctrl.saveColumnConfiguration()">
+                    <span class="input-group-btn">
+                      <button class="btn btn-theme-secondary" type="button"
+                        ng-disabled="!$ctrl.newColConfigName"
+                        ng-click="$ctrl.saveColumnConfiguration()"
+                        tooltip-placement="right" tooltip-append-to-body="true"
+                        uib-tooltip="Save this custom column configuration">
+                        <span class="fa fa-save"></span>
+                      </button>
+                    </span>
+                  </div>
+                  <div class="small text-danger margined-right margined-left margined-bottom"
+                    ng-if="$ctrl.colConfigError">
+                    {{$ctrl.colConfigError}}
+                  </div>
+                  <div>
+                    <li ng-click="$ctrl.loadColumnConfiguration()"
+                      ng-class="{'active':$ctrl.isSameAsVisible()}"
+                      uib-tooltip="Reset columns to the default columns"
+                      tooltip-placement="right"
+                      tooltip-append-to-body="true">
+                      <a>Moloch Default</a>
+                    </li>
+                  </div>
+                  <div ng-repeat="config in $ctrl.colConfigs track by $index">
+                    <li ng-class="{'active':$ctrl.isSameAsVisible($index)}">
+                      <div class="row">
+                        <div class="col-xs-10">
+                          <a ng-click="$ctrl.loadColumnConfiguration($index)">
+                            {{config.name}}
+                          </a>
                         </div>
-                      </li>
-                    </div>
-                  </span>
-                </ul>
-              </div> <!-- /column save button -->
+                        <div class="col-xs-2">
+                          <button class="btn btn-xs btn-default pull-right margined-right"
+                            ng-click="$ctrl.deleteColumnConfiguration(config.name, $index)">
+                            <span class="fa fa-trash-o"></span>
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  </div>
+                </span>
+              </ul>
+            </div> <!-- /column save button -->
 
-            </th>
+          </th>
 
-            <!-- table headers -->
-            <th ng-repeat="header in $ctrl.headers track by header.dbField"
-              class="moloch-col-header" ng-drop="true" ng-style="{'width':header.width+'px'}"
-              ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
-              ng-drag="true" ng-drag-data="header" draggable="false"
-              ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
+          <!-- table headers -->
+          <th ng-repeat="header in :refreshHeaders:$ctrl.headers track by header.dbField"
+            class="moloch-col-header" ng-drop="true" ng-style="{'width':header.width+'px'}"
+            ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
+            ng-drag="true" ng-drag-data="header" draggable="false"
+            ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
 
-              <div class="margined-left-sm margined-right-sm">
-                <!-- column dropdown menu -->
-                <div class="btn-group pull-right" uib-dropdown>
-                  <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
-                    <span class="fa fa-caret-down"></span>
-                  </button>
-                  <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
-                    <div>
+            <div class="margined-left-sm margined-right-sm">
+              <!-- column dropdown menu -->
+              <div class="btn-group pull-right" uib-dropdown>
+                <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
+                  <span class="fa fa-caret-down"></span>
+                </button>
+                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
+                  <div>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.toggleVisibility(header.dbField, header.sortBy)">
+                        Hide Column
+                      </a>
+                    </li>
+                  </div>
+                  <!-- single field column -->
+                  <div ng-if="::(!header.children && header.type !== 'seconds')">
+                    <li class="divider"></li>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 0)">
+                        Export Unique {{::header.friendlyName}}
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 1)">
+                        Export Unique {{::header.friendlyName}} with counts
+                      </a>
+                    </li>
+                    <span ng-if="::(header.portField)">
                       <li role="menuitem">
-                        <a ng-click="$ctrl.toggleVisibility(header.dbField, header.sortBy)">
-                          Hide Column
+                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
+                          Export Unique {{::header.friendlyName}}:Ports
                         </a>
                       </li>
-                    </div>
-                    <!-- single field column -->
-                    <div ng-if="::(!header.children && header.type !== 'seconds')">
+                      <li role="menuitem">
+                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
+                          Export Unique {{::header.friendlyName}}:Ports with counts
+                        </a>
+                      </li>
+                    </span>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.openSpiGraph(header.dbField)">
+                        Open {{::header.friendlyName}} in SPI Graph
+                      </a>
+                    </li>
+                  </div> <!-- /single field column -->
+                  <!-- multiple field column -->
+                  <div ng-if="::(header.children && header.type !== 'seconds')">
+                    <span ng-repeat="child in ::header.children track by child.dbField">
                       <li class="divider"></li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 0)">
-                          Export Unique {{::header.friendlyName}}
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 0)">
+                          Export Unique {{::child.friendlyName}}
                         </a>
                       </li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(header.rawField || header.exp, 1)">
-                          Export Unique {{::header.friendlyName}} with counts
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 1)">
+                          Export Unique {{::child.friendlyName}} with counts
                         </a>
                       </li>
-                      <span ng-if="::(header.portField)">
+                      <span ng-if="::(child.portField)">
                         <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                            Export Unique {{::header.friendlyName}}:Ports
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                            Export Unique {{::child.friendlyName}}:Ports
                           </a>
                         </li>
                         <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                            Export Unique {{::header.friendlyName}}:Ports with counts
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                            Export Unique {{::child.friendlyName}}:Ports with counts
                           </a>
                         </li>
                       </span>
-                      <li role="menuitem">
-                        <a ng-click="$ctrl.openSpiGraph(header.dbField)">
-                          Open {{::header.friendlyName}} in SPI Graph
-                        </a>
-                      </li>
-                    </div> <!-- /single field column -->
-                    <!-- multiple field column -->
-                    <div ng-if="::(header.children && header.type !== 'seconds')">
-                      <span ng-repeat="child in ::header.children track by child.dbField">
-                        <li class="divider"></li>
-                        <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 0)">
-                            Export Unique {{::child.friendlyName}}
-                          </a>
-                        </li>
-                        <li role="menuitem">
-                          <a ng-click="$ctrl.exportUnique(child.rawField || child.exp, 1)">
-                            Export Unique {{::child.friendlyName}} with counts
-                          </a>
-                        </li>
-                        <span ng-if="::(child.portField)">
-                          <li role="menuitem">
-                            <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                              Export Unique {{::child.friendlyName}}:Ports
-                            </a>
-                          </li>
-                          <li role="menuitem">
-                            <a ng-click="$ctrl.exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                              Export Unique {{::child.friendlyName}}:Ports with counts
-                            </a>
-                          </li>
-                        </span>
-                      <li role="menuitem">
-                        <a ng-click="$ctrl.openSpiGraph(child.dbField)">
-                          Open {{::child.friendlyName}} in SPI Graph
-                        </a>
-                      </li>
-                      </span>
-                    </div>
-                  </ul> <!-- /multiple field column -->
-                </div> <!-- /column dropdown menu -->
-
-                <!-- sortable column -->
-                <span ng-if="::((header.exp || header.sortBy) && !header.unsortable)"
-                  ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
-                  ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
-                  class="cursor-pointer">
-                  <div class="header-sort">
-                    <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
-                      class="fa fa-sort text-muted-more"></span>
-                    <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                      class="fa fa-sort-asc"></span>
-                    <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                      class="fa fa-sort-desc"></span>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.openSpiGraph(child.dbField)">
+                        Open {{::child.friendlyName}} in SPI Graph
+                      </a>
+                    </li>
+                    </span>
                   </div>
-                  <div class="header-text">{{::header.friendlyName}}</div>
-                </span>
+                </ul> <!-- /multiple field column -->
+              </div> <!-- /column dropdown menu -->
 
-                <!-- non-sortable column -->
-                <div ng-if="::(header.dbField === 'info')" class="cursor-pointer">
-                  {{::header.friendlyName}}
+              <!-- sortable column -->
+              <span ng-if="::((header.exp || header.sortBy) && !header.unsortable)"
+                ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
+                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
+                class="cursor-pointer">
+                <div class="header-sort">
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
+                    class="fa fa-sort text-muted-more"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                    class="fa fa-sort-asc"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                    class="fa fa-sort-desc"></span>
                 </div>
-
-              </div>
-            </th> <!-- /table headers -->
-          </tr>
-        </thead>
-
-        <tbody class="small" ng-if="!$ctrl.error">
-          <tr ng-repeat-start="session in $ctrl.sessions.data track by session.id"
-            id="session{{::session.id}}">
-            <td>
-              <span ng-if=":refresh:$ctrl.showSessions">
-                <a class="btn btn-sm btn-toggle margined-top-sm"
-                  ng-class="{'collapsed':!session.expanded, 'btn-theme-tertiary':!session.expanded, 'btn-danger':session.expanded}"
-                  ng-click="$ctrl.toggleSessionDetail(session)">
-                  <span class="fa fa-close"></span>
-                </a>
-                <small>
-                  <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                    expr="ip.protocol" value="{{::session.pr}}"
-                    session="::session" parse="true" pull-left="true">
-                  </session-field>
-                </small>
-              </span>&nbsp;
-            </td>
-            <td ng-repeat="col in :refresh:$ctrl.headers track by $index">
-              <span ng-if=":refresh:$ctrl.showSessions">
-                <span ng-if="::$ctrl.isArray(session[col.dbField])">
-                  <span ng-repeat="value in ::session[col.dbField] track by $index">
-                    <session-field field="::col" session="::session"
-                      value="{{::value}}" expr="{{::col.exp}}"
-                      parse="true" timezone="{{::$ctrl.settings.timezone}}">
-                    </session-field>
-                  </span>
-                </span>
-                <span ng-if="::!$ctrl.isArray(session[col.dbField])">
-                  <session-field field="::col" session="::session"
-                    value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
-                    parse="true" timezone="{{::$ctrl.settings.timezone}}">
-                  </session-field>
-                </span>
+                <div class="header-text">{{::header.friendlyName}}</div>
               </span>
-            </td>
-          </tr>
-          <tr ng-repeat-end ng-if="session.expanded" class="session-detail-row">
-            <td colspan="{{::$ctrl.headers.length + 1}}">
-              <session-detail session="::session"></session-detail>
-            </td>
-          </tr>
-        </tbody>
-      </table> <!-- /session data table -->
 
-    </div>
+              <!-- non-sortable column -->
+              <div ng-if="::(header.dbField === 'info')" class="cursor-pointer">
+                {{::header.friendlyName}}
+              </div>
+
+            </div>
+          </th> <!-- /table headers -->
+        </tr>
+      </thead>
+
+      <tbody class="small" ng-if=":refreshTable:($ctrl.showSessions && !$ctrl.error)">
+        <tr ng-repeat-start="session in ::$ctrl.sessions.data track by session.id"
+          id="session{{::session.id}}">
+          <td>
+            <a class="btn btn-sm btn-toggle margined-top-sm"
+              ng-class="{'collapsed':!session.expanded, 'btn-theme-tertiary':!session.expanded, 'btn-danger':session.expanded}"
+              ng-click="$ctrl.toggleSessionDetail(session)">
+              <span class="fa fa-close"></span>
+            </a>
+            <small>
+              <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                expr="ip.protocol" value="{{::session.pr}}"
+                session="::session" parse="true" pull-left="true">
+              </session-field>
+            </small>
+          </td>
+          <td ng-repeat="col in :refreshHeaders:$ctrl.headers track by $index">
+            <span ng-if="::$ctrl.isArray(session[col.dbField])">
+              <span ng-repeat="value in ::session[col.dbField] track by $index">
+                <session-field field="::col" session="::session"
+                  value="{{::value}}" expr="{{::col.exp}}"
+                  parse="true" timezone="{{::$ctrl.settings.timezone}}">
+                </session-field>
+              </span>
+            </span>
+            <span ng-if="::!$ctrl.isArray(session[col.dbField])">
+              <session-field field="::col" session="::session"
+                value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
+                parse="true" timezone="{{::$ctrl.settings.timezone}}">
+              </session-field>
+            </span>
+          </td>
+        </tr>
+        <tr ng-repeat-end ng-if="session.expanded" class="session-detail-row">
+          <td colspan="{{::$ctrl.headers.length + 1}}">
+            <session-detail session="::session"></session-detail>
+          </td>
+        </tr>
+      </tbody>
+    </table> <!-- /session data table -->
 
     <loading ng-if="$ctrl.loading"></loading>
 

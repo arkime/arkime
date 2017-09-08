@@ -90,7 +90,7 @@
 
           this.currentPage = args.currentPage;
 
-          this.getData();
+          this.getData(true);
         }
       });
 
@@ -120,7 +120,7 @@
         // don't issue search when the first change:search event is fired
         if (!componentInitialized || this.loading) { return; }
 
-        this.getData();
+        this.getData(true);
       });
 
       // watch for additions to search parameters from session detail or map
@@ -234,8 +234,8 @@
           if (!colResizeInitialized) { this.initializeColResizable(); }
         })
         .catch((error) => {
-          this.error    = error;
-          this.loading  = false;
+          this.error = error;
+          this.reloadTable(); // sets loading to false
         });
     }
 
@@ -363,6 +363,7 @@
       }
 
       this.calculateInfoColumnWidth(defaultInfoColWidth);
+      this.$scope.$broadcast('$$rebind::refreshHeaders');
     }
 
     /**
@@ -437,12 +438,12 @@
 
       this.loading      = true;
       this.showSessions = false;
-      this.$scope.$broadcast('$$rebind::refresh');
+      this.$scope.$broadcast('$$rebind::refreshTable');
 
       this.$timeout(() => {
         this.loading      = false;
         this.showSessions = true;
-        this.$scope.$broadcast('$$rebind::refresh');
+        this.$scope.$broadcast('$$rebind::refreshTable');
 
         this.initializeColResizable();
       });
@@ -540,7 +541,7 @@
 
       this.saveTableState();
 
-      this.getData();
+      this.getData(true);
     }
 
     /**
@@ -701,11 +702,10 @@
         this.tableState.visibleHeaders.push(id);
       }
 
+      this.mapHeadersToFields();
+
       if (reloadData) { this.getData(true); } // need data from the server (reloads table)
-      else {
-        this.mapHeadersToFields();
-        this.reloadTable();
-      }
+      else { this.reloadTable(); } // have all the data, just need to reload the table
 
       this.saveTableState(true);
     }
@@ -731,13 +731,13 @@
         this.tableState.order           = this.colConfigs[index].order.slice();
       }
 
-      this.reloadTable();
+      this.mapHeadersToFields();
 
       this.query.sorts = this.tableState.order;
 
       this.saveTableState();
 
-      this.getData();
+      this.getData(true);
     }
 
     /* Saves a custom column configuration */
