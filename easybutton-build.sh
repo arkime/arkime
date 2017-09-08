@@ -16,11 +16,13 @@ PCAP=1.8.1
 CURL=7.55.0
 LUA=5.3.4
 DAQ=2.0.6
+NODE=6.11.2
 
 TDIR="/data/moloch"
 DOPFRING=0
 DODAQ=0
 DOCLEAN=0
+DONODE=1
 
 while :
 do
@@ -39,6 +41,10 @@ do
     ;;
   --clean)
     DOCLEAN=1
+    shift
+    ;;
+  --nonode)
+    DONODE=0
     shift
     ;;
   -*)
@@ -238,8 +244,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Build plugins
 (cd capture/plugins/lua; $MAKE)
-if [ $DOPFRING -eq 1 ]; then
+
+if [ $DOPFRING -eq 1 ] || [ -f "/usr/local/lib/libpfring.so" ]; then
     (cd capture/plugins/pfring; $MAKE)
 fi
 
@@ -251,11 +259,15 @@ if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
 fi
 
-if [ -f "/usr/local/lib/libpfring.so" ]; then
-    (cd capture/plugins/pfring; $MAKE)
+if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
+    echo "MOLOCH: Installing node $NODE"
+    if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
+        wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz
+    fi
+    sudo tar xfC node-v$NODE-linux-x64.tar.xz $TDIR
+    (cd $TDIR/bin ; sudo ln -s ../node-v$NODE-linux-x64/bin/* .)
 fi
 
-
-echo "Now type 'sudo make install' and 'sudo make config'"
+echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"
 
 exit 0

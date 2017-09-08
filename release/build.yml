@@ -9,7 +9,6 @@
   become: true
   become_method: sudo
   vars:
-    - node_version: 6.11.2
     - rvm1_rubies:
       - ruby-1.9.3
     - rvm1_user: root
@@ -86,13 +85,6 @@
     - name: install fpm
       gem: name=fpm user_install=no state=latest executable=/usr/local/bin/gem
 
-
-# Prepare prereqs
-    - name: Download Packages
-      get_url: url={{item}} dest=. validate_certs=no
-      with_items:
-        - https://nodejs.org/download/release/v{{node_version}}/node-v{{node_version}}-linux-x64.tar.xz
-
 # Only install snf if it exists locally.
     - name: Check for remote snf
       stat: path=/opt/snf
@@ -126,15 +118,6 @@
 
     - name: Create raw directory
       file: dest=/data/{{moloch_name}}/raw state=directory owner=nobody mode=0700
-
-    - name: Unarchive node
-      unarchive: src=~vagrant/node-v{{node_version}}-linux-x64.tar.xz dest=/data/{{moloch_name}} copy=no
-
-    - name: node link
-      file: state=link src=/data/{{moloch_name}}/node-v{{node_version}}-linux-x64/bin/{{item}} dest=/data/{{moloch_name}}/bin/{{item}}
-      with_items:
-        - node
-        - npm
 
 # Actually build
     - block:
