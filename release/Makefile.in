@@ -11,12 +11,9 @@ install:
 	$(INSTALL) molochcapture.upstart.conf $(etcdir)/
 	$(INSTALL) molochviewer.upstart.conf $(etcdir)/
 	$(INSTALL) molochwise.upstart.conf $(etcdir)/
-	$(INSTALL) elasticsearch.upstart.conf $(etcdir)/
 	$(INSTALL) molochcapture.systemd.service $(etcdir)/
 	$(INSTALL) molochviewer.systemd.service $(etcdir)/
 	$(INSTALL) molochwise.systemd.service $(etcdir)/
-	$(INSTALL) elasticsearch.systemd.service $(etcdir)/
-	$(INSTALL) logging.demo.yml $(etcdir)/
 	$(INSTALL) elasticsearch.demo.yml $(etcdir)/
 	$(INSTALL) config.ini.sample $(etcdir)/
 	sed -e "s,BUILD_MOLOCH_INSTALL_DIR,@prefix@,g" < moloch_update_geo.sh > @prefix@/bin/moloch_update_geo.sh

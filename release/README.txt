@@ -7,7 +7,7 @@ Basic Moloch Installation steps:
  2) Install package
  3) Configure basic moloch items by running the Configure script (this needs to be done only once)
      /data/moloch/bin/Configure
- 4a) If NOT using the demo Elasticsearch, download, install, start elasticsearch 2.4.x or 5.4.x recommended
+ 4a) If NOT using the demo Elasticsearch, download, install, start elasticsearch, > 5.4.x recommended
       https://www.elastic.co/downloads/past-releases
  4b) If using the demo Elasticsearch, these won't work with real Elasticsearch installs
       /sbin/start elasticsearch # for upstart/Centos 6/Ubuntu 14.04
