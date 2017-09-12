@@ -683,6 +683,27 @@ function checkWebEnabled(req, res, next) {
 
   return next();
 }
+
+
+// TODO ECR
+function logAction(req, res, next) {
+  var log = {
+    date    : Math.floor(Date.now()/1000),
+    userId  : req.user.userId,
+    pathname: req._parsedUrl.pathname,
+    method  : req.method,
+    query   : req._parsedUrl.query,
+  }
+
+  if (req.query.view) { log.view = req.query.view; }
+
+  Db.logit(log, function(err, info) {
+    if (err) { console.log('log history error', err, info); }
+    return next();
+  });
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
@@ -2252,6 +2273,13 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+// TODO ECR
+app.get('/logs', function(req, res) {
+  Db.getHistory(req.query, function(err, result) {
+    res.send(result);
+  });
+});
+
 app.get('/fields', function(req, res) {
   if (!app.locals.fieldsMap) {
     res.status(404);

@@ -113,9 +113,9 @@
           template      : '<moloch-upload></moloch-upload>',
           reloadOnSearch: false
         })
-        .when('/logs', {
-          title         : 'Logs',
-          template      : '<moloch-logs></moloch-logs>',
+        .when('/history', {
+          title         : 'History',
+          template      : '<moloch-history></moloch-history>',
           reloadOnSearch: false
         })
         .otherwise({

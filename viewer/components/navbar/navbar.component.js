@@ -43,7 +43,7 @@
         files       : { title: 'Files',       link: 'files' },
         stats       : { title: 'Stats',       link: 'stats' },
         upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' },
-        logs        : { title: 'Logs',        link: 'logs' }
+        logs        : { title: 'History',     link: 'history' }
       };
 
       if (!this.demoMode) {

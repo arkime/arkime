@@ -58,7 +58,7 @@ require('./visualization/components/map');
 
 require('./upload/upload');
 
-require('./logs/logs');
-require('./logs/logs.service');
+require('./history/history');
+require('./history/history.service');
 
 require('./404/404');

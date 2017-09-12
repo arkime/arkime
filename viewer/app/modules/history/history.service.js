@@ -3,13 +3,13 @@
   'use strict';
 
   /**
-   * @class LogService
+   * @class HistoryService
    * @classdesc Transacts logs with the server
    */
-  class LogService {
+  class HistoryService {
 
     /**
-     * Initialize global variables for the LogService
+     * Initialize global variables for the HistoryService
      * @param $q    Service to run functions asynchronously
      * @param $http Angular service that facilitates communication
      *              with the remote HTTP servers
@@ -43,10 +43,10 @@
 
   }
 
-  LogService.$inject = ['$q', '$http'];
+  HistoryService.$inject = ['$q', '$http'];
 
 
   angular.module('moloch')
-     .service('LogService', LogService);
+     .service('HistoryService', HistoryService);
 
 })();

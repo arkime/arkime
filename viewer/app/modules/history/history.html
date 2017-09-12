@@ -6,7 +6,7 @@
         <span class="fa fa-history fa-stack-1x"></span>
         <span class="fa fa-square-o fa-stack-2x"></span>
       </span>&nbsp;
-      Logs
+      History
     </span>
   </div>
 
@@ -27,9 +27,9 @@
             <span class="input-group-addon">
               <span class="fa fa-search"></span>
             </span>
-            <input type="text" class="form-control input-sm" ng-model="$ctrl.searchLogs"
+            <input type="text" class="form-control input-sm" ng-model="$ctrl.searchHistory"
               ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
-              placeholder="Search for logs in the table below">
+              placeholder="Search for history in the table below">
           </div>
         </div>
       </div>
@@ -55,23 +55,23 @@
         </thead>
         <tbody>
         <tr class="animate-repeat"
-          ng-repeat="log in $ctrl.filteredLogs = ($ctrl.logs.data) track by $index">
+          ng-repeat="log in $ctrl.filteredHistory = ($ctrl.history.data) track by $index">
           <td class="no-wrap">{{log.date}}</td>
           <td class="no-wrap">{{log.userId}}</td>
           <td class="no-wrap">{{log.api}}</td>
           <td class="no-wrap">{{log.query}}</td>
           <td class="no-wrap">{{log.view}}</td>
         </tr>
-        <tr ng-if="$ctrl.searchLogs !== undefined && !$ctrl.filteredLogs.length && $ctrl.logs.data.length > 0">
+        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.filteredHistory.length && $ctrl.history.data.length > 0">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No results match your search</strong>
           </td>
         </tr>
-        <tr ng-if="$ctrl.logs.data.length === 0">
+        <tr ng-if="$ctrl.history.data.length === 0">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
-            <strong>No logs or none that match your search.</strong>
+            <strong>No history or none that match your search.</strong>
           </td>
         </tr>
         </tbody>

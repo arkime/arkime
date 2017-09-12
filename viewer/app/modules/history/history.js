@@ -3,20 +3,20 @@
   'use strict';
 
   /**
-   * @class LogsController
-   * @classdesc Interacts with moloch logs page
+   * @class HistoryController
+   * @classdesc Interacts with moloch history page
    * @example
-   * '<moloch-logs></moloch-logs>'
+   * '<moloch-history></moloch-history>'
    */
-  class LogsController {
+  class HistoryController {
 
     /**
      * Initialize global variables for this controller
      *
      * @ngInject
      */
-    constructor(LogService) {
-      this.LogService = LogService;
+    constructor(HistoryService) {
+      this.HistoryService = HistoryService;
     }
 
     /* Callback when component is mounted and ready */
@@ -47,18 +47,17 @@
       this.loading = true;
 
       let params = {
-        filter    : this.searchLogs,
+        filter    : this.searchHistory,
         sortField : this.sortField,
         desc      : this.sortReverse,
         start     : this.query.start,
         length    : this.query.length
       };
 
-      this.LogService.get(params)
+      this.HistoryService.get(params)
          .then((response) => {
            this.loading = false;
-           this.logs    = response;
-           console.log(response);
+           this.history = response;
          })
          .catch((error) => {
            this.loading  = false;
@@ -68,16 +67,16 @@
 
   }
 
-  LogsController.$inject = ['LogService'];
+  HistoryController.$inject = ['HistoryService'];
 
   /**
-   * Logs Directive
-   * Displays the moloch logs page
+   * History Directive
+   * Displays the moloch history page
    */
   angular.module('moloch')
-     .component('molochLogs', {
-       template  : require('html!./logs.html'),
-       controller: LogsController
+     .component('molochHistory', {
+       template  : require('html!./history.html'),
+       controller: HistoryController
      });
 
 })();
