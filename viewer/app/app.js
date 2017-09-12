@@ -109,8 +109,13 @@
           reloadOnSearch: false
         })
         .when('/upload', {
-          title    : 'Upload',
-          template : '<moloch-upload></moloch-upload>',
+          title         : 'Upload',
+          template      : '<moloch-upload></moloch-upload>',
+          reloadOnSearch: false
+        })
+        .when('/logs', {
+          title         : 'Logs',
+          template      : '<moloch-logs></moloch-logs>',
           reloadOnSearch: false
         })
         .otherwise({

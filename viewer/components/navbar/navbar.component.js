@@ -42,7 +42,8 @@
         connections : { title: 'Connections', link: 'connections' },
         files       : { title: 'Files',       link: 'files' },
         stats       : { title: 'Stats',       link: 'stats' },
-        upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' }
+        upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' },
+        logs        : { title: 'Logs',        link: 'logs' }
       };
 
       if (!this.demoMode) {

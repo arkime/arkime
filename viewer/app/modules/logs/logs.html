@@ -1,0 +1,83 @@
+<div class="container-fluid margin-for-main-and-sub-navbar">
+
+  <div class="sub-navbar">
+    <span class="sub-navbar-title">
+      <span class="fa-stack">
+        <span class="fa fa-history fa-stack-1x"></span>
+        <span class="fa fa-square-o fa-stack-2x"></span>
+      </span>&nbsp;
+      Logs
+    </span>
+  </div>
+
+  <div class="row margined-bottom-xxxxlg">
+    <div class="col-md-12">
+
+      <div class="row">
+        <!-- top pagination controls -->
+        <div class="col-md-6">
+          <moloch-pagination length="$ctrl.query.length"
+            records-total="$ctrl.users.recordsTotal"
+            records-filtered="$ctrl.users.recordsFiltered"
+            current-page="$ctrl.currentPage"
+            start="$ctrl.query.start"></moloch-pagination>
+        </div>
+        <div class="col-md-4 col-md-offset-2">
+          <div class="input-group input-group-sm pull-right header-input">
+            <span class="input-group-addon">
+              <span class="fa fa-search"></span>
+            </span>
+            <input type="text" class="form-control input-sm" ng-model="$ctrl.searchLogs"
+              ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+              placeholder="Search for logs in the table below">
+          </div>
+        </div>
+      </div>
+
+      <loading ng-if="$ctrl.loading"></loading>
+
+      <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+      <table class="table table-condensed table-striped margined-top-xxxlg">
+        <thead>
+        <tr>
+          <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+            ng-class="::{'no-wrap':column.nowrap}"
+            ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
+            uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
+            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
+            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
+            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+            {{::column.name}}
+          </th>
+          <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="animate-repeat"
+          ng-repeat="log in $ctrl.filteredLogs = ($ctrl.logs.data) track by $index">
+          <td class="no-wrap">{{log.date}}</td>
+          <td class="no-wrap">{{log.userId}}</td>
+          <td class="no-wrap">{{log.api}}</td>
+          <td class="no-wrap">{{log.query}}</td>
+          <td class="no-wrap">{{log.view}}</td>
+        </tr>
+        <tr ng-if="$ctrl.searchLogs !== undefined && !$ctrl.filteredLogs.length && $ctrl.logs.data.length > 0">
+          <td colspan="5" class="text-danger text-center">
+            <span class="fa fa-warning"></span>&nbsp;
+            <strong>No results match your search</strong>
+          </td>
+        </tr>
+        <tr ng-if="$ctrl.logs.data.length === 0">
+          <td colspan="5" class="text-danger text-center">
+            <span class="fa fa-warning"></span>&nbsp;
+            <strong>No logs or none that match your search.</strong>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+</div>
