@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 35;
+var MIN_DB_VERSION = 36;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -684,23 +684,22 @@ function checkWebEnabled(req, res, next) {
   return next();
 }
 
-
-// TODO ECR
 function logAction(req, res, next) {
   var log = {
-    date    : Math.floor(Date.now()/1000),
-    userId  : req.user.userId,
-    pathname: req._parsedUrl.pathname,
-    method  : req.method,
-    query   : req._parsedUrl.query,
+    timestamp : Math.floor(Date.now()/1000),
+    userId    : req.user.userId,
+    pathname  : req._parsedUrl.pathname,
+    method    : req.method,
+    query     : req._parsedUrl.query,
   }
 
   if (req.query.view) { log.view = req.query.view; }
 
   Db.logit(log, function(err, info) {
     if (err) { console.log('log history error', err, info); }
-    return next();
   });
+
+  return next();
 }
 
 
@@ -2273,12 +2272,39 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-// TODO ECR
+// TODO ECR - query string
 app.get('/logs', function(req, res) {
-  Db.getHistory(req.query, function(err, result) {
-    res.send(result);
+  var query = {
+    sort: {},
+    from: +req.query.start  || 0,
+    size: +req.query.length || 1000
+  };
+
+  query.sort[req.query.sortField || 'timestamp'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
+
+  Db.searchHistory(query, function(err, result) {
+    if (err || result.error) {
+      console.log("ERROR - history", err || result.error);
+      res.status(500);
+      return res.send(JSON.stringify({success: false, text: 'Error retrieving log history'}));
+    } else {
+      var recordsFiltered = result.hits.hits.length;
+      var results = {
+        recordsTotal    : result.hits.total,
+        recordsFiltered : recordsFiltered,
+        results         : []
+      };
+      for (var i = 0; i < recordsFiltered; i++) {
+        var log = result.hits.hits[i]._source;
+        log.id = result.hits.hits[i]._id;
+        results.results.push(log);
+      }
+    }
+
+    return res.send(results);
   });
 });
+
 
 app.get('/fields', function(req, res) {
   if (!app.locals.fieldsMap) {
@@ -2832,7 +2858,7 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.get('/sessions.json', function(req, res) {
+app.get('/sessions.json', logAction, function(req, res) {
   var i;
 
   var graph = {};

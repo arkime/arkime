@@ -15,24 +15,29 @@
      *
      * @ngInject
      */
-    constructor(HistoryService) {
+    constructor(UserService, HistoryService) {
+      this.UserService    = UserService;
       this.HistoryService = HistoryService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.sortField    = 'date';
-      this.sortReverse  = false;
+      this.sortField    = 'timestamp';
+      this.sortReverse  = true;
       this.currentPage  = 1;
       this.query        = { length: 50, start: 0 };
 
       this.columns = [
-        { name: 'Time', sort: 'date', nowrap:true, help: 'The date and time of the logged action' },
-        { name: 'User ID', sort: 'userId', nowrap: true, help: 'The id used for login' },
-        { name: 'API', sort: 'api', nowrap: true, help: 'The API endpoint' },
-        { name: 'Query', sort: 'query', nowrap: true, help: 'The query issued' },
+        { name: 'Time', sort: 'timestamp', nowrap:true, help: 'The date and time of the request' },
+        { name: 'User ID', sort: 'userId', nowrap: true, help: 'The id of the user that initiated the request' },
+        { name: 'API', sort: 'api', nowrap: true, help: 'The API endpoint of the request' },
+        { name: 'Query', sort: 'query', nowrap: true, help: 'The query issued with the request' },
         { name: 'View', sort: 'view', nowrap: true, help: 'The view expression applied to the query' }
       ];
+
+      this.UserService.getSettings()
+         .then((response) => { this.settings = response; })
+         .catch((error)   => { this.settings = {timezone: "local"}; });
 
       this.loadData();
     }
@@ -67,7 +72,7 @@
 
   }
 
-  HistoryController.$inject = ['HistoryService'];
+  HistoryController.$inject = ['UserService','HistoryService'];
 
   /**
    * History Directive

@@ -42,6 +42,7 @@
 # 33 - user columnConfigs
 # 34 - stats_v2
 # 35 - user spiviewFieldConfigs
+# 36 - log history
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -50,7 +51,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 35;
+my $VERSION = 36;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1662,6 +1663,66 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     print "\n";
 }
 
+# TODO ECR - index history by week?
+################################################################################
+sub historyCreate
+{
+    my $settings = '
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+    print "Creating history_v1 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}history_v1", $settings);
+    esAlias("add", "history_v1", "history");
+    historyUpdate();
+}
+################################################################################
+sub historyUpdate
+{
+    my $mapping = '
+{
+  "log": {
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "method": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "pathname": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "query": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "view": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "timestamp": {
+        "type": "date"
+      }
+    }
+  }
+}';
+
+    print "Setting history_v1 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}history_v1/log/_mapping?pretty", $mapping);
+}
+################################################################################
+
 ################################################################################
 sub usersCreate
 {
@@ -2360,6 +2421,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/_template/${PREFIX}sessions_template", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
+    esDelete("/${PREFIX}history_v1", 1);
     if ($ARGV[1] =~ "init") {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2379,6 +2441,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsCreate();
     sessionsUpdate();
     fieldsCreate();
+    historyCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2442,7 +2505,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         usersUpdate();
         sessionsUpdate();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 35) {
+    } elsif ($main::versionNumber <= 35) { # TODO ECR - need to update this part?
         usersUpdate();
         sessionsUpdate();
         checkForOldIndices();

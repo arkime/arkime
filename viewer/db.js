@@ -348,17 +348,12 @@ exports.setUser = function(name, doc, cb) {
   return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: 1}, cb);
 };
 
-
-
-// TODO ECR
 exports.logit = function(doc, cb) {
-  internals.elasticSearchClient.index({index:'history', type:'history', body:doc, refresh:1}, cb);
-}
-exports.getHistory = function(query, cb) {
-  internals.elasticSearchClient.search({index:'history'}, cb);
-}
-
-
+  internals.elasticSearchClient.index({index:'history', type:'log', body:doc, refresh:1}, cb);
+};
+exports.searchHistory = function(query, cb) {
+  internals.elasticSearchClient.search({index:'history', body:query}, cb);
+};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {

@@ -10,15 +10,15 @@
     </span>
   </div>
 
-  <div class="row margined-bottom-xxxxlg">
+  <div class="row">
     <div class="col-md-12">
 
       <div class="row">
         <!-- top pagination controls -->
         <div class="col-md-6">
           <moloch-pagination length="$ctrl.query.length"
-            records-total="$ctrl.users.recordsTotal"
-            records-filtered="$ctrl.users.recordsFiltered"
+            records-total="$ctrl.history.recordsTotal"
+            records-filtered="$ctrl.history.recordsFiltered"
             current-page="$ctrl.currentPage"
             start="$ctrl.query.start"></moloch-pagination>
         </div>
@@ -50,25 +50,24 @@
             <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
             {{::column.name}}
           </th>
-          <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
         <tr class="animate-repeat"
-          ng-repeat="log in $ctrl.filteredHistory = ($ctrl.history.data) track by $index">
-          <td class="no-wrap">{{log.date}}</td>
-          <td class="no-wrap">{{log.userId}}</td>
-          <td class="no-wrap">{{log.api}}</td>
-          <td class="no-wrap">{{log.query}}</td>
-          <td class="no-wrap">{{log.view}}</td>
+          ng-repeat="log in $ctrl.filteredHistory = ($ctrl.history.results) track by log.id">
+          <td>{{log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
+          <td>{{log.userId}}</td>
+          <td>{{log.pathname}}</td>
+          <td>{{log.query}}</td>
+          <td>{{log.view}}</td>
         </tr>
-        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.filteredHistory.length && $ctrl.history.data.length > 0">
+        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.filteredHistory.length && $ctrl.history.results.length > 0">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No results match your search</strong>
           </td>
         </tr>
-        <tr ng-if="$ctrl.history.data.length === 0">
+        <tr ng-if="$ctrl.history.results.length === 0">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No history or none that match your search.</strong>
