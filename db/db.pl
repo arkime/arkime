@@ -1703,16 +1703,20 @@ sub historyUpdate
         "type": "string",
         "index": "not_analyzed"
       },
-      "query": {
+      "expression": {
         "type": "string",
         "index": "not_analyzed"
       },
       "view": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "object",
+        "dynamic": "true"
       },
       "timestamp": {
         "type": "date"
+      },
+      "query": {
+        "type": "string",
+        "index": "not_analyzed"
       }
     }
   }
@@ -2505,7 +2509,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         usersUpdate();
         sessionsUpdate();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 35) { # TODO ECR - need to update this part?
+    } elsif ($main::versionNumber <= 36) {
         usersUpdate();
         sessionsUpdate();
         checkForOldIndices();

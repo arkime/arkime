@@ -28,7 +28,7 @@
               <span class="fa fa-search"></span>
             </span>
             <input type="text" class="form-control input-sm" ng-model="$ctrl.searchHistory"
-              ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+              ng-model-options="{debounce:400}" ng-change="$ctrl.loadData()"
               placeholder="Search for history in the table below">
           </div>
         </div>
@@ -53,25 +53,27 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="animate-repeat"
-          ng-repeat="log in $ctrl.filteredHistory = ($ctrl.history.results) track by log.id">
-          <td>{{log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
-          <td>{{log.userId}}</td>
-          <td>{{log.pathname}}</td>
-          <td>{{log.query}}</td>
-          <td>{{log.view}}</td>
-        </tr>
-        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.filteredHistory.length && $ctrl.history.results.length > 0">
+        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.history.results.length">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No results match your search</strong>
           </td>
         </tr>
-        <tr ng-if="$ctrl.history.results.length === 0">
+        <tr ng-if="$ctrl.history.results.length === 0 || ::!$ctrl.history.results">
           <td colspan="5" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
-            <strong>No history or none that match your search.</strong>
+            <strong>No history or none that matches your search.</strong>
           </td>
+        </tr>
+        <tr class="animate-repeat"
+          ng-repeat="log in $ctrl.history.results track by log.id">
+          <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
+          <td>{{::log.userId}}</td>
+          <td>{{::log.pathname}}</td>
+          <td>{{::log.expression}}</td>
+          <td><span ng-if="::log.view">
+            <strong>{{::log.view.name}}:</strong> {{::log.view.expression}}
+          </span></td>
         </tr>
         </tbody>
       </table>

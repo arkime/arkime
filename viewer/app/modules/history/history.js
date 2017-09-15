@@ -12,10 +12,16 @@
 
     /**
      * Initialize global variables for this controller
+     * @param $scope          Angular application model object
+     * @param $routeParams    Retrieve the current set of route parameters
+     * @param UserService     Transacts users and user data with the server
+     * @param HistoryService  Transacts logs with the server
      *
      * @ngInject
      */
-    constructor(UserService, HistoryService) {
+    constructor($scope, $routeParams, UserService, HistoryService) {
+      this.$scope         = $scope;
+      this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.HistoryService = HistoryService;
     }
@@ -25,13 +31,17 @@
       this.sortField    = 'timestamp';
       this.sortReverse  = true;
       this.currentPage  = 1;
-      this.query        = { length: 50, start: 0 };
+      this.query        = { length:50, start:0 };
+
+      if (this.$routeParams.length) {
+        this.query.length = parseInt(this.$routeParams.length);
+      }
 
       this.columns = [
         { name: 'Time', sort: 'timestamp', nowrap:true, help: 'The date and time of the request' },
         { name: 'User ID', sort: 'userId', nowrap: true, help: 'The id of the user that initiated the request' },
-        { name: 'API', sort: 'api', nowrap: true, help: 'The API endpoint of the request' },
-        { name: 'Query', sort: 'query', nowrap: true, help: 'The query issued with the request' },
+        { name: 'API', sort: 'pathname', nowrap: true, help: 'The API endpoint of the request' },
+        { name: 'Expression', sort: 'expression', nowrap: true, help: 'The query expression issued with the request' },
         { name: 'View', sort: 'view', nowrap: true, help: 'The view expression applied to the query' }
       ];
 
@@ -40,6 +50,16 @@
          .catch((error)   => { this.settings = {timezone: "local"}; });
 
       this.loadData();
+
+      /* LISTEN! */
+      this.$scope.$on('change:pagination', (event, args) => {
+        // pagination affects length, currentPage, and start
+        this.query.length = args.length;
+        this.query.start  = args.start;
+        this.currentPage  = args.currentPage;
+
+        this.loadData();
+      });
     }
 
     columnClick(name) {
@@ -72,7 +92,8 @@
 
   }
 
-  HistoryController.$inject = ['UserService','HistoryService'];
+  HistoryController.$inject = ['$scope','$routeParams',
+    'UserService','HistoryService'];
 
   /**
    * History Directive

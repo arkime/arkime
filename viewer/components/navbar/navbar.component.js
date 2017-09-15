@@ -42,13 +42,13 @@
         connections : { title: 'Connections', link: 'connections' },
         files       : { title: 'Files',       link: 'files' },
         stats       : { title: 'Stats',       link: 'stats' },
-        upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' },
-        logs        : { title: 'History',     link: 'history' }
+        upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' }
       };
 
       if (!this.demoMode) {
-        this.menu.settings  = { title: 'Settings', link: 'settings' };
-        this.menu.users     = { title: 'Users', link: 'users', permission: 'createEnabled' };
+        this.menu.history   = { title: 'History',   link: 'history' };
+        this.menu.settings  = { title: 'Settings',  link: 'settings' };
+        this.menu.users     = { title: 'Users',     link: 'users', permission: 'createEnabled' };
       }
     }
 
