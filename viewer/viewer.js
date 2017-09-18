@@ -693,6 +693,19 @@ function logAction(req, res, next) {
     query     : req._parsedUrl.query,
     expression: req.query.expression
   }
+  console.log(req.query);
+
+  if (req.query.fields) {
+    log.fields = req.query.fields;
+  } else if (req.query.spi) {
+    log.fields = req.query.spi;
+  }
+
+  if (req.query.date && parseInt(req.query.date) === -1) {
+    log.range = log.timestamp;
+  } else if(req.query.startTime && req.query.stopTime) {
+    log.range = req.query.stopTime - req.query.startTime;
+  }
 
   if (req.query.view && req.user.views) {
     var view = req.user.views[req.query.view];
@@ -2297,27 +2310,36 @@ app.get('/logs', function(req, res) {
       query : req.query.filter
     }
   }
-
-  Db.searchHistory(query, function(err, result) {
-    if (err || result.error) {
-      console.log("ERROR - history", err || result.error);
-      res.status(500);
-      return res.send(JSON.stringify({success: false, text: 'Error retrieving log history'}));
-    } else {
-      var results = {
-        recordsTotal    : result.hits.total,
-        recordsFiltered : result.hits.total,
-        results         : []
-      };
-      for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var log = result.hits.hits[i]._source;
-        log.id = result.hits.hits[i]._id;
-        results.results.push(log);
-      }
-    }
-
-    return res.send(results);
-  });
+  async.parallel({
+     logs: function (cb) {
+       Db.searchHistory(query, function(err, result) {
+         if (err || result.error) {
+           console.log("ERROR - history logs", err || result.error);
+           res.status(500);
+           return res.send(JSON.stringify({success: false, text: 'Error retrieving log history'}));
+         } else {
+           var results = { total:result.hits.total, results:[] };
+           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+             var log = result.hits.hits[i]._source;
+             log.id = result.hits.hits[i]._id;
+             results.results.push(log);
+           }
+           cb(null, results);
+         }
+       });
+     },
+     total: function (cb) {
+       Db.numberOfLogs(cb);
+     }
+   },
+   function(err, results) {
+     var r = {
+       recordsTotal: results.total,
+       recordsFiltered: results.logs.total,
+       data: results.logs.results
+     };
+     res.send(r);
+   });
 });
 
 

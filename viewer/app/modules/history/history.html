@@ -34,15 +34,11 @@
         </div>
       </div>
 
-      <loading ng-if="$ctrl.loading"></loading>
-
-      <error ng-if="$ctrl.error" message="$ctrl.error"></error>
-
-      <table class="table table-condensed table-striped margined-top-xxxlg">
+      <table class="table small table-condensed table-striped margined-top-xxxlg">
         <thead>
         <tr>
           <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
-            ng-class="::{'no-wrap':column.nowrap}"
+            ng-class="::{'no-wrap':column.nowrap}" ng-style="::{'width':column.width+'%'}"
             ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
             uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
             <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
@@ -53,30 +49,31 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-if="$ctrl.searchHistory !== undefined && !$ctrl.history.results.length">
-          <td colspan="5" class="text-danger text-center">
-            <span class="fa fa-warning"></span>&nbsp;
-            <strong>No results match your search</strong>
-          </td>
-        </tr>
-        <tr ng-if="$ctrl.history.results.length === 0 || ::!$ctrl.history.results">
-          <td colspan="5" class="text-danger text-center">
+        <tr ng-if="$ctrl.history.data.length === 0">
+          <td colspan="6" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No history or none that matches your search.</strong>
           </td>
         </tr>
         <tr class="animate-repeat"
-          ng-repeat="log in $ctrl.history.results track by log.id">
+          ng-repeat="log in $ctrl.history.data track by log.id">
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
+          <td><span ng-if="::log.range">{{::log.range*1000 | readableTime}}</span></td>
           <td>{{::log.userId}}</td>
-          <td>{{::log.pathname}}</td>
-          <td>{{::log.expression}}</td>
-          <td><span ng-if="::log.view">
-            <strong>{{::log.view.name}}:</strong> {{::log.view.expression}}
-          </span></td>
+          <td title="{{::log.pathname}}" class="no-wrap">{{::log.pathname}}</td>
+          <td title="{{::log.expression}}" class="no-wrap">{{::log.expression}}</td>
+          <td title="{{::log.view.expression}}" class="no-wrap">
+            <span ng-if="::log.view">
+              <strong>{{::log.view.name}}:</strong> {{::log.view.expression}}
+            </span>
+          </td>
         </tr>
         </tbody>
       </table>
+
+      <loading ng-if="$ctrl.loading"></loading>
+
+      <error ng-if="$ctrl.error" message="$ctrl.error"></error>
 
     </div>
   </div>

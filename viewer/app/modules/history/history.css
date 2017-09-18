@@ -1,0 +1,6 @@
+moloch-history table {
+  table-layout: fixed;
+}
+moloch-history table tbody tr td.no-wrap {
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+}

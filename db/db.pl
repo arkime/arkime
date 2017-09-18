@@ -1714,7 +1714,14 @@ sub historyUpdate
       "timestamp": {
         "type": "date"
       },
+      "range": {
+        "type": "integer"
+      },
       "query": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "fields": {
         "type": "string",
         "index": "not_analyzed"
       }
