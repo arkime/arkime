@@ -23,6 +23,7 @@ quic33-wireshark.pcap - https://bugs.wireshark.org/bugzilla/attachment.cgi?id=14
 dns-notify.pcap - http://pcapr.net/view/bortzmeyer+pcapr/2013/8/1/13/dns-notify.pcap.html
 pppoe.pcap - Subset of http://www.pcapr.net/view/tyson.key/2009/8/0/14/AOLTraffic_00000_20071029163901.html
 fbzero-android.pcap - Subset of https://github.com/ntop/nDPI/issues/300#issuecomment-261893575
+wireshark-bdat.pcap - https://www.wireshark.org/lists/wireshark-bugs/201610/msg00410.html
 
 
 

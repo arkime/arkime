@@ -1,0 +1,143 @@
+{
+   "sessions" : [
+      {
+         "body" : {
+            "a1" : "127.0.0.1",
+            "db" : 8895,
+            "p1" : 59620,
+            "fp" : 1476878885,
+            "ehh" : [
+               "message-id",
+               "from",
+               "received",
+               "date",
+               "subject"
+            ],
+            "portDst" : 1224,
+            "db2" : 130,
+            "ipSrc" : "127.0.0.1",
+            "pa" : 20,
+            "ehhcnt" : 5,
+            "p2" : 1224,
+            "prot-term-cnt" : 3,
+            "db1" : 8765,
+            "mac2-term-cnt" : 1,
+            "ss" : 1,
+            "ehocnt" : 2,
+            "eid" : [
+               "E1bwpfB-0000Be-Tu@testhost.test.ex"
+            ],
+            "by1" : 9433,
+            "mac1-term" : [
+               "00:00:00:00:00:00"
+            ],
+            "fpd" : 1476878885946,
+            "fb1" : "45484c4f20746573",
+            "by" : 10231,
+            "pa2" : 10,
+            "prot-term" : [
+               "ftp",
+               "smtp",
+               "tcp"
+            ],
+            "eho" : [
+               "testhost.test.ex",
+               "root"
+            ],
+            "esubcnt" : 1,
+            "a2" : "127.0.0.1",
+            "pa1" : 10,
+            "lastPacket" : 1476878885949,
+            "lpd" : 1476878885949,
+            "timestamp" : "SET",
+            "portSrc" : 59620,
+            "pr" : 6,
+            "psl" : [
+               90,
+               90,
+               82,
+               97,
+               105,
+               82,
+               129,
+               127,
+               377,
+               82,
+               129,
+               98,
+               8273,
+               271,
+               82,
+               95,
+               88,
+               82,
+               90,
+               82
+            ],
+            "edstcnt" : 1,
+            "esrc" : [
+               "sender@dom",
+               ""
+            ],
+            "esub" : [
+               "foo"
+            ],
+            "by2" : 798,
+            "fs" : [],
+            "ipDst" : "127.0.0.1",
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               383,
+               488,
+               570,
+               699,
+               826,
+               1203,
+               1285,
+               1414,
+               1512,
+               9785,
+               10056,
+               10138,
+               10233,
+               10321,
+               10403,
+               10493
+            ],
+            "firstPacket" : 1476878885946,
+            "no" : "test",
+            "mac2-term" : [
+               "00:00:00:00:00:00"
+            ],
+            "esrccnt" : 2,
+            "eidcnt" : 1,
+            "lp" : 1476878885,
+            "edst" : [
+               "p@test.ex"
+            ],
+            "sl" : 3,
+            "fb2" : "3232302047726565",
+            "mac1-term-cnt" : 1,
+            "tcpflags" : {
+               "urg" : 0,
+               "syn-ack" : 1,
+               "ack" : 4,
+               "psh" : 12,
+               "syn" : 1,
+               "fin" : 2,
+               "rst" : 0
+            }
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-161019"
+            }
+         }
+      }
+   ]
+}
+

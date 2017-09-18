@@ -50,10 +50,13 @@ typedef struct {
     GString           *line[2];
     gint               state64[2];
     guint              save64[2];
+    guint              bdatRemaining[2];
     GChecksum         *checksum[2];
 
     uint16_t           base64Decode:2;
     uint16_t           firstInContent:2;
+    uint16_t           seenHeaders:2;
+    uint16_t           inBDAT:2;
 } SMTPInfo_t;
 
 /******************************************************************************/
@@ -83,7 +86,7 @@ EMAIL_MIME_DATA,
 EMAIL_MIME_DATA_RETURN
 };
 /******************************************************************************/
-char *smtp_remove_matching(char *str, char start, char stop) 
+char *smtp_remove_matching(char *str, char start, char stop)
 {
     while (isspace(*str))
         str++;
@@ -209,7 +212,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
         /* No encoded text, or normal text in front of encoded */
         if (!startquestion || str != startquestion) {
             int extra = 0;
-            if (!startquestion) 
+            if (!startquestion)
                 startquestion = end;
             else if (str + 1 == startquestion && *str == ' ') {
                 // If we have " =?" don't encode space, this helps with "?= =?"
@@ -441,6 +444,17 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 *state = EMAIL_CMD;
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
+                email->seenHeaders |= (1 << which);
+            } else if (strncasecmp(line->str, "BDAT", 4) == 0) {
+                email->inBDAT |= (1 << which);
+                email->bdatRemaining[which] = atoi(line->str+5)+1;
+
+                if (email->seenHeaders & (1 << which))
+                    *state = EMAIL_DATA;
+                else {
+                    email->seenHeaders |= (1 << which);
+                    *state = EMAIL_DATA_HEADER;
+                }
             } else if (strncasecmp(line->str, "AUTH LOGIN", 10) == 0) {
                 moloch_session_add_tag(session, "smtp:authlogin");
                 if (line->len > 11) {
@@ -619,6 +633,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_MIME_DATA:
         case EMAIL_DATA: {
+
             if (*data == '\r') {
                 (*state)++;
                 break;
@@ -631,7 +646,9 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 #ifdef EMAILDEBUG
             printf("%d %d %sdata => %s\n", which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
 #endif
-            if (strcmp(line->str, ".") == 0) {
+
+            // If not in BDAT end DATA on single .
+            if (!(email->inBDAT & 1 << which) && (strcmp(line->str, ".") == 0)) {
                 email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else {
@@ -662,7 +679,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (email->base64Decode & (1 << which)) {
                         guchar buf[20000];
                         if (sizeof(buf) > line->len) {
-                            gsize  b = g_base64_decode_step (line->str, line->len, buf, 
+                            gsize  b = g_base64_decode_step (line->str, line->len, buf,
                                                             &(email->state64[which]),
                                                             &(email->save64[which]));
                             g_checksum_update(email->checksum[which], buf, b);
@@ -732,7 +749,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             } else {
                 *state = EMAIL_MIME_DONE;
             }
-            
+
             if (*data != '\n')
                 continue;
             break;
@@ -780,6 +797,17 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         data++;
         remaining--;
+
+        if (email->inBDAT & 1 << which) {
+            email->bdatRemaining[which]--;
+            if (email->bdatRemaining[which] == 0) {
+#ifdef EMAILDEBUG
+                printf("%d %d reseting to CMD %s\n", which, *state, line->str);
+#endif
+                *state = EMAIL_CMD;
+                email->inBDAT &=  ~(1 << which);
+            }
+        }
     }
 
     return 0;
@@ -840,7 +868,7 @@ void moloch_parser_init()
         "host.email", "Hostname", "eho",
         "Email hostnames",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "aliases", "[\"email.host\"]", 
+        "aliases", "[\"email.host\"]",
         "requiredRight", "emailSearch",
         "category", "host",
         NULL);
@@ -922,7 +950,7 @@ void moloch_parser_init()
 
     ipField = moloch_field_define("email", "ip",
         "ip.email", "IP", "eip",
-        "Email IP address", 
+        "Email IP address",
         MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
         "category", "ip",

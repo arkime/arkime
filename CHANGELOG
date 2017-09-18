@@ -17,6 +17,7 @@ NOTICE: 0.20 and above require nodejs 6.x
   - viewer - made number of packets displayed setting accurate
   - release - move node install from release to easybutton (issue #720)
   - release - install ES 5
+  - capture - initial SMTP BDAT support
 
 0.19.2 2017/08/25
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
