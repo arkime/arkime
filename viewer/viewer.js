@@ -2295,6 +2295,20 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
 app.get('/logs', function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId;
+  if (req.user.createEnabled) { // user is an admin, they can view all logs
+    // if the admin has requested a specific user
+    if (req.query.userId) { userId = req.query.userId; }
+  } else { // user isn't an admin, so they can only view their own logs
+    if (req.query.userId) { return error(403, 'Need admin privileges'); }
+    userId = req.user.userId;
+  }
+
   var query = {
     sort: {},
     from: +req.query.start  || 0,
@@ -2303,20 +2317,37 @@ app.get('/logs', function(req, res) {
 
   query.sort[req.query.sortField || 'timestamp'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
 
-  if (req.query.filter) {
-    query.query = {};
-    query.query.simple_query_string = {
-      fields: ['expression', 'userId', 'pathname', 'view.name', 'view.expression'],
-      query : req.query.filter
+  if (req.query.searchTerm || userId) {
+    query.query = { bool:{} };
+
+    if (req.query.searchTerm) { // apply search term
+      query.query.bool.must = {
+        simple_query_string: {
+          fields: ['expression','userId','pathname','view.name','view.expression'],
+          query : req.query.searchTerm
+        }
+      }
+    }
+
+    if (userId) { // filter on userId
+      query.query.bool.filter = {
+        term: { userId:userId }
+      };
     }
   }
+
+  if (req.query.pathname) { // filter on pathname (api endpoint)
+    if (!query.query) { query.query = { bool:{} }; }
+    if (!query.query.bool.filter) { query.query.bool.filter = { term:{} }; }
+    query.query.bool.filter.term.pathname = req.query.pathname;
+  }
+
   async.parallel({
      logs: function (cb) {
        Db.searchHistory(query, function(err, result) {
          if (err || result.error) {
            console.log("ERROR - history logs", err || result.error);
-           res.status(500);
-           return res.send(JSON.stringify({success: false, text: 'Error retrieving log history'}));
+           return error(500, 'Error retrieving log history');
          } else {
            var results = { total:result.hits.total, results:[] };
            for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {

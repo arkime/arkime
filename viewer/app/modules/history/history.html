@@ -15,22 +15,28 @@
 
       <div class="row">
         <!-- top pagination controls -->
-        <div class="col-md-6">
+        <div class="col-md-7">
           <moloch-pagination length="$ctrl.query.length"
             records-total="$ctrl.history.recordsTotal"
             records-filtered="$ctrl.history.recordsFiltered"
             current-page="$ctrl.currentPage"
             start="$ctrl.query.start"></moloch-pagination>
         </div>
-        <div class="col-md-4 col-md-offset-2">
-          <div class="input-group input-group-sm pull-right header-input">
+        <div class="col-md-5 form-inline no-wrap">
+          <div class="input-group input-group-sm pull-right">
             <span class="input-group-addon">
               <span class="fa fa-search"></span>
             </span>
-            <input type="text" class="form-control input-sm" ng-model="$ctrl.searchHistory"
+            <input type="text" class="form-control input-sm input-search"
+              ng-model="$ctrl.searchHistory"
               ng-model-options="{debounce:400}" ng-change="$ctrl.loadData()"
               placeholder="Search for history in the table below">
           </div>
+          <a class="btn btn-sm btn-primary pull-right margined-right-sm"
+            uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
+            ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
+            <span class="fa fa-filter"></span>
+          </a>
         </div>
       </div>
 
@@ -38,17 +44,26 @@
         <thead>
         <tr>
           <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
-            ng-class="::{'no-wrap':column.nowrap}" ng-style="::{'width':column.width+'%'}"
-            ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
-            uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
-            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
-            {{::column.name}}
+            ng-class="::{'no-wrap':column.nowrap}"ng-style="::{'width':column.width+'%'}">
+            <input type="text"
+              ng-if="column.filter && $ctrl.showColFilters"
+              has-permission="{{::column.permission}}"
+              ng-model-options="{debounce:400}"
+              ng-model="$ctrl.filters[column.sort]"
+              placeholder="Filter by {{::column.name}}"
+              class="form-control input-sm input-filter"
+              ng-change="$ctrl.filterTable(column.sort, $ctrl.filters[column.sort])">
+            <div ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
+              uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
+              <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
+              <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
+              <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+              {{::column.name}}
+            </div>
           </th>
         </tr>
         </thead>
-        <tbody>
+        <tbody ng-if="!$ctrl.error">
         <tr ng-if="$ctrl.history.data.length === 0">
           <td colspan="6" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;

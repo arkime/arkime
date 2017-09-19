@@ -1,6 +1,20 @@
+moloch-history input.input-search {
+  min-width: 300px;
+}
+
+/* table styles -------------------- */
 moloch-history table {
   table-layout: fixed;
 }
 moloch-history table tbody tr td.no-wrap {
-  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  white-space   : nowrap;
+  text-overflow : ellipsis;
+  overflow      : hidden;
+}
+/* super tiny input boxes for column filters */
+moloch-history table thead tr th input.input-filter {
+  height        : 24px;
+  padding       : 2px 5px;
+  font-size     : 12px;
+  margin-bottom : 2px;
 }
