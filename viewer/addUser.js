@@ -110,7 +110,7 @@ function main() {
     }
   }
 
-  Db.setUser(process.argv[2], nuser, function(err, info) {
+  Db.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
       console.log("Elastic search error", err);
     } else {

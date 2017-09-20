@@ -247,7 +247,7 @@ exports.getAliasesCache = function (index, cb) {
     return cb(null, internals.aliasesCache);
   }
 
-  exports.getAliases(index, function(err, aliases) {
+  exports.getAliases(index, (err, aliases) => {
     if (err) {
       return cb(err, aliases);
     }
@@ -261,7 +261,7 @@ exports.getAliasesCache = function (index, cb) {
 
 exports.health = function(cb) {
   internals.elasticSearchClient.info(function(err,data) {
-    internals.elasticSearchClient.cluster.health({}, function(err, result) {
+    internals.elasticSearchClient.cluster.health({}, (err, result) => {
       if (data && result) {
         result.version = data.version.number;
       }
@@ -271,7 +271,7 @@ exports.health = function(cb) {
 };
 
 exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, function (err, data, status) {cb(err,data);});
+  return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err,data);});
 };
 
 exports.update = function (index, type, id, document, options, cb) {
@@ -316,7 +316,7 @@ exports.getUserCache = function (name, cb) {
     return cb(null, internals.usersCache[name]);
   }
 
-  exports.getUser(name, function(err, suser) {
+  exports.getUser(name, (err, suser) => {
     if (err) {
       return cb(err, suser);
     }
@@ -329,7 +329,7 @@ exports.getUserCache = function (name, cb) {
 };
 
 exports.numberOfUsers = function(cb) {
-  internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, function(err, result) {
+  internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, (err, result) => {
     if (err || result.error) {
       return cb(null, 0);
     }
@@ -349,7 +349,7 @@ exports.setUser = function(name, doc, cb) {
 };
 
 exports.molochNodeStats = function (name, cb) {
-  exports.get('stats', 'stat', name, function(err, stat) {
+  exports.get('stats', 'stat', name, (err, stat) => {
     if (err || !stat.found) {
 
       // Even if an error, if we have a cached value use it
@@ -394,7 +394,7 @@ exports.healthCache = function (cb) {
         return cb(err, null);
       }
 
-      exports.get("dstats", "version", "version", function(err, doc) {
+      exports.get("dstats", "version", "version", (err, doc) => {
         if (doc !== undefined && doc._source !== undefined) {
           health.molochDbVersion = doc._source.version;
         }
@@ -407,7 +407,7 @@ exports.healthCache = function (cb) {
 
 exports.hostnameToNodeids = function (hostname, cb) {
   var query = {query: {match: {hostname:hostname}}};
-  exports.search('stats', 'stat', query, function(err, sdata) {
+  exports.search('stats', 'stat', query, (err, sdata) => {
     var nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
       for (var i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
@@ -424,7 +424,7 @@ function tagWorker(task, callback) {
       return setImmediate(callback, null, internals.tagId2Name[task.id]);
     }
     var query = {query: {term: {n:task.id}}};
-    exports.search('tags', 'tag', query, function(err, tdata) {
+    exports.search('tags', 'tag', query, (err, tdata) => {
       if (!err && tdata.hits.hits[0]) {
         internals.tagId2Name[task.id] = tdata.hits.hits[0]._id;
         internals.tagName2Id[tdata.hits.hits[0]._id] = task.id;
@@ -438,7 +438,7 @@ function tagWorker(task, callback) {
       return setImmediate(callback, null, internals.tagName2Id[task.name]);
     }
 
-    exports.get('tags', 'tag', task.name, function(err, tdata) {
+    exports.get('tags', 'tag', task.name, (err, tdata) => {
       if (!err && tdata.found) {
         internals.tagName2Id[task.name] = tdata._source.n;
         internals.tagId2Name[tdata._source.n] = task.name;
@@ -452,13 +452,13 @@ function tagWorker(task, callback) {
 internals.tagQueue = async.queue(tagWorker, 5);
 
 exports.tagIdToName = function (id, cb) {
-  internals.tagQueue.push({id: id, type: "tagIdToName"}, function (err, data) {
+  internals.tagQueue.push({id: id, type: "tagIdToName"}, (err, data) => {
     return cb(data);
   });
 };
 
 exports.tagNameToId = function (name, cb) {
-  internals.tagQueue.push({name: name, type: "tagNameToId"}, function (err, data) {
+  internals.tagQueue.push({name: name, type: "tagNameToId"}, (err, data) => {
     return cb(data);
   });
 };
@@ -469,7 +469,7 @@ exports.fileIdToFile = function (node, num, cb) {
     return cb(internals.fileId2File[key]);
   }
 
-  exports.get('files', 'file', node + '-' + num, function (err, fresult) {
+  exports.get('files', 'file', node + '-' + num, (err, fresult) => {
     if (!err && fresult.found) {
       var file = fresult._source;
       internals.fileId2File[key] = file;
@@ -499,7 +499,7 @@ exports.fileNameToFiles = function (name, cb) {
     query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
   }
 
-  exports.search('files', 'file', query, function(err, data) {
+  exports.search('files', 'file', query, (err, data) => {
     var files = [];
     if (err || !data.hits) {
       return cb(null);
@@ -516,7 +516,7 @@ exports.fileNameToFiles = function (name, cb) {
 };
 
 exports.getSequenceNumber = function (name, cb) {
-  exports.index("sequence", "sequence", name, {}, function (err, sinfo) {
+  exports.index("sequence", "sequence", name, {}, (err, sinfo) => {
     cb(err, sinfo._version);
   });
 };
@@ -535,8 +535,8 @@ exports.createTag = function (name, cb) {
 
   // Do a create
   exports.createTag.inProgress = 1;
-  exports.getSequenceNumber("tags", function (err, num) {
-    exports.index("tags", "tag", name, {n: num}, function (err, tinfo) {
+  exports.getSequenceNumber("tags", (err, num) => {
+    exports.index("tags", "tag", name, {n: num}, (err, tinfo) => {
       exports.createTag.inProgress = 0;
       internals.tagId2Name[num] = name;
       internals.tagName2Id[name] = num;
@@ -546,7 +546,7 @@ exports.createTag = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, function(err, result) {
+  internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
     if (err || result.error) {
       return cb(null, 0);
     }
@@ -571,7 +571,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   var index;
 
   ["stats", "dstats", "tags", "sequence", "files"].forEach(function(index) {
-    exports.indexStats(index, function(err, status) {
+    exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);
@@ -580,7 +580,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     });
   });
 
-  exports.get("dstats", "version", "version", function(err, doc) {
+  exports.get("dstats", "version", "version", (err, doc) => {
     var version;
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
@@ -614,7 +614,7 @@ exports.isLocalView = function(node, yesCB, noCB) {
     return yesCB();
   }
 
-  exports.molochNodeStatsCache(node, function(err, stat) {
+  exports.molochNodeStatsCache(node, (err, stat) => {
     if (err || stat.hostname !== os.hostname()) {
       noCB();
     } else {
@@ -624,8 +624,8 @@ exports.isLocalView = function(node, yesCB, noCB) {
 };
 
 exports.deleteFile = function(node, id, path, cb) {
-  fs.unlink(path, function() {
-    exports.deleteDocument('files', 'file', id, function(err, data) {
+  fs.unlink(path, () => {
+    exports.deleteDocument('files', 'file', id, (err, data) => {
       cb(null);
     });
   });
@@ -636,7 +636,7 @@ exports.id2Index = function (id) {
 };
 
 exports.loadFields = function(cb) {
-  exports.search("fields", "field", {size:1000}, function (err, data) {
+  exports.search("fields", "field", {size:1000}, (err, data) => {
     if (err) {
       return cb([]);
     }
@@ -650,7 +650,7 @@ function twoDigitString(value) {
 
 exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   var indices = [];
-  exports.getAliasesCache("sessions-*", function(err, aliases) {
+  exports.getAliasesCache("sessions-*", (err, aliases) => {
 
     if (err || aliases.error) {
       return cb("");
