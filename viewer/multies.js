@@ -355,9 +355,9 @@ function facet2Arr(facet, type) {
   }
 
   if (type === "histogram") {
-    arr = arr.sort(function(a,b) {return a.key - b.key;});
+    arr = arr.sort((a,b) => {return a.key - b.key;});
   } else {
-    arr = arr.sort(function(a,b) {return b.count - a.count;});
+    arr = arr.sort((a,b) => {return b.count - a.count;});
   }
   return arr;
 }
@@ -424,9 +424,9 @@ function agg2Arr(agg, type) {
   }
 
   if (type === "histogram") {
-    arr = arr.sort(function(a,b) {return a.key - b.key;});
+    arr = arr.sort((a,b) => {return a.key - b.key;});
   } else {
-    arr = arr.sort(function(a,b) {
+    arr = arr.sort((a,b) => {
       if (b.doc_count !== a.doc_count) {
         return b.doc_count - a.doc_count;
       }
@@ -536,7 +536,7 @@ function fixQuery(node, body, doneCb) {
         }
         clients[node].search({index: node2Prefix(node) + 'tags', type: 'tag', size:500, _source:["id", "n"], body: {query: query}}, (err, result) => {
           var terms = [];
-          result.hits.hits.forEach(function (hit) {
+          result.hits.hits.forEach((hit) => {
             terms.push(hit._source.n);
           });
           parent.terms = {};
@@ -597,7 +597,7 @@ function fixQuery(node, body, doneCb) {
       clients[node].search({index: node2Prefix(node) + 'files', type: 'file', size:500, body: query}, (err, result) => {
         outstanding--;
         obj.bool = {should: []};
-        result.hits.hits.forEach(function (file) {
+        result.hits.hits.forEach((file) => {
           obj.bool.should.push({bool: {must:[{term: {no: file._source.node}}, {term: {fs: file._source.num}}]}});
         });
         if (obj.bool.should.length === 0) {
@@ -720,7 +720,7 @@ function sortResults(search, obj) {
       sortorder[i] = search.sort[i][Object.keys(search.sort[i])[0]].order === "asc"? 1:-1;
     }
 
-    obj.hits.hits = obj.hits.hits.sort(function(a, b) {
+    obj.hits.hits = obj.hits.hits.sort((a, b) => {
       for (var i = 0; i < a.sort.length; i++) {
         if (a.sort[i] === b.sort[i]) {
           continue;
@@ -954,7 +954,7 @@ if (nodes.length === 0 || nodes[0] === "") {
   process.exit(1);
 }
 
-nodes.forEach(function(node) {
+nodes.forEach((node) => {
   tags[node] = {tagName2Id: {}, tagId2Name: {}};
 
   clients[node] = new ESC.Client({
@@ -963,7 +963,7 @@ nodes.forEach(function(node) {
     requestTimeout: 300000
   });
 
-  clients[node].info(function(err,data) {
+  clients[node].info((err,data) => {
     if (err) {
       console.log(err);
     }

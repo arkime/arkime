@@ -163,7 +163,7 @@ exports.getObj = function(key, defaultValue) {
   }
 
   var obj = {};
-  full.split(';').forEach(function(element) {
+  full.split(';').forEach((element) => {
     var parts = element.split("=");
     if (parts && parts.length === 2) {
       if (parts[1] === "true") {
@@ -181,7 +181,7 @@ function loadIncludes(includes) {
   if (!includes) {
     return;
   }
-  includes.split(';').forEach(function(file) {
+  includes.split(';').forEach((file) => {
     if (!fs.existsSync(file)) {
       console.log("ERROR - Couldn't open config includes file '" + file + "'");
       process.exit(1);
@@ -243,9 +243,9 @@ exports.headers = function(section) {
   if (internals.config[section] === undefined) {return [];}
   var keys = Object.keys(internals.config[section]);
   if (!keys) {return [];}
-  var headers = Object.keys(internals.config[section]).map(function(key) {
+  var headers = Object.keys(internals.config[section]).map((key) => {
     var obj = {name: key};
-    internals.config[section][key].split(';').forEach(function(element) {
+    internals.config[section][key].split(';').forEach((element) => {
       var i = element.indexOf(':');
       if (i === -1) {
         return;
@@ -271,9 +271,9 @@ exports.configMap = function(section, name, d) {
   var keys = Object.keys(data);
   if (!keys) {return {};}
   var map = {};
-  keys.forEach(function(key) {
+  keys.forEach((key) => {
     var obj = {};
-    data[key].split(';').forEach(function(element) {
+    data[key].split(';').forEach((element) => {
       var i = element.indexOf(':');
       if (i === -1) {
         return;
@@ -323,7 +323,7 @@ exports.loadFields = function(data) {
   internals.fieldsMap = {};
   internals.dbFieldsMap = {};
   internals.categories =  {};
-  data.forEach(function(field) {
+  data.forEach((field) => {
     var source = field._source;
     source.exp = field._id;
     internals.fieldsMap[field._id] = source;
@@ -333,7 +333,7 @@ exports.loadFields = function(data) {
       internals.categories[source.group] = [];
     }
     internals.categories[source.group].push(source);
-    (source.aliases || []).forEach(function(alias) {
+    (source.aliases || []).forEach((alias) => {
       internals.fieldsMap[alias] = source;
     });
   });

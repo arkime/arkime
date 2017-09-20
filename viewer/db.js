@@ -66,7 +66,7 @@ exports.initialize = function (info, cb) {
     maxSockets: 51
   });
 
-  internals.elasticSearchClient.info(function(err,data) {
+  internals.elasticSearchClient.info((err,data) => {
     if (err) {
       console.log(err, data);
     }
@@ -108,7 +108,7 @@ exports.initialize = function (info, cb) {
 //
 function fixIndex(index) {
   if (Array.isArray(index)) {
-    return index.map(function(val) {
+    return index.map((val) => {
       if (val.lastIndexOf(internals.prefix, 0) === 0) {
         return val;
       } else {
@@ -260,7 +260,7 @@ exports.getAliasesCache = function (index, cb) {
 };
 
 exports.health = function(cb) {
-  internals.elasticSearchClient.info(function(err,data) {
+  internals.elasticSearchClient.info((err,data) => {
     internals.elasticSearchClient.cluster.health({}, (err, result) => {
       if (data && result) {
         result.version = data.version.number;
@@ -385,7 +385,7 @@ exports.healthCache = function (cb) {
     return cb(null, internals.healthCache);
   }
 
-  return exports.health(function(err, health) {
+  return exports.health((err, health) => {
       if (err) {
         // Even if an error, if we have a cache use it
         if (internals.healthCache._timeStamp !== undefined) {
@@ -504,7 +504,7 @@ exports.fileNameToFiles = function (name, cb) {
     if (err || !data.hits) {
       return cb(null);
     }
-    data.hits.hits.forEach(function(hit) {
+    data.hits.hits.forEach((hit) => {
       var file = hit._source;
       var key = file.node + "!" + file.num;
       internals.fileId2File[key] = file;
@@ -570,7 +570,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
 
   var index;
 
-  ["stats", "dstats", "tags", "sequence", "files"].forEach(function(index) {
+  ["stats", "dstats", "tags", "sequence", "files"].forEach((index) => {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
@@ -601,7 +601,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   });
 
   if (checkUsers) {
-    exports.numberOfUsers(function(err, num) {
+    exports.numberOfUsers((err, num) => {
       if (num === 0) {
         console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
       }
