@@ -127,7 +127,7 @@
         })
         .catch((error) => {
           this.error = error.data.text || 'Error deleting log';
-        })
+        });
     }
 
   }
