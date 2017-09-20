@@ -13,14 +13,16 @@
     /**
      * Initialize global variables for this controller
      * @param $scope          Angular application model object
+     * @param $filter         Formats data displayed to the user
      * @param $routeParams    Retrieve the current set of route parameters
      * @param UserService     Transacts users and user data with the server
      * @param HistoryService  Transacts logs with the server
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, UserService, HistoryService) {
+    constructor($scope, $filter, $routeParams, UserService, HistoryService) {
       this.$scope         = $scope;
+      this.$filter        = $filter;
       this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.HistoryService = HistoryService;
@@ -110,9 +112,17 @@
       this.loadData();
     }
 
+    toggleLogDetail(log) {
+      log.expanded = !log.expanded;
+
+      if (log.query) {
+        log.queryObj = this.$filter('parseParamString')(log.query);
+      }
+    }
+
   }
 
-  HistoryController.$inject = ['$scope','$routeParams',
+  HistoryController.$inject = ['$scope','$filter','$routeParams',
     'UserService','HistoryService'];
 
   /**

@@ -1720,10 +1720,6 @@ sub historyUpdate
       "query": {
         "type": "string",
         "index": "not_analyzed"
-      },
-      "fields": {
-        "type": "string",
-        "index": "not_analyzed"
       }
     }
   }

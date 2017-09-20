@@ -307,6 +307,35 @@
       }
     ])
 
+     /**
+      * Creates an object from a query string
+      *
+      * @example
+      * $filter('parseParamString')('bounding=last&date=-1&expression=ip.dst+%3D%3D+18.26.4.105&length=50&order=fp:asc')
+      * returns { bounding:'last', date:'-1', expression:'ip.dst == 18.26.4.105', length:'50', order:'fp:asc' }
+      *
+      * @param {string} qstr   The query string to expand
+      * @returns {Obj} query   The query object
+      */
+     .filter('parseParamString', [
+       function() {
+         return function (qstr) {
+           let query = {};
+
+           let a = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&');
+           for (let i = 0, len = a.length; i < len; i++) {
+             let b = a[i].split('=');
+             let value = b[1] || '';
+             if (b[0] === 'expression') { value = value.replace(/\+/g, ' ');  }
+             query[decodeURIComponent(b[0])] = decodeURIComponent(value);
+           }
+
+           return query;
+         };
+       }
+     ])
+
+
 
     /* DIRECTIVES ---------------------------------------------------------- */
     /**

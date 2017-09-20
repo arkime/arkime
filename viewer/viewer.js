@@ -693,7 +693,6 @@ function logAction(req, res, next) {
     query     : req._parsedUrl.query,
     expression: req.query.expression
   }
-  console.log(req.query);
 
   if (req.query.fields) {
     log.fields = req.query.fields;

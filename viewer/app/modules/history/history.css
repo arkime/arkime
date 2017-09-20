@@ -1,5 +1,5 @@
-moloch-history input.input-search {
-  min-width: 300px;
+moloch-history dl dt h5 {
+  font-size: 16px;
 }
 
 /* table styles -------------------- */

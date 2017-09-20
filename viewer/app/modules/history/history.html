@@ -22,7 +22,7 @@
             current-page="$ctrl.currentPage"
             start="$ctrl.query.start"></moloch-pagination>
         </div>
-        <div class="col-md-5 form-inline no-wrap">
+        <div class="col-md-5">
           <div class="input-group input-group-sm pull-right">
             <span class="input-group-addon">
               <span class="fa fa-search"></span>
@@ -32,17 +32,19 @@
               ng-model-options="{debounce:400}" ng-change="$ctrl.loadData()"
               placeholder="Search for history in the table below">
           </div>
-          <a class="btn btn-sm btn-primary pull-right margined-right-sm"
-            uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
-            ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
-            <span class="fa fa-filter"></span>
-          </a>
         </div>
       </div>
 
       <table class="table small table-condensed table-striped margined-top-xxxlg">
         <thead>
         <tr>
+          <th width="32px;">
+            <a class="btn btn-xs btn-primary"
+              uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
+              ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
+              <span class="fa fa-filter"></span>
+            </a>
+          </th>
           <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
             ng-class="::{'no-wrap':column.nowrap}"ng-style="::{'width':column.width+'%'}">
             <input type="text"
@@ -65,13 +67,20 @@
         </thead>
         <tbody ng-if="!$ctrl.error">
         <tr ng-if="$ctrl.history.data.length === 0">
-          <td colspan="6" class="text-danger text-center">
+          <td colspan="7" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No history or none that matches your search.</strong>
           </td>
         </tr>
         <tr class="animate-repeat"
-          ng-repeat="log in $ctrl.history.data track by log.id">
+          ng-repeat-start="log in $ctrl.history.data track by log.id">
+          <td>
+            <a class="btn btn-xs btn-toggle"
+              ng-class="{'collapsed':!log.expanded, 'btn-theme-tertiary':!log.expanded, 'btn-danger':log.expanded}"
+              ng-click="$ctrl.toggleLogDetail(log)">
+              <span class="fa fa-close"></span>
+            </a>
+          </td>
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
           <td><span ng-if="::log.range">{{::log.range*1000 | readableTime}}</span></td>
           <td>{{::log.userId}}</td>
@@ -81,6 +90,34 @@
             <span ng-if="::log.view">
               <strong>{{::log.view.name}}:</strong> {{::log.view.expression}}
             </span>
+          </td>
+        </tr>
+        <tr ng-repeat-end ng-if="log.expanded">
+          <td colspan="7">
+            <div ng-if="::log.query">
+              <dl class="dl-horizontal">
+                <dt><h5>
+                  Query parameters
+                  <sup><span class="fa fa-info-circle text-theme-primary"></span></sup>
+                </h5></dt>
+                <dd>&nbsp;</dd>
+                <span ng-repeat="(key, value) in ::log.queryObj">
+                  <dt>{{::key}}</dt>
+                  <dd>{{::value}}</dd>
+                </span>
+              </dl>
+              <em>
+              <strong>
+                <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
+                Parsed from:
+              </strong>
+              <span style="word-break:break-all;">{{::log.query}}</span>
+              </em>
+            </div>
+            <div ng-if="::!log.query">
+              <span class="fa fa-frown-o fa-lg"></span>&nbsp;
+              <em>Sorry! There is no more information to show.</em>
+            </div>
           </td>
         </tr>
         </tbody>
