@@ -42,10 +42,10 @@
 
       this.columns = [
         { name:'Time', sort:'timestamp', nowrap:true, width:12, help:'The time of the request' },
-        { name:'Time Range', sort:'range', nowrap:true, width:10, help:'The time range of the request'},
+        { name:'Time Range', sort:'range', nowrap:true, width:12, help:'The time range of the request'},
         { name:'User ID', sort:'userId', nowrap:true, width:8, filter:true, permission:'createEnabled', help:'The id of the user that initiated the request' },
         { name:'API', sort:'pathname', nowrap:true, width:15, filter:true, help:'The API endpoint of the request' },
-        { name:'Expression', sort:'expression', nowrap:true, width:30, help:'The query expression issued with the request' },
+        { name:'Expression', sort:'expression', nowrap:true, width:28, help:'The query expression issued with the request' },
         { name:'View', sort:'view.name', nowrap:true, width:25, help:'The view expression applied to the request' }
       ];
 
@@ -118,6 +118,16 @@
       if (log.query) {
         log.queryObj = this.$filter('parseParamString')(log.query);
       }
+    }
+
+    deleteLog(id, index) {
+      this.HistoryService.delete(id)
+        .then((response) => {
+          this.history.data.splice(index, 1);
+        })
+        .catch((error) => {
+          this.error = error.data.text || 'Error deleting log';
+        })
     }
 
   }

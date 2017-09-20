@@ -38,7 +38,7 @@
       <table class="table small table-condensed table-striped margined-top-xxxlg">
         <thead>
         <tr>
-          <th width="32px;">
+          <th width="60px;">
             <a class="btn btn-xs btn-primary"
               uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
               ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
@@ -79,6 +79,11 @@
               ng-class="{'collapsed':!log.expanded, 'btn-theme-tertiary':!log.expanded, 'btn-danger':log.expanded}"
               ng-click="$ctrl.toggleLogDetail(log)">
               <span class="fa fa-close"></span>
+            </a>
+            <a class="btn btn-xs btn-warning"
+              has-permission="createEnabled"
+              ng-click="$ctrl.deleteLog(log.id, $index)">
+              <span class="fa fa-trash-o"></span>
             </a>
           </td>
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>

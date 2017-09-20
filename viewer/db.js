@@ -363,6 +363,9 @@ exports.numberOfLogs = function(cb) {
     return cb(null, result.count);
   });
 };
+exports.deleteLog = function (id, cb) {
+  return internals.elasticSearchClient.delete({index: 'history', type: 'log', id: id, refresh: 1}, cb);
+};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {

@@ -31,7 +31,28 @@
     get(params) {
       return this.$q((resolve, reject) => {
 
-        this.$http({ url:'logs', method:'GET', params:params })
+        this.$http({ url:'history/list', method:'GET', params:params })
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
+    /**
+     * Deletes a history item
+     * @param id          The id of the history item to delete
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    delete(id) {
+      return this.$q((resolve, reject) => {
+
+        let url = `history/list/${id}`;
+
+        this.$http({ url:url, method:'DELETE' })
            .then((response) => {
              resolve(response.data);
            }, (error) => {

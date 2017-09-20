@@ -730,11 +730,11 @@ function logAction(req, res, next) {
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log("WARNING - Starting in demo mode, some APIs disabled");
-  app.all(['/settings', '/users', '/history'], function(req, res) {
+  app.all(['/settings', '/users', '/history/list'], function(req, res) {
     return res.send('Disabled in demo mode.');
   });
 
-  app.get(['/user/settings', '/user/cron', '/logs'], function(req, res) {
+  app.get(['/user/settings', '/user/cron', '/history/list'], function(req, res) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
   });
@@ -2293,7 +2293,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/logs', function(req, res) {
+app.get('/history/list', function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -2371,6 +2371,22 @@ app.get('/logs', function(req, res) {
      res.send(r);
    });
 });
+
+app.delete('/history/list/:id', function(req, res) {
+  if (!req.user.createEnabled) {
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
+  }
+
+  Db.deleteLog(req.params.id, function(err, result) {
+    if (err || result.error) {
+      console.log("ERROR - deleting log", err || result.error);
+      return error(500, 'Error deleting log history');
+    } else {
+      res.send(JSON.stringify({success: true, text: "Deleted log successfully"}));
+    }
+  });
+})
 
 
 app.get('/fields', function(req, res) {
