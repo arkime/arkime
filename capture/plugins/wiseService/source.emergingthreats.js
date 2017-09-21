@@ -2,13 +2,13 @@
 /*
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ function EmergingThreatsSource (api, section) {
   this.scoreField = this.api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
   this.categoryField = this.api.addField("field:emergingthreats.category;db:et.category-term;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
 
-  this.api.addView("emergingthreats", 
+  this.api.addView("emergingthreats",
     "if (session.et)\n" +
     "  div.sessionDetailMeta.bold Emerging Threats\n" +
     "  dl.sessionDetailMeta\n" +
@@ -57,7 +57,7 @@ function EmergingThreatsSource (api, section) {
 }
 util.inherits(EmergingThreatsSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.parseCategories = function(fn) 
+EmergingThreatsSource.prototype.parseCategories = function(fn)
 {
   var parser = csv.parse({skip_empty_lines:true}, (err, data) => {
     if (err) {
@@ -85,7 +85,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
       if (data[i].length !== 3) {
         continue;
       }
-    
+
       var encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
                                       this.scoreField, "" + data[i][2]);
       var value = hash.get(data[i][0]);
@@ -136,9 +136,9 @@ EmergingThreatsSource.prototype.getIp = function(ip, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 EmergingThreatsSource.prototype.dump = function(res) {
   ["ips", "domains"].forEach((ckey) => {
-    res.write("" + ckey + ":\n");
+    res.write(`${ckey}:\n`);
     this[ckey].forEach((key, value) => {
-      var str = "{key: \"" + key + "\", ops:\n" + 
+      var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
     });

@@ -1,13 +1,13 @@
 /******************************************************************************/
 /*
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +41,7 @@ function AlienVaultSource (api, section) {
   this.threatlevelField = this.api.addField("field:alienvault.threat-level;db:alienvault.threatlevel;kind:integer;friendly:Threat Level;help:Alient Vault Threat Level;count:true");
   this.activityField    = this.api.addField("field:alienvault.activity;db:alienvault.activity-term;kind:termfield;friendly:Activity;help:Alient Vault Activity;count:true");
 
-  this.api.addView("alienvault", 
+  this.api.addView("alienvault",
     "if (session.alienvault)\n" +
     "  div.sessionDetailMeta.bold AlienVault\n" +
     "  dl.sessionDetailMeta\n" +
@@ -117,7 +117,7 @@ AlienVaultSource.prototype.getIp = function(ip, cb) {
 AlienVaultSource.prototype.dump = function(res) {
   var cache = this.ips;
   this.ips.forEach((key, value) => {
-    var str = "{key: \"" + key + "\", ops:\n" + 
+    var str = "{key: \"" + key + "\", ops:\n" +
                wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
     res.write(str);
   });

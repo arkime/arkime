@@ -33,13 +33,13 @@ function HODISource (api, section) {
     return;
   }
 
-  this.domain = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000), 
+  this.domain = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000),
                       maxAge: 1000 * 60 * +this.api.getConfig("hodi", "cacheAgeMin", "5")});
-  this.ip = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000), 
+  this.ip = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000),
                       maxAge: 1000 * 60 * +this.api.getConfig("hodi", "cacheAgeMin", "5")});
-  this.md5 = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000), 
+  this.md5 = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000),
                       maxAge: 1000 * 60 * +this.api.getConfig("hodi", "cacheAgeMin", "5")});
-  this.email = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000), 
+  this.email = LRU({max: this.api.getConfig("hodi", "cacheSize", 100000),
                       maxAge: 1000 * 60 * +this.api.getConfig("hodi", "cacheAgeMin", "5")});
 
   this.client = new elasticsearch.Client({
@@ -103,7 +103,7 @@ HODISource.prototype.process = function (index, id, cb) {
   this[index].set(id, true);
 
   var date = new Date().toISOString();
-  this.bulk.push({update: {_index: "hodi-" + index, _type: "hodi", _id: id}});
+  this.bulk.push({update: {_index: `hodi-${index}`, _type: "hodi", _id: id}});
   this.bulk.push({script_file: "hodi", params: {lastSeen: date}, upsert: {count: 1, firstSeen: date, lastSeen: date}});
   if (this.bulk.length >= 1000) {
     this.sendBulk();

@@ -52,7 +52,7 @@ function ThreatQSource (api, section) {
   this.sourceField = this.api.addField("field:threatq.source;db:threatq.source-term;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true");
   this.campaignField = this.api.addField("field:threatq.campaign;db:threatq.campaign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
 
-  this.api.addView("threatq", 
+  this.api.addView("threatq",
     "if (session.threatq)\n" +
     "  div.sessionDetailMeta.bold ThreatQ\n" +
     "  dl.sessionDetailMeta\n" +
@@ -62,10 +62,10 @@ function ThreatQSource (api, section) {
     "    +arrayList(session.threatq, 'campaign-term', 'Campaign', 'threatq.campaign')\n"
   );
 
-  this.api.addRightClick("threatqip", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"ip"});
-  this.api.addRightClick("threatqhost", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%HOST%", category:"host"});
-  this.api.addRightClick("threatqmd5", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"md5"});
-  this.api.addRightClick("threatqid", {name:"ThreatQ", url:"https://" + this.host + "/network/%TEXT%", fields:"threatq.id"});
+  this.api.addRightClick("threatqip", {name:"ThreatQ", url:`https://${this.host}/search.php?search=%TEXT%`, category:"ip"});
+  this.api.addRightClick("threatqhost", {name:"ThreatQ", url:`https://${this.host}/search.php?search=%HOST%`, category:"host"});
+  this.api.addRightClick("threatqmd5", {name:"ThreatQ", url:`https://${this.host}/search.php?search=%TEXT%`, category:"md5"});
+  this.api.addRightClick("threatqid", {name:"ThreatQ", url:`https://${this.host}/network/%TEXT%`, fields:"threatq.id"});
 
   setImmediate(this.loadFile.bind(this));
   setInterval(this.loadFile.bind(this), 24*60*60*1000); // Reload file every 24 hours
@@ -154,9 +154,9 @@ ThreatQSource.prototype.getEmail = function(email, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.dump = function(res) {
   ["ips", "domains", "emails", "md5s"].forEach((ckey) => {
-    res.write("" + ckey + ":\n");
+    res.write(`${ckey}:\n`);
     this[ckey].forEach((key, value) => {
-      var str = "{key: \"" + key + "\", ops:\n" +
+      var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
     });

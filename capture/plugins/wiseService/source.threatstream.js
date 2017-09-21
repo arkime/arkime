@@ -220,16 +220,16 @@ function getEmailZip(email, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 function getURLZip(url, cb) {
-  url = "http://" + url;
+  url = `http://${url}`;
   cb(null, this.urls.get(url));
 }
 //////////////////////////////////////////////////////////////////////////////////
 function dumpZip (res) {
   res.write("{");
   ["ips", "domains", "emails", "md5s", "urls"].forEach((ckey) => {
-    res.write("" + ckey + ": [\n");
+    res.write(`${ckey}: [\n`);
     this[ckey].forEach((key, value) => {
-      var str = "{key: \"" + key + "\", ops:\n" +
+      var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
     });
@@ -241,7 +241,7 @@ function dumpZip (res) {
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getApi = function(type, value, cb) {
   var options = {
-      url: "https://api.threatstream.com/api/v2/intelligence/?username=" + this.user + "&api_key=" + this.key + "&status=active&" + type + "=" + value + "&itype=" + this.types[type],
+      url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
       method: 'GET',
       forever: true
   };
@@ -309,7 +309,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
     return cb("dropped");
   }
 
-  this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + this.typesWithQuotes[type] + ")", value, (err, data) => {
+  this.db.all(`SELECT * FROM ts WHERE ${field} = ? AND itype IN (${this.typesWithQuotes[type]})`, value, (err, data) => {
     if (err) {
       console.log(this.section, "ERROR", err, data);
       return cb("dropped");
@@ -362,7 +362,7 @@ function getEmailSqlite3(email, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 function getURLSqlite3(url, cb) {
-  url = "http://" + url;
+  url = `http://${url}`;
   return this.getSqlite3("url", "url", url, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
@@ -421,7 +421,7 @@ ThreatStreamSource.prototype.openDb = function() {
     }
 
     console.log(this.section, "- Copying DB", dbStat.mtime);
-    exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  (err, stdout, stderr) => {
+    exec (`/bin/cp -f ${dbFile} ${dbFile}.temp`,  (err, stdout, stderr) => {
       console.log(stdout, stderr);
       realDb.run("END", (err) => {
         realDb.close();
@@ -434,10 +434,10 @@ ThreatStreamSource.prototype.openDb = function() {
             this.db.close();
           }
           this.db = null;
-          exec ("/bin/rm -f " + dbFile + ".moloch ",  (err, stdout, stderr) => {
-            exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  (err, stdout, stderr) => {
-              this.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
-              console.log(this.section, "- Loaded DB");
+          exec (`/bin/rm -f ${dbFile}.moloch`,  (err, stdout, stderr) => {
+            exec (`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`,  (err, stdout, stderr) => {
+              this.db = new sqlite3.Database(`${dbFile}.moloch`, sqlite3.OPEN_READONLY);
+              console.log(`${this.section} - Loaded DB`);
             });
           });
         });

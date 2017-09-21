@@ -61,7 +61,7 @@ function VirusTotalSource (api, section) {
   for(var i = 0; i < this.dataSources.length; i++) {
     var uc = this.dataSources[i];
     var lc = this.dataSourcesLC[i];
-    this.dataFields[i] = this.api.addField("field:virustotal." + lc + ";db:virustotal." + lc + "-term;kind:lotermfield;friendly:" + uc + ";help:VirusTotal " + uc + " Status;count:true");
+    this.dataFields[i] = this.api.addField(`field:virustotal.${lc};db:virustotal.${lc}-term;kind:lotermfield;friendly:${uc};help:VirusTotal ${uc} Status;count:true`);
     str += "    +arrayList(session.virustotal, '" + lc + "-term', '" + uc + "', 'virustotal." + lc + "')\n";
   }
 

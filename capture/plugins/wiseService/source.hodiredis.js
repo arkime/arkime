@@ -62,12 +62,12 @@ HODIRedisSource.prototype.process = function(key, tag, cb) {
   });
   this.client.hset(key, "last", date.getTime());
   this.client.hincrby(key, "count", 1);
-  this.client.hincrby(key, "count:" + date.getFullYear() + ":" + date.getMonth()+1, 1);
+  this.client.hincrby(key, `count:${date.getFullYear()}:${date.getMonth()+1}`, 1);
 
 };
 //////////////////////////////////////////////////////////////////////////////////
 HODIRedisSource.prototype.getDomain = function(query, cb) {
-  return this.process("d:" + query.value, this.tagsDomain, cb);
+  return this.process(`d:${query.value}`, this.tagsDomain, cb);
 };
 //////////////////////////////////////////////////////////////////////////////////
 HODIRedisSource.prototype.getMd5 = function(query, cb) {
@@ -75,15 +75,15 @@ HODIRedisSource.prototype.getMd5 = function(query, cb) {
     return cb (null, undefined);
   }
 
-  return this.process("h:" + query.value, this.tagsMd5, cb);
+  return this.process(`h:${query.value}`, this.tagsMd5, cb);
 };
 //////////////////////////////////////////////////////////////////////////////////
 HODIRedisSource.prototype.getEmail = function(query, cb) {
-  return this.process("e:" + query.value, this.tagsEmail, cb);
+  return this.process(`e:${query.value}`, this.tagsEmail, cb);
 };
 //////////////////////////////////////////////////////////////////////////////////
 HODIRedisSource.prototype.getIp = function(query, cb) {
-  return this.process("a:" + query.value, this.tagsIp, cb);
+  return this.process(`a:${query.value}`, this.tagsIp, cb);
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
