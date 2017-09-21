@@ -2320,12 +2320,12 @@ app.get('/history/list', function(req, res) {
     query.query = { bool:{} };
 
     if (req.query.searchTerm) { // apply search term
-      query.query.bool.must = {
+      query.query.bool.must = [{
         simple_query_string: {
           fields: ['expression','userId','pathname','view.name','view.expression'],
           query : req.query.searchTerm
         }
-      }
+      }]
     }
 
     if (userId) { // filter on userId
@@ -2339,6 +2339,17 @@ app.get('/history/list', function(req, res) {
     if (!query.query) { query.query = { bool:{} }; }
     if (!query.query.bool.filter) { query.query.bool.filter = { term:{} }; }
     query.query.bool.filter.term.pathname = req.query.pathname;
+  }
+
+  if (req.query.exists) {
+    if (!query.query) { query.query = { bool:{} }; }
+    if (!query.query.bool.must) { query.query.bool.must = []; }
+    let existsArr = req.query.exists.split(',');
+    for (var i = 0, len = existsArr.length; i < len; ++i) {
+      query.query.bool.must.push({
+        exists: { field:existsArr[i] }
+      });
+    }
   }
 
   async.parallel({

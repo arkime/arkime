@@ -2,6 +2,13 @@ moloch-history dl dt h5 {
   font-size: 16px;
 }
 
+moloch-history div.header-div {
+  display: inline-block;
+}
+moloch-history div.header-div input.checkbox {
+  margin-bottom: -2px;
+}
+
 /* table styles -------------------- */
 moloch-history table {
   table-layout: fixed;

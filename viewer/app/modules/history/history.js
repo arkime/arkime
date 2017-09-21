@@ -45,8 +45,8 @@
         { name:'Time Range', sort:'range', nowrap:true, width:12, help:'The time range of the request'},
         { name:'User ID', sort:'userId', nowrap:true, width:8, filter:true, permission:'createEnabled', help:'The id of the user that initiated the request' },
         { name:'API', sort:'pathname', nowrap:true, width:15, filter:true, help:'The API endpoint of the request' },
-        { name:'Expression', sort:'expression', nowrap:true, width:28, help:'The query expression issued with the request' },
-        { name:'View', sort:'view.name', nowrap:true, width:25, help:'The view expression applied to the request' }
+        { name:'Expression', sort:'expression', nowrap:true, width:28, exists:false, help:'The query expression issued with the request' },
+        { name:'View', sort:'view.name', nowrap:true, width:25, exists:false, help:'The view expression applied to the request' }
       ];
 
       this.UserService.getSettings()
@@ -76,6 +76,15 @@
         start     : this.query.start,
         length    : this.query.length
       };
+
+      let exists = [];
+      for (let i = 0, len = this.columns.length; i < len; ++i) {
+        let col = this.columns[i];
+        if (col.exists) { exists.push(col.sort); }
+      }
+      if (exists.length) {
+        params.exists = exists.join();
+      }
 
       if (this.filters && Object.keys(this.filters).length) {
         for (let key in this.filters) {

@@ -46,7 +46,7 @@
             </a>
           </th>
           <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
-            ng-class="::{'no-wrap':column.nowrap}"ng-style="::{'width':column.width+'%'}">
+            ng-class="::{'no-wrap':column.nowrap}" ng-style="::{'width':column.width+'%'}">
             <input type="text"
               ng-if="column.filter && $ctrl.showColFilters"
               has-permission="{{::column.permission}}"
@@ -55,7 +55,15 @@
               placeholder="Filter by {{::column.name}}"
               class="form-control input-sm input-filter"
               ng-change="$ctrl.filterTable(column.sort, $ctrl.filters[column.sort])">
-            <div ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
+            <div ng-if="column.hasOwnProperty('exists')"
+              class="margined-right header-div">
+              <input type="checkbox" class="checkbox"
+                tooltip-placement="top-left"
+                uib-tooltip="{{::column.name}} EXISTS!"
+                ng-change="$ctrl.loadData()" ng-model="column.exists">
+            </div>
+            <div ng-click="$ctrl.columnClick(column.sort)"
+              tooltip-placement="top-left" class="header-div"
               uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
               <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
               <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
