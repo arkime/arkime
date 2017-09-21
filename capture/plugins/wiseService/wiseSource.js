@@ -297,7 +297,7 @@ WISESource.request = function (url, file, cb) {
   var statusCode;
   console.log(url);
   request({url: url, headers: headers})
-  .on('response', (response) => {
+  .on('response', function (response) {
     statusCode = response.statusCode;
     if (response.statusCode === 200) {
       this.pipe(fs.createWriteStream(file));
