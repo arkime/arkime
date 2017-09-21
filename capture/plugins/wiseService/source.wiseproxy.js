@@ -34,8 +34,6 @@ function WiseProxySource (api, section) {
   this.offset       = 0;
   this.bufferInfo   = [];
 
-  var self = this;
-
   if (this.url === undefined) {
     console.log(this.section, "- ERROR not loading since no url specified in config file");
     return;
@@ -68,7 +66,7 @@ function WiseProxySource (api, section) {
     }
   }
 
-  self.updateInfo();
+  this.updateInfo();
   setTimeout(this.updateInfo.bind(this), 5*60*1000);
 
   this.api.addSource(this.section, this);
@@ -77,26 +75,24 @@ function WiseProxySource (api, section) {
 util.inherits(WiseProxySource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.performQuery = function() {
-  var self = this;
-
-  if (self.bufferInfo.length === 0) {
+  if (this.bufferInfo.length === 0) {
     return;
   }
 
   var options = {
       url: this.url + "/get",
       method: 'POST',
-      body: self.buffer.slice(0, self.offset)
+      body: this.buffer.slice(0, this.offset)
   };
 
-  var bufferInfo = self.bufferInfo;
-  self.bufferInfo = [];
-  self.offset = 0;
+  var bufferInfo = this.bufferInfo;
+  this.bufferInfo = [];
+  this.offset = 0;
 
   var i;
-  request(options, function(err, response, body) {
+  request(options, (err, response, body) => {
     if (err || response.statusCode !== 200) {
-      console.log(self.section, "error", self.section, err || response);
+      console.log(this.section, "error", this.section, err || response);
       for (i = 0; i < bufferInfo.length; i++) {
         bufferInfo[i].cb("Error");
       }
@@ -107,8 +103,8 @@ WiseProxySource.prototype.performQuery = function() {
     body = new Buffer(body, "binary");
     var offset = 0;
     var fieldsTS = body.readUInt32BE(offset); offset += 4;
-    if (fieldsTS !== self.fieldsTS) {
-      self.updateInfo();
+    if (fieldsTS !== this.fieldsTS) {
+      this.updateInfo();
     }
     var ver = body.readUInt32BE(offset); offset += 4;
     for (i = 0; i < bufferInfo.length; i++) {
@@ -124,7 +120,7 @@ WiseProxySource.prototype.performQuery = function() {
         var field = body[offset]; offset += 1;
         var len = body[offset]; offset += 1;
         var str = body.toString("ascii", offset, offset+len-1); offset += len;
-        args.push(self.mapping[field], str);
+        args.push(this.mapping[field], str);
       }
       var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
       return bi.cb(null, result);
@@ -133,33 +129,30 @@ WiseProxySource.prototype.performQuery = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.fetch = function(type, item, cb) {
-  var self = this;
+  this.buffer[this.offset] = type; this.offset++;
+  this.buffer.writeUInt16BE(item.length, this.offset); this.offset += 2;
+  this.buffer.write(item, this.offset); this.offset += item.length;
+  this.bufferInfo.push({type: type, item: item, cb: cb});
 
-  self.buffer[self.offset] = type; self.offset++;
-  self.buffer.writeUInt16BE(item.length, self.offset); self.offset += 2;
-  self.buffer.write(item, self.offset); self.offset += item.length;
-  self.bufferInfo.push({type: type, item: item, cb: cb});
-
-  if (self.bufferInfo.length > 100) {
-    self.performQuery();
+  if (this.bufferInfo.length > 100) {
+    this.performQuery();
   }
 };
 //////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.updateInfo = function() {
-  var self = this;
   var options = {
       url: this.url + "/fields",
       method: 'GET'
   };
 
-  request(options, function(err, response, body) {
+  request(options, (err, response, body) => {
     if (err) {
-      console.log(self.section, "problem fetching /fields", self.section, err || response);
+      console.log(this.section, "problem fetching /fields", this.section, err || response);
       return;
     }
     var buf = new Buffer(body, "binary");
     var offset = 0;
-    self.fieldsTS = buf.readUInt32BE(offset); offset += 4;
+    this.fieldsTS = buf.readUInt32BE(offset); offset += 4;
     var version = buf.readUInt32BE(offset); offset += 4;
     var length = buf[offset]; offset += 1;
     for (var i = 0; i < length; i++) {
@@ -168,7 +161,7 @@ WiseProxySource.prototype.updateInfo = function() {
       var str = buf.toString("ascii", offset, offset+len);
 
       offset += len;
-      self.mapping[i] = self.api.addField(str);
+      this.mapping[i] = this.api.addField(str);
     }
   });
 
@@ -177,13 +170,13 @@ WiseProxySource.prototype.updateInfo = function() {
       method: 'GET',
       json: true
   };
-  request(options, function(err, response, body) {
+  request(options, (err, response, body) => {
     if (err) {
-      console.log(self.section, "problem fetching /views", self.section, err || response);
+      console.log(this.section, "problem fetching /views", this.section, err || response);
       return;
     }
      for (var name in body) {
-       self.api.addView(name, body[name]);
+       this.api.addView(name, body[name]);
      }
   });
 
@@ -192,13 +185,13 @@ WiseProxySource.prototype.updateInfo = function() {
       method: 'GET',
       json: true
   };
-  request(options, function(err, response, body) {
+  request(options, (err, response, body) => {
     if (err) {
-      console.log(self.section, "problem fetching /rightClicks", self.section, err || response);
+      console.log(this.section, "problem fetching /rightClicks", this.section, err || response);
       return;
     }
      for (var name in body) {
-       self.api.addView(name, body[name]);
+       this.api.addView(name, body[name]);
      }
   });
 
@@ -225,8 +218,8 @@ function getURL(item, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^wiseproxy:/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/^wiseproxy:/);});
+  sections.forEach((section) => {
     var source = new WiseProxySource(api, section);
   });
 };

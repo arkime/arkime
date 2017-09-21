@@ -26,28 +26,25 @@ var util           = require('util')
 
 function SimpleSource (api, section) {
   SimpleSource.super_.call(this, api, section);
-  var self = this;
+  this.column  = +api.getConfig(section, "column", 0);
+  this.keyColumn  = api.getConfig(section, "keyColumn", 0);
 
-  self.column  = +api.getConfig(section, "column", 0);
-  self.keyColumn  = api.getConfig(section, "keyColumn", 0);
+  this.typeSetting();
 
-  self.typeSetting();
-
-  if (self.type === "ip") {
-    self.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
+  if (this.type === "ip") {
+    this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
   } else {
-    self.cache = new HashTable();
+    this.cache = new HashTable();
   }
 }
 util.inherits(SimpleSource, wiseSource);
 module.exports = SimpleSource;
 //////////////////////////////////////////////////////////////////////////////////
 SimpleSource.prototype.dump = function(res) {
-  var self = this;
-  var cache = self.type === "ip"?self.cache.items:self.cache;
-  cache.forEach(function(key, value) {
+  var cache = this.type === "ip"?this.cache.items:this.cache;
+  cache.forEach((key, value) => {
     var str = "{key: \"" + key + "\", ops:\n" + 
-      wiseSource.result2Str(wiseSource.combineResults([self.tagsResult, value])) + "},\n";
+      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + "},\n";
     res.write(str);
   });
   res.end();
@@ -70,8 +67,6 @@ SimpleSource.prototype.sendResult = function(key, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 SimpleSource.prototype.initSimple = function() {
-  var self = this;
-
   if (!this.type) {
     console.log(this.section, "- ERROR not loading since no type specified in config file");
     return false;
@@ -120,18 +115,17 @@ SimpleSource.prototype.initSimple = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 SimpleSource.prototype.load = function() {
-  var self = this;
   var setFunc;
   var newCache;
   var count = 0;
   if (this.type === "ip") {
     newCache = {items: new HashTable(), trie: new iptrie.IPTrie()};
-    setFunc  = function(key, value) {
+    setFunc  = (key, value) => {
       var parts = key.split("/");
       try {
         newCache.trie.add(parts[0], +parts[1] || 32, value);
       } catch (e) {
-        console.log("ERROR adding", self.section, key, e);
+        console.log("ERROR adding", this.section, key, e);
       }
       newCache.items.put(key, value);
       count++;
@@ -139,7 +133,7 @@ SimpleSource.prototype.load = function() {
   } else {
     newCache = new HashTable();
     if (this.type === "url") {
-      setFunc = function(key, value) {
+      setFunc = (key, value) => {
         if (key.lastIndexOf("http://", 0) === 0) {
           key = key.substring(7);
         }
@@ -153,13 +147,13 @@ SimpleSource.prototype.load = function() {
       };
     }
   }
-  this.simpleSourceLoad(setFunc, function (err) {
+  this.simpleSourceLoad(setFunc, (err) => {
     if (err) {
-      console.log("ERROR loading", self.section, err);
+      console.log("ERROR loading", this.section, err);
       return;
     }
-    self.cache = newCache;
-    console.log(self.section, "- Done Loading", count, "elements");
+    this.cache = newCache;
+    console.log(this.section, "- Done Loading", count, "elements");
   });
 };
 

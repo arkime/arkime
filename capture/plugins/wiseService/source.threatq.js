@@ -76,33 +76,32 @@ util.inherits(ThreatQSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.parseFile = function()
 {
-  var self = this;
-  self.ips.clear();
-  self.domains.clear();
-  self.emails.clear();
-  self.md5s.clear();
+  this.ips.clear();
+  this.domains.clear();
+  this.emails.clear();
+  this.md5s.clear();
 
   var count = 0;
   fs.createReadStream('/tmp/threatquotient.zip')
     .pipe(unzip.Parse())
-    .on('entry', function (entry) {
+    .on('entry', (entry) => {
       var bufs = [];
-      entry.on('data', function (buf) {
+      entry.on('data', (buf) => {
         bufs.push(buf);
-      }).on('end', function () {
+      }).on('end', () => {
         var json = JSON.parse(Buffer.concat(bufs));
-        json.forEach(function (item) {
-          var args = [self.idField, "" + item.id, self.typeField, item.type];
+        json.forEach((item) => {
+          let args = [this.idField, "" + item.id, this.typeField, item.type];
 
           if (item.source) {
-            item.source.forEach(function (str) {
-              args.push(self.sourceField, str);
+            item.source.forEach((str) => {
+              args.push(this.sourceField, str);
             });
           }
 
           if (item.campaign) {
-            item.campaign.forEach(function (str) {
-              args.push(self.campaignField, str);
+            item.campaign.forEach((str) => {
+              args.push(this.campaignField, str);
             });
           }
 
@@ -110,29 +109,28 @@ ThreatQSource.prototype.parseFile = function()
 
           count++;
           if (item.type === "IP Address") {
-            self.ips.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.ips.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "FQDN") {
-            self.domains.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.domains.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "Email Address") {
-            self.emails.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.emails.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "MD5") {
-            self.md5s.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.md5s.put(item.indicator, {num: args.length/2, buffer: encoded});
           }
         });
       });
     })
-    .on('close', function () {
-      console.log(self.section, "- Done Loading", count, "elements");
+    .on('close', () => {
+      console.log(this.section, "- Done Loading", count, "elements");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.loadFile = function() {
-  var self = this;
-  console.log(self.section, "- Downloading files");
-  wiseSource.request('https://' + self.host + '/export/moloch/?export_key=' + self.key,  '/tmp/threatquotient.zip', function (statusCode) {
-    if (statusCode === 200 || !self.loaded) {
-      self.loaded = true;
-      self.parseFile();
+  console.log(this.section, "- Downloading files");
+  wiseSource.request('https://' + this.host + '/export/moloch/?export_key=' + this.key,  '/tmp/threatquotient.zip', (statusCode) => {
+    if (statusCode === 200 || !this.loaded) {
+      this.loaded = true;
+      this.parseFile();
     }
   });
 };
@@ -155,10 +153,9 @@ ThreatQSource.prototype.getEmail = function(email, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.dump = function(res) {
-  var self = this;
-  ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
+  ["ips", "domains", "emails", "md5s"].forEach((ckey) => {
     res.write("" + ckey + ":\n");
-    self[ckey].forEach(function (key, value) {
+    this[ckey].forEach((key, value) => {
       var str = "{key: \"" + key + "\", ops:\n" +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);

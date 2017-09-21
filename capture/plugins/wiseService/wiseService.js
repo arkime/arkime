@@ -96,7 +96,7 @@ if (internals.workers > 1) {
     for (var i = 0; i < internals.workers; i++) {
       cluster.fork();
     }
-    cluster.on('exit', function(worker, code, signal) {
+    cluster.on('exit', (worker, code, signal) => {
       console.log('worker ' + worker.process.pid + ' died, restarting new worker');
       cluster.fork();
     });
@@ -207,8 +207,8 @@ internals.sourceApi = {
 };
 //////////////////////////////////////////////////////////////////////////////////
 function loadSources() {
-  glob(getConfig("wiseService", "sourcePath", "./") + "source.*.js", function (err, files) {
-    files.forEach(function(file) {
+  glob(getConfig("wiseService", "sourcePath", "./") + "source.*.js", (err, files) => {
+    files.forEach((file) => {
       var src = require(file);
       src.initSource(internals.sourceApi);
     });
@@ -254,7 +254,7 @@ function processQuery(req, query, cb) {
   }
 
   // Fetch the cache for this query
-  internals.cache.get(query, function(err, cacheResult) {
+  internals.cache.get(query, (err, cacheResult) => {
     if (req.timedout) {
       return cb("Timed out " + typeName + " " + query.value);
     }
@@ -268,7 +268,7 @@ function processQuery(req, query, cb) {
       internals.cacheHitStats[query.type]++;
     }
 
-    async.map(query.sources || typeInfo.sources, function(src, cb) {
+    async.map(query.sources || typeInfo.sources, (src, cb) => {
       if (!typeInfo.source_allowed(src, query.value)) {
         // This source isn't allowed for query
         return setImmediate(cb, undefined);
@@ -294,7 +294,7 @@ function processQuery(req, query, cb) {
         // First query for this value
         src.srcInProgress[typeName][query.value] = [cb];
         let startTime = Date.now();
-        src[funcName](src.fullQuery===true?query:query.value, function (err, result) {
+        src[funcName](src.fullQuery===true?query:query.value, (err, result) => {
           src.average100MS = (99.0 * src.average100MS + (Date.now() - startTime))/100.0;
 
           if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
@@ -319,7 +319,7 @@ function processQuery(req, query, cb) {
         // Woot, we can use the cache
         setImmediate(cb, null, cacheResult[src.section].result);
       }
-    }, function (err, results) {
+    }, (err, results) => {
       // Combine all the results together
       if (err) {
         return cb(err);
@@ -346,9 +346,9 @@ app.post("/get", function(req, res) {
   var offset = 0;
 
   var buffers = [];
-  req.on('data', function (chunk) {
+  req.on('data', (chunk) => {
     buffers.push(chunk);
-  }).once('end', function (err) {
+  }).once('end', (err) => {
     var queries = [];
     for (var buf = Buffer.concat(buffers); offset < buf.length; ) {
       var type = buf[offset];
@@ -362,9 +362,9 @@ app.post("/get", function(req, res) {
       internals.requestStats[type]++;
     }
 
-    async.map(queries, function (query, cb) {
+    async.map(queries, (query, cb) => {
       processQuery(req, query, cb);
-    }, function (err, results) {
+    }, (err, results) => {
       if (err || req.timedout) {
         console.log("Error", err || "Timed out" );
         return;
@@ -398,7 +398,7 @@ app.get("/:source/:type/:value", function(req, res) {
     return res.end("Unknown type " + req.params.type);
   }
 
-  processQuery(req, query, function (err, result) {
+  processQuery(req, query, (err, result) => {
     if (err || !result) {
       return res.end("Not found");
     }
@@ -427,18 +427,18 @@ app.get("/bro/:type", function(req, res) {
 
   var fn = internals.type2Func[req.params.type];
   var srcs = internals[fn + "s"];
-  async.map(hashes, function(hash, doneCb) {
-    async.map(srcs, function(src, cb) {
+  async.map(hashes, (hash, doneCb) => {
+    async.map(srcs, (src, cb) => {
       if (internals.source_allowed[req.params.type](src, hash)) {
         src[fn](hash, cb);
       } else {
         setImmediate(cb, undefined);
       }
-    }, function (err, results) {
+    }, (err, results) => {
       doneCb(null, results);
     });
   },
-  function (err, results) {
+  (err, results) => {
 
     for (var hashi = 0; hashi < hashes.length; hashi++) {
       if (hashi !== 0) {
@@ -488,7 +488,7 @@ app.get("/:type/:value", function(req, res) {
   var query = {type: type,
                value: req.params.value};
 
-  processQuery(req, query, function (err, result) {
+  processQuery(req, query, (err, result) => {
     if (err || !result) {
       return res.end("Not found");
     }
@@ -497,7 +497,7 @@ app.get("/:type/:value", function(req, res) {
 });
 //////////////////////////////////////////////////////////////////////////////////
 if (getConfig("wiseService", "regressionTests")) {
-  app.post('/shutdown', function(req, res) {
+  app.post('/shutdown', (req, res) => {
     process.exit(0);
     throw new Error("Exiting");
   });
@@ -639,18 +639,18 @@ internals.tuple.source_allowed = function(src, value) {
 internals.ja3.source_allowed = function(src, value) {return true;};
 //////////////////////////////////////////////////////////////////////////////////
 function loadExcludes() {
-  ["excludeDomains", "excludeEmails", "excludeURLs", "excludeTuples"].forEach(function(type) {
+  ["excludeDomains", "excludeEmails", "excludeURLs", "excludeTuples"].forEach((type) => {
     var items = getConfig("wiseService", type);
     internals[type] = [];
     if (!items) {return;}
-    items.split(";").forEach(function(item) {
+    items.split(";").forEach((item) => {
       internals[type].push(RegExp.fromWildExp(item, "ailop"));
     });
   });
 
   internals.excludeIPs = new iptrie.IPTrie();
   var items = getConfig("wiseService", "excludeIPs", "");
-  items.split(";").forEach(function(item) {
+  items.split(";").forEach((item) => {
     if (item === "") {
       return;
     }
@@ -686,11 +686,11 @@ function main() {
   setInterval(printStats, 60*1000);
   var server = http.createServer(app);
   server
-    .on('error', function (e) {
+    .on('error', (e) => {
       console.log("ERROR - couldn't listen on port", getConfig("wiseService", "port", 8081), "is wiseService already running?");
       process.exit(1);
     })
-    .on('listening', function (e) {
+    .on('listening', (e) => {
       console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
     })
     .listen(getConfig("wiseService", "port", 8081));

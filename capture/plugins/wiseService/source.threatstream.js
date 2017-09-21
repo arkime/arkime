@@ -120,28 +120,26 @@ util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.parseFile = function()
 {
-  var self = this;
-
-  self.ips.clear();
-  self.ips.reserve(2000000);
-  self.domains.clear();
-  self.domains.reserve(200000);
-  self.emails.clear();
-  self.emails.reserve(200000);
-  self.md5s.clear();
-  self.md5s.reserve(200000);
-  self.urls.clear();
-  self.urls.reserve(200000);
+  this.ips.clear();
+  this.ips.reserve(2000000);
+  this.domains.clear();
+  this.domains.reserve(200000);
+  this.emails.clear();
+  this.emails.reserve(200000);
+  this.md5s.clear();
+  this.md5s.reserve(200000);
+  this.urls.clear();
+  this.urls.reserve(200000);
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
-    .on('entry', function (entry) {
-      var bufs = [];
-      entry.on('data', function (buf) {
+    .on('entry', (entry) => {
+      let bufs = [];
+      entry.on('data', (buf) => {
         bufs.push(buf);
-      }).on('end', function () {
+      }).on('end', () => {
         var json = JSON.parse(Buffer.concat(bufs));
-        json.objects.forEach(function (item) {
+        json.objects.forEach((item) => {
           if (item.state !== "active") {
             return;
           }
@@ -150,58 +148,56 @@ ThreatStreamSource.prototype.parseFile = function()
           var num;
           try {
             if (item.maltype && item.maltype !== "null") {
-              encoded = wiseSource.encode(self.severityField, item.severity.toLowerCase(),
-                                          self.confidenceField, "" + item.confidence,
-                                          self.idField, "" + item.id,
-                                          self.typeField, item.itype.toLowerCase(),
-                                          self.maltypeField, item.maltype.toLowerCase(),
-                                          self.sourceField, item.source);
+              encoded = wiseSource.encode(this.severityField, item.severity.toLowerCase(),
+                                          this.confidenceField, "" + item.confidence,
+                                          this.idField, "" + item.id,
+                                          this.typeField, item.itype.toLowerCase(),
+                                          this.maltypeField, item.maltype.toLowerCase(),
+                                          this.sourceField, item.source);
               num = 6;
             } else {
-              encoded = wiseSource.encode(self.severityField, item.severity.toLowerCase(),
-                                          self.confidenceField, "" + item.confidence,
-                                          self.idField, "" + item.id,
-                                          self.typeField, item.itype.toLowerCase(),
-                                          self.sourceField, item.source);
+              encoded = wiseSource.encode(this.severityField, item.severity.toLowerCase(),
+                                          this.confidenceField, "" + item.confidence,
+                                          this.idField, "" + item.id,
+                                          this.typeField, item.itype.toLowerCase(),
+                                          this.sourceField, item.source);
               num = 5;
             }
           } catch (e) {
-            console.log(self.section, "ERROR -", entry.path, e, item, e.stack);
+            console.log(this.section, "ERROR -", entry.path, e, item, e.stack);
             return;
           }
 
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-            self.ips.put(item.srcip, {num: num, buffer: encoded});
+            this.ips.put(item.srcip, {num: num, buffer: encoded});
           } else if (item.itype.match(/_domain|_dns/)) {
-            self.domains.put(item.domain, {num: num, buffer: encoded});
+            this.domains.put(item.domain, {num: num, buffer: encoded});
           } else if (item.itype.match(/_email/)) {
-            self.emails.put(item.email, {num: num, buffer: encoded});
+            this.emails.put(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
-            self.md5s.put(item.md5, {num: num, buffer: encoded});
+            this.md5s.put(item.md5, {num: num, buffer: encoded});
           } else if (item.itype.match(/_url/)) {
             if (item.url.lastIndexOf("http://", 0) === 0) {
               item.url = item.url.substring(7);
             }
-            self.urls.put(item.url, {num: num, buffer: encoded});
+            this.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
-        //console.log(self.section, "- Done", entry.path);
+        //console.log(this.section, "- Done", entry.path);
       });
     })
-    .on('close', function () {
-      console.log(self.section, "- Done Loading");
+    .on('close', () => {
+      console.log(this.section, "- Done Loading");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.loadFile = function() {
-  var self = this;
-
-  console.log(self.section, "- Downloading files");
-  wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + self.user + '&api_key=' + self.key,  '/tmp/threatstream.zip', function (statusCode) {
-    if (statusCode === 200 || !self.loaded) {
-      self.loaded = true;
-      self.parseFile();
+  console.log(this.section, "- Downloading files");
+  wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + this.user + '&api_key=' + this.key,  '/tmp/threatstream.zip', (statusCode) => {
+    if (statusCode === 200 || !this.loaded) {
+      this.loaded = true;
+      this.parseFile();
     }
   });
 };
@@ -229,11 +225,10 @@ function getURLZip(url, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 function dumpZip (res) {
-  var self = this;
   res.write("{");
-  ["ips", "domains", "emails", "md5s", "urls"].forEach(function (ckey) {
+  ["ips", "domains", "emails", "md5s", "urls"].forEach((ckey) => {
     res.write("" + ckey + ": [\n");
-    self[ckey].forEach(function(key, value) {
+    this[ckey].forEach((key, value) => {
       var str = "{key: \"" + key + "\", ops:\n" +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
@@ -245,30 +240,28 @@ function dumpZip (res) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getApi = function(type, value, cb) {
-  var self = this;
-
   var options = {
-      url: "https://api.threatstream.com/api/v2/intelligence/?username=" + self.user + "&api_key=" + self.key + "&status=active&" + type + "=" + value + "&itype=" + self.types[type],
+      url: "https://api.threatstream.com/api/v2/intelligence/?username=" + this.user + "&api_key=" + this.key + "&status=active&" + type + "=" + value + "&itype=" + this.types[type],
       method: 'GET',
       forever: true
   };
 
-  if (self.inProgress > 50) {
+  if (this.inProgress > 50) {
     return cb ("dropped");
   }
 
-  self.inProgress++;
-  request(options, function(err, response, body) {
-    self.inProgress--;
+  this.inProgress++;
+  request(options, (err, response, body) => {
+    this.inProgress--;
     if (err) {
-      console.log(self.section, "problem fetching ", options, err || response);
+      console.log(this.section, "problem fetching ", options, err || response);
       return cb(null, wiseSource.emptyResult);
     }
 
     try {
       body = JSON.parse(body);
     } catch (e) {
-      console.log(self.section, "Couldn't parse", body);
+      console.log(this.section, "Couldn't parse", body);
       return cb(null, wiseSource.emptyResult);
     }
 
@@ -277,17 +270,17 @@ ThreatStreamSource.prototype.getApi = function(type, value, cb) {
     }
 
     var args = [];
-    body.objects.forEach(function (item) {
-      args.push(self.confidenceField, "" + item.confidence,
-                self.idField, "" + item.id,
-                self.typeField, item.itype.toLowerCase(),
-                self.sourceField, item.source);
+    body.objects.forEach((item) => {
+      args.push(this.confidenceField, "" + item.confidence,
+                this.idField, "" + item.id,
+                this.typeField, item.itype.toLowerCase(),
+                this.sourceField, item.source);
 
       if (item.maltype !== undefined && item.maltype !== "null") {
-        args.push(self.maltypeField, item.maltype.toLowerCase());
+        args.push(this.maltypeField, item.maltype.toLowerCase());
       }
       if (item.severity !== undefined) {
-        args.push(self.severityField, item.severity.toLowerCase());
+        args.push(this.severityField, item.severity.toLowerCase());
       }
     });
     var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
@@ -312,15 +305,13 @@ function getEmailApi(email, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
-  var self = this;
-
   if (!this.db) {
     return cb("dropped");
   }
 
-  this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
+  this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + this.typesWithQuotes[type] + ")", value, (err, data) => {
     if (err) {
-      console.log(self.section, "ERROR", err, data);
+      console.log(this.section, "ERROR", err, data);
       return cb("dropped");
     }
     if (data.length === 0) {
@@ -328,20 +319,20 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
     }
 
     var args = [];
-    data.forEach(function (item) {
-      args.push(self.confidenceField, "" + item.confidence,
-                self.idField, "" + item.id,
-                self.typeField, item.itype.toLowerCase(),
-                self.sourceField, item.source);
+    data.forEach((item) => {
+      args.push(this.confidenceField, "" + item.confidence,
+                this.idField, "" + item.id,
+                this.typeField, item.itype.toLowerCase(),
+                this.sourceField, item.source);
 
       if (item.maltype !== undefined && item.maltype !== null) {
-        args.push(self.maltypeField, item.maltype.toLowerCase());
+        args.push(this.maltypeField, item.maltype.toLowerCase());
       }
       if (item.severity !== undefined) {
-        args.push(self.severityField, item.severity.toLowerCase());
+        args.push(this.severityField, item.severity.toLowerCase());
       }
       if (item.import_session_id !== undefined && +item.import_session_id !== 0) {
-        args.push(self.importIdField, "" + item.import_session_id);
+        args.push(this.importIdField, "" + item.import_session_id);
       }
     });
     var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
@@ -350,12 +341,11 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 function getDomainSqlite3(domain, cb) {
-  var self = this;
-  self.getSqlite3("domain", "domain", domain, function (err, result) {
+  this.getSqlite3("domain", "domain", domain, (err, result) => {
     if (err || result !== wiseSource.emptyResult) {
       return cb(err, result);
     }
-    self.getSqlite3("domain", "domain", domain.substring(domain.indexOf(".")+1), cb);
+    this.getSqlite3("domain", "domain", domain.substring(domain.indexOf(".")+1), cb);
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
@@ -378,43 +368,41 @@ function getURLSqlite3(url, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.loadTypes = function() {
   // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
-  var self = this;
-  self.types = {};
-  self.typesWithQuotes = {};
-  request({url: "https://api.threatstream.com/api/v1/impact/?username="+self.user+"&api_key="+self.key+"&limit=1000", forever: true}, function(err, response, body) {
+  this.types = {};
+  this.typesWithQuotes = {};
+  request({url: "https://api.threatstream.com/api/v1/impact/?username="+this.user+"&api_key="+this.key+"&limit=1000", forever: true}, (err, response, body) => {
     if (err) {
-      console.log(self.section, "ERROR - failed to load types", err);
+      console.log(this.section, "ERROR - failed to load types", err);
       return;
     }
 
     body = JSON.parse(body);
-    body.objects.forEach(function(item) {
-      if (self.types[item.value_type] === undefined) {
-        self.types[item.value_type] = [item.name];
+    body.objects.forEach((item) => {
+      if (this.types[item.value_type] === undefined) {
+        this.types[item.value_type] = [item.name];
       } else {
-        self.types[item.value_type].push(item.name);
+        this.types[item.value_type].push(item.name);
       }
     });
-    for (var key in self.types) {
-      self.typesWithQuotes[key] = self.types[key].map(function(v) {return "'" + v + "'";}).join(",");
-      self.types[key] = self.types[key].join(",");
+    for (var key in this.types) {
+      this.typesWithQuotes[key] = this.types[key].map((v) => {return "'" + v + "'";}).join(",");
+      this.types[key] = this.types[key].join(",");
     }
 
     // Wait to register until request is done
-    self.api.addSource("threatstream", self);
+    this.api.addSource("threatstream", this);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.openDb = function() {
-  var self = this;
-  var dbFile = self.api.getConfig("threatstream", "dbFile", "ts.db");
+  var dbFile = this.api.getConfig("threatstream", "dbFile", "ts.db");
 
   var dbStat;
   try {dbStat = fs.statSync(dbFile);} catch (e) {};
 
   var realDb;
   if (!dbStat || !dbStat.isFile()) {
-    console.log(self.section, "ERROR - file doesn't exist", dbFile);
+    console.log(this.section, "ERROR - file doesn't exist", dbFile);
     process.exit();
   }
 
@@ -428,28 +416,28 @@ ThreatStreamSource.prototype.openDb = function() {
   function beginImmediate(err) {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
-      console.log(self.section, "Failed to lock sqlite DB", dbFile);
+      console.log(this.section, "Failed to lock sqlite DB", dbFile);
       return realDb.run("BEGIN IMMEDIATE", beginImmediate);
     }
 
-    console.log(self.section, "- Copying DB", dbStat.mtime);
-    exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  function(err, stdout, stderr) {
+    console.log(this.section, "- Copying DB", dbStat.mtime);
+    exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  (err, stdout, stderr) => {
       console.log(stdout, stderr);
-      realDb.run("END", function (err) {
+      realDb.run("END", (err) => {
         realDb.close();
         realDb = null;
 
         var tempDb = new sqlite3.Database(dbFile + ".temp");
-        tempDb.run("CREATE INDEX md5_index ON ts (md5)", function (err) {
+        tempDb.run("CREATE INDEX md5_index ON ts (md5)", (err) => {
           tempDb.close();
-          if (self.db) {
-            self.db.close();
+          if (this.db) {
+            this.db.close();
           }
-          self.db = null;
-          exec ("/bin/rm -f " + dbFile + ".moloch ",  function(err, stdout, stderr) {
-            exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  function(err, stdout, stderr) {
-              self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
-              console.log(self.section, "- Loaded DB");
+          this.db = null;
+          exec ("/bin/rm -f " + dbFile + ".moloch ",  (err, stdout, stderr) => {
+            exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  (err, stdout, stderr) => {
+              this.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
+              console.log(this.section, "- Loaded DB");
             });
           });
         });
@@ -460,13 +448,13 @@ ThreatStreamSource.prototype.openDb = function() {
 
   // If the last copy time doesn't match start the copy process.
   // This will also run on startup.
-  if (self.mtime !== dbStat.mtime.getTime()) {
-    self.mtime = dbStat.mtime.getTime();
+  if (this.mtime !== dbStat.mtime.getTime()) {
+    this.mtime = dbStat.mtime.getTime();
     realDb = new sqlite3.Database(dbFile);
     realDb.run("BEGIN IMMEDIATE", beginImmediate);
-  } else if (!self.db) {
+  } else if (!this.db) {
     // Open the DB if not already opened.
-    self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
+    this.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
   }
 };
 //////////////////////////////////////////////////////////////////////////////////

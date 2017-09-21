@@ -49,16 +49,15 @@ function HODISource (api, section) {
                       maxSockets: 51
                     });
 
-  var self = this;
-  ["hodi-domain", "hodi-ip", "hodi-md5", "hodi-email"].forEach(function(index) {
-    self.client.indices.exists({index: index}, function (err, exists) {
+  ["hodi-domain", "hodi-ip", "hodi-md5", "hodi-email"].forEach((index) => {
+    this.client.indices.exists({index: index}, (err, exists) => {
       if (exists) {
-        self.client.indices.putSettings({index: index, body: {
+        this.client.indices.putSettings({index: index, body: {
           "index.refresh_interval": "60s"
         }});
         return;
       }
-      self.client.indices.create({index: index, body: {
+      this.client.indices.create({index: index, body: {
         settings: {
           "index.refresh_interval": "60s"
         },
@@ -83,21 +82,18 @@ util.inherits(HODISource, wiseSource);
 
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.sendBulk = function () {
-  var self = this;
-  if (self.bulk.length === 0) {
+  if (this.bulk.length === 0) {
     return;
   }
-  if (self.api.debug > 0) {
-    console.log("HODI", self.bulk.length);
+  if (this.api.debug > 0) {
+    console.log("HODI", this.bulk.length);
   }
-  self.client.bulk({body: self.bulk});
-  self.bulk = [];
+  this.client.bulk({body: this.bulk});
+  this.bulk = [];
 };
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.process = function (index, id, cb) {
   cb(null, undefined);
-
-  var self = this;
 
   var info = this[index].get(id);
   if (info) {
@@ -107,10 +103,10 @@ HODISource.prototype.process = function (index, id, cb) {
   this[index].set(id, true);
 
   var date = new Date().toISOString();
-  self.bulk.push({update: {_index: "hodi-" + index, _type: "hodi", _id: id}});
-  self.bulk.push({script_file: "hodi", params: {lastSeen: date}, upsert: {count: 1, firstSeen: date, lastSeen: date}});
-  if (self.bulk.length >= 1000) {
-    self.sendBulk();
+  this.bulk.push({update: {_index: "hodi-" + index, _type: "hodi", _id: id}});
+  this.bulk.push({script_file: "hodi", params: {lastSeen: date}, upsert: {count: 1, firstSeen: date, lastSeen: date}});
+  if (this.bulk.length >= 1000) {
+    this.sendBulk();
   }
 };
 //////////////////////////////////////////////////////////////////////////////////

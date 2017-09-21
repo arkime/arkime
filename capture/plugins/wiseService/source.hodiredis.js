@@ -29,8 +29,7 @@ function HODIRedisSource (api, section) {
   var contentTypes = this.api.getConfig(section, "contentTypes",
           "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",");
 
-  var self = this;
-  contentTypes.forEach(function(type) { self.contentTypes[type] = 1;});
+  contentTypes.forEach((type) => { this.contentTypes[type] = 1;});
   this.url      = api.getConfig(section, "url");
   if (this.url === undefined) {
     console.log(this.section, "- ERROR not loading since no url specified in config file");
@@ -54,7 +53,7 @@ util.inherits(HODIRedisSource, wiseSource);
 HODIRedisSource.prototype.process = function(key, tag, cb) {
   var date = new Date();
 
-  this.client.hsetnx(key, "first", date.getTime(), function (err, result) {
+  this.client.hsetnx(key, "first", date.getTime(), (err, result) => {
     if (result === 1) {
       return cb(null, tag);
     } else {

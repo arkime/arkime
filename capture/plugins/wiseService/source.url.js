@@ -25,11 +25,9 @@ var util           = require('util')
 //////////////////////////////////////////////////////////////////////////////////
 function URLSource (api, section) {
   URLSource.super_.call(this, api, section);
-  var self = this;
-
-  self.url          = api.getConfig(section, "url");
-  self.reload       = +api.getConfig(section, "reload", -1);
-  self.headers      = {};
+  this.url          = api.getConfig(section, "url");
+  this.reload       = +api.getConfig(section, "reload", -1);
+  this.headers      = {};
   var headers       = api.getConfig(section, "headers");
   this.cacheTimeout = -1;
 
@@ -39,10 +37,10 @@ function URLSource (api, section) {
   }
 
   if (headers) {
-    headers.split(";").forEach(function(header) {
+    headers.split(";").forEach((header) => {
       var parts = header.split(":");
       if (parts.length === 2) {
-        self.headers[parts[0].trim()] = parts[1].trim();
+        this.headers[parts[0].trim()] = parts[1].trim();
       }
     });
   }
@@ -60,11 +58,9 @@ function URLSource (api, section) {
 util.inherits(URLSource, simpleSource);
 //////////////////////////////////////////////////////////////////////////////////
 URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
-  var self = this;
-
-  request(self.url, {headers: self.headers}, function (error, response, body) {
+  request(this.url, {headers: this.headers}, (error, response, body) => {
     if (!error && response.statusCode === 200) {
-      self.parse(body, setFunc, cb);
+      this.parse(body, setFunc, cb);
     } else {
       cb(error);
     }
@@ -72,8 +68,8 @@ URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^url:/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/^url:/);});
+  sections.forEach((section) => {
     var source = new URLSource(api, section);
   });
 };

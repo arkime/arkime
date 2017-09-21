@@ -45,40 +45,39 @@ function FileSource (api, section) {
   setImmediate(this.load.bind(this));
 
   // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-  var self = this;
-  self.watchTimeout = null;
-  self.watch = fs.watch(this.file, function watchCb(event, filename) {
-    clearTimeout(self.watchTimeout);
+  this.watchTimeout = null;
+  let watchCb = (event, filename) => {
+    clearTimeout(this.watchTimeout);
     if (event === "rename") {
-      self.watch.close();
-      setTimeout(function () {
-        self.load();
-        self.watch = fs.watch(self.file, watchCb);
+      this.watch.close();
+      setTimeout(() => {
+        this.load();
+        this.watch = fs.watch(this.file, watchCb);
       }, 500);
     } else {
-      self.watchTimeout = setTimeout(function () {
-        self.watchTimeout = null;
-        self.load();
+      this.watchTimeout = setTimeout(() => {
+        this.watchTimeout = null;
+        this.load();
       }, 2000);
     }
-  });
+  };
+
+  this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(FileSource, simpleSource);
 //////////////////////////////////////////////////////////////////////////////////
 FileSource.prototype.simpleSourceLoad = function(setFunc, cb) {
-  var self = this;
-
-  fs.readFile(self.file, function (err, body) {
+  fs.readFile(this.file, (err, body) => {
     if (err) {
       return cb(err);
     }
-    self.parse(body, setFunc, cb);
+    this.parse(body, setFunc, cb);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^file:/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/^file:/);});
+  sections.forEach((section) => {
     var source = new FileSource(api, section);
   });
 };

@@ -26,7 +26,6 @@ var source;
 
 //////////////////////////////////////////////////////////////////////////////////
 function VirusTotalSource (api, section) {
-  var self = this;
   VirusTotalSource.super_.call(this, api, section);
   this.waiting    = [];
   this.processing = {};
@@ -40,12 +39,12 @@ function VirusTotalSource (api, section) {
   this.contentTypes = {};
   var contentTypes = this.api.getConfig("virustotal", "contentTypes",
           "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",");
-  contentTypes.forEach(function(type) { self.contentTypes[type] = 1;});
+  contentTypes.forEach((type) => { this.contentTypes[type] = 1;});
 
   this.queriesPerMinute = +this.api.getConfig("virustotal", "queriesPerMinute", 3); // Keeps us under default limit, however most wise queries will time out :(
   this.maxOutstanding = +this.api.getConfig("virustotal", "maxOutstanding", 25);
   this.dataSources = this.api.getConfig("virustotal", "dataSources", "McAfee,Symantec,Microsoft,Kaspersky").split(",");
-  this.dataSourcesLC = this.dataSources.map(function(x) {return x.toLowerCase();});
+  this.dataSourcesLC = this.dataSources.map((x) => {return x.toLowerCase();});
   this.dataFields = [];
   this.fullQuery = true;
 
@@ -77,36 +76,34 @@ util.inherits(VirusTotalSource, wiseSource);
 
 //////////////////////////////////////////////////////////////////////////////////
 VirusTotalSource.prototype.performQuery = function () {
-  var self = this;
-
-  if (self.waiting.length === 0) {
+  if (this.waiting.length === 0) {
     return;
   }
 
-  if (self.api.debug > 0) {
-    console.log(self.section, "- Fetching %d", self.waiting.length);
+  if (this.api.debug > 0) {
+    console.log(this.section, "- Fetching %d", this.waiting.length);
   }
 
   var options = {
       url: 'https://www.virustotal.com/vtapi/v2/file/report?',
-      qs: {apikey: self.key,
-           resource: self.waiting.join(",")},
+      qs: {apikey: this.key,
+           resource: this.waiting.join(",")},
       method: 'GET',
       json: true
   };
-  var sent = self.waiting;
+  var sent = this.waiting;
 
-  self.waiting = [];
+  this.waiting = [];
 
-  var req = request(options, function(err, im, results) {
+  var req = request(options, (err, im, results) => {
     if (err || im.statusCode != 200 || results === undefined) {
-      console.log(self.section, "Error for request:\n", options, "\n", im, "\nresults:\n", results);
-      sent.forEach(function (md5) {
-        var cb = self.processing[md5];
+      console.log(this.section, "Error for request:\n", options, "\n", im, "\nresults:\n", results);
+      sent.forEach((md5) => {
+        var cb = this.processing[md5];
         if (!cb) {
           return;
         }
-        delete self.processing[md5];
+        delete this.processing[md5];
         cb(undefined, undefined);
       });
       return;
@@ -116,25 +113,25 @@ VirusTotalSource.prototype.performQuery = function () {
       results = [results];
     }
 
-    results.forEach(function(result) {
-      var cb = self.processing[result.md5];
+    results.forEach((result) => {
+      var cb = this.processing[result.md5];
       if (!cb) {
         return;
       }
-      delete self.processing[result.md5];
+      delete this.processing[result.md5];
 
       var wiseResult;
       if (result.response_code === 0) {
         wiseResult = wiseSource.emptyResult;
       }  else {
-        var args = [self.hitsField, ""+result.positives, self.linksField, result.permalink];
+        var args = [this.hitsField, ""+result.positives, this.linksField, result.permalink];
 
-        for(var i = 0; i < self.dataSources.length; i++) {
-          var uc = self.dataSources[i];
-          var lc = self.dataSourcesLC[i];
+        for(var i = 0; i < this.dataSources.length; i++) {
+          var uc = this.dataSources[i];
+          var lc = this.dataSourcesLC[i];
 
           if (result.scans[uc] && result.scans[uc].detected) {
-            args.push(self.dataFields[i], result.scans[uc].result);
+            args.push(this.dataFields[i], result.scans[uc].result);
           }
         }
 
@@ -143,8 +140,8 @@ VirusTotalSource.prototype.performQuery = function () {
 
       cb(null, wiseResult);
     });
-  }).on('error', function (err) {
-    console.log(self.section, err);
+  }).on('error', (err) => {
+    console.log(this.section, err);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +160,7 @@ VirusTotalSource.prototype.getMd5 = function(query, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 var reportApi = function(req, res) {
-  source.getMd5(req.query.resource, function(err, result) {
+  source.getMd5(req.query.resource, (err, result) => {
     //console.log(err, result);
     if(result.num === 0) {
       res.send({response_code: 0, resource: req.query.resource, verbose_msg: "The requested resource is not among the finished, queued or pending scans"});

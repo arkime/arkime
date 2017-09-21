@@ -25,17 +25,15 @@ var util           = require('util')
 //////////////////////////////////////////////////////////////////////////////////
 function RedisSource (api, section) {
   RedisSource.super_.call(this, api, section);
-  var self = this;
-
-  self.url      = api.getConfig(section, "url");
+  this.url      = api.getConfig(section, "url");
   if (this.url === undefined) {
     console.log(this.section, "- ERROR not loading since no url specified in config file");
     return;
   }
 
-  self.column   = +api.getConfig(section, "column", 0);
-  self.format   = api.getConfig(section, "format", "csv");
-  self.template = api.getConfig(section, "template", undefined);
+  this.column   = +api.getConfig(section, "column", 0);
+  this.format   = api.getConfig(section, "format", "csv");
+  this.template = api.getConfig(section, "template", undefined);
 
 
   this.tagsSetting();
@@ -51,27 +49,25 @@ util.inherits(RedisSource, wiseSource);
 
 //////////////////////////////////////////////////////////////////////////////////
 RedisSource.prototype.fetch = function (key, cb) {
-  var self = this;
-
-  if (self.template !== undefined) {
-    key = self.template.replace("%key%", key).replace("%type%", self.type);
+  if (this.template !== undefined) {
+    key = this.template.replace("%key%", key).replace("%type%", this.type);
   }
 
-  self.client.get(key, function(err, reply) {
+  this.client.get(key, (err, reply) => {
     if (reply === null) {
       return cb(null, undefined);
     }
 
-    self.parse(reply, function(ignorekey, result) {
-      var newresult = {num: result.num + self.tagsResult.num, buffer: Buffer.concat([result.buffer, self.tagsResult.buffer])};
+    this.parse(reply, (ignorekey, result) => {
+      var newresult = {num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer])};
       return cb(null, newresult);
-    }, function () {});
+    }, () => {});
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^redis:/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/^redis:/);});
+  sections.forEach((section) => {
     var source = new RedisSource(api, section);
   });
 };

@@ -41,44 +41,42 @@ function RightClickSource (api, section) {
 
   setImmediate(this.load.bind(this));
 
-  var self = this;
   // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-  self.watchTimeout = null;
-  self.watch = fs.watch(this.file, function watchCb(event, filename) {
-    clearTimeout(self.watchTimeout);
+  this.watchTimeout = null;
+  let watchCb = (event, filename) => {
+    clearTimeout(this.watchTimeout);
     if (event === "rename") {
-      self.watch.close();
-      setTimeout(function () {
-        self.load();
-        self.watch = fs.watch(self.file, watchCb);
+      this.watch.close();
+      setTimeout(() => {
+        this.load();
+        this.watch = fs.watch(this.file, watchCb);
       }, 500);
     } else {
-      self.watchTimeout = setTimeout(function () {
-        self.watchTimeout = null;
-        self.load();
+      this.watchTimeout = setTimeout(() => {
+        this.watchTimeout = null;
+        this.load();
       }, 2000);
     }
-  });
+  };
+  this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(RightClickSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 RightClickSource.prototype.load = function() {
-  var self = this;
-
-  if (!fs.existsSync(self.file)) {
-    console.log(this.section, "- ERROR not loading", self.section, "since", self.file, "doesn't exist");
+  if (!fs.existsSync(this.file)) {
+    console.log(this.section, "- ERROR not loading", this.section, "since", this.file, "doesn't exist");
     return;
   }
 
-  var config = ini.parseSync(self.file);
+  var config = ini.parseSync(this.file);
   var data = config["right-click"] || config;
 
   var keys = Object.keys(data);
   if (!keys) {return;}
 
-  keys.forEach(function(key) {
+  keys.forEach((key) => {
     var obj = {};
-    data[key].split(';').forEach(function(element) {
+    data[key].split(';').forEach((element) => {
       var i = element.indexOf(':');
       if (i === -1) {
         return;
@@ -97,18 +95,18 @@ RightClickSource.prototype.load = function() {
     }
     if (obj.users) {
       var users = {};
-      obj.users.split(",").forEach(function(item) {
+      obj.users.split(",").forEach((item) => {
         users[item] = 1;
       });
       obj.users = users;
     }
-    self.api.addRightClick(key, obj);
+    this.api.addRightClick(key, obj);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/(^right-click$|^right-click:)/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/(^right-click$|^right-click:)/);});
+  sections.forEach((section) => {
     var source = new RightClickSource(api, section);
   });
 };

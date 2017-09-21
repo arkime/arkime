@@ -58,34 +58,32 @@ util.inherits(AlienVaultSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.parseFile = function()
 {
-  var self = this;
-  var parser = csv.parse({delimiter: "#", skip_empty_lines:true}, function(err, data) {
+  var parser = csv.parse({delimiter: "#", skip_empty_lines:true}, (err, data) => {
     if (err) {
-      console.log(self.section, "- Couldn't parse csv", err);
+      console.log(this.section, "- Couldn't parse csv", err);
       return;
     }
     var count = 0;
-    self.ips.clear();
+    this.ips.clear();
     for (var i = 0; i < data.length; i++) {
       if (data[i].length < 8) {
         continue;
       }
 
-      var encoded = wiseSource.encode(self.idField, data[i][7],
-                                      self.reliabilityField, data[i][1],
-                                      self.threatlevelField, data[i][2],
-                                      self.activityField, data[i][3]);
-      self.ips.put(data[i][0], {num: 4, buffer: encoded});
+      var encoded = wiseSource.encode(this.idField, data[i][7],
+                                      this.reliabilityField, data[i][1],
+                                      this.threatlevelField, data[i][2],
+                                      this.activityField, data[i][3]);
+      this.ips.put(data[i][0], {num: 4, buffer: encoded});
       count++;
     }
-    console.log(self.section, "- Done Loading", count, "elements");
+    console.log(this.section, "- Done Loading", count, "elements");
   });
   fs.createReadStream('/tmp/alienvault.data').pipe(parser);
 };
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.loadFile = function() {
-  var self = this;
-  console.log(self.section, "- Downloading files");
+  console.log(this.section, "- Downloading files");
 
   var revision = 0;
 
@@ -93,21 +91,21 @@ AlienVaultSource.prototype.loadFile = function() {
     revision = + fs.readFileSync("/tmp/alienvault.rev").toString();
   }
 
-  wiseSource.request('http://reputation.alienvault.com/' + self.key + '/reputation.rev',  '/tmp/alienvault.rev', function (statusCode) {
+  wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.rev',  '/tmp/alienvault.rev', (statusCode) => {
     var line = fs.readFileSync("/tmp/alienvault.rev").toString();
     if (+line !== revision) {
       if (fs.existsSync("/tmp/alienvault.data")) {
         fs.unlinkSync("//tmp/alienvault.data");
       }
-      wiseSource.request('http://reputation.alienvault.com/' + self.key + '/reputation.data',  '/tmp/alienvault.data', function (statusCode) {
-        if (statusCode === 200 || !self.loaded) {
-          self.loaded = true;
-          self.parseFile();
+      wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.data',  '/tmp/alienvault.data', (statusCode) => {
+        if (statusCode === 200 || !this.loaded) {
+          this.loaded = true;
+          this.parseFile();
         }
       });
     } else {
-      self.loaded = true;
-      self.parseFile();
+      this.loaded = true;
+      this.parseFile();
     }
   });
 };
@@ -117,9 +115,8 @@ AlienVaultSource.prototype.getIp = function(ip, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.dump = function(res) {
-  var self = this;
-  var cache = self.ips;
-  self.ips.forEach(function(key, value) {
+  var cache = this.ips;
+  this.ips.forEach((key, value) => {
     var str = "{key: \"" + key + "\", ops:\n" + 
                wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
     res.write(str);

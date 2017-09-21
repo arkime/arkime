@@ -59,16 +59,15 @@ util.inherits(EmergingThreatsSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 EmergingThreatsSource.prototype.parseCategories = function(fn) 
 {
-  var self = this;
-  var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
+  var parser = csv.parse({skip_empty_lines:true}, (err, data) => {
     if (err) {
-      console.log(self.section, "- Couldn't parse", fn, "csv", err);
+      console.log(this.section, "- Couldn't parse", fn, "csv", err);
       return;
     }
 
-    self.categories = {};
+    this.categories = {};
     for (var i = 0; i < data.length; i++) {
-      self.categories[data[i][0]] = data[i][1];
+      this.categories[data[i][0]] = data[i][1];
     }
   });
   fs.createReadStream('/tmp/categories.txt').pipe(parser);
@@ -76,11 +75,9 @@ EmergingThreatsSource.prototype.parseCategories = function(fn)
 //////////////////////////////////////////////////////////////////////////////////
 EmergingThreatsSource.prototype.parse = function (fn, hash)
 {
-  var self = this;
-
-  var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
+  var parser = csv.parse({skip_empty_lines:true}, (err, data) => {
     if (err) {
-      console.log(self.section, "- Couldn't parse", fn, "csv", err);
+      console.log(this.section, "- Couldn't parse", fn, "csv", err);
       return;
     }
 
@@ -89,8 +86,8 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
         continue;
       }
     
-      var encoded = wiseSource.encode(self.categoryField, self.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
-                                      self.scoreField, "" + data[i][2]);
+      var encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
+                                      this.scoreField, "" + data[i][2]);
       var value = hash.get(data[i][0]);
       if (value) {
         value.num += 2;
@@ -99,33 +96,32 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
         hash.put(data[i][0], {num: 2, buffer: encoded});
       }
     }
-    console.log(self.section, "- Done Loading", fn);
+    console.log(this.section, "- Done Loading", fn);
   });
   fs.createReadStream(fn).pipe(parser);
 };
 //////////////////////////////////////////////////////////////////////////////////
 EmergingThreatsSource.prototype.loadFiles = function ()
 {
-  var self = this;
-  console.log(self.section, "- Downloading Files");
-  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/categories.txt', '/tmp/categories.txt', function (statusCode) {
+  console.log(this.section, "- Downloading Files");
+  wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/categories.txt', '/tmp/categories.txt', (statusCode) => {
 
-    self.parseCategories("/tmp/categories.txt");
+    this.parseCategories("/tmp/categories.txt");
   });
 
-  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', function (statusCode) {
-    if (statusCode === 200 || !self.ipsLoaded) {
-      self.ipsLoaded = true;
-      self.ips.clear();
-      self.parse("/tmp/iprepdata.csv", self.ips);
+  wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', (statusCode) => {
+    if (statusCode === 200 || !this.ipsLoaded) {
+      this.ipsLoaded = true;
+      this.ips.clear();
+      this.parse("/tmp/iprepdata.csv", this.ips);
     }
   });
 
-  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', function (statusCode) {
-    if (statusCode === 200 || !self.domainsLoaded) {
-      self.domainsLoaded = true;
-      self.domains.clear();
-      self.parse("/tmp/domainrepdata.csv", self.domains);
+  wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', (statusCode) => {
+    if (statusCode === 200 || !this.domainsLoaded) {
+      this.domainsLoaded = true;
+      this.domains.clear();
+      this.parse("/tmp/domainrepdata.csv", this.domains);
     }
   });
 };
@@ -139,11 +135,9 @@ EmergingThreatsSource.prototype.getIp = function(ip, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 EmergingThreatsSource.prototype.dump = function(res) {
-  var self = this;
-
-  ["ips", "domains"].forEach(function (ckey) {
+  ["ips", "domains"].forEach((ckey) => {
     res.write("" + ckey + ":\n");
-    self[ckey].forEach(function(key, value) {
+    this[ckey].forEach((key, value) => {
       var str = "{key: \"" + key + "\", ops:\n" + 
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);

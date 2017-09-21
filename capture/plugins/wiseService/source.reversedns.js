@@ -37,40 +37,36 @@ function ReverseDNSSource (api, section) {
   this.ips          = api.getConfig("reversedns", "ips");
   this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";"), "");
 
-  var self = this;
-
-  if (self.field === undefined) {
+  if (this.field === undefined) {
     console.log(this.section, "- No field defined");
     return;
   }
 
-  if (self.ips === undefined) {
+  if (this.ips === undefined) {
     console.log(this.section, "- No ips defined");
     return;
   }
 
-  self.theField = self.api.addField("field:" + self.field);
-  self.trie = new iptrie.IPTrie();
-  self.ips.split(";").forEach(function(item) {
+  this.theField = this.api.addField("field:" + this.field);
+  this.trie = new iptrie.IPTrie();
+  this.ips.split(";").forEach((item) => {
     if (item === "") {
       return;
     }
     var parts = item.split("/");
-    self.trie.add(parts[0], +parts[1] || 32, true);
+    this.trie.add(parts[0], +parts[1] || 32, true);
   });
 
-  self.api.addSource("reversedns", self);
+  this.api.addSource("reversedns", this);
 }
 util.inherits(ReverseDNSSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 ReverseDNSSource.prototype.getIp = function(ip, cb) {
-  var self = this;
-
-  if (!self.trie.find(ip)) {
+  if (!this.trie.find(ip)) {
     return cb(null, undefined);
   }
 
-  dns.reverse(ip, function (err, domains) {
+  dns.reverse(ip, (err, domains) => {
     //console.log("answer", ip, err, domains);
     if (err || domains.length === 0) {
       return cb(null, wiseSource.emptyResult);
@@ -78,14 +74,14 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
     var args = [];
     for (var i = 0; i < domains.length; i++) {
       var domain = domains[i];
-      if (self.stripDomains.length === 0) {
+      if (this.stripDomains.length === 0) {
         var parts = domain.split(".");
-        args.push(self.theField, parts[0].toLowerCase());
+        args.push(this.theField, parts[0].toLowerCase());
       } else {
-        for (var j = 0; j < self.stripDomains.length; j++) {
-          var stripDomain = self.stripDomains[j];
+        for (var j = 0; j < this.stripDomains.length; j++) {
+          var stripDomain = this.stripDomains[j];
           if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
-            args.push(self.theField, domain.slice(0, domain.length - stripDomain.length));
+            args.push(this.theField, domain.slice(0, domain.length - stripDomain.length));
           }
         }
       }

@@ -24,51 +24,50 @@ var csv            = require('csv')
   ;
 
 function WISESource (api, section) {
-  var self = this;
-  self.api = api;
-  self.section = section;
-  self.view = "";
-  self.shortcuts = {};
-  self.cacheTimeout = 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
-  self.cacheHitStat = 0;
-  self.cacheMissStat = 0;
-  self.cacheRefreshStat = 0;
-  self.cacheDroppedStat = 0;
-  self.average100MS = 0;
+  this.api = api;
+  this.section = section;
+  this.view = "";
+  this.shortcuts = {};
+  this.cacheTimeout = 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
+  this.cacheHitStat = 0;
+  this.cacheMissStat = 0;
+  this.cacheRefreshStat = 0;
+  this.cacheDroppedStat = 0;
+  this.average100MS = 0;
 
   // Domain and Email wildcards to exclude from source
-  ["excludeDomains", "excludeEmails", "excludeURLs"].forEach(function(type) {
+  ["excludeDomains", "excludeEmails", "excludeURLs"].forEach((type) => {
     var items = api.getConfig(section, type);
-    self[type] = [];
+    this[type] = [];
     if (!items) {return;}
-    items.split(";").forEach(function(item) {
+    items.split(";").forEach((item) => {
       if (item === "") {
         return;
       }
-      self[type].push(RegExp.fromWildExp(item, "ailop"));
+      this[type].push(RegExp.fromWildExp(item, "ailop"));
     });
   });
 
   // IP CIDRs to exclude from source
-  self.excludeIPs = new iptrie.IPTrie();
+  this.excludeIPs = new iptrie.IPTrie();
   var items = api.getConfig(section, "excludeIPs", "");
-  items.split(";").forEach(function(item) {
+  items.split(";").forEach((item) => {
     if (item === "") {
       return;
     }
     var parts = item.split("/");
-    self.excludeIPs.add(parts[0], +parts[1] || 32, true);
+    this.excludeIPs.add(parts[0], +parts[1] || 32, true);
   });
 
   items = api.getConfig(section, "onlyIPs", undefined);
   if (items) {
-    self.onlyIPs = new iptrie.IPTrie();
-    items.split(";").forEach(function(item) {
+    this.onlyIPs = new iptrie.IPTrie();
+    items.split(";").forEach((item) => {
       if (item === "") {
         return;
       }
       var parts = item.split("/");
-      self.onlyIPs.add(parts[0], +parts[1] || 32, true);
+      this.onlyIPs.add(parts[0], +parts[1] || 32, true);
     });
   }
 
@@ -77,18 +76,18 @@ function WISESource (api, section) {
   if (fields !== undefined) {
     fields = fields.split("\\n");
     for (var i = 0; i < fields.length; i++) {
-      self.parseFieldDef(fields[i]);
+      this.parseFieldDef(fields[i]);
     }
   }
 
   // views defined for source
   var view = api.getConfig(section, "view");
   if (view !== undefined) {
-    self.view = view.replace(/\\n/g, "\n");
+    this.view = view.replace(/\\n/g, "\n");
   }
 
-  if (self.view !== "") {
-    self.api.addView(self.section, self.view);
+  if (this.view !== "") {
+    this.api.addView(this.section, this.view);
   }
 }
 
@@ -111,26 +110,24 @@ function splitRemain(str, separator, limit) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
-  var self = this;
-
-  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, function(err, data) {
+  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, (err, data) => {
     if (err) {
       return endCb(err);
     }
 
     for (var i = 0; i < data.length; i++) {
       var args = [];
-      for (var k in self.shortcuts) {
+      for (var k in this.shortcuts) {
         if (data[i][k] !== undefined) {
-          args.push(self.shortcuts[k]);
+          args.push(this.shortcuts[k]);
           args.push(data[i][k]);
         }
       }
 
       if (args.length === 0) {
-        setCb(data[i][self.column], WISESource.emptyResult);
+        setCb(data[i][this.column], WISESource.emptyResult);
       } else {
-        setCb(data[i][self.column], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+        setCb(data[i][this.column], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
       }
     }
     endCb(err);
@@ -191,22 +188,21 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseJSON = function (body, setCb, endCb) {
-  var self = this;
   var json = JSON.parse(body);
 
-  if (self.keyColumn === undefined) {
+  if (this.keyColumn === undefined) {
     return endCb("No keyColumn set");
   }
 
   for(var i = 0; i < json.length; i++) {
-    var key = json[i][self.keyColumn];
+    var key = json[i][this.keyColumn];
     var args = [];
     if (key === undefined) {
       continue;
     }
-    for (var k in self.shortcuts) {
+    for (var k in this.shortcuts) {
       if (json[i][k] !== undefined && json[i][k] !== null) {
-        args.push(self.shortcuts[k]);
+        args.push(this.shortcuts[k]);
         args.push(json[i][k]);
       }
     }
@@ -301,16 +297,16 @@ WISESource.request = function (url, file, cb) {
   var statusCode;
   console.log(url);
   request({url: url, headers: headers})
-  .on('response', function(response) {
+  .on('response', (response) => {
     statusCode = response.statusCode;
     if (response.statusCode === 200) {
       this.pipe(fs.createWriteStream(file));
     }
   })
-  .on('error', function(error) {
+  .on('error', (error) => {
     console.log(error);
   })
-  .on('end', function() {
+  .on('end', () => {
     setImmediate(cb, statusCode);
   })
   ;
@@ -321,7 +317,7 @@ WISESource.prototype.tagsSetting = function () {
   var tags = this.api.getConfig(this.section, "tags");
   if (tags) {
     var args = [];
-    tags.split(",").forEach(function (part) {
+    tags.split(",").forEach((part) => {
       args.push(tagsField, part);
     });
     this.tagsResult = {num: args.length/2, buffer: WISESource.encode.apply(null, args)};

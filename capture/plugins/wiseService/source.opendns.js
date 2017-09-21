@@ -61,49 +61,46 @@ util.inherits(OpenDNSSource, wiseSource);
 
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.getCategories = function () {
-  var self = this;
   var options = {
       host: 'sgraph.api.opendns.com',
       port: '443',
       path: '/domains/categories/',
       method: 'GET',
       headers: {
-          'Authorization': 'Bearer ' + self.key,
+          'Authorization': 'Bearer ' + this.key,
       }
   };
 
   var response = "";
-  var request = https.request(options, function(res) {
-    res.on('data', function (chunk) {
+  var request = https.request(options, (res) => {
+    res.on('data', (chunk) => {
       response += chunk;
     });
-    res.on('end', function () {
-      self.categories = JSON.parse(response);
+    res.on('end', () => {
+      this.categories = JSON.parse(response);
     });
   });
-  request.on('error', function (err) {
-    console.log(self.section, err);
+  request.on('error', (err) => {
+    console.log(this.section, err);
   });
 
   request.end();
 };
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.performQuery = function () {
-  var self = this;
-
-  if (self.waiting.length === 0) {
+  if (this.waiting.length === 0) {
     return;
   }
 
-  if (self.api.debug > 0) {
-    console.log(this.section, "- Fetching %d", self.waiting.length);
+  if (this.api.debug > 0) {
+    console.log(this.section, "- Fetching %d", this.waiting.length);
   }
 
 
   // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
   // console.log("doing query:", waiting.length, "current cache", Object.keys(cache).length);
-  var postData = JSON.stringify(self.waiting);
-  self.waiting.length = 0;
+  var postData = JSON.stringify(this.waiting);
+  this.waiting.length = 0;
 
   var postOptions = {
       host: 'sgraph.api.opendns.com',
@@ -111,50 +108,50 @@ OpenDNSSource.prototype.performQuery = function () {
       path: '/domains/categorization/',
       method: 'POST',
       headers: {
-          'Authorization': 'Bearer ' + self.key,
+          'Authorization': 'Bearer ' + this.key,
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': postData.length
       }
   };
 
   var response = "";
-  var request = https.request(postOptions, function(res) {
-    res.on('data', function (chunk) {
+  var request = https.request(postOptions, (res) => {
+    res.on('data', (chunk) => {
       response += chunk;
     });
-    res.on('end', function (err) {
+    res.on('end', (err) => {
       var results;
       try {
         results = JSON.parse(response);
       } catch (e) {
-        console.log(self.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
+        console.log(this.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
         results = {};
       }
       for (var result in results) {
-        var cbs = self.processing[result];
+        var cbs = this.processing[result];
         if (!cbs) {
           return;
         }
-        delete self.processing[result];
+        delete this.processing[result];
 
-        var args = [self.statusField, self.statuses[results[result].status]];
+        var args = [this.statusField, this.statuses[results[result].status]];
 
         if (results[result].security_categories) {
-          results[result].security_categories.forEach(function(value) {
-            if (self.categories[value]) {
-              args.push(self.scField, self.categories[value]);
+          results[result].security_categories.forEach((value) => {
+            if (this.categories[value]) {
+              args.push(this.scField, this.categories[value]);
             } else {
-              console.log(self.section, "Bad OpenDNS SC", value);
+              console.log(this.section, "Bad OpenDNS SC", value);
             }
           });
         }
 
         if (results[result].content_categories) {
-          results[result].content_categories.forEach(function(value) {
-            if (self.categories[value]) {
-              args.push(self.ccField, self.categories[value]);
+          results[result].content_categories.forEach((value) => {
+            if (this.categories[value]) {
+              args.push(this.ccField, this.categories[value]);
             } else {
-              console.log(self.section, "Bad OpenDNS CC", value, results);
+              console.log(this.section, "Bad OpenDNS CC", value, results);
             }
           });
         }
@@ -168,8 +165,8 @@ OpenDNSSource.prototype.performQuery = function () {
       }
     });
   });
-  request.on('error', function (err) {
-    console.log(self.section, err);
+  request.on('error', (err) => {
+    console.log(this.section, err);
   });
 
   // post the data

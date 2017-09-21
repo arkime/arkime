@@ -58,41 +58,39 @@ util.inherits(PassiveTotalSource, wiseSource);
 
 //////////////////////////////////////////////////////////////////////////////////
 PassiveTotalSource.prototype.performQuery = function () {
-  var self = this;
-
-  if (self.waiting.length === 0) {
+  if (this.waiting.length === 0) {
     return;
   }
 
-  if (self.api.debug > 0) {
-    console.log(this.section, "- Fetching %d", self.waiting.length);
+  if (this.api.debug > 0) {
+    console.log(this.section, "- Fetching %d", this.waiting.length);
   }
 
   var options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       body: {additional: ["osint", "malware"],
-             query: self.waiting},
+             query: this.waiting},
       auth: {
-        user: self.user,
-        pass: self.key
+        user: this.user,
+        pass: this.key
       },
       method: 'GET',
       json: true
   };
 
-  var req = request(options, function(err, im, results) {
+  var req = request(options, (err, im, results) => {
     if (err) {
-      console.log(self.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
+      console.log(this.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
       results = {results:{}};
     } 
 
     for (var resultname in results.results) {
       var result = results.results[resultname];
-      var cbs = self.processing[resultname];
+      var cbs = this.processing[resultname];
       if (!cbs) {
         return;
       }
-      delete self.processing[resultname];
+      delete this.processing[resultname];
 
       var wiseResult;
       if (result.tags === undefined || result.tags.length === 0) {
@@ -101,7 +99,7 @@ PassiveTotalSource.prototype.performQuery = function () {
         var args = [];
         for (var i = 0; i < result.tags.length; i++) {
           if (typeof(result.tags[i]) === "string") {
-            args.push(self.tagsField, result.tags[i]);
+            args.push(this.tagsField, result.tags[i]);
           }
         }
         
@@ -113,11 +111,11 @@ PassiveTotalSource.prototype.performQuery = function () {
         cb(null, wiseResult);
       }
     }
-  }).on('error', function (err) {
-    console.log(self.section, err);
+  }).on('error', (err) => {
+    console.log(this.section, err);
   });
 
-  self.waiting.length = 0;
+  this.waiting.length = 0;
 };
 //////////////////////////////////////////////////////////////////////////////////
 PassiveTotalSource.prototype.fetch = function(key, cb) {

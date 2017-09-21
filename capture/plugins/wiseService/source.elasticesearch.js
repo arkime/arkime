@@ -26,7 +26,6 @@ var fs             = require('fs')
 //////////////////////////////////////////////////////////////////////////////////
 function ElasticsearchSource (api, section) {
   ElasticsearchSource.super_.call(this, api, section);
-  var self = this;
 
   this.esIndex          = api.getConfig(section, "esIndex");
   this.esTimestampField = api.getConfig(section, "esTimestampField");
@@ -38,9 +37,9 @@ function ElasticsearchSource (api, section) {
   this.typeSetting();
   this.tagsSetting();
 
-  ["esIndex", "esTimestampField", "esQueryField", "esResultField", "elasticsearch"].forEach(function(item) {
-    if (self[item] === undefined) {
-      console.log(self.section, "- ERROR not loading since no " + item + " specified in config file");
+  ["esIndex", "esTimestampField", "esQueryField", "esResultField", "elasticsearch"].forEach((item) => {
+    if (this[item] === undefined) {
+      console.log(this.section, "- ERROR not loading since no " + item + " specified in config file");
       return;
     }
   });
@@ -76,7 +75,7 @@ function ElasticsearchSource (api, section) {
   api.addSource(section, this);
 
   this.sourceFields = [this.esResultField];
-  for (var k in self.shortcuts) {
+  for (var k in this.shortcuts) {
     if (this.sourceFields.indexOf(k) === -1)
       this.sourceFields.push(k);
   }
@@ -102,38 +101,36 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
   query.query.bool.filter[2].term[this.esQueryField] = key;
   query.sort[this.esTimestampField] = {order: "desc"};
 
-  var self = this;
-
   // TODO: Should be option to do search vs get
   // TODO: Should be an option to add more then most recent
 
-  this.client.search({index: this.esIndex, body: query}, function(err, result) {
+  this.client.search({index: this.esIndex, body: query}, (err, result) => {
     if (err || result.error || !result.hits || result.hits.hits.length === 0) {
       return cb(null, undefined);
     }
     var json = result.hits.hits[0]._source;
-    var key = json[self.esResultField];
+    var key = json[this.esResultField];
     if (key === undefined) {
       return cb(null, undefined);
     }
     var args = [];
-    for (var k in self.shortcuts) {
+    for (var k in this.shortcuts) {
       if (json[k] !== undefined) {
-        args.push(self.shortcuts[k]);
+        args.push(this.shortcuts[k]);
         if (Array.isArray(json[k]))
           args.push(json[k][0]);
         else
           args.push(json[k]);
       }
     }
-    var newresult = {num: args.length/2 + self.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), self.tagsResult.buffer])};
+    var newresult = {num: args.length/2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer])};
     return cb(null, newresult);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^elasticsearch:/);});
-  sections.forEach(function(section) {
+  var sections = api.getConfigSections().filter((e) => {return e.match(/^elasticsearch:/);});
+  sections.forEach((section) => {
     var source = new ElasticsearchSource(api, section);
   });
 };
