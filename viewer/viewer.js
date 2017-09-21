@@ -716,7 +716,7 @@ function logAction(req, res, next) {
     }
   }
 
-  Db.logit(log, function(err, info) {
+  Db.historyIt(log, function(err, info) {
     if (err) { console.log('log history error', err, info); }
   });
 
@@ -2361,8 +2361,10 @@ app.get('/history/list', function(req, res) {
          } else {
            var results = { total:result.hits.total, results:[] };
            for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-             var log = result.hits.hits[i]._source;
-             log.id = result.hits.hits[i]._id;
+             var hit = result.hits.hits[i];
+             var log = hit._source;
+             log.id = hit._id;
+             log.index = hit._index;
              results.results.push(log);
            }
            cb(null, results);
@@ -2389,12 +2391,13 @@ app.delete('/history/list/:id', function(req, res) {
     return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
   }
 
-  Db.deleteLog(req.params.id, function(err, result) {
+  Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
     if (err || result.error) {
-      console.log("ERROR - deleting log", err || result.error);
-      return error(500, 'Error deleting log history');
+      console.log("ERROR - deleting history item", err || result.error);
+      res.status(500);
+      return res.send(JSON.stringify({ success: false, text: 'Error deleting history item' }));
     } else {
-      res.send(JSON.stringify({success: true, text: "Deleted log successfully"}));
+      res.send(JSON.stringify({success: true, text: "Deleted history item successfully"}));
     }
   });
 })

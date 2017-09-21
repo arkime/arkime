@@ -16,7 +16,7 @@
      * @param $filter         Formats data displayed to the user
      * @param $routeParams    Retrieve the current set of route parameters
      * @param UserService     Transacts users and user data with the server
-     * @param HistoryService  Transacts logs with the server
+     * @param HistoryService  Transacts history with the server
      *
      * @ngInject
      */
@@ -129,14 +129,23 @@
       }
     }
 
-    deleteLog(id, index) {
-      this.HistoryService.delete(id)
+    deleteLog(log, index) {
+      this.HistoryService.delete(log.id, log.index)
         .then((response) => {
+          this.msg = response.text || 'Successfully deleted history item';
+          this.msgType = 'success';
           this.history.data.splice(index, 1);
         })
         .catch((error) => {
-          this.error = error.data.text || 'Error deleting log';
+          this.msg = error.data.text || 'Error deleting history item';
+          this.msgType = 'danger';
         });
+    }
+
+    /* remove the message when user is done with it or duration ends */
+    messageDone() {
+      this.msg = null;
+      this.msgType = null;
     }
 
   }

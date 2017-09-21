@@ -44,15 +44,16 @@
     /**
      * Deletes a history item
      * @param id          The id of the history item to delete
+     * @param index       The db index
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    delete(id) {
+    delete(id, index) {
       return this.$q((resolve, reject) => {
 
         let url = `history/list/${id}`;
 
-        this.$http({ url:url, method:'DELETE' })
+        this.$http({ url:url, method:'DELETE', params:{index:index} })
            .then((response) => {
              resolve(response.data);
            }, (error) => {

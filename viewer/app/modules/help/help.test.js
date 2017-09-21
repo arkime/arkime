@@ -21,7 +21,7 @@
       $httpBackend = _$httpBackend_;
 
       $httpBackend.expectGET('fields?array=true').respond({});
-      $httpBackend.expectGET('users/current').respond({});
+      $httpBackend.expectGET('user/current').respond({});
 
       scope = $rootScope.$new();
 

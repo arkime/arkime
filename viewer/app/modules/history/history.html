@@ -8,6 +8,10 @@
       </span>&nbsp;
       History
     </span>
+    <div class="pull-right small toast-container">
+      <toast message="$ctrl.msg" type="$ctrl.msgType"
+        done="$ctrl.messageDone()"></toast>
+    </div>
   </div>
 
   <div class="row">
@@ -90,7 +94,7 @@
             </a>
             <a class="btn btn-xs btn-warning"
               has-permission="createEnabled"
-              ng-click="$ctrl.deleteLog(log.id, $index)">
+              ng-click="$ctrl.deleteLog(log, $index)">
               <span class="fa fa-trash-o"></span>
             </a>
           </td>

@@ -271,6 +271,9 @@
     });
 
     it('should reset the table state', function() {
+      $httpBackend.expectPOST(tableStateEndpoint)
+         .respond(200);
+
       expect(sessionComponent.tableState).toBeDefined();
 
       sessionComponent.tableState = {
@@ -422,8 +425,7 @@
       it('should issue query when adding a header', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
-
-        let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=50&order=fp:asc';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&flatten=1&length=50&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -442,6 +444,17 @@
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
 
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=lp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
         sessionComponent.sortBy({}, 'lp');
 
         expect(sessionComponent.tableState.order).toEqual([['lp','asc']]);
@@ -457,6 +470,17 @@
       it('should remove non-visible column from sort order', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc,lp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
 
         sessionComponent.sortBy({ shiftKey:true },'lp');
 
@@ -479,6 +503,10 @@
 
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1&flatten=1&length=50&order=a1:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
 
         sessionComponent.colConfigs = columnConfigurations;
 
