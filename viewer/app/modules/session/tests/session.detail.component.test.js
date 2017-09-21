@@ -43,7 +43,6 @@
 
     let scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
     let sessionDtlsEndpoint = 'node/session/sessionid/detail';
-    //                         node/session/sessionid/packets?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&packets=200&ts=false
     let sessionPktsEndpoint = 'node/session/sessionid/packets?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&packets=200&ts=false';
     let configEndpoint      = 'molochRightClick';
     let fieldEndpoint       = 'fields';

@@ -694,12 +694,6 @@ function logAction(req, res, next) {
     expression: req.query.expression
   }
 
-  if (req.query.fields) {
-    log.fields = req.query.fields;
-  } else if (req.query.spi) {
-    log.fields = req.query.spi;
-  }
-
   if (req.query.date && parseInt(req.query.date) === -1) {
     log.range = log.timestamp;
   } else if(req.query.startTime && req.query.stopTime) {
