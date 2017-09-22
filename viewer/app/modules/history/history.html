@@ -120,7 +120,12 @@
                 <dd>&nbsp;</dd>
                 <span ng-repeat="(key, value) in ::log.queryObj">
                   <dt>{{::key}}</dt>
-                  <dd>{{::value}}</dd>
+                  <dd>
+                    {{::value}}
+                    <span ng-if="key === 'view' && log.view && log.view.expression">
+                      ({{::log.view.expression}})
+                    </span>
+                  </dd>
                 </span>
               </dl>
               <em>
