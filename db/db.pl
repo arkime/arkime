@@ -2508,15 +2508,18 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         }
 
         esDelete("/_template/${PREFIX}template_1", 1);
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } elsif ($main::versionNumber <= 33) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } elsif ($main::versionNumber <= 36) {
         usersUpdate();
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } else {
