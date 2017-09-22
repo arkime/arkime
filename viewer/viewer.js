@@ -684,37 +684,41 @@ function checkWebEnabled(req, res, next) {
   return next();
 }
 
-function logAction(req, res, next) {
-  var log = {
-    timestamp : Math.floor(Date.now()/1000),
-    method    : req.method,
-    userId    : req.user.userId,
-    pathname  : req._parsedUrl.pathname,
-    query     : req._parsedUrl.query,
-    expression: req.query.expression
-  }
-
-  if (req.query.date && parseInt(req.query.date) === -1) {
-    log.range = log.timestamp;
-  } else if(req.query.startTime && req.query.stopTime) {
-    log.range = req.query.stopTime - req.query.startTime;
-  }
-
-  if (req.query.view && req.user.views) {
-    var view = req.user.views[req.query.view];
-    if (view) {
-      log.view = {
-        name: req.query.view,
-        expression: view.expression
-      };
+function logAction(uiPage) {
+  return function(req, res, next) {
+    var log = {
+      timestamp : Math.floor(Date.now()/1000),
+      method    : req.method,
+      userId    : req.user.userId,
+      pathname  : req._parsedUrl.pathname,
+      query     : req._parsedUrl.query,
+      expression: req.query.expression
     }
+
+    if (uiPage) { log.uiPage = uiPage; }
+
+    if (req.query.date && parseInt(req.query.date) === -1) {
+      log.range = log.timestamp;
+    } else if(req.query.startTime && req.query.stopTime) {
+      log.range = req.query.stopTime - req.query.startTime;
+    }
+
+    if (req.query.view && req.user.views) {
+      var view = req.user.views[req.query.view];
+      if (view) {
+        log.view = {
+          name: req.query.view,
+          expression: view.expression
+        };
+      }
+    }
+
+    Db.historyIt(log, function(err, info) {
+      if (err) { console.log('log history error', err, info); }
+    });
+
+    return next();
   }
-
-  Db.historyIt(log, function(err, info) {
-    if (err) { console.log('log history error', err, info); }
-  });
-
-  return next();
 }
 
 
@@ -968,7 +972,7 @@ app.get('/user/settings', function(req, res) {
 });
 
 // updates a user's settings
-app.post('/user/settings/update', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/settings/update', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1034,7 +1038,7 @@ app.get('/user/views', function(req, res) {
 });
 
 // creates a new view for a user
-app.post('/user/views/create', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/views/create', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1092,7 +1096,7 @@ app.post('/user/views/create', [checkCookieToken, logAction], function(req, res)
 });
 
 // deletes a user's specified view
-app.post('/user/views/delete', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/views/delete', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1132,7 +1136,7 @@ app.post('/user/views/delete', [checkCookieToken, logAction], function(req, res)
 });
 
 // updates a user's specified view
-app.post('/user/views/update', logAction, function(req, res) {
+app.post('/user/views/update', logAction(), function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1241,7 +1245,7 @@ app.get('/user/cron', function(req, res) {
 });
 
 // creates a new cron query for a user
-app.post('/user/cron/create', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/cron/create', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1296,7 +1300,7 @@ app.post('/user/cron/create', [checkCookieToken, logAction], function(req, res) 
 });
 
 // deletes a user's specified cron query
-app.post('/user/cron/delete', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/cron/delete', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1372,7 +1376,7 @@ app.post('/user/cron/update', checkCookieToken, function(req, res) {
 });
 
 // changes a user's password
-app.post('/user/password/change', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/password/change', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1438,7 +1442,7 @@ app.get('/user/columns', function(req, res) {
 });
 
 // creates a new custom column configuration for a user
-app.post('/user/columns/create', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/columns/create', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1502,7 +1506,7 @@ app.post('/user/columns/create', [checkCookieToken, logAction], function(req, re
 });
 
 // deletes a user's specified custom column configuration
-app.post('/user/columns/delete', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/columns/delete', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1567,7 +1571,7 @@ app.get('/user/spiview/fields', function(req, res) {
 });
 
 // creates a new custom spiview fields configuration for a user
-app.post('/user/spiview/fields/create', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/spiview/fields/create', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -1629,7 +1633,7 @@ app.post('/user/spiview/fields/create', [checkCookieToken, logAction], function(
 });
 
 // deletes a user's specified custom spiview fields configuration
-app.post('/user/spiview/fields/delete', [checkCookieToken, logAction], function(req, res) {
+app.post('/user/spiview/fields/delete', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -2410,7 +2414,7 @@ app.get('/fields', function(req, res) {
   }
 });
 
-app.get('/file/list', logAction, function(req, res) {
+app.get('/file/list', logAction('files'), function(req, res) {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -2949,7 +2953,7 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.get('/sessions.json', logAction, function(req, res) {
+app.get('/sessions.json', logAction('sessions'), function(req, res) {
   var i;
 
   var graph = {};
@@ -3054,7 +3058,7 @@ app.get('/sessions.json', logAction, function(req, res) {
   });
 });
 
-app.get('/spigraph.json', logAction, function(req, res) {
+app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
   function error(text) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: text}));
@@ -3179,7 +3183,7 @@ app.get('/spigraph.json', logAction, function(req, res) {
   });
 });
 
-app.get('/spiview.json', logAction, function(req, res) {
+app.get('/spiview.json', logAction('spiview'), function(req, res) {
   if (req.query.spi === undefined) {
     return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
   }
@@ -3351,7 +3355,7 @@ app.get('/spiview.json', logAction, function(req, res) {
   });
 });
 
-app.get('/dns.json', logAction, function(req, res) {
+app.get('/dns.json', logAction(), function(req, res) {
   console.log("dns.json", req.query);
   dns.reverse(req.query.ip, function (err, data) {
     if (err) {
@@ -3539,7 +3543,7 @@ function buildConnections(req, res, cb) {
   });
 }
 
-app.get('/connections.json', logAction, function(req, res) {
+app.get('/connections.json', logAction('connections'), function(req, res) {
   var health;
   Db.healthCache(function(err, h) {health = h;});
   buildConnections(req, res, function (err, nodes, links, total) {
@@ -3551,7 +3555,7 @@ app.get('/connections.json', logAction, function(req, res) {
   });
 });
 
-app.get('/connections.csv', logAction, function(req, res) {
+app.get('/connections.csv', logAction(), function(req, res) {
   res.setHeader("Content-Type", "application/force-download");
   var seperator = req.query.seperator || ",";
   buildConnections(req, res, function (err, nodes, links, total) {
@@ -3633,7 +3637,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   res.end();
 }
 
-app.get(/\/sessions.csv.*/, logAction, function(req, res) {
+app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   noCache(req, res, "text/csv");
   // default fields to display in csv
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
@@ -3657,7 +3661,7 @@ app.get(/\/sessions.csv.*/, logAction, function(req, res) {
   }
 });
 
-app.get('/uniqueValue.json', logAction, function(req, res) {
+app.get('/uniqueValue.json', logAction(), function(req, res) {
   if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
     res.send([]);
     return;
@@ -3692,7 +3696,7 @@ app.get('/uniqueValue.json', logAction, function(req, res) {
   });
 });
 
-app.get('/unique.txt', logAction, function(req, res) {
+app.get('/unique.txt', logAction(), function(req, res) {
   if (req.query.field === undefined && req.query.exp === undefined) {
     return res.send("Missing field or exp parameter");
   }
@@ -4316,7 +4320,7 @@ function localSessionDetail(req, res) {
 /**
  * Get SPI data for a session
  */
-app.get('/:nodeName/session/:id/detail', logAction, function(req, res) {
+app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
   Db.getWithOptions(Db.id2Index(req.params.id), 'session', req.params.id, {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
@@ -4366,7 +4370,7 @@ app.get('/:nodeName/session/:id/detail', logAction, function(req, res) {
 /**
  * Get Session Packets
  */
-app.get('/:nodeName/session/:id/packets', logAction, function(req, res) {
+app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
   isLocalView(req.params.nodeName, function () {
      noCache(req, res);
      req.packetsOnly = true;
@@ -4736,15 +4740,15 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   }
 }
 
-app.get(/\/sessions.pcapng.*/, logAction, function(req, res) {
+app.get(/\/sessions.pcapng.*/, logAction(), function(req, res) {
   return sessionsPcap(req, res, writePcapNg, "pcapng");
 });
 
-app.get(/\/sessions.pcap.*/, logAction, function(req, res) {
+app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
-app.post('/changeSettings', [checkToken, logAction] , function(req, res) {
+app.post('/changeSettings', [checkToken, logAction()] , function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
@@ -4843,7 +4847,7 @@ internals.usersMissing = {
   emailSearch: 0,
   removeEnabled: 0
 };
-app.post('/user/list', logAction, function(req, res) {
+app.post('/user/list', logAction('users'), function(req, res) {
   var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
 
   var query = {_source: columns,
@@ -4899,7 +4903,7 @@ app.post('/user/list', logAction, function(req, res) {
   });
 });
 
-app.post('/user/create', logAction, checkCookieToken, function(req, res) {
+app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
   function error(text) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: text}));
@@ -4948,7 +4952,7 @@ app.post('/user/create', logAction, checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/user/delete', logAction, checkCookieToken, function(req, res) {
+app.post('/user/delete', logAction(), checkCookieToken, function(req, res) {
   function error(text) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: text}));
@@ -4969,7 +4973,7 @@ app.post('/user/delete', logAction, checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/user/update', logAction, checkCookieToken, function(req, res) {
+app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
   function error(text) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: text}));

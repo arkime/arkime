@@ -1673,6 +1673,10 @@ sub historyUpdate
     "_source": {"enabled": true},
     "dynamic": "strict",
     "properties": {
+      "uiPage": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
       "userId": {
         "type": "string",
         "index": "not_analyzed"

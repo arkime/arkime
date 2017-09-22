@@ -42,7 +42,7 @@
       <table class="table small table-condensed table-striped margined-top-xxxlg">
         <thead>
         <tr>
-          <th width="60px;">
+          <th width="90px;">
             <a class="btn btn-xs btn-primary"
               uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
               ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
@@ -96,6 +96,13 @@
               has-permission="createEnabled"
               ng-click="$ctrl.deleteLog(log, $index)">
               <span class="fa fa-trash-o"></span>
+            </a>
+            <a class="btn btn-xs btn-info"
+              ng-if="log.uiPage"
+              tooltip-placement="right"
+              uib-tooltip="Open this query on the {{::log.uiPage}} page"
+              ng-href="{{::log.uiPage}}?{{::log.query}}">
+              <span class="fa fa-folder-open"></span>
             </a>
           </td>
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
