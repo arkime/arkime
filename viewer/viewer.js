@@ -5019,7 +5019,7 @@ app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
     user.removeEnabled = req.body.removeEnabled === true;
 
     // Can only change createEnabled if it is currently turned on
-    if (req.body.createEnabled !== undefined && req.user.createEnabled && req.body.createEnabled) {
+    if (req.body.createEnabled !== undefined && req.user.createEnabled) {
       user.createEnabled = req.body.createEnabled === true;
     }
 
