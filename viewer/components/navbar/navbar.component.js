@@ -46,8 +46,9 @@
       };
 
       if (!this.demoMode) {
-        this.menu.settings  = { title: 'Settings', link: 'settings' };
-        this.menu.users     = { title: 'Users', link: 'users', permission: 'createEnabled' };
+        this.menu.history   = { title: 'History',   link: 'history' };
+        this.menu.settings  = { title: 'Settings',  link: 'settings' };
+        this.menu.users     = { title: 'Users',     link: 'users', permission: 'createEnabled' };
       }
     }
 

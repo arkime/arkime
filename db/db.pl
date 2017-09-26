@@ -42,6 +42,7 @@
 # 33 - user columnConfigs
 # 34 - stats_v2
 # 35 - user spiviewFieldConfigs
+# 36 - user action history
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -50,7 +51,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 35;
+my $VERSION = 36;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1663,6 +1664,80 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 }
 
 ################################################################################
+sub historyUpdate
+{
+    my $mapping = '
+{
+  "history": {
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
+    "dynamic": "strict",
+    "properties": {
+      "uiPage": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "userId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "method": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "pathname": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "expression": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "view": {
+        "type": "object",
+        "dynamic": "true"
+      },
+      "timestamp": {
+        "type": "date"
+      },
+      "range": {
+        "type": "integer"
+      },
+      "query": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}';
+
+ my $template = '
+{
+  "template": "' . $PREFIX . 'history_v1-*",
+  "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "auto_expand_replicas": "0-3"
+    },
+  "mappings":' . $mapping . '
+}';
+
+print "Creating history template\n" if ($verbose > 0);
+esPut("/_template/${PREFIX}history_v1_template", $template);
+
+my $indices = esGet("/${PREFIX}history_v1-*/_aliases", 1);
+
+print "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+foreach my $i (keys %{$indices}) {
+    progress("$i ");
+    esPut("/$i/history/_mapping", $mapping, 1);
+}
+
+print "\n";
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -2360,6 +2435,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/_template/${PREFIX}sessions_template", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
+    esDelete("/${PREFIX}history_v1-*", 1);
     if ($ARGV[1] =~ "init") {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2379,6 +2455,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsCreate();
     sessionsUpdate();
     fieldsCreate();
+    historyUpdate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2435,15 +2512,18 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         }
 
         esDelete("/_template/${PREFIX}template_1", 1);
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } elsif ($main::versionNumber <= 33) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 35) {
+    } elsif ($main::versionNumber <= 36) {
         usersUpdate();
+        historyUpdate();
         sessionsUpdate();
         checkForOldIndices();
     } else {

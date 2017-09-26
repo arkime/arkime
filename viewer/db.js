@@ -348,6 +348,31 @@ exports.setUser = function(name, doc, cb) {
   return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: 1}, cb);
 };
 
+exports.historyIt = function(doc, cb) {
+  var d     = new Date(Date.now());
+  var jan   = new Date(d.getUTCFullYear(), 0, 0);
+  var iname = internals.prefix + 'history_v1-' +
+    twoDigitString(d.getUTCFullYear()%100) + 'w' +
+    twoDigitString(Math.floor((d - jan) / 604800000));
+
+  internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh:1}, cb);
+};
+exports.searchHistory = function(query, cb) {
+  internals.elasticSearchClient.search({index:internals.prefix + 'history_v1-*', body:query}, cb);
+};
+exports.numberOfLogs = function(cb) {
+  internals.elasticSearchClient.count({index:internals.prefix + 'history_v1-*', ignoreUnavailable:true}, function(err, result) {
+    if (err || result.error) {
+      return cb(null, 0);
+    }
+
+    return cb(null, result.count);
+  });
+};
+exports.deleteHistoryItem = function (id, index, cb) {
+  return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: 1}, cb);
+};
+
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, (err, stat) => {
     if (err || !stat.found) {

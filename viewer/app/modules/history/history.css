@@ -1,0 +1,31 @@
+moloch-history dl {
+  margin-bottom: 10px;
+}
+
+moloch-history dl dt h5 {
+  font-size: 16px;
+}
+
+moloch-history div.header-div {
+  display: inline-block;
+}
+moloch-history div.header-div input.checkbox {
+  margin-bottom: -2px;
+}
+
+/* table styles -------------------- */
+moloch-history table {
+  table-layout: fixed;
+}
+moloch-history table tbody tr td.no-wrap {
+  white-space   : nowrap;
+  text-overflow : ellipsis;
+  overflow      : hidden;
+}
+/* super tiny input boxes for column filters */
+moloch-history table thead tr th input.input-filter {
+  height        : 24px;
+  padding       : 2px 5px;
+  font-size     : 12px;
+  margin-bottom : 2px;
+}
