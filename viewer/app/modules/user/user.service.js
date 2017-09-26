@@ -52,15 +52,13 @@
      */
     hasPermission(priv) {
       return this.$q((resolve, reject) => {
-
         this.getCurrent()
           .then((user) => {
             let privs = priv.split(',');
-            let ok = true;
-            for (let p of privs) {
-              ok = ok && user[p];
+            for (let i = 0; i < privs.length; i++) {
+              if (!user[privs[i]]) {return resolve(false);}
             }
-            resolve(ok);
+            resolve(true);
           }, (error) => {
             reject(error);
           });
