@@ -2403,6 +2403,11 @@ app.delete('/history/list/:id', function(req, res) {
     return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
   }
 
+  if (!req.user.removeEnabled) {
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Need remove data privileges' }));
+  }
+
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
     if (err || result.error) {
       console.log("ERROR - deleting history item", err || result.error);

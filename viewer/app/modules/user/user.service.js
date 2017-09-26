@@ -55,7 +55,12 @@
 
         this.getCurrent()
           .then((user) => {
-            resolve(user[priv]);
+            let privs = priv.split(',');
+            let ok = true;
+            for (let p of privs) {
+              ok = ok && user[p];
+            }
+            resolve(ok);
           }, (error) => {
             reject(error);
           });
