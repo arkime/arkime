@@ -19,10 +19,10 @@ my $pwd = getcwd() . "/pcap";
     my $json = viewerGet("/history/list?molochRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 1, "Test1: recordsFiltered");
     my $item = $json->{data}->[0];
-    is ($item->{expression}, "(file=/Users/awick/moloch.newui/tests/pcap/socks-https-example.pcap||file=/Users/awick/moloch.newui/tests/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
+    is ($item->{expression}, "(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
     is ($item->{uiPage}, "sessions", "Test1: uiPage");
     is ($item->{pathname}, "/sessions.json", "Test1: pathname");
-    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=%28file%3D%2FUsers%2Fawick%2Fmoloch.newui%2Ftests%2Fpcap%2Fsocks-https-example.pcap%7C%7Cfile%3D%2FUsers%2Fawick%2Fmoloch.newui%2Ftests%2Fpcap%2Fdns-mx.pcap%29%26%26tags%3Ddomainwise", "Test1: query");
+    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"), "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
 
 # Make sure another user doesn't see our history
