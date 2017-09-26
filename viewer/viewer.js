@@ -238,12 +238,26 @@ if (Config.get("passwordSecret")) {
       }
     });
   });
+} else if (Config.get("regressionTests", false)) {
+  app.locals.alwaysShowESStatus = true;
+  app.locals.noPasswordSecret   = true;
+  app.use(function(req, res, next) {
+    var username = req.query["molochRegressionUser"] || "anonymous";
+    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+    Db.getUserCache(username, function(err, suser) {
+        if (!err && suser && suser.found) {
+          req.user.settings = suser._source.settings;
+          req.user.views = suser._source.views;
+        }
+      next();
+    });
+  });
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
     Db.getUserCache("anonymous", function(err, suser) {
         if (!err && suser && suser.found) {
           req.user.settings = suser._source.settings;
