@@ -57,6 +57,7 @@ my $PREFIX = "";
 my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
+my $HISTORY = 13;
 my $NOOPTIMIZE = 0;
 
 ################################################################################
@@ -104,6 +105,7 @@ sub showHelp($)
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
+    print "    --history <num>            - Number of weeks of history to keep, by default 13\n";
     print "  field disable <exp>          - disable a field from being indexed\n";
     print "  field enable <exp>           - enable a field from being indexed\n";
     exit 1;
@@ -1715,9 +1717,9 @@ sub historyUpdate
 {
   "template": "' . $PREFIX . 'history_v1-*",
   "settings": {
-      "number_of_shards": 1,
+      "number_of_shards": 2,
       "number_of_replicas": 0,
-      "auto_expand_replicas": "0-3"
+      "auto_expand_replicas": "0-1"
     },
   "mappings":' . $mapping . '
 }';
@@ -1865,23 +1867,23 @@ sub createNewAliasesFromOld
 ################################################################################
 sub time2index
 {
-my($type, $t) = @_;
+my($type, $prefix, $t) = @_;
 
     my @t = gmtime($t);
     if ($type eq "hourly") {
-        return sprintf("${PREFIX}sessions-%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
     }
 
     if ($type eq "daily") {
-        return sprintf("${PREFIX}sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
+        return sprintf("${PREFIX}${prefix}%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
     }
 
     if ($type eq "weekly") {
-        return sprintf("${PREFIX}sessions-%02dw%02d", $t[5] % 100, int($t[7]/7));
+        return sprintf("${PREFIX}${prefix}%02dw%02d", $t[5] % 100, int($t[7]/7));
     }
 
     if ($type eq "monthly") {
-        return sprintf("${PREFIX}sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
+        return sprintf("${PREFIX}${prefix}%02dm%02d", $t[5] % 100, $t[4]+1);
     }
 }
 
@@ -2060,6 +2062,9 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--history") {
+            $pos++;
+            $HISTORY = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
 	    $NOOPTIMIZE = 1;
         } else {
@@ -2118,10 +2123,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
+
+    # First handle sessions expire
     my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     my $endTime = time();
-    my $endTimeIndex = time2index($ARGV[2], $endTime);
+    my $endTimeIndex = time2index($ARGV[2], "sessions-", $endTime);
     delete $indices->{$endTimeIndex};
 
     my @startTime = gmtime;
@@ -2140,8 +2147,8 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $optimizecnt = 0;
     my $startTime = mktime(@startTime);
     while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], $startTime);
-        if (exists $indices->{$iname}) {
+        my $iname = time2index($ARGV[2], "sessions-", $startTime);
+        if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
             $indices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         }
@@ -2155,7 +2162,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     dbESVersion();
     $main::userAgent->timeout(3600);
     optimizeOther() unless $NOOPTIMIZE ;
-    printf ("Expiring %s indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
@@ -2164,6 +2171,36 @@ if ($ARGV[1] =~ /^users-?import$/) {
                 esGet("/$i/_flush", 1);
                 esPut("/$i/_settings", '{index: {"number_of_replicas":' . $REPLICAS . '}}', 1);
             }
+        } else {
+            esDelete("/$i", 1);
+        }
+    }
+
+    # Now figure out history expire
+    my $hindices = esGet("/${PREFIX}history_v1-*/_aliases", 1);
+
+    $endTimeIndex = time2index("weekly", "history_v1-", $endTime);
+    delete $hindices->{$endTimeIndex};
+
+    @startTime = gmtime;
+    $startTime[3] -= 7 * $HISTORY;
+
+    $optimizecnt = 0;
+    $startTime = mktime(@startTime);
+    while ($startTime <= $endTime) {
+        my $iname = time2index("weekly", "history_v1-", $startTime);
+        if (exists $hindices->{$iname} && $hindices->{$iname}->{OPTIMIZEIT} != 1) {
+            $hindices->{$iname}->{OPTIMIZEIT} = 1;
+            $optimizecnt++;
+        }
+        $startTime += 24*60*60;
+    }
+
+    printf ("Expiring %s history indices, %s optimizing %s\n", commify(scalar(keys %{$hindices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    foreach my $i (sort (keys %{$hindices})) {
+        progress("$i ");
+        if (exists $hindices->{$i}->{OPTIMIZEIT}) {
+            esGet("/$i/$main::OPTIMIZE?max_num_segments=1", 1) unless $NOOPTIMIZE ;
         } else {
             esDelete("/$i", 1);
         }
