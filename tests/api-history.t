@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -28,6 +28,10 @@ my $pwd = getcwd() . "/pcap";
 # Make sure another user doesn't see our history
     $json = viewerGet("/history/list?molochRegressionUser=historytest2");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
+
+# Make sure can't request someone elses
+    $json = viewerGet("/history/list?molochRegressionUser=historytest2&userId=historytest1");
+    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}', {relaxed => 1}), "historytest2 requesting historytest1", { context => 3 });
 
 # An admin user should see everything, find it
     $json = viewerGet("/history/list");

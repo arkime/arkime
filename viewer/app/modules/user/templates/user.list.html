@@ -82,6 +82,11 @@
             uib-tooltip="Settings for {{user.userId}}">
             <span class="fa fa-gear"></span>
           </a>
+          <a class="btn btn-sm btn-theme-tertiary"
+            ng-href="history?userId={{user.userId}}"
+            uib-tooltip="History for {{user.userId}}">
+            <span class="fa fa-history"></span>
+          </a>
           <a class="btn btn-sm btn-danger"
             ng-click="$ctrl.deleteUser(user)"
             uib-tooltip="Delete {{user.userId}}">

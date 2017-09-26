@@ -2316,7 +2316,7 @@ app.get('/history/list', function(req, res) {
     // if the admin has requested a specific user
     if (req.query.userId) { userId = req.query.userId; }
   } else { // user isn't an admin, so they can only view their own logs
-    if (req.query.userId) { return error(403, 'Need admin privileges'); }
+    if (req.query.userId && req.query.userId !== req.user.userId) { return error(403, 'Need admin privileges'); }
     userId = req.user.userId;
   }
 
