@@ -2225,6 +2225,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $esversion = dbESVersion();
     my $nodes = esGet("/_nodes");
     my $status = esGet("/_stats", 1);
+
     my $sessions = 0;
     my $sessionsBytes = 0;
     my @sessions = grep /^${PREFIX}sessions-/, keys %{$status->{indices}};
@@ -2232,6 +2233,15 @@ if ($ARGV[1] =~ /^users-?import$/) {
         next if ($index !~ /^${PREFIX}sessions-/);
         $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
         $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
+    }
+
+    my $historys = 0;
+    my $historysBytes = 0;
+    my @historys = grep /^${PREFIX}history_v1-/, keys %{$status->{indices}};
+    foreach my $index (@historys) {
+        next if ($index !~ /^${PREFIX}history_v1-/);
+        $historys += $status->{indices}->{$index}->{primaries}->{docs}->{count};
+        $historysBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
 
     sub printIndex {
@@ -2249,6 +2259,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
     if (scalar(@sessions) > 0) {
         printf "Session Density:     %10s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
                                                        commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
+    }
+    printf "History Indices:     %10s\n", commify(scalar(@historys));
+    printf "Histories:           %10s (%s bytes)\n", commify($historys), commify($historysBytes);
+    if (scalar(@historys) > 0) {
+        printf "History Density:     %10s (%s bytes)\n", commify(int($historys/(scalar(keys %{$nodes->{nodes}})*scalar(@historys)))),
+                                                       commify(int($historysBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@historys))));
     }
     printIndex($status, "files_v4");
     printIndex($status, "files_v3");
