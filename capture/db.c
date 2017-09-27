@@ -1245,6 +1245,13 @@ void moloch_db_update_stats(int n)
     double   memMax = moloch_db_memory_max();
     float    memUse = mem/memMax*100.0;
 
+    if (memUse > config.maxMemPercentage) {
+        LOG("Aborting, max memory percentage reached: %.2f > %d", memUse, config.maxMemPercentage);
+        fflush(stdout);
+        fflush(stderr);
+        kill(getpid(), SIGSEGV);
+    }
+
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
         "\"ver\": \"%s\", "

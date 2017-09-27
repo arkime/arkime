@@ -344,6 +344,7 @@ typedef struct moloch_config {
     uint32_t  fragsTimeout;
     uint32_t  maxFrags;
     uint32_t  snapLen;
+    uint32_t  maxMemPercentage;
 
     int       packetThreads;
 
