@@ -43,7 +43,7 @@
         <thead>
         <tr>
           <th width="90px;">
-            <a class="btn btn-xs btn-primary"
+            <a class="btn btn-xs btn-primary margined-bottom-sm"
               uib-tooltip="Toggle column filters" tooltip-placement="bottom-left"
               ng-click="$ctrl.showColFilters = !$ctrl.showColFilters">
               <span class="fa fa-filter"></span>
@@ -75,6 +75,13 @@
               <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
               {{::column.name}}
             </div>
+            <a ng-if="$ctrl.filters[column.sort]"
+              tooltip-placement="top-left"
+              uib-tooltip="The history is being filtered by {{::column.name}}. Click to display the filter."
+              ng-click="$ctrl.showColFilters = true"
+              class="margined-left">
+              <span class="fa fa-filter"></span>
+            </a>
           </th>
         </tr>
         </thead>
