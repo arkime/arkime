@@ -88,6 +88,12 @@
           </a>
         </li>
         <li role="presentation">
+          <a href="#history">
+            <span class="fa fa-fw fa-history"></span>&nbsp;
+            History
+          </a>
+        </li>
+        <li role="presentation">
           <a href="#settings">
             <span class="fa fa-fw fa-cog"></span>&nbsp;
             Settings
@@ -440,6 +446,53 @@
       </p>
       <p>
         Packets/Sec, Bytes/Sec, Bits/Sec, Sessions/Sec, Input Dropped/Sec, Active Sessions, Active TCP Sessions, Active UDP Sessions, Active ICMP Sessions, Free Space (MB), Free Space (%), Memory, Memory (%), CPU, Disk Queue, ES Queue, ES Dropped/Sec, Packet Queue, Closing Queue, Waiting Queue, Fragments Queue, Active Fragments, Framents Dropped/Sec, Overload Dropped/Sec, Total Dropped/Sec.
+      </p>
+
+      <hr>
+
+      <h3 id="history">
+        <span class="fa fa-fw fa-history"></span>&nbsp;
+        History
+      </h3>
+      <p>
+        The History tab provides the ability to view Moloch actions/queries to
+        ES. It is usable both as a history for a user and for auditing abilities
+        for an admin. A non-admin user can only view their own actions. An admin
+        user can view all users' actions.
+      </p>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa-search"></span>&nbsp;
+        Use the search input to search for specific history items.
+      </div>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa fa-sort"></span>&nbsp;
+        Sort the history by clicking any column header.
+      </div>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa-filter"></span>&nbsp;
+        Use the filter button to filter the history table by specific field
+        values.
+      </div>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa-check-square"></span>&nbsp;
+        Use the checkboxes within column headers to display history items that
+        always have a value for that field.
+      </div>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa-plus"></span>&nbsp;
+        Use the expand button to display more information about a history item.
+      </div>
+      <div class="margined-left-xxxxlg">
+        <span class="fa fa-folder-open"></span>&nbsp;
+        Use the open button to "go to" the history item. This will open the page
+        that the action/query was issued from.
+        <br>
+        <em class="margined-left-xxxlg">
+          &nbsp;This is only available for the main GET requests from a page
+          within the application.
+        </em>
+      </div>
+
       <hr>
 
       <h3 id="settings">
