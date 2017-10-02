@@ -21,7 +21,7 @@ my $pwd = getcwd() . "/pcap";
     my $item = $json->{data}->[0];
     is ($item->{expression}, "(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
     is ($item->{uiPage}, "sessions", "Test1: uiPage");
-    is ($item->{pathname}, "/sessions.json", "Test1: pathname");
+    is ($item->{api}, "/sessions.json", "Test1: api");
     is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"), "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
 

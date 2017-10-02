@@ -1687,7 +1687,7 @@ sub historyUpdate
         "type": "string",
         "index": "not_analyzed"
       },
-      "pathname": {
+      "api": {
         "type": "string",
         "index": "not_analyzed"
       },

@@ -109,7 +109,7 @@
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
           <td><span ng-if="::log.range">{{::log.range*1000 | readableTime}}</span></td>
           <td has-permission="createEnabled">{{::log.userId}}</td>
-          <td title="{{::log.pathname}}" class="no-wrap">{{::log.pathname}}</td>
+          <td title="{{::log.api}}" class="no-wrap">{{::log.api}}</td>
           <td title="{{::log.expression}}" class="no-wrap">{{::log.expression}}</td>
           <td title="{{::log.view.expression}}" class="no-wrap">
             <span ng-if="::log.view">

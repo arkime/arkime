@@ -704,7 +704,7 @@ function logAction(uiPage) {
       timestamp : Math.floor(Date.now()/1000),
       method    : req.method,
       userId    : req.user.userId,
-      pathname  : req._parsedUrl.pathname,
+      api       : req._parsedUrl.pathname,
       query     : req._parsedUrl.query,
       expression: req.query.expression
     }
@@ -2334,7 +2334,7 @@ app.get('/history/list', function(req, res) {
     if (req.query.searchTerm) { // apply search term
       query.query.bool.must = [{
         simple_query_string: {
-          fields: ['expression','userId','pathname','view.name','view.expression'],
+          fields: ['expression','userId','api','view.name','view.expression'],
           query : req.query.searchTerm
         }
       }]
@@ -2347,10 +2347,10 @@ app.get('/history/list', function(req, res) {
     }
   }
 
-  if (req.query.pathname) { // filter on pathname (api endpoint)
+  if (req.query.api) { // filter on api endpoint
     if (!query.query) { query.query = { bool:{} }; }
     if (!query.query.bool.filter) { query.query.bool.filter = { term:{} }; }
-    query.query.bool.filter.term.pathname = req.query.pathname;
+    query.query.bool.filter.term.api = req.query.api;
   }
 
   if (req.query.exists) {
