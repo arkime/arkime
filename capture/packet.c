@@ -705,7 +705,7 @@ int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packe
 {
     BSB bsb;
 
-    if (len < 4)
+    if (unlikely(len) < 4 || unlikely(!data))
         return 1;
 
     BSB_INIT(bsb, data, len);

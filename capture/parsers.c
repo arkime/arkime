@@ -486,6 +486,7 @@ moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *al
     BSB_IMPORT_u08(*bsb, ch);
 
     *apc = (ch >> 5) & 0x1;
+    *atag = 0;
 
     if ((ch & 0x1f) ==  0x1f) {
         while (BSB_REMAINING(*bsb)) {
