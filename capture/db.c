@@ -1184,7 +1184,7 @@ uint64_t moloch_db_memory_max()
 }
 
 /******************************************************************************/
-void moloch_db_update_stats(int n)
+void moloch_db_update_stats(int n, gboolean sync)
 {
     static uint64_t       lastPackets[NUMBER_OF_STATS];
     static uint64_t       lastBytes[NUMBER_OF_STATS];
@@ -1333,7 +1333,10 @@ void moloch_db_update_stats(int n)
     lastUsage[n]           = usage;
 
     if (n == 0) {
-        moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
+        if (sync)
+            moloch_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
+        else
+            moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
     } else {
         key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
         moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
@@ -1342,7 +1345,7 @@ void moloch_db_update_stats(int n)
 /******************************************************************************/
 gboolean moloch_db_update_stats_gfunc (gpointer user_data)
 {
-    moloch_db_update_stats((long)user_data);
+    moloch_db_update_stats((long)user_data, 0);
 
     return TRUE;
 }
@@ -2357,7 +2360,7 @@ void moloch_db_exit()
         }
 
         moloch_db_flush_gfunc((gpointer)1);
-        moloch_db_update_stats(TRUE);
+        moloch_db_update_stats(0, 1);
         moloch_http_free_server(esServer);
     }
 
