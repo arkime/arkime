@@ -8,7 +8,7 @@
       </span>&nbsp;
       Users
     </span>
-    <button class="pull-right btn btn-sm btn-theme-secondary btn-header"
+    <button class="pull-right btn btn-sm btn-theme-tertiary btn-header"
       ng-click="$ctrl.goToNewUserForm()">
       <span class="fa fa-plus-circle"></span>&nbsp;
       New User
@@ -77,12 +77,12 @@
         <td class="no-wrap"><input type="checkbox" ng-model="user.emailSearch" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.removeEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap">
-          <a class="btn btn-sm btn-theme-tertiary"
+          <a class="btn btn-sm btn-theme-primary"
             ng-href="settings?userId={{user.userId}}"
             uib-tooltip="Settings for {{user.userId}}">
             <span class="fa fa-gear"></span>
           </a>
-          <a class="btn btn-sm btn-theme-tertiary"
+          <a class="btn btn-sm btn-theme-secondary"
             ng-href="history?userId={{user.userId}}"
             uib-tooltip="History for {{user.userId}}">
             <span class="fa fa-history"></span>
