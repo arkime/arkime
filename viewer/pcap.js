@@ -145,7 +145,7 @@ Pcap.prototype.readHeader = function(cb) {
     return this.headBuffer;
   }
 
-  this.headBuffer = new Buffer(24);
+  this.headBuffer = Buffer.alloc(24);
   fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
 
   if (this.encoding === "aes-256-ctr") {
@@ -179,7 +179,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
     return;
   }
 
-  var buffer = new Buffer(1792); // Divisible by 256 and 16 and > 1550
+  var buffer = Buffer.alloc(1792); // Divisible by 256 and 16 and > 1550
   var posoffset = 0;
 
   if (this.encoding === "aes-256-ctr") {
@@ -221,7 +221,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
       }
       // Full packet didn't fit, get what was missed
       try {
-        var buffer2 = new Buffer((16 + len) - bytesRead - posoffset);
+        var buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
         fs.read(this.fd, buffer2, 0, buffer2.length, pos+bytesRead, (err, bytesRead, ignore) => {
           if (this.encoding === "aes-256-ctr") {
             var decipher = this.createDecipher((pos+bytesRead)/16);
@@ -330,7 +330,7 @@ Pcap.prototype.tcp = function (buffer, obj, pos) {
   };
 
   if (4*obj.tcp.off > buffer.length) {
-    obj.tcp.data = new Buffer(0);
+    obj.tcp.data = Buffer.alloc(0);
   } else {
     obj.tcp.data = buffer.slice(4*obj.tcp.off);
   }
@@ -554,7 +554,7 @@ Pcap.prototype.decode = function (buffer, obj) {
 Pcap.prototype.getHeaderNg = function () {
 
   var buffer = this.readHeader();
-  var b = new Buffer(32 + 24);
+  var b = Buffer.alloc(32 + 24);
 
   b.writeUInt32LE(0x0A0D0D0A, 0);  // Block Type
   b.writeUInt32LE(32, 4);          // Block Len 1
@@ -595,7 +595,7 @@ exports.reassemble_icmp = function (packets, numPackets, cb) {
       };
       results.push(result);
     } else {
-      var newBuf = new Buffer(results[results.length-1].data.length + item.icmp.data.length);
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.icmp.data.length);
       results[results.length-1].data.copy(newBuf);
       item.icmp.data.copy(newBuf, results[results.length-1].data.length);
       results[results.length-1].data = newBuf;
@@ -618,7 +618,7 @@ exports.reassemble_udp = function (packets, numPackets, cb) {
       };
       results.push(result);
     } else {
-      var newBuf = new Buffer(results[results.length-1].data.length + item.udp.data.length);
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.udp.data.length);
       results[results.length-1].data.copy(newBuf);
       item.udp.data.copy(newBuf, results[results.length-1].data.length);
       results[results.length-1].data = newBuf;
@@ -741,7 +741,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         };
         results.push(result);
       } else if (item.tcp.seq - previous > 0xffff) {
-        results.push({key: "", data: new Buffer(0), ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)});
+        results.push({key: "", data: Buffer.alloc(0), ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)});
         // Larger then max window size packets missing
         previous = start = item.tcp.seq;
         result = {
@@ -752,7 +752,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         results.push(result);
       } else {
         previous = item.tcp.seq;
-        var newBuf = new Buffer(item.tcp.data.length + item.tcp.seq - start);
+        var newBuf = Buffer.alloc(item.tcp.data.length + item.tcp.seq - start);
         results[results.length-1].data.copy(newBuf);
         item.tcp.data.copy(newBuf, item.tcp.seq - start);
         results[results.length-1].data = newBuf;
@@ -760,7 +760,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     });
 
     if (skey !== results[0].key) {
-      results.unshift({data: new Buffer(0), key: skey});
+      results.unshift({data: Buffer.alloc(0), key: skey});
     }
     cb(null, results);
   } catch (e) {

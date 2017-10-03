@@ -4490,7 +4490,7 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
 });
 
 function writePcap(res, id, options, doneCb) {
-  var b = new Buffer(0xfffe);
+  var b = Buffer.alloc(0xfffe);
   var nextPacket = 0;
   var boffset = 0;
   var packets = {};
@@ -4514,7 +4514,7 @@ function writePcap(res, id, options, doneCb) {
       if (boffset + buffer.length > b.length) {
         res.write(b.slice(0, boffset));
         boffset = 0;
-        b = new Buffer(0xfffe);
+        b = Buffer.alloc(0xfffe);
       }
       buffer.copy(b, boffset, 0, buffer.length);
       boffset += buffer.length;
@@ -4531,7 +4531,7 @@ function writePcap(res, id, options, doneCb) {
 }
 
 function writePcapNg(res, id, options, doneCb) {
-  var b = new Buffer(0xfffe);
+  var b = Buffer.alloc(0xfffe);
   var boffset = 0;
 
   processSessionId(id, true, function (pcap, buffer) {
@@ -4544,7 +4544,7 @@ function writePcapNg(res, id, options, doneCb) {
     if (boffset + buffer.length + 20 > b.length) {
       res.write(b.slice(0, boffset));
       boffset = 0;
-      b = new Buffer(0xfffe);
+      b = Buffer.alloc(0xfffe);
     }
 
     /* Need to write the ng block, and conver the old timestamp */
@@ -4581,7 +4581,7 @@ function writePcapNg(res, id, options, doneCb) {
     var json = JSON.stringify(session);
 
     var len = ((json.length + 20 + 3) >> 2) << 2;
-    b = new Buffer(len);
+    b = Buffer.alloc(len);
 
     b.writeUInt32LE(0x80808080, 0);               // Block Type
     b.writeUInt32LE(len, 4);                      // Block Len 1
@@ -4627,7 +4627,7 @@ app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
     for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
       size += results[i].data.length + 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
     }
-    var buffer = new Buffer(size);
+    var buffer = Buffer.alloc(size);
     var pos = 0;
     if (size === 0) {
       return res.send (internals.emptyPNG);
@@ -4702,7 +4702,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
     function () {
       // Get from remote DISK
       getViewUrl(fields.no, function(err, viewUrl, client) {
-        var buffer = new Buffer(fields.pa*20 + fields.by);
+        var buffer = Buffer.alloc(fields.pa*20 + fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
         info.path = Config.basePath(fields.no) + fields.no + "/" + extension + "/" + item._id + "." + extension;
@@ -4713,7 +4713,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
-              var tmp = new Buffer(buffer.length + chunk.length*10);
+              var tmp = Buffer.alloc(buffer.length + chunk.length*10);
               buffer.copy(tmp, 0, 0, bufpos);
               buffer = tmp;
             }
@@ -5331,7 +5331,7 @@ app.post('/searchAndTag', function(req, res) {
 
 function pcapScrub(req, res, id, entire, endCb) {
   if (pcapScrub.scrubbingBuffers === undefined) {
-    pcapScrub.scrubbingBuffers = [new Buffer(5000), new Buffer(5000), new Buffer(5000)];
+    pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
     pcapScrub.scrubbingBuffers[0].fill(0);
     pcapScrub.scrubbingBuffers[1].fill(1);
     var str = "Scrubbed! Hoot! ";
@@ -5556,10 +5556,10 @@ function sendSessionWorker(options, cb) {
     var buffer;
     if (err || !packetshdr) {
       console.log("WARNING - No PCAP only sending SPI data err:", err);
-      buffer = new Buffer(0);
+      buffer = Buffer.alloc(0);
       ps = [];
     } else {
-      buffer = new Buffer(packetshdr.length + packetslen);
+      buffer = Buffer.alloc(packetshdr.length + packetslen);
       var pos = 0;
       packetshdr.copy(buffer);
       pos += packetshdr.length;
@@ -5624,7 +5624,7 @@ function sendSessionWorker(options, cb) {
     });
 
     var sessionStr = JSON.stringify(session);
-    var b = new Buffer(12);
+    var b = Buffer.alloc(12);
     b.writeUInt32BE(Buffer.byteLength(sessionStr), 0);
     b.writeUInt32BE(buffer.length, 8);
     preq.write(b);

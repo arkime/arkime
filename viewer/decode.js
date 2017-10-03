@@ -199,12 +199,12 @@ function createUnxorBruteGzip (options, context) {
       }
 
       var gzip = new Buffer("1f8b08000000000002", "hex");
-      var tmp = new Buffer(gzip.length*2);
+      var tmp = Buffer.alloc(gzip.length*2);
       this.state = 2;
 
       done:
       for (var klen = 1; klen <= 4; klen++) {
-        var key = new Buffer(klen);
+        var key = Buffer.alloc(klen);
         for (var d = 0; d < data.length - gzip.length; d++) {
           for (var k = 0; k < klen; k++) {
             key[k] = data[d+k] ^ gzip[k];
