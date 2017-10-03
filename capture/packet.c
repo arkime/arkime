@@ -1165,7 +1165,8 @@ int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet
             done = 1;
             break;
         default:
-            LOG("Unknown protocol %d", ip6->ip6_nxt);
+            if (config.logUnknownProtocols)
+                LOG("Unknown protocol %d", ip6->ip6_nxt);
             return 1;
         }
         if (ip_hdr_len > len) {
