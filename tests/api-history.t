@@ -11,6 +11,10 @@ my $pwd = getcwd() . "/pcap";
 
     my $token = getTokenCookie();
 
+# Clear all history
+    esDelete("/tests*_history_v1*");
+    esGet("/_refresh");
+
 # Make a request
     countTest(4, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     esGet("/_refresh");
