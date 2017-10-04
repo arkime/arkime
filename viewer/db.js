@@ -358,10 +358,10 @@ exports.historyIt = function(doc, cb) {
   internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh:1}, cb);
 };
 exports.searchHistory = function(query, cb) {
-  internals.elasticSearchClient.search({index:internals.prefix + 'history_v1-*', body:query}, cb);
+  internals.elasticSearchClient.search({index:internals.prefix + 'history_v1-*', type:"history", body:query}, cb);
 };
 exports.numberOfLogs = function(cb) {
-  internals.elasticSearchClient.count({index:internals.prefix + 'history_v1-*', ignoreUnavailable:true}, function(err, result) {
+  internals.elasticSearchClient.count({index:internals.prefix + 'history_v1-*', type:"history", ignoreUnavailable:true}, function(err, result) {
     if (err || result.error) {
       return cb(null, 0);
     }

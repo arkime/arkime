@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 20;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -25,13 +25,29 @@ my $pwd = getcwd() . "/pcap";
     is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"), "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
 
+# Check Multi
+    my $mjson = multiGet("/history/list?molochRegressionUser=historytest1");
+    my $index = $json->{data}->[0]->{index};
+    delete $json->{data}->[0]->{index};
+    delete $mjson->{data}->[0]->{index};
+    eq_or_diff($mjson, $json, "multi Test1", { context => 3 });
+    $json->{data}->[0]->{index} = $index;
+
 # Make sure another user doesn't see our history
     $json = viewerGet("/history/list?molochRegressionUser=historytest2");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
+# Check Multi
+    $mjson = multiGet("/history/list?molochRegressionUser=historytest2");
+    eq_or_diff($mjson, $json, "multi Test2", { context => 3 });
+
 # Make sure can't request someone elses
     $json = viewerGet("/history/list?molochRegressionUser=historytest2&userId=historytest1");
     eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}', {relaxed => 1}), "historytest2 requesting historytest1", { context => 3 });
+
+# Check Multi
+    $mjson = viewerGet("/history/list?molochRegressionUser=historytest2&userId=historytest1");
+    eq_or_diff($mjson, $json, "multi historytest2 requesting historytest1", { context => 3 });
 
 # An admin user should see everything, find it
     $json = viewerGet("/history/list");
@@ -60,8 +76,12 @@ my $pwd = getcwd() . "/pcap";
     esGet("/_refresh");
 
 # Make sure gone
-    my $json = viewerGet("/history/list?molochRegressionUser=historytest1");
+    $json = viewerGet("/history/list?molochRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 0, "Should be no items");
+
+# Check Multi
+    $mjson = viewerGet("/history/list?molochRegressionUser=historytest1");
+    is ($mjson->{recordsFiltered}, 0, "multi Should be no items");
 
 
 # Delete Users
