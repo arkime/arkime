@@ -106,14 +106,24 @@ void ntp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     moloch_session_add_protocol(session, "ntp");
 }
 /******************************************************************************/
-void snmp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+void snmp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    uint32_t apc, atag, alen;
+    BSB bsb;
 
-    if (session->port2 != 161 ||  // snmp port
-            len < 16              // min length
-       ) {
+    BSB_INIT(bsb, data, len);
+    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    if (!value || atag != 16 || alen < 16)
         return;
-    }
+
+    BSB_INIT(bsb, value, alen);
+
+    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    if (!value || atag != 2 || alen != 1 || value[0] > 3)
+        return;
+
     moloch_session_add_protocol(session, "snmp");
 }
 /******************************************************************************/
