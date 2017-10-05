@@ -284,10 +284,15 @@
         isostop  = new Date(parseInt(urlParams.stopTime) * 1000);
       }
       else {
-        dateparams = `date=${urlParams.date}`;
         isostart = new Date();
         isostop  = new Date();
-        isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
+        if (urlParams.date) {
+            isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
+        }
+        else {
+            isostart.setHours(isostart.getHours() - 1);
+        }
+        dateparams = `date=${urlParams.date}`;
       }
 
       for (let key in this.molochClickables) {
