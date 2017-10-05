@@ -323,6 +323,13 @@
              .replace('%URL%', encodeURIComponent('http:' + url));
 
           let name = this.molochClickables[key].name || key;
+
+          name = (name)
+             .replace("%FIELD%", info.field)
+             .replace("%TEXT%", text)
+             .replace("%HOST%", host)
+             .replace("%URL%", url);
+
           let value = '%URL%';
           if (rc.category === 'host') { value = '%HOST%'; }
 
