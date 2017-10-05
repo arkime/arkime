@@ -211,6 +211,13 @@ void thrift_classify(MolochSession_t *session, const unsigned char *data, int le
     moloch_session_add_protocol(session, "thrift");
 }
 /******************************************************************************/
+void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (session->port2 != 520 &&  session->port1 != 520)
+        return;
+    moloch_session_add_protocol(session, "rip");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -322,6 +329,11 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("pjl", "pjl", 0, (unsigned char*)"\x40\x50\x4a\x4c\x20", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("dcerpc", "dcerpc", 0, (unsigned char*)"\x05\x00\x0b", 3, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x01\x01\x00\x00", 4, rip_classify);
+    moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x01\x02\x00\x00", 4, rip_classify);
+    moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x02\x01\x00\x00", 4, rip_classify);
+    moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x02\x02\x00\x00", 4, rip_classify);
 
     userField = moloch_field_by_db("user");
 }
