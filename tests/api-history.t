@@ -13,11 +13,15 @@ my $pwd = getcwd() . "/pcap";
 
 # Clear all history
     esDelete("/tests*_history_v1*");
+    sleep(1);
     esGet("/_refresh");
+    esGet("/_flush");
 
 # Make a request
     countTest(4, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    sleep(1);
     esGet("/_refresh");
+    esGet("/_flush");
 
 # See if recorded, should be the only item that is ours
     my $json = viewerGet("/history/list?molochRegressionUser=historytest1");
