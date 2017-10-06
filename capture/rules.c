@@ -681,7 +681,7 @@ void moloch_rules_init()
         for (i = 0; bpfs[i]; i++) {
             int n = rulesLen[type]++;
             MolochRule_t *rule = rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
-            rule->filename = "dontSaveBPFs";
+            rule->filename = "minPacketsSaveBPFs";
             moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
             GMatchInfo *match_info = 0;
