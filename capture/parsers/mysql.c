@@ -39,7 +39,7 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
         return 0;
     }
 
-    if (len < 36 || data[1] != 0 || data[2] != 0 || data[3] != 1) {
+    if (len < 35 || data[1] != 0 || data[2] != 0 || data[3] > 2) {
         moloch_parsers_unregister(session, info);
         return 0;
     }

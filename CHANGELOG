@@ -22,7 +22,7 @@ NOTICE: 0.20 and above require nodejs 6.x
   - viewer - initial history support
   - capture - new advanced setting maxMemPercentage that will abort capture if reached
   - capture - basic rip, nzsql detection
-  - capture - improved quic detection
+  - capture - improved quic, mysql detection
 
 0.19.2 2017/08/25
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
