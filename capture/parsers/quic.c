@@ -39,9 +39,9 @@ int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
     BSB_LIMPORT_u16(dbsb, tagLen);
     BSB_LIMPORT_skip(dbsb, 2);
 
-    if (tag && memcmp(tag, "CHLO", 4) == 0) {
-        moloch_session_add_protocol(session, "quic");
-    } else {
+    moloch_session_add_protocol(session, "quic");
+
+    if (!tag || memcmp(tag, "CHLO", 4) != 0) {
         return 0;
     }
 
@@ -159,6 +159,7 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         BSB_IMPORT_skip(bsb, dataLen);
 
         quic_chlo_parser(session,dbsb);
+        moloch_parsers_unregister(session, uw);
         return 0;
     }
 
