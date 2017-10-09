@@ -101,6 +101,7 @@
 
       this.HistoryService.get(params)
          .then((response) => {
+           this.error   = false;
            this.loading = false;
            this.history = response;
          })
