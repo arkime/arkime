@@ -2333,11 +2333,11 @@ app.get('/history/list', function(req, res) {
 
     if (req.query.searchTerm) { // apply search term
       query.query.bool.must = [{
-        simple_query_string: {
-          fields: ['expression','userId','api','view.name','view.expression'],
-          query : req.query.searchTerm
+        query_string: {
+          query : req.query.searchTerm,
+          fields: ['expression','userId','api','view.name','view.expression']
         }
-      }]
+      }];
     }
 
     if (userId) { // filter on userId
