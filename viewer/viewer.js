@@ -2329,33 +2329,33 @@ app.get('/history/list', function(req, res) {
   query.sort[req.query.sortField || 'timestamp'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
 
   if (req.query.searchTerm || userId) {
-    query.query = { bool:{} };
+    query.query = { bool: { must: [] } };
 
     if (req.query.searchTerm) { // apply search term
-      query.query.bool.must = [{
+      query.query.bool.must.push({
         query_string: {
           query : req.query.searchTerm,
           fields: ['expression','userId','api','view.name','view.expression']
         }
-      }];
+      });
     }
 
     if (userId) { // filter on userId
-      query.query.bool.filter = {
-        term: { userId:userId }
-      };
+      query.query.bool.must.push({
+        wildcard: { userId: '*' + userId + '*' }
+      });
     }
   }
 
   if (req.query.api) { // filter on api endpoint
-    if (!query.query) { query.query = { bool:{} }; }
-    if (!query.query.bool.filter) { query.query.bool.filter = { term:{} }; }
-    query.query.bool.filter.term.api = req.query.api;
+    if (!query.query) { query.query = { bool: { must: [] } }; }
+    query.query.bool.must.push({
+      wildcard: { api: '*' + req.query.api + '*' }
+    });
   }
 
   if (req.query.exists) {
-    if (!query.query) { query.query = { bool:{} }; }
-    if (!query.query.bool.must) { query.query.bool.must = []; }
+    if (!query.query) { query.query = { bool: { must: [] } }; }
     let existsArr = req.query.exists.split(',');
     for (var i = 0, len = existsArr.length; i < len; ++i) {
       query.query.bool.must.push({
@@ -2369,7 +2369,7 @@ app.get('/history/list', function(req, res) {
        Db.searchHistory(query, function(err, result) {
          if (err || result.error) {
            console.log("ERROR - history logs", err || result.error);
-           return error(500, 'Error retrieving log history');
+           return error(500, 'Error retrieving log history - ' + err || result.error);
          } else {
            var results = { total:result.hits.total, results:[] };
            for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {

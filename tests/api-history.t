@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests => 23;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -69,6 +69,14 @@ my $pwd = getcwd() . "/pcap";
         }
     }
     is ($found, 1, "Test4: Found id in all");
+
+# Should be able to pass in userId and api params
+    $json = viewerGet("/history/list?userId=historytest1&api=sessions");
+    is ($json->{recordsFiltered}, 1, "Test4: recordsFiltered");
+    my $item = $json->{data}->[0];
+    is ($item->{api}, "/sessions.json", "Test2: api");
+    $json = viewerGet("/history/list?userId=historytest1&api=somethingsilly");
+    is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
     $json = viewerDelete("/history/list/$item->{id}?molochRegressionUser=historytest1");
