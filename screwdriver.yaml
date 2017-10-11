@@ -1,7 +1,5 @@
 jobs:
     main:
-        image: centos{{CENTOS_VERSION}}
-        matrix:
-            CENTOS_VERSION: [6,7]
+        image: centos7
         steps:
             - easybutton-build.sh
