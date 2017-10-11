@@ -2,4 +2,4 @@ jobs:
     main:
         image: centos:7
         steps:
-            - easybutton-build.sh
+            - ./easybutton-build.sh
