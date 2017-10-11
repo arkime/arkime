@@ -68,15 +68,15 @@ my $pwd = getcwd() . "/pcap";
             last;
         }
     }
-    is ($found, 1, "Test4: Found id in all");
+    is ($found, 1, "Test3: Found id in all");
 
 # Should be able to pass in userId and api params
     $json = viewerGet("/history/list?userId=historytest1&api=sessions");
     is ($json->{recordsFiltered}, 1, "Test4: recordsFiltered");
     my $item = $json->{data}->[0];
-    is ($item->{api}, "/sessions.json", "Test2: api");
+    is ($item->{api}, "/sessions.json", "Test4: api");
     $json = viewerGet("/history/list?userId=historytest1&api=somethingsilly");
-    is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
+    is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
 
 # Can't delete items when not admin
     $json = viewerDelete("/history/list/$item->{id}?molochRegressionUser=historytest1");
