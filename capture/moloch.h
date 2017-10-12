@@ -698,6 +698,11 @@ void     moloch_db_update_filesize(uint32_t fileid, uint64_t size);
 gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();
 
+// Replace how SPI data is sent to ES.
+// The implementation must either call a moloch_http_free_buffer or another moloch_http routine that frees the buffer
+typedef void (* MolochDbSendBulkFunc) (char *json, int len);
+void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
+
 /******************************************************************************/
 /*
  * parsers.c

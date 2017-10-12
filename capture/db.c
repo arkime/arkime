@@ -300,6 +300,17 @@ void moloch_db_geo_lookup4(MolochSession_t *session, uint32_t addr, char **g, ch
     }
 }
 /******************************************************************************/
+LOCAL void moloch_db_send_bulk(char *json, int len)
+{
+    moloch_http_set(esServer, "/_bulk", 6, json, len, NULL, NULL);
+}
+LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
+/******************************************************************************/
+void moloch_db_set_send_bulk(MolochDbSendBulkFunc func)
+{
+    sendBulkFunc = func;
+}
+/******************************************************************************/
 LOCAL struct {
     char   *json;
     BSB     bsb;
@@ -315,8 +326,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 {
     uint32_t               i;
     char                   id[100];
-    char                   key[100];
-    int                    key_len;
     uuid_t                 uuid;
     MolochString_t        *hstring;
     MolochInt_t           *hint;
@@ -395,8 +404,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         else if (id[i] == '/') id[i] = '_';
     }
 
-    key_len = snprintf(key, sizeof(key), "/_bulk");
-
     struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
 
@@ -404,7 +411,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     /* If no room left to add, send the buffer */
     if (dbInfo[thread].json && (uint32_t)BSB_REMAINING(dbInfo[thread].bsb) < jsonSize) {
         if (BSB_LENGTH(dbInfo[thread].bsb) > 0) {
-            moloch_http_set(esServer, key, key_len, dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb), NULL, NULL);
+            sendBulkFunc(dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb));
         } else {
             moloch_http_free_buffer(dbInfo[thread].json);
         }
@@ -1370,7 +1377,7 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
             dbInfo[thread].lastSave = currentTime.tv_sec;
             MOLOCH_UNLOCK(dbInfo[thread].lock);
             // Unlock and then send buffer
-            moloch_http_set(esServer, "/_bulk", 6, json, len, NULL, NULL);
+            sendBulkFunc(json, len);
         } else {
             MOLOCH_UNLOCK(dbInfo[thread].lock);
         }
