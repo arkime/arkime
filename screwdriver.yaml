@@ -2,4 +2,5 @@ jobs:
     main:
         image: centos:7
         steps:
+            - yum install -y sudo
             - ./easybutton-build.sh
