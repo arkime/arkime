@@ -2,8 +2,7 @@ jobs:
     main:
         image: centos:7
         steps:
-            - mkdir -p /data/moloch/bin /data/moloch/etc
-            - yum install -y sudo
+            - yum install -y sudo perl-Test-Base perl-Test-Differences
             - ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH make install
             - ls -lR /data

@@ -261,6 +261,7 @@ fi
 
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "MOLOCH: Installing node $NODE"
+    sudo mkdir -p $TDIR/bin $TDIR/etc
     if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
         wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz
     fi
