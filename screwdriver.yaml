@@ -2,7 +2,7 @@ jobs:
     main:
         image: centos:7
         steps:
-            - yum install -y sudo perl-Test-Base perl-Test-Differences perl-Test-Simple
+            - yum install -y sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2
             - ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
