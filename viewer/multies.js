@@ -27,7 +27,6 @@ try {
 var Config         = require('./config.js'),
     express        = require('express'),
     async          = require('async'),
-    sprintf        = require('./public/sprintf.js'),
     os             = require('os'),
     util           = require('util'),
     URL            = require('url'),

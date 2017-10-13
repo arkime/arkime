@@ -3922,8 +3922,9 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        console.log("ERROR - processSessionIdDisk for session", session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.ps.length);
-        endCb("Error loading data for session " + session._id, null);
+        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.ps.length);
+        console.log("ERROR - processSessionIdDisk -", msg);
+        endCb(msg, null);
         break;
       case undefined:
         break;
@@ -4070,7 +4071,7 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
   function(err, session) {
     if (err) {
       console.log("ERROR - processSessionIdAndDecode", err);
-      return doneCb("error");
+      return doneCb(err);
     }
     packets = packets.filter(Boolean);
     if (packets.length === 0) {
@@ -4293,8 +4294,8 @@ function localSessionDetail(req, res) {
     cb(null);
   },
   function(err, session) {
-    if (err && session === null) {
-      return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
+    if (err) {
+      return res.end("Problem loading packets for " + req.params.id + " Error: " + err);
     }
     session.id = req.params.id;
 
@@ -6066,7 +6067,7 @@ app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, 
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
       console.log("ERROR - /cyberchef.htm", err);
-      return res.send("Error");
+      return res.end("Error - " + err);
     }
 
     let data = '';
