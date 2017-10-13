@@ -78,6 +78,9 @@
       this.timeBounding = 'last'; // default to lastPacket
       if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
 
+      this.timeInterval = 'auto'; // default to lastPacket
+      if (this.$routeParams.interval) { this.timeInterval = this.$routeParams.interval; }
+
       // load user's previous view choice
       if (sessionStorage && sessionStorage['moloch-view']) {
         this.view = sessionStorage['moloch-view'];
@@ -135,6 +138,10 @@
           if (current.params.bounding !== lastParams.bounding) {
             change = true;
             this.timeBounding = current.params.bounding || 'last';
+          }
+          if (current.params.interval !== lastParams.interval) {
+            change = true;
+            this.timeInterval = current.params.interval || 'auto';
           }
           if (current.params.view !== lastParams.view) {
             change = true;
@@ -217,7 +224,7 @@
 
     /**
      * Fired when the url parameters for search have changed
-     * (date, startTime, stopTime, expression, bounding, view)
+     * (date, startTime, stopTime, expression, bounding, interval, view)
      */
     change() {
       let useDateRange = false;
@@ -244,6 +251,7 @@
         let args = {
           expression: this.$rootScope.expression,
           bounding  : this.timeBounding,
+          interval  : this.timeInterval,
           view      : this.view
         };
 
@@ -309,7 +317,7 @@
      }
 
      /**
-      * Fired when change bounded checkbox is (un)checked
+      * Fired when change bounded pulldown is changed
       * Applies the timeBounding url parameter
       * Updating the url parameter triggers $routeUpdate which triggers change()
       */
@@ -318,6 +326,19 @@
          this.$location.search('bounding', this.timeBounding);
        } else {
          this.$location.search('bounding', null);
+       }
+     }
+
+     /**
+      * Fired when change interval pulldown is changed
+      * Applies the timeBounding url parameter
+      * Updating the url parameter triggers $routeUpdate which triggers change()
+      */
+     changeTimeInterval() {
+       if (this.timeInterval !== 'auto') {
+         this.$location.search('interval', this.timeInterval);
+       } else {
+         this.$location.search('interval', null);
        }
      }
 

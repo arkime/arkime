@@ -95,6 +95,7 @@
 
         this.query.expression = args.expression;
         if (args.bounding) {this.query.bounding = args.bounding;}
+        if (args.interval) {this.query.interval = args.interval;}
 
         // don't load data if it's already loading
         if (!this.loading) { this.loadData(); }

@@ -82,6 +82,7 @@
 
         this.query.expression = args.expression;
         if (args.bounding) { this.query.bounding = args.bounding; }
+        if (args.interval) { this.query.interval = args.interval; }
 
         if (initialized) { this.loadData(true); }
 

@@ -92,6 +92,7 @@
 
         _query.expression = this.query.expression = args.expression;
         if (args.bounding) {_query.bounding = this.query.bounding = args.bounding;}
+        if (args.interval) {_query.interval = this.query.interval = args.interval;}
 
         this.query.view = args.view;
 
@@ -417,6 +418,7 @@
         stopTime  : this.query.stopTime,
         expression: this.query.expression,
         bounding  : this.query.bounding,
+        interval  : this.query.interval,
         view      : this.query.view
       };
 

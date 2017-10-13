@@ -48,6 +48,7 @@
           if (query.expression) { params.expression = query.expression; }
           if (query.view)       { params.view = query.view; }
           if (query.bounding)   { params.bounding = query.bounding; }
+          if (query.interval)   { params.interval = query.interval; }
 
           if (query.startTime) {
             params.startTime = (query.startTime) | 0;

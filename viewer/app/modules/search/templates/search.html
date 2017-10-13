@@ -225,6 +225,26 @@
       </div>
     </div> <!-- /time bounding select -->
 
+    <!-- time interval select -->
+    <div class="form-group margined-bottom">
+      <div class="input-group input-group-sm">
+        <span class="input-group-addon cursor-help"
+          tooltip-placement="top-left"
+          uib-tooltip="Time Interval">
+          Interval
+        </span>
+        <select class="form-control time-range-control"
+          ng-model="$ctrl.timeInterval" tabindex="6"
+          ng-change="$ctrl.changeTimeInterval()">
+          <option value="auto">Auto</option>
+          <option value="second">Seconds</option>
+          <option value="minute">Minutes</option>
+          <option value="hour">Hours</option>
+          <option value="day">Days</option>
+        </select>
+      </div>
+    </div> <!-- /time interval select -->
+
     <!-- human readable time range -->
     <div class="margined-top margined-left-lg display-inline">
       <strong class="small text-theme-accent no-wrap">

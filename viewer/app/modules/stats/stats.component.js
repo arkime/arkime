@@ -50,7 +50,7 @@
 
       this.graphType      = this.$routeParams.type || 'deltaPacketsPerSec';
       this.graphInterval  = this.$routeParams.gtime || '5';
-      this.dataInterval   = this.$routeParams.interval ||'5000';
+      this.dataInterval   = this.$routeParams.refreshInterval ||'5000';
       this.graphsOpen     = true;
       this.nodeStatsOpen  = true;
       this.selectedTab    = 0; // select the first tab by default
@@ -160,10 +160,10 @@
     }
 
     /* exposed methods ----------------------------------------------------- */
-    /* fired when select input is changed for data interval */
+    /* fired when select input is changed for data refreshInterval */
     changeDataInterval() {
       // update url param
-      this.$location.search('interval', this.dataInterval);
+      this.$location.search('refreshInterval', this.dataInterval);
 
       if (reqPromise) { // cancel the interval and reset it if necessary
         this.$interval.cancel(reqPromise);

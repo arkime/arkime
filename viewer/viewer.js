@@ -2123,6 +2123,24 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
+  switch (req.query.interval) {
+  case "second":
+    interval = 1;
+    break;
+  case "minute":
+    interval = 60;
+    break;
+  case "hour":
+    interval = 60*60;
+    break;
+  case "day":
+    interval = 60*60*24;
+    break;
+  case "week":
+    interval = 60*60*24*7;
+    break;
+  }
+
   if (req.query.facets) {
     query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
                           mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}};

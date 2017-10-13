@@ -110,6 +110,7 @@
 
         _query.expression = this.query.expression = args.expression;
         if (args.bounding) {_query.bounding = this.query.bounding = args.bounding;}
+        if (args.interval) {_query.interval = this.query.interval = args.interval;}
 
         // reset to the first page, because we are issuing a new query
         // and there may only be 1 page of results
