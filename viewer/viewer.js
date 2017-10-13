@@ -2046,7 +2046,9 @@ function buildSessionQuery(req, buildCb) {
   }
 
   var interval;
-  if ((req.query.date && req.query.date === '-1') ||
+  if (req.query.interval) {
+    interval = req.query.interval
+  } else if ((req.query.date && req.query.date === '-1') ||
       (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
   } else if (req.query.startTime && req.query.stopTime) {
