@@ -5,6 +5,7 @@ jobs:
             - yum install -y sudo perl-Test-Base perl-Test-Differences perl-Test-Simple
             - ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH make install
-            - ls -lR /data
+            - cp -r capture/plugins/lua/samples /nids/moloch/lua
             - (cd tests ; ./tests.pl)
+            - (cd viewer; npm install ; npm test)
 
