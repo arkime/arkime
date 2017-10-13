@@ -3915,11 +3915,14 @@ app.get('/unique.txt', logAction(), function(req, res) {
 });
 
 function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
+  var fields;
+
   function processFile(pcap, pos, i, nextCb) {
     pcap.ref();
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
+        console.log("ERROR - processSessionIdDisk for session", session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.ps.length);
         endCb("Error loading data for session " + session._id, null);
         break;
       case undefined:
@@ -3931,8 +3934,6 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
       pcap.unref();
     });
   }
-
-  var fields;
 
   fields = session._source || session.fields;
 
@@ -4068,6 +4069,7 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
   },
   function(err, session) {
     if (err) {
+      console.log("ERROR - processSessionIdAndDecode", err);
       return doneCb("error");
     }
     packets = packets.filter(Boolean);
@@ -6062,7 +6064,10 @@ app.use('/cyberchef.htm', function(req, res) {
  * sends them to cyberchef */
 app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, function(req, res) {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-    if (err) { return res.send("Error"); }
+    if (err) {
+      console.log("ERROR - /cyberchef.htm", err);
+      return res.send("Error");
+    }
 
     let data = '';
     for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
