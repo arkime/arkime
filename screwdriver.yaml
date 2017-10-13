@@ -2,8 +2,9 @@ jobs:
     main:
         image: centos:7
         steps:
-            - mkdir -p /data/moloch/bin
+            - mkdir -p /data/moloch/bin /data/moloch/etc
             - yum install -y sudo
+            - ls -lR /data
             - ./easybutton-build.sh
             - make install
 
