@@ -2,42 +2,22 @@
    "sessions" : [
       {
          "body" : {
-            "fp" : 1483560476,
+            "mac1-term-cnt" : 1,
             "pa1" : 3,
-            "tcpflags" : {
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "rst" : 0,
-               "psh" : 1,
-               "ack" : 3,
-               "urg" : 0
-            },
-            "by" : 2205,
-            "db1" : 517,
+            "mac2-term" : [
+               "00:26:55:d1:4d:97"
+            ],
+            "lp" : 1483560476,
+            "no" : "test",
+            "fb1" : "1603010200010001",
             "by2" : 1454,
-            "firstPacket" : 1483560476240,
+            "as1" : "AS16150 Availo Networks AB",
             "a2" : "104.19.194.102",
             "portSrc" : 62510,
-            "fb2" : "1603010052020000",
-            "lastPacket" : 1483560476263,
-            "ipDst" : "0.0.0.0",
-            "mac1-term" : [
-               "c8:f7:33:1d:84:95"
-            ],
-            "fpd" : 1483560476240,
-            "prot-term-cnt" : 2,
-            "ss" : 1,
-            "ipSrc" : "0.0.0.0",
-            "tlsja3-term" : [
-               "4826a90ec2daf4f7b4b64cc1c8bd343b"
-            ],
-            "fs" : [],
-            "sl" : 23,
             "tlscipher-termcnt" : 1,
-            "p2" : 443,
-            "no" : "test",
-            "tlsver-termcnt" : 1,
+            "ipDst" : "0.0.0.0",
+            "mac2-term-cnt" : 1,
+            "portDst" : 443,
             "psl" : [
                102,
                102,
@@ -46,30 +26,62 @@
                90,
                1310
             ],
-            "tlsja3-termcnt" : 1,
-            "tlscipher-term" : [
-               "TLS_AES_128_GCM_SHA256"
-            ],
-            "portDst" : 443,
-            "as2" : "AS13335 CloudFlare",
-            "db" : 1737,
+            "fp" : 1483560476,
             "pa2" : 3,
-            "pa" : 6,
-            "fb1" : "1603010200010001",
-            "g2" : "USA",
-            "tipv62-term" : "2400cb0020480001000000006813c266",
-            "as1" : "AS16150 Availo Networks AB",
-            "a1" : "41.29.169.179",
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "ss" : 1,
             "tlsver-term" : [
                "TLSv1.3-draft-18"
             ],
-            "p1" : 62510,
-            "mac2-term" : [
-               "00:26:55:d1:4d:97"
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "rst" : 0,
+               "ack" : 3,
+               "syn" : 1,
+               "psh" : 1,
+               "urg" : 0,
+               "fin" : 0
+            },
+            "pr" : 6,
+            "g2" : "USA",
+            "firstPacket" : 1483560476240,
+            "p2" : 443,
+            "by" : 2205,
+            "tlsja3-termcnt" : 1,
+            "prot-term-cnt" : 2,
+            "db" : 1737,
+            "pa" : 6,
+            "tlscipher-term" : [
+               "TLS_AES_128_GCM_SHA256"
             ],
+            "tlsja3-term" : [
+               "4826a90ec2daf4f7b4b64cc1c8bd343b"
+            ],
+            "p1" : 62510,
+            "ipSrc" : "0.0.0.0",
+            "lpd" : 1483560476263,
+            "tlsver-termcnt" : 1,
+            "g1" : "SWE",
+            "fb2" : "1603010052020000",
+            "ho" : [
+               "blog.cloudflare.com"
+            ],
+            "by1" : 751,
             "hocnt" : 1,
-            "timestamp" : "SET",
+            "db1" : 517,
+            "fpd" : 1483560476240,
+            "as2" : "AS13335 Cloudflare Inc",
             "db2" : 1220,
+            "fs" : [],
+            "a1" : "41.29.169.179",
+            "lastPacket" : 1483560476263,
+            "mac1-term" : [
+               "c8:f7:33:1d:84:95"
+            ],
+            "tipv62-term" : "2400cb0020480001000000006813c266",
             "ps" : [
                24,
                126,
@@ -78,21 +90,9 @@
                925,
                1015
             ],
-            "pr" : 6,
+            "timestamp" : "SET",
             "tipv61-term" : "200116d8ffce0010aca8353c291da9b3",
-            "by1" : 751,
-            "ho" : [
-               "blog.cloudflare.com"
-            ],
-            "g1" : "SWE",
-            "mac1-term-cnt" : 1,
-            "lp" : 1483560476,
-            "mac2-term-cnt" : 1,
-            "lpd" : 1483560476263,
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ]
+            "sl" : 23
          },
          "header" : {
             "index" : {
