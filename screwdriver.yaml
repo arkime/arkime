@@ -4,7 +4,8 @@ jobs:
         steps:
             - mkdir -p /data/moloch/bin /data/moloch/etc
             - yum install -y sudo
-            - ls -lR /data
             - ./easybutton-build.sh
-            - make install
+            - export PATH=/data/moloch/bin:$PATH make install
+            - ls -lR /data
+            - (cd tests ; ./tests.pl)
 
