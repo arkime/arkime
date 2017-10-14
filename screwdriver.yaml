@@ -4,8 +4,10 @@ jobs:
         steps:
             - yum install -y sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 fontconfig
             - ./easybutton-build.sh
-            - export PATH=/data/moloch/bin:$PATH make install
+            - export PATH=/data/moloch/bin:$PATH
+            - make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - (cd tests ; ./tests.pl)
+            - export TZ=US/Eastern
             - (cd viewer; npm install ; npm test)
 
