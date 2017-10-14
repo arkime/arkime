@@ -77,7 +77,8 @@
     "ngdraggable": "^0.1.10",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
-    "webpack": "^1.13.2"
+    "webpack": "^1.13.2",
+    "jshint": ""
   },
   "optionalDependencies": {
     "png": "http://github.com/awick/node-png/tarball/master"
