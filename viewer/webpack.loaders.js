@@ -2,14 +2,6 @@ module.exports = {
 
   module: {
     loaders: [
-      { // js babel loader (traspiler)
-        loader: 'babel',
-        exclude: /(node_modules|public|views)/,
-        test: /\.js$/,
-        query: {
-          presets: ['es2015', 'stage-0']
-        }
-      },
       { // css loader
         test: /\.css$/,
         loaders: ['style', 'css']
