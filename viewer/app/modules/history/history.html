@@ -120,6 +120,7 @@
           <td>{{::log.timestamp | timezoneDateString:$ctrl.settings.timezone}}</td>
           <td><span ng-if="::log.range">{{::log.range*1000 | readableTime}}</span></td>
           <td has-permission="createEnabled">{{::log.userId}}</td>
+          <td title="{{::log.queryTime}}" class="no-wrap">{{::log.queryTime}}ms</td>
           <td title="{{::log.api}}" class="no-wrap">{{::log.api}}</td>
           <td title="{{::log.expression}}" class="no-wrap">{{::log.expression}}</td>
           <td title="{{::log.view.expression}}" class="no-wrap">
@@ -130,8 +131,21 @@
         </tr>
         <tr ng-repeat-end ng-if="log.expanded">
           <td colspan="7">
-            <div ng-if="::log.query">
+            <div ng-if="::(log.query || log.recordsReturned !== undefined)">
               <dl class="dl-horizontal">
+                <dt><h5>
+                  Counts
+                </h5></dt>
+                <dd>&nbsp;</dd>
+                <span ng-if="::log.recordsReturned !== undefined">
+                  <dt>Records Returned</dt><dd>{{::log.recordsReturned}}</dd>
+                </span>
+                <span ng-if="::log.recordsFiltered !== undefined">
+                  <dt>Records Filtered</dt><dd>{{::log.recordsFiltered}}</dd>
+                </span>
+                <span ng-if="::log.recordsTotal !== undefined">
+                  <dt>Records Total</dt><dd>{{::log.recordsTotal}}</dd>
+                </span>
                 <dt><h5>
                   Query parameters
                   <sup><span class="fa fa-info-circle text-theme-primary"></span></sup>
@@ -155,7 +169,7 @@
               <span style="word-break:break-all;">{{::log.query}}</span>
               </em>
             </div>
-            <div ng-if="::!log.query">
+            <div ng-if="::(!log.query && log.recordsReturned === undefined)">
               <span class="fa fa-frown-o fa-lg"></span>&nbsp;
               <em>Sorry! There is no more information to show.</em>
             </div>

@@ -1708,6 +1708,18 @@ sub historyUpdate
       "query": {
         "type": "string",
         "index": "not_analyzed"
+      },
+      "queryTime": {
+        "type": "integer"
+      },
+      "recordsReturned": {
+        "type": "integer"
+      },
+      "recordsFiltered": {
+        "type": "integer"
+      },
+      "recordsTotal": {
+        "type": "integer"
       }
     }
   }

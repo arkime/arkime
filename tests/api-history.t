@@ -1,4 +1,4 @@
-use Test::More tests => 23;
+use Test::More tests => 26;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -32,6 +32,9 @@ my $pwd = getcwd() . "/pcap";
     is ($item->{api}, "/sessions.json", "Test1: api");
     is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"), "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
+    is ($item->{recordsReturned}, 4, "Test1: recordsReturned");
+    is ($item->{recordsFiltered}, 4, "Test1: recordsFiltered");
+    cmp_ok ($item->{recordsTotal}, '>=', 80, "recordsTotal");
 
 # Check Multi
     my $mjson = multiGet("/history/list?molochRegressionUser=historytest1");

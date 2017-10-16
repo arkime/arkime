@@ -727,9 +727,22 @@ function logAction(uiPage) {
       }
     }
 
-    Db.historyIt(log, function(err, info) {
-      if (err) { console.log('log history error', err, info); }
-    });
+    res.logCounts = function(recordsReturned, recordsFiltered, recordsTotal) {
+      log.recordsReturned = recordsReturned;
+      log.recordsFiltered = recordsFiltered;
+      log.recordsTotal = recordsTotal;
+    }
+
+    req._molochStartTime = new Date();
+    function finish () {
+      log.queryTime = new Date() - req._molochStartTime;
+      res.removeListener('finish', finish);
+      Db.historyIt(log, function(err, info) {
+        if (err) { console.log('log history error', err, info); }
+      });
+    }
+
+    res.on('finish', finish);
 
     return next();
   }
@@ -2498,6 +2511,7 @@ app.get('/file/list', logAction('files'), function(req, res) {
     var r = {recordsTotal: results.total,
              recordsFiltered: results.files.total,
              data: results.files.results};
+    res.logCounts(r.data.length, r.recordsFiltered, r.total);
     res.send(r);
   });
 });
@@ -3087,6 +3101,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
                health: results.health,
                map: map,
                data: (results.sessions?results.sessions.results:[])};
+      res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
       try {
         res.send(r);
       } catch (c) {
@@ -3382,6 +3397,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
                protocols: protocols,
                bsqErr: bsqErr
           };
+          res.logCounts(r.spi.count, r.recordsFiltered, r.total);
           try {
             res.send(r);
           } catch (c) {
