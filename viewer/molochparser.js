@@ -650,6 +650,10 @@ function stringQuery(yy, field, str) {
         should.regexp[rawField] = str.substring(1, str.length-1);
         obj.push(should);
       } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+        if (str === "*") {
+          throw "Please use 'EXISTS!' instead of a '*' in expression";
+        }
+
         should = {wildcard: {}};
         should.wildcard[rawField] = str;
         obj.push(should);
@@ -691,6 +695,9 @@ function stringQuery(yy, field, str) {
     obj = {term: {}};
     obj.term[dbField] = str;
   } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+    if (str === "*") {
+      throw "Please use 'EXISTS!' instead of a '*' in expression";
+    }
     dbField = field2Raw(yy, field);
     obj = {wildcard: {}};
     obj.wildcard[dbField] = str;
@@ -1248,7 +1255,7 @@ case 22:console.log(yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?\/]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?/]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
 });
 return lexer;

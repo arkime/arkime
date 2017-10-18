@@ -453,6 +453,10 @@ function stringQuery(yy, field, str) {
         should.regexp[rawField] = str.substring(1, str.length-1);
         obj.push(should);
       } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+        if (str === "*") {
+          throw "Please use 'EXISTS!' instead of a '*' in expression";
+        }
+
         should = {wildcard: {}};
         should.wildcard[rawField] = str;
         obj.push(should);
@@ -494,6 +498,9 @@ function stringQuery(yy, field, str) {
     obj = {term: {}};
     obj.term[dbField] = str;
   } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+    if (str === "*") {
+      throw "Please use 'EXISTS!' instead of a '*' in expression";
+    }
     dbField = field2Raw(yy, field);
     obj = {wildcard: {}};
     obj.wildcard[dbField] = str;
