@@ -1,3 +1,8 @@
+shared:
+    settings:
+        email:
+            addresses: [moloch.build@oath.com]
+            statuses: [SUCCESS, FAILURE]
 jobs:
     main:
         image: centos:7
