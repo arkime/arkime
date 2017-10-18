@@ -67,7 +67,7 @@
    */
   angular.module('moloch')
     .component('molochGraphMap', {
-      template    : require('html!../templates/graph.map.html'),
+      template    : require('../templates/graph.map.html'),
       controller  : GraphMapController,
       bindings    : {
         graphData : '<',

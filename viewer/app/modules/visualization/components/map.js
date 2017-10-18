@@ -17,7 +17,7 @@
     function(FieldService, $filter, $document, $timeout, $window) {
       return {
         scope   : { 'mapData': '=', 'toggleMap': '&', 'primary': '@' },
-        template: require('html!../templates/map.html'),
+        template: require('../templates/map.html'),
         link    : function(scope, element) {
           /* setup --------------------------------------------------------- */
           scope.state = { open:false, src:true, dst:true };

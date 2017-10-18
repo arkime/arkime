@@ -1,5 +1,6 @@
-var webpack = require('webpack');
-var config  = require('./webpack.loaders.js');
+const webpack = require('webpack');
+let config    = require('./webpack.loaders.js');
+const Uglify  = require('uglifyjs-webpack-plugin');
 
 config.context = __dirname + '/app';
 
@@ -14,7 +15,14 @@ config.output = {
 };
 
 config.plugins = [
-  new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
+  new Uglify({
+    exclude: /(node_modules|public|views)/,
+    parallel: true
+  }),
+  new webpack.optimize.CommonsChunkPlugin({
+    name    : 'vendor',
+    filename: 'vendor.bundle.js'
+  }),
   new webpack.ProvidePlugin({
     $               : 'jquery',
     jQuery          : 'jquery',

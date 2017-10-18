@@ -509,7 +509,7 @@
    */
   angular.module('directives.search', [])
     .component('molochSearch', {
-      template  : require('html!../templates/search.html'),
+      template  : require('../templates/search.html'),
       controller: SearchController,
       bindings  : {
         openSessions        : '<',

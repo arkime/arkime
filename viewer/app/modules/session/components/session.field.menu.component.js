@@ -5,7 +5,7 @@
   angular.module('moloch')
     .directive('lazyMenu', ['$compile', function($compile) {
       function compile() {
-        let menu = require('html!../templates/session.field.menu.html');
+        let menu = require('../templates/session.field.menu.html');
         let transcludeMenu = $compile(menu);
 
         // bind the content to the scope

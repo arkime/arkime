@@ -517,7 +517,7 @@
    */
   angular.module('directives.search')
     .component('expressionTypeahead', {
-      template  : require('html!../templates/expression.typeahead.html'),
+      template  : require('../templates/expression.typeahead.html'),
       controller: ExpressionController
     });
 

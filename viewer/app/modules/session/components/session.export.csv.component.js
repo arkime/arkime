@@ -81,7 +81,7 @@
    */
   angular.module('moloch')
     .component('exportCsv', {
-      template  : require('html!../templates/session.export.csv.html'),
+      template  : require('../templates/session.export.csv.html'),
       controller: SessionExportCSVController,
       bindings  : {
         start       : '<', // where to start the action

@@ -11,7 +11,7 @@
   function($window, $document, $location, $anchorScroll, $timeout) {
     return {
       scope   : { sessions: '=' },
-      template: require('html!../templates/session.sticky.html'),
+      template: require('../templates/session.sticky.html'),
       link    : function(scope, element, attr) {
 
         /* exposed functions ----------------------------------------------- */

@@ -79,7 +79,7 @@
    */
   angular.module('directives.toast', [])
      .component('toast', {
-       template  : require('html!./toast.html'),
+       template  : require('./toast.html'),
        controller: ToastController,
        bindings  : {
          message : '<', // message to display in toast

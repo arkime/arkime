@@ -131,7 +131,7 @@
    */
   angular.module('moloch')
      .component('molochEsStats', {
-       template  : require('html!./stats.es.html'),
+       template  : require('./stats.es.html'),
        controller: StatsESController,
        bindings  : { updateInterval: '<' }
      });

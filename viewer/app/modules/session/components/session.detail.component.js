@@ -374,7 +374,7 @@
     ['$timeout','$filter','$compile','$routeParams','$location','$route',
     function($timeout, $filter, $compile, $routeParams, $location, $route) {
       return {
-        template    : require('html!../templates/session.detail.html'),
+        template    : require('../templates/session.detail.html'),
         controller  : SessionDetailController,
         controllerAs: '$ctrl',
         scope       : { session: '=' },

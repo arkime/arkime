@@ -18,7 +18,7 @@
     .directive('sessionGraph', ['$filter', '$timeout', '$document', '$window', '$location', '$routeParams',
       function($filter, $timeout, $document, $window, $location, $routeParams) {
       return {
-        template: require('html!../templates/graph.html'),
+        template: require('../templates/graph.html'),
         scope   : {
           graphData : '=',
           type      : '@',

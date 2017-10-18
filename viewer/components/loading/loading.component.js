@@ -11,7 +11,7 @@
    */
   angular.module('directives.loading', [])
     .component('loading', {
-      template : require('html!./loading.html')
+      template : require('./loading.html')
     });
 
 })();

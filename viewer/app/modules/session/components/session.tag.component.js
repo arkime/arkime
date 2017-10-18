@@ -126,7 +126,7 @@
    */
   angular.module('moloch')
     .component('sessionTag', {
-      template  : require('html!../templates/session.tag.html'),
+      template  : require('../templates/session.tag.html'),
       controller: SessionTagController,
       bindings  : {
         add         : '<', // whether to add or remove tags

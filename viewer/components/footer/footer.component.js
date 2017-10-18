@@ -30,7 +30,7 @@
    */
   angular.module('directives.footer', [])
     .component('footer', {
-      template  : require('html!./footer.html'),
+      template  : require('./footer.html'),
       controller: FooterController
     });
 

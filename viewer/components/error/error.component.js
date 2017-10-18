@@ -11,7 +11,7 @@
    */
   angular.module('directives.error', [])
     .component('error', {
-      template  : require('html!./error.html'),
+      template  : require('./error.html'),
       bindings  : {
         message : '<'
       }

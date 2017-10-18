@@ -826,7 +826,7 @@
    */
   angular.module('moloch')
     .component('molochSpiview', {
-      template  : require('html!./spiview.html'),
+      template  : require('./spiview.html'),
       controller: SpiviewController
     });
 

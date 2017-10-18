@@ -170,7 +170,7 @@
    */
   angular.module('moloch')
      .component('molochHistory', {
-       template  : require('html!./history.html'),
+       template  : require('./history.html'),
        controller: HistoryController
      });
 

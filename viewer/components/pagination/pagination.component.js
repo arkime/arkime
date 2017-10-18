@@ -126,7 +126,7 @@
    */
   angular.module('directives.pagination', [])
     .component('molochPagination', {
-      template  : require('html!./pagination.html'),
+      template  : require('./pagination.html'),
       controller: PaginationController,
       bindings  : {
         start           : '<',  // the item to start at

@@ -88,7 +88,7 @@
    */
   angular.module('moloch')
     .component('sessionDelete', {
-      template  : require('html!../templates/session.delete.html'),
+      template  : require('../templates/session.delete.html'),
       controller: SessionDeleteController,
       bindings  : {
         start       : '<', // where to start the action

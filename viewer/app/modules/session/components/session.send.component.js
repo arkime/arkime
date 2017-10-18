@@ -82,7 +82,7 @@
    */
   angular.module('moloch')
     .component('sessionSend', {
-      template  : require('html!../templates/session.send.html'),
+      template  : require('../templates/session.send.html'),
       controller: SessionSendController,
       bindings  : {
         start       : '<', // where to start the action

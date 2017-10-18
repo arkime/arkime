@@ -8,7 +8,7 @@
    */
   angular.module('moloch')
      .component('moloch404', {
-       template: require('html!./404.html')
+       template: require('./404.html')
      });
 
 })();

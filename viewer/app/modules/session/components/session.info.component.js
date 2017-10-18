@@ -43,7 +43,7 @@
    */
   angular.module('moloch')
     .component('sessionInfo', {
-      template  : require('html!../templates/session.info.html'),
+      template  : require('../templates/session.info.html'),
       controller: SessionInfoController,
       bindings  : { session : '<', field : '<' }
     });

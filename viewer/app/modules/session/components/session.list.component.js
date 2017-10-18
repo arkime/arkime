@@ -14,7 +14,7 @@
     visibleHeaders: ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
   };
 
-  let customCols = require('json!./custom.columns.json');
+  let customCols = require('./custom.columns.json');
 
   let componentInitialized = false, colResizeInitialized = false;
   let holdingClick = false, timeout;
@@ -850,7 +850,7 @@
 
   angular.module('moloch')
     .component('session', {
-      template  : require('html!../templates/session.list.html'),
+      template  : require('../templates/session.list.html'),
       controller: SessionListController
     });
 

@@ -2,7 +2,7 @@
 
   'use strict';
 
-  let customCols = require('json!../session/components/custom.columns.json');
+  let customCols = require('../session/components/custom.columns.json');
 
   let bodyElem = $(document.body);
 
@@ -730,7 +730,7 @@
    */
   angular.module('moloch')
      .component('molochSettings', {
-       template  : require('html!./settings.html'),
+       template  : require('./settings.html'),
        controller: SettingsController
      });
 

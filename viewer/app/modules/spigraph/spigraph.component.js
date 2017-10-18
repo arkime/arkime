@@ -324,7 +324,7 @@
    */
   angular.module('moloch')
      .component('molochSpigraph', {
-       template  : require('html!./spigraph.html'),
+       template  : require('./spigraph.html'),
        controller: SpigraphController
      });
 

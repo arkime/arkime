@@ -44,7 +44,7 @@
 
   angular.module('moloch')
     .component('connectionsLinkPopup', {
-      template  : require('html!./connections.linkpopup.html'),
+      template  : require('./connections.linkpopup.html'),
       controller: ConnectionsLinkPopupController,
       bindings  : {
         link    : '<',

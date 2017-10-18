@@ -75,7 +75,7 @@
    */
   angular.module('moloch')
     .component('sessionActions', {
-      template    : require('html!../templates/session.actions.html'),
+      template    : require('../templates/session.actions.html'),
       controller  : SessionActionsController
     });
 

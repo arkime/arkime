@@ -66,7 +66,7 @@
    */
   angular.module('moloch')
     .component('exportPcap', {
-      template  : require('html!../templates/session.export.pcap.html'),
+      template  : require('../templates/session.export.pcap.html'),
       controller: SessionExportPCAPController,
       bindings  : {
         start       : '<', // where to start the action

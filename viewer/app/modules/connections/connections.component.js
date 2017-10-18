@@ -575,7 +575,7 @@
    */
   angular.module('moloch')
      .component('molochConnections', {
-       template  : require('html!./connections.html'),
+       template  : require('./connections.html'),
        controller: ConnectionsController
      });
 

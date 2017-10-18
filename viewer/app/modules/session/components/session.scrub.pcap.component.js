@@ -83,7 +83,7 @@
    */
   angular.module('moloch')
     .component('scrubPcap', {
-      template  : require('html!../templates/session.scrub.pcap.html'),
+      template  : require('../templates/session.scrub.pcap.html'),
       controller: SessionScrubPCAPController,
       bindings  : {
         start       : '<', // where to start the action

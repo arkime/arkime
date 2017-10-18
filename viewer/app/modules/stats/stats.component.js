@@ -452,7 +452,7 @@
    */
   angular.module('moloch')
      .component('molochStats', {
-       template  : require('html!./stats.html'),
+       template  : require('./stats.html'),
        controller: StatsController
      });
 

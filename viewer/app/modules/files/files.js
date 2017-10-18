@@ -76,7 +76,7 @@
    */
   angular.module('moloch')
      .component('molochFiles', {
-       template  : require('html!./files.html'),
+       template  : require('./files.html'),
        controller: FilesController
      });
 

@@ -189,7 +189,7 @@
    */
   angular.module('moloch')
      .component('molochUsers', {
-       template  : require('html!../templates/user.list.html'),
+       template  : require('../templates/user.list.html'),
        controller: UserListController
      });
 

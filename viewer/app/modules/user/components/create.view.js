@@ -91,7 +91,7 @@
    */
   angular.module('moloch')
      .component('createView', {
-       template  : require('html!../templates/create.view.html'),
+       template  : require('../templates/create.view.html'),
        controller: CreateViewController,
        bindings  : {
          expression : '<', // the existing query expression

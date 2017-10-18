@@ -366,7 +366,7 @@
    */
   angular.module('moloch')
     .component('sessionField', {
-      template  : require('html!../templates/session.field.html'),
+      template  : require('../templates/session.field.html'),
       controller: SessionFieldController,
       bindings  : {
         // the session object

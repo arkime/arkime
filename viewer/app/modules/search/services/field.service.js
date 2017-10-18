@@ -2,7 +2,7 @@
 
   'use strict';
 
-  const _country_codes_cache = require('json!./countries.json');
+  const _country_codes_cache = require('./countries.json');
 
   let _recent_expressions = [];
 

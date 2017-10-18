@@ -108,7 +108,7 @@
    */
   angular.module('directives.navbar', [])
     .component('navbar', {
-      template  : require('html!./navbar.html'),
+      template  : require('./navbar.html'),
       controller: NavbarController
     });
 

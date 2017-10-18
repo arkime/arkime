@@ -57,7 +57,7 @@
    */
   angular.module('moloch')
     .component('esHealth', {
-      template  : require('html!./eshealth.html'),
+      template  : require('./eshealth.html'),
       controller: ESHealthController
     });
 

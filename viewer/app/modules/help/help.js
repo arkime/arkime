@@ -62,7 +62,7 @@
    */
   angular.module('moloch')
      .component('molochHelp', {
-       template  : require('html!./help.html'),
+       template  : require('./help.html'),
        controller: HelpController
      });
 

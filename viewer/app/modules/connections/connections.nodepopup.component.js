@@ -45,7 +45,7 @@
 
   angular.module('moloch')
     .component('connectionsNodePopup', {
-      template  : require('html!./connections.nodepopup.html'),
+      template  : require('./connections.nodepopup.html'),
       controller: ConnectionsNodePopupController,
       bindings  : {
         node    : '<',

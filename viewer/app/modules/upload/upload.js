@@ -65,7 +65,7 @@
    */
   angular.module('moloch')
     .component('molochUpload', {
-      template  : require('html!./upload.html'),
+      template  : require('./upload.html'),
       controller: UploadController
     });
 
