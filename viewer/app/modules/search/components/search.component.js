@@ -2,8 +2,10 @@
 
   'use strict';
 
+  // TODO ECR - REMOVE
   const hourMS    = 3600000;
   let currentTime = new Date().getTime();
+
   let initialized;
   let lastParams = {};
   let manualChange;
@@ -71,15 +73,14 @@
         this.applyExpression();
       }
 
+      // TODO ECR - REMOVE
       // update the time inputs based on the url parameters
-      this.setupTimeParams(this.$routeParams.date, this.$routeParams.startTime,
-         this.$routeParams.stopTime);
-
-      this.timeBounding = 'last'; // default to lastPacket
-      if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
-
-      this.timeInterval = 'auto'; // default to lastPacket
-      if (this.$routeParams.interval) { this.timeInterval = this.$routeParams.interval; }
+      // this.setupTimeParams(this.$routeParams.date, this.$routeParams.startTime,
+      //    this.$routeParams.stopTime);
+      // this.timeBounding = 'last'; // default to lastPacket
+      // if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
+      // this.timeInterval = 'auto'; // default to lastPacket
+      // if (this.$routeParams.interval) { this.timeInterval = this.$routeParams.interval; }
 
       // load user's previous view choice
       if (sessionStorage && sessionStorage['moloch-view']) {
@@ -89,27 +90,29 @@
         this.view = this.$routeParams.view;
       }
 
+      // TODO ECR - REMOVE
       // date picker popups hidden to start
-      this.startTimePopup   = { opened: false };
-      this.stopTimePopup    = { opened: false };
-      // date picker display format
-      this.dateTimeFormat   = 'yyyy/MM/dd HH:mm:ss';
-      // other acceptable formats
-      this.altInputFormats  = ['yyyy/M!/d! H:mm:ss'];
+      // this.startTimePopup   = { opened: false };
+      // this.stopTimePopup    = { opened: false };
+      // // date picker display format
+      // this.dateTimeFormat   = 'yyyy/MM/dd HH:mm:ss';
+      // // other acceptable formats
+      // this.altInputFormats  = ['yyyy/M!/d! H:mm:ss'];
 
       if (issueChange) { this.change(); }
 
+      // TODO ECR - REMOVE
       // watch for changes in time parameters
-      this.$scope.$on('update:time', (event, args) => {
-        if (args.start) { // start time changed
-          this.startTime  = parseInt(args.start * 1000, 10);
-        }
-        if (args.stop) {  // stop time changed
-          this.stopTime   = parseInt(args.stop * 1000, 10);
-        }
-
-        this.changeDate(true);
-      });
+      // this.$scope.$on('update:time', (event, args) => {
+      //   if (args.start) { // start time changed
+      //     this.startTime  = parseInt(args.start * 1000, 10);
+      //   }
+      //   if (args.stop) {  // stop time changed
+      //     this.stopTime   = parseInt(args.stop * 1000, 10);
+      //   }
+      //
+      //   this.changeDate(true);
+      // });
 
       // watch for closing the action form
       this.$scope.$on('close:form:container', (event, args) => {
@@ -135,25 +138,27 @@
             change = true;
             this.$rootScope.expression = current.params.expression;
           }
-          if (current.params.bounding !== lastParams.bounding) {
-            change = true;
-            this.timeBounding = current.params.bounding || 'last';
-          }
-          if (current.params.interval !== lastParams.interval) {
-            change = true;
-            this.timeInterval = current.params.interval || 'auto';
-          }
+          // TODO ECR - REMOVE?
+          // if (current.params.bounding !== lastParams.bounding) {
+          //   change = true;
+          //   this.timeBounding = current.params.bounding || 'last';
+          // }
+          // if (current.params.interval !== lastParams.interval) {
+          //   change = true;
+          //   this.timeInterval = current.params.interval || 'auto';
+          // }
           if (current.params.view !== lastParams.view) {
             change = true;
             this.view = current.params.view;
           }
-          if (current.params.date !== lastParams.date ||
-              current.params.stopTime !== lastParams.stopTime ||
-              current.params.startTime !== lastParams.startTime) {
-            change = true;
-            this.setupTimeParams(current.params.date, current.params.startTime,
-               current.params.stopTime);
-          }
+          // TODO ECR - REMOVE?
+          // if (current.params.date !== lastParams.date ||
+          //     current.params.stopTime !== lastParams.stopTime ||
+          //     current.params.startTime !== lastParams.startTime) {
+          //   change = true;
+          //   this.setupTimeParams(current.params.date, current.params.startTime,
+          //      current.params.stopTime);
+          // }
 
           if (change) { this.change(); }
         }
@@ -183,6 +188,7 @@
     }
 
     /**
+     * TODO ECR - REMOVE
      * Sets up time query parameters and updates the url if necessary
      * @param {string} date           The time range to query within
      * @param {string} startTime      The start time for a custom time range
@@ -223,6 +229,7 @@
     }
 
     /**
+     * TODO ECR - only manage expression, bounding, interval, view
      * Fired when the url parameters for search have changed
      * (date, startTime, stopTime, expression, bounding, interval, view)
      */
@@ -277,6 +284,7 @@
 
     /* exposed functions --------------------------------------------------- */
     /**
+     * TODO ECR - REMOVE
      * Fired when the time range value changes
      * Updating the url parameter triggers $routeUpdate which triggers change()
      */
@@ -289,6 +297,7 @@
     }
 
     /**
+     * TODO ECR - REMOVE
      * Validates a date and updates delta time (stop time - start time)
      * Fired when a date value is changed (with 500 ms delay)
      * @param {bool} loadData Whether to issue query after updating time
@@ -317,6 +326,7 @@
      }
 
      /**
+      * TODO ECR - REMOVE
       * Fired when change bounded pulldown is changed
       * Applies the timeBounding url parameter
       * Updating the url parameter triggers $routeUpdate which triggers change()
@@ -330,6 +340,7 @@
      }
 
      /**
+      * TODO ECR - REMOVE
       * Fired when change interval pulldown is changed
       * Applies the timeBounding url parameter
       * Updating the url parameter triggers $routeUpdate which triggers change()
@@ -343,6 +354,7 @@
      }
 
     /**
+     * TODO ECR - REMOVE
      * Fired when search button or enter is clicked
      * Updates the date, stopTime, and startTime url parameters
      */

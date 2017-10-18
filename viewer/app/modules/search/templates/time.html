@@ -1,0 +1,132 @@
+<!-- time range select -->
+<div class="form-group margined-bottom">
+  <div class="input-group input-group-sm">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="top-left"
+      uib-tooltip="Time Range">
+      <span class="fa fa-clock-o"></span>
+    </span>
+    <select class="form-control time-range-control" convert-to-number
+      tabindex="3"
+      ng-model="$ctrl.timeRange"
+      ng-change="$ctrl.changeTimeRange()">
+      <option value="1">Last hour</option>
+      <option value="6">Last 6 hours</option>
+      <option value="24">Last 24 hours</option>
+      <option value="48">Last 48 hours</option>
+      <option value="72">Last 72 hours</option>
+      <option value="168">Last week</option>
+      <option value="720">Last month</option>
+      <option value="4380">Last 6 months</option>
+      <option value="-1">All (careful)</option>
+      <option value="0" disabled>Custom</option>
+    </select>
+  </div>
+</div> <!-- /time range select -->
+
+<!-- start time -->
+<div ng-if="$ctrl.timezone"
+  class="form-group margined-bottom"
+  ng-class="{'has-error':!$ctrl.startTime}">
+  <div class="input-group input-group-sm">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="top"
+      uib-tooltip="Beginning Time">
+      Start
+    </span>
+    <input type="text" class="form-control date-control"
+      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
+      ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
+      close-text="Close" enter-click="$ctrl.applyDate()"
+      ng-change="$ctrl.changeDate()" tabindex="4"
+      ng-model-options="{ debounce: 500 }"
+      alt-input-formats="$ctrl.altInputFormats" />
+    <div class="input-group-btn">
+      <button type="button" class="btn btn-default" tabindex="-1"
+        ng-click="$ctrl.startTimePopup.opened = !$ctrl.startTimePopup.opened">
+        <span class="fa fa-calendar-o"></span>
+      </button>
+    </div>
+  </div>
+</div> <!-- /start time -->
+
+<!-- stop time -->
+<div ng-if="$ctrl.timezone"
+  class="form-group margined-bottom"
+  ng-class="{'has-error':!$ctrl.startTime}">
+  <div class="input-group input-group-sm">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="top"
+      uib-tooltip="Ending Time">
+      End
+    </span>
+    <input type="text" class="form-control date-control"
+      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
+      ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
+      close-text="Close" enter-click="$ctrl.applyDate()"
+      ng-change="$ctrl.changeDate()" tabindex="5"
+      ng-model-options="{ debounce: 500 }"
+      alt-input-formats="$ctrl.altInputFormats" />
+    <div class="input-group-btn">
+      <button type="button" class="btn btn-default" tabindex="-1"
+        ng-click="$ctrl.stopTimePopup.opened = !$ctrl.stopTimePopup.opened">
+        <span class="fa fa-calendar-o"></span>
+      </button>
+    </div>
+  </div>
+</div> <!-- /stop time -->
+
+
+
+<!-- time bounding select -->
+<div class="form-group margined-bottom">
+  <div class="input-group input-group-sm">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="top-left"
+      uib-tooltip="Time Bounding">
+      Bounding
+    </span>
+    <select class="form-control time-range-control"
+      ng-model="$ctrl.timeBounding" tabindex="6"
+      ng-change="$ctrl.changeTimeBounding()">
+      <option value="first">First Packet</option>
+      <option value="last">Last Packet</option>
+      <option value="both">Bounded</option>
+      <option value="either">Session Overlaps</option>
+      <option value="database">Database</option>
+    </select>
+  </div>
+</div> <!-- /time bounding select -->
+
+<!-- time interval select -->
+<div class="form-group margined-bottom">
+  <div class="input-group input-group-sm">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="top-left"
+      uib-tooltip="Time Interval">
+      Interval
+    </span>
+    <select class="form-control time-range-control"
+      ng-model="$ctrl.timeInterval" tabindex="6"
+      ng-change="$ctrl.changeTimeInterval()">
+      <option value="auto">Auto</option>
+      <option value="second">Seconds</option>
+      <option value="minute">Minutes</option>
+      <option value="hour">Hours</option>
+      <option value="day">Days</option>
+    </select>
+  </div>
+</div> <!-- /time interval select -->
+
+<!-- human readable time range -->
+<div class="margined-top margined-left-lg display-inline">
+  <strong class="small text-theme-accent no-wrap">
+    <span ng-if="$ctrl.deltaTime && !$ctrl.timeError">
+      Time Range: {{$ctrl.deltaTime | readableTime}}
+    </span>
+    <span ng-if="$ctrl.timeError">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
+      {{$ctrl.timeError}}
+    </span>
+  </strong>
+</div>
