@@ -1716,10 +1716,10 @@ sub historyUpdate
         "type": "integer"
       },
       "recordsFiltered": {
-        "type": "integer"
+        "type": "long"
       },
       "recordsTotal": {
-        "type": "integer"
+        "type": "long"
       }
     }
   }
