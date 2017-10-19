@@ -52,7 +52,7 @@
 
       this.UserService.getSettings()
         .then((response) => {this.settings = response; })
-        .catch((error)   => {this.settings = {timezone: "local"}; });
+        .catch((error)   => {this.settings = {timezone: 'local'}; });
 
       if (this.$routeParams.userId !== undefined) {
         this.filters.userId = this.$routeParams.userId;
@@ -73,6 +73,25 @@
         this.currentPage  = args.currentPage;
 
         this.loadData();
+      });
+
+
+      // update the temporal parameters
+      this.$scope.$on('change:time:input', (event, args) => {
+        if (args.bounding)  { this.timeBounding = args.bounding;  }
+        if (args.interval)  { this.timeInterval = args.interval;  }
+
+        if (args.date) {
+          this.timeRange = args.date;
+          this.startTime = null;
+          this.stopTime  = null;
+        } else if (args.startTime && args.stopTime) {
+          this.timeRange = null;
+          this.startTime = args.startTime;
+          this.stopTime  = args.stopTime;
+        }
+
+        this.loadData(); // TODO ECR - send date or stop and start times
       });
     }
 

@@ -1,49 +1,42 @@
-<div class="container-fluid margin-for-main-and-sub-navbar">
+<div class="container-fluid">
 
-  <div class="sub-navbar">
-    <span class="sub-navbar-title">
-      <span class="fa-stack">
-        <span class="fa fa-history fa-stack-1x"></span>
-        <span class="fa fa-square-o fa-stack-2x"></span>
-      </span>&nbsp;
-      History
-    </span>
-    <div class="pull-right small toast-container">
-      <toast message="$ctrl.msg" type="$ctrl.msgType"
-        done="$ctrl.messageDone()"></toast>
+  <form>
+
+    <!-- search input -->
+    <span class="pull-right fa fa-lg fa-question-circle text-theme-primary help-cursor margined-top-lg"
+      uib-tooltip="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
+      tooltip-placement="bottom-right"></span>
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" class="form-control input-sm input-search"
+        ng-model="$ctrl.searchHistory"
+        ng-model-options="{debounce:400}" ng-change="$ctrl.loadData()"
+        placeholder="Search for history in the table below">
+    </div> <!-- /search input -->
+
+    <div class="form-inline margined-top">
+      <moloch-time timezone="{{::$ctrl.settings.timezone}}"></moloch-time>
     </div>
-  </div>
 
-  <div class="row">
+  </form>
+
+  <!-- paging -->
+  <form class="history-nav">
+    <div class="form-inline">
+      <moloch-pagination length="$ctrl.query.length"
+        records-total="$ctrl.history.recordsTotal"
+        records-filtered="$ctrl.history.recordsFiltered"
+        current-page="$ctrl.currentPage"
+        start="$ctrl.query.start"></moloch-pagination>
+    </div>
+  </form> <!-- /paging -->
+
+  <div class="row margin-for-main-and-sub-navbar">
     <div class="col-md-12">
 
-      <div class="row">
-        <!-- top pagination controls -->
-        <div class="col-md-7">
-          <moloch-pagination length="$ctrl.query.length"
-            records-total="$ctrl.history.recordsTotal"
-            records-filtered="$ctrl.history.recordsFiltered"
-            current-page="$ctrl.currentPage"
-            start="$ctrl.query.start"></moloch-pagination>
-        </div>
-        <div class="col-md-5">
-          <div class="input-group input-group-sm pull-right">
-            <span class="input-group-addon">
-              <span class="fa fa-search"></span>
-            </span>
-            <input type="text" class="form-control input-sm input-search"
-              ng-model="$ctrl.searchHistory"
-              ng-model-options="{debounce:400}" ng-change="$ctrl.loadData()"
-              placeholder="Search for history in the table below">
-          </div>
-          <small class="help-block small pull-right" style="text-align:right;">
-            <span class="fa fa-info-circle"></span>&nbsp;
-            use ? to replace a single character and * to replace zero or more characters
-          </small>
-        </div>
-      </div>
-
-      <table class="table small table-condensed table-striped margined-top">
+      <table class="table small table-condensed table-striped margined-top-xxxxlg">
         <thead>
         <tr>
           <th width="90px;">
@@ -162,11 +155,11 @@
                 </span>
               </dl>
               <em>
-              <strong>
-                <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
-                Parsed from:
-              </strong>
-              <span style="word-break:break-all;">{{::log.query}}</span>
+                <strong>
+                  <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
+                  Parsed from:
+                </strong>
+                <span style="word-break:break-all;">{{::log.query}}</span>
               </em>
             </div>
             <div ng-if="::(!log.query && log.recordsReturned === undefined)">

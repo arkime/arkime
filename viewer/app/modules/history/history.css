@@ -29,3 +29,45 @@ moloch-history table thead tr th input.input-filter {
   font-size     : 12px;
   margin-bottom : 2px;
 }
+
+/* navbar styles ------------------- */
+moloch-history form {
+  position: fixed;
+  right   : 0;
+  left    : 0;
+  z-index : 1029;
+}
+
+moloch-history form {
+  border          : none;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-secondary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+moloch-history form .time-range-control {
+  -webkit-appearance: none;
+}
+
+/* navbar with pagination */
+moloch-history form.history-nav {
+  z-index         : 999;
+  position        : fixed;
+  top             : 115px;
+  left            : 0;
+  right           : 0;
+  height          : 42px;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+moloch-history form.history-nav .form-inline {
+  margin-top: -3px;
+}
