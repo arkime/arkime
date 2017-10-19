@@ -413,7 +413,7 @@ ThreatStreamSource.prototype.openDb = function() {
   // * Close .moloch db
   // * mv .temp to .moloch
   // * Open .moloch
-  function beginImmediate(err) {
+  let beginImmediate = (err) => {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
       console.log(this.section, "Failed to lock sqlite DB", dbFile);
