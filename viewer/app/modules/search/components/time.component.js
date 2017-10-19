@@ -6,7 +6,7 @@
   let currentTime = new Date().getTime();
 
   /**
-   * TODO ECR - only display necessary time controls
+   * TODO ECR - only display necessary time controls (hide bounding/interval)
    * @class TimeController
    * @classdesc Interacts with moloch time controls
    * @example
@@ -57,27 +57,35 @@
         this.changeDate();
       });
 
-      // TODO ECR - test this
+
       // watch for the url parameters to change and update the page
-      // date, startTime, stopTime, expression, bounding, and view parameters
-      // are managed by the search component
+      // date, startTime, stopTime, bounding, and interval parameters
       this.$scope.$on('$routeUpdate', (event, current) => {
+        let change = false;
+
         if (current.params.bounding !== this.timeBounding) {
+          change = true;
           this.timeBounding = current.params.bounding || 'last';
         }
+
         if (current.params.interval !== this.timeInterval) {
+          change = true;
           this.timeInterval = current.params.interval || 'auto';
         }
 
         if (current.params.date !== this.timeRange ||
            current.params.stopTime !== this.stopTime ||
            current.params.startTime !== this.startTime) {
+          change = true;
           this.setupTimeParams(current.params.date, current.params.startTime,
              current.params.stopTime);
         }
 
-        this.change();
+        if (change) { this.change(); }
       });
+
+      // initiate change
+      this.change();
     }
 
     /**
@@ -89,7 +97,7 @@
     setupTimeParams(date, startTime, stopTime) {
       if (date) { // time range is available
         this.timeRange = date;
-        if (this.timeRange === '-1') { // all time
+        if (parseInt(this.timeRange) === -1) { // all time
           this.startTime  = hourMS * 5;
           this.stopTime   = currentTime;
         } else if (this.timeRange > 0) {
@@ -118,11 +126,14 @@
         // there are no time query parameters, so set defaults
         this.timeRange = '1'; // default to 1 hour
       }
-
-      this.change();
     }
 
-    // TODO ECR - doc and rename
+    /**
+     * Fired on init and when search parameters for date, stopTime, startTime,
+     * bounding, and interval are changed
+     * Calculates the new date or stopTime and startTime
+     * Emits a change:time:input event for the parent controller to watch for
+     */
     change() {
       let useDateRange = false;
 
@@ -156,7 +167,7 @@
           args.stopTime   = (this.stopTime / 1000).toFixed();
         }
 
-        this.$scope.$emit('change:search', args); // TODO ECR - same event or new one?
+        this.$scope.$emit('change:time:input', args);
       }
     }
 
@@ -167,6 +178,7 @@
      * Updating the url parameter triggers $routeUpdate which triggers change()
      */
     changeTimeRange() {
+      this.deltaTime = null;
       this.timeError = false;
 
       this.$location.search('date', this.timeRange);
@@ -216,7 +228,6 @@
      * Fired when change bounded select box is changed
      * Applies the timeBounding url parameter
      * Updating the url parameter triggers $routeUpdate which triggers change()
-     * TODO ECR - UPDATE DOC
      */
     changeTimeBounding() {
       if (this.timeBounding !== 'last') {
@@ -227,10 +238,9 @@
     }
 
     /**
-     * Fired when change interval pulldown is changed
+     * Fired when change interval select box is changed
      * Applies the timeBounding url parameter
      * Updating the url parameter triggers $routeUpdate which triggers change()
-     * TODO ECR - UPDATE DOC
      */
     changeTimeInterval() {
       if (this.timeInterval !== 'auto') {
@@ -252,7 +262,7 @@
      .component('molochTime', {
        template  : require('../templates/time.html'),
        controller: TimeController,
-       bindings  : { timezone: '<' }
+       bindings  : { timezone: '@' }
      });
 
 })();
