@@ -2395,6 +2395,29 @@ app.get('/history/list', function(req, res) {
     }
   }
 
+  // filter history table by a time range
+  if (req.query.startTime && req.query.stopTime) {
+    if (! /^[0-9]+$/.test(req.query.startTime)) {
+      req.query.startTime = Date.parse(req.query.startTime.replace("+", " "))/1000;
+    } else {
+      req.query.startTime = parseInt(req.query.startTime, 10);
+    }
+
+    if (! /^[0-9]+$/.test(req.query.stopTime)) {
+      req.query.stopTime = Date.parse(req.query.stopTime.replace("+", " "))/1000;
+    } else {
+      req.query.stopTime = parseInt(req.query.stopTime, 10);
+    }
+
+    if (!query.query) { query.query = { bool: {} }; }
+    query.query.bool.filter = [{
+      range: { timestamp: {
+        gte: req.query.startTime,
+        lte: req.query.stopTime
+      } }
+    }];
+  }
+
   async.parallel({
      logs: function (cb) {
        Db.searchHistory(query, function(err, result) {

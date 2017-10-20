@@ -79,7 +79,7 @@
 
       if (issueChange) { this.change(); }
 
-      // LISTEN!
+      /* LISTEN! */
       // update the temporal parameters
       this.$scope.$on('change:time:input', (event, args) => {
         if (args.bounding)  { this.timeBounding = args.bounding;  }
@@ -145,13 +145,16 @@
     } /* /onInit */
 
     /**
-     * Clones the url parameters to lastParams so the $routeUpdate event
-     * knows if the params that matter have changed
+     * Clones the view and expression url parameters to lastParams so the
+     * $routeUpdate event knows if these parameters have changed
      */
     cloneParams() {
       lastParams = {}; // update the parameters
-      for (let k in this.$location.search()) {
-        lastParams[k] = this.$location.search()[k];
+      let params = this.$location.search();
+      for (let k in params) {
+        if (params.hasOwnProperty(k) && (k === 'expression' || k === 'view')) {
+          lastParams[k] = params[k];
+        }
       }
     }
 

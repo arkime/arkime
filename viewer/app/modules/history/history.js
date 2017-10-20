@@ -2,6 +2,8 @@
 
   'use strict';
 
+  let initialized;
+
   /**
    * @class HistoryController
    * @classdesc Interacts with moloch history page
@@ -35,6 +37,7 @@
       this.currentPage  = 1;
       this.query        = { length:50, start:0 };
       this.filters      = {}; // filters for column values
+      this.colSpan      = 7;
 
       if (this.$routeParams.length) {
         this.query.length = parseInt(this.$routeParams.length);
@@ -44,7 +47,7 @@
         { name:'Time', sort:'timestamp', nowrap:true, width:10, help:'The time of the request' },
         { name:'Time Range', sort:'range', nowrap:true, width:8, help:'The time range of the request' },
         { name:'User ID', sort:'userId', nowrap:true, width:11, filter:true, permission:'createEnabled', help:'The id of the user that initiated the request' },
-        { name:'Query Time', sort:'queryTime', nowrap:true, width:8, filter:true, help:'Execution time in MS' },
+        { name:'Query Time', sort:'queryTime', nowrap:true, width:8, help:'Execution time in MS' },
         { name:'API', sort:'api', nowrap:true, width:13, filter:true, help:'The API endpoint of the request' },
         { name:'Expression', sort:'expression', nowrap:true, width:27, exists:false, help:'The query expression issued with the request' },
         { name:'View', sort:'view.name', nowrap:true, width:23, exists:false, help:'The view expression applied to the request' }
@@ -54,16 +57,17 @@
         .then((response) => {this.settings = response; })
         .catch((error)   => {this.settings = {timezone: 'local'}; });
 
-      if (this.$routeParams.userId !== undefined) {
-        this.filters.userId = this.$routeParams.userId;
-        this.loadData();
-      } else {
-        this.UserService.getCurrent()
-          .then((response) => {
-            this.filters.userId = response.userId;
-            this.loadData();
-          });
-      }
+      this.UserService.getCurrent()
+        .then((response) => {
+          if (response.createEnabled) { this.colSpan = 8; }
+          this.filters.userId = this.$routeParams.userId || response.userId;
+          initialized = true;
+          this.loadData();
+        })
+        .catch(() => {
+          initialized = true;
+          this.loadData();
+        });
 
       /* LISTEN! */
       this.$scope.$on('change:pagination', (event, args) => {
@@ -72,15 +76,11 @@
         this.query.start  = args.start;
         this.currentPage  = args.currentPage;
 
-        this.loadData();
+        if (initialized) { this.loadData(); }
       });
-
 
       // update the temporal parameters
       this.$scope.$on('change:time:input', (event, args) => {
-        if (args.bounding)  { this.timeBounding = args.bounding;  }
-        if (args.interval)  { this.timeInterval = args.interval;  }
-
         if (args.date) {
           this.timeRange = args.date;
           this.startTime = null;
@@ -91,7 +91,7 @@
           this.stopTime  = args.stopTime;
         }
 
-        this.loadData(); // TODO ECR - send date or stop and start times
+        if (initialized) { this.loadData(); }
       });
     }
 
@@ -105,6 +105,10 @@
         start     : this.query.start,
         length    : this.query.length
       };
+
+      if (this.timeRange) { params.date       = this.timeRange; }
+      if (this.startTime) { params.startTime  = this.startTime; }
+      if (this.stopTime)  { params.stopTime   = this.stopTime;  }
 
       let exists = [];
       for (let i = 0, len = this.columns.length; i < len; ++i) {

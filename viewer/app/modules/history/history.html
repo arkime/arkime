@@ -17,7 +17,8 @@
     </div> <!-- /search input -->
 
     <div class="form-inline margined-top">
-      <moloch-time timezone="{{::$ctrl.settings.timezone}}"></moloch-time>
+      <moloch-time timezone="{{::$ctrl.settings.timezone}}"
+        hide-bounding="::true" hide-interval="::true"></moloch-time>
     </div>
 
   </form>
@@ -84,7 +85,7 @@
         </thead>
         <tbody ng-if="!$ctrl.error">
         <tr ng-if="$ctrl.history.data.length === 0">
-          <td colspan="7" class="text-danger text-center">
+          <td colspan="{{::$ctrl.colSpan}}" class="text-danger text-center">
             <span class="fa fa-warning"></span>&nbsp;
             <strong>No history or none that matches your search.</strong>
           </td>
