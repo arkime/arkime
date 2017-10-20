@@ -10,7 +10,8 @@
    * @class TimeController
    * @classdesc Interacts with moloch time controls
    * @example
-   * '<moloch-time></moloch-time>'
+   * ' <moloch-time timezone="{{::$ctrl.timezone}}"
+   *     hide-bounding="::true" hide-interval="::true"></moloch-time>'
    */
   class TimeController {
 
@@ -262,7 +263,11 @@
      .component('molochTime', {
        template  : require('../templates/time.html'),
        controller: TimeController,
-       bindings  : { timezone: '@' }
+       bindings  : {
+         timezone     : '@',
+         hideBounding : '<',
+         hideInterval : '<'
+       }
      });
 
 })();

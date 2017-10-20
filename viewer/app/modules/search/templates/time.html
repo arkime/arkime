@@ -79,7 +79,7 @@
 
 
 <!-- time bounding select -->
-<div class="form-group margined-bottom">
+<div class="form-group margined-bottom" ng-if="!$ctrl.hideBounding">
   <div class="input-group input-group-sm">
     <span class="input-group-addon cursor-help"
       tooltip-placement="top-left"
@@ -99,7 +99,7 @@
 </div> <!-- /time bounding select -->
 
 <!-- time interval select -->
-<div class="form-group margined-bottom">
+<div class="form-group margined-bottom" ng-if="!$ctrl.hideInterval">
   <div class="input-group input-group-sm">
     <span class="input-group-addon cursor-help"
       tooltip-placement="top-left"
