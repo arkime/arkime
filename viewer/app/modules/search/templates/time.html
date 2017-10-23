@@ -25,8 +25,7 @@
 </div> <!-- /time range select -->
 
 <!-- start time -->
-<div ng-if="$ctrl.timezone"
-  class="form-group margined-bottom"
+<div class="form-group margined-bottom"
   ng-class="{'has-error':!$ctrl.startTime}">
   <div class="input-group input-group-sm">
     <span class="input-group-addon cursor-help"
@@ -35,7 +34,7 @@
       Start
     </span>
     <input type="text" class="form-control date-control"
-      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
+      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{$ctrl.timezone}}"
       ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
       close-text="Close" enter-click="$ctrl.applyDate()"
       ng-change="$ctrl.changeDate()" tabindex="4"
@@ -51,8 +50,7 @@
 </div> <!-- /start time -->
 
 <!-- stop time -->
-<div ng-if="$ctrl.timezone"
-  class="form-group margined-bottom"
+<div class="form-group margined-bottom"
   ng-class="{'has-error':!$ctrl.startTime}">
   <div class="input-group input-group-sm">
     <span class="input-group-addon cursor-help"
@@ -61,7 +59,7 @@
       End
     </span>
     <input type="text" class="form-control date-control"
-      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
+      uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{$ctrl.timezone}}"
       ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
       close-text="Close" enter-click="$ctrl.applyDate()"
       ng-change="$ctrl.changeDate()" tabindex="5"

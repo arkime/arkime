@@ -6,7 +6,6 @@
   let currentTime = new Date().getTime();
 
   /**
-   * TODO ECR - only display necessary time controls (hide bounding/interval)
    * @class TimeController
    * @classdesc Interacts with moloch time controls
    * @example
