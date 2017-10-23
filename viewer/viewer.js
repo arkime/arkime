@@ -138,7 +138,12 @@ app.use(function(req, res, next) {
   if (res.setTimeout) {
     res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
   }
-  req.url = req.url.replace(Config.basePath(), "/");
+  if (Config.basePath() !== "/") {
+    if (req.url === "/") {
+      return res.redirect(Config.basePath());
+    }
+    req.url = req.url.replace(Config.basePath(), "/");
+  }
   return next();
 });
 app.use(bodyParser.json());
