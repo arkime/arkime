@@ -5,9 +5,9 @@ shared:
             statuses: [SUCCESS, FAILURE]
 jobs:
     main:
-        image: centos:7
+        image: andywick/moloch-build-7:1
         steps:
-            - yum install -y sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 fontconfig pango libXcomposite gtk3 gdk2 atk libXtst GConf2 libXScrnSaver alsa-lib
+            - ln -s /thirdparty .
             - ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
             - make install
