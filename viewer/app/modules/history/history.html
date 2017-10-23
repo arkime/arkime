@@ -124,7 +124,7 @@
           </td>
         </tr>
         <tr ng-repeat-end ng-if="log.expanded">
-          <td colspan="7">
+          <td colspan="{{::$ctrl.colSpan}}">
             <div ng-if="::(log.query || log.recordsReturned !== undefined)">
               <dl class="dl-horizontal">
                 <dt><h5>
@@ -160,7 +160,7 @@
                   <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
                   Parsed from:
                 </strong>
-                <span style="word-break:break-all;">{{::log.query}}</span>
+                <span style="word-break:break-all;">{{::log.api}}?{{::log.query}}</span>
               </em>
             </div>
             <div ng-if="::(!log.query && log.recordsReturned === undefined)">
