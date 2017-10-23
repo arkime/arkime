@@ -1,4 +1,4 @@
-use Test::More tests => 26;
+use Test::More tests => 28;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -80,6 +80,14 @@ my $pwd = getcwd() . "/pcap";
     is ($item->{api}, "/sessions.json", "Test4: api");
     $json = viewerGet("/history/list?userId=historytest1&api=somethingsilly");
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
+
+# Should be able to filter by time range
+    my $current = time;
+    my $pastHour = $current - 3600;
+    $json = viewerGet("/history/list?userId=historytest1&startTime=$pastHour&stopTime=$current");
+    is ($json->{recordsFiltered}, 1, "Test5: recordsFiltered");
+    $json = viewerGet("/history/list?userId=historytest1&startTime=18000&stopTime=$pastHour");
+    is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
     $json = viewerDelete("/history/list/$item->{id}?molochRegressionUser=historytest1");

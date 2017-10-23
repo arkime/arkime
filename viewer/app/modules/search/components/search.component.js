@@ -2,8 +2,6 @@
 
   'use strict';
 
-  const hourMS    = 3600000;
-  let currentTime = new Date().getTime();
   let initialized;
   let lastParams = {};
   let manualChange;
@@ -71,16 +69,6 @@
         this.applyExpression();
       }
 
-      // update the time inputs based on the url parameters
-      this.setupTimeParams(this.$routeParams.date, this.$routeParams.startTime,
-         this.$routeParams.stopTime);
-
-      this.timeBounding = 'last'; // default to lastPacket
-      if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
-
-      this.timeInterval = 'auto'; // default to lastPacket
-      if (this.$routeParams.interval) { this.timeInterval = this.$routeParams.interval; }
-
       // load user's previous view choice
       if (sessionStorage && sessionStorage['moloch-view']) {
         this.view = sessionStorage['moloch-view'];
@@ -89,26 +77,25 @@
         this.view = this.$routeParams.view;
       }
 
-      // date picker popups hidden to start
-      this.startTimePopup   = { opened: false };
-      this.stopTimePopup    = { opened: false };
-      // date picker display format
-      this.dateTimeFormat   = 'yyyy/MM/dd HH:mm:ss';
-      // other acceptable formats
-      this.altInputFormats  = ['yyyy/M!/d! H:mm:ss'];
-
       if (issueChange) { this.change(); }
 
-      // watch for changes in time parameters
-      this.$scope.$on('update:time', (event, args) => {
-        if (args.start) { // start time changed
-          this.startTime  = parseInt(args.start * 1000, 10);
-        }
-        if (args.stop) {  // stop time changed
-          this.stopTime   = parseInt(args.stop * 1000, 10);
+      /* LISTEN! */
+      // update the temporal parameters
+      this.$scope.$on('change:time:input', (event, args) => {
+        if (args.bounding)  { this.timeBounding = args.bounding;  }
+        if (args.interval)  { this.timeInterval = args.interval;  }
+
+        if (args.date) {
+          this.timeRange = args.date;
+          this.startTime = null;
+          this.stopTime  = null;
+        } else if (args.startTime && args.stopTime) {
+          this.timeRange = null;
+          this.startTime = args.startTime;
+          this.stopTime  = args.stopTime;
         }
 
-        this.changeDate(true);
+        this.change();
       });
 
       // watch for closing the action form
@@ -135,24 +122,10 @@
             change = true;
             this.$rootScope.expression = current.params.expression;
           }
-          if (current.params.bounding !== lastParams.bounding) {
-            change = true;
-            this.timeBounding = current.params.bounding || 'last';
-          }
-          if (current.params.interval !== lastParams.interval) {
-            change = true;
-            this.timeInterval = current.params.interval || 'auto';
-          }
+
           if (current.params.view !== lastParams.view) {
             change = true;
             this.view = current.params.view;
-          }
-          if (current.params.date !== lastParams.date ||
-              current.params.stopTime !== lastParams.stopTime ||
-              current.params.startTime !== lastParams.startTime) {
-            change = true;
-            this.setupTimeParams(current.params.date, current.params.startTime,
-               current.params.stopTime);
           }
 
           if (change) { this.change(); }
@@ -172,53 +145,16 @@
     } /* /onInit */
 
     /**
-     * Clones the url parameters to lastParams so the $routeUpdate event
-     * knows if the params that matter have changed
+     * Clones the view and expression url parameters to lastParams so the
+     * $routeUpdate event knows if these parameters have changed
      */
     cloneParams() {
       lastParams = {}; // update the parameters
-      for (let k in this.$location.search()) {
-        lastParams[k] = this.$location.search()[k];
-      }
-    }
-
-    /**
-     * Sets up time query parameters and updates the url if necessary
-     * @param {string} date           The time range to query within
-     * @param {string} startTime      The start time for a custom time range
-     * @param {string} stopTime       The stop time for a custom time range
-     */
-    setupTimeParams(date, startTime, stopTime) {
-      if (date) { // time range is available
-        this.timeRange = date;
-        if (this.timeRange === '-1') { // all time
-          this.startTime  = hourMS * 5;
-          this.stopTime   = currentTime;
-        } else if (this.timeRange > 0) {
-          this.stopTime   = currentTime;
-          this.startTime  = currentTime - (hourMS * this.timeRange);
+      let params = this.$location.search();
+      for (let k in params) {
+        if (params.hasOwnProperty(k) && (k === 'expression' || k === 'view')) {
+          lastParams[k] = params[k];
         }
-      } else if(startTime && stopTime) {
-        // start and stop times available
-        let stop  = parseInt(stopTime * 1000, 10);
-        let start = parseInt(startTime * 1000, 10);
-
-        if (stop && start && !isNaN(stop) && !isNaN(start)) {
-          // if we can parse start and stop time, set them
-          this.timeRange  = '0'; // custom time range
-          this.stopTime   = stop;
-          this.startTime  = start;
-          if (stop < start) {
-            this.timeError = 'Stop time cannot be before start time';
-          }
-          // update the displayed time range
-          this.deltaTime = this.stopTime - this.startTime;
-        } else { // if we can't parse stop or start time, set default
-          this.timeRange = '1'; // default to 1 hour
-        }
-      } else if (!date && !startTime && !stopTime) {
-        // there are no time query parameters, so set defaults
-        this.timeRange = '1'; // default to 1 hour
       }
     }
 
@@ -227,46 +163,22 @@
      * (date, startTime, stopTime, expression, bounding, interval, view)
      */
     change() {
-      let useDateRange = false;
+      let args = {
+        expression: this.$rootScope.expression,
+        bounding  : this.timeBounding,
+        interval  : this.timeInterval,
+        view      : this.view
+      };
 
-      // build the parameters to send to the parent controller that makes the req
-      if (this.timeRange > 0) {
-        // if it's not a custom time range or all, update the time
-        currentTime = new Date().getTime();
+      if (this.timeRange) { args.date       = this.timeRange; }
+      if (this.startTime) { args.startTime  = this.startTime; }
+      if (this.stopTime)  { args.stopTime   = this.stopTime;  }
 
-        this.stopTime   = currentTime;
-        this.startTime  = currentTime - (hourMS * this.timeRange);
-      }
-
-      if (parseInt(this.timeRange) === -1) { // all time
-        this.startTime  = hourMS * 5;
-        this.stopTime   = currentTime;
-        useDateRange    = true;
-      }
-
-      // always use startTime and stopTime instead of date range (except for all)
-      // querying with date range causes unexpected paging behavior
-      // because there are always new sessions
-      if (this.startTime && this.stopTime) {
-        let args = {
-          expression: this.$rootScope.expression,
-          bounding  : this.timeBounding,
-          interval  : this.timeInterval,
-          view      : this.view
-        };
-
-        if (useDateRange) { args.date = -1; }
-        else {
-          args.startTime  = (this.startTime / 1000).toFixed();
-          args.stopTime   = (this.stopTime / 1000).toFixed();
-        }
-
-        this.$scope.$emit('change:search', args);
-        this.$rootScope.$broadcast('issue:search', {
-          expression: this.$rootScope.expression,
-          view      : this.view
-        });
-      }
+      this.$scope.$emit('change:search', args);
+      this.$rootScope.$broadcast('issue:search', {
+        expression: this.$rootScope.expression,
+        view      : this.view
+      });
 
       this.$timeout(() => { // wait for digest cycle to finish so $routeUpdate
         // event has the correct flag value
@@ -276,81 +188,6 @@
 
 
     /* exposed functions --------------------------------------------------- */
-    /**
-     * Fired when the time range value changes
-     * Updating the url parameter triggers $routeUpdate which triggers change()
-     */
-    changeTimeRange() {
-      this.timeError = false;
-
-      this.$location.search('date', this.timeRange);
-      this.$location.search('stopTime', null);
-      this.$location.search('startTime', null);
-    }
-
-    /**
-     * Validates a date and updates delta time (stop time - start time)
-     * Fired when a date value is changed (with 500 ms delay)
-     * @param {bool} loadData Whether to issue query after updating time
-     */
-     changeDate(loadData) {
-       this.timeError = false;
-       this.timeRange = '0'; // custom time range
-
-       let stopSec  = parseInt((this.stopTime / 1000).toFixed());
-       let startSec = parseInt((this.startTime / 1000).toFixed());
-
-       // only continue if start and stop are valid numbers
-       if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
-         return;
-       }
-
-       if (stopSec < startSec) { // don't continue if stop < start
-         this.timeError = 'Stop time cannot be before start time';
-         return;
-       }
-
-       // update the displayed time range
-       this.deltaTime = this.stopTime - this.startTime;
-
-      if (loadData) { this.applyDate(); }
-     }
-
-     /**
-      * Fired when change bounded pulldown is changed
-      * Applies the timeBounding url parameter
-      * Updating the url parameter triggers $routeUpdate which triggers change()
-      */
-     changeTimeBounding() {
-       if (this.timeBounding !== 'last') {
-         this.$location.search('bounding', this.timeBounding);
-       } else {
-         this.$location.search('bounding', null);
-       }
-     }
-
-     /**
-      * Fired when change interval pulldown is changed
-      * Applies the timeBounding url parameter
-      * Updating the url parameter triggers $routeUpdate which triggers change()
-      */
-     changeTimeInterval() {
-       if (this.timeInterval !== 'auto') {
-         this.$location.search('interval', this.timeInterval);
-       } else {
-         this.$location.search('interval', null);
-       }
-     }
-
-    /**
-     * Fired when search button or enter is clicked
-     * Updates the date, stopTime, and startTime url parameters
-     */
-    applyDate() {
-      this.$location.search('date', null);
-      this.$location.search('stopTime', parseInt((this.stopTime / 1000).toFixed()));
-      this.$location.search('startTime', parseInt((this.startTime / 1000).toFixed()));
-    }
 
     /**
      * Fired when search button or enter is clicked
@@ -366,13 +203,12 @@
 
     /**
      * Fired when the search button or enter is clicked
-     * Updates the expression, date, startTime, and stopTime url parameters
+     * Updates the expression
      */
     applyParams() {
       manualChange = true;
 
       this.applyExpression();
-      if (parseInt(this.timeRange) === 0) { this.applyDate(); }
 
       this.change();
     }

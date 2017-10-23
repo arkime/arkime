@@ -18,6 +18,7 @@ require('./session/tests/session.sticky.component.test');
 require('./search/tests/search.component.test');
 require('./search/tests/field.service.test');
 require('./search/tests/expression.typeahead.test');
+require('./search/tests/time.component.test');
 
 require('./health/tests/eshealth.component.test');
 require('./health/tests/health.service.test');
