@@ -270,7 +270,7 @@ void moloch_plugin_init()
 
     char **dsts = moloch_config_str_list(NULL, "netflowDestinations", NULL);
     if (dsts == NULL || dsts[0] == NULL || dsts[0][0] == 0){
-        LOGEXIT("Unsupport netflowDestinations must be set");
+        LOGEXIT("netflowDestinations must be set");
     }
 
     int i;

@@ -16,6 +16,9 @@
 
 typedef struct {
     uint32_t   sshLen;
+    uint16_t   packets[2];
+    uint16_t   counts[2][2];
+    uint16_t   done;
 } SSHInfo_t;
 
 static int verField;
@@ -28,6 +31,29 @@ extern MolochConfig_t        config;
 int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
+
+    /* From packets 6-15 count number number of packets between 0-49 and 50-99 bytes.
+     * If more of the bigger packets in both directions this probably is a reverse shell
+     */
+    ssh->packets[which]++;
+    if (ssh->packets[which] > 5) {
+        if (remaining < 50)
+            ssh->counts[which][0]++;
+        else if (remaining < 100)
+            ssh->counts[which][1]++;
+
+        if (ssh->packets[which] > 15) {
+            if (ssh->counts[0][1] > ssh->counts[0][0] && ssh->counts[1][1] > ssh->counts[1][0]) {
+                moloch_session_add_tag(session, "ssh-reverse-shell");
+            }
+
+            moloch_parsers_unregister(session, uw);
+        }
+    }
+
+    // ssh->done is set when are finished looking for version string and keys
+    if (ssh->done)
+        return 0;
 
     if (memcmp("SSH", data, 3) == 0) {
         unsigned char *n = memchr(data, 0x0a, remaining);
@@ -61,7 +87,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
 
             // Can't have a ssh packet > 35000 bytes.
             if (ssh->sshLen >= 35000) {
-                moloch_parsers_unregister(session, uw);
+                ssh->done = 1;
                 return 0;
             }
             ssh->sshLen += 4;
@@ -71,7 +97,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
             BSB_IMPORT_u08(bsb, sshCode);
 
             if (sshCode == 33) {
-                moloch_parsers_unregister(session, uw);
+                ssh->done = 1;
 
                 uint32_t keyLen = 0;
                 BSB_IMPORT_u32(bsb, keyLen);
