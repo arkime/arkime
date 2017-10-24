@@ -8,12 +8,18 @@ jobs:
         image: andywick/moloch-build-7:1
         steps:
             - ln -s /thirdparty .
-            - ./easybutton-build.sh
+            - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
             - make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-            - (cd viewer; npm install ; npm test)
-            - slack: curl -X POST -H 'Content-type: application/json' --data "{\"username\": \"MolochBuild\", \"text\":\"It worked! $SD_PULL_REQUEST\"}" $SLACK
+            - test-viewer: (cd viewer; npm install ; npm test)
+            - slack-success: |
+                BUILD_VERSION=`git describe --tags`
+                BODY="{\"username\": \"MolochBuild\", \"text\":\"It worked! $GIT_BRANCH - $BUILD_VERSION - $SD_PULL_REQUEST\"}"
+                curl -X POST \
+                  -H "Content-type: application/json" \
+                  --data $BODY \
+                  $SLACK
 
