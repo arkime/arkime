@@ -15,4 +15,5 @@ jobs:
             - (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
             - (cd viewer; npm install ; npm test)
+            - curl -X POST -H 'Content-type: application/json' --data "{\"username\": \"MolochBuild\", \"text\":\"It worked! $SD_PULL_REQUEST\"}" $SLACK
 
