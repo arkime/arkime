@@ -20,7 +20,7 @@ jobs:
                 BODY="{\"username\": \"MolochBuild\", \"text\":\"It worked! $GIT_BRANCH - $BUILD_VERSION - $SD_PULL_REQUEST\"}"
                 echo $BUILD_VERSION
                 echo $BODY
-                curl -XPOST -H "Content-type: application/json" --data $"BODY" $SLACK
+                curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
             - SLACK
 
