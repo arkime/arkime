@@ -45,6 +45,11 @@ function ThreatStreamSource (api, section) {
     return;
   }
 
+  this.reloadTime = "never";
+  api.app.get("/threatstream/_reloadTime", (req, res) => {
+    res.send(this.reloadTime.toString());
+  });
+
   switch (this.mode) {
   case "api":
     this.inProgress = 0;
@@ -70,6 +75,11 @@ function ThreatStreamSource (api, section) {
     ThreatStreamSource.prototype.getURL    = getURLZip;
     ThreatStreamSource.prototype.dump      = dumpZip;
     api.addSource("threatstream", this);
+    api.app.get("/threatstream/_reload", (req, res) => {
+      this.loadFile.bind(this);
+      res.send("Ok");
+    });
+
     break;
   case "sqlite3":
     sqlite3           = require('sqlite3');
@@ -82,6 +92,10 @@ function ThreatStreamSource (api, section) {
     ThreatStreamSource.prototype.getEmail  = getEmailSqlite3;
     ThreatStreamSource.prototype.getURL    = getURLSqlite3;
     this.loadTypes();
+    api.app.get("/threatstream/_reload", (req, res) => {
+      this.openDB.bind(this)
+      res.send("Ok");
+    });
     break;
   default:
     console.log(this.section, "Unknown mode", this.mode);
@@ -198,6 +212,7 @@ ThreatStreamSource.prototype.loadFile = function() {
     if (statusCode === 200 || !this.loaded) {
       this.loaded = true;
       this.parseFile();
+      this.reloadTime = new Date();
     }
   });
 };
@@ -438,6 +453,7 @@ ThreatStreamSource.prototype.openDb = function() {
             exec (`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`,  (err, stdout, stderr) => {
               this.db = new sqlite3.Database(`${dbFile}.moloch`, sqlite3.OPEN_READONLY);
               console.log(`${this.section} - Loaded DB`);
+              this.reloadTime = new Date();
             });
           });
         });
