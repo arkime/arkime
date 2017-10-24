@@ -22,4 +22,6 @@ jobs:
                   -H "Content-type: application/json" \
                   --data $BODY \
                   $SLACK
+        secrets:
+            - SLACK
 
