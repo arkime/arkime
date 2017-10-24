@@ -125,8 +125,10 @@
         </tr>
         <tr ng-repeat-end ng-if="log.expanded">
           <td colspan="{{::$ctrl.colSpan}}">
-            <div ng-if="::(log.query || log.recordsReturned !== undefined)">
-              <dl class="dl-horizontal">
+
+            <dl class="dl-horizontal">
+              <!-- count info -->
+              <span ng-if="::log.recordsReturned !== undefined">
                 <dt><h5>
                   Counts
                 </h5></dt>
@@ -140,6 +142,20 @@
                 <span ng-if="::log.recordsTotal !== undefined">
                   <dt>Records Total</dt><dd>{{::log.recordsTotal}}</dd>
                 </span>
+              </span> <!-- /count info -->
+              <!-- req body -->
+              <span ng-if="::log.body">
+                <dt><h5>
+                  Request Body
+                </h5></dt>
+                <dd>&nbsp;</dd>
+                <span ng-repeat="(key, value) in ::log.body">
+                  <dt>{{::key}}</dt>
+                  <dd>{{::value}}</dd>
+                </span>
+              </span> <!-- /req body -->
+              <!-- query params -->
+              <span ng-if="::log.query">
                 <dt><h5>
                   Query parameters
                   <sup><span class="fa fa-info-circle text-theme-primary"></span></sup>
@@ -154,19 +170,21 @@
                     </span>
                   </dd>
                 </span>
-              </dl>
-              <em>
-                <strong>
-                  <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
-                  Parsed from:
-                </strong>
-                <span style="word-break:break-all;">{{::log.api}}?{{::log.query}}</span>
-              </em>
-            </div>
-            <div ng-if="::(!log.query && log.recordsReturned === undefined)">
+                <div class="margined-top-lg"><em>
+                  <strong>
+                    <span class="fa fa-info-circle text-theme-primary"></span>&nbsp;
+                    Parsed from:
+                  </strong>
+                  <span style="word-break:break-all;">{{::log.api}}?{{::log.query}}</span>
+                </em></div>
+              </span> <!-- /query params -->
+            </dl>
+            <!-- no info -->
+            <div ng-if="::(!log.query && !log.body && log.recordsReturned === undefined)"
+              class="margined-bottom-lg">
               <span class="fa fa-frown-o fa-lg"></span>&nbsp;
               <em>Sorry! There is no more information to show.</em>
-            </div>
+            </div> <!-- no info -->
           </td>
         </tr>
         </tbody>

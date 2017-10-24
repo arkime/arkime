@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 36;
+var MIN_DB_VERSION = 37;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -728,10 +728,24 @@ function logAction(uiPage) {
       }
     }
 
+    // save the request body
+    var avoidProps  = { password:true, newPassword:true, currentPassword:true };
+    var bodyClone   = {};
+
+    for (var key in req.body) {
+      if (req.body.hasOwnProperty(key) && !avoidProps[key]) {
+        bodyClone[key] = req.body[key];
+      }
+    }
+
+    if (Object.keys(bodyClone).length > 0) {
+      log.body = bodyClone;
+    }
+
     res.logCounts = function(recordsReturned, recordsFiltered, recordsTotal) {
       log.recordsReturned = recordsReturned;
       log.recordsFiltered = recordsFiltered;
-      log.recordsTotal = recordsTotal;
+      log.recordsTotal    = recordsTotal;
     }
 
     req._molochStartTime = new Date();
@@ -1354,7 +1368,7 @@ app.post('/user/cron/delete', [checkCookieToken, logAction()], function(req, res
 });
 
 // updates a user's specified cron query
-app.post('/user/cron/update', checkCookieToken, function(req, res) {
+app.post('/user/cron/update', [checkCookieToken, logAction()], function(req, res) {
   function error(status, text) {
     res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
@@ -4828,31 +4842,6 @@ app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
-app.post('/changeSettings', [checkToken, logAction()] , function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("changeSettings failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.settings = req.body;
-    delete user.settings.token;
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("changeSettings error", err, info);
-        return error("Change settings update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
-    });
-  });
-});
-
 app.get('/user/settings', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user || !user.found) {
@@ -4886,33 +4875,6 @@ app.get('/user/views', function(req, res) {
     var views = user._source.views || {};
 
     return res.send(views);
-  });
-});
-
-app.post('/user/views/delete', checkCookieToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.view) { return error("Missing view"); }
-
-  Db.getUser(req.token.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("Delete view failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    delete user.views[req.body.view];
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("Delete view failed", err, info);
-        return error("Delete view failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
-    });
   });
 });
 
@@ -5110,7 +5072,7 @@ app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/state/:name', function(req, res) {
+app.post('/state/:name', logAction(), function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
@@ -5266,7 +5228,7 @@ function mapTags(tags, prefix, tagsCb) {
   });
 }
 
-app.post('/addTags', function(req, res) {
+app.post('/addTags', logAction(), function(req, res) {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
@@ -5295,7 +5257,7 @@ app.post('/addTags', function(req, res) {
   });
 });
 
-app.post('/removeTags', function(req, res) {
+app.post('/removeTags', logAction(), function(req, res) {
   if (!req.user.removeEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
   }
@@ -5352,7 +5314,7 @@ function searchAndTagList(allTagIds, list, doneCb) {
   }, doneCb);
 }
 
-app.post('/searchAndTag', function(req, res) {
+app.post('/searchAndTag', logAction(), function(req, res) {
   var tags = [];
   var regex = req.body.regex;
   if (req.body.tags) {
@@ -5547,7 +5509,7 @@ function scrubList(req, res, entire, list) {
   });
 }
 
-app.post('/scrub', function(req, res) {
+app.post('/scrub', logAction(), function(req, res) {
   if (!req.user.removeEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
   }
@@ -5568,7 +5530,7 @@ app.post('/scrub', function(req, res) {
   }
 });
 
-app.post('/delete', function(req, res) {
+app.post('/delete', logAction(), function(req, res) {
   if (!req.user.removeEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
   }
