@@ -273,8 +273,8 @@
       this.SessionService.getState('sessionsNew')
          .then((response) => {
            this.tableState = response.data;
-           if (Object.keys(this.tableState).length === 0
-              || !this.tableState.visibleHeaders || !this.tableState.order) {
+           if (Object.keys(this.tableState).length === 0 ||
+              !this.tableState.visibleHeaders || !this.tableState.order) {
              this.tableState = defaultTableState;
            } else if (this.tableState.visibleHeaders[0] === '') {
              this.tableState.visibleHeaders.shift();
