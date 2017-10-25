@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 36;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -110,6 +110,21 @@ my $pwd = getcwd() . "/pcap";
     $mjson = viewerGet("/history/list?molochRegressionUser=historytest1");
     is ($mjson->{recordsFiltered}, 0, "multi Should be no items");
 
-
 # Delete Users
-    $json = viewerPostToken("/user/delete", "userId=historytest1", $token);
+    $json = viewerPostToken("/user/delete", "userId=historytest1&password=a&newPassword=b&currentPassword=c&test=1", $token);
+
+    sleep(1);
+    esGet("/_refresh");
+    esGet("/_flush");
+
+# Check history for delete
+    $json = viewerGet("/history/list?molochRegressionUser=anonymous");
+    is ($json->{recordsFiltered}, 1, "Delete: recordsFiltered");
+    $item = $json->{data}->[0];
+    is ($item->{api}, "/user/delete", "Delete: api");
+    is ($item->{userId}, "anonymous", "Delete: userId");
+    ok (!exists $item->{body}->{password}, "Delete: should have no password item");
+    ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
+    ok (!exists $item->{body}->{currentPassword}, "Delete: should have no currentPassword item");
+    is ($item->{body}->{userId}, "historytest1", "Delete: correct userId item");
+    is ($item->{body}->{test}, "1", "Delete: correct test item");
