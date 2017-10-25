@@ -17,7 +17,7 @@ jobs:
             - test-viewer: (cd viewer; npm install ; npm test)
             - slack-success: |
                 BUILD_VERSION=`git describe --tags`
-                BODY="{\"username\": \"MolochBuild\", \"text\":\"It worked! $GIT_BRANCH - $BUILD_VERSION - $SD_PULL_REQUEST\"}"
+                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked! - $GIT_BRANCH - $BUILD_VERSION - $SD_PULL_REQUEST\"}"
                 echo $BUILD_VERSION
                 echo $BODY
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
