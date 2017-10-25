@@ -479,10 +479,10 @@ app.get("/bro/:type", function(req, res) {
 });
 */
 //////////////////////////////////////////////////////////////////////////////////
-app.get("/:type/:value", function(req, res) {
+app.get("/:type/:value", function(req, res, next) {
   var type = internals.name2Type[req.params.type];
   if (type === undefined) {
-    return res.end("Unknown type " + req.params.type);
+    return next();
   }
 
   var query = {type: type,
