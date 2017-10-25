@@ -183,6 +183,19 @@
       expect(rootScope.expression).toEqual('country == EXISTS! ');
     });
 
+    it('EXISTS! should not split up just because "!" is a special character', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
+      rootScope.expression = 'protocols == EXISTS! && tls';
+      typeahead.caretPos = 27;
+
+      typeahead.changeExpression();
+      typeahead.addToQuery('tls.sessionid');
+
+      expect(rootScope.expression).toEqual('protocols == EXISTS! && tls.sessionid ');
+    });
+
   });
 
 })();

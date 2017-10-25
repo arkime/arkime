@@ -479,27 +479,27 @@
        let cur = '';
 
        for (let i = 0, ilen = input.length; i < ilen; i++) {
-           if (/[)(]/.test(input[i])) {
-             if (cur !== '') {
-               output.push(cur);
-             }
-             output.push(input[i]);
-             cur = '';
-           } else if (cur === '') {
+         if (/[)(]/.test(input[i])) {
+           if (cur !== '') {
+             output.push(cur);
+           }
+           output.push(input[i]);
+           cur = '';
+         } else if (cur === '') {
+           cur += input[i];
+         } else if (/[!&|=<>]/.test(cur) || cur === 'EXISTS' || cur === 'EXISTS!') {
+           if ((/[&|=<>]/.test(input[i]) && cur !== 'EXISTS!') || (cur === 'EXISTS' && input[i] === '!')) {
              cur += input[i];
-           } else if (/[!&|=<>]/.test(cur)) {
-             if (/[&|=<>]/.test(input[i])) {
-               cur += input[i];
-             } else {
-               output.push(cur);
-               cur = input[i];
-             }
-           } else if (/[!&|=<>]/.test(input[i])) {
+           } else {
              output.push(cur);
              cur = input[i];
-           } else {
-             cur += input[i];
            }
+         } else if (/[!&|=<>]/.test(input[i])) {
+           output.push(cur);
+           cur = input[i];
+         } else {
+           cur += input[i];
+         }
        }
        if (cur !== '') {
          output.push(cur);
