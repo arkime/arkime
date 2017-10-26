@@ -3042,6 +3042,25 @@ function flattenFields(fields) {
   return fields;
 }
 
+app.get('/buildQuery.json', logAction('query'), function(req, res) {
+
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      res.send({ recordsTotal: 0
+               , recordsFiltered: 0
+               , bsqErr: bsqErr.toString()
+               });
+      return;
+    }
+
+    if (req.query.fields) {
+      query._source = queryValueToArray(req.query.fields);
+    }
+
+    res.send({"esquery": query, "indices": indices});
+  });
+});
+
 app.get('/sessions.json', logAction('sessions'), function(req, res) {
   var i;
 
