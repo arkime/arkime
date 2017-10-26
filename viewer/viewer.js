@@ -5162,7 +5162,8 @@ function addTagsList(allTagIds, allTagNames, list, doneCb) {
     // Do the ES update
     var document = {
       doc: {
-        ta: fields.ta
+        ta: fields.ta,
+        tacnt: fields.ta.length
       }
     };
 
@@ -5202,22 +5203,30 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
       }
     }
 
-    // Do the ES update
-    var document = {
-      doc: {
-        ta: fields.ta
-      }
-    };
-
-    // Do the same for tags-term if it exists.  (it won't for old sessions)
-    if (fields["tags-term"]) {
-      for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
-        var pos = fields["tags-term"].indexOf(allTagNames[i]);
-        if (pos !== -1) {
-          fields["tags-term"].splice(pos, 1);
+    if (fields.ta.length === 0) {
+      // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
+      var document = {
+        script: "ctx._source.remove(\"ta\");ctx._source.remove(\"tacnt\");ctx._source.remove(\"tags-term\");"
+      };
+    } else {
+      // Do the ES update
+      var document = {
+        doc: {
+          ta: fields.ta,
+          tacnt: fields.ta.length
         }
+      };
+
+      // Do the same for tags-term if it exists.  (it won't for old sessions)
+      if (fields["tags-term"]) {
+        for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
+          var pos = fields["tags-term"].indexOf(allTagNames[i]);
+          if (pos !== -1) {
+            fields["tags-term"].splice(pos, 1);
+          }
+        }
+        document.doc["tags-term"] = fields["tags-term"];
       }
-      document.doc["tags-term"] = fields["tags-term"];
     }
 
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
