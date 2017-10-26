@@ -3,9 +3,9 @@ NOTICE: 0.20.x will be the last series to support ES 2.
 NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
         outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
 
-NOTICE: Upgrade wiseService before capture
+NOTICE: Restart wiseService before capture when upgrading
 
-NOTICE: 0.20 and above require nodejs 6.x
+NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
 
 0.20.0 2017/09/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
@@ -24,6 +24,7 @@ NOTICE: 0.20 and above require nodejs 6.x
   - capture - basic rip, nzsql detection
   - capture - improved quic, mysql detection
   - capture - plugins can now replace how SPI data is sent to ES
+  - viewer - fixed right client menu not working (issue #740)
 
 0.19.2 2017/08/25
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
