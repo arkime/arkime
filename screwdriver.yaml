@@ -5,21 +5,29 @@ shared:
             statuses: [SUCCESS, FAILURE]
 jobs:
     main:
-        image: andywick/moloch-build-7:1
+        image: andywick/moloch-build-7:2
         steps:
+            - name: |
+                if [ "$GIT_BRANCH" = "origin/master" ]; then
+                  MOLOCH_NAME="moloch"
+                else
+                  export MOLOCH_NAME="moloch-${GIT_BRANCH:7}"
+                fi
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
-            - export PATH=/data/moloch/bin:$PATH
+            - build: ./easybutton-build.sh --dir /data/$MOLOCH_NAME
+            - export PATH=/data/$MOLOCH_NAME/bin:$PATH
             - make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - cp -r capture/plugins/lua/samples /data/$MOLOCH_NAME/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
             - test-viewer: (cd viewer; npm install ; npm test)
+            - build-package: |
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/$MOLOCH_NAME/viewer/version.js | tr "-" "_"`
+                fpm -s dir -t rpm -n moloch -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/$MOLOCH_NAME
             - slack-success: |
-                BUILD_VERSION=`git describe --tags`
-                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked! - $GIT_BRANCH - $BUILD_VERSION\"}"
-                echo $BUILD_VERSION
-                echo $BODY
+                export BUILD_VERSION=`git describe --tags`
+                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $MOLOCH_NAME - $GIT_BRANCH - $BUILD_VERSION\"}"
+                printenv
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
             - SLACK
