@@ -5185,6 +5185,7 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
     }
 
     if (fields.ta.length === 0) {
+      // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
       var document = {
         script: "ctx._source.remove(\"ta\");ctx._source.remove(\"tacnt\");ctx._source.remove(\"tags-term\");"
       };
