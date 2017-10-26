@@ -3042,7 +3042,7 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.get('/query.json', logAction('query'), function(req, res) {
+app.get('/buildQuery.json', logAction('query'), function(req, res) {
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
