@@ -23,12 +23,11 @@ jobs:
             - test-viewer: (cd viewer; npm install ; npm test)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/$MOLOCH_NAME/viewer/version.js | tr "-" "_"`
-                fpm -s dir -t rpm -n moloch -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/$MOLOCH_NAME
+                fpm -s dir -t rpm -n $MOLOCH_NAME -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/$MOLOCH_NAME
             - slack-success: |
                 export BUILD_VERSION=`git describe --tags`
-                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $MOLOCH_NAME - $GIT_BRANCH - $BUILD_VERSION\"}"
-                printenv
-                ls -l
+                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - $MOLOCH_NAME-$MOLOCH_VERSION-$SD_BUILD_ID \"}"
+                ls -l moloch*
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
             - SLACK
