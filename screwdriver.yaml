@@ -5,7 +5,7 @@ shared:
             statuses: [SUCCESS, FAILURE]
 jobs:
     main:
-        image: andywick/moloch-build-7:2
+        image: andywick/moloch-build-7:3
         steps:
             - name: |
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
