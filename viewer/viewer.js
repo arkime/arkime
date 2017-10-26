@@ -2620,7 +2620,7 @@ app.get('/esstats.json', function(req, res) {
       var write = 0;
 
       var oldnode = internals.previousNodeStats[0][nodes[n]];
-      if ("total" in node.fs.io_stats && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined) {
+      if (node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
         write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
