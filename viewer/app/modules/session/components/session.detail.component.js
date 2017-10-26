@@ -209,7 +209,7 @@
           localStorage['moloch-base'] = this.$scope.params.base;
         }
         if (this.userSettings.numPackets === 'last') {
-          localStorage['moloch-packets'] = this.$scope.params.packets;
+          localStorage['moloch-packets'] = this.$scope.params.packets || 200;
         }
         localStorage['moloch-line']   = this.$scope.params.line;
         localStorage['moloch-gzip']   = this.$scope.params.gzip;

@@ -183,3 +183,133 @@
   ng-hide="$ctrl.loadingPackets || $ctrl.errorPackets || renderingPackets">
   <div class="inner"></div>
 </div>
+
+<!-- packet options -->
+<div class="packet-options margined-top-xxlg" ng-if="!$ctrl.loading">
+  <form class="form-inline margined-bottom-lg">
+    <fieldset ng-disabled="$ctrl.loading || $ctrl.loadingPackets || $ctrl.errorPacket || renderingPackets">
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon cursor-help"
+            tooltip-placement="top-left"
+            uib-tooltip="Number of Packets">
+            Packets
+          </span>
+          <select class="form-control" convert-to-number
+            style="-webkit-appearance:none;"
+            ng-model="params.packets"
+            ng-change="$ctrl.getPackets()">
+            <option value="50">50</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+            <option value="1000">1,000</option>
+            <option value="2000">2,000</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-group btn-group-sm">
+        <label class="btn btn-radio" ng-model="params.base"
+          ng-click="$ctrl.getPackets()" uib-btn-radio="'natural'">
+          natural
+        </label>
+        <label class="btn btn-radio" ng-model="params.base"
+          ng-click="$ctrl.getPackets()" uib-btn-radio="'ascii'">
+          ascii
+        </label>
+        <label class="btn btn-radio" ng-model="params.base"
+          ng-click="$ctrl.getPackets()" uib-btn-radio="'utf8'">
+          utf8
+        </label>
+        <label class="btn btn-radio" ng-model="params.base"
+          ng-click="$ctrl.getPackets()" uib-btn-radio="'hex'">
+          hex
+        </label>
+      </div>
+      <button type="button" class="btn btn-checkbox btn-sm"
+        ng-model="params.line" uib-btn-checkbox ng-click="$ctrl.getPackets()"
+        btn-checkbox-true="true" btn-checkbox-false="false"
+        ng-disabled="params.base !== 'hex'">
+        <span class="fa fa-list-ol"></span>&nbsp;
+        Line Numbers
+      </button>
+      <button type="button" class="btn btn-checkbox btn-sm"
+        ng-model="params.gzip" uib-btn-checkbox ng-click="$ctrl.getPackets()"
+        btn-checkbox-true="true" btn-checkbox-false="false">
+        <span class="fa fa-file-archive-o"></span>&nbsp;
+        Uncompress
+      </button>
+      <button type="button" class="btn btn-checkbox btn-sm"
+        ng-model="params.image" uib-btn-checkbox ng-click="$ctrl.getPackets()"
+        btn-checkbox-true="true" btn-checkbox-false="false">
+        <span class="fa fa-file-image-o"></span>&nbsp;
+        Show Image &amp; Files
+      </button>
+      <button type="button" class="btn btn-checkbox btn-sm"
+        ng-model="params.ts" uib-btn-checkbox ng-click="$ctrl.toggleTimeStamps()"
+        btn-checkbox-true="true" btn-checkbox-false="false">
+        <span class="fa fa-clock-o"></span>&nbsp;
+        Show Timestamps
+      </button>
+      <!-- other decodings -->
+      <div class="btn-group" role="group">
+        <label ng-repeat="(key, value) in $ctrl.decodings"
+          type="button" class="btn btn-radio btn-sm"
+          uib-tooltip="{{::value.name}} Decoding"
+          tooltip-append-to-body="true"
+          ng-class="{'active':params.decode[key]}"
+          ng-click="$ctrl.toggleDecoding(key)">
+          {{::value.name}}
+        </label>
+      </div>
+      <div class="btn-group" uib-dropdown>
+        <button type="button" class="btn btn-default btn-sm" uib-dropdown-toggle>
+          CyberChef <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu">
+          <li role="menuitem">
+            <a ng-href='{{::session.no}}/session/{{session.id}}/cyberchef?type=src&recipe=[{"op":"From Hex","args":["None"]}]'
+              target="_blank">
+              Open src packets with CyberChef
+            </a>
+          </li>
+          <li role="menuitem">
+            <a ng-href='{{::session.no}}/session/{{session.id}}/cyberchef?type=dst&recipe=[{"op":"From Hex","args":["None"]}]'
+              target="_blank">
+              Open dst packets with CyberChef
+            </a>
+          </li>
+        </ul>
+      </div>
+    </fieldset>
+    <div class="well well-sm margined-top" ng-if="$ctrl.decodingForm">
+      <span ng-repeat="field in $ctrl.decodings[$ctrl.decodingForm].fields"
+        ng-if="!field.disabled">
+        <div class="form-group">
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">
+              {{field.name}}
+            </span>
+            <input ng-model="field.value" class="form-control" type="field.type">
+          </div>
+        </div>
+      </span>
+      <div class="btn-group btn-group-sm pull-right">
+        <button class="btn btn-warning"
+          uib-tooltip="cancel"
+          tooltip-append-to-body="true"
+          ng-click="$ctrl.closeDecodingForm(false)">
+          <span class="fa fa-ban"></span>
+        </button>
+        <button class="btn btn-theme-primary"
+          uib-tooltip="apply"
+          tooltip-append-to-body="true"
+          ng-click="$ctrl.applyDecoding($ctrl.decodingForm)">
+          <span class="fa fa-check"></span>
+        </button>
+      </div>
+      <span class="help-block">
+        {{$ctrl.decodings[$ctrl.decodingForm].title}}
+      </span>
+    </div>
+  </form>
+</div> <!-- /packet options -->
