@@ -5,7 +5,7 @@ shared:
             statuses: [SUCCESS, FAILURE]
 jobs:
     main:
-        image: andywick/moloch-build-7:3
+        image: andywick/moloch-build-7:4
         steps:
             - name: |
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -28,6 +28,7 @@ jobs:
                 export BUILD_VERSION=`git describe --tags`
                 BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $MOLOCH_NAME - $GIT_BRANCH - $BUILD_VERSION\"}"
                 printenv
+                ls -l
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
             - SLACK
