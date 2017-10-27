@@ -12,8 +12,9 @@ jobs:
                 mkdir -p /usr/share/elasticsearch/data /usr/share/elasticsearch/config
                 chown elasticsearch /usr/share/elasticsearch/data
                 export ES_JAVA_OPTS="-Xms1G -Xmx1G -Des.path.conf=/etc/elasticsearch -Des.path.home=/sr/usr/share/elasticsearch -Des.path.logs=/var/log/elasticsearch"
-                echo "About to start"
                 su -s /bin/sh -c 'nohup "$0" "$@" > /dev/null &' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch
+                sleep 2
+                curl http://localhost:9200
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
@@ -23,6 +24,7 @@ jobs:
             - export TZ=US/Eastern
             - test-ui: (cd viewer; npm install ; npm test)
             - wise-npm: (cd capture/plugins/wiseService; npm install)
+            - es-curl: curl http://localhost:9200
             - test-api: (cd tests; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
