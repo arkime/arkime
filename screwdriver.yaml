@@ -12,7 +12,7 @@ jobs:
                 mkdir -p /usr/share/elasticsearch/data /usr/share/elasticsearch/config
                 chown elasticsearch /usr/share/elasticsearch/data
                 export ES_JAVA_OPTS="-Xms1G -Xmx1G -Des.path.conf=/etc/elasticsearch -Des.path.home=/sr/usr/share/elasticsearch -Des.path.logs=/var/log/elasticsearch"
-                nohup su -s /bin/sh -c 'exec "$0" "$@" > /dev/null' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch &
+                nohup su -s /bin/sh -c '"$0" "$@" > /dev/null' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch &
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
