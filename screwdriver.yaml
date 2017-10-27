@@ -7,16 +7,6 @@ jobs:
     main:
         image: andywick/moloch-build-7:6
         steps:
-            - startes: |
-                yum install -y https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.3.rpm
-                mkdir -p /usr/share/elasticsearch/data /usr/share/elasticsearch/config
-                chown elasticsearch /usr/share/elasticsearch/data
-                export ES_JAVA_OPTS="-Xms1G -Xmx1G -Des.path.conf=/etc/elasticsearch -Des.path.home=/sr/usr/share/elasticsearch -Des.path.logs=/var/log/elasticsearch"
-                su -s /bin/sh -c 'exec "$0" "$@" &' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch &
-                sleep 5
-                ps aux | grep elasticsearch
-                tail /var/log/elasticsearch/*
-                curl http://localhost:9200
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
@@ -26,8 +16,6 @@ jobs:
             - export TZ=US/Eastern
             - test-ui: (cd viewer; npm install ; npm test)
             - wise-npm: (cd capture/plugins/wiseService; npm install)
-            - es-curl: curl http://localhost:9200
-            - test-api: (cd tests; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
