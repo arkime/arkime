@@ -25,8 +25,9 @@ jobs:
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/$MOLOCH_NAME/viewer/version.js | tr "-" "_"`
                 fpm -s dir -t rpm -n $MOLOCH_NAME -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/$MOLOCH_NAME
             - slack-success: |
-                export BUILD_VERSION=`git describe --tags`
-                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - $MOLOCH_NAME-$MOLOCH_VERSION-$SD_BUILD_ID \"}"
+                BUILD_VERSION=`git describe --tags`
+                MSG=`git log -1 --format=%s`
+                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - $MOLOCH_NAME-$MOLOCH_VERSION-$SD_BUILD_ID - $MSG\"}"
                 ls -l moloch*
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
