@@ -68,6 +68,8 @@
       this.query          = _query; // load saved query
       this.stickySessions = [];     // array of open sessions
 
+      this.getColumnWidths();
+
       this.getTableState(); // IMPORTANT: kicks off the initial search query!
 
       this.getCustomColumnConfigurations();
@@ -175,7 +177,10 @@
             if (header) {
               header.width = column.w;
               this.colWidths[header.dbField] = column.w;
-              localStorage['session-column-widths'] = JSON.stringify(this.colWidths);
+
+              this.SessionService.saveState(this.colWidths, 'sessionsColWidths')
+                 .catch((error) => { this.error = error; });
+
               this.mapHeadersToFields();
             }
           });
@@ -300,6 +305,15 @@
          });
     }
 
+    /* Gets the column widths of the table if they exist */
+    getColumnWidths() {
+      this.SessionService.getState('sessionsColWidths')
+        .then((response) => {
+          this.colWidths = response.data || {};
+        })
+        .catch(() => { this.colWidths = {}; });
+    }
+
     /* Gets the current user's custom column configurations */
     getCustomColumnConfigurations() {
       this.UserService.getColumnConfigs()
@@ -346,12 +360,9 @@
      */
     mapHeadersToFields() {
       this.headers = [];
-      this.colWidths = {};
       this.sumOfColWidths = 80;
 
-      if (localStorage['session-column-widths']) {
-        this.colWidths = JSON.parse(localStorage['session-column-widths']);
-      }
+      if (!this.colWidths) { this.colWidths = {}; }
 
       for (let i = 0, len = this.tableState.visibleHeaders.length; i < len; ++i) {
         let headerId  = this.tableState.visibleHeaders[i];
