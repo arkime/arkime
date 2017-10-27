@@ -5,7 +5,7 @@ shared:
             statuses: [SUCCESS, FAILURE]
 jobs:
     main:
-        image: andywick/moloch-build-7:5
+        image: andywick/moloch-build-7:6
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
@@ -14,7 +14,8 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-            - test-viewer: (cd viewer; npm install ; npm test)
+            - test-ui: (cd viewer; npm install ; npm test)
+            - test-api: (cd tests; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -25,7 +26,7 @@ jobs:
             - slack-success: |
                 BUILD_VERSION=`git describe --tags`
                 MSG=`git log -1 --format=%s`
-                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - $moloch-$MOLOCH_VERSION-$SD_BUILD_ID - $MSG\"}"
+                BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - moloch-$MOLOCH_VERSION-$SD_BUILD_ID - $MSG\"}"
                 ls -l moloch*
                 curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
         secrets:
