@@ -8,11 +8,12 @@ jobs:
         image: andywick/moloch-build-7:6
         steps:
             - startes: |
-                yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.3.rpm
+                yum install -y https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.3.rpm
                 mkdir -p /usr/share/elasticsearch/data /usr/share/elasticsearch/config
                 chown elasticsearch /usr/share/elasticsearch/data
                 export ES_JAVA_OPTS="-Xms1G -Xmx1G -Des.path.conf=/etc/elasticsearch -Des.path.home=/sr/usr/share/elasticsearch -Des.path.logs=/var/log/elasticsearch"
-                nohup su -s /bin/sh -c '"$0" "$@" > /dev/null' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch &
+                echo "About to start"
+                su -s /bin/sh -c 'nohup "$0" "$@" > /dev/null &' elasticsearch -- /usr/share/elasticsearch/bin/elasticsearch
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
