@@ -139,6 +139,14 @@ session [ng-drop].drag-enter {
 }
 
 
+/* table fit button -------------------------- */
+.fit-btn {
+  position: absolute;
+  top     : 310px;
+  left    : 16px;
+}
+
+
 /* grouped dropdown menu --------------------- */
 ul.dropdown-menu div .group-header {
   padding       : 8px 0 2px 0;

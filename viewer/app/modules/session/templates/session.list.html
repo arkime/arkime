@@ -255,6 +255,12 @@
 
             </div>
           </th> <!-- /table headers -->
+          <a ng-if="$ctrl.showFitButton && $ctrl.showSessions && !$ctrl.loading"
+            class="btn btn-xs btn-theme-quaternary fit-btn"
+            ng-click="$ctrl.fitTable()" tooltip-placement="top-left"
+            uib-tooltip="Fit the table to the current window size">
+            <span class="fa fa-arrows-h"></span>
+          </a>
         </tr>
       </thead>
 
