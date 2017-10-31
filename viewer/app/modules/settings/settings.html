@@ -49,6 +49,12 @@
             Column Configs
           </a>
         </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'spiview'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('spiview')">
+            <span class="fa fa-fw fa-eyedropper"></span>&nbsp;
+            SPI View Configs
+          </a>
+        </li>
         <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'theme'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('theme')">
             <span class="fa fa-fw fa-paint-brush"></span>&nbsp;
@@ -497,8 +503,8 @@
         <h3>Custom Column Configurations</h3>
 
         <p>
-          Custom column configurations allow the user to save their table's
-          column layout for future use.
+          Custom column configurations allow the user to save their session
+          table's column layout for future use.
         </p>
 
         <hr>
@@ -513,19 +519,19 @@
           </tr>
           </thead>
           <tbody>
-            <!-- col configs -->
-            <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.colConfigs">
-              <td>
-                {{::config.name}}
-              </td>
-              <td>
-                <label class="label label-md label-default margined-right"
-                  uib-tooltip="{{::$ctrl.fieldsMap[col].help}}"
-                  ng-repeat="col in ::config.columns">
-                  {{::$ctrl.fieldsMap[col].friendlyName}}
-                </label>
-              </td>
-              <td>
+          <!-- col configs -->
+          <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.colConfigs">
+            <td>
+              {{::config.name}}
+            </td>
+            <td>
+              <label class="label label-md label-default margined-right"
+                uib-tooltip="{{::$ctrl.fieldsMap[col].help}}"
+                ng-repeat="col in ::config.columns">
+                {{::$ctrl.fieldsMap[col].friendlyName}}
+              </label>
+            </td>
+            <td>
                 <span ng-repeat="order in ::config.order">
                   <label class="label label-md label-default margined-right"
                     uib-tooltip="{{::$ctrl.fieldsMap[order[0]].help}}">
@@ -533,24 +539,24 @@
                     ({{::order[1]}})
                   </label>
                 </span>
-              </td>
-              <td>
-                <a class="btn btn-sm btn-danger pull-right"
-                  ng-click="$ctrl.deleteColConfig(config.name, $index)">
-                  <span class="fa fa-trash-o"></span>&nbsp;
-                  Delete
-                </a>
-              </td>
-            </tr> <!-- /col configs -->
-            <!-- col config list error -->
-            <tr ng-if="$ctrl.colConfigError">
-              <td colspan="3">
-                <p class="text-danger margined-bottom-none">
-                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
-                  {{$ctrl.colConfigError}}
-                </p>
-              </td>
-            </tr> <!-- /col config list error -->
+            </td>
+            <td>
+              <a class="btn btn-sm btn-danger pull-right"
+                ng-click="$ctrl.deleteColConfig(config.name, $index)">
+                <span class="fa fa-trash-o"></span>&nbsp;
+                Delete
+              </a>
+            </td>
+          </tr> <!-- /col configs -->
+          <!-- col config list error -->
+          <tr ng-if="$ctrl.colConfigError">
+            <td colspan="3">
+              <p class="text-danger margined-bottom-none">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{$ctrl.colConfigError}}
+              </p>
+            </td>
+          </tr> <!-- /col config list error -->
           </tbody>
         </table>
 
@@ -567,6 +573,73 @@
         </div>
 
       </form> <!-- /col configs settings -->
+
+      <!-- spiview field configs settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'spiview'" id="spiview">
+
+        <h3>Custom SPI View Configurations</h3>
+
+        <p>
+          Custom visible field configurations allow the user to save their
+          visible fields on the SPI View page for future use.
+        </p>
+
+        <hr>
+
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Fields</th>
+            <th>&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+          <!-- spiview field configs -->
+          <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.spiviewConfigs">
+            <td>
+              {{::config.name}}
+            </td>
+            <td>
+              <label class="label label-md label-default margined-right"
+                uib-tooltip="{{::fieldObj.help}}"
+                ng-repeat="fieldObj in ::config.fieldObjs">
+                {{::fieldObj.friendlyName}} ({{::fieldObj.count}})
+              </label>
+            </td>
+            <td>
+              <a class="btn btn-sm btn-danger pull-right"
+                ng-click="$ctrl.deleteSpiviewConfig(config.name, $index)">
+                <span class="fa fa-trash-o"></span>&nbsp;
+                Delete
+              </a>
+            </td>
+          </tr> <!-- /spiview field configs -->
+          <!-- spiview field config list error -->
+          <tr ng-if="$ctrl.spiviewConfigError">
+            <td colspan="3">
+              <p class="text-danger margined-bottom-none">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{$ctrl.spiviewConfigError}}
+              </p>
+            </td>
+          </tr> <!-- /spview field config list error -->
+          </tbody>
+        </table>
+
+        <div ng-if="!$ctrl.spiviewConfigs.length" class="alert alert-info">
+          <span class="fa fa-info-circle fa-lg"></span>
+          <strong>You have no custom SPI View field configurations.</strong>
+          <br><br>
+          To create one, go to the SPI View page, toggle fields to
+          your preferred configuration, and click the field configuration
+          button ( <span class="fa fa-columns"></span> ) at the top left of the
+          page. Name your new custom field configuration then click the save
+          button. You can now switch to this field configuration anytime you
+          want by clicking on its name in the dropdown!
+        </div>
+
+      </form> <!-- /spiview field configs settings -->
 
       <!-- theme settings -->
       <form class="padded-bottom-lg" ng-if="$ctrl.visibleTab === 'theme'" id="theme">

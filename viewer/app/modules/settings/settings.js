@@ -54,7 +54,8 @@
       let tab = this.$location.hash();
       if (tab) { // if there is a tab specified and it's a valid tab
         if (tab === 'general' || tab === 'views' || tab === 'cron' ||
-            tab === 'col' || tab === 'theme' || tab === 'password') {
+            tab === 'col' || tab === 'theme' || tab === 'password' ||
+            tab === 'spiview') {
           this.visibleTab = tab;
         }
       }
@@ -97,6 +98,7 @@
           this.getViews();
           this.getCronQueries();
           this.getColConfigs();
+          this.getSpiviewConfigs();
         })
         .catch((error) => {
           this.error    = error.text;
@@ -203,6 +205,49 @@
           this.colConfigError = error.text;
         });
     }
+
+    /* retrieves the specified user's custom spiview fields configurations.
+     * dissects the visible spiview fields for view consumption */
+    getSpiviewConfigs() {
+      this.UserService.getSpiviewFields(this.userId)
+         .then((response) => {
+           this.spiviewConfigs = response;
+
+           for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
+             let config = this.spiviewConfigs[x];
+             let spiParamsArray = config.fields.split(',');
+
+             // get each field from the spi query parameter and issue
+             // a query for one field at a time
+             for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+               let param = spiParamsArray[i];
+               let split = param.split(':');
+               let fieldID = split[0];
+               let count = split[1];
+
+               let field;
+
+               for (let key in this.fields) {
+                 if (this.fields[key].dbField === fieldID) {
+                   field = this.fields[key];
+                   break;
+                 }
+               }
+
+               if (field) {
+                 if (!config.fieldObjs) { config.fieldObjs = []; }
+
+                 field.count = count;
+                 config.fieldObjs.push(field);
+               }
+             }
+           }
+         })
+         .catch((error) => {
+           this.spiviewConfigError = error.text;
+         });
+    }
+
 
 
     /* page functions ------------------------------------------------------ */
@@ -673,6 +718,28 @@
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    }
+
+
+    /* SPIVIEW FIELD CONFIGURATIONS ----------------------------------------- */
+    /**
+     * Deletes a previously saved custom spiview field configuration
+     * @param {string} name The name of the field config to remove
+     * @param {int} index   The index in the array of the field config to remove
+     */
+    deleteSpiviewConfig(name, index) {
+      this.UserService.deleteSpiviewFieldConfig(name, this.userId)
+         .then((response) => {
+           this.spiviewConfigs.splice(index, 1);
+           // display success message to user
+           this.msg = response.text;
+           this.msgType = 'success';
+         })
+         .catch((error) => {
+           // display error message to user
+           this.msg = error.text;
+           this.msgType = 'danger';
+         });
     }
 
 
