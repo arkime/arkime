@@ -68,7 +68,6 @@
       this.refresh      = '0';
       this.items        = [];
 
-      let initialized = false;
       this.$scope.$on('change:search', (event, args) => {
         if (args.startTime && args.stopTime) {
           this.query.startTime  = args.startTime;
@@ -84,9 +83,9 @@
         if (args.bounding) { this.query.bounding = args.bounding; }
         if (args.interval) { this.query.interval = args.interval; }
 
-        if (initialized) { this.loadData(true); }
+        if (!this.fields) { return; }
 
-        initialized = true;
+        this.loadData(true);
       });
 
       this.$scope.$on('change:time', (event, args) => {
@@ -149,7 +148,7 @@
         }
 
         let field = current.params.field || 'no';
-        if (field !== this.query.field) {
+        if (field !== this.query.field && field !== this.formatField(this.query.field)) {
           change = true;
           this.query.field = field;
         }
@@ -166,7 +165,7 @@
         }
 
         let graphType = current.params.graphType || 'lpHisto';
-        if (current.params.graphType !== this.graphType) {
+        if (graphType !== this.graphType) {
           change = true;
           this.graphType = graphType;
           // update sort parameter if sorting on graph
@@ -234,13 +233,11 @@
     /* fired when a field is selected from the typeahead */
     changeField() {
       this.$location.search('field', this.query.field);
-      this.$scope.$broadcast('apply:expression');
     }
 
     /* fired when max elements input is changed */
     changeMaxElements() {
       this.$location.search('size', this.query.size);
-      this.$scope.$broadcast('apply:expression');
     }
 
     changeSortBy() {
@@ -251,8 +248,6 @@
       }
 
       this.$location.search('sort', this.sortBy);
-
-      this.$scope.$broadcast('apply:expression');
     }
 
     changeRefreshInterval() {
