@@ -196,7 +196,7 @@
                 }
 
                 let val = $filter('commaString')(Math.round(item.series.data[item.dataIndex][1]*100)/100);
-                let d = $filter('date')(item.datapoint[0].toFixed(0), 'yyyy/MM/dd HH:mm:ss');
+                let d = $filter('timezoneDateString')(item.datapoint[0].toFixed(0)/1000, scope.timezone || 'local');
 
                 let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                     <strong>${type || ''}</strong>
