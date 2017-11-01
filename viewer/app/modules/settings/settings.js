@@ -8,6 +8,12 @@
 
   let interval;
 
+  const defaultSpiviewConfig = { fields: ['a2','prot-term','a1'] };
+  const defaultColConfig = {
+    order   : [['fp', 'asc']],
+    columns : ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
+  };
+
   /**
    * @class SettingsController
    * @classdesc Interacts with moloch settings page
@@ -49,6 +55,9 @@
       this.error    = false;
 
       this.visibleTab = 'general'; // default tab
+
+      this.defaultColConfig = defaultColConfig;
+      this.defaultSpiviewConfig = defaultSpiviewConfig;
 
       // does the url specify a tab in hash
       let tab = this.$location.hash();

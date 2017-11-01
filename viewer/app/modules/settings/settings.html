@@ -519,6 +519,27 @@
           </tr>
           </thead>
           <tbody>
+          <!-- default col config -->
+          <tr ng-if="$ctrl.defaultColConfig && $ctrl.fieldsMap">
+            <td>Moloch Default</td>
+            <td>
+              <label class="label label-md label-default margined-right"
+                uib-tooltip="{{::$ctrl.fieldsMap[col].help}}"
+                ng-repeat="col in ::$ctrl.defaultColConfig.columns">
+                {{::$ctrl.fieldsMap[col].friendlyName}}
+              </label>
+            </td>
+            <td>
+              <span ng-repeat="order in ::$ctrl.defaultColConfig.order">
+                <label class="label label-md label-default margined-right"
+                  uib-tooltip="{{::$ctrl.fieldsMap[order[0]].help}}">
+                  {{::$ctrl.fieldsMap[order[0]].friendlyName}}&nbsp;
+                  ({{::order[1]}})
+                </label>
+              </span>
+            </td>
+            <td>&nbsp;</td>
+          </tr> <!-- /default col configs -->
           <!-- col configs -->
           <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.colConfigs">
             <td>
@@ -595,6 +616,18 @@
           </tr>
           </thead>
           <tbody>
+          <!-- default spiview field config -->
+          <tr ng-if="$ctrl.defaultSpiviewConfig && $ctrl.fieldsMap">
+            <td>Moloch Default</td>
+            <td>
+              <label class="label label-md label-default margined-right"
+                uib-tooltip="{{::$ctrl.fieldsMap[field].help}}"
+                ng-repeat="field in ::$ctrl.defaultSpiviewConfig.fields">
+                {{::$ctrl.fieldsMap[field].friendlyName}} (100)
+              </label>
+            </td>
+            <td>&nbsp;</td>
+          </tr> <!-- /default spiview field confg -->
           <!-- spiview field configs -->
           <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.spiviewConfigs">
             <td>
