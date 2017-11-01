@@ -151,7 +151,7 @@ sub esPost
 
     print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
     print "POST DATA:", Dumper($content), "\n" if ($verbose > 3);
-    my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content);
+    my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json");
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
       print "POST RESULT:", $response->content, "\n" if ($verbose > 3);
       die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
@@ -174,7 +174,7 @@ sub esPut
 
     print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     print "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
-    my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content));
+    my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
       print Dumper($response);
       die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
@@ -327,9 +327,9 @@ sub sequenceUpdate
     my $mapping = '
 {
   "sequence": {
-    "_source" : { "enabled": 0 },
-    "_all"    : { "enabled": 0 },
-    "enabled" : 0
+    "_source" : { "enabled": "false" },
+    "_all"    : { "enabled": "false" },
+    "enabled" : "false"
   }
 }';
 
@@ -372,9 +372,9 @@ sub filesUpdate
     my $mapping = '
 {
   "file": {
-    "_all": {"enabled": 0},
-    "_source": {"enabled": 1},
-    "dynamic": "dynamic",
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
+    "dynamic": "true",
     "dynamic_templates": [
       {
         "any": {
@@ -440,8 +440,8 @@ sub statsUpdate
 my $mapping = '
 {
   "stat": {
-    "_all": {"enabled": false},
-    "_source": {"enabled": true},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic": "true",
     "dynamic_templates": [
       {
@@ -497,8 +497,8 @@ sub dstatsUpdate
 my $mapping = '
 {
   "dstat": {
-    "_all": {"enabled": false},
-    "_source": {"enabled": true},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic": "true",
     "dynamic_templates": [
       {
@@ -561,8 +561,8 @@ sub fieldsUpdate
     my $mapping = '
 {
   "field": {
-    "_all": {"enabled": 0},
-    "_source": {"enabled": 1},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic_templates": [
       {
         "string_template": {
@@ -586,7 +586,7 @@ sub fieldsUpdate
       "type": "ip",
       "dbField": "ipall",
       "portField": "portall",
-      "noFacet": true
+      "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/port", '{
       "friendlyName": "All port fields",
@@ -789,7 +789,7 @@ sub fieldsUpdate
       "help": "Moloch ID for the session",
       "type": "termfield",
       "dbField": "_id",
-      "noFacet": true
+      "noFacet": "true"
 
     }');
     esPost("/${PREFIX}fields_v1/field/rootId", '{
@@ -828,7 +828,7 @@ sub fieldsUpdate
       "type": "termfield",
       "dbField": "fb1",
       "transform": "utf8ToHex",
-      "noFacet": true
+      "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.dst.hex", '{
       "friendlyName": "Payload Dst Hex",
@@ -845,7 +845,7 @@ sub fieldsUpdate
       "type": "termfield",
       "dbField": "fb2",
       "transform": "utf8ToHex",
-      "noFacet": true
+      "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.hex", '{
       "friendlyName": "Payload Hex",
@@ -876,7 +876,7 @@ sub fieldsUpdate
       "help": "Moloch view name",
       "type": "viewand",
       "dbField": "viewand",
-      "noFacet": true
+      "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/starttime", '{
       "friendlyName": "Start Time",
@@ -916,8 +916,8 @@ sub queriesUpdate
     my $mapping = '
 {
   "query": {
-    "_all": {"enabled": 0},
-    "_source": {"enabled": 1},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
       "name": {
@@ -967,7 +967,7 @@ sub sessionsUpdate
     my $mapping = '
 {
   "session": {
-    "_all": {"enabled": false},
+    "_all": {"enabled": "false"},
     "dynamic": "true",
     "dynamic_templates": [
       {
@@ -1033,7 +1033,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "url_analyzer",
         "copy_to": "rawus",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawus": {
         "type": "string",
@@ -1046,7 +1046,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawua",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawua": {
         "type": "string",
@@ -1068,23 +1068,23 @@ sub sessionsUpdate
       },
       "lp": {
         "type": "long",
-        "doc_values": true
+        "doc_values": "true"
       },
       "lpd": {
         "type": "date",
-        "doc_values": true
+        "doc_values": "true"
       },
       "fp": {
         "type": "long",
-        "doc_values": true
+        "doc_values": "true"
       },
       "fpd": {
         "type": "date",
-        "doc_values": true
+        "doc_values": "true"
       },
       "a1": {
         "type": "long",
-        "doc_values": true
+        "doc_values": "true"
       },
       "g1": {
         "type": "string",
@@ -1094,7 +1094,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawas1",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawas1": {
         "type": "string",
@@ -1106,7 +1106,7 @@ sub sessionsUpdate
       },
       "p1": {
         "type": "integer",
-        "doc_values": true
+        "doc_values": "true"
       },
       "fb1": {
         "type": "string",
@@ -1114,7 +1114,7 @@ sub sessionsUpdate
       },
       "a2": {
         "type": "long",
-        "doc_values": true
+        "doc_values": "true"
       },
       "g2": {
         "type": "string",
@@ -1124,7 +1124,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawas2",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawas2": {
         "type": "string",
@@ -1136,7 +1136,7 @@ sub sessionsUpdate
       },
       "p2": {
         "type": "integer",
-        "doc_values": true
+        "doc_values": "true"
       },
       "fb2": {
         "type": "string",
@@ -1159,7 +1159,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawasxff",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawasxff": {
         "type": "string",
@@ -1197,7 +1197,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawasdnsip",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawasdnsip": {
         "type": "string",
@@ -1326,7 +1326,7 @@ sub sessionsUpdate
           "iOn": {
             "type": "string",
             "analyzer": "snowball",
-            "norms": {"enabled": false},
+            "norms": {"enabled": "false"},
             "fields": {
               "rawiOn": {"type": "string", "index": "not_analyzed"}
             }
@@ -1338,7 +1338,7 @@ sub sessionsUpdate
           "sOn": {
             "type": "string",
             "analyzer": "snowball",
-            "norms": {"enabled": false},
+            "norms": {"enabled": "false"},
             "fields": {
               "rawsOn": {"type": "string", "index": "not_analyzed"}
             }
@@ -1396,7 +1396,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "raweua",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "raweua": {
         "type": "string",
@@ -1409,7 +1409,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawesub",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawesub": {
         "type": "string",
@@ -1492,7 +1492,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawaseip",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawaseip": {
         "type": "string",
@@ -1591,7 +1591,7 @@ sub sessionsUpdate
         "type": "string",
         "analyzer": "snowball",
         "copy_to": "rawassocksip",
-        "norms": {"enabled": false}
+        "norms": {"enabled": "false"}
       },
       "rawassocksip": {
         "type": "string",
@@ -1672,8 +1672,8 @@ sub historyUpdate
     my $mapping = '
 {
   "history": {
-    "_all": {"enabled": false},
-    "_source": {"enabled": true},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
       "uiPage": {
@@ -1779,8 +1779,8 @@ sub usersUpdate
     my $mapping = '
 {
   "user": {
-    "_all": {"enabled": false},
-    "_source": {"enabled": true},
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
       "userId": {
@@ -1973,10 +1973,15 @@ sub dbCheck {
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
     if ($main::esVersion < 20400 ||
-        ($main::esVersion >= 50000 && $main::esVersion < 50102)) {
+        ($main::esVersion >= 50000 && $main::esVersion < 50102) ||
+        ($main::esVersion == 50300) ||
+        ($main::esVersion >= 60000)
+    ) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+              "* 5.6.x is recommended\n",
               "* 2.4.x is supported\n",
-              "* 5.1.2 is supported, but not recommended for production yet\n",
+              "* 5.0 - 5.1.1, 5.3.0 are not supported\n",
+              "* 6.x is not supported\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
