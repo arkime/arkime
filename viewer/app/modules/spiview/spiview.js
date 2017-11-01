@@ -77,7 +77,6 @@
           });
       }
 
-      let initialized;
       this.$scope.$on('change:search', (event, args) => {
         // either (startTime && stopTime) || date
         if (args.startTime && args.stopTime) {
@@ -97,7 +96,8 @@
         this.query.view = args.view;
 
         // don't issue search when the first change:search event is fired
-        if (!initialized) { initialized = true; return; }
+        // fields are needed first to complete requests
+        if (!this.fields) { return; }
 
         newQuery = true;
 
@@ -385,7 +385,7 @@
             this.dataLoading = false;
             pendingPromise = null;
           });
-      } else {
+      } else if (this.fields) {
         // if we couldn't figure out the fields to request,
         // request the default ones
         this.getSpiData(defaultSpi);
