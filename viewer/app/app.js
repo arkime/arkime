@@ -39,7 +39,7 @@
     'directives.navbar', 'directives.footer',
     'directives.loading', 'directives.error',
     'directives.pagination', 'directives.search',
-    'directives.toast',
+    'directives.toast', 'directives.noresults',
 
     // utilities
     'moloch.util', 'moloch.config',

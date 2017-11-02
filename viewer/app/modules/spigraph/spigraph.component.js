@@ -39,7 +39,7 @@
     $onInit() {
       this.UserService.getSettings()
         .then((response) => {
-          this.settings = response; 
+          this.settings = response;
           if (this.settings.timezone === undefined) {
             this.settings.timezone = 'local';
           }
@@ -82,6 +82,8 @@
         this.query.expression = args.expression;
         if (args.bounding) { this.query.bounding = args.bounding; }
         if (args.interval) { this.query.interval = args.interval; }
+
+        this.query.view = args.view;
 
         if (!this.fields) { return; }
 

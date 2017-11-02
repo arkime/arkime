@@ -871,7 +871,7 @@
       this.showFitButton = false;
 
       this.saveColumnWidths();
-      
+
       this.$timeout(() => { this.initializeColResizable(); });
     }
 

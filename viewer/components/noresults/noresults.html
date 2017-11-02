@@ -1,0 +1,15 @@
+<div class="info-area vertical-horizontal-center">
+  <div ng-if="::$ctrl.recordsTotal === '0'">
+    <span class="fa fa-3x text-muted-more fa-exclamation-triangle"></span>&nbsp;
+    Oh no, Moloch is empty! There is no data to search.
+  </div>
+  <div ng-if="::(!$ctrl.recordsTotal || $ctrl.recordsTotal > 0)">
+    <span class="fa fa-3x text-muted-more fa-folder-open"></span>
+    No results or none that match your search within your time range.
+    <small ng-if="::$ctrl.view" class="text-theme-primary">
+      <br>
+      Don't forget! You have a view applied to your search:&nbsp;
+      <strong>{{::$ctrl.view}}</strong>
+    </small>
+  </div>
+</div>

@@ -14,3 +14,5 @@ require('./error/error.component');
 require('./toast/toast.component');
 
 require('./pagination/pagination.component');
+
+require('./noresults/noresults.component');

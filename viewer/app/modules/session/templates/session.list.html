@@ -309,19 +309,9 @@
 
     <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
 
-    <!-- no results -->
-    <div class="info-area vertical-horizontal-center"
-     ng-if="!$ctrl.error && !$ctrl.sessions.data.length">
-      <div ng-if="!$ctrl.loading">
-        <span class="fa fa-3x text-muted-more fa-folder-open"></span>
-        No results or none that match your search.
-        <small ng-if="$ctrl.query.view" class="text-theme-primary">
-          <br>
-          Don't forget! You have a view applied to your search:&nbsp;
-          <strong>{{::$ctrl.query.view}}</strong>
-        </small>
-      </div>
-    </div> <!-- /no results -->
+    <noresults ng-if="!$ctrl.error && !$ctrl.loading && !$ctrl.sessions.data.length"
+      records-total="{{::$ctrl.sessions.recordsTotal}}" view="{{::$ctrl.query.view}}">
+    </noresults>
 
   </div>
 

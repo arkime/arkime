@@ -126,18 +126,13 @@
       </div>
     </div>
 
-    <div ng-if="$ctrl.error || $ctrl.recordsFiltered === 0">
-      <!-- no results -->
-      <div class="info-area vertical-horizontal-center"
-        ng-if="!$ctrl.error && !$ctrl.loading && $ctrl.recordsFiltered === 0">
-        <span class="fa fa-3x text-muted-more fa-folder-open"></span>
-        No results or none that match your search.
-      </div> <!-- /no results -->
-
-      <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
-    </div>
-
     <loading ng-if="$ctrl.loading"></loading>
+
+    <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
+
+    <noresults ng-if="!$ctrl.error && !$ctrl.loading && !$ctrl.recordsFiltered"
+      records-total="{{::$ctrl.recordsTotal}}" view="{{::$ctrl.query.view}}">
+    </noresults>
 
   </div>
 
