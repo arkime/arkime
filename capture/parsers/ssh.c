@@ -48,6 +48,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
             }
 
             moloch_parsers_unregister(session, uw);
+            return 0;
         }
     }
 
