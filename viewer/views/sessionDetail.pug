@@ -594,3 +594,27 @@ dl
       +clickableValue('tcpflags.fin', session.tcpflags.fin)
       strong.medium.margined-left-xxlg URG
       +clickableValue('tcpflags.urg', session.tcpflags.urg)
+  if (session.icmpCode || session.icmpType)
+    dt
+      div.btn-group.clickable-label(uib-dropdown="")
+        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
+          strong IMCP&nbsp;
+          span.caret
+        ul.dropdown-menu(uib-dropdown-menu="")
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpType', 0)")
+              | Export Unique ICMP Type
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpType', 1)")
+              | Export Unique ICMP Type with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpCode', 0)")
+              | Export Unique ICMP Code
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpCode', 1)")
+              | Export Unique ICMP Code with counts
+    dd
+      strong.medium Type
+      +arrayPrint(session, "icmpType", "icmp.type")
+      strong.medium.margined-left-xxlg Code
+      +arrayPrint(session, "icmpCode", "icmp.code")

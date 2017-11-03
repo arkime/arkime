@@ -41,6 +41,8 @@ LOCAL int                    mac1Field;
 LOCAL int                    mac2Field;
 LOCAL int                    vlanField;
 LOCAL int                    greIpField;
+LOCAL int                    icmpTypeField;
+LOCAL int                    icmpCodeField;
 
 LOCAL uint64_t               droppedFrags;
 
@@ -188,6 +190,12 @@ void moloch_packet_tcp_finish(MolochSession_t *session)
 /******************************************************************************/
 void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+
+    if (packet->payloadLen >= 2) {
+        moloch_field_int_add(icmpCodeField, session, data[0]);
+        moloch_field_int_add(icmpTypeField, session, data[1]);
+    }
 }
 /******************************************************************************/
 void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t * const packet)
@@ -1442,6 +1450,18 @@ void moloch_packet_init()
         "tcpflags.urg", "TCP Flag URG", "tcpflags.urg",
         "Count of packets with URG flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    icmpTypeField = moloch_field_define("general", "integer",
+        "icmp", "ICMP Type", "icmpType",
+        "ICMP type field values",
+        MOLOCH_FIELD_TYPE_INT_GHASH, 0,
+        NULL);
+
+    icmpCodeField = moloch_field_define("general", "integer",
+        "icmp", "ICMP Code", "icmpCode",
+        "ICMP code field values",
+        MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);
 
     int t;

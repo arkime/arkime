@@ -10,6 +10,7 @@ NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
 0.20.1 2017/11/xx
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
   - viewer - graph hover now respects timezone setting (issue #757)
+  - capture - decode icmp type/code (issue #751)
 
 0.20.0 2017/10/31
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
