@@ -87,6 +87,7 @@ uint64_t connectionsSet[2048];
 struct molochhttpserver_t {
     uint64_t              dropped;
     char                **names;
+    char                **defaultHeaders;
     int                   namesCnt;
     int                   namesPos;
     char                  compress;
@@ -141,14 +142,29 @@ static size_t moloch_http_curl_write_callback(void *contents, size_t size, size_
     return sz;
 }
 /******************************************************************************/
-unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **UNUSED(headers), size_t *return_len)
+unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len)
 {
     MolochHttpServer_t        *server = serverV;
+    struct curl_slist         *headerList = NULL;
 
     if (return_len)
         *return_len = 0;
 
     CURL *easy;
+
+    if (headers) {
+        int i;
+        for (i = 0; headers[i]; i++) {
+            headerList = curl_slist_append(headerList, headers[i]);
+        }
+    }
+
+    if (server->defaultHeaders) {
+        int i;
+        for (i = 0; server->defaultHeaders[i]; i++) {
+            headerList = curl_slist_append(headerList, server->defaultHeaders[i]);
+        }
+    }
 
     MOLOCH_LOCK(server->syncRequest);
     if (!server->syncRequest.easy) {
@@ -171,6 +187,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_HTTPGET, 1L);
     }
 
+    if (headerList) {
+        curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
+    }
+
     char url[1000];
     char *host = server->names[server->namesPos];
     server->namesPos = (server->namesPos + 1) % server->namesCnt;
@@ -180,6 +200,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     server->syncRequest.used = 0;
     int res = curl_easy_perform(easy);
+
+    if (headerList) {
+        curl_slist_free_all(headerList);
+    }
 
     if (res != CURLE_OK) {
         LOG("libcurl failure %s error '%s'", url, curl_easy_strerror(res));
@@ -569,6 +593,13 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
         }
     }
 
+    if (server->defaultHeaders) {
+        int i;
+        for (i = 0; server->defaultHeaders[i]; i++) {
+            request->headerList = curl_slist_append(request->headerList, server->defaultHeaders[i]);
+        }
+    }
+
     // Do we need to compress item
     if (server->compress && data && data_len > 1000) {
         char            *buf = moloch_http_get_buffer(data_len);
@@ -717,6 +748,13 @@ void moloch_http_free_server(void *serverV)
     g_strfreev(server->names);
 
     MOLOCH_TYPE_FREE(MolochHttpServer_t, server);
+}
+/******************************************************************************/
+void moloch_http_set_headers(void *serverV, char **headers)
+{
+    MolochHttpServer_t        *server = serverV;
+
+    server->defaultHeaders = headers;
 }
 /******************************************************************************/
 gboolean moloch_http_is_moloch(uint32_t hash, char *key)

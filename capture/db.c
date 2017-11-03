@@ -2290,6 +2290,10 @@ void moloch_db_init()
     }
     if (!config.dryRun) {
         esServer = moloch_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
+        static char *headers[2];
+        headers[0] = "Content-Type: application/json";
+        headers[1] = NULL;
+        moloch_http_set_headers(esServer, headers);
     }
     DLL_INIT(t_, &tagRequests);
     HASH_INIT(tag_, tags, moloch_db_tag_hash, moloch_db_tag_cmp);
