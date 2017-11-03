@@ -27,6 +27,7 @@ showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 
 my $userAgent = LWP::UserAgent->new(timeout => 20);
 my $response = $userAgent->request(HTTP::Request::Common::PUT("$host/tagger",
+                               "Content-Type" => "application/json;charset=UTF-8",
                                 Content => '{"mappings": {"file": { _all: {enabled: 0}, "properties":{"tags":{"type":"string","index": "no"}, "type": {"type":"string","index": "no"}, "data": {"type":"string","index": "no"}, "md5": {"type":"string","index": "no"}}}}}'));
 
 my @ELEMENTS;
@@ -55,6 +56,6 @@ my $md5hex = md5_hex($elements);
 
 my $content  = '{' . $fields . '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
 #print $content,"\n";
-$response = $userAgent->post("$host/tagger/file/$ARGV[2]", Content => $content);
+$response = $userAgent->post("$host/tagger/file/$ARGV[2]", "Content-Type" => "application/json;charset=UTF-8", Content => $content);
 print $response->content, "\n";
 

@@ -1355,16 +1355,13 @@ sub sessionsUpdate
             "type": "integer"
           },
           "notBefore": {
-            "type": "long",
-            "index": "not_analyzed"
+            "type": "long"
           },
           "notAfter": {
-            "type": "long",
-            "index": "not_analyzed"
+            "type": "long"
           },
           "diffDays": {
-            "type": "integer",
-            "index": "not_analyzed"
+            "type": "integer"
           },
           "hash": {
             "type": "string",
@@ -1647,7 +1644,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     #print "$template\n";
     esPut("/_template/${PREFIX}sessions_template", $template);
 
-    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
+    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
 
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
@@ -1744,7 +1741,7 @@ sub historyUpdate
 print "Creating history template\n" if ($verbose > 0);
 esPut("/_template/${PREFIX}history_v1_template", $template);
 
-my $indices = esGet("/${PREFIX}history_v1-*/_aliases", 1);
+my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
 print "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
 foreach my $i (keys %{$indices}) {
@@ -1849,13 +1846,13 @@ sub createAliasedFromNonAliased
 {
     my ($name, $newName, $createFunction) = @_;
 
-    my $indices = esGet("/${PREFIX}{$newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+    my $indices = esGet("/${PREFIX}{$newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
 
     # Need to create new name
     if (!exists $indices->{"${PREFIX}{$newName}"}) {
         $createFunction->();
         sleep 1;
-        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
     }
 
     # Copy old index to new index
@@ -1865,11 +1862,11 @@ sub createAliasedFromNonAliased
 
     # Delete old index and add alias.  Do in a loop since there is a race condition of capture
     # processes trying to save their information.
-    $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+    $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
     while (exists $indices->{"${PREFIX}${name}"} || ! exists $indices->{"${PREFIX}${newName}"}->{aliases}->{"${PREFIX}${name}"}) {
         esDelete("/${PREFIX}${name}", 1);
         esAlias("add", "${newName}", "${name}");
-        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
     }
 }
 ################################################################################
@@ -2147,7 +2144,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
 
     # First handle sessions expire
-    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
+    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], "sessions-", $endTime);
@@ -2199,7 +2196,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
 
     # Now figure out history expire
-    my $hindices = esGet("/${PREFIX}history_v1-*/_aliases", 1);
+    my $hindices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
     $endTimeIndex = time2index("weekly", "history_v1-", $endTime);
     delete $hindices->{$endTimeIndex};
@@ -2229,7 +2226,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
-    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
+    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
 
     dbESVersion();
     $main::userAgent->timeout(3600);

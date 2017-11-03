@@ -199,6 +199,7 @@ app.get("/_nodes/stats/:kinds", simpleGatherCopy);
 app.get("/_cluster/health", simpleGatherAdd);
 
 app.get("/:index/_aliases", simpleGatherCopy);
+app.get("/:index/_alias", simpleGatherCopy);
 
 app.get("/:index/_status", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
