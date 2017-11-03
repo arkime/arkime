@@ -201,7 +201,7 @@ if (Config.get("passwordSecret")) {
       }
 
       Db.getUserCache(obj.user, function(err, suser) {
-        if (err) {return res.send("ERROR - user: " + obj.user + " err:" + err);}
+        if (err) {return res.send("ERROR - x-moloch getUser - user: " + obj.user + " err:" + err);}
         if (!suser || !suser.found) {return res.send(obj.user + " doesn't exist");}
         if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
         userCleanup(suser._source);
@@ -215,7 +215,7 @@ if (Config.get("passwordSecret")) {
     if (internals.userNameHeader !== undefined && req.headers[internals.userNameHeader] !== undefined) {
       var userName = req.headers[internals.userNameHeader];
       Db.getUserCache(userName, function(err, suser) {
-        if (err) {return res.send("ERROR - " +  err);}
+        if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
         if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
         if (!suser._source.enabled) {return res.send(userName + " not enabled");}
         if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
@@ -595,7 +595,7 @@ function proxyRequest (req, res, errCb) {
       if (errCb) {
         return errCb(err);
       }
-      console.log("ERROR - ", err);
+      console.log("ERROR - getViewUrl - node:", req.params.nodeName, "err:", err);
       res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
     }
     var info = url.parse(viewUrl);
@@ -863,7 +863,7 @@ app.get('/vendor.bundle.js.map', function(req, res) {
 app.get('/user.css', function(req, res) {
   fs.readFile("./views/user.styl", 'utf8', function(err, str) {
     function error(msg) {
-      console.log('ERROR -', msg);
+      console.log('ERROR - user.css -', msg);
       return res.status(404).end();
     }
 
@@ -4251,7 +4251,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       emailFields: Config.headers("headers-email")
     }, function(err, data) {
       if (err) {
-        console.trace("ERROR - ", err);
+        console.trace("ERROR - localSession - ", err);
         return req.next(err);
       }
       res.send(data);
@@ -4471,7 +4471,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
         emailFields : Config.headers("headers-email")
       }, function(err, data) {
         if (err) {
-          console.trace("ERROR - ", err);
+          console.trace("ERROR - fixFields - ", err);
           return req.next(err);
         }
         res.send(data);
