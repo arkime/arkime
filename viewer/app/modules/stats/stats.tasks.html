@@ -31,10 +31,9 @@
     <tr class="animate-repeat"
       ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.id">
       <td class="no-wrap">{{stat.action}}</td>
-      <td class="no-wrap">{{stat.transport}}</td>
-      <td class="no-wrap">{{stat.description}}</td>
+      <td>{{stat.description}}</td>
       <td class="no-wrap">{{stat.start_time_in_millis/1000 | timezoneDateString:$ctrl.settings.timezone}}</td>
-      <td class="no-wrap">{{stat.running_time_in_nanos/1000|number:1}}ms</td>
+      <td class="no-wrap">{{stat.running_time_in_nanos/1000000|number:1}}ms</td>
       <td class="no-wrap">{{stat.childrenCount|number}}</td>
     </tr>
     <tr ng-if="!$ctrl.filteredStats.length">

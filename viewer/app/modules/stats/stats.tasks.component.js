@@ -39,7 +39,6 @@
 
       this.columns = [
         { name: 'Action', sort: 'action', doStats: false },
-        { name: 'Transport', sort: 'transport', doStats: true },
         { name: 'Description', sort: 'description', doStats: true },
         { name: 'Start Time', sort: 'start_time_in_millis', doStats: true },
         { name: 'Running Time', sort: 'running_time_in_nanos', doStats: true },
