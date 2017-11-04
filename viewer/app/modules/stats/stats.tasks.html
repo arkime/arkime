@@ -29,7 +29,7 @@
   <tbody>
   <tbody>
     <tr class="animate-repeat"
-      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.index">
+      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.id">
       <td class="no-wrap">{{stat.action}}</td>
       <td class="no-wrap">{{stat.transport}}</td>
       <td class="no-wrap">{{stat.description}}</td>

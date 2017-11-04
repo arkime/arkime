@@ -2617,7 +2617,7 @@ app.get('/estasks.json', function(req, res) {
 
     var regex;
     if (req.query.filter !== undefined) {
-      let regex = new RegExp(req.query.filter);
+      regex = new RegExp(req.query.filter);
     }
 
     let rtasks = [];
@@ -2626,7 +2626,11 @@ app.get('/estasks.json', function(req, res) {
 
       if (regex && !task.action.match(regex)) {continue;}
 
-      task.childrenCount = task.children.length;
+      if (task.children) {
+        task.childrenCount = task.children.length;
+      } else {
+        task.childrenCount = 0;
+      }
       delete task.children;
       rtasks.push(task);
     }
