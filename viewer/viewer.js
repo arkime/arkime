@@ -2290,6 +2290,9 @@ function sessionsListFromQuery(req, res, fields, cb) {
   }
 
   buildSessionQuery(req, function(err, query, indices) {
+    if (err) {
+      return res.send("Could not build query.  Err: " + err);
+    }
     query._source = fields;
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
@@ -2575,6 +2578,75 @@ app.get('/molochRightClick', checkWebEnabled, function(req, res) {
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);
+  });
+});
+
+app.get('/esindices.json', function(req, res) {
+  Db.indicesCache(function(err, indices) {
+    // Implement filtering
+    if (req.query.filter !== undefined) {
+      let findices = [];
+      let regex = new RegExp(req.query.filter);
+      for (var i = 0, ilen = indices.length; i < ilen; i++) {
+        if (!indices[i].index.match(regex)) {continue;}
+        findices.push(indices[i]);
+      }
+      indices = findices;
+    }
+
+    // Implement sorting
+    var sortField = req.query.sortField || "index";
+    if (sortField === "index" || sortField == "status" || sortField == "health") {
+      if (req.query.desc === "true")
+        indices = indices.sort(function(a,b){ return b.index.localeCompare(a.index); })
+      else
+        indices = indices.sort(function(a,b){ return a.index.localeCompare(b.index); })
+    } else {
+      if (req.query.desc === "true")
+        indices = indices.sort(function(a,b){ return b[sortField] - a[sortField]; })
+      else
+        indices = indices.sort(function(a,b){ return a[sortField] - b[sortField]; })
+    }
+    res.send(indices);
+  });
+});
+
+app.get('/estasks.json', function(req, res) {
+  Db.tasks(function(err, tasks) {
+    tasks = tasks.tasks;
+
+    var regex;
+    if (req.query.filter !== undefined) {
+      let regex = new RegExp(req.query.filter);
+    }
+
+    let rtasks = [];
+    for (var key in tasks) {
+      let task = tasks[key];
+
+      if (regex && !task.action.match(regex)) {continue;}
+
+      task.childrenCount = task.children.length;
+      delete task.children;
+      rtasks.push(task);
+    }
+
+    tasks = rtasks;
+
+    // Implement sorting
+    var sortField = req.query.sortField || "action";
+    if (sortField === "action") {
+      if (req.query.desc === "true")
+        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); })
+      else
+        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); })
+    } else {
+      if (req.query.desc === "true")
+        tasks = tasks.sort(function(a,b){ return b[sortField] - a[sortField]; })
+      else
+        tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; })
+    }
+    res.send(tasks);
   });
 });
 
@@ -5230,6 +5302,7 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
     }
 
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
+      console.log("ALW ERR", err);
       if (err) {
         console.log("removeTagsList error", err);
       }
@@ -5313,7 +5386,85 @@ app.post('/removeTags', logAction(), function(req, res) {
   });
 });
 
-function searchAndTagList(allTagIds, list, doneCb) {
+//////////////////////////////////////////////////////////////////////////////////
+//// Search Session Add/Remove Tags
+//////////////////////////////////////////////////////////////////////////////////
+
+function pcapSearch(id, options, cb) {
+  if (options.regex) {
+    options.regexp = new RegExp(options.regex);
+  } else if (options.findString) {
+  } else {
+    console.log("ERROR - Unknown search type", options);
+    return cb(null, true);
+  }
+  processSessionIdAndDecode(id, 10000, function(err, session, results) {
+    if (err) {
+      return cb(null, false);
+    }
+
+    for (var i = 0, ilen = results.length; i < ilen; i++) {
+      if (options.regex) {
+        if (results[i].data.toString().match(options.regexp)) {
+          return cb(null, true);
+        }
+      } else if (options.findString) {
+        if (results[i].data.includes(options.findString)) {
+          return cb(null, true);
+        }
+      }
+    }
+    return cb(null, true);
+  });
+}
+
+app.get('/:nodeName/searchSession/:id', checkProxyRequest, function(req, res) {
+  noCache(req, res);
+  res.statusCode = 200;
+
+  var options = {};
+  options.regex = req.params.regex;
+  options.findString = req.params.findString;
+
+  pcapSearch(req.params.id, options, function(err, matched) {
+    return res.send(JSON.stringify({success: true, matched: matched}));
+  });
+});
+
+
+function searchSession(req, session, cb) {
+  var fields = session._source || session.fields;
+  isLocalView(fields.no, function () {
+    var options = {};
+    options.regex = req.body.regex || req.params.regex;
+    options.findString = req.body.findString || req.params.findString;
+    pcapSearch(session._id, options, function(err, matched) {
+      cb(null, matched);
+    });
+  },
+  function () {
+    // Check Remotely
+    getViewUrl(fields.no, function(err, viewUrl, client) {
+      var info = url.parse(viewUrl);
+      info.path = Config.basePath(fields.no) + fields.no + "/searchSession/" + session._id;
+      info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+      addAuth(info, req.user, fields.no);
+      addCaTrust(info, fields.no);
+      var preq = client.request(info, function(pres) {
+        pres.on('end', function () {
+          cb(null, true); // ALW FIX
+        });
+      });
+      preq.on('error', function (e) {
+        console.log("ERROR - Couldn't searchSession", info, "\nerror=", e);
+        return res.send(JSON.stringify({success: false, text: "Couldn't searchSession" + e}));
+      });
+      preq.end();
+    });
+  });
+}
+
+function searchAndTagList(req, allTagIds, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
     if (!fields) {
@@ -5334,17 +5485,18 @@ function searchAndTagList(allTagIds, list, doneCb) {
     }
 
     if (doit) {
-      console.log("doit", session._id);
+      searchSession(req, session, function (err, matched) {
+        nextCb(null);
+      });
     } else {
-      console.log("dont doit", session._id);
+      nextCb(null);
     }
-    nextCb(null);
   }, doneCb);
 }
 
 app.post('/searchAndTag', logAction(), function(req, res) {
   var tags = [];
-  var regex = req.body.regex;
+  var regex = req.body.regex || "";
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
@@ -5362,13 +5514,13 @@ app.post('/searchAndTag', logAction(), function(req, res) {
       var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
-        searchAndTagList(tagIds, list, function () {
+        searchAndTagList(req, tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
     } else {
       sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
-        searchAndTagList(tagIds, list, function () {
+        searchAndTagList(req, tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });

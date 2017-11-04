@@ -1,0 +1,49 @@
+<div class="row margined-top">
+  <div class="col-md-12">
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" class="form-control" ng-model="$ctrl.searchStats"
+        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+        placeholder="Begin typing to search for ES stats (hint: this input accepts regex)">
+    </div>
+  </div>
+</div>
+
+<table class="table table-condensed table-striped margined-top-xxxlg text-right"
+  ng-if="!$ctrl.error && $ctrl.stats">
+  <thead class="small">
+    <tr>
+      <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer text-right"
+        ng-click="$ctrl.columnClick(column.sort)">
+        {{::column.name}}
+        <span ng-if="column.sort !== undefined">
+          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-desc"></span>
+          <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+        </span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+  <tbody>
+    <tr class="animate-repeat"
+      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.index">
+      <td class="no-wrap">{{stat.action}}</td>
+      <td class="no-wrap">{{stat.transport}}</td>
+      <td class="no-wrap">{{stat.description}}</td>
+      <td class="no-wrap">{{stat.start_time_in_millis/1000 | timezoneDateString:$ctrl.settings.timezone}}</td>
+      <td class="no-wrap">{{stat.running_time_in_nanos/1000|number:1}}ms</td>
+      <td class="no-wrap">{{stat.childrenCount|number}}</td>
+    </tr>
+    <tr ng-if="!$ctrl.filteredStats.length">
+      <td colspan="6" class="text-danger">
+        <span class="fa fa-warning"></span>&nbsp;
+        No results match your search
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<error ng-if="$ctrl.error" message="$ctrl.error"></error>

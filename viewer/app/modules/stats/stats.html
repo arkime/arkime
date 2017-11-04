@@ -233,11 +233,27 @@
 
       </uib-tab>
 
-      <uib-tab index="1" heading="Elasticsearch" select="$ctrl.selectTab(1)">
+      <uib-tab index="1" heading="ES Stats" select="$ctrl.selectTab(1)">
 
         <moloch-es-stats ng-if="$ctrl.selectedTab === 1"
           update-interval="$ctrl.dataInterval">
         </moloch-es-stats>
+
+      </uib-tab>
+
+      <uib-tab index="2" heading="ES Indices" select="$ctrl.selectTab(2)">
+
+        <moloch-es-indices ng-if="$ctrl.selectedTab === 2"
+          update-interval="$ctrl.dataInterval">
+        </moloch-es-indices>
+
+      </uib-tab>
+
+      <uib-tab index="3" heading="ES Tasks" select="$ctrl.selectTab(3)">
+
+        <moloch-es-tasks ng-if="$ctrl.selectedTab === 3"
+          update-interval="$ctrl.dataInterval">
+        </moloch-es-tasks>
 
       </uib-tab>
 

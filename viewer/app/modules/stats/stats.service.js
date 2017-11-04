@@ -70,6 +70,52 @@
     }
 
     /**
+     * Gets moloch stats from the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getElasticsearchIndices(options) {
+      return this.$q((resolve, reject) => {
+
+        let config = { method:'GET',
+                          url:'esindices.json',
+                        cache:false,
+                       params:options};
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Gets moloch stats from the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getElasticsearchTasks(options) {
+      return this.$q((resolve, reject) => {
+
+        let config = { method:'GET',
+                          url:'estasks.json',
+                        cache:false,
+                       params:options};
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
      * Gets moloch dstats from the server
      */
     getDetailStats(options) {

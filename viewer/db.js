@@ -32,6 +32,7 @@ var internals = {tagId2Name: {},
                  fileName2File: {},
                  molochNodeStatsCache: {},
                  healthCache: {},
+                 indicesCache: {},
                  usersCache: {},
                  qInProgress: 0,
                  apiVersion: "2.x",
@@ -270,6 +271,18 @@ exports.health = function(cb) {
   });
 };
 
+exports.indices = function(cb) {
+  internals.elasticSearchClient.cat.indices({format: "json"}, (err,result) => {
+    return cb(err, result);
+  });
+};
+
+exports.tasks = function(cb) {
+  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, (err,result) => {
+    return cb(err, result);
+  });
+};
+
 exports.nodesStats = function (options, cb) {
   return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err,data);});
 };
@@ -427,6 +440,30 @@ exports.healthCache = function (cb) {
         internals.healthCache._timeStamp = Date.now();
         cb(null, health);
       });
+  });
+};
+
+exports.indicesCache = function (cb) {
+  if (!cb) {
+    return internals.indicesCache;
+  }
+
+  if (internals.indicesCache._timeStamp !== undefined && internals.indicesCache._timeStamp > Date.now() - 10000) {
+    return cb(null, internals.indicesCache);
+  }
+
+  return exports.indices((err, indices) => {
+    if (err) {
+      // Even if an error, if we have a cache use it
+      if (internals.indicesCache._timeStamp !== undefined) {
+        return cb(null, internals.indicesCache);
+      }
+      return cb(err, null);
+    }
+
+    internals.indicesCache = indices;
+    internals.indicesCache._timeStamp = Date.now();
+    cb(null, indices);
   });
 };
 
