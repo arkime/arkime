@@ -1,7 +1,8 @@
-use Test::More tests => 24;
+use Test::More tests => 30;
 use Cwd;
 use URI::Escape;
 use MolochTest;
+use Data::Dumper;
 use strict;
 
 my $pwd = getcwd() . "/pcap";
@@ -30,3 +31,21 @@ my $pwd = getcwd() . "/pcap";
 # dstats.json
     my $dstats = viewerGet("/dstats.json?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
+
+# esindices
+    my $indices = viewerGet("/esindices/list");
+    cmp_ok (@{$indices}, ">=", 30, "indices array size");
+    cmp_ok ($indices->[0]->{index} cmp $indices->[1]->{index}, "<", 0, "indices index sorted");
+
+    my $indices = viewerGet("/esindices/list?desc=true");
+    cmp_ok ($indices->[0]->{index} cmp $indices->[1]->{index}, ">", 0, "indices index sorted reverse");
+
+    my $indices = viewerGet("/esindices/list?sortField=store.size");
+    cmp_ok ($indices->[0]->{"store.size"}, "<=", $indices->[1]->{"store.size"}, "indices store.size sorted");
+
+    my $indices = viewerGet("/esindices/list?desc=true&sortField=store.size");
+    cmp_ok ($indices->[0]->{"store.size"}, ">=", $indices->[1]->{"store.size"}, "indices store.size sorted reverse");
+
+# estasks
+    my $tasks = viewerGet("/estask/list");
+    cmp_ok (@{$tasks}, ">=", 1, "tasks array size");

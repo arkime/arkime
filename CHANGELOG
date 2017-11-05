@@ -14,6 +14,7 @@ NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
   - viewer - upgrade Cyberchef to 6.4.5
   - viewer - es indices tab (#761)
   - viewer - es tasks tab (#763)
+  - capture - ssh parser crash fixed (introduced in 0.20.0)
 
 0.20.0 2017/10/31
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x

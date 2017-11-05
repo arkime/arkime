@@ -499,6 +499,20 @@ function arrayZeroFill(n) {
   return a;
 }
 
+function sizeStringToInt(v) {
+  if (typeof(v) !== "string")
+    return v;
+  if (v.endsWith("kb") || v.endsWith("k"))
+    return Math.ceil(parseFloat(v, 10)*1024);
+  if (v.endsWith("mb") || v.endsWith("m"))
+    return Math.ceil(parseFloat(v, 10)*1024*1024);
+  if (v.endsWith("gb") || v.endsWith("g"))
+    return Math.ceil(parseFloat(v, 10)*1024*1024*1024);
+  if (v.endsWith("tb") || v.endsWith("t"))
+    return Math.ceil(parseFloat(v, 10)*1024*1024*1024*1024);
+  return parseInt(v, 10);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
 //////////////////////////////////////////////////////////////////////////////////
@@ -2592,6 +2606,11 @@ app.get('/esindices/list', function(req, res) {
         findices.push(indices[i]);
       }
       indices = findices;
+    }
+
+    for (var i = 0, ilen = indices.length; i < ilen; i++) {
+      indices[i]['store.size'] = sizeStringToInt(indices[i]['store.size']);
+      indices[i]['pri.store.size'] = sizeStringToInt(indices[i]['pri.store.size']);
     }
 
     // Implement sorting

@@ -307,32 +307,36 @@ Pcap.prototype.icmp = function (buffer, obj, pos) {
 };
 
 Pcap.prototype.tcp = function (buffer, obj, pos) {
-  obj.tcp = {
-    _pos:       pos,
-    length:     buffer.length,
-    sport:      buffer.readUInt16BE(0),
-    dport:      buffer.readUInt16BE(2),
-    seq:        buffer.readUInt32BE(4),
-    ack:        buffer.readUInt32BE(8),
-    off:        ((buffer[12] >> 4) & 0xf),
-    res1:       (buffer[12] & 0xf),
-    flags:      buffer[13],
-    res2:       (buffer[13] >> 6 & 0x3),
-    urgflag:    (buffer[13] >> 5 & 0x1),
-    ackflag:    (buffer[13] >> 4 & 0x1),
-    pshflag:    (buffer[13] >> 3 & 0x1),
-    rstflag:    (buffer[13] >> 2 & 0x1),
-    synflag:    (buffer[13] >> 1 & 0x1),
-    finflag:    (buffer[13] >> 0 & 0x1),
-    win:        buffer.readUInt16BE(14),
-    sum:        buffer.readUInt16BE(16),
-    urp:        buffer.readUInt16BE(18)
-  };
+  try {
+    obj.tcp = {
+      _pos:       pos,
+      length:     buffer.length,
+      sport:      buffer.readUInt16BE(0),
+      dport:      buffer.readUInt16BE(2),
+      seq:        buffer.readUInt32BE(4),
+      ack:        buffer.readUInt32BE(8),
+      off:        ((buffer[12] >> 4) & 0xf),
+      res1:       (buffer[12] & 0xf),
+      flags:      buffer[13],
+      res2:       (buffer[13] >> 6 & 0x3),
+      urgflag:    (buffer[13] >> 5 & 0x1),
+      ackflag:    (buffer[13] >> 4 & 0x1),
+      pshflag:    (buffer[13] >> 3 & 0x1),
+      rstflag:    (buffer[13] >> 2 & 0x1),
+      synflag:    (buffer[13] >> 1 & 0x1),
+      finflag:    (buffer[13] >> 0 & 0x1),
+      win:        buffer.readUInt16BE(14),
+      sum:        buffer.readUInt16BE(16),
+      urp:        buffer.readUInt16BE(18)
+    };
 
-  if (4*obj.tcp.off > buffer.length) {
-    obj.tcp.data = Buffer.alloc(0);
-  } else {
-    obj.tcp.data = buffer.slice(4*obj.tcp.off);
+    if (4*obj.tcp.off > buffer.length) {
+      obj.tcp.data = Buffer.alloc(0);
+    } else {
+      obj.tcp.data = buffer.slice(4*obj.tcp.off);
+    }
+  } catch (e) {
+    console.trace("Couldn't parse tcp", e);
   }
 };
 
