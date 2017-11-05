@@ -78,7 +78,7 @@
       return this.$q((resolve, reject) => {
 
         let config = { method:'GET',
-                          url:'esindices.json',
+                          url:'esindices/list',
                         cache:false,
                        params:options};
 
@@ -101,7 +101,7 @@
       return this.$q((resolve, reject) => {
 
         let config = { method:'GET',
-                          url:'estasks.json',
+                          url:'estask/list',
                         cache:false,
                        params:options};
 
@@ -131,6 +131,24 @@
             resolve(response.data);
           }, (error) => {
             reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Cancel task
+     */
+    cancelTask(taskId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'estask/cancel', method:'POST', data: {taskId: taskId}};
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
           });
 
       });

@@ -272,19 +272,19 @@ exports.health = function(cb) {
 };
 
 exports.indices = function(cb) {
-  internals.elasticSearchClient.cat.indices({format: "json"}, (err,result) => {
-    return cb(err, result);
-  });
+  internals.elasticSearchClient.cat.indices({format: "json"}, cb);
 };
 
 exports.tasks = function(cb) {
-  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, (err,result) => {
-    return cb(err, result);
-  });
+  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, cb);
 };
 
+exports.taskCancel = function(taskId, cb) {
+  internals.elasticSearchClient.tasks.cancel({taskId: taskId}, cb);
+}
+
 exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err,data);});
+  return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err, data);});
 };
 
 exports.update = function (index, type, id, document, options, cb) {

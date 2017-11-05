@@ -24,17 +24,26 @@
           <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
         </span>
       </th>
+      <th>&nbsp;</th>
     </tr>
   </thead>
   <tbody>
   <tbody>
     <tr class="animate-repeat"
-      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.id">
+      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats) track by stat.taskId">
       <td class="no-wrap">{{stat.action}}</td>
       <td>{{stat.description}}</td>
       <td class="no-wrap">{{stat.start_time_in_millis/1000 | timezoneDateString:$ctrl.settings.timezone}}</td>
       <td class="no-wrap">{{stat.running_time_in_nanos/1000000|number:1}}ms</td>
       <td class="no-wrap">{{stat.childrenCount|number}}</td>
+      <td class="no-wrap">
+        <a class="btn btn-sm btn-danger"
+          ng-click="$ctrl.cancelTask(stat.taskId)"
+          ng-show="stat.cancellable"
+          uib-tooltip="Cancel Task">
+          <span class="fa fa-trash-o"></span>
+        </a>
+      </td>
     </tr>
     <tr ng-if="!$ctrl.filteredStats.length">
       <td colspan="6" class="text-danger">

@@ -116,6 +116,10 @@
           this.loading  = false;
         });
     }
+
+    cancelTask(taskId) {
+      this.StatsService.cancelTask(taskId);
+    }
   }
 
 

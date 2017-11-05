@@ -2581,7 +2581,7 @@ app.get('/eshealth.json', function(req, res) {
   });
 });
 
-app.get('/esindices.json', function(req, res) {
+app.get('/esindices/list', function(req, res) {
   Db.indicesCache(function(err, indices) {
     // Implement filtering
     if (req.query.filter !== undefined) {
@@ -2611,7 +2611,7 @@ app.get('/esindices.json', function(req, res) {
   });
 });
 
-app.get('/estasks.json', function(req, res) {
+app.get('/estask/list', function(req, res) {
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
 
@@ -2626,6 +2626,7 @@ app.get('/estasks.json', function(req, res) {
 
       if (regex && !task.action.match(regex)) {continue;}
 
+      task.taskId = key;
       if (task.children) {
         task.childrenCount = task.children.length;
       } else {
@@ -2651,6 +2652,25 @@ app.get('/estasks.json', function(req, res) {
         tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; })
     }
     res.send(tasks);
+  });
+});
+
+app.post('/estask/cancel', logAction(), function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.user.createEnabled) {
+    return error('Need admin privileges');
+  }
+
+  if (!req.body || !req.body.taskId) {
+    return error('Missing/Empty required fields');
+  }
+
+  Db.taskCancel(req.body.taskId, (err, result) => {
+    return res.send(JSON.stringify({success: true, text: result}));
   });
 });
 
