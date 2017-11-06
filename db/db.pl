@@ -211,13 +211,13 @@ sub esCopy
 
     $main::userAgent->timeout(3600);
 
-    my $status = esGet("/_stats", 1);
+    my $status = esGet("/_stats/docs", 1);
     print "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
 
     esPost("/_reindex", to_json({"source" => {"index" => $PREFIX.$srci}, "dest" => {"index" => $PREFIX.$dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
     my $status = esGet("/${PREFIX}${dsti}/_refresh", 1);
-    my $status = esGet("/_stats", 1);
+    my $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} != $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
         print $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " != ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
         die "ERROR - Copy failed from $srci to $dsti\n";
@@ -2243,7 +2243,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     dbVersion(0);
     my $esversion = dbESVersion();
     my $nodes = esGet("/_nodes");
-    my $status = esGet("/_stats", 1);
+    my $status = esGet("/_stats/docs,store", 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
