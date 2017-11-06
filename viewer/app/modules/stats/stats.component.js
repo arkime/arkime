@@ -44,10 +44,6 @@
         .then((response) => { this.settings = response; })
         .catch((error)   => { this.settings = { timezone:'local' }; });
 
-      this.UserService.hasPermission("createEnabled")
-        .then((response) => { this.isAdmin = response; })
-        .catch((error)   => { this.isAdmin = false; });
-
       this.query = {
         length    : this.$routeParams.length || 50,
         start     : 0,

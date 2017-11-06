@@ -241,7 +241,7 @@
 
       </uib-tab>
 
-      <uib-tab index="2" heading="ES Indices" select="$ctrl.selectTab(2)" ng-show="$ctrl.isAdmin">
+      <uib-tab index="2" heading="ES Indices" select="$ctrl.selectTab(2)" has-permission="createEnabled">
 
         <moloch-es-indices ng-if="$ctrl.selectedTab === 2"
           update-interval="$ctrl.dataInterval">
@@ -249,7 +249,7 @@
 
       </uib-tab>
 
-      <uib-tab index="3" heading="ES Tasks" select="$ctrl.selectTab(3)" ng-show="$ctrl.isAdmin">
+      <uib-tab index="3" heading="ES Tasks" select="$ctrl.selectTab(3)" has-permission="createEnabled">
 
         <moloch-es-tasks ng-if="$ctrl.selectedTab === 3"
           update-interval="$ctrl.dataInterval">
