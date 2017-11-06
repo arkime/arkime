@@ -87,7 +87,8 @@
   <div class="container-fluid">
 
     <span class="fa fa-lg fa-question-circle-o pull-right margined-top-lg cursor-help"
-      uib-tooltip="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing."
+      ng-if="$ctrl.selectedTab === 0"
+      uib-tooltip="HINT: This graph is 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing."
       tooltip-placement="left"></span>
 
     <uib-tabset ng-if="!$ctrl.error" active="$ctrl.selectedTab">
