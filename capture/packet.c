@@ -928,6 +928,32 @@ int moloch_packet_frags_outstanding()
     return 0;
 }
 /******************************************************************************/
+void moloch_packet_log(int ses)
+{
+    MolochReaderStats_t stats;
+    if (moloch_reader_stats(&stats)) {
+        stats.dropped = 0;
+        stats.total = totalPackets;
+    }
+
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d",
+      totalPackets,
+      moloch_session_watch_count(ses),
+      moloch_session_monitoring(),
+      moloch_session_idle_seconds(ses),
+      stats.total,
+      stats.dropped - initialDropped,
+      (stats.dropped - initialDropped)*(double)100.0/stats.total,
+      moloch_http_queue_length(esServer),
+      moloch_writer_queue_length(),
+      moloch_packet_outstanding(),
+      moloch_session_close_outstanding(),
+      moloch_session_need_save_outstanding(),
+      moloch_packet_frags_outstanding(),
+      moloch_packet_frags_size()
+      );
+}
+/******************************************************************************/
 int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
 {
     totalBytes += packet->pktlen;
@@ -943,28 +969,7 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
     }
 
     if ((++totalPackets) % config.logEveryXPackets == 0) {
-        MolochReaderStats_t stats;
-        if (moloch_reader_stats(&stats)) {
-            stats.dropped = 0;
-            stats.total = totalPackets;
-        }
-
-        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d",
-          totalPackets,
-          moloch_session_watch_count(packet->ses),
-          moloch_session_monitoring(),
-          moloch_session_idle_seconds(packet->ses),
-          stats.total,
-          stats.dropped - initialDropped,
-          (stats.dropped - initialDropped)*(double)100.0/stats.total,
-          moloch_http_queue_length(esServer),
-          moloch_writer_queue_length(),
-          moloch_packet_outstanding(),
-          moloch_session_close_outstanding(),
-          moloch_session_need_save_outstanding(),
-          moloch_packet_frags_outstanding(),
-          moloch_packet_frags_size()
-          );
+        moloch_packet_log(packet->ses);
     }
 
     packet->hash = moloch_session_hash(sessionId);
@@ -1003,7 +1008,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 
     if (len < (int)sizeof(struct ip)) {
 #ifdef DEBUG_PACKET
-        LOG("too small for header %p %d", packet, len);
+        LOG("BAD PACKET: too small for header %p %d", packet, len);
 #endif
         return 1;
     }
@@ -1011,7 +1016,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     int ip_len = ntohs(ip4->ip_len);
     if (len < ip_len) {
 #ifdef DEBUG_PACKET
-        LOG("incomplete %p %d", packet, len);
+        LOG("BAD PACKET: incomplete %p %d %d", packet, len, ip_len);
 #endif
         return 1;
     }
@@ -1019,7 +1024,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     int ip_hdr_len = 4 * ip4->ip_hl;
     if (len < ip_hdr_len) {
 #ifdef DEBUG_PACKET
-        LOG("too small for header and options %p %d", packet, len);
+        LOG("BAD PACKET: too small for header and options %p %d", packet, len);
 #endif
         return 1;
     }
@@ -1057,7 +1062,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     case IPPROTO_TCP:
         if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
 #ifdef DEBUG_PACKET
-            LOG("too small for tcp hdr %p %d", packet, len);
+            LOG("BAD PACKET: too small for tcp hdr %p %d", packet, len);
 #endif
             return 1;
         }
@@ -1070,7 +1075,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     case IPPROTO_UDP:
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
 #ifdef DEBUG_PACKET
-        LOG("too small for udp header %p %d", packet, len);
+        LOG("BAD PACKET: too small for udp header %p %d", packet, len);
 #endif
             return 1;
         }
@@ -1192,6 +1197,9 @@ int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Len or bytes %d %d %d", len, data[0], data[1]);
+#endif
         return 1;
     }
 
@@ -1207,6 +1215,9 @@ int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     case 0x57:
         return moloch_packet_ip6(batch, packet, data + 8, plen-2);
     default:
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Unknown pppoe type %d", type);
+#endif
         return 1;
     }
 }
@@ -1214,6 +1225,9 @@ int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const pack
 int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", len);
+#endif
         return 1;
     }
     int n = 12;
@@ -1231,9 +1245,15 @@ int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const pack
             n += 2;
             break;
         default:
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Unknown ethertype %x", ethertype);
+#endif
             return 1;
         } // switch
     }
+#ifdef DEBUG_PACKET
+    LOG("BAD PACKET: bad len %d < %d", n+2, len);
+#endif
     return 1;
 }
 /******************************************************************************/
@@ -1242,6 +1262,9 @@ int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     if (len < 14 ||
         (data[0] != AF_INET && data[0] != AF_INET6) ||
         data[1] != 0) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Wrong type %d", data[0]);
+#endif
         return 1;
     }
     int n = 4;
@@ -1250,6 +1273,9 @@ int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const pack
 
         // Make sure length is at least header and not bigger then remaining packet
         if (length < 4 || length > len - n) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Wrong len %d", length);
+#endif
             return 1;
         }
 
@@ -1263,6 +1289,9 @@ int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const pack
             n += ((length + 3) & 0xfffffc);
         }
     }
+#ifdef DEBUG_PACKET
+    LOG("BAD PACKET: Not sure");
+#endif
     return 1;
 }
 /******************************************************************************/
@@ -1303,8 +1332,12 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     case 0: // NULL
         if (packet->pktlen > 4)
             rc = moloch_packet_ip4(batch, packet, packet->pkt+4, packet->pktlen-4);
-        else
+        else {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Too short %d", packet->pktlen);
+#endif
             rc = 1;
+        }
         break;
     case 1: // Ether
         rc = moloch_packet_ether(batch, packet, packet->pkt, packet->pktlen);
@@ -1530,4 +1563,5 @@ void moloch_packet_exit()
         Destroy_Patricia(ipTree, NULL);
         ipTree = 0;
     }
+    moloch_packet_log(SESSION_TCP);
 }
