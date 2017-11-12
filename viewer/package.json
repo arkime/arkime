@@ -39,6 +39,7 @@
     "prestart": "npm run bundle:min",
     "build": "npm run test && npm run bundle:min",
     "lint": "jshint app components",
+    "viewerlint": "jshint viewer.js db.js config.js multies.js",
     "bundle": "webpack --progress --display-error-details --bail",
     "bundle:min": "webpack --define process.env.NODE_ENV=production --progress --bail",
     "test": "karma start --single-run",

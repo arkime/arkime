@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost multiGet getTokenCookie getTokenCookie2);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -216,20 +216,16 @@ sub bin2hex {
     return unpack("H*", $data);
 }
 ################################################################################
-sub getToken {
-    my $usersPage = $MolochTest::userAgent->get("http://$MolochTest::host:8123/users")->content;
-    $usersPage =~ /token.*value: "(.*)"/;
-    return $1;
-}
-################################################################################
-sub getToken2 {
-    my $usersPage = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->content;
-    $usersPage =~ /token.*value: "(.*)"/;
-    return $1;
-}
-################################################################################
 sub getTokenCookie {
-    my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/users")->{"_headers"}->{"set-cookie"};
+my ($userId) = @_;
+
+    my $setCookie;
+    if ($userId) {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/makeToken?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+    } else {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/makeToken")->{"_headers"}->{"set-cookie"};
+    }
+
     $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
     return $1;
 }

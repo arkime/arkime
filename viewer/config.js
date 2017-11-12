@@ -133,7 +133,7 @@ exports.sectionGet = function(section, key, defaultValue) {
   }
 
   return value;
-}
+};
 
 exports.getFull = function(node, key, defaultValue) {
   var value;

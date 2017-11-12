@@ -78,7 +78,7 @@ var internals = {
   writers: {},
 
   cronTimeout: Math.max(+Config.get("tcpTimeout", 8*60), +Config.get("udpTimeout", 60), +Config.get("icmpTimeout", 10)) +
-               +Config.get("dbFlushTimeout", 5) + 60 + 5,
+               parseInt(Config.get("dbFlushTimeout", 5), 10) + 60 + 5,
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -134,7 +134,16 @@ app.locals.molochClusters = Config.configMap("moloch-clusters");
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(passport.initialize());
+
+function molochError (status, text) {
+  /* jshint validthis: true */
+  this.status(status || 403);
+  return this.send(JSON.stringify({ success: false, text: text }));
+}
+
 app.use(function(req, res, next) {
+  res.molochError = molochError;
+
   if (res.setTimeout) {
     res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
   }
@@ -243,12 +252,12 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    var username = req.query["molochRegressionUser"] || "anonymous";
+    var username = req.query.molochRegressionUser || "anonymous";
     req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
     Db.getUserCache(username, function(err, suser) {
         if (!err && suser && suser.found) {
-          req.user.settings = suser._source.settings;
-          req.user.views = suser._source.views;
+          userCleanup(suser._source);
+          req.user = suser._source;
         }
       next();
     });
@@ -261,7 +270,7 @@ if (Config.get("passwordSecret")) {
     req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
     Db.getUserCache("anonymous", function(err, suser) {
         if (!err && suser && suser.found) {
-          req.user.settings = suser._source.settings;
+          req.user.settings = suser._source.settings || {};
           req.user.views = suser._source.views;
         }
       next();
@@ -276,7 +285,7 @@ app.use(function(req, res, next) {
 
   var mrc = {};
 
-  mrc['httpAuthorizationDecode'] = {fields: "http.authorization", func: `{
+  mrc.httpAuthorizationDecode = {fields: "http.authorization", func: `{
     if (value.substring(0,5) === "Basic")
       return {name: "Decoded:", value: atob(value.substring(6))};
     return undefined;
@@ -457,9 +466,9 @@ function createRightClicks() {
     }
     if (mrc[key].users) {
       var users = {};
-      mrc[key].users.split(",").forEach(function(item) {
+      for (const item of mrc[key].users.split(",")) {
         users[item] = 1;
-      });
+      }
       mrc[key].users = users;
     }
   }
@@ -500,16 +509,11 @@ function arrayZeroFill(n) {
 }
 
 function sizeStringToInt(v) {
-  if (typeof(v) !== "string")
-    return v;
-  if (v.endsWith("kb") || v.endsWith("k"))
-    return Math.ceil(parseFloat(v, 10)*1024);
-  if (v.endsWith("mb") || v.endsWith("m"))
-    return Math.ceil(parseFloat(v, 10)*1024*1024);
-  if (v.endsWith("gb") || v.endsWith("g"))
-    return Math.ceil(parseFloat(v, 10)*1024*1024*1024);
-  if (v.endsWith("tb") || v.endsWith("t"))
-    return Math.ceil(parseFloat(v, 10)*1024*1024*1024*1024);
+  if (typeof(v) !== "string")              {return v;}
+  if (v.endsWith("kb") || v.endsWith("k")) {return Math.ceil(parseFloat(v, 10)*1024);}
+  if (v.endsWith("mb") || v.endsWith("m")) {return Math.ceil(parseFloat(v, 10)*1024*1024);}
+  if (v.endsWith("gb") || v.endsWith("g")) {return Math.ceil(parseFloat(v, 10)*1024*1024*1024);}
+  if (v.endsWith("tb") || v.endsWith("t")) {return Math.ceil(parseFloat(v, 10)*1024*1024*1024*1024);}
   return parseInt(v, 10);
 }
 
@@ -550,7 +554,7 @@ function addCaTrust(info, node) {
 
     internals.caTrustCerts[node] = [];
 
-    for (var i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
+    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
       line = caTrustFileLines[i];
       if (line.length === 0) {
         continue;
@@ -662,36 +666,9 @@ function checkProxyRequest(req, res, next) {
   });
 }
 
-function checkToken(req, res, next) {
-  if (!req.body.token) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
-  }
-
-  req.token = Config.auth2obj(req.body.token);
-  var diff = Math.abs(Date.now() - req.token.date);
-  if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
-    console.trace("bad token", req.token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
-  }
-
-  // Shorter token timeout if editing someone elses info
-  if (req.token.suserId && req.token.userId !== req.user.userId && diff > 600000) {
-    console.trace("admin bad token", req.token);
-    return res.send(JSON.stringify({success: false, text: "Admin Timeout - Please try reloading page and repeating the action"}));
-  }
-
-  return next();
-}
-
-
 function checkCookieToken(req, res, next) {
-  function error(text) {
-    res.status(500);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
-
   if (!req.headers['x-moloch-cookie']) {
-    return error('Missing token');
+    return res.molochError(500, 'Missing token');
   }
 
   req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
@@ -699,7 +676,7 @@ function checkCookieToken(req, res, next) {
   if (diff > 2400000 || req.token.pid !== process.pid ||
       req.token.userId !== req.user.userId) {
     console.trace('bad token', req.token);
-    return error('Timeout - Please try reloading page and repeating the action');
+    return res.molochError(500, 'Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
@@ -722,7 +699,7 @@ function logAction(uiPage) {
       api       : req._parsedUrl.pathname,
       query     : req._parsedUrl.query,
       expression: req.query.expression
-    }
+    };
 
     if (uiPage) { log.uiPage = uiPage; }
 
@@ -760,7 +737,7 @@ function logAction(uiPage) {
       log.recordsReturned = recordsReturned;
       log.recordsFiltered = recordsFiltered;
       log.recordsTotal    = recordsTotal;
-    }
+    };
 
     req._molochStartTime = new Date();
     function finish () {
@@ -774,7 +751,7 @@ function logAction(uiPage) {
     res.on('finish', finish);
 
     return next();
-  }
+  };
 }
 
 
@@ -847,9 +824,7 @@ app.get('/molochclusters', function(req, res) {
       return res.send('Cannot locate right clicks');
     }
 
-    var clustersClone = cloneClusters(molochClusters);
-
-    return res.send(clustersClone);
+    return res.send(cloneClusters(molochClusters));
   }
 
   var clustersClone = cloneClusters(app.locals.molochClusters);
@@ -887,7 +862,7 @@ app.get('/user.css', function(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=0');
     res.setHeader('Last-Modified', date);
 
-    if (err) { return error(err) }
+    if (err) { return error(err); }
     if (!req.user.settings.theme) { return error('no custom theme defined'); }
 
     var theme = req.user.settings.theme.split(':');
@@ -951,371 +926,283 @@ var settingDefaults = {
 
 // gets the current user
 app.get('/user/current', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        return res.send(req.user);
-      } else {
-        console.log('/user/current error', err, user);
-        res.status(403);
-        return res.send(JSON.stringify({success: false, text: 'Unknown user'}));
-      }
+
+  var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+    'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+
+  var clone     = {};
+
+  for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
+    var prop = userProps[i];
+    if (req.user.hasOwnProperty(prop)) {
+      clone[prop] = req.user[prop];
     }
+  }
 
-    var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-      'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+  clone.canUpload = app.locals.allowUploads;
 
-    var clone     = {};
-    var source    = user._source;
+  // If no settings, use defaults
+  if (clone.settings === undefined) {clone.settings = settingDefaults;}
 
-    for (var i = 0, len = userProps.length; i < len; ++i) {
-      var prop = userProps[i];
-      if (source.hasOwnProperty(prop)) {
-        clone[prop] = source[prop];
-      }
-    }
+  // Use settingsDefaults for any settings that are missing
+  for (let item in settingDefaults) {
+    if (clone.settings[item] === undefined) {clone.settings[item] = settingDefaults[item];}
+  }
 
-    clone['canUpload'] = app.locals.allowUploads;
-
-    // If no settings, use defaults
-    if (clone.settings === undefined) {clone.settings = settingDefaults;}
-
-    // Use settingsDefaults for any settings that are missing
-    for (var item in settingDefaults) {
-      if (clone.settings[item] === undefined) {clone.settings[item] = settingDefaults[item];}
-    }
-
-    return res.send(clone);
-  });
+  return res.send(clone);
 });
 
-// gets a user's settings
-app.get('/user/settings', function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+// express middleware to set req.settingUser to who to work on, depending if admin or not
+function getSettingUser (req, res, next) {
+  // If no userId parameter, or userId is ourself then req.user already has our info
+  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+    req.settingUser = req.user;
+    return next();
   }
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+  if (!req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
-    return error(403, 'Need admin privileges');
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
   }
 
-  Db.getUserCache(userId, function(err, user) {
+  Db.getUserCache(req.query.userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
         // TODO: send anonymous user's settings
-        return res.send('{}');
+        req.settingUser = {};
       } else {
-        console.log('Unknown user', err, user);
-        return error(404, 'User not found');
+        req.settingUser = null;
       }
+      return next();
     }
-
-    var settings = user._source.settings || settingDefaults;
-
-    res.cookie(
-       'MOLOCH-COOKIE',
-       Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-       { path: app.locals.basePath }
-    );
-
-    return res.send(settings);
+    req.settingUser = user._source;
+    return next();
   });
-});
+}
 
-// updates a user's settings
-app.post('/user/settings/update', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
+// express middleware to set req.settingUser to who to work on, depending if admin or not
+function postSettingUser (req, res, next) {
+  var userId;
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to update another user's settings without admin privilege
-    return error(403, 'Need admin privileges');
+  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+    userId = req.user.userId;
+  } else if (!req.user.createEnabled) {
+    // user is trying to get another user's settings without admin privilege
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
+  } else {
+    userId = req.query.userId;
   }
 
   Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/settings/update failed', err, user);
-      return error(403, 'Unknown user');
-    }
-
-    user = user._source;
-    user.settings = req.body;
-    delete user.settings.token;
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/settings/update error', err, info);
-        return error(500, 'Settings update failed');
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's settings
+        req.settingUser = {};
+      } else {
+        req.settingUser = null;
       }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Updated settings successfully'
-      }));
-    });
+      return next();
+    }
+    req.settingUser = user._source;
+    return next();
+  });
+}
+
+
+// gets a user's settings
+app.get('/user/settings', getSettingUser, function(req, res) {
+  if (!req.settingUser) {
+    res.status(404);
+    return res.send(JSON.stringify('User not found'));
+  }
+
+  var settings = req.settingUser.settings || settingDefaults;
+
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
+  return res.send(settings);
+});
+
+// updates a user's settings
+app.post('/user/settings/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
+
+  req.settingUser.settings = req.body;
+  delete req.settingUser.settings.token;
+
+  Db.setUser(req.settingUser.userId, req.settingUser, function(err, info) {
+    if (err) {
+      console.log('/user/settings/update error', err, info);
+      return res.molochError(500, 'Settings update failed');
+    }
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Updated settings successfully'
+    }));
   });
 });
 
 // gets a user's views
-app.get('/user/views', function(req, res) {
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+app.get('/user/views', getSettingUser, function(req, res) {
+  if (!req.settingUser) {return res.send({});}
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to get another user's views without admin privilege
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: 'Need admin privileges'}));
-  }
-
-  Db.getUserCache(userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's views
-        return res.send('{}');
-      } else {
-        console.log('Unknown user', err, user);
-        return res.send('{}');
-      }
-    }
-
-    var views = user._source.views || {};
-
-    return res.send(views);
-  });
+  return res.send(req.settingUser.views || {});
 });
 
 // creates a new view for a user
-app.post('/user/views/create', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/views/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {
+    console.log('/user/views/create unknown user');
+    return res.molochError(403, 'Unknown user');
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to create a view for another user without admin privilege
-    return error(403, 'Need admin privileges');
+  if (!req.body.viewName)   { return res.molochError(403, 'Missing view name'); }
+  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
+
+  var user = req.settingUser;
+  user.views = user.views || {};
+  var container = user.views;
+  if (req.body.groupName) {
+    req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (!user.views._groups) {
+      user.views._groups = {};
+    }
+    if (!user.views._groups[req.body.groupName]) {
+      user.views._groups[req.body.groupName] = {};
+    }
+    container = user.views._groups[req.body.groupName];
+  }
+  req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+  if (container[req.body.viewName]) {
+    container[req.body.viewName].expression = req.body.expression;
+  } else {
+    container[req.body.viewName] = {expression: req.body.expression};
   }
 
-  if (!req.body.viewName)   { return error(403, 'Missing view name'); }
-  if (!req.body.expression) { return error(403, 'Missing view expression'); }
-
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/views/create failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/views/create error', err, info);
+      return res.molochError(500, 'Create view failed');
     }
-
-    user = user._source;
-    user.views = user.views || {};
-    var container = user.views;
-    if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-      if (!user.views._groups) {
-        user.views._groups = {};
-      }
-      if (!user.views._groups[req.body.groupName]) {
-        user.views._groups[req.body.groupName] = {};
-      }
-      container = user.views._groups[req.body.groupName];
-    }
-    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-    if (container[req.body.viewName]) {
-      container[req.body.viewName].expression = req.body.expression;
-    } else {
-      container[req.body.viewName] = {expression: req.body.expression};
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/views/create error', err, info);
-        return error(500, 'Create view failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Created view successfully',
-        views   : user.views
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Created view successfully',
+      viewName: req.body.viewName,
+      views   : user.views
+    }));
   });
 });
 
 // deletes a user's specified view
-app.post('/user/views/delete', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {
+    console.log('/user/views/delete unknown user');
+    return res.molochError(403, 'Unknown user');
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to delete another user's view without admin privilege
-    return error(403, 'Need admin privileges');
-  }
+  if (!req.body.view) { return res.molochError(403, 'Missing view'); }
 
-  if (!req.body.view) { return error(403, 'Missing view'); }
+  var user = req.settingUser;
+  user.views = user.views || {};
+  if (user.views[req.body.view] === undefined) { return res.molochError(200, "View not found"); }
+  delete user.views[req.body.view];
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/views/delete failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/views/delete failed', err, info);
+      return res.molochError(500, 'Delete view failed');
     }
-
-    user = user._source;
-    user.views = user.views || {};
-    delete user.views[req.body.view];
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/views/delete failed', err, info);
-        return error(500, 'Delete view failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Deleted view successfully'
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted view successfully'
+    }));
   });
 });
 
 // updates a user's specified view
-app.post('/user/views/update', logAction(), function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+
+  if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
+  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
+  if (!req.body.key)        { return res.molochError(403, 'Missing view key'); }
+
+  var user = req.settingUser;
+  user.views = user.views || {};
+  var container = user.views;
+  if (req.body.groupName) {
+    req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (!user.views._groups) {
+      user.views._groups = {};
+    }
+    if (!user.views._groups[req.body.groupName]) {
+      user.views._groups[req.body.groupName] = {};
+    }
+    container = user.views._groups[req.body.groupName];
+  }
+  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+  if (container[req.body.name]) {
+    container[req.body.name].expression = req.body.expression;
+  } else {
+    container[req.body.name] = {expression: req.body.expression};
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to update another user's view without admin privilege
-    return error(403, 'Need admin privileges');
+  // delete the old one if the key (view name) has changed
+  if (user.views[req.body.key] && req.body.name !== req.body.key) {
+    user.views[req.body.key] = null;
+    delete user.views[req.body.key];
   }
 
-  if (!req.body.name)       { return error(403, 'Missing view name'); }
-  if (!req.body.expression) { return error(403, 'Missing view expression'); }
-  if (!req.body.key)        { return error(403, 'Missing view key'); }
-
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/views/update failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/views/update error', err, info);
+      return res.molochError(500, 'Updating view failed');
     }
-
-    user = user._source;
-    user.views = user.views || {};
-    var container = user.views;
-    if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-      if (!user.views._groups) {
-        user.views._groups = {};
-      }
-      if (!user.views._groups[req.body.groupName]) {
-        user.views._groups[req.body.groupName] = {};
-      }
-      container = user.views._groups[req.body.groupName];
-    }
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-    if (container[req.body.name]) {
-      container[req.body.name].expression = req.body.expression;
-    } else {
-      container[req.body.name] = {expression: req.body.expression};
-    }
-
-    // delete the old one if the key (view name) has changed
-    if (user.views[req.body.key] && req.body.name !== req.body.key) {
-      user.views[req.body.key] = null;
-      delete user.views[req.body.key];
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/views/update error', err, info);
-        return error(500, 'Updating view failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Updated view successfully',
-        views   : user.views
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Updated view successfully',
+      views   : user.views
+    }));
   });
 });
 
 // gets a user's cron queries
-app.get('/user/cron', function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
+app.get('/user/cron', getSettingUser, function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
-  function sendCronQueries(user, cp) {
-    if (user.settings === undefined) {user.settings = {};}
-    Db.search('queries', 'query', {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
-      if (err || data.error) {
-        console.log('/user/cron error', err || data.error);
-      }
-
-      let queries = {};
-
-      if (data && data.hits && data.hits.hits) {
-        user.queries = {};
-        data.hits.hits.forEach(function(item) {
-          queries[item._id] = item._source;
-        });
-      }
-
-      res.send(queries);
-    });
-  }
-
-  if (req.query.userId) {
-    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
-      // user is trying to get another user's cron queries without admin privilege
-      return error('Need admin privileges');
+  var user = req.settingUser;
+  if (user.settings === undefined) {user.settings = {};}
+  Db.search('queries', 'query', {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+    if (err || data.error) {
+      console.log('/user/cron error', err || data.error);
     }
-    Db.getUser(req.query.userId, function(err, user) {
-      if (err || !user.found) {
-        console.log('/user/cron error', err, user);
-        return error('Unknown user');
-      }
-      sendCronQueries(user._source, 0);
-    });
-  } else {
-    sendCronQueries(req.user, 1);
-  }
+
+    let queries = {};
+
+    if (data && data.hits && data.hits.hits) {
+      user.queries = {};
+      data.hits.hits.forEach(function(item) {
+        queries[item._id] = item._source;
+      });
+    }
+
+    res.send(queries);
+  });
 });
 
 // creates a new cron query for a user
-app.post('/user/cron/create', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
+app.post('/user/cron/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to create a cron query for another user without admin privilege
-    return error(403, 'Need admin privileges');
-  }
-
-  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
-  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
-  if (!req.body.action) { return error(403, 'Missing cron query action'); }
-  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
+  if (!req.body.name)   { return res.molochError(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return res.molochError(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return res.molochError(403, 'Missing cron query tag(s)'); }
 
   var document = {
     doc: {
@@ -1327,8 +1214,7 @@ app.post('/user/cron/create', [checkCookieToken, logAction()], function(req, res
     }
   };
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+  var userId = req.settingUser.userId;
 
   if (req.body.since === '-1') {
     document.doc.lpValue =  document.doc.lastRun = 0;
@@ -1342,7 +1228,7 @@ app.post('/user/cron/create', [checkCookieToken, logAction()], function(req, res
   Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
     if (err) {
       console.log('/user/cron/create error', err, info);
-      return error(500, 'Create cron query failed');
+      return res.molochUser(500, 'Create cron query failed');
     }
     if (Config.get('cronQueries', false)) {
       processCronQueries();
@@ -1356,23 +1242,15 @@ app.post('/user/cron/create', [checkCookieToken, logAction()], function(req, res
 });
 
 // deletes a user's specified cron query
-app.post('/user/cron/delete', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
+app.post('/user/cron/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to delete a cron query for another user without admin privilege
-    return error(403, 'Need admin privileges');
-  }
-
-  if (!req.body.key) { return error(403, 'Missing cron query key'); }
+  if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
 
   Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
     if (err) {
-      console.log('/user/cron/delete error', err, info);
-      return error(500, 'Delete cron query failed');
+      console.log('/user/cron/delete error', err, sq);
+      return res.molochError(500, 'Delete cron query failed');
     }
     res.send(JSON.stringify({
       success : true,
@@ -1382,22 +1260,14 @@ app.post('/user/cron/delete', [checkCookieToken, logAction()], function(req, res
 });
 
 // updates a user's specified cron query
-app.post('/user/cron/update', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
+app.post('/user/cron/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to update a cron query for another user without admin privilege
-    return error(403, 'Need admin privileges');
-  }
-
-  if (!req.body.key)    { return error(403, 'Missing cron query key'); }
-  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
-  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
-  if (!req.body.action) { return error(403, 'Missing cron query action'); }
-  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
+  if (!req.body.key)    { return res.molochError(403, 'Missing cron query key'); }
+  if (!req.body.name)   { return res.molochError(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return res.molochError(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return res.molochError(403, 'Missing cron query tag(s)'); }
 
   var document = {
     doc: {
@@ -1412,13 +1282,13 @@ app.post('/user/cron/update', [checkCookieToken, logAction()], function(req, res
   Db.get('queries', 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
       console.log('/user/cron/update failed', err, sq);
-      return error(403, 'Unknown query');
+      return res.molochError(403, 'Unknown query');
     }
 
     Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
       if (err) {
         console.log('/user/cron/update error', err, document, data);
-        return error(500, 'Cron query update failed');
+        return res.molochError(500, 'Cron query update failed');
       }
       if (Config.get('cronQueries', false)) {
         processCronQueries();
@@ -1432,305 +1302,192 @@ app.post('/user/cron/update', [checkCookieToken, logAction()], function(req, res
 });
 
 // changes a user's password
-app.post('/user/password/change', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
-
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to change password for another user without admin privilege
-    return error(403, 'Need admin privileges');
-  }
+app.post('/user/password/change', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error(403, 'New password needs to be at least 3 characters');
+    return res.molochError(403, 'New password needs to be at least 3 characters');
   }
 
   if (!req.query.userId && (req.user.passStore !==
      Config.pass2store(req.token.userId, req.body.currentPassword) ||
      req.token.userId !== req.user.userId)) {
-    return error(403, 'Current password mismatch');
+    return res.molochError(403, 'Current password mismatch');
   }
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+  var user = req.settingUser;
+  user.passStore = Config.pass2store(user.userId, req.body.newPassword);
 
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/password/change error', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/password/change error', err, info);
+      return res.molochError(500, 'Update failed');
     }
-
-    user = user._source;
-    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/password/change error', err, info);
-        return error(500, 'Update failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Changed password successfully'
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Changed password successfully'
+    }));
   });
 });
 
 // gets custom column configurations for a user
-app.get('/user/columns', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's views
-        return res.send('[]');
-      } else {
-        console.log('Unknown user', err, user);
-        return res.send('[]');
-      }
-    }
+app.get('/user/columns', getSettingUser, function(req, res) {
+  if (!req.settingUser) {return res.send([]);}
 
-    var columnConfigurations = user._source.columnConfigs || [];
-
-    return res.send(columnConfigurations);
-  });
+  return res.send(req.settingUser.columnConfigs || []);
 });
 
 // creates a new custom column configuration for a user
-app.post('/user/columns/create', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/columns/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
+
+  if (!req.body.name)     { return res.molochError(403, 'Missing custom column configuration name'); }
+  if (!req.body.columns)  { return res.molochError(403, 'Missing columns'); }
+  if (!req.body.order)    { return res.molochError(403, 'Missing sort order'); }
+
+  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+  if (req.body.name.length < 1) {
+    return res.molochError(403, 'Invalid custom column configuration name');
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to create a view for another user without admin privilege
-    return error(403, 'Need admin privileges');
+  var user = req.settingUser;
+  user.columnConfigs = user.columnConfigs || [];
+
+  // don't let user use duplicate names
+  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.columnConfigs[i].name) {
+      return res.molochError(403, 'There is already a custom column with that name');
+    }
   }
 
-  if (!req.body.name)     { return error(403, 'Missing custom column configuration name'); }
-  if (!req.body.columns)  { return error(403, 'Missing columns'); }
-  if (!req.body.order)    { return error(403, 'Missing sort order'); }
+  user.columnConfigs.push({
+    name    : req.body.name,
+    columns : req.body.columns,
+    order   : req.body.order
+  });
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/columns/create failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/columns/create error', err, info);
+      return res.molochError(500, 'Create custom column configuration failed');
     }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-
-    if (req.body.name.length < 1) {
-      return error(403, 'Invalid custom column configuration name');
-    }
-
-    user = user._source;
-    user.columnConfigs = user.columnConfigs || [];
-
-    var duplicate = false;
-    // don't let user use duplicate names
-    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
-      if (req.body.name === user.columnConfigs[i].name) {
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate) { return error(403, 'There is already a custom column with that name'); }
-
-    user.columnConfigs.push({
-      name    : req.body.name,
-      columns : req.body.columns,
-      order   : req.body.order
-    });
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/columns/create error', err, info);
-        return error(500, 'Create custom column configuration failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Created custom column configuration successfully',
-        name    : req.body.name
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Created custom column configuration successfully',
+      name    : req.body.name
+    }));
   });
 });
 
 // deletes a user's specified custom column configuration
-app.post('/user/columns/delete', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/columns/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
+
+  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
+
+  var user = req.settingUser;
+  user.columnConfigs = user.columnConfigs || [];
+
+  var found = false;
+  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.columnConfigs[i].name) {
+      user.columnConfigs.splice(i, 1);
+      found = true;
+      break;
+    }
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to delete another user's view without admin privilege
-    return error(403, 'Need admin privileges');
-  }
+  if (!found) { return res.molochError(200, "Column not found"); }
 
-  if (!req.body.name) { return error(403, 'Missing custom column configuration name'); }
-
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/columns/delete failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/columns/delete failed', err, info);
+      return res.molochError(500, 'Delete custom column configuration failed');
     }
-
-    user = user._source;
-    user.columnConfigs = user.columnConfigs || [];
-
-    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
-      if (req.body.name === user.columnConfigs[i].name) {
-        user.columnConfigs.splice(i, 1);
-        break;
-      }
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/columns/delete failed', err, info);
-        return error(500, 'Delete custom column configuration failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Deleted custom column configuration successfully'
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted custom column configuration successfully'
+    }));
   });
 });
 
 // gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's opened fields
-        return res.send('[]');
-      } else {
-        console.log('Unknown user', err, user);
-        return res.send('[]');
-      }
-    }
+app.get('/user/spiview/fields', getSettingUser, function(req, res) {
+  if (!req.settingUser) {return res.send([]);}
 
-    var fieldConfigurations = user._source.spiviewFieldConfigs || [];
-
-    return res.send(fieldConfigurations);
-  });
+  return res.send(req.settingUser.spiviewFieldConfigs || []);
 });
 
 // creates a new custom spiview fields configuration for a user
-app.post('/user/spiview/fields/create', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/spiview/fields/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
+
+  if (!req.body.name)   { return res.molochError(403, 'Missing custom spiview field configuration name'); }
+  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
+
+  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+
+  if (req.body.name.length < 1) {
+    return res.molochError(403, 'Invalid custom spiview fields configuration name');
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to create a view for another user without admin privilege
-    return error(403, 'Need admin privileges');
+  var user = req.settingUser;
+  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+  // don't let user use duplicate names
+  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.spiviewFieldConfigs[i].name) {
+      return res.molochError(403, 'There is already a custom spiview fields configuration with that name');
+    }
   }
 
-  if (!req.body.name)   { return error(403, 'Missing custom spiview field configuration name'); }
-  if (!req.body.fields) { return error(403, 'Missing fields'); }
+  user.spiviewFieldConfigs.push({
+    name  : req.body.name,
+    fields: req.body.fields
+  });
 
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/columns/create failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/spiview/fields/create error', err, info);
+      return res.molochError(500, 'Create custom spiview fields configuration failed');
     }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-
-    if (req.body.name.length < 1) {
-      return error(403, 'Invalid custom spiview fields configuration name');
-    }
-
-    user = user._source;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-    var duplicate = false;
-    // don't let user use duplicate names
-    for (var i = 0, len = user.spiviewFieldConfigs.length; i < len; ++i) {
-      if (req.body.name === user.spiviewFieldConfigs[i].name) {
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate) { return error(403, 'There is already a custom spiview fields configuration with that name'); }
-
-    user.spiviewFieldConfigs.push({
-      name  : req.body.name,
-      fields: req.body.fields
-    });
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/spiview/fields/create error', err, info);
-        return error(500, 'Create custom spiview fields configuration failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Created custom spiview fields configuration successfully',
-        name    : req.body.name
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Created custom spiview fields configuration successfully',
+      name    : req.body.name
+    }));
   });
 });
 
 // deletes a user's specified custom spiview fields configuration
-app.post('/user/spiview/fields/delete', [checkCookieToken, logAction()], function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
+app.post('/user/spiview/fields/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
+
+  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview fields configuration name'); }
+
+  var user = req.settingUser;
+  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+  var found = false;
+  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.spiviewFieldConfigs[i].name) {
+      user.spiviewFieldConfigs.splice(i, 1);
+      found = true;
+      break;
+    }
   }
 
-  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
-    // user is trying to delete another user's view without admin privilege
-    return error(403, 'Need admin privileges');
-  }
+  if (!found) { return res.molochError(200, "Spiview fields not found"); }
 
-  if (!req.body.name) { return error(403, 'Missing custom spiview fields configuration name'); }
-
-  var userId = req.user.userId;                         // get current user
-  if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  Db.getUser(userId, function(err, user) {
-    if (err || !user.found) {
-      console.log('/user/spiview/fields/delete failed', err, user);
-      return error(403, 'Unknown user');
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/spiview/fields/delete failed', err, info);
+      return res.molochError(500, 'Delete custom spiview fields configuration failed');
     }
-
-    user = user._source;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-    for (var i = 0, len = user.spiviewFieldConfigs.length; i < len; ++i) {
-      if (req.body.name === user.spiviewFieldConfigs[i].name) {
-        user.spiviewFieldConfigs.splice(i, 1);
-        break;
-      }
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log('/user/spiview/fields/delete failed', err, info);
-        return error(500, 'Delete custom spiview fields configuration failed');
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : 'Deleted custom spiview fields configuration successfully'
-      }));
-    });
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted custom spiview fields configuration successfully'
+    }));
   });
 });
 
@@ -1935,7 +1692,7 @@ function addSortToQuery(query, info, d, missing) {
     query.sort = [];
   }
 
-  for (var i = 0, ilen = parseInt(info.iSortingCols, 10); i < ilen; i++) {
+  for (let i = 0, ilen = parseInt(info.iSortingCols, 10); i < ilen; i++) {
     if (!info["iSortCol_" + i] || !info["sSortDir_" + i] || !info["mDataProp_" + info["iSortCol_" + i]]) {
       continue;
     }
@@ -2108,8 +1865,8 @@ function buildSessionQuery(req, buildCb) {
     case "first":
       query.query.bool.filter.push({range: {fp: {gte: req.query.startTime, lte: req.query.stopTime}}});
       break;
-    case "last":
     default:
+    case "last":
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
       break;
     case "both":
@@ -2144,9 +1901,9 @@ function buildSessionQuery(req, buildCb) {
     case "first":
       query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
       break;
+    default:
     case "both":
     case "last":
-    default:
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
       break;
     case "either":
@@ -2341,7 +2098,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
         return nextCb(null);
       }
 
-      for (var i = 0; i < fixFields.length; i++) {
+      for (let i = 0; i < fixFields.length; i++) {
         var field = fixFields[i];
         if (session._source[field] && Array.isArray(session._source[field])) {
           session._source[field] = session._source[field][0];
@@ -2369,17 +2126,13 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
 app.get('/history/list', function(req, res) {
-  function error(status, text) {
-    res.status(status || 403);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
 
   var userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
     // if the admin has requested a specific user
     if (req.query.userId) { userId = req.query.userId; }
   } else { // user isn't an admin, so they can only view their own logs
-    if (req.query.userId && req.query.userId !== req.user.userId) { return error(403, 'Need admin privileges'); }
+    if (req.query.userId && req.query.userId !== req.user.userId) { return res.molochError(403, 'Need admin privileges'); }
     userId = req.user.userId;
   }
 
@@ -2420,7 +2173,7 @@ app.get('/history/list', function(req, res) {
   if (req.query.exists) {
     if (!query.query) { query.query = { bool: { must: [] } }; }
     let existsArr = req.query.exists.split(',');
-    for (var i = 0, len = existsArr.length; i < len; ++i) {
+    for (let i = 0, len = existsArr.length; i < len; ++i) {
       query.query.bool.must.push({
         exists: { field:existsArr[i] }
       });
@@ -2455,10 +2208,10 @@ app.get('/history/list', function(req, res) {
        Db.searchHistory(query, function(err, result) {
          if (err || result.error) {
            console.log("ERROR - history logs", err || result.error);
-           return error(500, 'Error retrieving log history - ' + err || result.error);
+           return res.molochError(500, 'Error retrieving log history - ' + err || result.error);
          } else {
            var results = { total:result.hits.total, results:[] };
-           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+           for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
              var hit = result.hits.hits[i];
              var log = hit._source;
              log.id = hit._id;
@@ -2503,7 +2256,7 @@ app.delete('/history/list/:id', function(req, res) {
       res.send(JSON.stringify({success: true, text: "Deleted history item successfully"}));
     }
   });
-})
+});
 
 
 app.get('/fields', function(req, res) {
@@ -2513,7 +2266,7 @@ app.get('/fields', function(req, res) {
   }
 
   if (req.query && req.query.array) {
-    res.send(app.locals.fieldsArr)
+    res.send(app.locals.fieldsArr);
   } else {
     res.send(app.locals.fieldsMap);
   }
@@ -2543,7 +2296,7 @@ app.get('/file/list', logAction('files'), function(req, res) {
           return cb(err || result.error);
         }
 
-        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+        for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
           var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
           if (fields.locked === undefined) {
             fields.locked = 0;
@@ -2601,30 +2354,32 @@ app.get('/esindices/list', function(req, res) {
     if (req.query.filter !== undefined) {
       let findices = [];
       let regex = new RegExp(req.query.filter);
-      for (var i = 0, ilen = indices.length; i < ilen; i++) {
+      for (let i = 0, ilen = indices.length; i < ilen; i++) {
         if (!indices[i].index.match(regex)) {continue;}
         findices.push(indices[i]);
       }
       indices = findices;
     }
 
-    for (var i = 0, ilen = indices.length; i < ilen; i++) {
+    for (let i = 0, ilen = indices.length; i < ilen; i++) {
       indices[i]['store.size'] = sizeStringToInt(indices[i]['store.size']);
       indices[i]['pri.store.size'] = sizeStringToInt(indices[i]['pri.store.size']);
     }
 
     // Implement sorting
     var sortField = req.query.sortField || "index";
-    if (sortField === "index" || sortField == "status" || sortField == "health") {
-      if (req.query.desc === "true")
-        indices = indices.sort(function(a,b){ return b.index.localeCompare(a.index); })
-      else
-        indices = indices.sort(function(a,b){ return a.index.localeCompare(b.index); })
+    if (sortField === "index" || sortField === "status" || sortField === "health") {
+      if (req.query.desc === "true") {
+        indices = indices.sort(function(a,b){ return b.index.localeCompare(a.index); });
+      } else {
+        indices = indices.sort(function(a,b){ return a.index.localeCompare(b.index); });
+      }
     } else {
-      if (req.query.desc === "true")
-        indices = indices.sort(function(a,b){ return b[sortField] - a[sortField]; })
-      else
-        indices = indices.sort(function(a,b){ return a[sortField] - b[sortField]; })
+      if (req.query.desc === "true") {
+        indices = indices.sort(function(a,b){ return b[sortField] - a[sortField]; });
+      } else {
+        indices = indices.sort(function(a,b){ return a[sortField] - b[sortField]; });
+      }
     }
     res.send(indices);
   });
@@ -2660,32 +2415,27 @@ app.get('/estask/list', function(req, res) {
     // Implement sorting
     var sortField = req.query.sortField || "action";
     if (sortField === "action") {
-      if (req.query.desc === "true")
-        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); })
-      else
-        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); })
+      if (req.query.desc === "true") {
+        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); });
+      } else {
+        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); });
+      }
     } else {
-      if (req.query.desc === "true")
-        tasks = tasks.sort(function(a,b){ return b[sortField] - a[sortField]; })
-      else
-        tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; })
+      if (req.query.desc === "true") {
+        tasks = tasks.sort(function(a,b){ return b[sortField] - a[sortField]; });
+      } else {
+        tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; });
+      }
     }
     res.send(tasks);
   });
 });
 
 app.post('/estask/cancel', logAction(), function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.user.createEnabled) {
-    return error('Need admin privileges');
-  }
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
 
   if (!req.body || !req.body.taskId) {
-    return error('Missing/Empty required fields');
+    return res.molochError(403, 'Missing/Empty required fields');
   }
 
   Db.taskCancel(req.body.taskId, (err, result) => {
@@ -2758,16 +2508,18 @@ app.get('/esstats.json', function(req, res) {
 
     if (req.query.sortField) {
       if (req.query.sortField === "nodeName") {
-        if (req.query.desc === "true")
-          stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); })
-        else
-          stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); })
+        if (req.query.desc === "true") {
+          stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); });
+        } else {
+          stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); });
+        }
       } else {
         var field = req.query.sortField;
-        if (req.query.desc === "true")
-          stats = stats.sort(function(a,b){ return b[field] - a[field]; })
-        else
-          stats = stats.sort(function(a,b){ return a[field] - b[field]; })
+        if (req.query.desc === "true") {
+          stats = stats.sort(function(a,b){ return b[field] - a[field]; });
+        } else {
+          stats = stats.sort(function(a,b){ return a[field] - b[field]; });
+        }
       }
     }
 
@@ -2829,21 +2581,21 @@ app.get('/stats.json', function(req, res) {
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
-          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
             var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
             if (result.hits.hits[i]._source) {
               mergeUnarray(fields, result.hits.hits[i].fields);
             }
             fields.id        = result.hits.hits[i]._id;
 
-            ["totalPackets", "totalK", "totalSessions",
+            for (const key of ["totalPackets", "totalK", "totalSessions",
              "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
              "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
              "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
              "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
-            ].forEach(function(key) {
+            ]) {
               fields[key] = fields[key] || 0;
-            });
+            }
 
             fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
             fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
@@ -2913,13 +2665,13 @@ app.get('/dstats.json', function(req, res) {
     deltaOverloadDroppedPerSec: {_source: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped * 1000.0/item.deltaMS);}},
     deltaESDroppedPerSec: {_source: ["deltaESDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaESDropped * 1000.0/item.deltaMS);}},
     deltaTotalDroppedPerSec: {_source: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped + item.deltaOverloadDropped) * 1000.0/item.deltaMS);}},
-    cpu: {_source: ["cpu"], func: function (item) {return item.cpu * .01;}}
+    cpu: {_source: ["cpu"], func: function (item) {return item.cpu * 0.01;}}
   };
 
   query._source = mapping[req.query.name]?mapping[req.query.name]._source:[req.query.name];
   query._source.push("nodeName", "currentTime");
 
-  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name]};
+  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name];};
 
   Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits._source"}, function(err, result) {
     if (err || result.error) {
@@ -3130,7 +2882,7 @@ function fixFields(fields, fixCb) {
 function flattenFields(fields) {
   var newFields = {};
 
-  for (var key in fields) {
+  for (let key in fields) {
     if (fields.hasOwnProperty(key)) {
       var field = fields[key];
       if (typeof field === 'object' && !field.length) {
@@ -3148,7 +2900,7 @@ function flattenFields(fields) {
     }
   }
 
-  for (var key in newFields) {
+  for (let key in newFields) {
     if (newFields.hasOwnProperty(key)) {
       fields[key] = newFields[key];
     }
@@ -3161,9 +2913,9 @@ app.get('/buildQuery.json', logAction('query'), function(req, res) {
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      res.send({ recordsTotal: 0
-               , recordsFiltered: 0
-               , bsqErr: bsqErr.toString()
+      res.send({ recordsTotal: 0,
+                 recordsFiltered: 0,
+                 bsqErr: bsqErr.toString()
                });
       return;
     }
@@ -3283,16 +3035,11 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
 });
 
 app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
     if (bsqErr) {
-      return error(bsqErr.toString());
+      return res.molochError(403, bsqErr.toString());
     }
 
     delete query.sort;
@@ -3337,7 +3084,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
         console.log("spigraph.json error", err, (result?result.error:null));
-        return error(errorString(err, result));
+        return res.molochError(403, errorString(err, result));
       }
       results.recordsFiltered = result.hits.total;
 
@@ -3385,7 +3132,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
             r.dbHisto = 0.0;
             r.paHisto = 0.0;
             var graph = r.graph;
-            for (var i = 0; i < graph.lpHisto.length; i++) {
+            for (let i = 0; i < graph.lpHisto.length; i++) {
               r.lpHisto += graph.lpHisto[i][1];
               r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
               r.paHisto += graph.pa2Histo[i][1] + graph.pa2Histo[i][1];
@@ -3529,7 +3276,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
             async.each(nobucket.fs.buckets, function (fsitem, cb) {
               Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
                 if (file && file.name) {
-                  nresults.push({key: file.name, doc_count: fsitem.doc_count})
+                  nresults.push({key: file.name, doc_count: fsitem.doc_count});
                 }
                 cb();
               });
@@ -3789,7 +3536,7 @@ app.get('/connections.csv', logAction(), function(req, res) {
     }
 
     res.write("Source, Destination, Sessions, Packets, Bytes, Databytes\r\n");
-    for (var i = 0, ilen = links.length; i < ilen; i++) {
+    for (let i = 0, ilen = links.length; i < ilen; i++) {
       res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +
                 "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
                      links[i].value + seperator +
@@ -3812,7 +3559,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
 
   if (fields) {
     var columnHeaders = [];
-    for (var i = 0, len = fields.length; i < len; ++i) {
+    for (let i = 0, ilen = fields.length; i < ilen; ++i) {
       columnHeaders.push(fieldObjects[fields[i]].friendlyName);
     }
     res.write(columnHeaders.join(', '));
@@ -3825,7 +3572,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
     if (!fields) { continue; }
 
     var values = [];
-    for (var k = 0, len = fields.length; k < len; ++k) {
+    for (let k = 0, klen = fields.length; k < klen; ++k) {
       let value = sessionData[fields[k]];
       if (fields[k] === 'pr' && value) {
         switch (value) {
@@ -3959,7 +3706,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
     aggSize = 1000;
     doneCb = function() {
       res.send(items);
-    }
+    };
     writeCb = function (item, cb) {
       items.push(item.key);
       if (writes++ > 1000) {
@@ -4022,7 +3769,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
   }
 
   if (req.query.field === "ip.src:p1" || req.query.field === "ip.dst:p2" ||
-      req.query.field === "a1:p1" || req.query.field == "a2:p2") {
+      req.query.field === "a1:p1" || req.query.field === "a2:p2") {
     eachCb = function(item, cb) {
       var key = Pcap.inet_ntoa(item.key);
       item.field2.buckets.forEach(function (item2) {
@@ -4052,7 +3799,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
 
         // Count up hits
         var hits = result.hits.hits;
-        for (var i = 0, ilen = hits.length; i < ilen; i++) {
+        for (let i = 0, ilen = hits.length; i < ilen; i++) {
           var fields = hits[i]._source || hits[i].fields;
           var avalue = fields[field];
           if (Array.isArray(avalue)) {
@@ -4072,7 +3819,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
         }
 
         async.forEachSeries(aggregations, eachCb, function () {
-          doneCb?doneCb():res.end();
+          return doneCb?doneCb():res.end();
         });
       });
     } else {
@@ -4095,7 +3842,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
         }
 
         async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
-          doneCb?doneCb():res.end();
+          return doneCb?doneCb():res.end();
         });
       });
     }
@@ -4419,7 +4166,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
       options["ITEM-HTTP"].order.push(key);
       options["ITEM-SMTP"].order.push(key);
     }
-    options[key] = decodeOptions[key]
+    options[key] = decodeOptions[key];
   }
 
   if (req.query.needgzip) {
@@ -4863,7 +4610,7 @@ app.get('/:nodeName/raw/:id', checkProxyRequest, function(req, res) {
     if (err) {
       return res.send("Error");
     }
-    for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+    for (let i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
       res.write(results[i].data);
     }
     res.end();
@@ -4976,42 +4723,6 @@ app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
-app.get('/user/settings', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's settings
-        return res.send("{}");
-      } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
-      }
-    }
-
-    var settings = user._source.settings || {};
-
-    return res.send(settings);
-  });
-});
-
-app.get('/user/views', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's views
-        return res.send("{}");
-      } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
-      }
-    }
-
-    var views = user._source.views || {};
-
-    return res.send(views);
-  });
-});
-
 internals.usersMissing = {
   userId: "",
   userName: "",
@@ -5024,6 +4735,8 @@ internals.usersMissing = {
   removeEnabled: 0
 };
 app.post('/user/list', logAction('users'), function(req, res) {
+  if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
+
   var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
 
   var query = {_source: columns,
@@ -5052,7 +4765,7 @@ app.post('/user/list', logAction('users'), function(req, res) {
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
-          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
             var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
             fields.id = result.hits.hits[i]._id;
             fields.expression = safeStr(fields.expression || "");
@@ -5080,27 +4793,20 @@ app.post('/user/list', logAction('users'), function(req, res) {
 });
 
 app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.user.createEnabled) {
-    return error('Need admin privileges');
-  }
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return error('Missing/Empty required fields');
+    return res.molochError(403, 'Missing/Empty required fields');
   }
 
   if (req.body.userId.match(/[^\w.-]/)) {
-    return error('User ID must be word characters');
+    return res.molochError(403, 'User ID must be word characters');
   }
 
   Db.getUser(req.body.userId, function(err, user) {
     if (!user || user.found) {
       console.log('Trying to add duplicate user', err, user);
-      return error('User already exists');
+      return res.molochError(403, 'User already exists');
     }
 
     var nuser = {
@@ -5122,24 +4828,19 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
         return res.send(JSON.stringify({success: true, text:'User created succesfully'}));
       } else {
         console.log('ERROR - add user', err, info);
-        return error(err);
+        return res.molochError(403, err);
       }
     });
   });
 });
 
 app.post('/user/delete', logAction(), checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
   if (!req.user.createEnabled) {
-    return error('Need admin privileges');
+    return res.molochError(403, 'Need admin privileges');
   }
 
   if (req.body.userId === req.user.userId) {
-    return error('Can not delete yourself');
+    return res.molochError(403, 'Can not delete yourself');
   }
 
   Db.deleteUser(req.body.userId, function(err, data) {
@@ -5149,14 +4850,9 @@ app.post('/user/delete', logAction(), checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
+app.post('/user/update', logAction(), checkCookieToken, postSettingUser, function(req, res) {
   if (!req.user.createEnabled) {
-    return error('Need admin privileges');
+    return res.molochError(403, 'Need admin privileges');
   }
 
   /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
@@ -5166,7 +4862,7 @@ app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
   Db.getUser(req.body.userId, function(err, user) {
     if (err || !user.found) {
       console.log('update user failed', err, user);
-      return error('User not found');
+      return res.molochErr(403, 'User not found');
     }
     user = user._source;
 
@@ -5183,7 +4879,7 @@ app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
     if (req.body.userName !== undefined) {
       if (req.body.userName.match(/^\s*$/)) {
         console.log("ERROR - empty username", req.body);
-        return error('Username can not be empty');
+        return res.molochErr(403, 'Username can not be empty');
       } else {
         user.userName = req.body.userName;
       }
@@ -5207,14 +4903,10 @@ app.post('/user/update', logAction(), checkCookieToken, function(req, res) {
 });
 
 app.post('/state/:name', logAction(), function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("save state failed", err, user);
-      return error("Unknown user");
+      return res.molochError(403, "Unknown user");
     }
     user = user._source;
 
@@ -5225,7 +4917,7 @@ app.post('/state/:name', logAction(), function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("state error", err, info);
-        return error("state update failed");
+        return res.molochError(403, "state update failed");
       }
       return res.send(JSON.stringify({success: true, text: "updated state successfully"}));
     });
@@ -5233,17 +4925,10 @@ app.post('/state/:name', logAction(), function(req, res) {
 });
 
 app.get('/state/:name', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("Unknown user", err, user);
-      return res.send("{}");
-    }
-    user = user._source;
-    if (!user.tableStates || !user.tableStates[req.params.name]) {
-      return res.send("{}");
-    }
-    return res.send(user.tableStates[req.params.name]);
-  });
+  if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
+    return res.send("{}");
+  }
+  return res.send(req.user.tableStates[req.params.name]);
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -5268,7 +4953,7 @@ function addTagsList(allTagIds, allTagNames, list, doneCb) {
 
 
     // Find which tags need to be added to this session
-    for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
+    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
       if (fields.ta.indexOf(allTagIds[i]) === -1) {
         fields.ta.push(allTagIds[i]);
       }
@@ -5284,7 +4969,7 @@ function addTagsList(allTagIds, allTagNames, list, doneCb) {
 
     // Do the same for tags-term if it exists.  (it won't for old sessions)
     if (fields["tags-term"]) {
-      for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
+      for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
         if (fields["tags-term"].indexOf(allTagNames[i]) === -1) {
           fields["tags-term"].push(allTagNames[i]);
         }
@@ -5311,21 +4996,22 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
     }
 
     // Find which tags need to be removed from this session
-    for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      var pos = fields.ta.indexOf(allTagIds[i]);
+    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
+      let pos = fields.ta.indexOf(allTagIds[i]);
       if (pos !== -1) {
         fields.ta.splice(pos, 1);
       }
     }
 
+    let document;
     if (fields.ta.length === 0) {
       // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
-      var document = {
+      document = {
         script: "ctx._source.remove(\"ta\");ctx._source.remove(\"tacnt\");ctx._source.remove(\"tags-term\");"
       };
     } else {
       // Do the ES update
-      var document = {
+      document = {
         doc: {
           ta: fields.ta,
           tacnt: fields.ta.length
@@ -5334,8 +5020,8 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
 
       // Do the same for tags-term if it exists.  (it won't for old sessions)
       if (fields["tags-term"]) {
-        for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
-          var pos = fields["tags-term"].indexOf(allTagNames[i]);
+        for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
+          let pos = fields["tags-term"].indexOf(allTagNames[i]);
           if (pos !== -1) {
             fields["tags-term"].splice(pos, 1);
           }
@@ -5446,7 +5132,7 @@ function pcapSearch(id, options, cb) {
       return cb(null, false);
     }
 
-    for (var i = 0, ilen = results.length; i < ilen; i++) {
+    for (let i = 0, ilen = results.length; i < ilen; i++) {
       if (options.regex) {
         if (results[i].data.toString().match(options.regexp)) {
           return cb(null, true);
@@ -5500,7 +5186,7 @@ function searchSession(req, session, cb) {
       });
       preq.on('error', function (e) {
         console.log("ERROR - Couldn't searchSession", info, "\nerror=", e);
-        return res.send(JSON.stringify({success: false, text: "Couldn't searchSession" + e}));
+        return cb({success: false, text: "Couldn't searchSession" + e});
       });
       preq.end();
     });
@@ -5517,7 +5203,7 @@ function searchAndTagList(req, allTagIds, list, doneCb) {
 
     var doit = false;
     if (fields.ta) {
-      for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
+      for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
         if (fields.ta.indexOf(allTagIds[i]) === -1) {
           doit = true;
           break;
@@ -5581,7 +5267,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     pcapScrub.scrubbingBuffers[0].fill(0);
     pcapScrub.scrubbingBuffers[1].fill(1);
     var str = "Scrubbed! Hoot! ";
-    for (var i = 0; i < 5000;) {
+    for (let i = 0; i < 5000;) {
       i += pcapScrub.scrubbingBuffers[2].write(str, i);
     }
   }
@@ -5809,7 +5495,7 @@ function sendSessionWorker(options, cb) {
       var pos = 0;
       packetshdr.copy(buffer);
       pos += packetshdr.length;
-      for(var i = 0, ilen = packets.length; i < ilen; i++) {
+      for(let i = 0, ilen = packets.length; i < ilen; i++) {
         ps.push(pos);
         packets[i].copy(buffer, pos);
         pos += packets[i].length;
@@ -6296,7 +5982,7 @@ app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, 
     }
 
     let data = '';
-    for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+    for (let i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
       data += results[i].data.toString('hex');
     }
 
@@ -6323,6 +6009,7 @@ app.use(function (req, res) {
      { path: app.locals.basePath }
   );
 
+  console.log(req.user);
   var theme = req.user.settings.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
 

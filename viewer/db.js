@@ -170,7 +170,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
     var params = {scroll: '2m'};
     exports.merge(params, options);
     var querySize = query.size;
-    delete query.size
+    delete query.size;
     exports.search(index, type, query, params,
       function getMoreUntilDone(error, response) {
         if (totalResults === undefined) {
@@ -281,7 +281,7 @@ exports.tasks = function(cb) {
 
 exports.taskCancel = function(taskId, cb) {
   internals.elasticSearchClient.tasks.cancel({taskId: taskId}, cb);
-}
+};
 
 exports.nodesStats = function (options, cb) {
   return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err, data);});
@@ -360,6 +360,10 @@ exports.setUser = function(name, doc, cb) {
   delete internals.usersCache[name];
   return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: 1}, cb);
 };
+
+function twoDigitString(value) {
+  return (value < 10) ? ("0" + value) : value.toString();
+}
 
 exports.historyIt = function(doc, cb) {
   var d     = new Date(Date.now());
@@ -705,10 +709,6 @@ exports.loadFields = function(cb) {
     cb(data.hits.hits);
   });
 };
-
-function twoDigitString(value) {
-  return (value < 10) ? ("0" + value) : value.toString();
-}
 
 exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   var indices = [];

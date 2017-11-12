@@ -88,8 +88,7 @@ app.use(function(req, res, next) {
 
 function node2Url(node) {
   var url = node.split(',')[0];
-  if (url.match(/^http/))
-    return url
+  if (url.match(/^http/)) {return url;}
   return "http://" + url;
 }
 
