@@ -1,4 +1,4 @@
-use Test::More tests => 50;
+use Test::More tests => 53;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -85,19 +85,22 @@ my $pwd = getcwd() . "/pcap";
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
-    my $info = viewerGet("/user/columns?molochRegressionUser=test1");
+    $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item");
+
+    $info = viewerGet("/user/columns?molochRegressionUser=anonymous&userId=test1");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item admin");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(! $info->{success}, "column: delete not found");
 
-    my $info = viewerGet("/user/columns?molochRegressionUser=test1");
+    $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");
 
-    my $info = viewerGet("/user/columns?molochRegressionUser=test1");
+    $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
 
@@ -113,19 +116,22 @@ my $pwd = getcwd() . "/pcap";
     ok($info->{success}, "spiview fields: create success");
     is($info->{name}, "sfields1", "spiview fields: create name");
 
-    my $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
+    $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item");
+
+    $info = viewerGet("/user/spiview/fields?molochRegressionUser=anonymous&userId=test1");
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item admin");
 
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");
 
-    my $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
+    $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item");
 
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=sfields1', $test1Token);
     ok($info->{success}, "spiview fields: delete found");
 
-    my $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
+    $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
 
@@ -138,19 +144,22 @@ my $pwd = getcwd() . "/pcap";
     is($info->{viewName}, "view1", "view: create name");
     eq_or_diff($info->{views}, from_json('{"view1": {"expression":"ip == 1.2.3.4"}}'), "view: 1 item");
 
-    my $info = viewerGet("/user/views?molochRegressionUser=test1");
+    $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1": {"expression":"ip == 1.2.3.4"}}'), "view: 1 item");
+
+    $info = viewerGet("/user/views?molochRegressionUser=anonymous&userId=test1");
+    eq_or_diff($info, from_json('{"view1": {"expression":"ip == 1.2.3.4"}}'), "view: 1 item admin");
 
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", 'view=fred', $test1Token);
     ok(!$info->{success}, "view: delete not found");
 
-    my $info = viewerGet("/user/views?molochRegressionUser=test1");
+    $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1": {"expression":"ip == 1.2.3.4"}}'), "view: 1 item");
 
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", 'view=view1', $test1Token);
     ok($info->{success}, "view: delete found");
 
-    my $info = viewerGet("/user/views?molochRegressionUser=test1");
+    $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json("{}"), "view: empty");
 
 

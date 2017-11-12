@@ -170,13 +170,13 @@
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu">
                     <li role="menuitem">
                       <a class="cursor-pointer"
-                        ng-click="$ctrl.exportUnique(field.exp, 0)">
+                        ng-click="$ctrl.exportUnique(field.dbField, 0)">
                         Export Unique {{field.friendlyName}}
                       </a>
                     </li>
                     <li role="menuitem">
                       <a class="cursor-pointer"
-                        ng-click="$ctrl.exportUnique(field.exp, 1)">
+                        ng-click="$ctrl.exportUnique(field.dbField, 1)">
                         Export Unique {{field.friendlyName}} with counts
                       </a>
                     </li>
@@ -217,13 +217,13 @@
                   <li class="divider"></li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.exportUnique(value.field.exp, 0)">
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 0)">
                       Export Unique {{::value.field.friendlyName}}
                     </a>
                   </li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.exportUnique(value.field.exp, 1)">
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 1)">
                       Export Unique {{::value.field.friendlyName}} with counts
                     </a>
                   </li>
