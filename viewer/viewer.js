@@ -240,12 +240,8 @@ if (Config.get("passwordSecret")) {
     req.url = req.url.replace("/", Config.basePath());
     passport.authenticate('digest', {session: false})(req, res, function (err) {
       req.url = req.url.replace(Config.basePath(), "/");
-      if (err) {
-        res.send(JSON.stringify({success: false, text: err}));
-        return;
-      } else {
-        return next();
-      }
+      if (err) { return res.molochError(200, err); }
+      else { return next(); }
     });
   });
 } else if (Config.get("regressionTests", false)) {
@@ -766,13 +762,11 @@ if (Config.get('demoMode', false)) {
   });
 
   app.get(['/user/settings', '/user/cron', '/history/list'], function(req, res) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+    return res.molochError(403, "Disabled in demo mode.");
   });
 
   app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
-    res.status(403);
-    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+    return res.molochError(403, "Disabled in demo mode.");
   });
 }
 
@@ -960,11 +954,8 @@ function getSettingUser (req, res, next) {
     return next();
   }
 
-  if (!req.user.createEnabled) {
-    // user is trying to get another user's settings without admin privilege
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
-  }
+  // user is trying to get another user's settings without admin privilege
+  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
 
   Db.getUserCache(req.query.userId, function(err, user) {
     if (err || !user || !user.found) {
@@ -989,8 +980,7 @@ function postSettingUser (req, res, next) {
     userId = req.user.userId;
   } else if (!req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
+    return res.molochError(403, "Need admin privileges");
   } else {
     userId = req.query.userId;
   }
@@ -1726,6 +1716,7 @@ function lookupQueryItems(query, doneCb) {
   var finished = 0;
   var err = null;
 
+  //jshint latedef: nofunc
   function process(parent, obj, item) {
     //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
     if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
@@ -2237,21 +2228,13 @@ app.get('/history/list', function(req, res) {
 });
 
 app.delete('/history/list/:id', function(req, res) {
-  if (!req.user.createEnabled) {
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Need admin privileges' }));
-  }
-
-  if (!req.user.removeEnabled) {
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Need remove data privileges' }));
-  }
+  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+  if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
 
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
     if (err || result.error) {
       console.log("ERROR - deleting history item", err || result.error);
-      res.status(500);
-      return res.send(JSON.stringify({ success: false, text: 'Error deleting history item' }));
+      return res.molochError(500, 'Error deleting history item');
     } else {
       res.send(JSON.stringify({success: true, text: "Deleted history item successfully"}));
     }
@@ -3519,10 +3502,7 @@ app.get('/connections.json', logAction('connections'), function(req, res) {
   var health;
   Db.healthCache(function(err, h) {health = h;});
   buildConnections(req, res, function (err, nodes, links, total) {
-    if (err) {
-      res.status(403);
-      return res.send(JSON.stringify({success: false, text: err.toString()}));
-    }
+    if (err) { return res.molochError(403, err.toString()); }
     res.send({health: health, nodes: nodes, links: links, recordsFiltered: total});
   });
 });
@@ -3947,15 +3927,11 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
      * reduce the number of elasticsearch queries and problems
      */
     var outstanding = 0;
-    var saveInfo;
     for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
       if (fields.ps[i] < 0) {
         outstanding++;
         Db.fileIdToFile(fields.no, -1 * fields.ps[i], function (info) {
           outstanding--;
-          if (i === 0) {
-            saveInfo = info;
-          }
           if (i === ilen && outstanding === 0) {
             i++; // So not called again below
             readyToProcess();
@@ -5031,7 +5007,6 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
     }
 
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
-      console.log("ALW ERR", err);
       if (err) {
         console.log("removeTagsList error", err);
       }
@@ -5064,9 +5039,7 @@ app.post('/addTags', logAction(), function(req, res) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
 
-  if (tags.length === 0) {
-    return res.send(JSON.stringify({success: false, text: "No tags specified"}));
-  }
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
@@ -5088,17 +5061,14 @@ app.post('/addTags', logAction(), function(req, res) {
 });
 
 app.post('/removeTags', logAction(), function(req, res) {
-  if (!req.user.removeEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
-  }
+  if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
+
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
 
-  if (tags.length === 0) {
-    return res.send(JSON.stringify({success: false, text: "No tags specified"}));
-  }
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
@@ -5230,13 +5200,8 @@ app.post('/searchAndTag', logAction(), function(req, res) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
 
-  if (tags.length === 0) {
-    return res.send(JSON.stringify({success: false, text: "No tags specified"}));
-  }
-
-  if (regex.length === 0) {
-    return res.send(JSON.stringify({success: false, text: "No regex specified"}));
-  }
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
+  if (regex.length === 0) { return res.molochError(200, "No regex specified"); }
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
@@ -5355,9 +5320,7 @@ function pcapScrub(req, res, id, entire, endCb) {
 }
 
 app.get('/:nodeName/scrub/:id', checkProxyRequest, function(req, res) {
-  if (!req.user.removeEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
-  }
+  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   noCache(req, res);
   res.statusCode = 200;
@@ -5368,9 +5331,7 @@ app.get('/:nodeName/scrub/:id', checkProxyRequest, function(req, res) {
 });
 
 app.get('/:nodeName/delete/:id', checkProxyRequest, function(req, res) {
-  if (!req.user.removeEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
-  }
+  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   noCache(req, res);
   res.statusCode = 200;
@@ -5382,9 +5343,7 @@ app.get('/:nodeName/delete/:id', checkProxyRequest, function(req, res) {
 
 
 function scrubList(req, res, entire, list) {
-  if (!list) {
-    return res.end(JSON.stringify({success: false, text: "Missing list of sessions"}));
-  }
+  if (!list) { return res.molochError(200, "Missing list of sessions"); }
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
@@ -5419,9 +5378,7 @@ function scrubList(req, res, entire, list) {
 }
 
 app.post('/scrub', logAction(), function(req, res) {
-  if (!req.user.removeEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
-  }
+  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
@@ -5434,15 +5391,12 @@ app.post('/scrub', logAction(), function(req, res) {
       scrubList(req, res, false, list);
     });
   } else {
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Error: Missing expression. An expression is required so you don\'t scrub everything.' }));
+    return res.molochError(403, "Error: Missing expression. An expression is required so you don't scrub everything.");
   }
 });
 
 app.post('/delete', logAction(), function(req, res) {
-  if (!req.user.removeEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
-  }
+  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
@@ -5455,8 +5409,7 @@ app.post('/delete', logAction(), function(req, res) {
       scrubList(req, res, true, list);
     });
   } else {
-    res.status(403);
-    return res.send(JSON.stringify({ success: false, text: 'Error: Missing expression. An expression is required so you don\'t delete everything.' }));
+    return res.molochError(403, "Error: Missing expression. An expression is required so you don't delete everything.");
   }
 });
 
@@ -5621,9 +5574,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
 
 
 function sendSessionsList(req, res, list) {
-  if (!list) {
-    return res.end(JSON.stringify({success: false, text: "Missing list of sessions"}));
-  }
+  if (!list) { return res.molochError(200, "Missing list of sessions"); }
 
   var saveId = Config.nodeName() + "-" + new Date().getTime().toString(36);
 
@@ -5748,9 +5699,7 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
 }
 
 app.post('/receiveSession', function receiveSession(req, res) {
-  if (!req.query.saveId) {
-    return res.send({success: false, text: "Missing saveId"});
-  }
+  if (!req.query.saveId) { return res.molochError(200, "Missing saveId"); }
 
   // JS Static Variable :)
   receiveSession.saveIds = receiveSession.saveIds || {};
