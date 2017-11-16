@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faol%2Fmoloch.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Faol%2Fmoloch?ref=badge_shield)
+
 .. contents::
     :local:
     :depth: 2
@@ -297,3 +299,7 @@ Currently upgrading from previous versions of Moloch is a manual process, howeve
 * Make sure ES is running and update the database using the "db/db.pl host:port upgrade" script
 * Start the new capture and viewer processes
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faol%2Fmoloch.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Faol%2Fmoloch?ref=badge_large)
