@@ -345,6 +345,7 @@ typedef struct moloch_config {
     uint32_t  maxFrags;
     uint32_t  snapLen;
     uint32_t  maxMemPercentage;
+    uint32_t  maxReqBody;
 
     int       packetThreads;
 
@@ -355,6 +356,8 @@ typedef struct moloch_config {
     char      parseSMB;
     char      parseQSValue;
     char      parseCookieValue;
+    char      parseReqBody;
+    char      reqBodyOnlyUtf8;
     char      compressES;
     char      antiSynDrop;
     char      readTruncatedPackets;

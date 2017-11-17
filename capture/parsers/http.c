@@ -69,6 +69,7 @@ static int valueField;
 static int magicField;
 static int statuscodeField;
 static int methodField;
+static int reqBodyField;
 
 /******************************************************************************/
 int
@@ -132,6 +133,14 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 
         http->magicString[http->which] = moloch_parsers_magic(session, magicField, at, length);
         http->inBody |= (1 << http->which);
+
+        /* Put small requests in a field. */
+        if (config.parseReqBody && http->which == http->urlWhich && length <= config.maxReqBody && length > 0) {
+            if (!config.reqBodyOnlyUtf8 || g_utf8_validate(at, length, NULL) == TRUE) {
+                moloch_field_string_add(reqBodyField, session, at, length, TRUE);
+            }
+        }
+
     }
 
     g_checksum_update(http->checksum[http->which], (guchar *)at, length);
@@ -819,6 +828,13 @@ static const char *method_strings[] =
         "http.statuscode", "Status Code", "http.statuscode",
         "Response HTTP numeric status code",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    reqBodyField = moloch_field_define("http", "termfield",
+        "http.reqbody", "Request Body", "rqbd",
+        "HTTP Request Body",
+        MOLOCH_FIELD_TYPE_STR_HASH, 0,
+        "rawField", "rqbd.raw",
         NULL);
 
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);

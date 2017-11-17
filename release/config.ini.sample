@@ -167,6 +167,13 @@ parseSMB=true
 # Should we parse HTTP QS Values
 parseQSValue=false
 
+# Should we parse HTTP Request bodies?
+parseReqBody=false
+# Only index HTTP request bodies less than this number of bytes */
+maxReqBody=256
+# Only store request bodies that Utf-8?
+config.reqBodyOnlyUtf8 = true
+
 # Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
 

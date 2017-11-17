@@ -424,6 +424,7 @@ void moloch_config_load()
     config.maxFrags              = moloch_config_int(keyfile, "maxFrags", 50000, 1000, 0xffffff);
     config.snapLen               = moloch_config_int(keyfile, "snapLen", 16384, 1, MOLOCH_PACKET_MAX_LEN);
     config.maxMemPercentage      = moloch_config_int(keyfile, "maxMemPercentage", 100, 5, 100);
+    config.maxReqBody            = moloch_config_int(keyfile, "maxReqBody", 256, 0, 0xffffffff);
 
     config.packetThreads         = moloch_config_int(keyfile, "packetThreads", 1, 1, MOLOCH_MAX_PACKET_THREADS);
 
@@ -435,6 +436,8 @@ void moloch_config_load()
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
+    config.parseReqBody          = moloch_config_boolean(keyfile, "parseReqBody", FALSE);
+    config.reqBodyOnlyUtf8       = moloch_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
