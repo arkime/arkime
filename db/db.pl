@@ -1906,11 +1906,6 @@ sub dbESVersion {
     my $esversion = esGet("/");
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
-    if ($main::esVersion >= 50000) {
-        $main::OPTIMIZE = "_forcemerge";
-    } else {
-        $main::OPTIMIZE = "_optimize";
-    }
     return $esversion;
 }
 ################################################################################
@@ -2064,7 +2059,7 @@ sub optimizeOther {
     print "Optimizing Admin Indices\n";
     foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1", "${PREFIX}tags_v3", "${PREFIX}users_v4") {
         progress("$i ");
-        esGet("/$i/$main::OPTIMIZE?max_num_segments=1", 1);
+        esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
         esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
@@ -2185,7 +2180,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esGet("/$i/$main::OPTIMIZE?max_num_segments=4", 1) unless $NOOPTIMIZE ;
+            esPost("/$i/_forcemerge?max_num_segments=4", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esGet("/$i/_flush", 1);
                 esPut("/$i/_settings", '{index: {"number_of_replicas":' . $REPLICAS . '}}', 1);
@@ -2219,7 +2214,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$hindices})) {
         progress("$i ");
         if (exists $hindices->{$i}->{OPTIMIZEIT}) {
-            esGet("/$i/$main::OPTIMIZE?max_num_segments=1", 1) unless $NOOPTIMIZE ;
+            esPost("/$i/_forcemerge?max_num_segments=1", "", 1) unless $NOOPTIMIZE ;
         } else {
             esDelete("/$i", 1);
         }
@@ -2234,7 +2229,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
-        esGet("/$i/$main::OPTIMIZE?max_num_segments=4", 1);
+        esPost("/$i/_forcemerge?max_num_segments=4", "", 1);
         esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
