@@ -3,113 +3,113 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140226"
+               "_index" : "tests_sessions-140226",
+               "_type" : "session"
             }
          },
          "body" : {
-            "mac1-term-cnt" : 1,
-            "db2" : 0,
-            "ta" : [
-               "srcip"
-            ],
-            "ipSrc" : "10.0.0.1",
-            "dnshocnt" : 1,
-            "firstPacket" : 1393428477365,
-            "g2" : "USA",
-            "fp" : 1393428477,
-            "by2" : 0,
+            "rir2" : "ARIN",
             "mac1-term" : [
                "00:1a:e3:dc:2e:c0"
             ],
-            "by" : 74,
+            "tacnt" : 1,
+            "ipDst" : "8.8.8.8",
+            "tags-term" : [
+               "srcip"
+            ],
+            "as2" : "AS15169 Google LLC",
             "ss" : 1,
-            "fs" : [],
+            "prot-term-cnt" : 2,
             "pa1" : 1,
-            "a1" : "10.0.0.1",
-            "as2" : "AS15169 Google Inc.",
+            "mac2-term-cnt" : 1,
             "fb1" : "f376011000010000",
-            "lpd" : 1393428477365,
+            "portDst" : 53,
             "mac2-term" : [
                "00:19:e2:ba:2f:c1"
             ],
-            "timestamp" : "SET",
-            "lastPacket" : 1393428477365,
-            "pr" : 17,
-            "sl" : 0,
-            "a2" : "8.8.8.8",
-            "ps" : [
-               24
-            ],
-            "vlan" : [
-               500
-            ],
+            "lp" : 1393428477,
+            "by2" : 0,
             "no" : "test",
-            "portDst" : 53,
-            "rir2" : "ARIN",
+            "by" : 74,
             "prot-term" : [
                "udp",
                "dns"
             ],
-            "test" : {
-               "number" : [
-                  134744072
+            "g1" : "RUS",
+            "lastPacket" : 1393428477365,
+            "lpd" : 1393428477365,
+            "db" : 66,
+            "timestamp" : "SET",
+            "db2" : 0,
+            "fpd" : 1393428477365,
+            "fs" : [],
+            "dnshocnt" : 1,
+            "a2" : "8.8.8.8",
+            "ps" : [
+               24
+            ],
+            "sl" : 0,
+            "firstPacket" : 1393428477365,
+            "dns" : {
+               "qt-term-cnt" : 1,
+               "qt-term" : [
+                  "DNSKEY"
                ],
-               "ip" : [
-                  167772161
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "qc-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "qc-term" : [
+                  "IN"
+               ]
+            },
+            "fp" : 1393428477,
+            "vlan" : [
+               500
+            ],
+            "test" : {
+               "string" : [
+                  "16777226:53869,134744072:53"
                ],
                "ip-geo" : [
                   "RUS"
                ],
-               "string" : [
-                  "16777226:53869,134744072:53"
+               "ip" : [
+                  167772161
                ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
+               "number" : [
+                  134744072
                ],
                "ip-rir" : [
                   ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
                ]
             },
-            "tags-term" : [
+            "pr" : 17,
+            "ta" : [
                "srcip"
             ],
-            "p1" : 53869,
-            "pa" : 1,
+            "mac1-term-cnt" : 1,
+            "a1" : "10.0.0.1",
             "pa2" : 0,
-            "prot-term-cnt" : 2,
-            "mac2-term-cnt" : 1,
-            "vlan-cnt" : 1,
-            "dns" : {
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "opcode-term-cnt" : 1,
-               "qt-term" : [
-                  "DNSKEY"
-               ],
-               "qt-term-cnt" : 1,
-               "qc-term-cnt" : 1
-            },
-            "db" : 66,
-            "as1" : "AS0000 This is neat",
-            "psl" : [
-               90
-            ],
-            "g1" : "RUS",
+            "pa" : 1,
+            "ipSrc" : "10.0.0.1",
             "db1" : 66,
-            "fpd" : 1393428477365,
-            "ipDst" : "8.8.8.8",
+            "p1" : 53869,
+            "g2" : "USA",
             "by1" : 74,
             "dnsho" : [
                "<root>"
             ],
-            "tacnt" : 1,
             "p2" : 53,
-            "lp" : 1393428477,
+            "vlan-cnt" : 1,
+            "psl" : [
+               90
+            ],
+            "as1" : "AS0000 This is neat",
             "portSrc" : 53869
          }
       }

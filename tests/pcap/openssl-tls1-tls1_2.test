@@ -1,44 +1,160 @@
 {
    "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-141015"
-            }
-         },
          "body" : {
+            "lastPacket" : 1413338208189,
+            "g2" : "USA",
+            "a2" : "74.125.228.103",
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "tlsja3-termcnt" : 1,
+            "a1" : "10.0.0.1",
+            "pa" : 20,
+            "tlsver-termcnt" : 1,
+            "fpd" : 1413338207695,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "lp" : 1413338208,
+            "ta" : [
+               "srcip"
+            ],
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  1743027530
+               ],
+               "string" : [
+                  "16777226:42431,1743027530:443"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ]
+            },
+            "firstPacket" : 1413338207695,
+            "db" : 4898,
+            "pr" : 6,
+            "portSrc" : 42431,
+            "fs" : [],
+            "pa2" : 8,
+            "prot-term-cnt" : 2,
+            "portDst" : 443,
+            "tlsver-term" : [
+               "TLSv1.2"
+            ],
+            "timestamp" : "SET",
+            "no" : "test",
+            "by1" : 1220,
+            "p1" : 42431,
+            "mac1-term-cnt" : 1,
+            "pa1" : 12,
+            "tlscipher-term" : [
+               "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+            ],
+            "tlsja3-term" : [
+               "609a9998ac9d232d213aee990ec5162f"
+            ],
+            "psl" : [
+               90,
+               90,
+               82,
+               345,
+               82,
+               1500,
+               82,
+               1500,
+               1342,
+               234,
+               82,
+               82,
+               82,
+               208,
+               312,
+               82,
+               113,
+               82,
+               82,
+               82
+            ],
+            "ipDst" : "74.125.228.103",
+            "tags-term" : [
+               "srcip"
+            ],
+            "rir2" : "ARIN",
+            "db1" : 420,
+            "g1" : "RUS",
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               631,
+               713,
+               2213,
+               2295,
+               3795,
+               5137,
+               5371,
+               5453,
+               5535,
+               5617,
+               5825,
+               6137,
+               6219,
+               6332,
+               6414,
+               6496
+            ],
+            "by2" : 5014,
+            "as1" : "AS0000 This is neat",
+            "sl" : 494,
             "tls" : [
                {
-                  "notBefore" : 1021953600,
-                  "sOn" : "GeoTrust Inc.",
-                  "iOn" : "Equifax",
-                  "sn" : "12bbe6",
-                  "diffDays" : 5936,
-                  "notAfter" : 1534824000,
                   "sCn" : [
                      "geotrust global ca"
                   ],
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3"
+                  "notAfter" : 1534824000,
+                  "iOn" : "Equifax",
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "sn" : "12bbe6",
+                  "diffDays" : 5936,
+                  "notBefore" : 1021953600,
+                  "sOn" : "GeoTrust Inc."
                },
                {
                   "sCn" : [
                      "google internet authority g2"
                   ],
+                  "iOn" : "GeoTrust Inc.",
                   "notAfter" : 1483228799,
                   "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
-                  "sOn" : "Google Inc",
-                  "notBefore" : 1365174955,
+                  "sn" : "023a76",
+                  "diffDays" : 1366,
                   "iCn" : [
                      "geotrust global ca"
                   ],
-                  "iOn" : "GeoTrust Inc.",
-                  "sn" : "023a76",
-                  "diffDays" : 1366
+                  "notBefore" : 1365174955,
+                  "sOn" : "Google Inc"
                },
                {
                   "sOn" : "Google Inc",
+                  "altcnt" : 49,
                   "notBefore" : 1411553285,
+                  "diffDays" : 89,
+                  "iCn" : [
+                     "google internet authority g2"
+                  ],
+                  "sn" : "7a5b0bd895632f87",
                   "alt" : [
                      "*.google.com",
                      "*.android.com",
@@ -90,163 +206,47 @@
                      "youtube.com",
                      "youtubeeducation.com"
                   ],
-                  "iCn" : [
-                     "google internet authority g2"
-                  ],
-                  "sn" : "7a5b0bd895632f87",
-                  "diffDays" : 89,
+                  "hash" : "0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91",
                   "iOn" : "Google Inc",
-                  "altcnt" : 49,
+                  "notAfter" : 1419292800,
                   "sCn" : [
                      "*.google.com"
-                  ],
-                  "notAfter" : 1419292800,
-                  "hash" : "0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91"
+                  ]
                }
             ],
-            "pa" : 20,
-            "sl" : 494,
-            "db" : 4898,
-            "by" : 6234,
-            "g2" : "USA",
-            "ss" : 1,
-            "mac2-term-cnt" : 2,
-            "p2" : 443,
-            "a1" : "10.0.0.1",
-            "as1" : "AS0000 This is neat",
-            "ta" : [
-               "srcip"
-            ],
-            "rir2" : "ARIN",
-            "ipSrc" : "10.0.0.1",
-            "lastPacket" : 1413338208189,
-            "test" : {
-               "number" : [
-                  1743027530
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:42431,1743027530:443"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "tlscipher-termcnt" : 1,
-            "tcpflags" : {
-               "ack" : 10,
-               "fin" : 2,
-               "urg" : 0,
-               "psh" : 6,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "syn" : 1
-            },
-            "tlsver-term" : [
-               "TLSv1.2"
-            ],
-            "tlsja3-termcnt" : 1,
-            "g1" : "RUS",
             "fb1" : "1603010102010000",
-            "fpd" : 1413338207695,
-            "ipDst" : "74.125.228.103",
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               631,
-               713,
-               2213,
-               2295,
-               3795,
-               5137,
-               5371,
-               5453,
-               5535,
-               5617,
-               5825,
-               6137,
-               6219,
-               6332,
-               6414,
-               6496
-            ],
-            "lp" : 1413338208,
-            "tlscnt" : 3,
-            "db1" : 420,
-            "by2" : 5014,
-            "by1" : 1220,
-            "tlsver-termcnt" : 1,
-            "p1" : 42431,
-            "pa1" : 12,
-            "fp" : 1413338207,
-            "db2" : 4478,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "tlsja3-term" : [
-               "609a9998ac9d232d213aee990ec5162f"
-            ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "lpd" : 1413338208189,
+            "as2" : "AS15169 Google LLC",
             "tacnt" : 1,
-            "tags-term" : [
-               "srcip"
-            ],
-            "no" : "test",
-            "as2" : "AS15169 Google Inc.",
-            "pa2" : 8,
+            "tlscnt" : 3,
+            "tlscipher-termcnt" : 1,
             "fb2" : "160303003d020000",
-            "portSrc" : 42431,
-            "pr" : 6,
-            "a2" : "74.125.228.103",
-            "mac1-term-cnt" : 1,
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ],
-            "fs" : [],
-            "prot-term-cnt" : 2,
-            "tlscipher-term" : [
-               "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
-            ],
-            "firstPacket" : 1413338207695,
-            "portDst" : 443,
-            "timestamp" : "SET",
-            "psl" : [
-               90,
-               90,
-               82,
-               345,
-               82,
-               1500,
-               82,
-               1500,
-               1342,
-               234,
-               82,
-               82,
-               82,
-               208,
-               312,
-               82,
-               113,
-               82,
-               82,
-               82
-            ]
+            "ipSrc" : "10.0.0.1",
+            "mac2-term-cnt" : 2,
+            "by" : 6234,
+            "fp" : 1413338207,
+            "ss" : 1,
+            "lpd" : 1413338208189,
+            "tcpflags" : {
+               "ack" : 10,
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "fin" : 2,
+               "syn-ack" : 1,
+               "psh" : 6
+            },
+            "db2" : 4478,
+            "p2" : 443
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-141015"
+            }
          }
       }
    ]
