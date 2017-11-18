@@ -218,6 +218,13 @@ void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     moloch_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
+void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (data[0] != 1 && !MOLOCH_SESSION_v6(session))
+        return;
+    moloch_session_add_protocol(session, "dhcpv6");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -268,6 +275,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x1a", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x1b", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x1c", 1, ntp_classify);
+    moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x21", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x23", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x24", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\xd9", 1, ntp_classify);
@@ -336,6 +344,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x02\x02\x00\x00", 4, rip_classify);
 
     moloch_parsers_classifier_register_tcp("nzsql", "nzsql", 0, (unsigned char*)"\x00\x00\x00\x08\x00\x01\x00\x03", 8, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("dhcpv6",  NULL, 547, MOLOCH_PARSERS_PORT_UDP, dhcpv6_udp_classify);
 
     userField = moloch_field_by_db("user");
 }
