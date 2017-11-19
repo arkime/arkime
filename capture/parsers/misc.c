@@ -220,7 +220,7 @@ void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
 /******************************************************************************/
 void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (data[0] != 1 || !MOLOCH_SESSION_v6(session))
+    if ((data[0] != 1 && data[0] != 11) || !MOLOCH_SESSION_v6(session))
         return;
     moloch_session_add_protocol(session, "dhcpv6");
 }
@@ -230,6 +230,15 @@ void dhcp_udp_classify(MolochSession_t *session, const unsigned char *data, int 
     if (data[0] != 1 || MOLOCH_SESSION_v6(session))
         return;
     moloch_session_add_protocol(session, "dhcp");
+}
+/******************************************************************************/
+void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 18 ||
+            (data[16] != 8 && data[16] != 33 && data[16] != 46) ||
+            (data[17] != 0x10 && data[17] != 0x20))
+        return;
+    moloch_session_add_protocol(session, "isakmp");
 }
 /******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
@@ -315,6 +324,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("nsclient", "nsclient", 0, (unsigned char*)"None&", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_udp("ssdp", "ssdp", 0, (unsigned char*)"M-SEARCH ", 9, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_udp("ssdp", "ssdp", 0, (unsigned char*)"NOTIFY * ", 9, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("zabbix", "zabbix", 0, (unsigned char*)"ZBXD\x01", 5, misc_add_protocol_classify);
 
@@ -356,6 +366,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("dhcp",  NULL, 67, MOLOCH_PARSERS_PORT_UDP, dhcp_udp_classify);
 
     moloch_parsers_classifier_register_tcp("splunk", "splunk", 0, (unsigned char*)"--splunk-cooked-mode-v3--", 25, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("isakmp",  NULL, 500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
 
     userField = moloch_field_by_db("user");
 }
