@@ -236,9 +236,18 @@ void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, in
 {
     if (len < 18 ||
             (data[16] != 8 && data[16] != 33 && data[16] != 46) ||
-            (data[17] != 0x10 && data[17] != 0x20))
+            (data[17] != 0x10 && data[17] != 0x20)) {
         return;
+    }
     moloch_session_add_protocol(session, "isakmp");
+ }
+/******************************************************************************/
+void aruba_papi_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 20 || data[0] != 0x49 || data[1] != 0x72) {
+        return;
+    }
+    moloch_session_add_protocol(session, "aruba-papi");
 }
 /******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
@@ -368,6 +377,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("splunk", "splunk", 0, (unsigned char*)"--splunk-cooked-mode-v3--", 25, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_port("isakmp",  NULL, 500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
+
+    moloch_parsers_classifier_register_port("aruba-papi",  NULL, 8211, MOLOCH_PARSERS_PORT_UDP, aruba_papi_udp_classify);
 
     userField = moloch_field_by_db("user");
 }
