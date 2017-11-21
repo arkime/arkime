@@ -173,6 +173,7 @@ app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { ma
 
 app.use('/cyberchef.htm', function(req, res, next) {
   res.setHeader("Vary", "Accept-Encoding");
+  res.setHeader("Content-Type", "text/html");
   res.setHeader("Content-Encoding", "gzip");
   res.sendFile(__dirname + "/public/cyberchef.htm.gz");
 });
