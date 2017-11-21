@@ -135,7 +135,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
         http->inBody |= (1 << http->which);
 
         /* Put small requests in a field. */
-        if (config.parseReqBody && http->which == http->urlWhich && length <= config.maxReqBody && length > 0) {
+        if (http->which == http->urlWhich && length <= config.maxReqBody && length > 0) {
             if (!config.reqBodyOnlyUtf8 || g_utf8_validate(at, length, NULL) == TRUE) {
                 moloch_field_string_add(reqBodyField, session, at, length, TRUE);
             }
@@ -831,10 +831,9 @@ static const char *method_strings[] =
         NULL);
 
     reqBodyField = moloch_field_define("http", "termfield",
-        "http.reqbody", "Request Body", "rqbd",
+        "http.reqbody", "Request Body", "rqbd-term",
         "HTTP Request Body",
         MOLOCH_FIELD_TYPE_STR_HASH, 0,
-        "rawField", "rqbd.raw",
         NULL);
 
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);

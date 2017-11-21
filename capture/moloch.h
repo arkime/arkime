@@ -356,7 +356,6 @@ typedef struct moloch_config {
     char      parseSMB;
     char      parseQSValue;
     char      parseCookieValue;
-    char      parseReqBody;
     char      reqBodyOnlyUtf8;
     char      compressES;
     char      antiSynDrop;
