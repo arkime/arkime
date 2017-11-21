@@ -258,6 +258,10 @@ void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"BSYNC\x00", 6, misc_add_protocol_classify);
+    /* Bitcoin main network */
+    moloch_parsers_classifier_register_tcp("bitcoin", "bitcoin", 0, (unsigned char*)"\xf9\xbe\xb4\xd9", 4, misc_add_protocol_classify);
+    /* Bitcoin namecoin fork */
+    moloch_parsers_classifier_register_tcp("bitcoin", "bitcoin", 0, (unsigned char*)"\xf9\xbe\xb4\xfe", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("rdp", NULL, 0, (unsigned char*)"\x03\x00", 2, rdp_classify);
     moloch_parsers_classifier_register_tcp("imap", NULL, 0, (unsigned char*)"* OK ", 5, imap_classify);
     moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK POP3 ", 9, misc_add_protocol_classify);
