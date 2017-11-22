@@ -874,7 +874,7 @@ if(require.main === module) {
           });
         },
         function (err, n) {
-          Pcap.reassemble_tcp(packets, packets[0].ip.addr1 + ':' + packets[0].tcp.sport, function(err, results) {
+          Pcap.reassemble_tcp(packets, packets.length, packets[0].ip.addr1 + ':' + packets[0].tcp.sport, function(err, results) {
             exports.createPipeline(options, options.order, new Pcap2ItemStream(options, results));
           });
         }
