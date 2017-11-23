@@ -123,6 +123,13 @@ function getConfig(section, name, d) {
 function getConfigSections() {
   return Object.keys(internals.config);
 }
+
+// Explicit sigint handler for running under docker
+// See https://github.com/nodejs/node/issues/4182
+process.on('SIGINT', function() {
+    process.exit();
+});
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Sources
 //////////////////////////////////////////////////////////////////////////////////
