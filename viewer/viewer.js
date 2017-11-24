@@ -301,7 +301,9 @@ app.use(function(req, res, next) {
 logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 
 function loadFields() {
-  Db.loadFields(function (data) {
+  Db.loadFields(function (err, data) {
+    if (err) {data = [];}
+    else {data = data.hits.hits;}
     Config.loadFields(data);
     app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
     app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
