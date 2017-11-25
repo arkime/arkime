@@ -35,7 +35,7 @@ var internals = {tagId2Name: {},
                  indicesCache: {},
                  usersCache: {},
                  qInProgress: 0,
-                 apiVersion: "2.x",
+                 apiVersion: "2.4",
                  q: []};
 
 exports.initialize = function (info, cb) {
@@ -248,7 +248,7 @@ exports.deleteIndex = function (index, options, cb) {
   }
   var params = {index: fixIndex(index)};
   exports.merge(params, options);
-  return internals.elasticSearchClient.delete(params, cb);
+  return internals.elasticSearchClient.indices.delete(params, cb);
 };
 
 exports.indexStats = function(index, cb) {
@@ -318,6 +318,14 @@ exports.close = function () {
   return internals.elasticSearchClient.close();
 };
 
+exports.flush = function (index, cb) {
+  return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+};
+
+exports.refresh = function (index, cb) {
+  return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
@@ -331,6 +339,7 @@ exports.flushCache = function () {
   internals.usersCache = {};
   delete internals.aliasesCache;
 };
+
 
 exports.searchUsers = function(query, cb) {
   return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query}, cb);
@@ -391,10 +400,10 @@ exports.historyIt = function(doc, cb) {
   return internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh:1}, cb);
 };
 exports.searchHistory = function(query, cb) {
-  return internals.elasticSearchClient.search({index:internals.prefix + 'history_v1-*', type:"history", body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query}, cb);
 };
 exports.numberOfLogs = function(cb) {
-  internals.elasticSearchClient.count({index:internals.prefix + 'history_v1-*', type:"history", ignoreUnavailable:true}, function(err, result) {
+  internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, function(err, result) {
     if (err || result.error) {
       return cb(null, 0);
     }
