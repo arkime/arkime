@@ -52,7 +52,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 37;
+my $VERSION = 38;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1619,7 +1619,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     my $template = '
 {
-  "template": "' . $PREFIX . 'session*",
+  "template": "' . $PREFIX . 'sessions-*",
   "settings": {
     "index": {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
@@ -1650,14 +1650,107 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
         esPut("/$i/session/_mapping", $mapping, 1);
+    }
 
-        # Before version 12 had soft, change to node, requires a close and open
-        if ($main::versionNumber < 12) {
-            esPost("/$i/_close", "");
-            #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
-            esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
-            esPost("/$i/_open", "");
+    print "\n";
+}
+
+################################################################################
+sub sessions2Update
+{
+    my $mapping = '
+{
+  "session": {
+    "_all": {"enabled": "false"},
+    "dynamic": "true",
+    "dynamic_templates": [
+      {
+        "template_ip_end": {
+          "match": "*Ip",
+          "mapping": {
+            "type": "ip"
+          }
         }
+      },
+      {
+        "template_ip_alone": {
+          "match": "ip",
+          "mapping": {
+            "type": "ip"
+          }
+        }
+      },
+      {
+        "template_string": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "string",
+            "index": "not_analyzed",
+            "norms": {"enabled": false}
+          }
+        }
+      }
+    ],
+    "properties": {
+      "timestamp": {
+        "type": "date"
+      },
+      "firstPacket": {
+        "type": "date"
+      },
+      "lastPacket": {
+        "type": "date"
+      },
+      "packetPosArray": {
+        "type": "long",
+        "index": "no"
+      },
+      "packetLenArray": {
+        "type": "integer",
+        "index": "no"
+      },
+      "cert": {
+        "type": "object",
+        "properties": {
+          "notBefore": {
+            "type": "date"
+          },
+          "notAfter": {
+            "type": "date"
+          }
+        }
+      }
+    }
+  }
+}
+';
+
+$REPLICAS = 0 if ($REPLICAS < 0);
+my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+
+    my $template = '
+{
+  "template": "' . $PREFIX . 'sessions2-*",
+  "settings": {
+    "index": {
+      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
+      "refresh_interval": "60s",
+      "number_of_shards": ' . $SHARDS . ',
+      "number_of_replicas": ' . $REPLICAS . '
+    }
+  },
+  "mappings":' . $mapping . '
+}';
+
+    print "Creating sessions template\n" if ($verbose > 0);
+    esPut("/_template/${PREFIX}sessions2_template", $template);
+
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
+
+    print "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+    foreach my $i (keys %{$indices}) {
+        progress("$i ");
+        esPut("/$i/session/_mapping", $mapping, 1);
     }
 
     print "\n";
@@ -2500,6 +2593,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}sessions-*", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
     esDelete("/_template/${PREFIX}sessions_template", 1);
+    esDelete("/_template/${PREFIX}sessions2_template", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
@@ -2521,6 +2615,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     statsCreate();
     dstatsCreate();
     sessionsUpdate();
+    sessions2Update();
     fieldsCreate();
     historyUpdate();
     if ($ARGV[1] =~ "init") {
@@ -2581,17 +2676,20 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esDelete("/_template/${PREFIX}template_1", 1);
         historyUpdate();
         sessionsUpdate();
+        sessions2Update();
         checkForOldIndices();
     } elsif ($main::versionNumber <= 33) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
         historyUpdate();
         sessionsUpdate();
+        sessions2Update();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 37) {
+    } elsif ($main::versionNumber <= 38) {
         usersUpdate();
         historyUpdate();
         sessionsUpdate();
+        sessions2Update();
         checkForOldIndices();
     } else {
         print "db.pl is hosed\n";
