@@ -72,20 +72,20 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("oracle", NULL, 2, (unsigned char*)"\x00\x00\x01\x00\x00\x00", 6, oracle_classify);
 
     userField = moloch_field_define("oracle", "lotermfield",
-        "oracle.user", "User", "oracle.user-term",
+        "oracle.user", "User", "oracle.user",
         "Oracle User",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
         NULL);
 
     hostField = moloch_field_define("oracle", "lotermfield",
-        "oracle.host", "Host", "oracle.host-term",
+        "oracle.host", "Host", "oracle.host",
         "Oracle Host",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     serviceField = moloch_field_define("oracle", "lotermfield",
-        "oracle.service", "Service", "oracle.service-term",
+        "oracle.service", "Service", "oracle.service",
         "Oracle Service",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);

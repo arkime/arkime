@@ -175,35 +175,14 @@ void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointe
     MOLOCH_UNLOCK(sessionCmds[session->thread].lock);
 }
 /******************************************************************************/
-void moloch_session_get_tag_cb(void *sessionV, int tagType, const char *tagName, uint32_t tag, gboolean async)
-{
-    MolochSession_t *session = sessionV;
-
-    if (tag == 0) {
-        LOG("ERROR - Not adding tag %s type %d couldn't get tag num", tagName, tagType);
-        moloch_session_decr_outstanding(session);
-    } else if (async) {
-        moloch_session_add_cmd(session, MOLOCH_SES_CMD_ADD_TAG, (gpointer)(long)tagType, (gpointer)(long)tag, NULL);
-    } else {
-        moloch_field_int_add(tagType, session, tag);
-        moloch_session_decr_outstanding(session);
-    }
-
-}
-/******************************************************************************/
 gboolean moloch_session_has_tag(MolochSession_t *session, const char *tagName)
 {
-    uint32_t tagValue;
-
-    if (!session->fields[config.tagsField])
+    if (!session->fields[config.tagsStringField])
         return FALSE;
 
-    if ((tagValue = moloch_db_peek_tag(tagName)) == 0)
-        return FALSE;
-
-    MolochInt_t          *hint;
-    HASH_FIND_INT(i_, *(session->fields[config.tagsField]->ihash), tagValue, hint);
-    return hint != 0;
+    MolochString_t          *hstring;
+    HASH_FIND(s_, *(session->fields[config.tagsStringField]->shash), tagName, hstring);
+    return hstring != 0;
 }
 /******************************************************************************/
 void moloch_session_add_protocol(MolochSession_t *session, const char *protocol)
@@ -222,33 +201,7 @@ gboolean moloch_session_has_protocol(MolochSession_t *session, const char *proto
 }
 /******************************************************************************/
 void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
-    moloch_session_incr_outstanding(session);
-    moloch_db_get_tag(session, config.tagsField, tag, moloch_session_get_tag_cb);
     moloch_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
-
-    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
-        MolochString_t *tstring;
-
-        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
-        if (tstring) {
-            session->stopSaving = (int)(long)tstring->uw;
-        }
-    }
-}
-
-/******************************************************************************/
-void moloch_session_add_tag_type(MolochSession_t *session, int tagtype, const char *tag) {
-    moloch_session_incr_outstanding(session);
-    moloch_db_get_tag(session, tagtype, tag, moloch_session_get_tag_cb);
-
-    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
-        MolochString_t *tstring;
-
-        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
-        if (tstring) {
-            session->stopSaving = (long)tstring->uw;
-        }
-    }
 }
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, int ses)
@@ -615,9 +568,9 @@ void moloch_session_init()
     if (p == 12) p = 11;
 
     protocolField = moloch_field_define("general", "termfield",
-        "protocols", "Protocols", "prot-term",
+        "protocols", "Protocols", "protocol",
         "Protocols set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     if (config.debug)

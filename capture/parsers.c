@@ -606,21 +606,14 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
 /******************************************************************************/
 void moloch_parsers_init()
 {
-    moloch_field_define("general", "lotermfield",
-        "user", "User", "user",
-        "External user set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        NULL);
-
     moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "ss",
+        "session.segments", "Session Segments", "segments",
         "Number of segments in session so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("general", "integer",
-        "session.length", "Session Length", "sl",
+        "session.length", "Session Length", "length",
         "Session Length in milliseconds so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
@@ -756,35 +749,18 @@ void moloch_parsers_init()
     );
 
     // Set tags field up AFTER loading plugins
-    config.tagsField = moloch_field_define("general", "termfield",
-        "tags", "Tags", "ta",
+    config.tagsStringField = moloch_field_define("general", "lotermfield",
+        "tags", "Tags", "tags",
         "Tags set for session",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
-
-    config.tagsStringField = moloch_field_define("general", "notreal",
-        "tags", "Tags", "tags-term",
-        "Tags set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NODB,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "lotermfield",
-        "asset", "Asset", "asset-term",
+        "asset", "Asset", "asset",
         "Asset name",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
-    if (config.nodeClass) {
-        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, config.tagsField, classTag, NULL);
-    }
-
-    if (config.extraTags) {
-        int i;
-        for (i = 0; config.extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, config.tagsField, config.extraTags[i], NULL);
-        }
-    }
 
     if (config.extraOps) {
         int i;

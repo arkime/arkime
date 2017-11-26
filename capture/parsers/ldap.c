@@ -181,14 +181,14 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
 
     authTypeField = moloch_field_define("ldap", "termfield",
-        "ldap.authtype", "Auth Type", "ldap.authtype-term",
+        "ldap.authtype", "Auth Type", "ldap.authtype",
         "The auth type of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     bindNameField = moloch_field_define("ldap", "termfield",
-        "ldap.bindname", "Bind Name", "ldap.bindname-term",
+        "ldap.bindname", "Bind Name", "ldap.bindname",
         "The bind name of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 }

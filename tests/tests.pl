@@ -48,9 +48,9 @@ sub doGeo {
 sub sortJson {
     my ($json) = @_;
 
-    foreach my $session (@{$json->{sessions}}) {
+    foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
-        foreach my $i ("dnsip", "tags-term", "ta") {
+        foreach my $i ("tags") {
             if (exists $body->{$i}) {
                 my @tmp = sort (@{$body->{$i}});
                 $body->{$i} = \@tmp;
@@ -102,31 +102,19 @@ sub doFix {
 ################################################################################
 sub fix {
 my ($json) = @_;
-    foreach my $session (@{$json->{sessions}}) {
+    foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
 
         delete $session->{header}->{index}->{_id};
-        if (exists $body->{ro}) {
-            $body->{ro} = "SET";
+        if (exists $body->{rootId}) {
+            $body->{rootId} = "SET";
         }
         if (exists $body->{timestamp}) {
             $body->{timestamp} = "SET";
         }
-        foreach my $field ("a1", "a2", "dnsip", "socksip", "eip") {
-            $body->{$field} = fixIp($body->{$field}) if (exists $body->{$field});
-        }
-        if ($body->{radius}) {
-            foreach my $field ("eip", "fip") {
-                $body->{radius}->{$field} = fixIp($body->{radius}->{$field}) if (exists $body->{radius}->{$field});
-            }
-        }
-
-        foreach my $field ("ta", "hh1", "hh2") {
-            $body->{$field} = fixTags($json, $body->{$field}) if (exists $body->{$field});
-        }
     }
 
-    @{$json->{sessions}} = sort {$a->{body}->{fpd} <=> $b->{body}->{fpd}} @{$json->{sessions}};
+    @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};
 
     delete $json->{tags};
 }

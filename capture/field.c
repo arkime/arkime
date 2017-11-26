@@ -177,20 +177,11 @@ int moloch_field_define_text(char *text, int *shortcut)
         type = MOLOCH_FIELD_TYPE_STR_HASH;
 
     if (count)
-        flags |= MOLOCH_FIELD_FLAG_COUNT;
+        flags |= MOLOCH_FIELD_FLAG_CNT;
 
     int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, NULL);
     g_strfreev(elements);
     return pos;
-}
-/******************************************************************************/
-/* Changes ... to va_list */
-static void moloch_session_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
-{
-    va_list args;
-    va_start(args, help);
-    moloch_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args);
-    va_end(args);
 }
 /******************************************************************************/
 int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...)
@@ -199,7 +190,6 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     char expression2[1000];
     char friendlyName2[1000];
     char help2[1000];
-    char rawField[100];
 
     MolochFieldInfo_t *minfo = 0;
     HASH_FIND(d_, fieldsByDb, dbField, minfo);
@@ -244,13 +234,6 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
     }
 
-    // Hack to remove trailing .snow on capture side
-    int dbLen = strlen(minfo->dbField);
-    if (dbLen > 5 && memcmp(".snow", minfo->dbField+dbLen-5, 5) == 0) {
-        minfo->dbField[dbLen-5] = 0;
-        minfo->dbFieldLen -= 5;
-    }
-
     minfo->type     = type;
     minfo->flags    = flags;
 
@@ -288,29 +271,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     MolochFieldInfo_t *info = 0;
     if (flags & MOLOCH_FIELD_FLAG_CNT) {
-        snprintf(dbField2, sizeof(dbField2), "%scnt", dbField);
-        HASH_FIND(d_, fieldsByDb, dbField2, info);
-        if (!info) {
-            snprintf(expression2, sizeof(expression2), "%s.cnt", expression);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
-            snprintf(help2, sizeof(help2), "Unique number of %s", help);
-            moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-        }
-    }
-
-    if (flags & MOLOCH_FIELD_FLAG_SCNT) {
-        snprintf(dbField2, sizeof(dbField2), "%sscnt", dbField);
-        HASH_FIND(d_, fieldsByDb, dbField2, info);
-        if (!info) {
-            snprintf(expression2, sizeof(expression2), "%s.cnt", expression);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
-            snprintf(help2, sizeof(help2), "Unique number of %s", help);
-            moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-        }
-    }
-
-    if (flags & MOLOCH_FIELD_FLAG_COUNT) {
-        snprintf(dbField2, sizeof(dbField2), "%s-cnt", dbField);
+        snprintf(dbField2, sizeof(dbField2), "%sCnt", dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.cnt", expression);
@@ -331,37 +292,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         return -1;
     }
 
-    if (flags & MOLOCH_FIELD_FLAG_IPPRE) {
-        int fnlen = strlen(friendlyName);
-        snprintf(dbField2, sizeof(dbField2), "g%s", dbField);
-        HASH_FIND(d_, fieldsByDb, dbField2, info);
-        if (!info) {
-            snprintf(expression2, sizeof(expression2), "country.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s GEO", fnlen-2, friendlyName);
-            snprintf(help2, sizeof(help2), "GeoIP country string calculated from the %s", help);
-            moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-        }
-
-        snprintf(dbField2, sizeof(dbField2), "as%s", dbField);
-        HASH_FIND(d_, fieldsByDb, dbField2, info);
-        if (!info) {
-            snprintf(expression2, sizeof(expression2), "asn.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s ASN", fnlen-2, friendlyName);
-            snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
-            snprintf(rawField, sizeof(rawField), "raw%s", dbField2);
-            moloch_session_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
-        }
-
-        snprintf(dbField2, sizeof(dbField2), "rir%s", dbField);
-        HASH_FIND(d_, fieldsByDb, dbField2, info);
-        if (!info) {
-            snprintf(expression2, sizeof(expression2), "rir.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s RIR", fnlen-2, friendlyName);
-            snprintf(help2, sizeof(help2), "Regional Internet Registry string calculated from %s", help);
-            moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-        }
-    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
-        snprintf(dbField2, sizeof(dbField2), "%s-geo", dbField);
+    if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
+        snprintf(dbField2, sizeof(dbField2), "%.*sGEO", minfo->dbFieldLen-2, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.country", expression);
@@ -370,18 +302,17 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
 
-        snprintf(dbField2, sizeof(dbField2), "%s-asn.snow", dbField);
+        snprintf(dbField2, sizeof(dbField2), "%.*sASN", minfo->dbFieldLen-2, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(dbField2, sizeof(dbField2), "%s-asn.snow", dbField);
+            snprintf(dbField2, sizeof(dbField2), "%sASN", dbField);
             snprintf(expression2, sizeof(expression2), "%s.asn", expression);
             snprintf(friendlyName2, sizeof(friendlyName2), "%s ASN", friendlyName);
-            snprintf(rawField, sizeof(rawField), "%s-asn.raw", dbField);
             snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
-            moloch_session_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
+            moloch_db_add_field(group, "termfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
 
-        snprintf(dbField2, sizeof(dbField2), "%s-rir", dbField);
+        snprintf(dbField2, sizeof(dbField2), "%.*sRIR", minfo->dbFieldLen-2, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.rir", expression);
@@ -951,11 +882,6 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         switch (config.fields[op->fieldPos]->type) {
         case  MOLOCH_FIELD_TYPE_INT_HASH:
         case  MOLOCH_FIELD_TYPE_INT_GHASH:
-            if (op->fieldPos == config.tagsField) {
-                moloch_session_add_tag(session, op->str);
-                continue;
-            }
-            // Fall Thru
         case  MOLOCH_FIELD_TYPE_INT:
         case  MOLOCH_FIELD_TYPE_INT_ARRAY:
         case  MOLOCH_FIELD_TYPE_IP:
@@ -1029,16 +955,6 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         switch (config.fields[fieldPos]->type) {
         case  MOLOCH_FIELD_TYPE_INT_HASH:
         case  MOLOCH_FIELD_TYPE_INT_GHASH:
-            if (fieldPos == config.tagsField) {
-                moloch_db_get_tag(NULL, config.tagsField, value, NULL); // Preload the tagname -> tag mapping
-                if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)
-                    op->str = g_strndup(value, valuelen);
-                else
-                    op->str = value;
-                op->strLenOrInt = valuelen;
-                break;
-            }
-            // Fall thru
         case  MOLOCH_FIELD_TYPE_INT:
         case  MOLOCH_FIELD_TYPE_INT_ARRAY:
             op->str = 0;

@@ -10,8 +10,8 @@
   };
 
   const defaultTableState = {
-    order         : [['fp', 'asc']],
-    visibleHeaders: ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
+    order         : [['firstPacket', 'asc']],
+    visibleHeaders: ['firstPacket','lastPacket','src','srcPort','dst','dstPort','totPackets','dbby','node','info']
   };
 
   let customCols = require('./custom.columns.json');
@@ -177,7 +177,7 @@
             let header = this.headers[colIdx-1];
             if (header) {
               header.width = column.w;
-              this.colWidths[header.dbField] = column.w;
+              this.colWidths[header.dbField2] = column.w;
 
               this.saveColumnWidths();
 
@@ -201,9 +201,7 @@
 
       this.stickySessions = []; // clear sticky sessions
 
-      // TODO: tipv6*-term goes away with ES5
-      // clear fields to query for but always include protocols field
-      this.query.fields   = ['pr','tipv61-term','tipv62-term'];
+      this.query.fields   = ['ipProtocol'];
 
       this.mapHeadersToFields();
 
@@ -214,10 +212,10 @@
           if (field.children) {
             for (let j = 0; j < field.children.length; ++j) {
               let child = field.children[j];
-              if (child) { this.query.fields.push(child.dbField); }
+              if (child) { this.query.fields.push(child.dbField2); }
             }
           } else {
-            this.query.fields.push(field.dbField);
+            this.query.fields.push(field.dbField2);
           }
         }
       }
@@ -354,7 +352,7 @@
       for (let key in this.fields) {
         if (this.fields.hasOwnProperty(key)) {
           let item = this.fields[key];
-          if (item.dbField === fieldId) {
+          if (item.dbField2 === fieldId) {
             return item;
           }
         }
@@ -378,7 +376,7 @@
 
         if (field) {
           field.width = this.colWidths[headerId] || field.width || 100;
-          if (field.dbField === 'info') { // info column is super special
+          if (field.dbField2 === 'info') { // info column is super special
             // reset info field width to default so it can always be recalculated
             // to take up all of the rest of the space that it can
             field.width = defaultInfoColWidth;
@@ -408,7 +406,7 @@
         let fillWithInfoCol = windowWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
-          if (this.headers[i].dbField === 'info') {
+          if (this.headers[i].dbField2 === 'info') {
             let newInfoColWidth = Math.max(fillWithInfoCol, infoColWidth);
             this.headers[i].width = newInfoColWidth;
             newTableWidth += newInfoColWidth;
@@ -627,14 +625,14 @@
             let header = this.headers[i];
             // find the first sortable column
             if ((!header.children || (header.children && header.sortBy)) &&
-               (header.dbField !== id && header.sortBy !== id)) {
-              newSort = header.sortBy || header.dbField;
+               (header.dbField2 !== id && header.sortBy !== id)) {
+              newSort = header.sortBy || header.dbField2;
               break;
             }
           }
 
           // if there are no columns to sort by, sort by start time
-          if (!newSort) { newSort = 'fp'; }
+          if (!newSort) { newSort = 'firstPacket'; }
 
           this.tableState.order = [[newSort,'asc']];
         } else {
@@ -682,7 +680,7 @@
       // set to the first position if dropped on far left column
       if (!newIndex || newIndex < 0) { newIndex = 0; }
 
-      let draggedIndex = this.tableState.visibleHeaders.indexOf(obj.dbField);
+      let draggedIndex = this.tableState.visibleHeaders.indexOf(obj.dbField2);
 
       // reorder the visible headers
       if (newIndex >= this.tableState.visibleHeaders.length) {
@@ -844,7 +842,7 @@
 
     /**
      * Opens the spi graph page in a new browser tab
-     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     * @param {string} fieldID The field id (dbField2) to display spi graph data for
      */
     openSpiGraph(fieldID) {
       this.SessionService.openSpiGraph(fieldID);
@@ -864,7 +862,7 @@
         let header    = this.headers[i];
         let newWidth  = Math.floor(header.width * percentChange);
         header.width  = newWidth;
-        this.colWidths[header.dbField] = newWidth;
+        this.colWidths[header.dbField2] = newWidth;
       }
 
       this.tableWidth = windowWidth;

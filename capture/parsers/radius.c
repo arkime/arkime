@@ -105,28 +105,28 @@ void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(d
 void moloch_parser_init()
 {
     userField = moloch_field_define("radius", "termfield",
-        "radius.user", "User", "radius.user-term",
+        "radius.user", "User", "radius.user",
         "RADIUS user",
         MOLOCH_FIELD_TYPE_STR_HASH,     0, 
         "category", "user",
         NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
-        "radius.mac", "MAC", "radius.mac-term",
+        "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL); 
 
     endpointIpField = moloch_field_define("radius", "ip",
-        "radius.endpoint-ip", "Endpoint IP", "radius.eip",
+        "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
         "Radius endpoint ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     framedIpField = moloch_field_define("radius", "ip",
-        "radius.framed-ip", "Framed IP", "radius.fip",
+        "radius.framed-ip", "Framed IP", "radius.framedIp",
         "Radius framed ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
 

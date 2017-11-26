@@ -1416,15 +1416,15 @@ void moloch_packet_init()
     pcapFileHeader.sigfigs = 0;
 
     mac1Field = moloch_field_define("general", "lotermfield",
-        "mac.src", "Src MAC", "mac1-term",
+        "mac.src", "Src MAC", "srcMac",
         "Source ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
-        "mac.dst", "Dst MAC", "mac2-term",
+        "mac.dst", "Dst MAC", "dstMac",
         "Destination ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "lotermfield",
@@ -1437,29 +1437,13 @@ void moloch_packet_init()
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "vlan",
         "vlan value",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     greIpField = moloch_field_define("general", "ip",
-        "gre.ip", "GRE IP", "greip",
+        "gre.ip", "GRE IP", "greIp",
         "GRE ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
-
-    moloch_field_define("general", "lotermfield",
-        "tipv6.src", "IPv6 Src", "tipv61-term",
-        "Temporary IPv6 Source",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        "portField", "p1",
-        "transform", "ipv6ToHex",
-        NULL);
-
-    moloch_field_define("general", "lotermfield",
-        "tipv6.dst", "IPv6 Dst", "tipv62-term",
-        "Temporary IPv6 Destination",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        "portField", "p2",
-        "transform", "ipv6ToHex",
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "integer",
@@ -1505,13 +1489,13 @@ void moloch_packet_init()
         NULL);
 
     icmpTypeField = moloch_field_define("general", "integer",
-        "icmp", "ICMP Type", "icmpType",
+        "icmp", "ICMP Type", "icmp.type",
         "ICMP type field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);
 
     icmpCodeField = moloch_field_define("general", "integer",
-        "icmp", "ICMP Code", "icmpCode",
+        "icmp", "ICMP Code", "icmp.code",
         "ICMP code field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);

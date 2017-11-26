@@ -518,7 +518,7 @@ void moloch_quit()
  */
 gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
 {
-    if (moloch_db_tags_loading() || moloch_http_queue_length(esServer))
+    if (moloch_http_queue_length(esServer))
         return TRUE;
 
     if (config.debug)

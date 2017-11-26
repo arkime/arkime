@@ -151,8 +151,6 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
 #define MOLOCH_FIELD_FLAG_LINKED_SESSIONS    0x0001
-/* Create a XXX-cnt field with unique count */
-#define MOLOCH_FIELD_FLAG_COUNT              0x0002
 /* Force the field to be utf8 */
 #define MOLOCH_FIELD_FLAG_FORCE_UTF8         0x0004
 /* Don't create in fields db table */
@@ -161,14 +159,8 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_FLAG_FAKE               0x0010
 /* Don't create in capture list */
 #define MOLOCH_FIELD_FLAG_DISABLED           0x0020
-
-/* These are ones you shouldn't set, for old cruf before we were smarter */
-/* XXXcnt - dont use */
+/* Added Cnt */
 #define MOLOCH_FIELD_FLAG_CNT                0x1000
-/* XXXscnt - dont use */
-#define MOLOCH_FIELD_FLAG_SCNT               0x2000
-/* prepend ip stuff - dont use*/
-#define MOLOCH_FIELD_FLAG_IPPRE              0x4000
 
 
 typedef struct moloch_field_info {
@@ -296,7 +288,6 @@ typedef struct moloch_config {
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
     MolochFieldInfo_t *fields[MOLOCH_FIELDS_MAX];
     int                maxField;
-    int                tagsField;
     int                tagsStringField;
 
     int                numPlugins;
@@ -370,7 +361,6 @@ typedef struct {
     char     *asn;
     char     *rir;
     int       numtags;
-    int       tags[10];
     char     *tagsStr[10];
 } MolochIpInfo_t;
 
@@ -689,12 +679,10 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
  */
 
 void     moloch_db_init();
-int      moloch_db_tags_loading();
 char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id);
 char    *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
-uint32_t moloch_db_peek_tag(const char *tagname);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
@@ -808,7 +796,6 @@ void     moloch_session_exit();
 void     moloch_session_add_protocol(MolochSession_t *session, const char *protocol);
 gboolean moloch_session_has_protocol(MolochSession_t *session, const char *protocol);
 void     moloch_session_add_tag(MolochSession_t *session, const char *tag);
-void     moloch_session_add_tag_type(MolochSession_t *session, int field, const char *tag);
 gboolean moloch_session_has_tag(MolochSession_t *session, const char *tag);
 
 #define  moloch_session_incr_outstanding(session) (session)->outstandingQueries++

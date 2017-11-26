@@ -105,20 +105,20 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("postgresql", NULL, 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
 
     userField = moloch_field_define("postgresql", "termfield",
-        "postgresql.user", "User", "postgresql.user-term",
+        "postgresql.user", "User", "postgresql.user",
         "Postgresql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
         NULL);
 
     dbField = moloch_field_define("postgresql", "termfield",
-        "postgresql.db", "Database", "postgresql.db-term",
+        "postgresql.db", "Database", "postgresql.db",
         "Postgresql database",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     appField = moloch_field_define("postgresql", "termfield",
-        "postgresql.app", "Application", "postgresql.app-term",
+        "postgresql.app", "Application", "postgresql.app",
         "Postgresql application",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);

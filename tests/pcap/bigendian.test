@@ -1,69 +1,63 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-120502",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-120502"
             }
          },
          "body" : {
-            "a1" : "192.168.177.160",
-            "no" : "test",
-            "mac1-term-cnt" : 1,
-            "by2" : 0,
-            "by1" : 196,
-            "fpd" : 1335958313152,
-            "a2" : "10.64.11.49",
-            "icmpCode" : [
-               8
-            ],
-            "by" : 196,
-            "ipDst" : "10.64.11.49",
-            "db2" : 0,
-            "db" : 0,
+            "icmp" : {
+               "type" : [
+                  0
+               ],
+               "code" : [
+                  8
+               ]
+            },
+            "dstDataBytes" : 0,
+            "srcPort" : 0,
+            "ipSrc" : "192.168.177.160",
             "firstPacket" : 1335958313152,
-            "lastPacket" : 1335958317529,
-            "rir1" : "ARIN",
-            "mac2-term-cnt" : 1,
-            "prot-term-cnt" : 1,
-            "mac2-term" : [
+            "length" : 4376,
+            "dstMac" : [
                "00:00:5e:00:01:b1"
             ],
-            "p2" : 0,
-            "pr" : 1,
-            "icmpType" : [
-               0
+            "dstBytes" : 0,
+            "lastPacket" : 1335958317529,
+            "totDataBytes" : 0,
+            "dstPackets" : 0,
+            "dstMacCnt" : 1,
+            "protocol" : [
+               "icmp"
             ],
-            "ipSrc" : "192.168.177.160",
-            "p1" : 0,
-            "psl" : [
+            "srcMac" : [
+               "00:21:28:05:29:ba"
+            ],
+            "dstPort" : 0,
+            "ipDst" : "10.64.11.49",
+            "ipProtocol" : 1,
+            "segments" : 1,
+            "node" : "test",
+            "fileIds" : [],
+            "packetLenArray" : [
                114,
                114
             ],
-            "prot-term" : [
-               "icmp"
-            ],
-            "portDst" : 0,
-            "db1" : 0,
-            "ps" : [
+            "srcBytes" : 196,
+            "totPackets" : 2,
+            "protocolCnt" : 1,
+            "srcPackets" : 2,
+            "timestamp" : "SET",
+            "totBytes" : 196,
+            "srcDataBytes" : 0,
+            "srcRIR" : "ARIN",
+            "packetPosArray" : [
                24,
                138
             ],
-            "portSrc" : 0,
-            "pa1" : 2,
-            "ss" : 1,
-            "timestamp" : "SET",
-            "fp" : 1335958313,
-            "fs" : [],
-            "lp" : 1335958317,
-            "sl" : 4376,
-            "mac1-term" : [
-               "00:21:28:05:29:ba"
-            ],
-            "lpd" : 1335958317529,
-            "pa2" : 0,
-            "pa" : 2
+            "srcMacCnt" : 1
          }
       }
    ]

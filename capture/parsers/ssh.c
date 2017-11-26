@@ -149,13 +149,13 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
 void moloch_parser_init()
 {
     verField = moloch_field_define("ssh", "lotermfield",
-        "ssh.ver", "Version", "sshver",
+        "ssh.ver", "Version", "ssh.version",
         "SSH Software Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     keyField = moloch_field_define("ssh", "termfield",
-        "ssh.key", "Key", "sshkey",
+        "ssh.key", "Key", "ssh.key",
         "SSH Key",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);

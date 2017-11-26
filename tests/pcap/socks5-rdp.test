@@ -1,37 +1,39 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131210"
-            }
-         },
          "body" : {
-            "fp" : 1386644255,
-            "mac2-term" : [
-               "00:0a:f3:31:94:00"
+            "srcMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
             ],
-            "sockspo" : 3389,
-            "pa2" : 4,
-            "mac2-term-cnt" : 1,
-            "ipDst" : "10.0.0.2",
-            "fpd" : 1386644255859,
+            "userCnt" : 1,
+            "protocolCnt" : 3,
+            "dstDataBytes" : 31,
+            "srcMacCnt" : 2,
+            "node" : "test",
+            "srcDataBytes" : 54,
+            "tagsCnt" : 2,
+            "ipProtocol" : 6,
+            "dstGEO" : "CAN",
+            "timestamp" : "SET",
+            "length" : 1242,
+            "srcBytes" : 405,
+            "srcPayload8" : "050100050100010a",
+            "dstPort" : 42356,
+            "totBytes" : 668,
             "tcpflags" : {
-               "psh" : 6,
-               "rst" : 0,
-               "urg" : 0,
+               "syn-ack" : 1,
                "fin" : 0,
                "ack" : 2,
-               "syn-ack" : 1,
-               "syn" : 1
+               "syn" : 1,
+               "psh" : 6,
+               "rst" : 0,
+               "urg" : 0
             },
-            "pr" : 6,
-            "ss" : 1,
-            "rir2" : "TEST",
-            "lp" : 1386644257,
-            "gsocksip" : "RUS",
-            "psl" : [
+            "fileIds" : [],
+            "dstASN" : "AS0001 Cool Beans!",
+            "ipSrc" : "10.0.0.3",
+            "packetLenArray" : [
                82,
                82,
                76,
@@ -43,30 +45,7 @@
                89,
                76
             ],
-            "pa" : 10,
-            "as1" : "AS0002 Hmm!@#$%^&*()",
-            "no" : "test",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "fb1" : "050100050100010a",
-            "g2" : "CAN",
-            "p1" : 2276,
-            "prot-term-cnt" : 3,
-            "db2" : 31,
-            "assocksip" : "AS0000 This is neat",
-            "db1" : 54,
-            "sl" : 1242,
-            "firstPacket" : 1386644255859,
-            "socksip" : "10.0.0.1",
-            "usercnt" : 1,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "fb2" : "0500050000010000",
-            "ps" : [
+            "packetPosArray" : [
                24,
                106,
                188,
@@ -78,36 +57,47 @@
                687,
                776
             ],
-            "timestamp" : "SET",
-            "user" : [
-               "XXX"
-            ],
-            "a1" : "10.0.0.3",
-            "lpd" : 1386644257101,
-            "portDst" : 42356,
-            "mac1-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "a2" : "10.0.0.2",
-            "p2" : 42356,
-            "prot-term" : [
+            "socks" : {
+               "ASN" : "AS0000 This is neat",
+               "port" : 3389,
+               "GEO" : "RUS",
+               "ip" : 167772161
+            },
+            "dstBytes" : 263,
+            "totDataBytes" : 85,
+            "dstPackets" : 4,
+            "dstPayload8" : "0500050000010000",
+            "dstRIR" : "TEST",
+            "dstMacCnt" : 1,
+            "srcPackets" : 6,
+            "ipDst" : "10.0.0.2",
+            "protocol" : [
                "rdp",
                "socks",
                "tcp"
             ],
-            "by2" : 263,
-            "ipSrc" : "10.0.0.3",
-            "pa1" : 6,
-            "as2" : "AS0001 Cool Beans!",
+            "user" : [
+               "XXX"
+            ],
+            "srcPort" : 2276,
+            "segments" : 1,
+            "srcASN" : "AS0002 Hmm!@#$%^&*()",
             "lastPacket" : 1386644257101,
-            "by1" : 405,
-            "by" : 668,
-            "tacnt" : 2,
-            "mac1-term-cnt" : 2,
-            "db" : 85,
-            "portSrc" : 2276,
-            "fs" : []
+            "totPackets" : 10,
+            "firstPacket" : 1386644255859,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstMac" : [
+               "00:0a:f3:31:94:00"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131210",
+               "_type" : "session"
+            }
          }
       }
    ]

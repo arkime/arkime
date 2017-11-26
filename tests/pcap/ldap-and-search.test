@@ -1,70 +1,38 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-051115"
-            }
-         },
          "body" : {
-            "mac1-term" : [
+            "dstPackets" : 5,
+            "totBytes" : 976,
+            "segments" : 1,
+            "ipProtocol" : 6,
+            "dstPort" : 389,
+            "dstDataBytes" : 28,
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "by1" : 610,
-            "db" : 102,
-            "ss" : 1,
-            "ipSrc" : "127.0.0.1",
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               382,
-               464,
-               560,
-               642,
-               777,
-               873,
-               962,
-               1044,
-               1126
-            ],
-            "lastPacket" : 1132019262678,
-            "p2" : 389,
-            "pa2" : 5,
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "mac1-term-cnt" : 1,
-            "pa" : 13,
-            "a1" : "127.0.0.1",
-            "mac2-term-cnt" : 1,
-            "fp" : 1132019262,
-            "fs" : [],
-            "db1" : 74,
-            "by2" : 366,
+            "totDataBytes" : 102,
             "tcpflags" : {
-               "psh" : 5,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 4,
-               "fin" : 2,
                "syn" : 1,
+               "fin" : 2,
+               "ack" : 4,
+               "syn-ack" : 1,
+               "psh" : 5,
+               "rst" : 0,
                "urg" : 0
             },
-            "no" : "test",
-            "pr" : 6,
-            "sl" : 0,
-            "fb2" : "300c02010161070a",
-            "p1" : 40848,
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "lastPacket" : 1132019262678,
             "firstPacket" : 1132019262677,
-            "by" : 976,
+            "srcPayload8" : "300c020101600702",
+            "srcDataBytes" : 74,
+            "dstBytes" : 366,
+            "ipDst" : "127.0.0.1",
             "timestamp" : "SET",
-            "fpd" : 1132019262677,
-            "fb1" : "300c020101600702",
-            "psl" : [
+            "dstPayload8" : "300c02010161070a",
+            "packetLenArray" : [
                90,
                90,
                82,
@@ -79,27 +47,51 @@
                82,
                82
             ],
-            "lp" : 1132019262,
-            "lpd" : 1132019262678,
-            "ipDst" : "127.0.0.1",
-            "mac2-term" : [
-               "00:00:00:00:00:00"
-            ],
-            "a2" : "127.0.0.1",
-            "portDst" : 389,
-            "pa1" : 8,
-            "portSrc" : 40848,
-            "db2" : 28,
-            "prot-term-cnt" : 2,
+            "length" : 0,
+            "fileIds" : [],
+            "srcBytes" : 610,
+            "srcPackets" : 8,
+            "ipSrc" : "127.0.0.1",
+            "protocolCnt" : 2,
             "ldap" : {
-               "authtype-term-cnt" : 1,
-               "bindname-term-cnt" : 1,
-               "bindname-term" : [
+               "authtypeCnt" : 1,
+               "authtype" : [
+                  "none"
+               ],
+               "bindname" : [
                   "<ROOT>"
                ],
-               "authtype-term" : [
-                  "none"
-               ]
+               "bindnameCnt" : 1
+            },
+            "packetPosArray" : [
+               24,
+               114,
+               204,
+               286,
+               382,
+               464,
+               560,
+               642,
+               777,
+               873,
+               962,
+               1044,
+               1126
+            ],
+            "dstMacCnt" : 1,
+            "protocol" : [
+               "ldap",
+               "tcp"
+            ],
+            "srcMacCnt" : 1,
+            "totPackets" : 13,
+            "node" : "test",
+            "srcPort" : 40848
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-051115",
+               "_type" : "session"
             }
          }
       }

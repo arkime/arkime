@@ -1,73 +1,14 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131126",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "mac1-term-cnt" : 1,
-            "by" : 1492,
-            "lpd" : 1385474639455,
-            "ipSrc" : "10.0.0.2",
-            "no" : "test",
-            "db2" : 280,
-            "pa2" : 10,
-            "ta" : [
-               "dstip",
-               "smtp:authlogin",
-               "srcip"
-            ],
-            "portDst" : 1080,
-            "mac2-term-cnt" : 2,
-            "ipDst" : "10.0.0.1",
-            "pr" : 6,
-            "rir1" : "TEST",
-            "by1" : 638,
-            "psl" : [
-               82,
-               82,
-               76,
-               76,
-               76,
-               76,
-               76,
-               76,
-               91,
-               76,
-               80,
-               76,
-               146,
-               81,
-               76,
-               219,
-               82,
-               76,
-               113,
-               76
-            ],
-            "a1" : "10.0.0.2",
-            "sl" : 12781,
-            "as2" : "AS0000 This is neat",
-            "fs" : [],
-            "p1" : 53709,
-            "a2" : "10.0.0.1",
-            "prot-term" : [
-               "socks",
-               "smtp",
-               "tcp"
-            ],
-            "db1" : 47,
-            "socksho" : "010.000.00.003",
-            "g2" : "RUS",
-            "firstPacket" : 1385474626674,
-            "tcpflags" : {
-               "psh" : 10,
-               "urg" : 0,
-               "fin" : 0,
-               "ack" : 6,
-               "syn-ack" : 1,
-               "rst" : 1,
-               "syn" : 2
-            },
-            "fb2" : "0500050000010a00",
-            "ps" : [
+            "packetPosArray" : [
                24,
                106,
                188,
@@ -89,42 +30,90 @@
                1647,
                1760
             ],
-            "pa1" : 10,
-            "fb1" : "050100050100030e",
-            "p2" : 1080,
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
+            "lastPacket" : 1385474639455,
+            "srcRIR" : "TEST",
+            "timestamp" : "SET",
+            "dstPayload8" : "0500050000010a00",
+            "srcPort" : 53709,
+            "firstPacket" : 1385474626674,
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
             ],
-            "tags-term" : [
+            "protocolCnt" : 3,
+            "tags" : [
                "smtp:authlogin",
                "srcip",
                "dstip"
             ],
-            "portSrc" : 53709,
-            "g1" : "CAN",
-            "ss" : 1,
-            "timestamp" : "SET",
-            "fp" : 1385474626,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
+            "tcpflags" : {
+               "rst" : 1,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "syn" : 2,
+               "ack" : 6,
+               "fin" : 0,
+               "psh" : 10
+            },
+            "node" : "test",
+            "srcBytes" : 638,
+            "tagsCnt" : 3,
+            "dstASN" : "AS0000 This is neat",
+            "packetLenArray" : [
+               82,
+               82,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               91,
+               76,
+               80,
+               76,
+               146,
+               81,
+               76,
+               219,
+               82,
+               76,
+               113,
+               76
             ],
-            "sockspo" : 25,
-            "fpd" : 1385474626674,
-            "tacnt" : 3,
-            "by2" : 854,
-            "pa" : 20,
-            "prot-term-cnt" : 3,
-            "db" : 327,
-            "as1" : "AS0001 Cool Beans!",
-            "lastPacket" : 1385474639455,
-            "lp" : 1385474639
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131126",
-               "_type" : "session"
-            }
+            "srcPayload8" : "050100050100030e",
+            "dstGEO" : "RUS",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "dstBytes" : 854,
+            "srcDataBytes" : 47,
+            "fileIds" : [],
+            "dstDataBytes" : 280,
+            "segments" : 1,
+            "ipDst" : "10.0.0.1",
+            "srcMacCnt" : 1,
+            "ipProtocol" : 6,
+            "srcGEO" : "CAN",
+            "ipSrc" : "10.0.0.2",
+            "length" : 12781,
+            "dstMacCnt" : 2,
+            "socks" : {
+               "host" : "010.000.00.003",
+               "port" : 25
+            },
+            "srcPackets" : 10,
+            "srcASN" : "AS0001 Cool Beans!",
+            "totPackets" : 20,
+            "totDataBytes" : 327,
+            "dstPort" : 1080,
+            "protocol" : [
+               "socks",
+               "smtp",
+               "tcp"
+            ],
+            "totBytes" : 1492,
+            "dstPackets" : 10
          }
       }
    ]

@@ -10,8 +10,8 @@
 
   const defaultSpiviewConfig = { fields: ['a2','prot-term','a1'] };
   const defaultColConfig = {
-    order   : [['fp', 'asc']],
-    columns : ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
+    order   : [['firstPacket', 'asc']],
+    columns : ['firstPacket','lastPacket','src','srcPort','dst','dstPort','totPackets','dbby','node','info']
   };
 
   /**
@@ -153,7 +153,7 @@
                }
              })
              .catch(() => {
-               this.setupColumns(['fp','lp','src','p1','dst','p2','pa','dbby','no','info']);
+               this.setupColumns(['firstPacket','lastPacket','src','srcPort','dst','dstPort','totPackets','dbby','node','info']);
              });
         });
     }

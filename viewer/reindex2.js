@@ -75,8 +75,8 @@ var fieldsMap = {
   "user":             "user",
   "usercnt":          "userCnt",
   "sl":               "length",
-  "tags-term":        "tag",
-  "tacnt":            "tagCnt",
+  "tags-term":        "tags",
+  "tacnt":            "tagsCnt",
   "asset-term":       "asset",
   "asset-term-cnt":   "assetCnt",
   "prot-term":        "protocol",
@@ -114,7 +114,7 @@ var fieldsMap = {
 
   "by":               "totBytes",
   "db":               "totDataBytes",
-  "pa":               "totDataBytes",
+  "pa":               "totPackets",
   "pr":               "ipProtocol",
 
   "scrubby":          "scrubBy",
@@ -184,8 +184,8 @@ var fieldsMap = {
 //QUIC
   "quic.host-term":         "quic.host",
   "quic.host-termcnt":      "quic.hostCnt",
-  "quic.ua-term":           "quic.userAgent",
-  "quic.ua-termcnt":        "quic.userAgentCnt",
+  "quic.ua-term":           "quic.useragent",
+  "quic.ua-termcnt":        "quic.useragentCnt",
   "quic.version-term":      "quic.version",
   "quic.version-termcnt":   "quic.versionCnt",
 
@@ -465,15 +465,15 @@ function remap (result, item, prefix) {
     } else if (typeof (value) === "object" && !Array.isArray(value)) {
       remap(result, value, fullkey + ".");
     } else if (fullkey.startsWith("hdrs.hres-")) {
-      var path = ["http", "response", fullkey.substring(10).replace(/cnt$/, "Cnt")];
+      var path = ["http", "response-" + fullkey.substring(10).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
     } else if (fullkey.startsWith("hdrs.hreq-")) {
-      var path = ["http", "request", fullkey.substring(10).replace(/cnt$/, "Cnt")];
+      var path = ["http", "request-" + fullkey.substring(10).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
     } else if (fullkey.startsWith("hdrs.ehead-")) {
-      var path = ["email", "header", fullkey.substring(11).replace(/cnt$/, "Cnt")];
+      var path = ["email", "header-" + fullkey.substring(11).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
     } else {
@@ -592,20 +592,20 @@ function checkFields(fields) {
     }
 
     if (dbField.match(/hdrs.hres-/)) {
-      fieldsMap[dbField] = "http.response." + dbField.substring(10).replace(/cnt$/, "Cnt");
+      fieldsMap[dbField] = "http.response-" + dbField.substring(10).replace(/cnt$/, "Cnt");
     } else if (dbField.match(/hdrs.hreq-/)) {
-      fieldsMap[dbField] = "http.request." + dbField.substring(10).replace(/cnt$/, "Cnt");
+      fieldsMap[dbField] = "http.request-" + dbField.substring(10).replace(/cnt$/, "Cnt");
     } else if (dbField.match(/hdrs.ehead-/)) {
-      fieldsMap[dbField] = "email.header." + dbField.substring(11).replace(/cnt$/, "Cnt");
+      fieldsMap[dbField] = "email.header-" + dbField.substring(11).replace(/cnt$/, "Cnt");
     }
 
     if (internals.sliceNum === 0) {
       if (fieldsMap[dbField] === "ignore") {
       } else if (field._source.dbField2 === undefined) {
-          let document = { doc: { dbField2: fieldsMap[dbField]} };
-          Db.update("fields", "field", field._id, document, {refresh: 1}, function (err, msg) {console.log(err,msg)});
+        Db.update("fields", "field", field._id, {doc: {dbField2: fieldsMap[dbField]}});
       } else if (field._source.dbField2 !== fieldsMap[dbField]) {
         console.log("WARNING - dbfield2", field._source.dbField2, "doesn't match", fieldsMap[dbField]);
+        Db.update("fields", "field", field._id, {doc: {dbField2: fieldsMap[dbField]}});
       }
     }
 
@@ -615,6 +615,25 @@ function checkFields(fields) {
       console.log("Unknown field",dbField);
       error++;
     }
+  }
+
+  if (internals.sliceNum === 0) {
+    Db.update("fields", "field", "ip.dst", {doc: {dbField2: "dstIp", portField2: "dstPort"}});
+    Db.update("fields", "field", "ip.src", {doc: {dbField2: "srcIp", portField2: "srcPort"}});
+    Db.update("fields", "field", "ip.socks", {doc: {portField2: "socks.port"}});
+    Db.update("fields", "field", "id", {doc: {dbField2: "_id"}});
+    Db.update("fields", "field", "tags", {doc: {dbField2: "tags"}});
+    Db.update("fields", "field", "file", {doc: {dbField2: "fileand"}});
+    Db.update("fields", "field", "view", {doc: {dbField2: "viewand"}});
+
+    /*
+    Db.update("fields", "field", "port", {doc: {regex2: "(Port|\\.port)$"}});
+    Db.update("fields", "field", "rir", {doc: {regex2: "(RIR)$"}});
+    Db.update("fields", "field", "asn", {doc: {regex2: "(ASN)$"}});
+    Db.update("fields", "field", "country", {doc: {regex2: "(GEO)$"}});
+    Db.update("fields", "field", "host", {doc: {regex2: "\\.host$"}});
+    Db.update("fields", "field", "payload8.hex", {doc: {regex2: "Payload8$"}});
+    */
   }
 
   for (const field in fieldsMap) {

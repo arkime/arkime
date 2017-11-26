@@ -329,7 +329,6 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
-    char                   header[200];
     MolochString_t        *hstring = 0;
 
 #ifdef HTTPDEBUG
@@ -349,12 +348,11 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
         http->pos[http->which] = (long)(hstring?hstring->uw:0);
 
-        snprintf(header, sizeof(header), "http:header:%s", lower);
-        g_free(lower);
         if (http->which == http->urlWhich)
-            moloch_session_add_tag_type(session, tagsReqField, header);
+            moloch_field_string_add(tagsReqField, session, lower, -1, TRUE);
         else
-            moloch_session_add_tag_type(session, tagsResField, header);
+            moloch_field_string_add(tagsResField, session, lower, -1, TRUE);
+        g_free(lower);
     }
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
@@ -695,45 +693,43 @@ static const char *method_strings[] =
     };
 
     hostField = moloch_field_define("http", "lotermfield",
-        "host.http", "Hostname", "ho",
+        "host.http", "Hostname", "http.host",
         "HTTP host header field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"http.host\"]",
         "category", "host",
         NULL);
 
-    urlsField = moloch_field_define("http", "textfield",
-        "http.uri", "URI", "us",
+    urlsField = moloch_field_define("http", "termfield",
+        "http.uri", "URI", "http.uri",
         "URIs for request",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        "rawField", "rawus",
         "category", "[\"url\",\"host\"]",
         NULL);
 
     xffField = moloch_field_define("http", "ip",
-        "ip.xff", "XFF IP", "xff",
+        "ip.xff", "XFF IP", "http.xffIp",
         "X-Forwarded-For Header",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_SCNT | MOLOCH_FIELD_FLAG_IPPRE,
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT,
         "category", "ip",
         NULL);
 
-    uaField = moloch_field_define("http", "textfield",
-        "http.user-agent", "Useragent", "ua",
+    uaField = moloch_field_define("http", "termfield",
+        "http.user-agent", "Useragent", "http.useragent",
         "User-Agent Header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "rawField", "rawua",
         NULL);
 
     tagsReqField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.src", "Has Src Header", "hh1",
+        "http.hasheader.src", "Has Src Header", "http.requestHeader",
         "Request has header present",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     tagsResField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.dst", "Has Dst Header", "hh2",
+        "http.hasheader.dst", "Has Dst Header", "http.responseHeader",
         "Response has header present",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     moloch_field_define("http", "lotermfield",
@@ -744,7 +740,7 @@ static const char *method_strings[] =
         NULL);
 
     md5Field = moloch_field_define("http", "lotermfield",
-        "http.md5", "Body MD5", "hmd5",
+        "http.md5", "Body MD5", "http.md5",
         "MD5 of http body response",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "md5",
@@ -758,68 +754,68 @@ static const char *method_strings[] =
         NULL);
 
     verReqField = moloch_field_define("http", "termfield",
-        "http.version.src", "Src Version", "hsver",
+        "http.version.src", "Src Version", "http.clientVersion",
         "Request HTTP version number",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     verResField = moloch_field_define("http", "termfield",
-        "http.version.dst", "Dst Version", "hdver",
+        "http.version.dst", "Dst Version", "http.serverVersion",
         "Response HTTP version number",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     pathField = moloch_field_define("http", "termfield",
-        "http.uri.path", "URI Path", "hpath",
+        "http.uri.path", "URI Path", "http.path",
         "Path portion of URI",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     keyField = moloch_field_define("http", "termfield",
-        "http.uri.key", "QS Keys", "hkey",
+        "http.uri.key", "QS Keys", "http.key",
         "Keys from query string of URI",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     valueField = moloch_field_define("http", "termfield",
-        "http.uri.value", "QS Values", "hval",
+        "http.uri.value", "QS Values", "http.value",
         "Values from query string of URI",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     cookieKeyField = moloch_field_define("http", "termfield",
-        "http.cookie.key", "Cookie Keys", "hckey-term",
+        "http.cookie.key", "Cookie Keys", "http.cookieKey",
         "The keys to cookies sent up in requests",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     cookieValueField = moloch_field_define("http", "termfield",
-        "http.cookie.value", "Cookie Values", "hcval-term",
+        "http.cookie.value", "Cookie Values", "http.cookieValue",
         "The values to cookies sent up in requests",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     methodField = moloch_field_define("http", "termfield",
-        "http.method", "Request Method", "http.method-term",
+        "http.method", "Request Method", "http.method",
         "HTTP Request Method",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     magicField = moloch_field_define("http", "termfield",
-        "http.bodymagic", "Body Magic", "http.bodymagic-term",
+        "http.bodymagic", "Body Magic", "http.bodyMagic",
         "The content type of body determined by libfile/magic",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     userField = moloch_field_define("http", "termfield",
-        "http.user", "User", "huser-term",
+        "http.user", "User", "http.user",
         "HTTP Auth User",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
         NULL);
 
     atField = moloch_field_define("http", "lotermfield",
-        "http.authtype", "Auth Type", "hat-term",
+        "http.authtype", "Auth Type", "http.authType",
         "HTTP Auth Type",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
@@ -827,11 +823,11 @@ static const char *method_strings[] =
     statuscodeField = moloch_field_define("http", "integer",
         "http.statuscode", "Status Code", "http.statuscode",
         "Response HTTP numeric status code",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     reqBodyField = moloch_field_define("http", "termfield",
-        "http.reqbody", "Request Body", "rqbd-term",
+        "http.reqbody", "Request Body", "http.requestBody",
         "HTTP Request Body",
         MOLOCH_FIELD_TYPE_STR_HASH, 0,
         NULL);
@@ -842,8 +838,8 @@ static const char *method_strings[] =
     moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
     moloch_config_add_header(&httpReqHeaders, "user-agent", uaField);
     moloch_config_add_header(&httpReqHeaders, "host", hostField);
-    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "hdrs.hreq-", &httpReqHeaders, 0);
-    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "hdrs.hres-", &httpResHeaders, 0);
+    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request-", &httpReqHeaders, 0);
+    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {

@@ -8,14 +8,14 @@
     "help": "Information",
     "unsortable": true,
     "children": [
-      "us",
-      "esrc",
-      "edst",
-      "esub",
-      "efn",
-      "dnsho",
-      "tls.alt",
-      "ircch"
+      "http.uri",
+      "email.src",
+      "email.dst",
+      "email.subject",
+      "email.filename",
+      "dns.host",
+      "cert.alt",
+      "irc.channel"
     ]
   },
   "src": {

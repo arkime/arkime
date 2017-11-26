@@ -442,8 +442,8 @@
           scope.openPermalink = function() {
             $location.path('sessions')
               .search('expression', `id=${scope.session.id}`)
-              .search('startTime', scope.session.fp)
-              .search('stopTime', scope.session.lp)
+              .search('startTime', scope.session.firstPacket)
+              .search('stopTime', scope.session.lastPacket)
               .search('openAll', 1);
           };
 

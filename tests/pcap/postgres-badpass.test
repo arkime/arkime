@@ -1,101 +1,25 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-140505",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-140505"
             }
          },
          "body" : {
-            "ss" : 1,
-            "mac2-term-cnt" : 1,
-            "tcpflags" : {
-               "syn" : 1,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 5,
-               "psh" : 4,
-               "fin" : 2
-            },
-            "no" : "test",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "lp" : 1399312748,
-            "test" : {
-               "string" : [
-                  "16777226:53499,33554442:5432"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "a2" : "10.0.0.2",
-            "firstPacket" : 1399312748531,
-            "fb2" : "4e520000000c0000",
-            "prot-term" : [
+            "segments" : 1,
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 352,
+            "totDataBytes" : 96,
+            "timestamp" : "SET",
+            "dstPayload8" : "4e520000000c0000",
+            "protocol" : [
                "tcp",
                "postgresql"
             ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "a1" : "10.0.0.1",
-            "db1" : 82,
-            "mac1-term-cnt" : 2,
-            "ipSrc" : "10.0.0.1",
-            "mac1-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "by" : 974,
-            "pa2" : 5,
-            "ipDst" : "10.0.0.2",
-            "portSrc" : 53499,
-            "g2" : "CAN",
-            "as1" : "AS0000 This is neat",
-            "portDst" : 5432,
-            "postgresql" : {
-               "app-term" : "psql",
-               "db-term" : "bar",
-               "user-term" : "foo"
-            },
-            "as2" : "AS0001 Cool Beans!",
-            "p2" : 5432,
-            "fs" : [],
-            "tacnt" : 2,
-            "g1" : "RUS",
-            "pa" : 13,
-            "p1" : 53499,
-            "fp" : 1399312748,
-            "prot-term-cnt" : 2,
-            "sl" : 18,
-            "db" : 96,
-            "fb1" : "0000000804d2162f",
-            "pr" : 6,
-            "lpd" : 1399312748549,
-            "by2" : 352,
-            "fpd" : 1399312748531,
-            "psl" : [
+            "ipProtocol" : 6,
+            "packetLenArray" : [
                94,
                90,
                82,
@@ -110,11 +34,29 @@
                82,
                82
             ],
-            "timestamp" : "SET",
-            "rir2" : "TEST",
-            "pa1" : 8,
-            "by1" : 622,
-            "ps" : [
+            "srcMacCnt" : 2,
+            "dstGEO" : "CAN",
+            "srcPackets" : 8,
+            "dstMacCnt" : 1,
+            "tagsCnt" : 2,
+            "srcPayload8" : "0000000804d2162f",
+            "srcBytes" : 622,
+            "lastPacket" : 1399312748549,
+            "ipSrc" : "10.0.0.1",
+            "postgresql" : {
+               "user" : "foo",
+               "app" : "psql",
+               "db" : "bar"
+            },
+            "srcPort" : 53499,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstRIR" : "TEST",
+            "srcDataBytes" : 82,
+            "dstDataBytes" : 14,
+            "packetPosArray" : [
                24,
                118,
                208,
@@ -129,8 +71,54 @@
                1042,
                1124
             ],
-            "lastPacket" : 1399312748549,
-            "db2" : 14
+            "tcpflags" : {
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 5,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "psh" : 4,
+               "urg" : 0
+            },
+            "dstPackets" : 5,
+            "length" : 18,
+            "dstPort" : 5432,
+            "node" : "test",
+            "fileIds" : [],
+            "totPackets" : 13,
+            "srcGEO" : "RUS",
+            "protocolCnt" : 2,
+            "test" : {
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string.snow" : [
+                  "16777226:53499,33554442:5432"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "firstPacket" : 1399312748531,
+            "srcASN" : "AS0000 This is neat",
+            "srcMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "totBytes" : 974,
+            "ipDst" : "10.0.0.2",
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ]
          }
       }
    ]

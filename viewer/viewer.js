@@ -1659,10 +1659,10 @@ function addSortToQuery(query, info, d, missing) {
       var field = parts[0];
 
       var obj = {};
-      if (field === "fp") {
-        obj.fpd = {order: parts[1]};
-      } else if (field === "lp") {
-        obj.lpd = {order: parts[1]};
+      if (field === "firstPacket") {
+        obj.firstPacket = {order: parts[1]};
+      } else if (field === "lastPacket") {
+        obj.lastPacket = {order: parts[1]};
       } else {
         obj[field] = {order: parts[1]};
       }
@@ -1698,10 +1698,10 @@ function addSortToQuery(query, info, d, missing) {
     }
     query.sort.push(obj);
 
-    if (field === "fp") {
-      query.sort.push({fpd: {order: info["sSortDir_" + i]}});
-    } else if (field === "lp") {
-      query.sort.push({lpd: {order: info["sSortDir_" + i]}});
+    if (field === "firstPacket") {
+      query.sort.push({firstPacket: {order: info["sSortDir_" + i]}});
+    } else if (field === "lastPacket") {
+      query.sort.push({lastPacket: {order: info["sSortDir_" + i]}});
     }
   }
 }
@@ -1796,10 +1796,10 @@ function lookupQueryItems(query, doneCb) {
         } else if (files.length > 1) {
           obj.bool = {should: []};
           files.forEach(function(file) {
-            obj.bool.should.push({bool: {must: [{term: {no: file.node}}, {term: {fs: file.num}}]}});
+            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fs: file.num}}]}});
           });
         } else {
-          obj.bool = {must: [{term: {no: files[0].node}}, {term: {fs: files[0].num}}]};
+          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fs: files[0].num}}]};
         }
         if (finished && outstanding === 0) {
           doneCb(err);
@@ -1857,19 +1857,19 @@ function buildSessionQuery(req, buildCb) {
 
     switch (req.query.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
       break;
     default:
     case "last":
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
       break;
     case "both":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
-      query.query.bool.filter.push({range: {lp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {lte: req.query.stopTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "database":
       query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
@@ -1893,16 +1893,16 @@ function buildSessionQuery(req, buildCb) {
 
     switch (req.query.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
       break;
     default:
     case "both":
     case "last":
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "database":
       query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000}}});
@@ -1935,24 +1935,24 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}};
-    query.aggregations.dbHisto = {aggregations: {db1: {sum: {field:"db1"}}, db2: {sum: {field:"db2"}}, pa1: {sum: {field:"pa1"}}, pa2: {sum: {field:"pa2"}}}};
+    query.aggregations = {mapG1: {terms: {field: "srcGEO", size:1000, min_doc_count:1}},
+                          mapG2: {terms: {field: "dstGEO", size:1000, min_doc_count:1}}};
+    query.aggregations.dbHisto = {aggregations: {srcDataBytes: {sum: {field:"srcDataBytes"}}, dstDataBytes: {sum: {field:"dstDataBytes"}}, srcPackets: {sum: {field:"srcPackets"}}, dstPackets: {sum: {field:"dstPackets"}}}};
 
     switch (req.query.bounding) {
     case "first":
-       query.aggregations.dbHisto.histogram = { field:'fp', interval:interval, min_doc_count:1 };
+       query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval, min_doc_count:1 };
       break;
     case "database":
       query.aggregations.dbHisto.histogram = { field:'timestamp', interval:interval*1000, min_doc_count:1 };
       break;
     default:
-      query.aggregations.dbHisto.histogram = { field:'lp', interval:interval, min_doc_count:1 };
+      query.aggregations.dbHisto.histogram = { field:'lastPacket', interval:interval, min_doc_count:1 };
       break;
     }
   }
 
-  addSortToQuery(query, req.query, "fp");
+  addSortToQuery(query, req.query, "firstPacket");
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
@@ -1991,7 +1991,7 @@ function buildSessionQuery(req, buildCb) {
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
-      return buildCb(err || lerr, query, "sessions-*");
+      return buildCb(err || lerr, query, "sessions2-*");
     }
 
     Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
@@ -2028,7 +2028,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     }
     processedRo[fields.ro] = true;
 
-    query.query.bool.filter.push({term: {ro: fields.ro}});
+    query.query.bool.filter.push({term: {rootId: fields.rootId}});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
         console.log("ERROR fetching matching sessions", err, result);
@@ -2050,8 +2050,8 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
 }
 
 function sessionsListFromQuery(req, res, fields, cb) {
-  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("ro") === -1) {
-    fields.push("ro");
+  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
+    fields.push("rootId");
   }
 
   buildSessionQuery(req, function(err, query, indices) {
@@ -2078,12 +2078,12 @@ function sessionsListFromQuery(req, res, fields, cb) {
 
 function sessionsListFromIds(req, ids, fields, cb) {
   var list = [];
-  var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro", "tipv61-term", "tipv62-term"];
+  var nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   // ES treats _source=no as turning off _source, very sad :(
-  if (fields.length === 1 && fields[0] === "no") {
-    fields.push("lp");
+  if (fields.length === 1 && fields[0] === "node") {
+    fields.push("lastPacket");
   }
 
   async.eachLimit(ids, 10, function(id, nextCb) {
@@ -2750,10 +2750,10 @@ function mapMerge(aggregations) {
 function graphMerge(req, query, aggregations) {
   var graph = {
     lpHisto: [],
-    db1Histo: [],
-    db2Histo: [],
-    pa1Histo: [],
-    pa2Histo: [],
+    srcDataBytesHisto: [],
+    dstDataBytesHisto: [],
+    srcPacketsHisto: [],
+    dstPacketsHisto: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
@@ -2768,19 +2768,19 @@ function graphMerge(req, query, aggregations) {
     aggregations.dbHisto.buckets.forEach(function (item) {
       var key = item.key;
       graph.lpHisto.push([key, item.doc_count]);
-      graph.pa1Histo.push([key, item.pa1.value]);
-      graph.pa2Histo.push([key, item.pa2.value]);
-      graph.db1Histo.push([key, item.db1.value]);
-      graph.db2Histo.push([key, item.db2.value]);
+      graph.srcPacketsHisto.push([key, item.srcPackets.value]);
+      graph.dstPacketsHisto.push([key, item.dstPackets.value]);
+      graph.srcDataBytesHisto.push([key, item.srcDataBytes.value]);
+      graph.dstDataBytesHisto.push([key, item.dstDataBytes.value]);
     });
   } else {
     aggregations.dbHisto.buckets.forEach(function (item) {
       var key = item.key*1000;
       graph.lpHisto.push([key, item.doc_count]);
-      graph.pa1Histo.push([key, item.pa1.value]);
-      graph.pa2Histo.push([key, item.pa2.value]);
-      graph.db1Histo.push([key, item.db1.value]);
-      graph.db2Histo.push([key, item.db2.value]);
+      graph.srcPacketsHisto.push([key, item.srcPackets.value]);
+      graph.dstPacketsHisto.push([key, item.dstPackets.value]);
+      graph.srcDataBytesHisto.push([key, item.srcDataBytes.value]);
+      graph.dstDataBytesHisto.push([key, item.dstDataBytes.value]);
     });
   }
   return graph;
@@ -2935,14 +2935,14 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
     var addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
-      ["no", "a1", "p1", "a2", "p2"].forEach(function(item) {
+      ["node", "srcIp", "srcPort", "dstIp", "dstPort"].forEach(function(item) {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
         }
       });
     } else {
       addMissing = true;
-      query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
+      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel"];
     }
 
     if (query.aggregations && query.aggregations.dbHisto) {
@@ -2980,7 +2980,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
             }
 
             if (addMissing) {
-              ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
+              ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
                 if (fields[item] === undefined) {
                   fields[item] = -1;
                 }
@@ -2999,7 +2999,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
         });
       },
       total: function (totalCb) {
-        Db.numberOfDocuments('sessions-*', totalCb);
+        Db.numberOfDocuments('sessions2-*', totalCb);
       },
       health: Db.healthCache
     },
@@ -3032,7 +3032,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     query.size = 0;
     var size = +req.query.size || 20;
 
-    var field = req.query.field || "no";
+    var field = req.query.field || "node";
     query.aggregations.field = {terms: {field: field, size: size}};
 
     /* Need the setImmediate so we don't blow max stack frames */
@@ -3066,7 +3066,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     }
 
     Db.healthCache(function(err, health) {results.health = health;});
-    Db.numberOfDocuments('sessions-*', function (err, total) {results.recordsTotal = total;});
+    Db.numberOfDocuments('sessions2-*', function (err, total) {results.recordsTotal = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
         console.log("spigraph.json error", err, (result?result.error:null));
@@ -3104,11 +3104,11 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
 
           r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
-            r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
+            r.graph.xmin = results.graph.xmin || results.graph.srcPacketsHisto[0][0];
           }
 
           if (r.graph.xmax === null) {
-            r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length-1][0];
+            r.graph.xmax = results.graph.xmax || results.graph.srcPacketsHisto[results.graph.srcPacketsHisto.length-1][0];
           }
 
           r.map = mapMerge(result.responses[i].aggregations);
@@ -3120,8 +3120,8 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
             var graph = r.graph;
             for (let i = 0; i < graph.lpHisto.length; i++) {
               r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-              r.paHisto += graph.pa2Histo[i][1] + graph.pa2Histo[i][1];
+              r.dbHisto += graph.srcDataBytesHisto[i][1] + graph.dstDataBytesHisto[i][1];
+              r.paHisto += graph.srcPacketsHisto[i][1] + graph.dstPacketsHisto[i][1];
             }
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || "lpHisto";
@@ -3173,7 +3173,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
-        query.aggregations[parts[0]] = {terms: {field: "no", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
+        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
       } else {
         query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 
@@ -3245,7 +3245,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
         });
       },
       total: function (totalCb) {
-        Db.numberOfDocuments('sessions-*', totalCb);
+        Db.numberOfDocuments('sessions2-*', totalCb);
       },
       health: Db.healthCache
     },
@@ -3326,11 +3326,11 @@ app.get('/dns.json', logAction(), function(req, res) {
 function buildConnections(req, res, cb) {
   if (req.query.dstField === "ip.dst:port") {
     var dstipport = true;
-    req.query.dstField = "a2";
+    req.query.dstField = "dstIp";
   }
 
-  req.query.srcField       = req.query.srcField || "a1";
-  req.query.dstField       = req.query.dstField || "a2";
+  req.query.srcField       = req.query.srcField || "srcIp";
+  req.query.dstField       = req.query.dstField || "dstIp";
   var fsrc                 = req.query.srcField.replace(".snow", "");
   var fdst                 = req.query.dstField.replace(".snow", "");
   var minConn              = req.query.minConn  || 1;
@@ -3364,7 +3364,7 @@ function buildConnections(req, res, cb) {
 
     var n = "" + vsrc + "->" + vdst;
     if (connects[n] === undefined) {
-      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, no: {}};
+      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, node: {}};
       nodesHash[vsrc].cnt++;
       nodesHash[vdst].cnt++;
     }
@@ -3373,7 +3373,7 @@ function buildConnections(req, res, cb) {
     connects[n].by += f.by;
     connects[n].db += f.db;
     connects[n].pa += f.pa;
-    connects[n].no[f.no] = 1;
+    connects[n].node[f.node] = 1;
     return setImmediate(cb);
   }
 
@@ -3410,14 +3410,14 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.srcField}});
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
-    query._source = ["by", "db", "pa", "no"];
+    query._source = ["totBytes", "totDataBytes", "totPackets", "node"];
     if (Db.isES5) {
       query.docvalue_fields = [fsrc, fdst];
     } else {
       query.fields = [fsrc, fdst];
     }
     if (dstipport) {
-      query._source.push("p2");
+      query._source.push("dstPort");
     }
 
     console.log("buildConnections query", JSON.stringify(query));
@@ -3533,9 +3533,9 @@ app.get('/connections.csv', logAction(), function(req, res) {
 
 function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   if (list.length > 0 && list[0].fields) {
-    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+    list = list.sort(function(a,b){return a.fields.lastPacket - b.fields.lastPacket;});
   } else if (list.length > 0 && list[0]._source) {
-    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+    list = list.sort(function(a,b){return a._source.lastPacket - b._source.lastPacket;});
   }
 
   var fieldObjects  = Config.getDBFieldsMap();
@@ -3595,9 +3595,9 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
 app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   noCache(req, res, "text/csv");
   // default fields to display in csv
-  var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
+  var fields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node"];
   // save requested fields because sessionsListFromQuery returns fields with
-  // "ro" appended onto the end
+  // "rootId" appended onto the end
   var reqFields = fields;
 
   if (req.query.fields) {
@@ -3807,9 +3807,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
       });
     } else {
       if (req.query.field === "ip.src:p1" || req.query.field === "a1:p1") {
-        query.aggregations = {field: { terms : {field : "a1", size: aggSize}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
+        query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
       } else if (req.query.field === "ip.dst:p2" || req.query.field === "a2:p2") {
-        query.aggregations = {field: { terms : {field : "a2", size: aggSize}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
+        query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
       } else  {
         query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
       }
@@ -3840,7 +3840,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.ps.length);
+        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPosArray.length);
         console.log("ERROR - processSessionIdDisk -", msg);
         endCb(msg, null);
         break;
@@ -3858,19 +3858,19 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 
   var fileNum;
   var itemPos = 0;
-  async.eachLimit(fields.ps, limit || 1, function(pos, nextCb) {
+  async.eachLimit(fields.packetPosArray, limit || 1, function(pos, nextCb) {
     if (pos < 0) {
       fileNum = pos * -1;
       return nextCb(null);
     }
 
     // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-    var opcap = Pcap.get(fields.no + ":" + fileNum);
+    var opcap = Pcap.get(fields.node + ":" + fileNum);
     if (!opcap.isOpen()) {
-      Db.fileIdToFile(fields.no, fileNum, function(file) {
+      Db.fileIdToFile(fields.node, fileNum, function(file) {
         if (!file) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
-          return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+          return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
         }
         if (file.kekId) {
           file.kek = Config.sectionGet("keks", file.kekId, undefined);
@@ -3880,7 +3880,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
           }
         }
 
-        var ipcap = Pcap.get(fields.no + ":" + file.num);
+        var ipcap = Pcap.get(fields.node + ":" + file.num);
 
         try {
           ipcap.open(file.name, file);
@@ -3911,7 +3911,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {_source: "no,pa,ps,psl,a1,p1,tipv61-term"};
+    options  = {_source: "node,totPackets,packetPosArray,packetLenArray,srcIp,srcPort"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
@@ -3922,18 +3922,18 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
 
     var fields = session._source || session.fields;
 
-    if (maxPackets && fields.ps.length > maxPackets) {
-      fields.ps.length = maxPackets;
+    if (maxPackets && fields.packetPosArray.length > maxPackets) {
+      fields.packetPosArray.length = maxPackets;
     }
 
     /* Go through the list of prefetch the id to file name if we are running in parallel to
      * reduce the number of elasticsearch queries and problems
      */
     var outstanding = 0;
-    for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
-      if (fields.ps[i] < 0) {
+    for (var i = 0, ilen = fields.packetPosArray.length; i < ilen; i++) {
+      if (fields.packetPosArray[i] < 0) {
         outstanding++;
-        Db.fileIdToFile(fields.no, -1 * fields.ps[i], function (info) {
+        Db.fileIdToFile(fields.node, -1 * fields.packetPosArray[i], function (info) {
           outstanding--;
           if (i === ilen && outstanding === 0) {
             i++; // So not called again below
@@ -3948,7 +3948,7 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     }
 
     function readyToProcess() {
-      var pcapWriteMethod = Config.getFull(fields.no, "pcapWriteMethod");
+      var pcapWriteMethod = Config.getFull(fields.node, "pcapWriteMethod");
       var psid = processSessionIdDisk;
       var writer = internals.writers[pcapWriteMethod];
       if (writer && writer.processSessionId) {
@@ -4512,7 +4512,7 @@ function writePcapNg(res, id, options, doneCb) {
     res.write(b.slice(0, boffset));
 
     session.version = molochversion.version;
-    delete session.ps;
+    delete session.packetPosArray;
     var json = JSON.stringify(session);
 
     var len = ((json.length + 20 + 3) >> 2) << 2;
@@ -4601,15 +4601,15 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   var options = {writeHeader: true};
 
-  var query = { _source: ["ro"],
+  var query = { _source: ["rootId"],
                 size: 1000,
-                query: {term: {ro: req.params.id}},
-                sort: { lp: { order: 'asc' } }
+                query: {term: {rootId: req.params.id}},
+                sort: { lastPacket: { order: 'asc' } }
               };
 
   console.log("entirePcap query", JSON.stringify(query));
 
-  Db.searchPrimary('sessions-*', 'session', query, function(err, data) {
+  Db.searchPrimary('sessions2-*', 'session', query, function(err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
       writePcap(res, item._id, options, nextCb);
     }, function (err) {
@@ -4621,30 +4621,30 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 function sessionsPcapList(req, res, list, pcapWriter, extension) {
 
   if (list.length > 0 && list[0].fields) {
-    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+    list = list.sort(function(a,b){return a.fields.lastPacket - b.fields.lastPacket;});
   } else if (list.length > 0 && list[0]._source) {
-    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+    list = list.sort(function(a,b){return a._source.lastPacket - b._source.lastPacket;});
   }
 
   var options = {writeHeader: true};
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       // Get from our DISK
       pcapWriter(res, item._id, options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var buffer = Buffer.alloc(fields.pa*20 + fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + "/" + extension + "/" + item._id + "." + extension;
+        info.path = Config.basePath(fields.node) + fields.node + "/" + extension + "/" + item._id + "." + extension;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
 
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
@@ -4684,11 +4684,11 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
 
-    sessionsListFromIds(req, ids, ["lp", "no", "by", "pa", "ro"], function(err, list) {
+    sessionsListFromIds(req, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
-    sessionsListFromQuery(req, res, ["lp", "no", "by", "pa", "ro"], function(err, list) {
+    sessionsListFromQuery(req, res, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   }
@@ -5048,13 +5048,13 @@ app.post('/addTags', logAction(), function(req, res) {
     if (req.body.ids) {
       var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
+      sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
         addTagsList(tagIds, tags, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
     } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
+      sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
         addTagsList(tagIds, tags, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
@@ -5136,7 +5136,7 @@ app.get('/:nodeName/searchSession/:id', checkProxyRequest, function(req, res) {
 
 function searchSession(req, session, cb) {
   var fields = session._source || session.fields;
-  isLocalView(fields.no, function () {
+  isLocalView(fields.node, function () {
     var options = {};
     options.regex = req.body.regex || req.params.regex;
     options.findString = req.body.findString || req.params.findString;
@@ -5146,12 +5146,12 @@ function searchSession(req, session, cb) {
   },
   function () {
     // Check Remotely
-    getViewUrl(fields.no, function(err, viewUrl, client) {
+    getViewUrl(fields.node, function(err, viewUrl, client) {
       var info = url.parse(viewUrl);
-      info.path = Config.basePath(fields.no) + fields.no + "/searchSession/" + session._id;
+      info.path = Config.basePath(fields.node) + fields.node + "/searchSession/" + session._id;
       info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-      addAuth(info, req.user, fields.no);
-      addCaTrust(info, fields.no);
+      addAuth(info, req.user, fields.node);
+      addCaTrust(info, fields.node);
       var preq = client.request(info, function(pres) {
         pres.on('end', function () {
           cb(null, true); // ALW FIX
@@ -5210,13 +5210,13 @@ app.post('/searchAndTag', logAction(), function(req, res) {
     if (req.body.ids) {
       var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
+      sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
         searchAndTagList(req, tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
     } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
+      sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
         searchAndTagList(req, tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
@@ -5265,28 +5265,28 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "no,pr,ps,psl"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "node,ipProtocol,packetPosArray,packetLenArray"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
     var itemPos = 0;
-    async.eachLimit(fields.ps, 10, function(pos, nextCb) {
+    async.eachLimit(fields.packetPosArray, 10, function(pos, nextCb) {
       if (pos < 0) {
         fileNum = pos * -1;
         return nextCb(null);
       }
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-      var opcap = Pcap.get("write"+fields.no + ":" + fileNum);
+      var opcap = Pcap.get("write"+fields.node + ":" + fileNum);
       if (!opcap.isOpen()) {
-        Db.fileIdToFile(fields.no, fileNum, function(file) {
+        Db.fileIdToFile(fields.node, fileNum, function(file) {
 
           if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
-            return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+            console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+            return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
           }
 
-          var ipcap = Pcap.get("write"+fields.no + ":" + file.num);
+          var ipcap = Pcap.get("write"+fields.node + ":" + file.num);
 
           try {
             ipcap.openReadWrite(file.name, file);
@@ -5351,18 +5351,18 @@ function scrubList(req, res, entire, list) {
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
 
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       // Get from our DISK
       pcapScrub(req, res, item._id, entire, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + (entire?"/delete/":"/scrub/") + item._id;
+        info.path = Config.basePath(fields.node) + fields.no + (entire?"/delete/":"/scrub/") + item._id;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('end', function () {
             setImmediate(nextCb);
@@ -5386,11 +5386,11 @@ app.post('/scrub', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else {
@@ -5404,11 +5404,11 @@ app.post('/delete', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else {
@@ -5462,7 +5462,7 @@ function sendSessionWorker(options, cb) {
       return;
     }
     session.id = options.id;
-    session.ps = ps;
+    session.packetPosArray = ps;
     delete session.fs;
 
     if (options.tags) {
@@ -5583,29 +5583,29 @@ function sendSessionsList(req, res, list) {
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       var options = {
         user: req.user,
         cluster: req.body.cluster,
         id: item._id,
         saveId: saveId,
         tags: req.query.tags,
-        nodeName: fields.no
+        nodeName: fields.node
       };
       // Get from our DISK
       internals.sendSessionQueue.push(options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
+        info.path = Config.basePath(fields.node) + fields.node + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         if (req.query.tags) {
           info.path += "&tags=" + req.query.tags;
         }
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
           });
@@ -5634,10 +5634,10 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
   var nodes = {};
 
   list.forEach(function (item) {
-    if (!nodes[item.no]) {
-      nodes[item.no] = [];
+    if (!nodes[item.node]) {
+      nodes[item.node] = [];
     }
-    nodes[item.no].push(item.id);
+    nodes[item.node].push(item.id);
   });
 
   var keys = Object.keys(nodes);
@@ -5734,7 +5734,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
     Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
       var filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "-" + req.query.saveId + ".pcap";
       saveId.seq      = seq;
-      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: filename, first: session.fp, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
+      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
       });
@@ -5814,7 +5814,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
         makeFilename(function (filename) {
           req.resume();
-          session.ps[0] = - saveId.seq;
+          session.packetPosArray[0] = - saveId.seq;
           session.fs = [saveId.seq];
 
           if (saveId.start === 0) {
@@ -5826,8 +5826,8 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
           // Adjust packet location based on where we start writing
           if (saveId.start > 0) {
-            for (var p = 1, plen = session.ps.length; p < plen; p++) {
-              session.ps[p] += (saveId.start - 24);
+            for (var p = 1, plen = session.packetPosArray.length; p < plen; p++) {
+              session.packetPosArray[p] += (saveId.start - 24);
             }
           }
 
@@ -5862,11 +5862,11 @@ app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   } else {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   }
@@ -5992,7 +5992,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
   async.doWhilst(function(whilstCb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
-    query.query.bool.filter[0] = {range: {lp: {gt: cq.lpValue, lte: singleEndTime}}};
+    query.query.bool.filter[0] = {range: {lastPacket: {gt: cq.lpValue, lte: singleEndTime}}};
 
     if (Config.debug > 2) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
@@ -6001,7 +6001,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
     Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
 
       // There are no matching indices, continue while loop
-      if (indices === "sessions-*") {
+      if (indices === "sessions2-*") {
         cq.lpValue += 24*60*60;
         return setImmediate(whilstCb, null);
       }
@@ -6039,7 +6039,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
         var i, ilen;
         if (cq.action.indexOf("forward:") === 0) {
           for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push({id: hits[i]._id, no: hits[i]._source.no});
+            ids.push({id: hits[i]._id, node: hits[i]._source.node});
           }
 
           sendSessionsListQL(options, ids, doNext);
@@ -6054,7 +6054,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
 
           var tags = options.tags.split(",");
           mapTags(tags, "", function(err, tagIds) {
-            sessionsListFromIds(null, ids, ["ta", "tags-term", "no"], function(err, list) {
+            sessionsListFromIds(null, ids, ["ta", "tags-term", "node"], function(err, list) {
               addTagsList(tagIds, tags, list, doNext);
             });
           });
@@ -6142,7 +6142,7 @@ function processCronQueries() {
           var query = {from: 0,
                        size: 1000,
                        query: {bool: {filter: [{}]}},
-                       _source: ["_id", "no"]
+                       _source: ["_id", "node"]
                       };
 
           try {

@@ -118,14 +118,14 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("mysql", NULL, 1, (unsigned char*)"\x00\x00\x00\x0a", 4, mysql_classify);
 
     userField = moloch_field_define("mysql", "lotermfield",
-        "mysql.user", "User", "mysql.user-term",
+        "mysql.user", "User", "mysql.user",
         "Mysql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
         NULL);
 
     versionField = moloch_field_define("mysql", "termfield",
-        "mysql.ver", "Version", "mysql.ver-term",
+        "mysql.ver", "Version", "mysql.version",
         "Mysql server version string",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);

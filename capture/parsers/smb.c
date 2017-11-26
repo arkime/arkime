@@ -581,44 +581,44 @@ void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSE
 void moloch_parser_init()
 {
     shareField =moloch_field_define("smb", "termfield",
-        "smb.share", "Share", "smbsh",
+        "smb.share", "Share", "smb.share",
         "SMB shares connected to",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     fnField = moloch_field_define("smb", "termfield",
-        "smb.fn", "Filename", "smbfn",
+        "smb.fn", "Filename", "smb.filename",
         "SMB files opened, created, deleted",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     osField = moloch_field_define("smb", "termfield",
-        "smb.os", "OS", "smbos",
+        "smb.os", "OS", "smb.os",
         "SMB OS information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     domainField = moloch_field_define("smb", "termfield",
-        "smb.domain", "Domain", "smbdm",
+        "smb.domain", "Domain", "smb.domain",
         "SMB domain",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     verField = moloch_field_define("smb", "termfield",
-        "smb.ver", "Version", "smbver",
+        "smb.ver", "Version", "smb.version",
         "SMB Version information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     userField = moloch_field_define("smb", "termfield",
-        "smb.user", "User", "smbuser",
+        "smb.user", "User", "smb.user",
         "SMB User",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
         NULL);
 
     hostField = moloch_field_define("smb", "termfield",
-        "host.smb", "Hostname", "smbho",
+        "host.smb", "Hostname", "smb.host",
         "SMB Host name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "host",

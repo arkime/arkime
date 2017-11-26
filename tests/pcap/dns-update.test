@@ -1,131 +1,119 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160702"
-            }
-         },
          "body" : {
-            "no" : "test",
-            "mac1-term" : [
-               "3c:8a:b0:6f:27:c5",
-               "3c:8a:b0:6e:77:c5"
-            ],
-            "ipSrc" : "10.0.0.1",
-            "mac1-term-cnt" : 2,
-            "lpd" : 1467464485007,
-            "dnsip" : [
-               "10.0.0.1"
-            ],
-            "by" : 340,
-            "mac2-term-cnt" : 1,
-            "sl" : 24,
-            "tacnt" : 2,
-            "dns" : {
-               "status-term" : [
-                  "NOTIMPL"
-               ],
-               "opcode-term" : [
-                  "UPDATE"
-               ],
-               "status-term-cnt" : 1,
-               "opcode-term-cnt" : 1
-            },
-            "pa" : 2,
-            "psl" : [
-               186,
-               186
-            ],
-            "lastPacket" : 1467464485007,
-            "ipDst" : "10.0.0.2",
-            "a2" : "10.0.0.2",
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa1" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "p2" : 53,
-            "pr" : 17,
-            "fs" : [],
-            "dnsho" : [
-               "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
-            ],
-            "tags-term" : [
+            "tags" : [
                "srcip",
                "dstip"
             ],
-            "db2" : 162,
-            "fb1" : "6919280000010001",
-            "prot-term-cnt" : 2,
-            "db" : 324,
-            "rir2" : "TEST",
-            "dnsipcnt" : 1,
-            "lp" : 1467464485,
-            "db1" : 162,
-            "vlan" : [
-               100
-            ],
-            "by2" : 170,
-            "vlan-cnt" : 1,
-            "as1" : "AS0000 This is neat",
-            "firstPacket" : 1467464484984,
-            "dnshocnt" : 1,
-            "gdnsip" : [
-               "RUS"
-            ],
-            "portSrc" : 51031,
-            "g2" : "CAN",
-            "fpd" : 1467464484984,
-            "asdnsip" : [
-               "AS0000 This is neat"
-            ],
-            "fb2" : "6919a80400010000",
-            "pa2" : 1,
-            "p1" : 51031,
-            "a1" : "10.0.0.1",
-            "g1" : "RUS",
-            "timestamp" : "SET",
+            "ipProtocol" : 17,
+            "dstPayload8" : "6919a80400010000",
+            "srcGEO" : "RUS",
+            "srcASN" : "AS0000 This is neat",
+            "dstGEO" : "CAN",
+            "dstDataBytes" : 162,
             "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "string" : [
+               "string.snow" : [
                   "16777226:51031,33554442:53"
                ],
-               "ip-geo" : [
-                  "RUS"
+               "ASN" : [
+                  "AS0000 This is neat"
                ],
                "number" : [
                   33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "GEO" : [
+                  "RUS"
                ]
             },
-            "by1" : 170,
-            "ta" : [
-               "dstip",
-               "srcip"
+            "dstASN" : "AS0001 Cool Beans!",
+            "srcPackets" : 1,
+            "srcPayload8" : "6919280000010001",
+            "protocolCnt" : 2,
+            "protocol" : [
+               "udp",
+               "dns"
             ],
-            "rirdnsip" : [
-               ""
+            "totDataBytes" : 324,
+            "dstPackets" : 1,
+            "vlanCnt" : 1,
+            "fileIds" : [],
+            "totBytes" : 340,
+            "vlan" : [
+               100
             ],
-            "ps" : [
+            "packetPosArray" : [
                24,
                210
             ],
-            "portDst" : 53,
-            "fp" : 1467464484,
-            "ss" : 1,
-            "mac2-term" : [
+            "srcMacCnt" : 2,
+            "segments" : 1,
+            "node" : "test",
+            "dstMacCnt" : 1,
+            "lastPacket" : 1467464485007,
+            "srcPort" : 51031,
+            "tagsCnt" : 2,
+            "ipSrc" : "10.0.0.1",
+            "dstRIR" : "TEST",
+            "srcDataBytes" : 162,
+            "srcBytes" : 170,
+            "dstMac" : [
                "00:1b:17:00:03:24"
-            ]
+            ],
+            "firstPacket" : 1467464484984,
+            "packetLenArray" : [
+               186,
+               186
+            ],
+            "timestamp" : "SET",
+            "dns" : {
+               "opcode" : [
+                  "UPDATE"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "opcodeCnt" : 1,
+               "ipCnt" : 1,
+               "statusCnt" : 1,
+               "hostCnt" : 1,
+               "GEO" : [
+                  "RUS"
+               ],
+               "host" : [
+                  "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "status" : [
+                  "NOTIMPL"
+               ]
+            },
+            "dstBytes" : 170,
+            "length" : 24,
+            "totPackets" : 2,
+            "srcMac" : [
+               "3c:8a:b0:6f:27:c5",
+               "3c:8a:b0:6e:77:c5"
+            ],
+            "ipDst" : "10.0.0.2",
+            "dstPort" : 53
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-160702"
+            }
          }
       }
    ]

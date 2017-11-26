@@ -225,13 +225,13 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
 
     hostField = moloch_field_define("quic", "lotermfield",
-        "host.quic", "Hostname", "quic.host-term", 
+        "host.quic", "Hostname", "quic.host", 
         "QUIC host header field", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
         "aliases", "[\"quic.host\"]", NULL);
 
     uaField = moloch_field_define("quic", "termfield",
-        "quic.user-agent", "User-Agent", "quic.ua-term",
+        "quic.user-agent", "User-Agent", "quic.useragent",
         "User-Agent",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);

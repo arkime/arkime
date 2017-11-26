@@ -693,111 +693,105 @@ void tls_classify(MolochSession_t *session, const unsigned char *data, int len, 
 void moloch_parser_init()
 {
     certsField = moloch_field_define("cert", "notreal",
-        "cert", "tls", "tls",
+        "cert", "cert", "cert",
         "CERT Info",
         MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
     moloch_field_define("cert", "integer",
-        "cert.cnt", "Cert Cnt", "tlscnt",
+        "cert.cnt", "Cert Cnt", "certCnt",
         "Count of certificates",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.alt", "Alt Name", "tls.alt",
+        "cert.alt", "Alt Name", "cert.alt",
         "Certificate alternative names",
         0,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.serial", "Serial Number", "tls.sn",
+        "cert.serial", "Serial Number", "cert.serial",
         "Serial Number",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.issuer.cn", "Issuer CN", "tls.iCn",
+        "cert.issuer.cn", "Issuer CN", "cert.issuerCN",
         "Issuer's common name",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.subject.cn", "Subject CN", "tls.sCn",
+        "cert.subject.cn", "Subject CN", "cert.subjectCN",
         "Subject's common name",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
-    moloch_field_define("cert", "lotextfield",
-        "cert.issuer.on", "Issuer ON", "tls.iOn",
+    moloch_field_define("cert", "lotermfield",
+        "cert.issuer.on", "Issuer ON", "tls.issuerON",
         "Issuer's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        "rawField", "rawiOn",
         NULL);
 
-    moloch_field_define("cert", "lotextfield",
-        "cert.subject.on", "Subject ON", "tls.sOn",
+    moloch_field_define("cert", "lotermfield",
+        "cert.subject.on", "Subject ON", "tls.subjectON",
         "Subject's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        "rawField", "rawsOn",
         NULL);
 
-    moloch_field_define("cert", "lotextfield",
-        "cert.hash", "Hash", "tls.hash",
+    moloch_field_define("cert", "lotermfield",
+        "cert.hash", "Hash", "cert.hash",
         "SHA1 hash of entire certificate",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "seconds",
-        "cert.notbefore", "Not Before", "tls.notBefore",
+        "cert.notbefore", "Not Before", "cert.notBefore",
         "Certificate is not valid before this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "seconds",
-        "cert.notafter", "Not After", "tls.notAfter",
+        "cert.notafter", "Not After", "cert.notAfter",
         "Certificate is not valid after this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "integer",
-        "cert.validfor", "Days Valid For", "tls.diffDays",
+        "cert.validfor", "Days Valid For", "cert.validDays",
         "Certificate is valid for this may days",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
-    hostField = moloch_field_define("http", "lotermfield",
-        "host.http", "Hostname", "ho",
-        "HTTP host header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "aliases", "[\"http.host\"]", NULL);
+    hostField = moloch_field_by_exp("host.http");
 
     verField = moloch_field_define("tls", "termfield",
-        "tls.version", "Version", "tlsver-term",
+        "tls.version", "Version", "tls.version",
         "SSL/TLS version field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     cipherField = moloch_field_define("tls", "uptermfield",
-        "tls.cipher", "Cipher", "tlscipher-term",
+        "tls.cipher", "Cipher", "tls.cipher",
         "SSL/TLS cipher field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     ja3Field = moloch_field_define("tls", "lotermfield",
-        "tls.ja3", "JA3", "tlsja3-term",
+        "tls.ja3", "JA3", "tls.ja3",
         "SSL/TLS JA3 field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     dstIdField = moloch_field_define("tls", "lotermfield",
-        "tls.sessionid.dst", "Dst Session Id", "tlsdstid-term",
+        "tls.sessionid.dst", "Dst Session Id", "tls.dstSessionId",
         "SSL/TLS Dst Session Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  0,
         NULL);
 
     srcIdField = moloch_field_define("tls", "lotermfield",
-        "tls.sessionid.src", "Src Session Id", "tlssrcid-term",
+        "tls.sessionid.src", "Src Session Id", "tls.srcSessionId",
         "SSL/TLS Src Session Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  0,
         NULL);

@@ -272,16 +272,16 @@ void socks5_classify(MolochSession_t *session, const unsigned char *data, int le
 void moloch_parser_init()
 {
     ipField = moloch_field_define("socks", "ip",
-        "ip.socks", "IP", "socksip",
+        "ip.socks", "IP", "socks.ip",
         "SOCKS destination IP",
-        MOLOCH_FIELD_TYPE_IP, MOLOCH_FIELD_FLAG_IPPRE, 
+        MOLOCH_FIELD_TYPE_IP, 0, 
         "aliases", "[\"ip.socks\"]",
-        "portField", "sockspo", 
+        "portField", "socks.port", 
         "category", "user",
         NULL);
 
     hostField = moloch_field_define("socks", "lotermfield",
-        "host.socks", "Host", "socksho",
+        "host.socks", "Host", "socks.host",
         "SOCKS destination host",
         MOLOCH_FIELD_TYPE_STR,       0, 
         "aliases", "[\"socks.host\"]", 
@@ -289,7 +289,7 @@ void moloch_parser_init()
         NULL);
 
     portField = moloch_field_define("socks", "integer",
-        "port.socks", "Port", "sockspo",
+        "port.socks", "Port", "socks.port",
         "SOCKS destination port",
         MOLOCH_FIELD_TYPE_INT,       0, 
         "aliases", "[\"socks.port\"]", 
@@ -297,7 +297,7 @@ void moloch_parser_init()
         NULL);
 
     userField = moloch_field_define("socks", "termfield",
-        "socks.user", "User", "socksuser",
+        "socks.user", "User", "socks.user",
         "SOCKS authenticated user",
         MOLOCH_FIELD_TYPE_STR,     0, 
         "aliases", "[\"socksuser\"]", 

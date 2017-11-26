@@ -361,15 +361,15 @@ void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 void moloch_parser_init()
 {
     ipField = moloch_field_define("dns", "ip",
-        "ip.dns", "IP",  "dnsip",
+        "ip.dns", "IP",  "dns.ip",
         "IP from DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"dns.ip\"]",
         "category", "ip",
         NULL);
 
     hostField = moloch_field_define("dns", "lotermfield",
-        "host.dns", "Host", "dnsho",
+        "host.dns", "Host", "dns.host",
         "DNS host looked up",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"dns.host\"]",
@@ -377,27 +377,27 @@ void moloch_parser_init()
         NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
-        "dns.status", "Status Code", "dns.status-term",
+        "dns.status", "Status Code", "dns.status",
         "DNS lookup return code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     opCodeField = moloch_field_define("dns", "uptermfield",
-        "dns.opcode", "Op Code", "dns.opcode-term",
+        "dns.opcode", "Op Code", "dns.opcode",
         "DNS lookup op code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     queryTypeField = moloch_field_define("dns", "uptermfield",
-        "dns.query.type", "Query Type", "dns.qt-term",
+        "dns.query.type", "Query Type", "dns.qt",
         "DNS lookup query type",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     queryClassField = moloch_field_define("dns", "uptermfield",
-        "dns.query.class", "Query Class", "dns.qc-term",
+        "dns.query.class", "Query Class", "dns.qc",
         "DNS lookup query class",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
 

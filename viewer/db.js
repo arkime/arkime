@@ -723,7 +723,7 @@ exports.deleteFile = function(node, id, path, cb) {
 };
 
 exports.id2Index = function (id) {
-  return 'sessions-' + id.substr(0,id.indexOf('-'));
+  return 'sessions2-' + id.substr(0,id.indexOf('-'));
 };
 
 exports.loadFields = function(cb) {
@@ -732,7 +732,7 @@ exports.loadFields = function(cb) {
 
 exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   var indices = [];
-  exports.getAliasesCache("sessions-*", (err, aliases) => {
+  exports.getAliasesCache("sessions2-*", (err, aliases) => {
 
     if (err || aliases.error) {
       return cb("");
@@ -750,25 +750,25 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       var d = new Date(startTime*1000);
       switch (rotateIndex) {
       case "monthly":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) + 'm' +
           twoDigitString(d.getUTCMonth()+1);
         break;
       case "weekly":
         var jan = new Date(d.getUTCFullYear(), 0, 0);
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) + 'w' +
           twoDigitString(Math.floor((d - jan) / 604800000));
         break;
       case "hourly":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
           twoDigitString(d.getUTCHours());
         break;
       default:
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate());
@@ -783,7 +783,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
     }
 
     if (indices.length === 0) {
-      return cb("sessions-*");
+      return cb("sessions2-*");
     }
 
     return cb(indices.join());

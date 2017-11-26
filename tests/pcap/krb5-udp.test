@@ -1,79 +1,71 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a2" : "10.150.10.150",
-            "fp" : 1466252055,
-            "p2" : 88,
-            "by" : 297,
-            "ps" : [
-               24
-            ],
-            "vlan-cnt" : 1,
-            "lpd" : 1466252055201,
-            "firstPacket" : 1466252055201,
-            "a1" : "10.172.10.172",
-            "fpd" : 1466252055201,
-            "ss" : 1,
-            "p1" : 58412,
-            "pr" : 17,
-            "prot-term-cnt" : 2,
-            "prot-term" : [
+            "dstMacCnt" : 1,
+            "totDataBytes" : 289,
+            "protocol" : [
                "udp",
                "krb5"
             ],
-            "fb1" : "6a81f83081f5a103",
-            "mac2-term" : [
-               "00:00:5e:00:01:01"
-            ],
-            "mac1-term" : [
-               "00:1b:17:00:02:30"
-            ],
-            "by1" : 297,
+            "dstPort" : 88,
             "krb5" : {
-               "sname-term" : [
-                  "krbtgt/xx.xxx.xxxxx.NET"
+               "realm" : [
+                  "xx.xxx.xxxxx.NET"
                ],
-               "cname-termcnt" : 1,
-               "realm-termcnt" : 1,
-               "cname-term" : [
+               "cnameCnt" : 1,
+               "realmCnt" : 1,
+               "cname" : [
                   "xxxxxxxx$"
                ],
-               "sname-termcnt" : 1,
-               "realm-term" : [
-                  "xx.xxx.xxxxx.NET"
-               ]
+               "sname" : [
+                  "krbtgt/xx.xxx.xxxxx.NET"
+               ],
+               "snameCnt" : 1
             },
-            "psl" : [
+            "node" : "test",
+            "lastPacket" : 1466252055201,
+            "totPackets" : 1,
+            "dstMac" : [
+               "00:00:5e:00:01:01"
+            ],
+            "dstPackets" : 0,
+            "srcBytes" : 297,
+            "ipProtocol" : 17,
+            "srcPackets" : 1,
+            "srcMacCnt" : 1,
+            "protocolCnt" : 2,
+            "segments" : 1,
+            "srcDataBytes" : 289,
+            "timestamp" : "SET",
+            "ipSrc" : "10.172.10.172",
+            "totBytes" : 297,
+            "packetLenArray" : [
                313
             ],
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1466252055201,
-            "by2" : 0,
-            "portDst" : 88,
-            "mac2-term-cnt" : 1,
-            "pa" : 1,
-            "timestamp" : "SET",
-            "pa1" : 1,
-            "sl" : 0,
-            "db1" : 289,
-            "pa2" : 0,
-            "ipDst" : "10.150.10.150",
-            "portSrc" : 58412,
             "vlan" : [
                300
             ],
-            "no" : "test",
-            "db2" : 0,
-            "fs" : [],
-            "lp" : 1466252055,
-            "db" : 289,
-            "ipSrc" : "10.172.10.172"
+            "srcPort" : 58412,
+            "firstPacket" : 1466252055201,
+            "dstDataBytes" : 0,
+            "packetPosArray" : [
+               24
+            ],
+            "srcMac" : [
+               "00:1b:17:00:02:30"
+            ],
+            "vlanCnt" : 1,
+            "fileIds" : [],
+            "srcPayload8" : "6a81f83081f5a103",
+            "ipDst" : "10.150.10.150",
+            "length" : 0,
+            "dstBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-160618",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-160618"
             }
          }
       }

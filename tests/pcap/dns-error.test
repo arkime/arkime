@@ -1,121 +1,109 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "tags-term" : [
+            "srcASN" : "AS0000 This is neat",
+            "totDataBytes" : 203,
+            "dstPackets" : 1,
+            "srcPort" : 56329,
+            "srcGEO" : "RUS",
+            "length" : 5,
+            "srcMacCnt" : 1,
+            "dstRIR" : "TEST",
+            "dns" : {
+               "qcCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "status" : [
+                  "NXDOMAIN"
+               ],
+               "hostCnt" : 1,
+               "statusCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "host" : [
+                  "no.such.host"
+               ],
+               "qtCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "opcodeCnt" : 1
+            },
+            "segments" : 1,
+            "timestamp" : "SET",
+            "ipSrc" : "10.0.0.1",
+            "tags" : [
                "srcip",
                "dstip"
             ],
-            "pa2" : 1,
-            "g2" : "CAN",
-            "portDst" : 53,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "by1" : 72,
-            "portSrc" : 56329,
-            "g1" : "RUS",
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstMacCnt" : 2,
             "lastPacket" : 1394587409103,
-            "pa1" : 1,
-            "dnshocnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "prot-term-cnt" : 2,
-            "mac2-term-cnt" : 2,
-            "by2" : 147,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "ipSrc" : "10.0.0.1",
-            "timestamp" : "SET",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "psl" : [
-               88,
-               163
-            ],
-            "db2" : 139,
-            "by" : 219,
+            "srcBytes" : 72,
+            "dstPayload8" : "a9ba858300010000",
+            "tagsCnt" : 2,
+            "dstPort" : 53,
+            "totPackets" : 2,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 139,
             "ipDst" : "10.0.0.2",
-            "fb1" : "a9ba010000010000",
-            "a1" : "10.0.0.1",
+            "srcPackets" : 1,
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "packetPosArray" : [
+               24,
+               112
+            ],
+            "srcPayload8" : "a9ba010000010000",
+            "ipProtocol" : 17,
             "test" : {
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:56329,33554442:53"
+               "ip" : [
+                  167772161
                ],
                "number" : [
                   33554442
                ],
-               "ip" : [
-                  167772161
+               "ASN" : [
+                  "AS0000 This is neat"
                ],
-               "ip-rir" : [
+               "RIR" : [
                   ""
                ],
-               "ip-geo" : [
+               "GEO" : [
                   "RUS"
+               ],
+               "string.snow" : [
+                  "16777226:56329,33554442:53"
                ]
             },
-            "tacnt" : 2,
-            "dnsho" : [
-               "no.such.host"
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
-            "dns" : {
-               "qt-term-cnt" : 1,
-               "qc-term-cnt" : 1,
-               "status-term" : [
-                  "NXDOMAIN"
-               ],
-               "opcode-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "status-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term" : [
-                  "A"
-               ]
-            },
             "firstPacket" : 1394587409097,
-            "p1" : 56329,
-            "p2" : 53,
-            "lp" : 1394587409,
-            "ps" : [
-               24,
-               112
+            "node" : "test",
+            "dstBytes" : 147,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "as1" : "AS0000 This is neat",
-            "prot-term" : [
-               "udp",
-               "dns"
+            "fileIds" : [],
+            "packetLenArray" : [
+               88,
+               163
             ],
-            "rir2" : "TEST",
-            "no" : "test",
-            "pr" : 17,
-            "db" : 203,
-            "sl" : 5,
-            "fpd" : 1394587409097,
-            "a2" : "10.0.0.2",
-            "db1" : 64,
-            "fp" : 1394587409,
-            "fb2" : "a9ba858300010000",
-            "pa" : 2,
-            "ss" : 1,
-            "lpd" : 1394587409103
+            "srcDataBytes" : 64,
+            "totBytes" : 219,
+            "dstGEO" : "CAN"
          },
          "header" : {
             "index" : {
                "_type" : "session",
-               "_index" : "tests_sessions-140312"
+               "_index" : "tests_sessions2-140312"
             }
          }
       }

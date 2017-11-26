@@ -1,80 +1,72 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160511"
-            }
-         },
          "body" : {
-            "prot-term" : [
-               "udp",
-               "quic"
-            ],
-            "pr" : 17,
-            "a2" : "64.15.116.182",
-            "db1" : 2768,
-            "prot-term-cnt" : 2,
-            "fp" : 1462966377,
-            "quic" : {
-               "version-term" : [
-                  "Q033"
-               ],
-               "host-term" : [
-                  "www.google.com"
-               ],
-               "host-termcnt" : 1,
-               "version-termcnt" : 1
-            },
-            "portSrc" : 40482,
-            "portDst" : 443,
-            "mac1-term-cnt" : 1,
-            "pa" : 3,
-            "fpd" : 1462966377795,
-            "g2" : "USA",
-            "lp" : 1462966377,
+            "dstASN" : "AS43515 Google Ireland Limited",
+            "totDataBytes" : 2879,
+            "node" : "test",
+            "dstPackets" : 1,
+            "dstPort" : 443,
+            "dstDataBytes" : 111,
             "ipDst" : "64.15.116.182",
-            "db" : 2879,
-            "ss" : 1,
-            "pa1" : 2,
+            "srcPackets" : 2,
             "ipSrc" : "10.0.2.15",
-            "psl" : [
+            "fileIds" : [],
+            "dstPayload8" : "0a79f24eb64a9c07",
+            "totBytes" : 2903,
+            "protocolCnt" : 2,
+            "timestamp" : "SET",
+            "segments" : 1,
+            "length" : 195,
+            "firstPacket" : 1462966377795,
+            "ipProtocol" : 17,
+            "srcMacCnt" : 1,
+            "packetLenArray" : [
                1408,
                1408,
                135
             ],
-            "pa2" : 1,
-            "mac2-term-cnt" : 1,
-            "lastPacket" : 1462966377990,
-            "p1" : 40482,
-            "by2" : 119,
-            "by" : 2903,
-            "fs" : [],
-            "p2" : 443,
-            "fb1" : "0979f24eb64a9c07",
-            "fb2" : "0a79f24eb64a9c07",
-            "as2" : "AS36040 Google LLC",
-            "no" : "test",
-            "db2" : 111,
-            "a1" : "10.0.2.15",
-            "lpd" : 1462966377990,
-            "by1" : 2784,
-            "timestamp" : "SET",
-            "mac1-term" : [
+            "srcMac" : [
                "08:00:27:cc:18:37"
             ],
-            "ps" : [
+            "dstRIR" : "ARIN",
+            "dstMacCnt" : 1,
+            "dstGEO" : "USA",
+            "srcPayload8" : "0979f24eb64a9c07",
+            "srcBytes" : 2784,
+            "quic" : {
+               "version-termCnt" : 1,
+               "hostCnt" : 1,
+               "version-term" : [
+                  "Q033"
+               ],
+               "host" : [
+                  "www.google.com"
+               ]
+            },
+            "srcPort" : 40482,
+            "dstBytes" : 119,
+            "packetPosArray" : [
                24,
                1432,
                2840
             ],
-            "firstPacket" : 1462966377795,
-            "sl" : 195,
-            "rir2" : "ARIN",
-            "mac2-term" : [
+            "dstMac" : [
                "52:54:00:12:35:02"
-            ]
+            ],
+            "lastPacket" : 1462966377990,
+            "protocol" : [
+               "udp",
+               "quic"
+            ],
+            "srcDataBytes" : 2768,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-160511"
+            }
          }
       }
    ]

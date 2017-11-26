@@ -443,15 +443,6 @@ void moloch_config_load()
 
 }
 /******************************************************************************/
-void moloch_config_get_tag_cb(MolochIpInfo_t *ii, int UNUSED(tagtype), const char *tagName, uint32_t tag)
-{
-    if (ii->numtags >= 10) return;
-
-    ii->tags[ii->numtags] = tag;
-    ii->tagsStr[ii->numtags] = strdup(tagName);
-    ii->numtags++;
-}
-/******************************************************************************/
 void moloch_config_load_local_ips()
 {
     GError   *error = 0;
@@ -480,7 +471,10 @@ void moloch_config_load_local_ips()
             } else if (strncmp(values[v], "rir:", 4) == 0) {
                 ii->rir = g_strdup(values[v]+4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
-                moloch_db_get_tag(ii, 0, values[v]+4, (MolochTag_cb)moloch_config_get_tag_cb);
+                if (ii->numtags < 10) {
+                    ii->tagsStr[ii->numtags] = strdup(values[v]+4);
+                    ii->numtags++;
+                }
             } else if (strncmp(values[v], "country:", 8) == 0) {
                 ii->country = g_strdup(values[v]+8);
             }
@@ -619,34 +613,17 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 
         char expression[100];
         char field[100];
-        char rawfield[100];
         char help[100];
 
-        if (type == 0) {
-            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
-            snprintf(field, sizeof(field), "%s%s.snow", dbBase, name);
-            snprintf(rawfield, sizeof(rawfield), "%s%s.raw", dbBase, name);
-            snprintf(help, sizeof(help), "%s%s", helpBase, name);
-        } else {
-            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
-            snprintf(field, sizeof(field), "%s%s", dbBase, name);
-            rawfield[0] = 0;
-            snprintf(help, sizeof(help), "%s%s", helpBase, name);
-        }
+        snprintf(expression, sizeof(expression), "%s%s", expBase, name);
+        snprintf(field, sizeof(field), "%s%s", dbBase, name);
+        snprintf(help, sizeof(help), "%s%s", helpBase, name);
 
         int pos;
-        if (rawfield[0]) {
-            pos = moloch_field_define(group, kind,
-                    expression, expression, field,
-                    help,
-                    t, f,
-                    "rawField", rawfield, NULL);
-        } else {
-            pos = moloch_field_define(group, kind,
-                    expression, expression, field,
-                    help,
-                    t, f, NULL);
-        }
+        pos = moloch_field_define(group, kind,
+                expression, expression, field,
+                help,
+                t, f, NULL);
         moloch_config_add_header(hash, g_strdup(keys[k]), pos);
         g_strfreev(values);
     }

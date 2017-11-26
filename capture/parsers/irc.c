@@ -109,14 +109,14 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len, 
 void moloch_parser_init()
 {
     nickField = moloch_field_define("irc", "termfield",
-        "irc.nick", "Nickname", "ircnck", 
+        "irc.nick", "Nickname", "irc.nick", 
         "Nicknames set", 
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
         "category", "user",
         NULL);
 
     channelsField = moloch_field_define("irc", "termfield",
-        "irc.channel", "Channel", "ircch", 
+        "irc.channel", "Channel", "irc.channel", 
         "Channels joined",  
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
         NULL);

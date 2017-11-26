@@ -1,28 +1,38 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131205",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "no" : "test",
-            "fb1" : "45484c4f206c6f63",
-            "fp" : 1386252622,
-            "tacnt" : 1,
-            "sl" : 643,
-            "esrc" : [
-               "12345678@aol.com"
+            "ipDst" : "64.12.168.40",
+            "totDataBytes" : 789,
+            "srcGEO" : "RUS",
+            "tags" : [
+               "srcip"
             ],
-            "fs" : [],
-            "ss" : 1,
-            "g2" : "USA",
-            "portSrc" : 48012,
-            "mac1-term-cnt" : 1,
-            "db1" : 74,
-            "psl" : [
+            "srcMac" : [
+               "00:0a:f3:31:84:00"
+            ],
+            "dstDataBytes" : 715,
+            "totPackets" : 16,
+            "totBytes" : 1861,
+            "dstRIR" : "ARIN",
+            "tagsCnt" : 1,
+            "dstBytes" : 1185,
+            "fileIds" : [],
+            "email" : {
+               "src" : [
+                  "12345678@aol.com"
+               ],
+               "dst" : [
+                  "123456@example"
+               ],
+               "dstCnt" : 1,
+               "srcCnt" : 1
+            },
+            "dstGEO" : "USA",
+            "srcDataBytes" : 74,
+            "srcBytes" : 676,
+            "lastPacket" : 1386252623067,
+            "packetLenArray" : [
                90,
                90,
                82,
@@ -40,8 +50,15 @@
                82,
                82
             ],
-            "by2" : 1185,
-            "ps" : [
+            "dstPayload8" : "3232302d6d74616f",
+            "srcPackets" : 9,
+            "dstPackets" : 7,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "dstMacCnt" : 2,
+            "packetPosArray" : [
                24,
                114,
                204,
@@ -59,85 +76,59 @@
                1977,
                2059
             ],
-            "g1" : "RUS",
-            "prot-term-cnt" : 2,
-            "esrccnt" : 1,
-            "mac2-term" : [
+            "segments" : 1,
+            "protocolCnt" : 2,
+            "dstMac" : [
                "00:26:88:d8:bf:c1",
                "00:00:5e:00:01:02"
             ],
-            "pa2" : 7,
-            "p1" : 48012,
-            "lp" : 1386252623,
-            "p2" : 587,
-            "mac1-term" : [
-               "00:0a:f3:31:84:00"
-            ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "ipDst" : "64.12.168.40",
-            "a2" : "64.12.168.40",
-            "edst" : [
-               "123456@example"
-            ],
-            "ta" : [
-               "srcip"
-            ],
-            "fpd" : 1386252622425,
-            "lpd" : 1386252623067,
-            "by" : 1861,
-            "firstPacket" : 1386252622425,
-            "by1" : 676,
-            "db" : 789,
-            "pr" : 6,
-            "lastPacket" : 1386252623067,
+            "length" : 643,
             "ipSrc" : "10.0.0.1",
-            "portDst" : 587,
-            "mac2-term-cnt" : 2,
-            "as1" : "AS0000 This is neat",
+            "node" : "test",
+            "tcpflags" : {
+               "rst" : 0,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "psh" : 7,
+               "fin" : 2,
+               "syn" : 1,
+               "ack" : 5
+            },
+            "srcPort" : 48012,
             "timestamp" : "SET",
             "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "string" : [
-                  "16777226:48012,682101824:587"
-               ],
                "number" : [
                   682101824
                ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-asn" : [
+               "ASN" : [
                   "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:48012,682101824:587"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "GEO" : [
+                  "RUS"
                ]
             },
-            "pa" : 16,
-            "tags-term" : [
-               "srcip"
-            ],
-            "rir2" : "ARIN",
-            "db2" : 715,
-            "edstcnt" : 1,
-            "a1" : "10.0.0.1",
-            "tcpflags" : {
-               "psh" : 7,
-               "rst" : 0,
-               "urg" : 0,
-               "fin" : 2,
-               "ack" : 5,
-               "syn-ack" : 1,
-               "syn" : 1
-            },
-            "fb2" : "3232302d6d74616f",
-            "as2" : "AS1668 AOL Transit Data Network",
-            "pa1" : 9
+            "ipProtocol" : 6,
+            "dstPort" : 587,
+            "srcPayload8" : "45484c4f206c6f63",
+            "srcASN" : "AS0000 This is neat",
+            "firstPacket" : 1386252622425,
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "srcMacCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131205",
+               "_type" : "session"
+            }
          }
       }
    ]
