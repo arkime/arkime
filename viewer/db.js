@@ -26,9 +26,7 @@ var ESC            = require('elasticsearch'),
     fs             = require('fs'),
     util           = require('util');
 
-var internals = {tagId2Name: {},
-                 tagName2Id: {},
-                 fileId2File: {},
+var internals = {fileId2File: {},
                  fileName2File: {},
                  molochNodeStatsCache: {},
                  healthCache: {},
@@ -95,8 +93,6 @@ exports.initialize = function (info, cb) {
 
   // Replace tag implementation
   if (internals.dontMapTags) {
-    exports.tagIdToName = function (id, cb) { return cb(id); };
-    exports.tagNameToId = function (name, cb) { return cb(name); };
     exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
     internals.prefix = "MULTIPREFIX_";
   }
@@ -330,8 +326,6 @@ exports.refresh = function (index, cb) {
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
 exports.flushCache = function () {
-  internals.tagId2Name = {};
-  internals.tagName2Id = {};
   internals.fileId2File = {};
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
@@ -509,51 +503,6 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-function tagWorker(task, callback) {
-  if (task.type === "tagIdToName") {
-    if (internals.tagId2Name[task.id]) {
-      return setImmediate(callback, null, internals.tagId2Name[task.id]);
-    }
-    var query = {query: {term: {n:task.id}}};
-    exports.search('tags', 'tag', query, (err, tdata) => {
-      if (!err && tdata.hits.hits[0]) {
-        internals.tagId2Name[task.id] = tdata.hits.hits[0]._id;
-        internals.tagName2Id[tdata.hits.hits[0]._id] = task.id;
-        return callback(null, internals.tagId2Name[task.id]);
-      }
-      console.log("LOOKUPERROR", query, err, tdata.hits);
-      return callback(null, "<lookuperror>");
-    });
-  } else {
-    if (internals.tagName2Id[task.name]) {
-      return setImmediate(callback, null, internals.tagName2Id[task.name]);
-    }
-
-    exports.get('tags', 'tag', task.name, (err, tdata) => {
-      if (!err && tdata.found) {
-        internals.tagName2Id[task.name] = tdata._source.n;
-        internals.tagId2Name[tdata._source.n] = task.name;
-        return callback(null, internals.tagName2Id[task.name]);
-      }
-      return callback(null, -1);
-    });
-  }
-}
-
-internals.tagQueue = async.queue(tagWorker, 5);
-
-exports.tagIdToName = function (id, cb) {
-  internals.tagQueue.push({id: id, type: "tagIdToName"}, (err, data) => {
-    return cb(data);
-  });
-};
-
-exports.tagNameToId = function (name, cb) {
-  internals.tagQueue.push({name: name, type: "tagNameToId"}, (err, data) => {
-    return cb(data);
-  });
-};
-
 exports.fileIdToFile = function (node, num, cb) {
   var key = node + "!" + num;
   if (internals.fileId2File[key] !== undefined) {
@@ -612,30 +561,6 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.createTag = function (name, cb) {
-  // Only allow 1 create at a time, the lazy way
-  if (exports.createTag.inProgress === 1) {
-    setTimeout(exports.createTag, 50, name, cb);
-    return;
-  }
-
-  // Was already created while waiting
-  if (internals.tagName2Id[name]) {
-    return cb(internals.tagName2Id[name]);
-  }
-
-  // Do a create
-  exports.createTag.inProgress = 1;
-  exports.getSequenceNumber("tags", (err, num) => {
-    exports.index("tags", "tag", name, {n: num}, (err, tinfo) => {
-      exports.createTag.inProgress = 0;
-      internals.tagId2Name[num] = name;
-      internals.tagName2Id[name] = num;
-      cb(num);
-    });
-  });
-};
-
 exports.numberOfDocuments = function (index, cb) {
   internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
     if (err || result.error) {
@@ -661,7 +586,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
 
   var index;
 
-  ["stats", "dstats", "tags", "sequence", "files"].forEach((index) => {
+  ["stats", "dstats", "sequence", "files"].forEach((index) => {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
@@ -701,6 +626,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
 };
 
 exports.isLocalView = function(node, yesCB, noCB) {
+  console.log("CHECKING", node, internals.nodeName);
   if (node === internals.nodeName) {
     return yesCB();
   }

@@ -1,6 +1,6 @@
 if (session.postgresql)
   div.sessionDetailMeta.bold postgresql
   dl.sessionDetailMeta
-    +stringList(session.postgresql, "user-term", "Users", "postgresql.user")
-    +stringList(session.postgresql, "db-term", "DBs", "postgresql.db")
-    +stringList(session.postgresql, "app-term", "Applications", "postgresql.app")
+    +stringList(session.postgresql, "user", "Users", "postgresql.user")
+    +stringList(session.postgresql, "db", "DBs", "postgresql.db")
+    +stringList(session.postgresql, "app", "Applications", "postgresql.app")

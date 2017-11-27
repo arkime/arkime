@@ -729,13 +729,13 @@ void moloch_parser_init()
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.issuer.on", "Issuer ON", "tls.issuerON",
+        "cert.issuer.on", "Issuer ON", "cert.issuerON",
         "Issuer's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.subject.on", "Subject ON", "tls.subjectON",
+        "cert.subject.on", "Subject ON", "cert.subjectON",
         "Subject's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);

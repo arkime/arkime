@@ -371,16 +371,12 @@ function queryValueToArray(val) {
   return val.join(",").split(",");
 }
 
-var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
+var FMEnum = Object.freeze({other: 0, ip: 1});
 function fmenum(field) {
   var fieldsMap = Config.getFieldsMap();
   if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
       fieldsMap[field] && fieldsMap[field].type === "ip") {
     return FMEnum.ip;
-  } else if (field.match(/^(ta)$/) !== null) {
-    return FMEnum.tags;
-  } else if (field.match(/^(hh1|hh2)$/) !== null) {
-    return FMEnum.hh;
   }
   return FMEnum.other;
 }
@@ -1728,70 +1724,7 @@ function lookupQueryItems(query, doneCb) {
   //jshint latedef: nofunc
   function process(parent, obj, item) {
     //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
-    if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
-      if (obj[item].indexOf("*") !== -1) {
-        delete parent.wildcard;
-        outstanding++;
-        var query;
-        if (item === "ta") {
-          query = {bool: {must: {wildcard: {_uid: "tag#" + obj[item]}},
-                          must_not: {wildcard: {_uid: "tag#" + "http:header:*"}}
-                         }
-                  };
-        } else {
-          query = {wildcard: {_uid: "tag#http:header:" + obj[item].toLowerCase()}};
-        }
-        Db.search('tags', 'tag', {size:500, _source:["id", "n"], query: query}, function(err, result) {
-          var terms = [];
-          result.hits.hits.forEach(function (hit) {
-            var fields = hit._source || hit.fields;
-            terms.push(fields.n);
-          });
-          parent.terms = {};
-          parent.terms[item] = terms;
-          outstanding--;
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      } else if (Array.isArray(obj[item])) {
-        outstanding++;
-
-        async.map(obj[item], function(str, cb) {
-          var tag = (item !== "ta"?"http:header:" + str.toLowerCase():str);
-          Db.tagNameToId(tag, function (id) {
-            if (id === null) {
-              console.log("Tag '" + tag + "' not found");
-              cb(null, -1);
-            } else {
-              cb(null, id);
-            }
-          });
-        },
-        function (err, results) {
-          outstanding--;
-          obj[item] = results;
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      } else {
-        outstanding++;
-        var tag = (item !== "ta"?"http:header:" + obj[item].toLowerCase():obj[item]);
-
-        Db.tagNameToId(tag, function (id) {
-          outstanding--;
-          if (id === null) {
-            err = "Tag '" + tag + "' not found";
-          } else {
-            obj[item] = id;
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      }
-    } else if (item === "fileand" && typeof obj[item] === "string") {
+    if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
       outstanding++;
@@ -1802,10 +1735,10 @@ function lookupQueryItems(query, doneCb) {
         } else if (files.length > 1) {
           obj.bool = {should: []};
           files.forEach(function(file) {
-            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fs: file.num}}]}});
+            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fileIds: file.num}}]}});
           });
         } else {
-          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fs: files[0].num}}]};
+          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fileIds: files[0].num}}]};
         }
         if (finished && outstanding === 0) {
           doneCb(err);
@@ -2781,59 +2714,16 @@ function graphMerge(req, query, aggregations) {
   return graph;
 }
 
-function fixTagsField(container, field, doneCb, offset) {
-  if (container[field] === undefined) {
-    return doneCb(null);
-  }
-  async.map(container[field], function (item, cb) {
-    Db.tagIdToName(item, function (name) {
-      cb(null, name.substring(offset));
-    });
-  },
-  function(err, results) {
-    container[field] = results;
-    doneCb(err);
-  });
-}
-
-function fixTagBucketsField(container, field, doneCb, offset) {
-  if (container[field] === undefined) {
-    return doneCb(null);
-  }
-  async.map(container[field].buckets, function (item, cb) {
-    Db.tagIdToName(item.key, function (name) {
-      item.key = name.substring(offset);
-      cb(null, item);
-    });
-  },
-  function(err, results) {
-    container[field].buckets = results;
-    doneCb(err);
-  });
-}
-
 function fixFields(fields, fixCb) {
   async.parallel([
     function(parallelCb) {
-      fixTagsField(fields, "ta", parallelCb, 0);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh", parallelCb, 12);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh1", parallelCb, 12);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh2", parallelCb, 12);
-    },
-    function(parallelCb) {
       var files = [];
-      if (!fields.fs) {
-        fields.fs = [];
+      if (!fields.fileIds) {
+        fields.fileIds = [];
         return parallelCb(null);
       }
-      async.forEachSeries(fields.fs, function (item, cb) {
-        Db.fileIdToFile(fields.no, item, function (file) {
+      async.forEachSeries(fields.fileIds, function (item, cb) {
+        Db.fileIdToFile(fields.node, item, function (file) {
           if (file && file.locked === 1) {
             files.push(file.name);
           }
@@ -2841,7 +2731,7 @@ function fixFields(fields, fixCb) {
         });
       },
       function(err) {
-        fields.fs = files;
+        fields.fileIds = files;
         parallelCb(err);
       });
     }],
@@ -3042,22 +2932,6 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
         setImmediate(cb);
       };
       break;
-    case FMEnum.tags:
-      eachCb = function(item, cb) {
-        Db.tagIdToName(item.name, function (name) {
-          item.name = name;
-          setImmediate(cb);
-        });
-      };
-      break;
-    case FMEnum.hh:
-      eachCb = function(item, cb) {
-        Db.tagIdToName(item.name, function (name) {
-          item.name = name.substring(12);
-          setImmediate(cb);
-        });
-      };
-      break;
     }
 
     Db.healthCache(function(err, health) {results.health = health;});
@@ -3168,7 +3042,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
-        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
+        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fileIds: {terms: {field: "fileIds", size: parts.length>1?parseInt(parts[1],10):10}}}};
       } else {
         query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 
@@ -3253,8 +3127,8 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
           var nresults = [];
           var sodc = 0;
           async.each(results.spi.fileand.buckets, function(nobucket, cb) {
-            sodc += nobucket.fs.sum_other_doc_count;
-            async.each(nobucket.fs.buckets, function (fsitem, cb) {
+            sodc += nobucket.fileIds.sum_other_doc_count;
+            async.each(nobucket.fileIds.buckets, function (fsitem, cb) {
               Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
                 if (file && file.name) {
                   nresults.push({key: file.name, doc_count: fsitem.doc_count});
@@ -3716,22 +3590,6 @@ app.get('/unique.txt', logAction(), function(req, res) {
       writeCb(item, cb);
     };
     break;
-  case FMEnum.tags:
-    eachCb = function(item, cb) {
-      Db.tagIdToName(item.key, function (name) {
-        item.key = name;
-        writeCb(item, cb);
-      });
-    };
-    break;
-  case FMEnum.hh:
-    eachCb = function(item, cb) {
-      Db.tagIdToName(item.key, function (name) {
-        item.key = name.substring(12);
-        writeCb(item, cb);
-      });
-    };
-    break;
   }
 
   if (req.query.field === "ip.src:p1" || req.query.field === "ip.dst:p2" ||
@@ -4163,6 +4021,26 @@ function localSessionDetailReturn(req, res, session, incoming) {
   decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
 }
 
+function sortFields(session) {
+  if (session.tags) {
+    session.tags = session.tags.sort();
+  }
+  if (session.http) {
+    if (session.http.requestHeader) {
+      session.http.requestHeader = session.http.requestHeader.sort();
+    }
+    if (session.http.responseHeader) {
+      session.http.responseHeader = session.http.responseHeader.sort();
+    }
+  }
+  if (session.email && session.email.headers) {
+    session.email.headers = session.email.headers.sort();
+  }
+  if (session.pr) {
+    session.pr = Pcap.protocol2Name(session.pr);
+  }
+}
+
 
 function localSessionDetail(req, res) {
   if (!req.query) {
@@ -4195,23 +4073,8 @@ function localSessionDetail(req, res) {
       return res.end("Problem loading packets for " + req.params.id + " Error: " + err);
     }
     session.id = req.params.id;
+    sortFields(session);
 
-    if (session.ta) {
-      session.ta = session.ta.sort();
-    }
-
-    if (session.hh) {
-      session.hh = session.hh.sort();
-    }
-    if (session.hh1) {
-      session.hh1 = session.hh1.sort();
-    }
-    if (session.hh2) {
-      session.hh2 = session.hh2.sort();
-    }
-    if (session.pr) {
-      session.pr = Pcap.protocol2Name(session.pr);
-    }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
@@ -4267,21 +4130,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
 
     session.id = req.params.id;
 
-    if (session.ta) {
-      session.ta = session.ta.sort();
-    }
-    if (session.hh) {
-      session.hh = session.hh.sort();
-    }
-    if (session.hh1) {
-      session.hh1 = session.hh1.sort();
-    }
-    if (session.hh2) {
-      session.hh2 = session.hh2.sort();
-    }
-    if (session.pr) {
-      session.pr = Pcap.protocol2Name(session.pr);
-    }
+    sortFields(session);
 
     fixFields(session, function() {
       pug.render(internals.sessionDetailNew, {
@@ -4308,6 +4157,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
  * Get Session Packets
  */
 app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
+  console.log("ALW", req.params);
   isLocalView(req.params.nodeName, function () {
      noCache(req, res);
      req.packetsOnly = true;
@@ -4897,10 +4747,8 @@ app.get('/state/:name', function(req, res) {
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
 
-function addTagsList(allTagIds, allTagNames, list, doneCb) {
+function addTagsList(allTagNames, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
-    var tagIds = [];
-
     var fields = session._source || session.fields;
 
     if (!fields) {
@@ -4908,88 +4756,64 @@ function addTagsList(allTagIds, allTagNames, list, doneCb) {
       return nextCb(null);
     }
 
-    if (fields.ta === undefined) {
-      fields.ta = [];
-      fields["tags-term"] = [];
+    if (fields.tags === undefined) {
+      fields.tags = [];
     }
 
 
-    // Find which tags need to be added to this session
-    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      if (fields.ta.indexOf(allTagIds[i]) === -1) {
-        fields.ta.push(allTagIds[i]);
+    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
+      if (fields.tags.indexOf(allTagNames[i]) === -1) {
+        fields.tags.push(allTagNames[i]);
       }
     }
 
     // Do the ES update
     var document = {
       doc: {
-        ta: fields.ta,
-        tacnt: fields.ta.length
+        tags: fields.tags,
+        tagsCnt: fields.tags.length
       }
     };
 
-    // Do the same for tags-term if it exists.  (it won't for old sessions)
-    if (fields["tags-term"]) {
-      for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-        if (fields["tags-term"].indexOf(allTagNames[i]) === -1) {
-          fields["tags-term"].push(allTagNames[i]);
-        }
-      }
-      document.doc["tags-term"] = fields["tags-term"];
-    }
-
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       if (err) {
-        console.log("CAN'T UPDATE", session, err, data);
+        console.log("addTagsList error", session, err, data);
       }
       nextCb(null);
     });
   }, doneCb);
 }
 
-function removeTagsList(res, allTagIds, allTagNames, list) {
+function removeTagsList(res, allTagNames, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
-    var tagIds = [];
-
     var fields = session._source || session.fields;
+
     if (!fields || !fields.ta) {
       return nextCb(null);
     }
 
-    // Find which tags need to be removed from this session
-    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      let pos = fields.ta.indexOf(allTagIds[i]);
+    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
+      let pos = fields.tags.indexOf(allTagNames[i]);
       if (pos !== -1) {
-        fields.ta.splice(pos, 1);
+        fields.tags.splice(pos, 1);
       }
     }
 
     let document;
-    if (fields.ta.length === 0) {
+    if (fields.tags.length === 0) {
       // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
       document = {
-        script: "ctx._source.remove(\"ta\");ctx._source.remove(\"tacnt\");ctx._source.remove(\"tags-term\");"
+        script: "ctx._source.remove(\"tags\");ctx._source.remove(\"tagsCnt\");"
       };
     } else {
       // Do the ES update
       document = {
         doc: {
-          ta: fields.ta,
-          tacnt: fields.ta.length
+          tags: fields.tags,
+          tagsCnt: fields.tags.length
         }
       };
 
-      // Do the same for tags-term if it exists.  (it won't for old sessions)
-      if (fields["tags-term"]) {
-        for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-          let pos = fields["tags-term"].indexOf(allTagNames[i]);
-          if (pos !== -1) {
-            fields["tags-term"].splice(pos, 1);
-          }
-        }
-        document.doc["tags-term"] = fields["tags-term"];
-      }
     }
 
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -5003,22 +4827,6 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
   });
 }
 
-function mapTags(tags, prefix, tagsCb) {
-  async.map(tags, function (tag, cb) {
-    Db.tagNameToId(prefix + tag, function (tagid) {
-      if (tagid === -1) {
-        Db.createTag(prefix + tag, function(tagid) {
-          cb(null, tagid);
-        });
-      } else {
-        cb(null, tagid);
-      }
-    });
-  }, function (err, result) {
-    tagsCb(null, result);
-  });
-}
-
 app.post('/addTags', logAction(), function(req, res) {
   var tags = [];
   if (req.body.tags) {
@@ -5027,23 +4835,21 @@ app.post('/addTags', logAction(), function(req, res) {
 
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
-        addTagsList(tagIds, tags, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
-        addTagsList(tagIds, tags, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    }
-  });
+    });
+  }
 });
 
 app.post('/removeTags', logAction(), function(req, res) {
@@ -5056,19 +4862,17 @@ app.post('/removeTags', logAction(), function(req, res) {
 
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term"], function(err, list) {
-        removeTagsList(res, tagIds, tags, list);
-      });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term"], function(err, list) {
-        removeTagsList(res, tagIds, tags, list);
-      });
-    }
-  });
+    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
+      removeTagsList(res, tags, list);
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags"], function(err, list) {
+      removeTagsList(res, tags, list);
+    });
+  }
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -5149,7 +4953,7 @@ function searchSession(req, session, cb) {
   });
 }
 
-function searchAndTagList(req, allTagIds, list, doneCb) {
+function searchAndTagList(req, tags, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
     if (!fields) {
@@ -5159,8 +4963,8 @@ function searchAndTagList(req, allTagIds, list, doneCb) {
 
     var doit = false;
     if (fields.ta) {
-      for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-        if (fields.ta.indexOf(allTagIds[i]) === -1) {
+      for (let i = 0, ilen = tags.length; i < ilen; i++) {
+        if (fields.tags.indexOf(tags[i]) === -1) {
           doit = true;
           break;
         }
@@ -5189,23 +4993,21 @@ app.post('/searchAndTag', logAction(), function(req, res) {
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
   if (regex.length === 0) { return res.molochError(200, "No regex specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
-        searchAndTagList(req, tagIds, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
+      searchAndTagList(req, tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
-        searchAndTagList(req, tagIds, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
+      searchAndTagList(req, tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    }
-  });
+    });
+  }
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -5342,7 +5144,7 @@ function scrubList(req, res, entire, list) {
       // Get from remote DISK
       getViewUrl(fields.node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.node) + fields.no + (entire?"/delete/":"/scrub/") + item._id;
+        info.path = Config.basePath(fields.node) + fields.node + (entire?"/delete/":"/scrub/") + item._id;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         addAuth(info, req.user, fields.node);
         addCaTrust(info, fields.node);
@@ -5725,34 +5527,10 @@ app.post('/receiveSession', function receiveSession(req, res) {
   }
 
   function saveSession() {
-    function tags(container, field, prefix, cb) {
-      if (!container[field]) {
-        return cb(null);
-      }
-
-      mapTags(session[field], prefix, function (err, tagIds) {
-        session[field] = tagIds;
-        cb(null);
-      });
-    }
-
-    async.parallel([
-      function(parallelCb) {
-        tags(session, "ta", "", parallelCb);
-      },
-      function(parallelCb) {
-        tags(session, "hh1", "http:header:", parallelCb);
-      },
-      function(parallelCb) {
-        tags(session, "hh2", "http:header:", parallelCb);
-      }],
-      function() {
-        var id = session.id;
-        delete session.id;
-        Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
-        });
-      }
-    );
+    var id = session.id;
+    delete session.id;
+    Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
+    });
   }
 
   function chunkWrite(chunk) {
@@ -5789,7 +5567,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
     // If we know the session len and haven't read the session
     if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
       session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
-      session.no = Config.nodeName();
+      session.node = Config.nodeName();
       buffer = buffer.slice(sessionlen);
 
       if (filelen > 0) {
@@ -6036,10 +5814,8 @@ function processCronQuery(cq, options, query, endTime, cb) {
           }
 
           var tags = options.tags.split(",");
-          mapTags(tags, "", function(err, tagIds) {
-            sessionsListFromIds(null, ids, ["ta", "tags-term", "node"], function(err, list) {
-              addTagsList(tagIds, tags, list, doNext);
-            });
+          sessionsListFromIds(null, ids, ["tags", "node"], function(err, list) {
+            addTagsList(tags, list, doNext);
           });
         } else {
           console.log("Unknown action", cq);

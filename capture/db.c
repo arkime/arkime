@@ -845,8 +845,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_CERTSINFO: {
             MolochCertsInfoHashStd_t *cihash = session->fields[pos]->cihash;
 
-            BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, *cihash));
-            BSB_EXPORT_cstr(jbsb, "\"tls\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"certCnt\":%d,", HASH_COUNT(t_, *cihash));
+            BSB_EXPORT_cstr(jbsb, "\"cert\":[");
 
             MolochCertsInfo_t *certs;
             MolochString_t *string;
@@ -855,7 +855,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 BSB_EXPORT_u08(jbsb, '{');
 
                 if (certs->issuer.commonName.s_count > 0) {
-                    BSB_EXPORT_cstr(jbsb, "\"iCn\":[");
+                    BSB_EXPORT_cstr(jbsb, "\"issuerCN\":[");
                     while (certs->issuer.commonName.s_count > 0) {
                         DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
                         moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
@@ -871,13 +871,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
 
                 if (certs->issuer.orgName) {
-                    BSB_EXPORT_cstr(jbsb, "\"iOn\":");
+                    BSB_EXPORT_cstr(jbsb, "\"issuerON\":");
                     moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
                     BSB_EXPORT_u08(jbsb, ',');
                 }
 
                 if (certs->subject.commonName.s_count) {
-                    BSB_EXPORT_cstr(jbsb, "\"sCn\":[");
+                    BSB_EXPORT_cstr(jbsb, "\"subjectCN\":[");
                     while (certs->subject.commonName.s_count > 0) {
                         DLL_POP_HEAD(s_, &certs->subject.commonName, string);
                         moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
@@ -891,14 +891,14 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 }
 
                 if (certs->subject.orgName) {
-                    BSB_EXPORT_cstr(jbsb, "\"sOn\":");
+                    BSB_EXPORT_cstr(jbsb, "\"subjectON\":");
                     moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
                     BSB_EXPORT_u08(jbsb, ',');
                 }
 
                 if (certs->serialNumber) {
                     int k;
-                    BSB_EXPORT_cstr(jbsb, "\"sn\":\"");
+                    BSB_EXPORT_cstr(jbsb, "\"serial\":\"");
                     for (k = 0; k < certs->serialNumberLen; k++) {
                         BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
                     }
@@ -907,7 +907,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 }
 
                 if (certs->alt.s_count) {
-                    BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
+                    BSB_EXPORT_sprintf(jbsb, "\"altCnt\":%d,", certs->alt.s_count);
                     BSB_EXPORT_cstr(jbsb, "\"alt\":[");
                     while (certs->alt.s_count > 0) {
                         DLL_POP_HEAD(s_, &certs->alt, string);
@@ -921,10 +921,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_u08(jbsb, ',');
                 }
 
-                BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore);
-                BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter);
+                BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore*1000);
+                BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter*1000);
                 if (certs->notAfter >= certs->notBefore)
-                    BSB_EXPORT_sprintf(jbsb, "\"diffDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
+                    BSB_EXPORT_sprintf(jbsb, "\"validDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 

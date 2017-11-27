@@ -1,20 +1,20 @@
 ul.nav.nav-pills.margined-bottom-xlg
-  if (session.ro)
+  if (session.rootId)
     li.cursor-pointer
-      a(ng-click='$ctrl.allSessions(' + '"' + session.ro + '"' + ', ' + session.fp + ')') All Sessions
+      a(ng-click='$ctrl.allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
     li.cursor-pointer
-      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
+      a(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
     li.cursor-pointer
-      a(href=session.no + '/entirePcap/' + session.ro + '.pcap', target="_blank") Download Entire Pcap
+      a(href=session.node + '/entirePcap/' + session.rootId + '.pcap', target="_blank") Download Entire Pcap
   else
     li.cursor-pointer
-      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Pcap
+      a(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank") Download Pcap
   li.cursor-pointer
-    a(href=session.no + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
+    a(href=session.node + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
   li.cursor-pointer
-    a(href=session.no + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
+    a(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.cursor-pointer
-    a(ng-click="openPermalink()", href='sessions?expression=id=' + session.id + '&startTime=' + session.fp + '&stopTime=' + session.lp + '&openAll=1') Permalink
+    a(ng-click="openPermalink()", href='sessions?expression=id=' + session.id + '&startTime=' + session.firstPacket + '&stopTime=' + session.lastPacket + '&openAll=1') Permalink
   li.cursor-pointer.dropdown
     a(data-toggle="dropdown", role="button") Actions &nbsp;
       span.fa.fa-caret-down
@@ -26,34 +26,34 @@ dl
   dt Id
   dd
     +clickableValue('id', session.id)
-    if (session.ro)
+    if (session.rootId)
       strong.margined-left-xxxxlg Root Id:
-      +clickableValue('rootId', session.ro)
+      +clickableValue('rootId', session.rootId)
     else
       | &nbsp;
 
   dt Start
   dd
-    + clickableValue('starttime', session.lp, true)
+    + clickableValue('starttime', session.lastPacket, true)
     strong.margined-left-xxxxlg Stop
-    + clickableValue('stoptime', session.lp, true)
+    + clickableValue('stoptime', session.lastPacket, true)
 
   dt
     +clickableLabel('node', 'Node')
   dd
-    +clickableValue('node', session.no, true)
+    +clickableValue('node', session.node, true)
 
-  +arrayList(session, "prot-term", "Protocols", "protocols")
+  +arrayList(session, "protocol", "Protocols", "protocols")
 
   dt
    +clickableLabel('ip.protocol', 'IP Protocol')
   dd
-    +clickableValue('ip.protocol', session.pr)
+    +clickableValue('ip.protocol', session.ipProtocol)
 
   +arrayList(session, "user", "Users", "user")
-  +arrayList(session, "asset-term", "Assets", "asset")
+  +arrayList(session, "asset", "Assets", "asset")
 
-  if (session.by1 || session.by2)
+  if (session.srcBytes || session.dstBytes)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
@@ -91,13 +91,13 @@ dl
               | Open Src Databytes SPI Graph
     dd
       strong.medium Packets
-      +clickableValue('packets.src', session.pa1)
+      +clickableValue('packets.src', session.srcPackets)
 
       strong.medium.margined-left-xxlg Bytes
-      +clickableValue('bytes.src', session.by1)
+      +clickableValue('bytes.src', session.srcBytes)
 
       strong.medium.margined-left-xxlg Databytes
-      +clickableValue('databytes.src', session.db1)
+      +clickableValue('databytes.src', session.srcDataBytes)
 
     dt
       div.btn-group.clickable-label(uib-dropdown="")
@@ -136,15 +136,15 @@ dl
               | Open Dst Databytes SPI Graph
     dd
       strong.medium Packets
-      +clickableValue('packets.dst', session.pa2)
+      +clickableValue('packets.dst', session.dstPackets)
 
       strong.medium.margined-left-xxlg Bytes
-      +clickableValue('bytes.dst', session.by2)
+      +clickableValue('bytes.dst', session.dstBytes)
 
       strong.medium.margined-left-xxlg Databytes
-      +clickableValue('databytes.dst', session.db2)
+      +clickableValue('databytes.dst', session.dstDataBytes)
 
-  if (session["mac1-term"])
+  if (session["srcMac"])
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
@@ -182,10 +182,10 @@ dl
               | Open VLan SPI Graph
     dd
       strong.medium Src Mac
-      +arrayPrint(session, "mac1-term", "mac.src", true)
+      +arrayPrint(session, "srcMac", "mac.src", true)
 
       strong.medium.margined-left-xxlg Dst Mac
-      +arrayPrint(session, "mac2-term", "mac.dst", true)
+      +arrayPrint(session, "dstMac", "mac.dst", true)
 
       if (session.vlan)
         strong.medium.margined-left-xxlg VLan
@@ -264,10 +264,7 @@ dl
           a.cursor-pointer(ng-click="$ctrl.openSpiGraph('rir.src')")
             | Open Src RIR SPI Graph
   dd
-    if (session['tipv61-term'])
-      +ipPrint6(session['tipv61-term'], session.p1, session.g1, session.as1, session.rir1, "src")
-    else
-      +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
+    +ipPrint(session.srcIp, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
 
   dt
     div.btn-group.clickable-label(uib-dropdown="")
@@ -342,12 +339,9 @@ dl
           a.cursor-pointer(ng-click="$ctrl.openSpiGraph('rir.dst')")
             | Open Dst RIR SPI Graph
   dd
-    if (session['tipv62-term'])
-      +ipPrint6(session['tipv62-term'], session.p2, session.g2, session.as2, session.rir2, "dst")
-    else
-      +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+    +ipPrint(session.dstIp, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
 
-  if (session.fb1 || session.fb2)
+  if (session.srcPayload8 || session.dstPayload8)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
@@ -374,26 +368,26 @@ dl
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('payload8.dst.hex')")
               | Open Dst Payload8 SPI Graph
     dd
-      if (session.fb1)
+      if (session.srcPayload8)
         strong.medium Src
-        - var fb1a = new Buffer(session.fb1, "hex").toString();
-        +clickableValue('payload8.src.hex', session.fb1)
+        - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
+        +clickableValue('payload8.src.hex', session.srcPayload8)
         | (
-        +clickableValue('payload8.src.utf8', fb1a)
+        +clickableValue('payload8.src.utf8', srcPayload8a)
         |)
-      if (session.fb2)
-        if (session.fb1)
+      if (session.dstPayload8)
+        if (session.srcPayload8)
           strong.medium.margined-left-xxlg Dst
         else
           strong.medium Dst
-        - var fb2a = new Buffer(session.fb2, "hex").toString();
-        +clickableValue('payload8.dst.hex', session.fb2)
+        - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
+        +clickableValue('payload8.dst.hex', session.dstPayload8)
         | (
-        +clickableValue('payload8.dst.utf8', fb2a)
+        +clickableValue('payload8.dst.utf8', dstPayload8a)
         |)
 
   div.tag-list
-    +arrayList(session, "ta", "Tags", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-theme-secondary margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-theme-secondary margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
 
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files", "file")
@@ -405,7 +399,7 @@ dl
       div.margined-top-sm.margined-bottom-sm
         | By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
 
-  if (session.socksip)
+  if (session.socks)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
@@ -443,10 +437,10 @@ dl
               | Open Socks Country SPI Graph
           li.divider
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('rawassocksip', 0)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('socks.ip', 0)")
               | Export Unique Socks ASN
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('rawassocksip', 1)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('socks.ip', 1)")
               | Export Unique Socks ASN with counts
           li
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('asn.socks')")
@@ -462,16 +456,12 @@ dl
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('rir.socks')")
               | Open Socks RIR SPI Graph
     dd
-      +ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
+      +ipPrint(session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks")
 
-  if (session.greip)
-    +ipArrayList(session, "greip", "GRE IPs", "gre.ip")
-
-  if (session.socksho)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
-          strong Socks Dst&nbsp;
+          strong Socks Host&nbsp;
           span.caret
         ul.dropdown-menu(uib-dropdown-menu="")
           li
@@ -494,15 +484,19 @@ dl
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('port.socks')")
               | Open Socks Port SPI Graph
     dd
-      +clickableValue('host.socks', session.socksho)
+      +clickableValue('host.socks', session.socks.host)
       | :
-      +clickableValue('port.socks', session.sockspo)
+      +clickableValue('port.socks', session.socks.port)
 
-  if (session.socksuser)
-    dt
-      +clickableLabel('socks.user', 'Socks User')
-    dd
-      +clickableValue('socks.user', session.socksuser)
+    if (session.socks.user)
+      dt
+        +clickableLabel('socks.user', 'Socks User')
+      dd
+        +clickableValue('socks.user', session.socks.user)
+
+  if (session.gre)
+    +ipArrayList(session.gre.ip, "ip", "GRE IPs", "gre.ip")
+
   if (session.tcpflags)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
@@ -594,7 +588,8 @@ dl
       +clickableValue('tcpflags.fin', session.tcpflags.fin)
       strong.medium.margined-left-xxlg URG
       +clickableValue('tcpflags.urg', session.tcpflags.urg)
-  if (session.icmpCode || session.icmpType)
+
+  if (session.icmp)
     dt
       div.btn-group.clickable-label(uib-dropdown="")
         button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
@@ -602,19 +597,19 @@ dl
           span.caret
         ul.dropdown-menu(uib-dropdown-menu="")
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpType', 0)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmp.type', 0)")
               | Export Unique ICMP Type
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpType', 1)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmp.type', 1)")
               | Export Unique ICMP Type with counts
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpCode', 0)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmp.code', 0)")
               | Export Unique ICMP Code
           li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmpCode', 1)")
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('icmp.code', 1)")
               | Export Unique ICMP Code with counts
     dd
       strong.medium Type
-      +arrayPrint(session, "icmpType", "icmp.type")
+      +arrayPrint(session.icmp, "type", "icmp.type")
       strong.medium.margined-left-xxlg Code
-      +arrayPrint(session, "icmpCode", "icmp.code")
+      +arrayPrint(session.icmp, "code", "icmp.code")

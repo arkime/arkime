@@ -960,7 +960,7 @@ nodes.forEach((node) => {
 
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
-    apiVersion: "1.2",
+    apiVersion: "5.3",
     requestTimeout: 300000
   });
 
@@ -968,8 +968,8 @@ nodes.forEach((node) => {
     if (err) {
       console.log(err);
     }
-    if (data.version.number.match(/^(1.[01]|0)/)) {
-      console.log("ES", data.version.number,"is not supported, upgrade to 1.2.x or 1.3.x:", node);
+    if (data.version.number.match(/^([01234])/)) {
+      console.log("ES", data.version.number,"is not supported, upgrade to 5.6.x:", node);
       process.exit();
     }
   });

@@ -268,42 +268,6 @@ sub esAlias
 }
 
 ################################################################################
-sub tagsCreate
-{
-    my $settings = '
-{
-  "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0,
-    "auto_expand_replicas": "0-3"
-  }
-}';
-
-    print "Creating tags_v3 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}tags_v3", $settings);
-    esAlias("add", "tags_v3", "tags");
-    tagsUpdate();
-}
-
-################################################################################
-sub tagsUpdate
-{
-    my $mapping = '
-{
-  "tag": {
-    "dynamic": "strict",
-    "properties": {
-      "n": {
-        "type": "integer"
-      }
-    }
-  }
-}';
-
-    print "Setting tags_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}tags_v3/tag/_mapping", $mapping);
-}
-################################################################################
 sub sequenceCreate
 {
     my $settings = '
@@ -2192,7 +2156,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1", "${PREFIX}tags_v3", "${PREFIX}users_v4") {
+    foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1",  "${PREFIX}users_v4") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
         esPost("/$i/_upgrade", "", 1);
@@ -2417,8 +2381,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
     printIndex($status, "files_v4");
     printIndex($status, "files_v3");
-    printIndex($status, "tags_v3");
-    printIndex($status, "tags_v2");
     printIndex($status, "users_v4");
     printIndex($status, "users_v3");
     exit 0;
@@ -2652,7 +2614,6 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     sleep(1);
 
     print "Creating\n";
-    tagsCreate();
     sequenceCreate();
     filesCreate();
     statsCreate();
@@ -2698,10 +2659,6 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         } else {
             createAliasedFromNonAliased("queries", "queries_v1", \&queriesCreate);
         }
-
-        esDelete("/${PREFIX}tags_v1", 1);
-        createAliasedFromNonAliased("fields", "fields_v1", \&fieldsCreate);
-        createNewAliasesFromOld("tags", "tags_v3", "tags_v2", \&tagsCreate);
 
         esDelete("/${PREFIX}users_v1", 1);
         esDelete("/${PREFIX}users_v2", 1);
