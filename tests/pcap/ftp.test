@@ -1,33 +1,53 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160201",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "fileIds" : [],
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               115,
-               82,
-               98,
-               82,
-               116,
-               104,
-               105
+            "protocol" : [
+               "ftp",
+               "tcp"
             ],
-            "srcPayload8" : "5553455220616e6f",
-            "dstMacCnt" : 1,
-            "srcDataBytes" : 38,
-            "ipDst" : "129.21.171.72",
-            "totPackets" : 10,
             "dstPayload8" : "3232302057656c63",
-            "dstGEO" : "USA",
-            "firstPacket" : 1454301530932,
-            "dstRIR" : "ARIN",
+            "ipDst" : "129.21.171.72",
+            "srcMacCnt" : 1,
+            "dstASN" : "AS4385 Rochester Institute of Technology",
             "length" : 78,
-            "userCnt" : 1,
-            "srcBytes" : 376,
-            "dstPackets" : 5,
+            "lastPacket" : 1454301531009,
+            "fileIds" : [],
+            "node" : "test",
+            "srcPort" : 43958,
+            "dstMac" : [
+               "58:f3:9c:f7:2f:9f"
+            ],
+            "dstBytes" : 428,
+            "srcDataBytes" : 38,
+            "tcpflags" : {
+               "ack" : 3,
+               "rst" : 0,
+               "psh" : 5,
+               "fin" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1
+            },
+            "user" : [
+               "anonymous"
+            ],
+            "ipProtocol" : 6,
+            "srcPayload8" : "5553455220616e6f",
+            "totPackets" : 10,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 90,
+            "segments" : 1,
+            "srcMac" : [
+               "00:08:e3:ff:fc:28"
+            ],
+            "totBytes" : 804,
             "packetPosArray" : [
                24,
                114,
@@ -40,50 +60,30 @@
                779,
                883
             ],
-            "dstDataBytes" : 90,
-            "srcPort" : 43958,
-            "totDataBytes" : 128,
-            "srcMacCnt" : 1,
-            "protocolCnt" : 2,
-            "ipProtocol" : 6,
-            "srcPackets" : 5,
-            "tcpflags" : {
-               "urg" : 0,
-               "fin" : 0,
-               "ack" : 3,
-               "psh" : 5,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "rst" : 0
-            },
-            "segments" : 1,
+            "dstGEO" : "USA",
             "dstPort" : 21,
-            "lastPacket" : 1454301531009,
-            "dstASN" : "AS4385 Rochester Institute of Technology",
-            "dstBytes" : 428,
-            "protocol" : [
-               "ftp",
-               "tcp"
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               115,
+               82,
+               98,
+               82,
+               116,
+               104,
+               105
             ],
+            "dstPackets" : 5,
+            "dstRIR" : "ARIN",
+            "totDataBytes" : 128,
+            "userCnt" : 1,
+            "firstPacket" : 1454301530932,
+            "dstMacCnt" : 1,
+            "srcBytes" : 376,
             "ipSrc" : "10.10.30.26",
-            "srcMac" : [
-               "00:08:e3:ff:fc:28"
-            ],
-            "node" : "test",
             "timestamp" : "SET",
-            "totBytes" : 804,
-            "dstMac" : [
-               "58:f3:9c:f7:2f:9f"
-            ],
-            "user" : [
-               "anonymous"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-160201",
-               "_type" : "session"
-            }
+            "srcPackets" : 5
          }
       }
    ]

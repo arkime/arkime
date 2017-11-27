@@ -2,17 +2,26 @@
    "sessions2" : [
       {
          "body" : {
-            "tcpflags" : {
-               "fin" : 2,
-               "psh" : 8,
-               "ack" : 8,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 3
-            },
-            "dstASN" : "AS36459 GitHub, Inc.",
-            "srcPort" : 50754,
+            "srcPayload8" : "8080010301005700",
+            "srcMacCnt" : 1,
+            "ipSrc" : "10.180.156.141",
+            "dstRIR" : "ARIN",
+            "srcDataBytes" : 613,
+            "protocolCnt" : 2,
+            "srcPackets" : 14,
+            "firstPacket" : 1385410273592,
+            "srcBytes" : 1513,
+            "dstPayload8" : "1603010051020000",
+            "totBytes" : 6319,
+            "tlscnt" : 2,
+            "segments" : 1,
+            "length" : 536,
+            "ipProtocol" : 6,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "timestamp" : "SET",
+            "dstBytes" : 4806,
             "packetLenArray" : [
                94,
                90,
@@ -38,55 +47,39 @@
                70,
                70
             ],
-            "totPackets" : 23,
-            "ipSrc" : "10.180.156.141",
-            "tls" : {
-               "dstSessionId" : [
-                  "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1,
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ]
-            },
-            "srcDataBytes" : 613,
+            "dstGEO" : "USA",
+            "fileIds" : [],
+            "dstPackets" : 9,
             "protocol" : [
                "tls",
                "tcp"
             ],
-            "srcBytes" : 1513,
-            "totDataBytes" : 4817,
-            "dstRIR" : "ARIN",
-            "fileIds" : [],
             "lastPacket" : 1385410274128,
-            "ipProtocol" : 6,
-            "dstBytes" : 4806,
-            "dstGEO" : "USA",
             "dstPort" : 443,
-            "dstPackets" : 9,
-            "length" : 536,
-            "tlscnt" : 2,
-            "dstPayload8" : "1603010051020000",
-            "ipDst" : "192.30.252.131",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcPackets" : 14,
-            "firstPacket" : 1385410273592,
-            "totBytes" : 6319,
-            "srcPayload8" : "8080010301005700",
-            "protocolCnt" : 2,
+            "tls" : {
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
+               ]
+            },
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "srcMacCnt" : 1,
+            "dstDataBytes" : 4204,
+            "ipDst" : "192.30.252.131",
+            "dstMacCnt" : 2,
+            "totPackets" : 23,
             "node" : "test",
-            "srcGEO" : "USA",
+            "srcPort" : 50754,
+            "dstASN" : "AS36459 GitHub, Inc.",
             "packetPosArray" : [
                24,
                118,
@@ -112,15 +105,22 @@
                6571,
                6641
             ],
-            "timestamp" : "SET",
-            "segments" : 1,
-            "dstDataBytes" : 4204,
-            "dstMacCnt" : 2
+            "tcpflags" : {
+               "urg" : 0,
+               "ack" : 8,
+               "psh" : 8,
+               "fin" : 2,
+               "syn" : 1,
+               "rst" : 3,
+               "syn-ack" : 1
+            },
+            "totDataBytes" : 4817,
+            "srcGEO" : "USA"
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131125"
+               "_index" : "tests_sessions2-131125",
+               "_type" : "session"
             }
          }
       }

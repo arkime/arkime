@@ -1,62 +1,15 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131212",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               153,
-               82,
-               110,
-               82,
-               262,
-               118,
-               113,
-               121,
-               124,
-               82,
-               128,
-               82,
-               1071,
-               82,
-               85,
-               82,
-               114,
-               82,
-               88,
-               82,
-               173,
-               82,
-               82,
-               82,
-               82
-            ],
-            "dstPayload8" : "3232302078787878",
-            "dstGEO" : "USA",
-            "srcMacCnt" : 1,
-            "srcBytes" : 2033,
-            "totBytes" : 3458,
-            "tagsCnt" : 1,
-            "tags" : [
-               "smtp:statuscode:250"
-            ],
-            "totPackets" : 28,
-            "dstPackets" : 14,
-            "srcPayload8" : "45484c4f20787878",
-            "tcpflags" : {
-               "psh" : 13,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "urg" : 0,
-               "rst" : 0,
-               "fin" : 2,
-               "ack" : 11
-            },
-            "firstPacket" : 1386817958900,
-            "dstRIR" : "ARIN",
-            "dstBytes" : 1425,
-            "ipProtocol" : 6,
+            "fileIds" : [],
+            "ipDst" : "64.236.55.17",
             "packetPosArray" : [
                24,
                114,
@@ -87,53 +40,71 @@
                3766,
                3848
             ],
-            "ipSrc" : "10.180.156.249",
-            "srcDataBytes" : 1101,
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "timestamp" : "SET",
-            "protocolCnt" : 2,
-            "fileIds" : [],
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "length" : 302,
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstPort" : 25,
             "srcGEO" : "USA",
-            "dstDataBytes" : 493,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               153,
+               82,
+               110,
+               82,
+               262,
+               118,
+               113,
+               121,
+               124,
+               82,
+               128,
+               82,
+               1071,
+               82,
+               85,
+               82,
+               114,
+               82,
+               88,
+               82,
+               173,
+               82,
+               82,
+               82,
+               82
+            ],
+            "dstRIR" : "ARIN",
+            "ipProtocol" : 6,
+            "segments" : 1,
+            "srcPackets" : 14,
+            "dstMacCnt" : 2,
+            "dstPort" : 25,
             "email" : {
-               "subject" : [
-                  "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
+               "subjectCnt" : 1,
+               "headersCnt" : 10,
+               "contentTypeCnt" : 1,
+               "src" : [
+                  "xxxxx@xxx.net"
                ],
+               "srcCnt" : 1,
+               "contentType" : [
+                  "text/plain; charset=us-ascii"
+               ],
+               "idCnt" : 1,
                "dst" : [
                   "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "hostCnt" : 2,
+               "ip" : [
+                  "127.0.0.1"
                ],
                "host" : [
                   "localhost",
                   "xxxxxxxxxxxxx.xxx.com"
                ],
-               "dstCnt" : 1,
+               "RIR" : [
+                  ""
+               ],
                "id" : [
                   "20131212031238.GA1705@xxx.net"
-               ],
-               "ASN" : [
-                  "---"
-               ],
-               "hostCnt" : 2,
-               "idCnt" : 1,
-               "useragentCnt" : 1,
-               "headersCnt" : 10,
-               "srcCnt" : 1,
-               "subjectCnt" : 1,
-               "useragent" : [
-                  "Mutt/1.5.20 (2009-12-10)"
                ],
                "headers" : [
                   "content-type",
@@ -147,42 +118,71 @@
                   "date",
                   "subject"
                ],
+               "mimeVersion" : [
+                  "1.0"
+               ],
                "GEO" : [
                   "---"
                ],
-               "contentType" : [
-                  "text/plain; charset=us-ascii"
+               "subject" : [
+                  "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
                ],
-               "contentTypeCnt" : 1,
-               "ip" : [
-                  2130706433
+               "ASN" : [
+                  "---"
                ],
+               "useragent" : [
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "dstCnt" : 1,
+               "useragentCnt" : 1,
                "ipCnt" : 1,
-               "RIR" : [
-                  ""
-               ],
-               "src" : [
-                  "xxxxx@xxx.net"
-               ],
-               "mimeVersionCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ]
+               "mimeVersionCnt" : 1
             },
+            "srcBytes" : 2033,
             "totDataBytes" : 1594,
+            "firstPacket" : 1386817958900,
+            "lastPacket" : 1386817959201,
+            "dstPayload8" : "3232302078787878",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "dstDataBytes" : 493,
+            "totPackets" : 28,
+            "srcMacCnt" : 1,
+            "dstGEO" : "USA",
+            "timestamp" : "SET",
+            "tags" : [
+               "smtp:statuscode:250"
+            ],
+            "length" : 302,
+            "totBytes" : 3458,
+            "ipSrc" : "10.180.156.249",
             "srcPort" : 35803,
-            "srcPackets" : 14,
-            "ipDst" : "64.236.55.17",
-            "dstMacCnt" : 2,
-            "segments" : 1,
-            "node" : "test",
-            "lastPacket" : 1386817959201
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131212"
-            }
+            "srcDataBytes" : 1101,
+            "protocolCnt" : 2,
+            "dstPackets" : 14,
+            "tcpflags" : {
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "ack" : 11,
+               "psh" : 13,
+               "fin" : 2
+            },
+            "tagsCnt" : 1,
+            "dstBytes" : 1425,
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "srcPayload8" : "45484c4f20787878",
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "node" : "test"
          }
       }
    ]

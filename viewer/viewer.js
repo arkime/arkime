@@ -304,6 +304,12 @@ function loadFields() {
   Db.loadFields(function (err, data) {
     if (err) {data = [];}
     else {data = data.hits.hits;}
+
+    // Everything will use dbField2 as dbField
+    for (let i = 0, ilen = data.length; i < ilen; i++) {
+      data[i]._source.dbField = data[i]._source.dbField2 || undefined;
+      delete data[i]._source.rawField;
+    }
     Config.loadFields(data);
     app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
     app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
@@ -1941,13 +1947,13 @@ function buildSessionQuery(req, buildCb) {
 
     switch (req.query.bounding) {
     case "first":
-       query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval, min_doc_count:1 };
+       query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval*1000, min_doc_count:1 };
       break;
     case "database":
       query.aggregations.dbHisto.histogram = { field:'timestamp', interval:interval*1000, min_doc_count:1 };
       break;
     default:
-      query.aggregations.dbHisto.histogram = { field:'lastPacket', interval:interval, min_doc_count:1 };
+      query.aggregations.dbHisto.histogram = { field:'lastPacket', interval:interval*1000, min_doc_count:1 };
       break;
     }
   }
@@ -2750,10 +2756,10 @@ function mapMerge(aggregations) {
 function graphMerge(req, query, aggregations) {
   var graph = {
     lpHisto: [],
-    srcDataBytesHisto: [],
-    dstDataBytesHisto: [],
-    srcPacketsHisto: [],
-    dstPacketsHisto: [],
+    db1Histo: [],
+    db2Histo: [],
+    pa1Histo: [],
+    pa2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
@@ -2763,26 +2769,15 @@ function graphMerge(req, query, aggregations) {
     return graph;
   }
 
-  if (req.query.bounding === "database") {
-    graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
-    aggregations.dbHisto.buckets.forEach(function (item) {
-      var key = item.key;
-      graph.lpHisto.push([key, item.doc_count]);
-      graph.srcPacketsHisto.push([key, item.srcPackets.value]);
-      graph.dstPacketsHisto.push([key, item.dstPackets.value]);
-      graph.srcDataBytesHisto.push([key, item.srcDataBytes.value]);
-      graph.dstDataBytesHisto.push([key, item.dstDataBytes.value]);
-    });
-  } else {
-    aggregations.dbHisto.buckets.forEach(function (item) {
-      var key = item.key*1000;
-      graph.lpHisto.push([key, item.doc_count]);
-      graph.srcPacketsHisto.push([key, item.srcPackets.value]);
-      graph.dstPacketsHisto.push([key, item.dstPackets.value]);
-      graph.srcDataBytesHisto.push([key, item.srcDataBytes.value]);
-      graph.dstDataBytesHisto.push([key, item.dstDataBytes.value]);
-    });
-  }
+  graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
+  aggregations.dbHisto.buckets.forEach(function (item) {
+    var key = item.key;
+    graph.lpHisto.push([key, item.doc_count]);
+    graph.pa1Histo.push([key, item.srcPackets.value]);
+    graph.pa2Histo.push([key, item.dstPackets.value]);
+    graph.db1Histo.push([key, item.srcDataBytes.value]);
+    graph.db2Histo.push([key, item.dstDataBytes.value]);
+  });
   return graph;
 }
 
@@ -3104,11 +3099,11 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
 
           r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
-            r.graph.xmin = results.graph.xmin || results.graph.srcPacketsHisto[0][0];
+            r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
           }
 
           if (r.graph.xmax === null) {
-            r.graph.xmax = results.graph.xmax || results.graph.srcPacketsHisto[results.graph.srcPacketsHisto.length-1][0];
+            r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length-1][0];
           }
 
           r.map = mapMerge(result.responses[i].aggregations);
@@ -3120,8 +3115,8 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
             var graph = r.graph;
             for (let i = 0; i < graph.lpHisto.length; i++) {
               r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.srcDataBytesHisto[i][1] + graph.dstDataBytesHisto[i][1];
-              r.paHisto += graph.srcPacketsHisto[i][1] + graph.dstPacketsHisto[i][1];
+              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+              r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
             }
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || "lpHisto";
@@ -3167,7 +3162,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     }
 
     if (req.query.facets) {
-      query.aggregations.protocols = {terms: {field: "prot-term", size:1000}};
+      query.aggregations.protocols = {terms: {field: "protocol", size:1000}};
     }
 
     queryValueToArray(req.query.spi).forEach(function (item) {
@@ -3279,18 +3274,6 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
             results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
             parallelCb();
           });
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "ta", parallelCb, 0);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh", parallelCb, 12);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh1", parallelCb, 12);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh2", parallelCb, 12);
         }],
         function() {
           r = {health: results.health,

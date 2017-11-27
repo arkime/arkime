@@ -33,7 +33,7 @@
   "scripts": {
     "start": "node viewer.js -c ../config.ini",
     "start:test": "node viewer.js -c ../tests/config.test.ini -n test & webpack -d --watch --display-error-details",
-    "start:testuser": "node viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --display-error-details",
+    "start:testuser": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack -d --watch --display-error-details",
     "addtestuser": "node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin",
     "start:dev": "node viewer.js -c config.dev.ini & webpack -d --watch --display-error-details",
     "prestart": "npm run bundle:min",

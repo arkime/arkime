@@ -8,60 +8,72 @@
             }
          },
          "body" : {
-            "totPackets" : 14,
-            "smb" : {
-               "osCnt" : 1,
-               "user" : [
-                  "administrator"
-               ],
-               "domain" : [
-                  "VNET3"
-               ],
-               "shareCnt" : 1,
-               "version" : [
-                  "Samba 3.9.0-SVN-build-11572"
-               ],
-               "userCnt" : 1,
-               "share" : [
-                  "\\\\192.168.114.129\\TEST"
-               ],
-               "domainCnt" : 1,
-               "host" : [
-                  "BLU"
-               ],
-               "versionCnt" : 1,
-               "hostCnt" : 1,
-               "os" : [
-                  "Unix"
-               ]
-            },
-            "length" : 56,
             "dstDataBytes" : 922,
-            "timestamp" : "SET",
+            "srcPort" : 52703,
             "segments" : 1,
-            "ipDst" : "192.168.114.129",
-            "ipProtocol" : 6,
-            "dstPayload8" : "00000095ff534d42",
-            "dstPackets" : 6,
-            "ipSrc" : "192.168.114.1",
             "tcpflags" : {
-               "fin" : 0,
+               "syn-ack" : 1,
                "ack" : 2,
-               "psh" : 10,
-               "urg" : 0,
                "rst" : 0,
+               "psh" : 10,
+               "fin" : 0,
                "syn" : 1,
-               "syn-ack" : 1
+               "urg" : 0
             },
+            "dstMac" : [
+               "00:0c:29:30:60:27"
+            ],
             "srcMac" : [
                "00:50:56:c0:00:01"
             ],
-            "srcPackets" : 8,
+            "dstPort" : 445,
+            "timestamp" : "SET",
+            "dstPackets" : 6,
             "node" : "test",
+            "dstBytes" : 1326,
+            "totBytes" : 2764,
+            "totPackets" : 14,
+            "srcDataBytes" : 902,
             "srcPayload8" : "000000dbff534d42",
+            "smb" : {
+               "domain" : [
+                  "VNET3"
+               ],
+               "version" : [
+                  "Samba 3.9.0-SVN-build-11572"
+               ],
+               "os" : [
+                  "Unix"
+               ],
+               "user" : [
+                  "administrator"
+               ],
+               "userCnt" : 1,
+               "osCnt" : 1,
+               "domainCnt" : 1,
+               "versionCnt" : 1,
+               "host" : [
+                  "BLU"
+               ],
+               "share" : [
+                  "\\\\192.168.114.129\\TEST"
+               ],
+               "hostCnt" : 1,
+               "shareCnt" : 1
+            },
+            "srcRIR" : "ARIN",
+            "dstPayload8" : "00000095ff534d42",
             "dstMacCnt" : 1,
+            "ipProtocol" : 6,
+            "srcBytes" : 1438,
             "firstPacket" : 1132371118535,
-            "dstRIR" : "ARIN",
+            "protocolCnt" : 2,
+            "fileIds" : [],
+            "ipSrc" : "192.168.114.1",
+            "length" : 56,
+            "ipDst" : "192.168.114.129",
+            "lastPacket" : 1132371118592,
+            "srcMacCnt" : 1,
             "packetPosArray" : [
                24,
                114,
@@ -78,15 +90,13 @@
                2760,
                2881
             ],
-            "fileIds" : [],
-            "dstMac" : [
-               "00:0c:29:30:60:27"
-            ],
-            "protocolCnt" : 2,
+            "totDataBytes" : 1824,
             "protocol" : [
                "smb",
                "tcp"
             ],
+            "srcPackets" : 8,
+            "dstRIR" : "ARIN",
             "packetLenArray" : [
                90,
                90,
@@ -102,17 +112,7 @@
                140,
                121,
                131
-            ],
-            "dstBytes" : 1326,
-            "lastPacket" : 1132371118592,
-            "srcMacCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcPort" : 52703,
-            "srcBytes" : 1438,
-            "totDataBytes" : 1824,
-            "srcDataBytes" : 902,
-            "totBytes" : 2764,
-            "dstPort" : 445
+            ]
          }
       }
    ]

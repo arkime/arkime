@@ -224,7 +224,7 @@
           case 'seconds':
             this.time = true;
             qVal  = val; // save original value as the query value
-            val   = this.$filter('timezoneDateString')(parseInt(val), this.timezone);
+            val   = this.$filter('timezoneDateString')(parseInt(val)/1000, this.timezone);
             if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
               // only starttime and stoptime fields are applied to time inputs
               this.time = false;
@@ -232,7 +232,7 @@
             }
             break;
           case 'ip':
-            val   = this.$filter('extractIPString')(val);
+            val   = val;
             qVal  = val; // don't save original value (parsed val is query val)
             break;
           case 'lotermfield':

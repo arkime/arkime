@@ -1,15 +1,65 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-161224"
+            }
+         },
          "body" : {
-            "ipProtocol" : 6,
-            "dstDataBytes" : 951,
-            "srcPackets" : 5,
-            "protocolCnt" : 3,
-            "firstPacket" : 1482552218498,
-            "totPackets" : 10,
+            "fileIds" : [],
+            "protocol" : [
+               "tls",
+               "mysql",
+               "tcp"
+            ],
             "vlan" : [
                50
+            ],
+            "srcDataBytes" : 192,
+            "protocolCnt" : 3,
+            "firstPacket" : 1482552218498,
+            "dstDataBytes" : 951,
+            "totDataBytes" : 1143,
+            "tls" : {
+               "cipherCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_256_CBC_SHA"
+               ],
+               "versionCnt" : 1,
+               "version" : [
+                  "TLSv1.1"
+               ],
+               "ja3Cnt" : 1,
+               "dstSessionId" : [
+                  "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
+               ],
+               "ja3" : [
+                  "3509fd9d38bde48d8abc69cd321c0ba0"
+               ]
+            },
+            "srcMacCnt" : 2,
+            "timestamp" : "SET",
+            "dstBytes" : 1309,
+            "srcBytes" : 550,
+            "node" : "test",
+            "ipSrc" : "10.10.10.10",
+            "lastPacket" : 1482552218503,
+            "length" : 4,
+            "dstPort" : 3306,
+            "dstMac" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "ipDst" : "10.10.10.11",
+            "dstPayload8" : "4a0000000a352e37",
+            "segments" : 1,
+            "srcPayload8" : "200000018faa3a00",
+            "ipProtocol" : 6,
+            "srcMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
             ],
             "packetLenArray" : [
                94,
@@ -23,31 +73,9 @@
                86,
                959
             ],
-            "totDataBytes" : 1143,
-            "ipDst" : "10.10.10.11",
-            "dstMac" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "vlanCnt" : 1,
-            "tcpflags" : {
-               "psh" : 4,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "ack" : 4
-            },
+            "dstPackets" : 5,
             "tlscnt" : 1,
-            "srcBytes" : 550,
-            "dstPayload8" : "4a0000000a352e37",
-            "srcPort" : 41324,
-            "mysql" : {
-               "version" : "5.7.16"
-            },
-            "srcDataBytes" : 192,
-            "dstBytes" : 1309,
+            "totBytes" : 1859,
             "packetPosArray" : [
                24,
                118,
@@ -60,51 +88,23 @@
                998,
                1084
             ],
-            "dstMacCnt" : 2,
-            "timestamp" : "SET",
-            "totBytes" : 1859,
-            "tls" : {
-               "ja3" : [
-                  "3509fd9d38bde48d8abc69cd321c0ba0"
-               ],
-               "ja3Cnt" : 1,
-               "dstSessionId" : [
-                  "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
-               ],
-               "versionCnt" : 1,
-               "cipherCnt" : 1,
-               "version" : [
-                  "TLSv1.1"
-               ],
-               "cipher" : [
-                  "TLS_RSA_WITH_AES_256_CBC_SHA"
-               ]
+            "mysql" : {
+               "version" : "5.7.16"
             },
-            "ipSrc" : "10.10.10.10",
-            "dstPort" : 3306,
-            "fileIds" : [],
-            "length" : 4,
-            "node" : "test",
-            "protocol" : [
-               "tls",
-               "mysql",
-               "tcp"
-            ],
-            "srcPayload8" : "200000018faa3a00",
-            "srcMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "segments" : 1,
-            "srcMacCnt" : 2,
-            "lastPacket" : 1482552218503,
-            "dstPackets" : 5
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-161224",
-               "_type" : "session"
-            }
+            "srcPort" : 41324,
+            "dstMacCnt" : 2,
+            "srcPackets" : 5,
+            "vlanCnt" : 1,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "psh" : 4,
+               "syn" : 1,
+               "ack" : 4,
+               "fin" : 0,
+               "urg" : 0,
+               "rst" : 0
+            },
+            "totPackets" : 10
          }
       }
    ]

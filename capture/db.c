@@ -466,8 +466,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_sprintf(jbsb,
                       "\"timestamp\":%" PRIu64 ","
-                      "\"ipSrc\":\"%s\","
-                      "\"ipDst\":\"%s\",",
+                      "\"srcIp\":\"%s\","
+                      "\"dstIp\":\"%s\",",
                       ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000,
                       ipsrc,
                       ipdst);
@@ -672,7 +672,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_IP: {
-            const int             value = session->fields[pos]->i;
+            const uint32_t        value = session->fields[pos]->i;
             char                 *as;
             char                 *g;
             char                 *rir;
@@ -696,7 +696,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, rir);
             }
 
-            BSB_EXPORT_sprintf(jbsb, "\"%s\":%u,", config.fields[pos]->dbField, htonl(value));
+            snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":\"%s\",", config.fields[pos]->dbField, ipsrc);
             }
             break;
         case MOLOCH_FIELD_TYPE_IP_HASH: {
@@ -718,7 +719,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 cnt++;
                 if (cnt >= MAX_IPS)
                     break;
-                BSB_EXPORT_sprintf(jbsb, "%u,", htonl(hint->i_hash));
+
+                const uint32_t value = hint->i_hash;
+                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
+                BSB_EXPORT_sprintf(jbsb, "\"%s\",", ipsrc);
             );
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
@@ -788,7 +792,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 if (cnt >= MAX_IPS)
                     break;
 
-                BSB_EXPORT_sprintf(jbsb, "%u,", htonl((int)(long)ikey));
+                //const uint32_t value = htonl((int)(long)ikey);
+                const uint32_t value = (int)(long)ikey;
+                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
+                BSB_EXPORT_sprintf(jbsb, "\"%s\",", ipsrc);
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
@@ -1759,7 +1766,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
 
     key_len = snprintf(key, sizeof(key), "/%sfields/field/%s", config.prefix, expression);
 
-    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField\": \"%s\", \"type\": \"%s\"",
+    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
              friendlyName,
              group,
              help,

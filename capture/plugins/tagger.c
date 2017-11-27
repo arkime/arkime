@@ -678,15 +678,15 @@ void moloch_plugin_init()
       NULL
     );
 
-    tagsField      = moloch_field_by_db("ta");
-    httpHostField  = moloch_field_by_db("ho");
-    httpXffField   = moloch_field_by_db("xff");
-    httpMd5Field   = moloch_field_by_db("hmd5");
-    httpPathField  = moloch_field_by_db("hpath");
-    emailMd5Field  = moloch_field_by_db("emd5");
-    emailSrcField  = moloch_field_by_db("esrc");
-    emailDstField  = moloch_field_by_db("edst");
-    dnsHostField   = moloch_field_by_db("dnsho");
+    tagsField      = moloch_field_by_db("tags");
+    httpHostField  = moloch_field_by_db("http.host");
+    httpXffField   = moloch_field_by_db("http.xff");
+    httpMd5Field   = moloch_field_by_db("http.md5");
+    httpPathField  = moloch_field_by_db("http.path");
+    emailMd5Field  = moloch_field_by_db("email.md5");
+    emailSrcField  = moloch_field_by_db("email.src");
+    emailDstField  = moloch_field_by_db("emain.dst");
+    dnsHostField   = moloch_field_by_db("dns.host");
 
 
     /* Call right away sync, and schedule every 60 seconds async */

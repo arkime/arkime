@@ -53,14 +53,14 @@
           <small>
             <span class="fa fa-clock-o fa-fw"></span>
             <em>
-              {{::session.firstPacket | date:'yyyy/MM/dd HH:mm:ss'}} -
-              {{::session.lastPacket | date:'yyyy/MM/dd HH:mm:ss'}}
+              {{::session.firstPacket/1000 | date:'yyyy/MM/dd HH:mm:ss'}} -
+              {{::session.lastPacket/1000 | date:'yyyy/MM/dd HH:mm:ss'}}
             </em>
             <br>
             <strong>{{::session.srcIp}}</strong>:{{::session.srcPort}} <strong>{{::session.srcGEO}}</strong> -
             <strong>{{::session.dstIp}}</strong>:{{::session.dstPort}} <strong>{{::session.dstGEO}}</strong>
             <br>
-            <strong>{{::session.ipProtocol | protocol}}</strong> - {{::session.no}}
+            <strong>{{::session.ipProtocol | protocol}}</strong> - {{::session.node}}
           </small>
         </p>
       </a>

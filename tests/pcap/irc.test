@@ -2,84 +2,39 @@
    "sessions2" : [
       {
          "body" : {
-            "ipDst" : "38.229.70.20",
-            "srcPackets" : 14,
-            "ipSrc" : "10.180.156.249",
-            "length" : 14568,
-            "irc" : {
-               "channel" : [
-                  "#moloch-fpc"
-               ],
-               "nick" : [
-                  "molochtest"
-               ],
-               "channelCnt" : 1,
-               "nickCnt" : 1
+            "lastPacket" : 1387554256201,
+            "tcpflags" : {
+               "rst" : 0,
+               "fin" : 0,
+               "syn" : 1,
+               "urg" : 0,
+               "ack" : 16,
+               "psh" : 11,
+               "syn-ack" : 1
             },
-            "totDataBytes" : 7015,
             "dstGEO" : "USA",
-            "dstMacCnt" : 2,
+            "dstDataBytes" : 6901,
+            "dstPayload8" : "3a636172642e6672",
+            "length" : 14568,
+            "dstRIR" : "ARIN",
+            "ipProtocol" : 6,
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "tcpflags" : {
-               "psh" : 11,
-               "syn" : 1,
-               "ack" : 16,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "fin" : 0
-            },
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "lastPacket" : 1387554256201,
-            "srcDataBytes" : 114,
-            "dstRIR" : "ARIN",
-            "timestamp" : "SET",
-            "dstPayload8" : "3a636172642e6672",
-            "srcPort" : 45921,
-            "protocol" : [
-               "irc",
-               "tcp"
-            ],
-            "firstPacket" : 1387554241634,
+            "totBytes" : 8945,
+            "dstPackets" : 15,
+            "dstBytes" : 7899,
+            "srcPayload8" : "5553455220787878",
+            "fileIds" : [],
             "srcMacCnt" : 1,
+            "ipSrc" : "10.180.156.249",
+            "firstPacket" : 1387554241634,
+            "srcGEO" : "USA",
+            "timestamp" : "SET",
             "dstPort" : 8000,
+            "srcDataBytes" : 114,
+            "srcPackets" : 14,
             "protocolCnt" : 2,
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               403,
-               485,
-               584,
-               728,
-               810,
-               941,
-               1023,
-               1159,
-               1241,
-               1375,
-               1457,
-               2987,
-               3069,
-               4599,
-               4681,
-               4784,
-               6314,
-               7844,
-               7926,
-               8274,
-               8356,
-               8479,
-               8561,
-               8713,
-               8795
-            ],
             "srcBytes" : 1046,
             "node" : "test",
             "packetLenArray" : [
@@ -113,17 +68,62 @@
                82,
                638
             ],
+            "irc" : {
+               "channel" : [
+                  "#moloch-fpc"
+               ],
+               "channelCnt" : 1,
+               "nick" : [
+                  "molochtest"
+               ],
+               "nickCnt" : 1
+            },
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "packetPosArray" : [
+               24,
+               114,
+               204,
+               286,
+               403,
+               485,
+               584,
+               728,
+               810,
+               941,
+               1023,
+               1159,
+               1241,
+               1375,
+               1457,
+               2987,
+               3069,
+               4599,
+               4681,
+               4784,
+               6314,
+               7844,
+               7926,
+               8274,
+               8356,
+               8479,
+               8561,
+               8713,
+               8795
+            ],
+            "protocol" : [
+               "irc",
+               "tcp"
+            ],
+            "dstMacCnt" : 2,
+            "ipDst" : "38.229.70.20",
             "totPackets" : 29,
-            "fileIds" : [],
-            "srcPayload8" : "5553455220787878",
-            "ipProtocol" : 6,
-            "dstPackets" : 15,
-            "totBytes" : 8945,
-            "srcGEO" : "USA",
-            "dstBytes" : 7899,
-            "dstDataBytes" : 6901,
-            "dstASN" : "AS23028 Team Cymru Inc.",
-            "segments" : 1
+            "totDataBytes" : 7015,
+            "segments" : 1,
+            "srcPort" : 45921,
+            "dstASN" : "AS23028 Team Cymru Inc."
          },
          "header" : {
             "index" : {

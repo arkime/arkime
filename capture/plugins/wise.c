@@ -654,17 +654,17 @@ void moloch_plugin_init()
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
-    httpHostField  = moloch_field_by_db("ho");
-    httpXffField   = moloch_field_by_db("xff");
-    httpMd5Field   = moloch_field_by_db("hmd5");
-    emailMd5Field  = moloch_field_by_db("emd5");
-    emailSrcField  = moloch_field_by_db("esrc");
-    emailDstField  = moloch_field_by_db("edst");
-    dnsHostField   = moloch_field_by_db("dnsho");
-    tagsField      = moloch_field_by_db("ta");
-    httpUrlField   = moloch_field_by_db("us");
-    protocolField  = moloch_field_by_db("prot-term");
-    ja3Field       = moloch_field_by_db("tlsja3-term");
+    httpHostField  = moloch_field_by_db("http.host");
+    httpXffField   = moloch_field_by_db("http.xff");
+    httpMd5Field   = moloch_field_by_db("http.md5");
+    emailMd5Field  = moloch_field_by_db("email.md5");
+    emailSrcField  = moloch_field_by_db("email.src");
+    emailDstField  = moloch_field_by_db("email.dst");
+    dnsHostField   = moloch_field_by_db("dns.host");
+    tagsField      = moloch_field_by_db("tags");
+    httpUrlField   = moloch_field_by_db("http.uri");
+    protocolField  = moloch_field_by_db("protocol");
+    ja3Field       = moloch_field_by_db("tls.ja3");
 
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);

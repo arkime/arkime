@@ -8,77 +8,35 @@
             }
          },
          "body" : {
-            "srcDataBytes" : 0,
-            "packetLenArray" : [
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               143,
-               143
-            ],
-            "segments" : 1,
-            "totPackets" : 10,
-            "dstPackets" : 6,
-            "dstDataBytes" : 0,
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "dstPort" : 0,
-            "srcRIR" : "ARIN",
-            "dstMac" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "srcMac" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "length" : 23309,
-            "ipDst" : "172.28.2.3",
-            "firstPacket" : 1055289968793,
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "icmp",
-               "gre"
-            ],
-            "ipProtocol" : 1,
-            "node" : "test",
-            "dstBytes" : 742,
             "totDataBytes" : 0,
-            "icmp" : {
-               "type" : [
-                  0,
-                  3
-               ],
-               "code" : [
-                  8,
-                  0,
-                  3
-               ]
-            },
             "greASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcPort" : 0,
-            "protocolCnt" : 2,
-            "lastPacket" : 1055289992101,
-            "srcGEO" : "USA",
-            "totBytes" : 1230,
+            "srcMacCnt" : 1,
+            "fileIds" : [],
             "greRIR" : [
                "ARIN",
                "ARIN"
             ],
-            "timestamp" : "SET",
+            "dstPort" : 0,
+            "protocol" : [
+               "icmp",
+               "gre"
+            ],
+            "dstRIR" : "ARIN",
+            "firstPacket" : 1055289968793,
+            "srcBytes" : 488,
+            "srcDataBytes" : 0,
+            "dstDataBytes" : 0,
+            "lastPacket" : 1055289992101,
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcGEO" : "USA",
+            "totBytes" : 1230,
             "ipSrc" : "66.59.111.190",
-            "srcMacCnt" : 1,
-            "srcPackets" : 4,
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "greIpCnt" : 2,
             "packetPosArray" : [
                24,
                162,
@@ -91,165 +49,180 @@
                6474,
                6732
             ],
-            "srcBytes" : 488,
-            "fileIds" : [],
-            "dstRIR" : "ARIN",
+            "timestamp" : "SET",
+            "protocolCnt" : 2,
+            "segments" : 1,
+            "totPackets" : 10,
+            "dstMac" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "node" : "test",
+            "greIpCnt" : 2,
+            "dstBytes" : 742,
+            "srcASN" : "AS11590 Cumberland Technologies International",
+            "srcPackets" : 4,
+            "dstPackets" : 6,
+            "packetLenArray" : [
+               138,
+               138,
+               138,
+               138,
+               138,
+               138,
+               138,
+               138,
+               143,
+               143
+            ],
             "greGEO" : [
                "---",
                "USA"
-            ]
+            ],
+            "srcMac" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "icmp" : {
+               "type" : [
+                  0,
+                  3
+               ],
+               "code" : [
+                  8,
+                  0,
+                  3
+               ]
+            },
+            "ipDst" : "172.28.2.3",
+            "srcRIR" : "ARIN",
+            "ipProtocol" : 1,
+            "length" : 23309,
+            "srcPort" : 0,
+            "dstMacCnt" : 1
          }
       },
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-030611",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-030611"
             }
          },
          "body" : {
-            "ipDst" : "18.26.4.105",
-            "length" : 74,
-            "dstMac" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "srcMac" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "srcRIR" : "ARIN",
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "dstPort" : 123,
-            "dstPackets" : 1,
-            "dstDataBytes" : 106,
-            "totPackets" : 2,
-            "srcDataBytes" : 106,
-            "packetLenArray" : [
-               130,
-               130
-            ],
-            "segments" : 1,
-            "srcBytes" : 114,
-            "fileIds" : [],
-            "dstRIR" : "ARIN",
-            "greGEO" : [
-               "---",
-               "USA"
-            ],
-            "greIpCnt" : 2,
-            "packetPosArray" : [
-               1128,
-               1258
-            ],
-            "srcPayload8" : "230b06ef00000000",
-            "srcPackets" : 1,
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "timestamp" : "SET",
-            "dstASN" : "AS3 Massachusetts Institute of Technology",
-            "ipSrc" : "66.59.111.190",
-            "srcMacCnt" : 1,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "totBytes" : 228,
-            "srcGEO" : "USA",
-            "dstMacCnt" : 1,
             "protocol" : [
                "udp",
                "gre",
                "ntp"
             ],
-            "ipProtocol" : 17,
-            "totDataBytes" : 212,
-            "node" : "test",
-            "dstBytes" : 114,
+            "dstRIR" : "ARIN",
+            "firstPacket" : 1055289973849,
+            "srcBytes" : 114,
+            "dstPayload8" : "240206ee000003bc",
             "dstGEO" : "USA",
+            "dstDataBytes" : 106,
+            "srcDataBytes" : 106,
+            "lastPacket" : 1055289973923,
+            "totDataBytes" : 212,
             "greASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "protocolCnt" : 3,
-            "srcPort" : 123,
-            "lastPacket" : 1055289973923,
-            "firstPacket" : 1055289973849,
-            "dstPayload8" : "240206ee000003bc"
-         }
-      },
-      {
-         "body" : {
-            "ipDst" : "172.28.2.3",
-            "length" : 3157,
-            "srcMac" : [
-               "00:02:2d:56:4a:fd"
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
             ],
-            "dstMac" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "ssh" : {
-               "key" : [
-                  "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
-               ],
-               "version" : [
-                  "ssh-2.0-openssh_3.6.1p1",
-                  "ssh-1.99-openssh_3.1p1"
-               ],
-               "keyCnt" : 1,
-               "versionCnt" : 2
-            },
-            "srcRIR" : "ARIN",
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "dstPort" : 22,
-            "dstPackets" : 10,
-            "dstDataBytes" : 1671,
-            "totPackets" : 22,
-            "tcpflags" : {
-               "syn" : 1,
-               "urg" : 0,
-               "psh" : 8,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 10,
-               "fin" : 2
-            },
-            "packetLenArray" : [
-               114,
-               114,
-               106,
-               129,
-               106,
-               130,
-               106,
-               594,
-               594,
-               106,
-               106,
-               130,
-               106,
-               530,
-               106,
-               522,
-               106,
-               842,
-               106,
-               106,
-               106,
-               106
-            ],
-            "segments" : 1,
-            "srcDataBytes" : 952,
-            "dstRIR" : "ARIN",
+            "fileIds" : [],
+            "srcMacCnt" : 1,
+            "dstPort" : 123,
+            "srcPackets" : 1,
+            "dstPackets" : 1,
+            "srcPayload8" : "230b06ef00000000",
+            "srcASN" : "AS11590 Cumberland Technologies International",
             "greGEO" : [
                "---",
                "USA"
             ],
-            "srcBytes" : 2040,
+            "packetLenArray" : [
+               130,
+               130
+            ],
+            "ipDst" : "18.26.4.105",
+            "srcMac" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "dstMacCnt" : 1,
+            "ipProtocol" : 17,
+            "srcRIR" : "ARIN",
+            "length" : 74,
+            "srcPort" : 123,
+            "totBytes" : 228,
+            "srcGEO" : "USA",
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "ipSrc" : "66.59.111.190",
+            "protocolCnt" : 3,
+            "packetPosArray" : [
+               1128,
+               1258
+            ],
+            "timestamp" : "SET",
+            "greIpCnt" : 2,
+            "totPackets" : 2,
+            "dstMac" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "node" : "test",
+            "dstASN" : "AS3 Massachusetts Institute of Technology",
+            "dstBytes" : 114,
+            "segments" : 1
+         }
+      },
+      {
+         "body" : {
+            "greASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "totDataBytes" : 2623,
+            "srcMacCnt" : 1,
             "fileIds" : [],
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPort" : 22,
+            "firstPacket" : 1055289978756,
+            "protocol" : [
+               "ssh",
+               "gre",
+               "tcp"
+            ],
+            "dstRIR" : "ARIN",
+            "srcBytes" : 2040,
+            "dstPayload8" : "5353482d312e3939",
+            "lastPacket" : 1055289981914,
+            "dstDataBytes" : 1671,
+            "srcDataBytes" : 952,
+            "ssh" : {
+               "keyCnt" : 1,
+               "version" : [
+                  "ssh-2.0-openssh_3.6.1p1",
+                  "ssh-1.99-openssh_3.1p1"
+               ],
+               "versionCnt" : 2,
+               "key" : [
+                  "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
+               ]
+            },
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcGEO" : "USA",
+            "totBytes" : 4619,
+            "ipSrc" : "66.59.111.190",
+            "timestamp" : "SET",
             "packetPosArray" : [
                1388,
                1502,
@@ -274,38 +247,65 @@
                6147,
                6253
             ],
-            "greIpCnt" : 2,
-            "srcPackets" : 12,
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "srcPayload8" : "5353482d322e302d",
-            "srcMacCnt" : 1,
-            "timestamp" : "SET",
-            "ipSrc" : "66.59.111.190",
-            "totBytes" : 4619,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcGEO" : "USA",
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
             "protocolCnt" : 3,
-            "srcPort" : 40264,
-            "lastPacket" : 1055289981914,
-            "protocol" : [
-               "ssh",
-               "gre",
-               "tcp"
-            ],
-            "ipProtocol" : 6,
-            "dstMacCnt" : 1,
-            "node" : "test",
-            "totDataBytes" : 2623,
+            "segments" : 1,
             "dstBytes" : 2579,
-            "dstPayload8" : "5353482d312e3939",
-            "firstPacket" : 1055289978756
+            "greIpCnt" : 2,
+            "dstMac" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "totPackets" : 22,
+            "node" : "test",
+            "srcPayload8" : "5353482d322e302d",
+            "srcASN" : "AS11590 Cumberland Technologies International",
+            "dstPackets" : 10,
+            "srcPackets" : 12,
+            "packetLenArray" : [
+               114,
+               114,
+               106,
+               129,
+               106,
+               130,
+               106,
+               594,
+               594,
+               106,
+               106,
+               130,
+               106,
+               530,
+               106,
+               522,
+               106,
+               842,
+               106,
+               106,
+               106,
+               106
+            ],
+            "greGEO" : [
+               "---",
+               "USA"
+            ],
+            "tcpflags" : {
+               "rst" : 0,
+               "psh" : 8,
+               "ack" : 10,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "urg" : 0
+            },
+            "srcMac" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "ipDst" : "172.28.2.3",
+            "srcPort" : 40264,
+            "srcRIR" : "ARIN",
+            "length" : 3157,
+            "ipProtocol" : 6,
+            "dstMacCnt" : 1
          },
          "header" : {
             "index" : {
@@ -315,252 +315,252 @@
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-030611"
-            }
-         },
          "body" : {
-            "totPackets" : 2,
+            "dstPackets" : 0,
+            "srcPackets" : 2,
+            "srcASN" : "AS11590 Cumberland Technologies International",
+            "srcPayload8" : "bdaa010000010000",
+            "greGEO" : [
+               "---",
+               "USA"
+            ],
             "packetLenArray" : [
                115,
                115
             ],
-            "segments" : 1,
-            "srcDataBytes" : 182,
-            "dstPort" : 53,
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "dstPackets" : 0,
-            "dstDataBytes" : 0,
+            "ipDst" : "172.28.2.3",
             "srcMac" : [
                "00:02:2d:56:4a:fd"
             ],
+            "dstMacCnt" : 1,
+            "srcPort" : 37675,
+            "ipProtocol" : 17,
+            "srcRIR" : "ARIN",
+            "length" : 5001,
+            "totBytes" : 198,
+            "srcGEO" : "USA",
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "ipSrc" : "66.59.111.190",
+            "protocolCnt" : 3,
+            "timestamp" : "SET",
+            "packetPosArray" : [
+               6359,
+               6617
+            ],
+            "dstBytes" : 0,
+            "greIpCnt" : 2,
+            "totPackets" : 2,
+            "node" : "test",
             "dstMac" : [
                "00:c0:ca:14:b0:52"
             ],
-            "srcRIR" : "ARIN",
-            "ipDst" : "172.28.2.3",
-            "length" : 5001,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "protocolCnt" : 3,
-            "srcPort" : 37675,
-            "lastPacket" : 1055289992056,
+            "segments" : 1,
+            "firstPacket" : 1055289987055,
             "protocol" : [
                "udp",
                "dns",
                "gre"
             ],
-            "ipProtocol" : 17,
-            "dstMacCnt" : 1,
-            "node" : "test",
-            "dstBytes" : 0,
-            "totDataBytes" : 182,
-            "firstPacket" : 1055289987055,
-            "totBytes" : 198,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcGEO" : "USA",
-            "srcPackets" : 2,
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "srcPayload8" : "bdaa010000010000",
-            "srcMacCnt" : 1,
-            "timestamp" : "SET",
+            "dstRIR" : "ARIN",
+            "srcBytes" : 198,
             "dns" : {
                "qc" : [
                   "IN"
                ],
-               "host" : [
-                  "www.gleeble.org"
-               ],
                "qcCnt" : 1,
+               "qt" : [
+                  "ANY"
+               ],
                "qtCnt" : 1,
                "opcode" : [
                   "QUERY"
                ],
+               "hostCnt" : 1,
                "opcodeCnt" : 1,
-               "qt" : [
-                  "ANY"
-               ],
-               "hostCnt" : 1
+               "host" : [
+                  "www.gleeble.org"
+               ]
             },
-            "ipSrc" : "66.59.111.190",
-            "dstRIR" : "ARIN",
-            "greGEO" : [
-               "---",
-               "USA"
-            ],
-            "srcBytes" : 198,
-            "fileIds" : [],
-            "packetPosArray" : [
-               6359,
-               6617
-            ],
-            "greIpCnt" : 2
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-030611",
-               "_type" : "session"
-            }
-         },
-         "body" : {
-            "srcRIR" : "ARIN",
-            "srcMac" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "dstMac" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "length" : 56,
-            "ipDst" : "66.59.111.182",
-            "segments" : 1,
-            "packetLenArray" : [
-               130,
-               130
-            ],
-            "srcDataBytes" : 106,
-            "totPackets" : 2,
-            "dstDataBytes" : 106,
-            "dstPackets" : 1,
-            "dstPort" : 123,
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "srcMacCnt" : 1,
-            "ipSrc" : "66.59.111.190",
-            "dstASN" : "AS11590 Cumberland Technologies International",
-            "timestamp" : "SET",
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "srcPackets" : 1,
-            "srcPayload8" : "230b06ef00000000",
-            "packetPosArray" : [
-               6875,
-               7005
-            ],
-            "greIpCnt" : 2,
-            "greGEO" : [
-               "---",
-               "USA"
-            ],
-            "dstRIR" : "ARIN",
-            "fileIds" : [],
-            "srcBytes" : 114,
-            "dstPayload8" : "240306ef000008cf",
-            "firstPacket" : 1055289992849,
-            "srcPort" : 123,
-            "protocolCnt" : 3,
-            "lastPacket" : 1055289992905,
+            "lastPacket" : 1055289992056,
+            "srcDataBytes" : 182,
+            "dstDataBytes" : 0,
             "greASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstGEO" : "USA",
-            "node" : "test",
-            "totDataBytes" : 212,
-            "dstBytes" : 114,
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "udp",
-               "gre",
-               "ntp"
-            ],
-            "ipProtocol" : 17,
-            "srcGEO" : "USA",
-            "totBytes" : 228,
+            "totDataBytes" : 182,
             "greRIR" : [
                "ARIN",
                "ARIN"
-            ]
-         }
-      },
-      {
-         "body" : {
-            "srcPayload8" : "230b06ef00000000",
-            "srcASN" : "AS11590 Cumberland Technologies International",
-            "srcPackets" : 1,
-            "ipSrc" : "66.59.111.190",
-            "dstASN" : "AS10755 Dartmouth College",
-            "timestamp" : "SET",
+            ],
             "srcMacCnt" : 1,
             "fileIds" : [],
-            "srcBytes" : 114,
-            "greGEO" : [
-               "---",
-               "USA"
-            ],
-            "dstRIR" : "ARIN",
-            "greIpCnt" : 2,
-            "packetPosArray" : [
-               7135,
-               7265
-            ],
-            "node" : "test",
-            "totDataBytes" : 212,
-            "dstBytes" : 114,
-            "protocol" : [
-               "udp",
-               "gre",
-               "ntp"
-            ],
-            "ipProtocol" : 17,
-            "dstMacCnt" : 1,
-            "srcPort" : 123,
-            "protocolCnt" : 3,
-            "lastPacket" : 1055289996921,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstGEO" : "USA",
-            "firstPacket" : 1055289996849,
-            "dstPayload8" : "240206f5000005b6",
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "totBytes" : 228,
-            "srcGEO" : "USA",
-            "dstMac" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "srcMac" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "srcRIR" : "ARIN",
-            "ipDst" : "129.170.17.4",
-            "length" : 72,
-            "totPackets" : 2,
-            "srcDataBytes" : 106,
-            "segments" : 1,
-            "packetLenArray" : [
-               130,
-               130
-            ],
-            "greIp" : [
-               2887450946,
-               1111190921
-            ],
-            "dstPort" : 123,
-            "dstDataBytes" : 106,
-            "dstPackets" : 1
+            "dstPort" : 53
          },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-030611"
             }
+         }
+      },
+      {
+         "body" : {
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "fileIds" : [],
+            "srcMacCnt" : 1,
+            "dstPort" : 123,
+            "totDataBytes" : 212,
+            "greASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstPayload8" : "240306ef000008cf",
+            "dstGEO" : "USA",
+            "dstDataBytes" : 106,
+            "srcDataBytes" : 106,
+            "lastPacket" : 1055289992905,
+            "protocol" : [
+               "udp",
+               "gre",
+               "ntp"
+            ],
+            "dstRIR" : "ARIN",
+            "firstPacket" : 1055289992849,
+            "srcBytes" : 114,
+            "protocolCnt" : 3,
+            "packetPosArray" : [
+               6875,
+               7005
+            ],
+            "timestamp" : "SET",
+            "totPackets" : 2,
+            "greIpCnt" : 2,
+            "dstMac" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "dstASN" : "AS11590 Cumberland Technologies International",
+            "node" : "test",
+            "dstBytes" : 114,
+            "segments" : 1,
+            "totBytes" : 228,
+            "srcGEO" : "USA",
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "ipSrc" : "66.59.111.190",
+            "ipDst" : "66.59.111.182",
+            "srcMac" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "dstMacCnt" : 1,
+            "srcRIR" : "ARIN",
+            "ipProtocol" : 17,
+            "length" : 56,
+            "srcPort" : 123,
+            "srcPackets" : 1,
+            "dstPackets" : 1,
+            "srcASN" : "AS11590 Cumberland Technologies International",
+            "srcPayload8" : "230b06ef00000000",
+            "greGEO" : [
+               "---",
+               "USA"
+            ],
+            "packetLenArray" : [
+               130,
+               130
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-030611",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-030611"
+            }
+         },
+         "body" : {
+            "dstGEO" : "USA",
+            "dstPayload8" : "240206f5000005b6",
+            "dstDataBytes" : 106,
+            "srcDataBytes" : 106,
+            "lastPacket" : 1055289996921,
+            "dstRIR" : "ARIN",
+            "protocol" : [
+               "udp",
+               "gre",
+               "ntp"
+            ],
+            "firstPacket" : 1055289996849,
+            "srcBytes" : 114,
+            "srcMacCnt" : 1,
+            "fileIds" : [],
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPort" : 123,
+            "totDataBytes" : 212,
+            "greASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcMac" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "ipDst" : "129.170.17.4",
+            "ipProtocol" : 17,
+            "srcRIR" : "ARIN",
+            "length" : 72,
+            "srcPort" : 123,
+            "dstMacCnt" : 1,
+            "srcPayload8" : "230b06ef00000000",
+            "srcASN" : "AS11590 Cumberland Technologies International",
+            "srcPackets" : 1,
+            "dstPackets" : 1,
+            "greGEO" : [
+               "---",
+               "USA"
+            ],
+            "packetLenArray" : [
+               130,
+               130
+            ],
+            "packetPosArray" : [
+               7135,
+               7265
+            ],
+            "timestamp" : "SET",
+            "protocolCnt" : 3,
+            "segments" : 1,
+            "greIpCnt" : 2,
+            "dstMac" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "totPackets" : 2,
+            "node" : "test",
+            "dstASN" : "AS10755 Dartmouth College",
+            "dstBytes" : 114,
+            "srcGEO" : "USA",
+            "greIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "totBytes" : 228,
+            "ipSrc" : "66.59.111.190"
          }
       }
    ]

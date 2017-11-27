@@ -9,85 +9,20 @@
          },
          "body" : {
             "tagsCnt" : 2,
-            "dstPayload8" : "323230206d782e67",
-            "dstRIR" : "ARIN",
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               133,
-               82,
-               110,
-               82,
-               236,
-               92,
-               112,
-               194,
-               1500,
-               1500,
-               82,
-               935,
-               396,
-               292,
-               135,
-               247,
-               143,
-               147,
-               143,
-               82,
-               188,
-               768,
-               82,
-               110,
-               82,
-               158,
-               82,
-               113,
-               163,
-               82,
-               82,
-               82,
-               82
-            ],
-            "segments" : 1,
-            "lastPacket" : 1388017125239,
-            "dstPort" : 25,
+            "dstPackets" : 19,
+            "srcDataBytes" : 1384,
             "protocol" : [
                "tls",
                "smtp",
                "tcp"
             ],
-            "tls" : {
-               "versionCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ]
-            },
-            "srcDataBytes" : 1384,
-            "length" : 478,
             "srcPayload8" : "45484c4f20787878",
-            "timestamp" : "SET",
-            "srcMacCnt" : 1,
-            "tags" : [
-               "srcip",
-               "smtp:starttls"
-            ],
-            "dstPackets" : 19,
-            "srcASN" : "AS0000 This is neat",
-            "srcBytes" : 2514,
-            "tlscnt" : 3,
             "ipSrc" : "10.0.0.1",
-            "fileIds" : [],
-            "firstPacket" : 1388017124762,
+            "length" : 478,
+            "srcGEO" : "RUS",
+            "tlscnt" : 3,
+            "dstPayload8" : "323230206d782e67",
             "node" : "test",
-            "dstMacCnt" : 2,
-            "totBytes" : 8403,
-            "dstASN" : "AS15169 Google Inc.",
-            "dstBytes" : 5889,
             "packetPosArray" : [
                24,
                114,
@@ -126,52 +61,117 @@
                8839,
                8921
             ],
-            "dstGEO" : "USA",
-            "srcGEO" : "RUS",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
+            "srcMacCnt" : 1,
+            "tags" : [
+               "srcip",
+               "smtp:starttls"
             ],
-            "srcPort" : 57406,
-            "ipDst" : "173.194.68.26",
+            "srcASN" : "AS0000 This is neat",
+            "dstGEO" : "USA",
+            "srcPackets" : 17,
+            "firstPacket" : 1388017124762,
             "ipProtocol" : 6,
-            "dstDataBytes" : 4627,
+            "dstMacCnt" : 2,
             "test" : {
-               "string.snow" : [
-                  "16777226:57406,440713901:25"
-               ],
-               "ip" : [
-                  167772161
-               ],
                "RIR" : [
                   ""
                ],
-               "number" : [
-                  440713901
+               "string.snow" : [
+                  "16777226:57406,440713901:25"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "ip" : [
+                  "10.0.0.1"
                ],
                "ASN" : [
                   "AS0000 This is neat"
                ],
-               "GEO" : [
-                  "RUS"
+               "number" : [
+                  440713901
                ]
             },
+            "dstASN" : "AS15169 Google Inc.",
+            "protocolCnt" : 3,
+            "dstRIR" : "ARIN",
+            "ipDst" : "173.194.68.26",
+            "dstBytes" : 5889,
+            "fileIds" : [],
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               133,
+               82,
+               110,
+               82,
+               236,
+               92,
+               112,
+               194,
+               1500,
+               1500,
+               82,
+               935,
+               396,
+               292,
+               135,
+               247,
+               143,
+               147,
+               143,
+               82,
+               188,
+               768,
+               82,
+               110,
+               82,
+               158,
+               82,
+               113,
+               163,
+               82,
+               82,
+               82,
+               82
+            ],
+            "dstPort" : 25,
+            "dstDataBytes" : 4627,
             "tcpflags" : {
                "rst" : 0,
                "urg" : 0,
                "psh" : 20,
-               "fin" : 2,
-               "syn" : 1,
                "ack" : 12,
-               "syn-ack" : 1
+               "syn-ack" : 1,
+               "syn" : 1,
+               "fin" : 2
             },
+            "totDataBytes" : 6011,
+            "totBytes" : 8403,
+            "lastPacket" : 1388017125239,
+            "segments" : 1,
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],
+            "srcPort" : 57406,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "timestamp" : "SET",
             "totPackets" : 36,
-            "protocolCnt" : 3,
-            "totDataBytes" : 6011,
-            "srcPackets" : 17
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "versionCnt" : 1,
+               "cipherCnt" : 1,
+               "version" : [
+                  "TLSv1"
+               ]
+            },
+            "srcBytes" : 2514
          }
       }
    ]

@@ -1,7 +1,15 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-071029",
+               "_type" : "session"
+            }
+         },
          "body" : {
+            "dstDataBytes" : 3282,
+            "totBytes" : 4196,
             "packetLenArray" : [
                86,
                82,
@@ -14,51 +22,28 @@
                282,
                145
             ],
-            "srcASN" : "AS1668 AOL Transit Data Network",
-            "ipSrc" : "172.202.246.57",
-            "timestamp" : "SET",
-            "dstDataBytes" : 3282,
-            "dstPort" : 443,
-            "totDataBytes" : 3564,
-            "protocolCnt" : 3,
-            "srcPort" : 1063,
-            "dstRIR" : "ARIN",
+            "dstBytes" : 3596,
             "dstMac" : [
                "00:90:1a:a0:3d:a4"
             ],
-            "tlscnt" : 3,
-            "dstPayload8" : "160300004a020000",
-            "tls" : {
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_MD5"
-               ],
-               "dstSessionId" : [
-                  "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
-               ],
-               "cipherCnt" : 1,
-               "version" : [
-                  "SSLv3"
-               ]
-            },
-            "srcBytes" : 600,
+            "srcPayload8" : "804c010300003300",
             "ipProtocol" : 6,
-            "dstPackets" : 5,
+            "fileIds" : [],
+            "srcPackets" : 5,
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "protocolCnt" : 3,
+            "totDataBytes" : 3564,
+            "dstMacCnt" : 1,
             "srcMac" : [
                "00:11:f5:13:d7:a3"
             ],
-            "dstGEO" : "USA",
-            "node" : "test",
-            "firstPacket" : 1193676055856,
-            "lastPacket" : 1193676056235,
-            "segments" : 1,
-            "srcPackets" : 5,
-            "ipDst" : "64.12.189.217",
-            "srcPayload8" : "804c010300003300",
-            "srcDataBytes" : 282,
-            "dstBytes" : 3596,
             "srcRIR" : "ARIN",
-            "fileIds" : [],
+            "srcASN" : "AS1668 AOL Transit Data Network",
+            "protocol" : [
+               "pppoe",
+               "tls",
+               "tcp"
+            ],
             "packetPosArray" : [
                24,
                110,
@@ -71,33 +56,48 @@
                3953,
                4235
             ],
-            "totPackets" : 10,
-            "dstMacCnt" : 1,
-            "totBytes" : 4196,
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "length" : 380,
-            "srcGEO" : "GBR",
-            "protocol" : [
-               "pppoe",
-               "tls",
-               "tcp"
-            ],
+            "srcMacCnt" : 1,
+            "dstPort" : 443,
+            "firstPacket" : 1193676055856,
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_MD5"
+               ],
+               "version" : [
+                  "SSLv3"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
+               ],
+               "versionCnt" : 1
+            },
+            "dstPackets" : 5,
+            "lastPacket" : 1193676056235,
+            "dstRIR" : "ARIN",
+            "dstGEO" : "USA",
             "tcpflags" : {
-               "ack" : 4,
-               "syn-ack" : 1,
-               "fin" : 0,
+               "psh" : 4,
+               "urg" : 0,
                "rst" : 0,
                "syn" : 1,
-               "psh" : 4,
-               "urg" : 0
+               "syn-ack" : 1,
+               "fin" : 0,
+               "ack" : 4
             },
-            "srcMacCnt" : 1
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-071029",
-               "_type" : "session"
-            }
+            "ipSrc" : "172.202.246.57",
+            "timestamp" : "SET",
+            "srcPort" : 1063,
+            "ipDst" : "64.12.189.217",
+            "node" : "test",
+            "totPackets" : 10,
+            "srcDataBytes" : 282,
+            "dstPayload8" : "160300004a020000",
+            "tlscnt" : 3,
+            "segments" : 1,
+            "srcGEO" : "GBR",
+            "srcBytes" : 600,
+            "length" : 380
          }
       }
    ]

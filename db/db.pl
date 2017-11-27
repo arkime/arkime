@@ -585,6 +585,7 @@ sub fieldsUpdate
       "help": "Search all ip fields",
       "type": "ip",
       "dbField": "ipall",
+      "dbField2": "ipall",
       "portField": "portall",
       "noFacet": "true"
     }');
@@ -594,6 +595,7 @@ sub fieldsUpdate
       "help": "Search all port fields",
       "type": "integer",
       "dbField": "portall",
+      "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
     esPost("/${PREFIX}fields_v1/field/rir", '{
@@ -601,7 +603,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all rir fields",
       "type": "uptermfield",
-      "dbField": "all",
+      "dbField": "rirall",
+      "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
     esPost("/${PREFIX}fields_v1/field/country", '{
@@ -609,7 +612,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all country fields",
       "type": "uptermfield",
-      "dbField": "all",
+      "dbField": "geoall",
+      "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
     esPost("/${PREFIX}fields_v1/field/asn", '{
@@ -617,7 +621,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all ASN fields",
       "type": "textfield",
-      "dbField": "all",
+      "dbField": "asnall",
+      "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
     esPost("/${PREFIX}fields_v1/field/host", '{
@@ -625,7 +630,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all Host fields",
       "type": "lotextfield",
-      "dbField": "all",
+      "dbField": "hostall",
+      "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.src", '{
@@ -634,7 +640,9 @@ sub fieldsUpdate
       "help": "Source IP",
       "type": "ip",
       "dbField": "a1",
+      "dbField2": "srcIp",
       "portField": "p1",
+      "portField2": "srcPort",
       "category": "ip"
     }');
     esPost("/${PREFIX}fields_v1/field/port.src", '{
@@ -643,6 +651,7 @@ sub fieldsUpdate
       "help": "Source Port",
       "type": "integer",
       "dbField": "p1",
+      "dbField2": "srcPort",
       "category": "port"
     }');
     esPost("/${PREFIX}fields_v1/field/asn.src", '{
@@ -651,6 +660,7 @@ sub fieldsUpdate
       "help": "GeoIP ASN string calculated from the source IP",
       "type": "textfield",
       "dbField": "as1",
+      "dbField2": "srcASN",
       "rawField": "rawas1",
       "category": "asn"
     }');
@@ -660,6 +670,7 @@ sub fieldsUpdate
       "help": "Source Country",
       "type": "uptermfield",
       "dbField": "g1",
+      "dbField2": "srcGEO",
       "category": "country"
     }');
     esPost("/${PREFIX}fields_v1/field/rir.src", '{
@@ -668,6 +679,7 @@ sub fieldsUpdate
       "help": "Source RIR",
       "type": "uptermfield",
       "dbField": "rir1",
+      "dbField2": "srcRIR",
       "category": "rir"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.dst", '{
@@ -676,7 +688,9 @@ sub fieldsUpdate
       "help": "Destination IP",
       "type": "ip",
       "dbField": "a2",
+      "dbField2": "dstIp",
       "portField": "p2",
+      "portField2": "dstPort",
       "category": "ip"
     }');
     esPost("/${PREFIX}fields_v1/field/port.dst", '{
@@ -685,6 +699,7 @@ sub fieldsUpdate
       "help": "Source Port",
       "type": "integer",
       "dbField": "p2",
+      "dbField2": "dstPort",
       "category": "port"
     }');
     esPost("/${PREFIX}fields_v1/field/asn.dst", '{
@@ -693,6 +708,7 @@ sub fieldsUpdate
       "help": "GeoIP ASN string calculated from the destination IP",
       "type": "textfield",
       "dbField": "as2",
+      "dbField2": "dstASN",
       "rawField": "rawas2",
       "category": "asn"
     }');
@@ -702,6 +718,7 @@ sub fieldsUpdate
       "help": "Destination Country",
       "type": "uptermfield",
       "dbField": "g2",
+      "dbField2": "dstGEO",
       "category": "country"
     }');
     esPost("/${PREFIX}fields_v1/field/rir.dst", '{
@@ -710,6 +727,7 @@ sub fieldsUpdate
       "help": "Destination RIR",
       "type": "uptermfield",
       "dbField": "rir2",
+      "dbField2": "dstRIR",
       "category": "rir"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes", '{
@@ -717,63 +735,72 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "by"
+      "dbField": "by",
+      "dbField2": "totBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes.src", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
       "type": "integer",
-      "dbField": "by1"
+      "dbField": "by1",
+      "dbField2": "srcBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes.dst", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "by2"
+      "dbField": "by2",
+      "dbField2": "dstBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "db"
+      "dbField": "db",
+      "dbField2": "totDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes.src", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
       "type": "integer",
-      "dbField": "db1"
+      "dbField": "db1",
+      "dbField2": "srcDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes.dst", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "db2"
+      "dbField": "db2",
+      "dbField2": "dstDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/packets", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
       "type": "integer",
-      "dbField": "pa"
+      "dbField": "pa",
+      "dbField2": "totPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/packets.src", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
       "type": "integer",
-      "dbField": "pa1"
+      "dbField": "pa1",
+      "dbField2": "srcPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/packets.dst", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
       "type": "integer",
-      "dbField": "pa2"
+      "dbField": "pa2",
+      "dbField2": "dstPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.protocol", '{
       "friendlyName": "IP Protocol",
@@ -781,6 +808,7 @@ sub fieldsUpdate
       "help": "IP protocol number or friendly name",
       "type": "lotermfield",
       "dbField": "pr",
+      "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
     esPost("/${PREFIX}fields_v1/field/id", '{
@@ -789,6 +817,7 @@ sub fieldsUpdate
       "help": "Moloch ID for the session",
       "type": "termfield",
       "dbField": "_id",
+      "dbField2": "_id",
       "noFacet": "true"
 
     }');
@@ -797,21 +826,24 @@ sub fieldsUpdate
       "group": "general",
       "help": "Moloch ID of the first session in a multi session stream",
       "type": "termfield",
-      "dbField": "ro"
+      "dbField": "ro",
+      "dbField2": "rootId"
     }');
     esPost("/${PREFIX}fields_v1/field/node", '{
       "friendlyName": "Moloch Node",
       "group": "general",
       "help": "Moloch node name the session was recorded on",
       "type": "termfield",
-      "dbField": "no"
+      "dbField": "no",
+      "dbField2": "node"
     }');
     esPost("/${PREFIX}fields_v1/field/file", '{
       "friendlyName": "Filename",
       "group": "general",
       "help": "Moloch offline pcap filename",
       "type": "fileand",
-      "dbField": "fileand"
+      "dbField": "fileand",
+      "dbField2": "fileand"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.src.hex", '{
       "friendlyName": "Payload Src Hex",
@@ -819,6 +851,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of source payload in hex",
       "type": "lotermfield",
       "dbField": "fb1",
+      "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.src.utf8", '{
@@ -827,6 +860,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of source payload in utf8",
       "type": "termfield",
       "dbField": "fb1",
+      "dbField2": "srcPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
@@ -836,6 +870,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of destination payload in hex",
       "type": "lotermfield",
       "dbField": "fb2",
+      "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.dst.utf8", '{
@@ -844,6 +879,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of destination payload in utf8",
       "type": "termfield",
       "dbField": "fb2",
+      "dbField2": "dstPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
@@ -853,6 +889,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballhex",
+      "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.utf8", '{
@@ -861,6 +898,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballutf8",
+      "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
     esPost("/${PREFIX}fields_v1/field/scrubbed.by", '{
@@ -868,7 +906,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "SPI data was scrubbed by",
       "type": "lotermfield",
-      "dbField": "scrubby"
+      "dbField": "scrubby",
+      "dbField2": "scrubby"
     }');
     esPost("/${PREFIX}fields_v1/field/view", '{
       "friendlyName": "View Name",
@@ -876,6 +915,7 @@ sub fieldsUpdate
       "help": "Moloch view name",
       "type": "viewand",
       "dbField": "viewand",
+      "dbField2": "viewand",
       "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/starttime", '{
@@ -883,14 +923,16 @@ sub fieldsUpdate
       "group": "general",
       "help": "Session Start Time",
       "type": "seconds",
-      "dbField": "fp"
+      "dbField": "fp",
+      "dbField2": "firstPacket"
     }');
     esPost("/${PREFIX}fields_v1/field/stoptime", '{
       "friendlyName": "Stop Time",
       "group": "general",
       "help": "Session Stop Time",
       "type": "seconds",
-      "dbField": "lp"
+      "dbField": "lp",
+      "dbField2": "lastPacket"
     }');
 }
 
@@ -2591,6 +2633,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}dstats_v1", 1);
     esDelete("/${PREFIX}dstats_v2", 1);
     esDelete("/${PREFIX}sessions-*", 1);
+    esDelete("/${PREFIX}sessions2-*", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
     esDelete("/_template/${PREFIX}sessions_template", 1);
     esDelete("/_template/${PREFIX}sessions2_template", 1);

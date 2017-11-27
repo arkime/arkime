@@ -3,11 +3,12 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131126",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131126"
             }
          },
          "body" : {
+            "node" : "test",
             "packetPosArray" : [
                24,
                106,
@@ -30,34 +31,9 @@
                1647,
                1760
             ],
-            "lastPacket" : 1385474639455,
-            "srcRIR" : "TEST",
-            "timestamp" : "SET",
-            "dstPayload8" : "0500050000010a00",
-            "srcPort" : 53709,
-            "firstPacket" : 1385474626674,
-            "srcMac" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "protocolCnt" : 3,
-            "tags" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ],
-            "tcpflags" : {
-               "rst" : 1,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "syn" : 2,
-               "ack" : 6,
-               "fin" : 0,
-               "psh" : 10
-            },
-            "node" : "test",
-            "srcBytes" : 638,
-            "tagsCnt" : 3,
-            "dstASN" : "AS0000 This is neat",
+            "srcPayload8" : "050100050100030e",
+            "totDataBytes" : 327,
+            "srcGEO" : "CAN",
             "packetLenArray" : [
                82,
                82,
@@ -80,40 +56,64 @@
                113,
                76
             ],
-            "srcPayload8" : "050100050100030e",
-            "dstGEO" : "RUS",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "dstBytes" : 854,
-            "srcDataBytes" : 47,
-            "fileIds" : [],
+            "totPackets" : 20,
+            "dstPayload8" : "0500050000010a00",
             "dstDataBytes" : 280,
             "segments" : 1,
-            "ipDst" : "10.0.0.1",
-            "srcMacCnt" : 1,
-            "ipProtocol" : 6,
-            "srcGEO" : "CAN",
+            "dstPackets" : 10,
+            "fileIds" : [],
             "ipSrc" : "10.0.0.2",
-            "length" : 12781,
-            "dstMacCnt" : 2,
-            "socks" : {
-               "host" : "010.000.00.003",
-               "port" : 25
-            },
+            "dstBytes" : 854,
+            "srcRIR" : "TEST",
+            "srcMacCnt" : 1,
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
+            ],
             "srcPackets" : 10,
-            "srcASN" : "AS0001 Cool Beans!",
-            "totPackets" : 20,
-            "totDataBytes" : 327,
-            "dstPort" : 1080,
+            "timestamp" : "SET",
+            "length" : 12781,
+            "tagsCnt" : 3,
+            "srcBytes" : 638,
+            "tcpflags" : {
+               "syn" : 2,
+               "fin" : 0,
+               "ack" : 6,
+               "syn-ack" : 1,
+               "psh" : 10,
+               "rst" : 1,
+               "urg" : 0
+            },
             "protocol" : [
                "socks",
                "smtp",
                "tcp"
             ],
+            "dstMacCnt" : 2,
+            "firstPacket" : 1385474626674,
+            "ipDst" : "10.0.0.1",
+            "srcDataBytes" : 47,
+            "lastPacket" : 1385474639455,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "dstASN" : "AS0000 This is neat",
+            "ipProtocol" : 6,
+            "srcASN" : "AS0001 Cool Beans!",
+            "socks" : {
+               "host" : "010.000.00.003",
+               "port" : 25
+            },
             "totBytes" : 1492,
-            "dstPackets" : 10
+            "dstGEO" : "RUS",
+            "srcPort" : 53709,
+            "dstPort" : 1080,
+            "protocolCnt" : 3,
+            "tags" : [
+               "smtp:authlogin",
+               "srcip",
+               "dstip"
+            ]
          }
       }
    ]

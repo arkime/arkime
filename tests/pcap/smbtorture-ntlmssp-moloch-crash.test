@@ -1,52 +1,54 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-051119",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "tcpflags" : {
-               "urg" : 0,
-               "rst" : 0,
-               "psh" : 10,
-               "syn" : 1,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "ack" : 2
-            },
+            "srcPackets" : 8,
+            "dstPayload8" : "00000095ff534d42",
+            "firstPacket" : 1132371118535,
+            "timestamp" : "SET",
             "srcPort" : 52703,
-            "srcMac" : [
-               "00:50:56:c0:00:01"
-            ],
-            "srcBytes" : 1438,
-            "dstPackets" : 6,
-            "dstPort" : 445,
-            "tagsCnt" : 1,
             "ipSrc" : "192.168.114.1",
-            "ipProtocol" : 6,
-            "fileIds" : [],
-            "dstDataBytes" : 922,
-            "protocolCnt" : 2,
+            "ipDst" : "192.168.114.129",
+            "dstPort" : 445,
+            "tags" : [
+               "smb:bad-security-blob"
+            ],
             "smb" : {
+               "versionCnt" : 1,
+               "domain" : [
+                  "VNET3"
+               ],
+               "shareCnt" : 1,
+               "domainCnt" : 1,
                "os" : [
                   "Unix"
                ],
-               "domainCnt" : 1,
-               "versionCnt" : 1,
-               "shareCnt" : 1,
+               "osCnt" : 1,
                "version" : [
                   "Samba 3.9.0-SVN-build-11572"
                ],
                "share" : [
                   "\\\\192.168.114.129\\TEST"
-               ],
-               "osCnt" : 1,
-               "domain" : [
-                  "VNET3"
                ]
             },
-            "srcPayload8" : "000000dbff534d42",
+            "ipProtocol" : 6,
+            "dstBytes" : 1326,
+            "srcMacCnt" : 1,
+            "segments" : 1,
             "srcRIR" : "ARIN",
-            "totBytes" : 2764,
-            "ipDst" : "192.168.114.129",
-            "firstPacket" : 1132371118535,
+            "length" : 56,
+            "lastPacket" : 1132371118592,
+            "srcDataBytes" : 902,
+            "fileIds" : [],
+            "protocolCnt" : 2,
+            "srcBytes" : 1438,
+            "dstMacCnt" : 1,
             "packetPosArray" : [
                24,
                114,
@@ -63,15 +65,15 @@
                2760,
                2881
             ],
+            "srcMac" : [
+               "00:50:56:c0:00:01"
+            ],
             "totPackets" : 14,
-            "length" : 56,
+            "totBytes" : 2764,
+            "srcPayload8" : "000000dbff534d42",
             "node" : "test",
             "dstMac" : [
                "00:0c:29:30:60:27"
-            ],
-            "protocol" : [
-               "smb",
-               "tcp"
             ],
             "packetLenArray" : [
                90,
@@ -89,26 +91,24 @@
                121,
                131
             ],
-            "srcDataBytes" : 902,
-            "srcMacCnt" : 1,
-            "dstBytes" : 1326,
-            "srcPackets" : 8,
-            "timestamp" : "SET",
-            "tags" : [
-               "smb:bad-security-blob"
-            ],
-            "lastPacket" : 1132371118592,
-            "totDataBytes" : 1824,
             "dstRIR" : "ARIN",
-            "segments" : 1,
-            "dstPayload8" : "00000095ff534d42",
-            "dstMacCnt" : 1
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-051119",
-               "_type" : "session"
-            }
+            "totDataBytes" : 1824,
+            "dstPackets" : 6,
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "dstDataBytes" : 922,
+            "tcpflags" : {
+               "fin" : 0,
+               "psh" : 10,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 2,
+               "rst" : 0
+            },
+            "tagsCnt" : 1
          }
       }
    ]

@@ -1,78 +1,26 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-141015",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "tags" : [
-               "srcip"
-            ],
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               345,
-               82,
-               1500,
-               1500,
-               82,
-               82,
-               1342,
-               234,
-               82,
-               82,
-               208,
-               312,
-               82,
-               113,
-               82,
-               82,
-               82
-            ],
-            "tagsCnt" : 1,
-            "firstPacket" : 1413337896106,
-            "length" : 477,
-            "dstPackets" : 8,
-            "dstASN" : "AS15169 Google Inc.",
-            "fileIds" : [],
-            "srcASN" : "AS0000 This is neat",
-            "ipDst" : "74.125.228.37",
-            "timestamp" : "SET",
             "ipSrc" : "10.0.0.1",
-            "test" : {
-               "RIR" : [
-                  ""
+            "tls" : {
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
                ],
-               "GEO" : [
-                  "RUS"
+               "ja3" : [
+                  "609a9998ac9d232d213aee990ec5162f"
                ],
-               "number" : [
-                  635731274
-               ],
-               "string.snow" : [
-                  "16777226:57413,635731274:443"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  167772161
+               "ja3Cnt" : 1,
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "version" : [
+                  "TLSv1.2"
                ]
             },
+            "ipDst" : "74.125.228.37",
             "dstPayload8" : "160303003d020000",
-            "srcMacCnt" : 1,
-            "dstRIR" : "ARIN",
-            "srcDataBytes" : 420,
             "totPackets" : 20,
-            "dstGEO" : "USA",
-            "srcPort" : 57413,
-            "totBytes" : 6234,
-            "srcPayload8" : "1603010102010000",
-            "srcGEO" : "RUS",
+            "totDataBytes" : 4898,
             "packetPosArray" : [
                24,
                114,
@@ -95,53 +43,105 @@
                6414,
                6496
             ],
-            "tcpflags" : {
-               "fin" : 2,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "psh" : 6,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 10
+            "node" : "test",
+            "srcPackets" : 12,
+            "dstASN" : "AS15169 Google Inc.",
+            "test" : {
+               "number" : [
+                  635731274
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "string.snow" : [
+                  "16777226:57413,635731274:443"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ]
             },
-            "segments" : 1,
             "protocolCnt" : 2,
-            "lastPacket" : 1413337896584,
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstDataBytes" : 4478,
-            "protocol" : [
-               "tls",
-               "tcp"
-            ],
-            "ipProtocol" : 6,
-            "totDataBytes" : 4898,
-            "dstMacCnt" : 2,
-            "tlscnt" : 3,
-            "srcBytes" : 1220,
+            "srcGEO" : "RUS",
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "tls" : {
-               "ja3" : [
-                  "609a9998ac9d232d213aee990ec5162f"
-               ],
-               "ja3Cnt" : 1,
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
-               ],
-               "versionCnt" : 1,
-               "version" : [
-                  "TLSv1.2"
-               ]
-            },
-            "node" : "test",
-            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "timestamp" : "SET",
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "fileIds" : [],
             "dstBytes" : 5014,
-            "srcPackets" : 12
+            "totBytes" : 6234,
+            "tlscnt" : 3,
+            "tcpflags" : {
+               "psh" : 6,
+               "syn-ack" : 1,
+               "ack" : 10,
+               "fin" : 2,
+               "rst" : 0,
+               "syn" : 1,
+               "urg" : 0
+            },
+            "dstPort" : 443,
+            "segments" : 1,
+            "srcDataBytes" : 420,
+            "srcMacCnt" : 1,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               345,
+               82,
+               1500,
+               1500,
+               82,
+               82,
+               1342,
+               234,
+               82,
+               82,
+               208,
+               312,
+               82,
+               113,
+               82,
+               82,
+               82
+            ],
+            "ipProtocol" : 6,
+            "dstDataBytes" : 4478,
+            "dstGEO" : "USA",
+            "srcPayload8" : "1603010102010000",
+            "firstPacket" : 1413337896106,
+            "tags" : [
+               "srcip"
+            ],
+            "tagsCnt" : 1,
+            "dstMacCnt" : 2,
+            "dstPackets" : 8,
+            "length" : 477,
+            "lastPacket" : 1413337896584,
+            "srcASN" : "AS0000 This is neat",
+            "srcPort" : 57413,
+            "srcBytes" : 1220
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-141015"
+            }
          }
       }
    ]

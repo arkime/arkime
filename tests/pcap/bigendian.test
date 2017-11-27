@@ -8,55 +8,55 @@
             }
          },
          "body" : {
-            "icmp" : {
-               "type" : [
-                  0
-               ],
-               "code" : [
-                  8
-               ]
-            },
-            "dstDataBytes" : 0,
-            "srcPort" : 0,
-            "ipSrc" : "192.168.177.160",
-            "firstPacket" : 1335958313152,
             "length" : 4376,
+            "dstPort" : 0,
+            "totBytes" : 196,
+            "ipDst" : "10.64.11.49",
+            "protocolCnt" : 1,
+            "dstPackets" : 0,
             "dstMac" : [
                "00:00:5e:00:01:b1"
-            ],
-            "dstBytes" : 0,
-            "lastPacket" : 1335958317529,
-            "totDataBytes" : 0,
-            "dstPackets" : 0,
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "icmp"
             ],
             "srcMac" : [
                "00:21:28:05:29:ba"
             ],
-            "dstPort" : 0,
-            "ipDst" : "10.64.11.49",
-            "ipProtocol" : 1,
-            "segments" : 1,
+            "srcPackets" : 2,
+            "srcBytes" : 196,
             "node" : "test",
-            "fileIds" : [],
+            "firstPacket" : 1335958313152,
+            "totPackets" : 2,
+            "srcDataBytes" : 0,
+            "totDataBytes" : 0,
+            "icmp" : {
+               "code" : [
+                  8
+               ],
+               "type" : [
+                  0
+               ]
+            },
+            "protocol" : [
+               "icmp"
+            ],
+            "lastPacket" : 1335958317529,
+            "ipSrc" : "192.168.177.160",
+            "dstBytes" : 0,
             "packetLenArray" : [
                114,
                114
             ],
-            "srcBytes" : 196,
-            "totPackets" : 2,
-            "protocolCnt" : 1,
-            "srcPackets" : 2,
-            "timestamp" : "SET",
-            "totBytes" : 196,
-            "srcDataBytes" : 0,
             "srcRIR" : "ARIN",
+            "dstDataBytes" : 0,
+            "dstMacCnt" : 1,
             "packetPosArray" : [
                24,
                138
             ],
+            "fileIds" : [],
+            "ipProtocol" : 1,
+            "srcPort" : 0,
+            "segments" : 1,
+            "timestamp" : "SET",
             "srcMacCnt" : 1
          }
       }

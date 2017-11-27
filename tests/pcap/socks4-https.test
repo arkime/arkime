@@ -2,22 +2,20 @@
    "sessions2" : [
       {
          "body" : {
-            "firstPacket" : 1415053640836,
-            "dstASN" : "AS0001 Cool Beans!",
-            "dstMacCnt" : 2,
-            "srcBytes" : 404,
-            "tagsCnt" : 4,
-            "dstPackets" : 10,
-            "dstDataBytes" : 6784,
-            "tcpflags" : {
-               "urg" : 0,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 10,
-               "psh" : 4
-            },
+            "srcPort" : 50606,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c1"
+            ],
+            "ipDst" : "10.0.0.2",
+            "ipSrc" : "10.0.0.1",
+            "srcMacCnt" : 1,
+            "srcMac" : [
+               "00:0a:f3:31:84:00"
+            ],
+            "dstBytes" : 7348,
+            "srcASN" : "AS0000 This is neat",
+            "node" : "test",
             "packetLenArray" : [
                82,
                82,
@@ -36,31 +34,54 @@
                76,
                1366
             ],
-            "tlscnt" : 3,
-            "dstBytes" : 7348,
-            "dstGEO" : "CAN",
-            "srcPackets" : 6,
-            "ipSrc" : "10.0.0.1",
-            "srcPort" : 50606,
-            "srcMac" : [
-               "00:0a:f3:31:84:00"
-            ],
-            "segments" : 1,
-            "ipDst" : "10.0.0.2",
             "dstRIR" : "TEST",
-            "totDataBytes" : 6822,
-            "srcMacCnt" : 1,
-            "totPackets" : 16,
-            "protocolCnt" : 3,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:d8:bf:c1"
-            ],
-            "socks" : {
-               "port" : 443,
-               "host" : "login.live.com",
-               "user" : "fd7bcf7b5c9e1d"
+            "dstPayload8" : "005a01bb83fd3d50",
+            "ipProtocol" : 6,
+            "dstASN" : "AS0001 Cool Beans!",
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "string.snow" : [
+                  "16777226:50606,33554442:9901"
+               ]
             },
+            "dstDataBytes" : 6784,
+            "dstGEO" : "CAN",
+            "tags" : [
+               "srcip",
+               "dstip",
+               "out-of-order-dst",
+               "acked-unseen-segment-dst"
+            ],
+            "dstPort" : 9901,
+            "dstPackets" : 10,
+            "tcpflags" : {
+               "rst" : 0,
+               "psh" : 4,
+               "urg" : 0,
+               "fin" : 0,
+               "syn" : 1,
+               "ack" : 10,
+               "syn-ack" : 1
+            },
+            "length" : 1867,
+            "protocolCnt" : 3,
+            "fileIds" : [],
+            "firstPacket" : 1415053640836,
+            "timestamp" : "SET",
             "packetPosArray" : [
                24,
                106,
@@ -79,68 +100,47 @@
                6590,
                6666
             ],
-            "dstPort" : 9901,
+            "totDataBytes" : 6822,
+            "socks" : {
+               "port" : 443,
+               "user" : "fd7bcf7b5c9e1d",
+               "host" : "login.live.com"
+            },
+            "srcBytes" : 404,
+            "lastPacket" : 1415053642702,
+            "srcPayload8" : "040101bb00000001",
+            "tls" : {
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
+               ],
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "dstSessionId" : [
+                  "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
+               ]
+            },
             "protocol" : [
                "tls",
                "socks",
                "tcp"
             ],
-            "srcASN" : "AS0000 This is neat",
-            "length" : 1867,
+            "tagsCnt" : 4,
+            "tlscnt" : 3,
             "totBytes" : 7752,
-            "srcPayload8" : "040101bb00000001",
-            "timestamp" : "SET",
-            "node" : "test",
-            "srcDataBytes" : 38,
-            "test" : {
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "string.snow" : [
-                  "16777226:50606,33554442:9901"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "tls" : {
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
-               ],
-               "dstSessionId" : [
-                  "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
-               ],
-               "version" : [
-                  "TLSv1.2"
-               ],
-               "versionCnt" : 1
-            },
+            "dstMacCnt" : 2,
+            "segments" : 1,
             "srcGEO" : "RUS",
-            "dstPayload8" : "005a01bb83fd3d50",
-            "ipProtocol" : 6,
-            "tags" : [
-               "srcip",
-               "dstip",
-               "out-of-order-dst",
-               "acked-unseen-segment-dst"
-            ],
-            "fileIds" : [],
-            "lastPacket" : 1415053642702
+            "srcPackets" : 6,
+            "totPackets" : 16,
+            "srcDataBytes" : 38
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-141103",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-141103"
             }
          }
       }

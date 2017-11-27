@@ -8,100 +8,19 @@
             }
          },
          "body" : {
+            "dstGEO" : "USA",
             "dstMac" : [
                "00:25:90:ac:d0:6a"
             ],
-            "protocolCnt" : 2,
-            "dstMacCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
-            "tagsCnt" : 2,
-            "node" : "test",
-            "ipDst" : "64.236.64.226",
-            "test" : {
-               "number" : [
-                  3795905600
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:20720,-499061696:25"
-               ]
-            },
-            "totPackets" : 19,
-            "dstBytes" : 1163,
-            "dstPayload8" : "32323020616f6c6d",
-            "dstRIR" : "ARIN",
-            "ipProtocol" : 6,
-            "tags" : [
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "timestamp" : "SET",
-            "lastPacket" : 1384762016457,
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               153,
-               110,
-               82,
-               251,
-               182,
-               123,
-               82,
-               184,
-               1530,
-               340,
-               82,
-               114,
-               162,
-               82,
-               82,
-               82
-            ],
-            "dstDataBytes" : 495,
-            "srcPayload8" : "45484c4f20736d74",
-            "srcDataBytes" : 1834,
-            "fileIds" : [],
+            "srcPort" : 20720,
             "email" : {
+               "srcCnt" : 1,
                "subjectCnt" : 1,
-               "ip" : [
-                  178782209,
-                  178782210
-               ],
-               "GEO" : [
-                  "---",
-                  "---"
-               ],
+               "headersCnt" : 6,
                "src" : [
                   "xxxxxxxxx@xxxxxxxxx.com"
                ],
-               "srcCnt" : 1,
-               "hostCnt" : 3,
-               "contentTypeCnt" : 1,
-               "RIR" : [
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "xxxx.xxxx.xxxxxxxxx.com",
-                  "smtp-02.xxxxxxxxx.com",
-                  "smtp-01.xxxxxxxxx.com"
-               ],
-               "mimeVersionCnt" : 1,
-               "md5" : [
-                  "5b153a606bea42005e1eedb5ddeabcf0"
-               ],
+               "md5Cnt" : 1,
                "headers" : [
                   "content-type",
                   "mime-version",
@@ -110,9 +29,28 @@
                   "received",
                   "subject"
                ],
+               "md5" : [
+                  "5b153a606bea42005e1eedb5ddeabcf0"
+               ],
+               "ipCnt" : 2,
+               "contentTypeCnt" : 1,
                "dst" : [
                   "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
                ],
+               "RIR" : [
+                  "",
+                  ""
+               ],
+               "subject" : [
+                  "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
+               ],
+               "mimeVersionCnt" : 1,
+               "host" : [
+                  "xxxx.xxxx.xxxxxxxxx.com",
+                  "smtp-02.xxxxxxxxx.com",
+                  "smtp-01.xxxxxxxxx.com"
+               ],
+               "dstCnt" : 1,
                "contentType" : [
                   "multipart/mixed; boundary=\"===============1250870193309395048==\""
                ],
@@ -120,21 +58,54 @@
                   "---",
                   "---"
                ],
-               "dstCnt" : 1,
-               "ipCnt" : 2,
-               "md5Cnt" : 1,
-               "headersCnt" : 6,
-               "subject" : [
-                  "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
+               "hostCnt" : 3,
+               "GEO" : [
+                  "---",
+                  "---"
+               ],
+               "ip" : [
+                  "10.168.0.1",
+                  "10.168.0.2"
                ],
                "mimeVersion" : [
                   "1.0"
                ]
             },
-            "firstPacket" : 1384762012670,
-            "srcPackets" : 9,
-            "dstPort" : 25,
+            "dstRIR" : "ARIN",
             "totBytes" : 3599,
+            "totDataBytes" : 2329,
+            "dstBytes" : 1163,
+            "tcpflags" : {
+               "psh" : 9,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 7,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "urg" : 0
+            },
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "node" : "test",
+            "timestamp" : "SET",
+            "srcPackets" : 9,
+            "firstPacket" : 1384762012670,
+            "length" : 3788,
+            "srcBytes" : 2436,
+            "tagsCnt" : 2,
+            "dstDataBytes" : 495,
+            "srcMacCnt" : 2,
+            "srcMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0b:5f:6b:5d:40"
+            ],
+            "tags" : [
+               "smtp:statuscode:250",
+               "srcip"
+            ],
             "packetPosArray" : [
                24,
                114,
@@ -156,34 +127,63 @@
                3763,
                3845
             ],
-            "srcPort" : 20720,
-            "srcMacCnt" : 2,
-            "dstPackets" : 10,
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "srcMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0b:5f:6b:5d:40"
-            ],
+            "totPackets" : 19,
+            "srcASN" : "AS0000 This is neat",
+            "fileIds" : [],
+            "ipProtocol" : 6,
+            "dstPayload8" : "32323020616f6c6d",
             "srcGEO" : "RUS",
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "segments" : 1,
-            "totDataBytes" : 2329,
-            "tcpflags" : {
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "psh" : 9,
-               "syn" : 1,
-               "fin" : 2,
-               "ack" : 7
-            },
-            "dstGEO" : "USA",
             "ipSrc" : "10.0.0.1",
-            "length" : 3788,
-            "srcBytes" : 2436
+            "dstPort" : 25,
+            "srcDataBytes" : 1834,
+            "srcPayload8" : "45484c4f20736d74",
+            "lastPacket" : 1384762016457,
+            "test" : {
+               "string.snow" : [
+                  "16777226:20720,-499061696:25"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "number" : [
+                  3795905600
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "dstPackets" : 10,
+            "segments" : 1,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               153,
+               110,
+               82,
+               251,
+               182,
+               123,
+               82,
+               184,
+               1530,
+               340,
+               82,
+               114,
+               162,
+               82,
+               82,
+               82
+            ],
+            "ipDst" : "64.236.64.226",
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstMacCnt" : 1
          }
       }
    ]

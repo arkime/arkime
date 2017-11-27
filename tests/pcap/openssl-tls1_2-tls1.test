@@ -2,55 +2,54 @@
    "sessions2" : [
       {
          "body" : {
-            "node" : "test",
-            "srcBytes" : 1210,
-            "ipProtocol" : 6,
-            "dstMacCnt" : 2,
-            "tagsCnt" : 1,
-            "segments" : 1,
-            "packetLenArray" : [
-               90,
-               82,
-               70,
-               333,
-               1530,
-               70,
-               1530,
-               1112,
-               70,
-               70,
-               380,
-               76,
-               113,
-               70,
-               93,
-               70,
-               76,
-               76,
-               70
-            ],
-            "length" : 606,
-            "srcGEO" : "RUS",
-            "dstGEO" : "USA",
-            "srcASN" : "AS0000 This is neat",
             "tls" : {
-               "version" : [
-                  "TLSv1"
-               ],
-               "ja3Cnt" : 1,
-               "ja3" : [
-                  "609a9998ac9d232d213aee990ec5162f"
-               ],
                "dstSessionId" : [
                   "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
                ],
-               "cipherCnt" : 1,
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_MD5"
                ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "cipherCnt" : 1,
+               "ja3" : [
+                  "609a9998ac9d232d213aee990ec5162f"
+               ],
+               "ja3Cnt" : 1,
                "versionCnt" : 1
             },
-            "ipSrc" : "10.0.0.1",
+            "dstPackets" : 8,
+            "srcDataBytes" : 596,
+            "totPackets" : 19,
+            "srcMacCnt" : 1,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstGEO" : "USA",
+            "totBytes" : 5677,
+            "test" : {
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "number" : [
+                  51711040
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:40291,51711040:443"
+               ],
+               "RIR" : [
+                  ""
+               ]
+            },
+            "dstPayload8" : "1603010f75020000",
+            "dstDataBytes" : 4005,
             "packetPosArray" : [
                24,
                114,
@@ -72,76 +71,77 @@
                5859,
                5935
             ],
-            "ipDst" : "64.12.21.3",
-            "lastPacket" : 1413338075560,
-            "srcPayload8" : "1603010102010000",
-            "srcPackets" : 11,
-            "dstPayload8" : "1603010f75020000",
-            "totBytes" : 5677,
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "fileIds" : [],
-            "srcDataBytes" : 596,
-            "dstBytes" : 4467,
-            "srcPort" : 40291,
-            "srcMacCnt" : 1,
-            "test" : {
-               "RIR" : [
-                  ""
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "number" : [
-                  51711040
-               ],
-               "string.snow" : [
-                  "16777226:40291,51711040:443"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "protocolCnt" : 2,
             "protocol" : [
                "tls",
                "tcp"
             ],
-            "totPackets" : 19,
-            "totDataBytes" : 4601,
-            "dstPackets" : 8,
-            "dstRIR" : "ARIN",
-            "tcpflags" : {
-               "syn" : 1,
-               "ack" : 8,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "rst" : 0,
-               "psh" : 7
-            },
+            "dstPort" : 443,
+            "srcPackets" : 11,
             "tags" : [
                "srcip"
             ],
-            "firstPacket" : 1413338074954,
-            "dstDataBytes" : 4005,
+            "tlscnt" : 2,
+            "ipProtocol" : 6,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "ack" : 8,
+               "psh" : 7,
+               "fin" : 2
+            },
+            "dstRIR" : "ARIN",
+            "totDataBytes" : 4601,
+            "lastPacket" : 1413338075560,
+            "srcGEO" : "RUS",
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "fileIds" : [],
+            "dstBytes" : 4467,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
+            "firstPacket" : 1413338074954,
+            "ipDst" : "64.12.21.3",
+            "length" : 606,
+            "packetLenArray" : [
+               90,
+               82,
+               70,
+               333,
+               1530,
+               70,
+               1530,
+               1112,
+               70,
+               70,
+               380,
+               76,
+               113,
+               70,
+               93,
+               70,
+               76,
+               76,
+               70
+            ],
+            "srcPayload8" : "1603010102010000",
+            "node" : "test",
+            "srcASN" : "AS0000 This is neat",
+            "ipSrc" : "10.0.0.1",
+            "tagsCnt" : 1,
+            "srcPort" : 40291,
+            "segments" : 1,
+            "protocolCnt" : 2,
+            "srcBytes" : 1210,
             "timestamp" : "SET",
-            "dstPort" : 443,
-            "tlscnt" : 2
+            "dstMacCnt" : 2
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-141015",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-141015"
             }
          }
       }

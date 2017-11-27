@@ -3,126 +3,50 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-140306"
+               "_index" : "tests_sessions2-140306",
+               "_type" : "session"
             }
          },
          "body" : {
+            "dstPackets" : 11,
+            "srcDataBytes" : 211,
+            "dstGEO" : "CAN",
+            "dstMacCnt" : 2,
+            "totBytes" : 2498,
             "totPackets" : 23,
-            "segments" : 1,
             "tcpflags" : {
-               "urg" : 0,
                "syn-ack" : 1,
                "ack" : 11,
+               "syn" : 1,
+               "urg" : 0,
                "rst" : 0,
-               "psh" : 8,
                "fin" : 2,
-               "syn" : 1
+               "psh" : 8
             },
+            "srcPackets" : 12,
+            "dstDataBytes" : 749,
             "tags" : [
                "srcip",
                "dstip"
             ],
-            "srcDataBytes" : 211,
-            "ipProtocol" : 6,
-            "tagsCnt" : 2,
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "timestamp" : "SET",
-            "dstPackets" : 11,
-            "dstASN" : "AS0001 Cool Beans!",
-            "fileIds" : [],
-            "srcMacCnt" : 1,
-            "srcGEO" : "RUS",
-            "node" : "test",
-            "srcPayload8" : "45484c4f20787878",
-            "dstDataBytes" : 749,
-            "packetPosArray" : [
-               24,
-               114,
-               208,
-               290,
-               583,
-               665,
-               747,
-               829,
-               1002,
-               1084,
-               1599,
-               1681,
-               1803,
-               1885,
-               2010,
-               2092,
-               2224,
-               2306,
-               2444,
-               2526,
-               2644,
-               2726,
-               2808
-            ],
-            "srcPackets" : 12,
+            "totDataBytes" : 960,
+            "firstPacket" : 1394118475009,
+            "srcPort" : 40531,
+            "dstPort" : 25,
+            "length" : 128,
+            "srcBytes" : 1011,
             "ipDst" : "10.0.0.2",
-            "dstRIR" : "TEST",
+            "srcGEO" : "RUS",
+            "srcPayload8" : "45484c4f20787878",
+            "srcASN" : "AS0000 This is neat",
             "lastPacket" : 1394118475137,
-            "ipSrc" : "10.0.0.1",
-            "dstMacCnt" : 2,
-            "test" : {
-               "GEO" : [
-                  "RUS"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "string.snow" : [
-                  "16777226:40531,33554442:25"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "dstGEO" : "CAN",
-            "totBytes" : 2498,
+            "dstRIR" : "TEST",
             "protocol" : [
                "smtp",
                "tcp"
             ],
-            "srcASN" : "AS0000 This is neat",
-            "dstPayload8" : "3232302d78787878",
-            "email" : {
-               "headers" : [
-                  "from",
-                  "to",
-                  "subject"
-               ],
-               "dst" : [
-                  "xxxxx@xxx.net"
-               ],
-               "src" : [
-                  "xxxxx@xxx.net"
-               ],
-               "subjectCnt" : 1,
-               "srcCnt" : 1,
-               "subject" : [
-                  "Awesome windows: See What’s Next in charset decoding!"
-               ],
-               "headersCnt" : 3,
-               "dstCnt" : 1
-            },
-            "protocolCnt" : 2,
-            "length" : 128,
-            "firstPacket" : 1394118475009,
-            "dstBytes" : 1487,
-            "totDataBytes" : 960,
-            "srcBytes" : 1011,
+            "tagsCnt" : 2,
+            "segments" : 1,
             "packetLenArray" : [
                90,
                94,
@@ -148,11 +72,87 @@
                82,
                82
             ],
-            "dstPort" : 25,
-            "srcPort" : 40531,
+            "dstBytes" : 1487,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
+            ],
+            "timestamp" : "SET",
+            "protocolCnt" : 2,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "string.snow" : [
+                  "16777226:40531,33554442:25"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ]
+            },
+            "email" : {
+               "dstCnt" : 1,
+               "dst" : [
+                  "xxxxx@xxx.net"
+               ],
+               "subjectCnt" : 1,
+               "headersCnt" : 3,
+               "subject" : [
+                  "Awesome windows: See What’s Next in charset decoding!"
+               ],
+               "src" : [
+                  "xxxxx@xxx.net"
+               ],
+               "headers" : [
+                  "from",
+                  "to",
+                  "subject"
+               ],
+               "srcCnt" : 1
+            },
+            "dstASN" : "AS0001 Cool Beans!",
+            "node" : "test",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstPayload8" : "3232302d78787878",
+            "srcMacCnt" : 1,
+            "ipProtocol" : 6,
+            "ipSrc" : "10.0.0.1",
+            "fileIds" : [],
+            "packetPosArray" : [
+               24,
+               114,
+               208,
+               290,
+               583,
+               665,
+               747,
+               829,
+               1002,
+               1084,
+               1599,
+               1681,
+               1803,
+               1885,
+               2010,
+               2092,
+               2224,
+               2306,
+               2444,
+               2526,
+               2644,
+               2726,
+               2808
             ]
          }
       }

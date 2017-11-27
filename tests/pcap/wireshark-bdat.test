@@ -2,67 +2,25 @@
    "sessions2" : [
       {
          "body" : {
-            "srcPayload8" : "45484c4f20746573",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "totBytes" : 10231,
-            "dstDataBytes" : 130,
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               383,
-               488,
-               570,
-               699,
-               826,
-               1203,
-               1285,
-               1414,
-               1512,
-               9785,
-               10056,
-               10138,
-               10233,
-               10321,
-               10403,
-               10493
-            ],
-            "ipSrc" : "127.0.0.1",
-            "firstPacket" : 1476878885946,
-            "dstPayload8" : "3232302047726565",
-            "totPackets" : 20,
-            "node" : "test",
-            "srcPackets" : 10,
-            "timestamp" : "SET",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
-            "lastPacket" : 1476878885949,
-            "srcDataBytes" : 8765,
-            "protocolCnt" : 3,
-            "dstPort" : 1224,
             "srcMacCnt" : 1,
+            "lastPacket" : 1476878885949,
+            "srcPort" : 59620,
+            "totPackets" : 20,
+            "dstPort" : 1224,
+            "srcBytes" : 9433,
+            "dstBytes" : 798,
+            "firstPacket" : 1476878885946,
+            "totBytes" : 10231,
             "tcpflags" : {
-               "syn" : 1,
-               "fin" : 2,
+               "ack" : 4,
                "rst" : 0,
                "psh" : 12,
-               "ack" : 4,
+               "syn-ack" : 1,
+               "syn" : 1,
                "urg" : 0,
-               "syn-ack" : 1
+               "fin" : 2
             },
-            "srcBytes" : 9433,
-            "protocol" : [
-               "ftp",
-               "smtp",
-               "tcp"
-            ],
-            "ipProtocol" : 6,
-            "dstBytes" : 798,
+            "ipDst" : "127.0.0.1",
             "packetLenArray" : [
                90,
                90,
@@ -85,45 +43,87 @@
                90,
                82
             ],
+            "packetPosArray" : [
+               24,
+               114,
+               204,
+               286,
+               383,
+               488,
+               570,
+               699,
+               826,
+               1203,
+               1285,
+               1414,
+               1512,
+               9785,
+               10056,
+               10138,
+               10233,
+               10321,
+               10403,
+               10493
+            ],
+            "segments" : 1,
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "protocolCnt" : 3,
+            "dstPayload8" : "3232302047726565",
+            "srcPayload8" : "45484c4f20746573",
+            "totDataBytes" : 8895,
+            "ipSrc" : "127.0.0.1",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
             "length" : 3,
             "dstPackets" : 10,
-            "ipDst" : "127.0.0.1",
+            "protocol" : [
+               "ftp",
+               "smtp",
+               "tcp"
+            ],
+            "ipProtocol" : 6,
+            "timestamp" : "SET",
+            "dstMacCnt" : 1,
             "fileIds" : [],
-            "totDataBytes" : 8895,
+            "node" : "test",
+            "dstDataBytes" : 130,
             "email" : {
-               "subject" : [
-                  "foo"
+               "dstCnt" : 1,
+               "src" : [
+                  "sender@dom",
+                  ""
                ],
-               "headersCnt" : 5,
-               "id" : [
-                  "E1bwpfB-0000Be-Tu@testhost.test.ex"
+               "dst" : [
+                  "p@test.ex"
                ],
                "host" : [
                   "testhost.test.ex",
                   "root"
                ],
-               "dstCnt" : 1,
                "idCnt" : 1,
-               "dst" : [
-                  "p@test.ex"
+               "subject" : [
+                  "foo"
+               ],
+               "hostCnt" : 2,
+               "id" : [
+                  "E1bwpfB-0000Be-Tu@testhost.test.ex"
                ],
                "subjectCnt" : 1,
-               "hostCnt" : 2,
+               "srcCnt" : 2,
+               "headersCnt" : 5,
                "headers" : [
                   "message-id",
                   "from",
                   "received",
                   "date",
                   "subject"
-               ],
-               "srcCnt" : 2,
-               "src" : [
-                  "sender@dom",
-                  ""
                ]
             },
-            "segments" : 1,
-            "srcPort" : 59620
+            "srcDataBytes" : 8765,
+            "srcPackets" : 10
          },
          "header" : {
             "index" : {

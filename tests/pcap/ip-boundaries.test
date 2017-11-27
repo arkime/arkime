@@ -2,52 +2,52 @@
    "sessions2" : [
       {
          "body" : {
-            "dstPort" : 3207,
-            "dstMacCnt" : 1,
-            "srcDataBytes" : 137,
-            "srcBytes" : 145,
-            "ipDst" : "0.0.0.0",
             "length" : 0,
-            "ipSrc" : "255.255.255.255",
+            "dstPackets" : 0,
+            "timestamp" : "SET",
+            "fileIds" : [],
+            "node" : "test",
+            "srcBytes" : 145,
+            "srcMac" : [
+               "78:fe:3d:11:21:f2"
+            ],
             "srcPayload8" : "64313a6164323a69",
+            "srcDataBytes" : 137,
+            "ipProtocol" : 17,
+            "dstPort" : 3207,
+            "srcPort" : 50759,
+            "dstBytes" : 0,
+            "dstMacCnt" : 1,
+            "ipSrc" : "255.255.255.255",
+            "totDataBytes" : 137,
+            "packetLenArray" : [
+               161
+            ],
+            "packetPosArray" : [
+               103
+            ],
+            "ipDst" : "0.0.0.0",
+            "protocolCnt" : 2,
+            "segments" : 1,
+            "lastPacket" : 1387253713030,
+            "totBytes" : 145,
+            "srcMacCnt" : 1,
+            "totPackets" : 1,
+            "firstPacket" : 1387253713030,
+            "srcPackets" : 1,
+            "dstDataBytes" : 0,
             "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "ipProtocol" : 17,
-            "lastPacket" : 1387253713030,
-            "packetLenArray" : [
-               161
-            ],
-            "srcMacCnt" : 1,
-            "protocolCnt" : 2,
-            "fileIds" : [],
-            "dstDataBytes" : 0,
-            "timestamp" : "SET",
-            "totDataBytes" : 137,
-            "srcPackets" : 1,
-            "dstPackets" : 0,
             "dstMac" : [
                "00:10:db:ff:26:00"
-            ],
-            "totPackets" : 1,
-            "node" : "test",
-            "srcPort" : 50759,
-            "packetPosArray" : [
-               103
-            ],
-            "totBytes" : 145,
-            "srcMac" : [
-               "78:fe:3d:11:21:f2"
-            ],
-            "segments" : 1,
-            "firstPacket" : 1387253713030,
-            "dstBytes" : 0
+            ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131217",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131217"
             }
          }
       }

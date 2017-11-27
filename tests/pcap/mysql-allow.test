@@ -1,18 +1,18 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-140423",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
             "dstDataBytes" : 185,
-            "srcRIR" : "ARIN",
-            "srcDataBytes" : 123,
-            "srcPayload8" : "5200000105a60f00",
-            "totDataBytes" : 308,
+            "fileIds" : [],
+            "ipSrc" : "192.168.1.3",
+            "srcPort" : 42803,
+            "dstPort" : 3306,
+            "segments" : 1,
+            "dstMacCnt" : 1,
+            "srcPackets" : 6,
             "packetPosArray" : [
                24,
                114,
@@ -26,35 +26,22 @@
                1007,
                1168
             ],
-            "totBytes" : 1050,
+            "lastPacket" : 1398217359003,
             "dstBytes" : 523,
-            "dstMacCnt" : 1,
+            "dstPackets" : 5,
+            "srcDataBytes" : 123,
+            "totBytes" : 1050,
+            "dstRIR" : "ARIN",
+            "protocolCnt" : 2,
+            "totDataBytes" : 308,
             "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "dstRIR" : "ARIN",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "timestamp" : "SET",
-            "fileIds" : [],
-            "ipProtocol" : 6,
-            "length" : 43,
-            "ipDst" : "192.168.1.3",
-            "totPackets" : 11,
-            "tcpflags" : {
-               "syn" : 1,
-               "psh" : 5,
-               "fin" : 0,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 4
+            "srcMacCnt" : 1,
+            "mysql" : {
+               "version" : "5.5.35-0ubuntu0.12.04.2",
+               "user" : "user10"
             },
-            "protocol" : [
-               "mysql",
-               "tcp"
-            ],
             "packetLenArray" : [
                90,
                90,
@@ -68,23 +55,36 @@
                161,
                82
             ],
-            "dstPayload8" : "5b0000000a352e35",
-            "srcBytes" : 527,
-            "lastPacket" : 1398217359003,
-            "ipSrc" : "192.168.1.3",
-            "srcPackets" : 6,
-            "firstPacket" : 1398217358961,
-            "dstPackets" : 5,
-            "dstPort" : 3306,
-            "protocolCnt" : 2,
-            "mysql" : {
-               "version" : "5.5.35-0ubuntu0.12.04.2",
-               "user" : "user10"
+            "ipProtocol" : 6,
+            "tcpflags" : {
+               "psh" : 5,
+               "rst" : 0,
+               "fin" : 0,
+               "syn" : 1,
+               "ack" : 4,
+               "syn-ack" : 1,
+               "urg" : 0
             },
-            "segments" : 1,
-            "srcMacCnt" : 1,
+            "length" : 43,
+            "srcBytes" : 527,
             "node" : "test",
-            "srcPort" : 42803
+            "protocol" : [
+               "mysql",
+               "tcp"
+            ],
+            "dstPayload8" : "5b0000000a352e35",
+            "srcRIR" : "ARIN",
+            "srcPayload8" : "5200000105a60f00",
+            "firstPacket" : 1398217358961,
+            "timestamp" : "SET",
+            "ipDst" : "192.168.1.3",
+            "totPackets" : 11
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140423",
+               "_type" : "session"
+            }
          }
       }
    ]

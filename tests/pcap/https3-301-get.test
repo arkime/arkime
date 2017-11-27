@@ -1,17 +1,33 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131125",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "srcPort" : 62599,
-            "srcDataBytes" : 630,
+            "totDataBytes" : 4838,
+            "tls" : {
+               "ja3Cnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "dstSessionId" : [
+                  "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "ja3" : [
+                  "06a92bf69b367389d2feb0d70501ddfe"
+               ],
+               "versionCnt" : 1,
+               "cipherCnt" : 1
+            },
             "lastPacket" : 1385396821236,
-            "fileIds" : [],
+            "dstBytes" : 4810,
+            "dstPackets" : 9,
+            "ipSrc" : "10.180.156.141",
+            "srcGEO" : "USA",
+            "firstPacket" : 1385396821013,
+            "dstPort" : 443,
+            "protocolCnt" : 2,
             "packetPosArray" : [
                24,
                118,
@@ -37,63 +53,33 @@
                6580,
                6662
             ],
+            "totBytes" : 6340,
+            "srcBytes" : 1530,
+            "ipProtocol" : 6,
+            "segments" : 1,
+            "ipDst" : "192.30.252.130",
+            "tcpflags" : {
+               "fin" : 2,
+               "psh" : 8,
+               "urg" : 0,
+               "ack" : 8,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 3
+            },
             "node" : "test",
-            "ipSrc" : "10.180.156.141",
-            "dstPackets" : 9,
-            "protocolCnt" : 2,
+            "srcMacCnt" : 1,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "dstASN" : "AS36459 GitHub, Inc.",
+            "dstPayload8" : "1603010055020000",
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "dstASN" : "AS36459 GitHub, Inc.",
-            "dstBytes" : 4810,
-            "srcPackets" : 14,
-            "segments" : 1,
-            "totBytes" : 6340,
-            "srcMacCnt" : 1,
-            "dstMacCnt" : 2,
-            "srcBytes" : 1530,
-            "srcGEO" : "USA",
-            "ipProtocol" : 6,
-            "timestamp" : "SET",
-            "dstRIR" : "ARIN",
-            "tlscnt" : 2,
-            "dstDataBytes" : 4208,
-            "ipDst" : "192.30.252.130",
-            "protocol" : [
-               "tls",
-               "tcp"
-            ],
-            "dstPort" : 443,
-            "firstPacket" : 1385396821013,
             "srcPayload8" : "1603010072010000",
-            "tls" : {
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "ja3Cnt" : 1,
-               "dstSessionId" : [
-                  "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
-               ],
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1
-            },
             "totPackets" : 23,
-            "tcpflags" : {
-               "urg" : 0,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "syn" : 1,
-               "rst" : 3,
-               "psh" : 8,
-               "ack" : 8
-            },
             "packetLenArray" : [
                94,
                90,
@@ -119,19 +105,33 @@
                82,
                70
             ],
-            "dstPayload8" : "1603010055020000",
-            "length" : 223,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
+            "timestamp" : "SET",
+            "dstGEO" : "USA",
+            "dstMacCnt" : 2,
+            "srcDataBytes" : 630,
+            "dstDataBytes" : 4208,
+            "fileIds" : [],
+            "protocol" : [
+               "tls",
+               "tcp"
             ],
+            "srcPort" : 62599,
+            "tlscnt" : 2,
+            "length" : 223,
+            "srcPackets" : 14,
             "http" : {
-               "hostCnt" : 1,
                "host" : [
                   "www.github.com"
-               ]
+               ],
+               "hostCnt" : 1
             },
-            "totDataBytes" : 4838,
-            "dstGEO" : "USA"
+            "dstRIR" : "ARIN"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131125"
+            }
          }
       }
    ]

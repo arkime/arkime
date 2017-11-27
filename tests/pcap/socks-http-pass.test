@@ -3,19 +3,40 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131203",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131203"
             }
          },
          "body" : {
+            "srcMacCnt" : 1,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "totPackets" : 11,
             "ipSrc" : "10.180.156.185",
+            "node" : "test",
+            "segments" : 1,
+            "protocol" : [
+               "tcp"
+            ],
             "totBytes" : 752,
-            "protocolCnt" : 1,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "firstPacket" : 1386090517357,
             "length" : 1,
-            "dstPort" : 1080,
-            "dstDataBytes" : 2,
-            "srcPackets" : 6,
+            "totDataBytes" : 6,
+            "dstPayload8" : "05ff",
+            "fileIds" : [],
+            "timestamp" : "SET",
+            "ipDst" : "10.180.156.249",
+            "dstGEO" : "USA",
             "srcDataBytes" : 4,
+            "protocolCnt" : 1,
+            "srcPort" : 54068,
+            "dstDataBytes" : 2,
+            "srcGEO" : "USA",
+            "dstPort" : 1080,
             "packetLenArray" : [
                94,
                90,
@@ -29,6 +50,22 @@
                82,
                82
             ],
+            "lastPacket" : 1386090517358,
+            "tcpflags" : {
+               "fin" : 2,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "psh" : 2,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 5
+            },
+            "dstBytes" : 340,
+            "ipProtocol" : 6,
+            "srcPayload8" : "05020001",
+            "srcPackets" : 6,
+            "srcBytes" : 412,
+            "dstMacCnt" : 1,
             "packetPosArray" : [
                24,
                118,
@@ -42,44 +79,7 @@
                788,
                870
             ],
-            "timestamp" : "SET",
-            "ipProtocol" : 6,
-            "segments" : 1,
-            "ipDst" : "10.180.156.249",
-            "firstPacket" : 1386090517357,
-            "srcPort" : 54068,
-            "dstGEO" : "USA",
-            "dstPayload8" : "05ff",
-            "node" : "test",
-            "dstBytes" : 340,
-            "totPackets" : 11,
-            "lastPacket" : 1386090517358,
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcBytes" : 412,
-            "srcMacCnt" : 1,
-            "totDataBytes" : 6,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "ack" : 5,
-               "rst" : 0,
-               "syn" : 1,
-               "psh" : 2
-            },
-            "dstPackets" : 5,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "protocol" : [
-               "tcp"
-            ],
-            "dstMacCnt" : 1,
-            "srcPayload8" : "05020001",
-            "fileIds" : [],
-            "srcGEO" : "USA"
+            "dstPackets" : 5
          }
       },
       {
@@ -90,37 +90,37 @@
             }
          },
          "body" : {
+            "srcMacCnt" : 1,
+            "totBytes" : 972,
+            "protocol" : [
+               "socks",
+               "tcp"
+            ],
+            "node" : "test",
+            "segments" : 1,
+            "ipSrc" : "10.180.156.185",
+            "totPackets" : 14,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "timestamp" : "SET",
+            "fileIds" : [],
+            "dstPayload8" : "050201ff",
+            "totDataBytes" : 28,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "length" : 8,
             "firstPacket" : 1386090528538,
             "dstGEO" : "USA",
-            "dstPayload8" : "050201ff",
-            "srcPort" : 54069,
-            "node" : "test",
-            "packetPosArray" : [
-               952,
-               1046,
-               1136,
-               1218,
-               1305,
-               1387,
-               1471,
-               1553,
-               1654,
-               1738,
-               1820,
-               1902,
-               1984,
-               2066
-            ],
             "ipDst" : "10.180.156.249",
-            "segments" : 1,
-            "ipProtocol" : 6,
-            "timestamp" : "SET",
-            "tags" : [
-               "socks:password"
-            ],
             "socks" : {
                "user" : "testuser"
             },
+            "srcGEO" : "USA",
+            "dstDataBytes" : 4,
+            "srcPort" : 54069,
+            "protocolCnt" : 2,
             "srcDataBytes" : 24,
             "packetLenArray" : [
                94,
@@ -138,177 +138,84 @@
                82,
                82
             ],
-            "totBytes" : 972,
-            "ipSrc" : "10.180.156.185",
-            "tagsCnt" : 1,
-            "srcPackets" : 8,
-            "dstDataBytes" : 4,
-            "length" : 8,
-            "protocolCnt" : 2,
+            "tags" : [
+               "socks:password"
+            ],
             "dstPort" : 1080,
-            "protocol" : [
-               "socks",
-               "tcp"
-            ],
-            "dstMacCnt" : 1,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "fileIds" : [],
-            "srcPayload8" : "0503000102010874",
-            "srcGEO" : "USA",
-            "dstPackets" : 6,
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcBytes" : 564,
+            "tagsCnt" : 1,
+            "dstBytes" : 408,
             "lastPacket" : 1386090528547,
             "tcpflags" : {
-               "psh" : 4,
-               "syn-ack" : 1,
-               "fin" : 2,
                "urg" : 0,
+               "rst" : 0,
+               "psh" : 4,
                "ack" : 6,
                "syn" : 1,
-               "rst" : 0
+               "fin" : 2,
+               "syn-ack" : 1
             },
-            "totDataBytes" : 28,
-            "srcMacCnt" : 1,
-            "totPackets" : 14,
-            "dstBytes" : 408
+            "packetPosArray" : [
+               952,
+               1046,
+               1136,
+               1218,
+               1305,
+               1387,
+               1471,
+               1553,
+               1654,
+               1738,
+               1820,
+               1902,
+               1984,
+               2066
+            ],
+            "dstPackets" : 6,
+            "srcBytes" : 564,
+            "srcPackets" : 8,
+            "dstMacCnt" : 1,
+            "srcPayload8" : "0503000102010874",
+            "ipProtocol" : 6
          }
       },
       {
          "body" : {
-            "totPackets" : 20,
-            "http" : {
-               "methodCnt" : 1,
-               "hostCnt" : 1,
-               "serverVersionCnt" : 1,
-               "md5" : [
-                  "09b9c392dc1f6e914cea287cb6be34b0"
-               ],
-               "requestHeaderCnt" : 3,
-               "responseHeaderCnt" : 11,
-               "uricnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "useragentCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "pathCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
-               ],
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "host" : [
-                  "www.example.com"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "x-cache",
-                  "cache-control",
-                  "accept-ranges",
-                  "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
-                  "x-ec-custom-error",
-                  "server"
-               ],
-               "bodyMagicCnt" : 1,
-               "uri" : [
-                  "//www.example.com/"
-               ],
-               "clientVersionCnt" : 1,
-               "statuscodeCnt" : 1,
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "md5Cnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ]
+            "dstGEO" : "USA",
+            "ipDst" : "10.180.156.249",
+            "socks" : {
+               "port" : 80,
+               "user" : "testuser",
+               "ip" : "93.184.216.119",
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+               "GEO" : "USA",
+               "RIR" : "RIPE"
             },
-            "dstBytes" : 2141,
+            "dstPayload8" : "0502010005000001",
+            "fileIds" : [],
+            "timestamp" : "SET",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "length" : 153,
+            "firstPacket" : 1386090534425,
+            "totDataBytes" : 1785,
+            "node" : "test",
+            "segments" : 1,
+            "totBytes" : 3125,
             "protocol" : [
                "http",
                "socks",
                "tcp"
             ],
-            "dstMacCnt" : 1,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "fileIds" : [],
-            "srcPayload8" : "0503000102010874",
-            "srcGEO" : "USA",
-            "dstPackets" : 8,
             "dstMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "srcBytes" : 984,
-            "lastPacket" : 1386090534579,
-            "tcpflags" : {
-               "psh" : 8,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "rst" : 0,
-               "fin" : 2,
-               "urg" : 0,
-               "ack" : 8
-            },
-            "totDataBytes" : 1785,
-            "srcMacCnt" : 1,
-            "srcDataBytes" : 180,
-            "packetLenArray" : [
-               94,
-               90,
-               82,
-               87,
-               82,
-               84,
-               82,
-               101,
-               84,
-               82,
-               92,
-               92,
-               82,
-               228,
-               1530,
-               225,
-               82,
-               82,
-               82,
-               82
-            ],
-            "totBytes" : 3125,
-            "tagsCnt" : 1,
+            "totPackets" : 20,
             "ipSrc" : "10.180.156.185",
-            "dstDataBytes" : 1605,
+            "srcMacCnt" : 1,
+            "dstMacCnt" : 1,
+            "srcBytes" : 984,
             "srcPackets" : 12,
-            "length" : 153,
-            "protocolCnt" : 3,
-            "dstPort" : 1080,
-            "firstPacket" : 1386090534425,
-            "dstGEO" : "USA",
-            "dstPayload8" : "0502010005000001",
-            "srcPort" : 54072,
-            "node" : "test",
             "packetPosArray" : [
                2148,
                2242,
@@ -331,21 +238,114 @@
                5429,
                5511
             ],
-            "ipDst" : "10.180.156.249",
-            "segments" : 1,
+            "dstPackets" : 8,
             "ipProtocol" : 6,
-            "timestamp" : "SET",
-            "socks" : {
-               "RIR" : "RIPE",
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "user" : "testuser",
-               "ip" : 1572395127,
-               "port" : 80,
-               "GEO" : "USA"
+            "srcPayload8" : "0503000102010874",
+            "dstBytes" : 2141,
+            "http" : {
+               "uricnt" : 1,
+               "pathCnt" : 1,
+               "serverVersionCnt" : 1,
+               "bodyMagicCnt" : 1,
+               "responseHeader" : [
+                  "expires",
+                  "content-type",
+                  "x-cache",
+                  "cache-control",
+                  "accept-ranges",
+                  "content-length",
+                  "etag",
+                  "date",
+                  "last-modified",
+                  "x-ec-custom-error",
+                  "server"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "requestHeaderCnt" : 3,
+               "method" : [
+                  "GET"
+               ],
+               "statuscodeCnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "md5Cnt" : 1,
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "clientVersionCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
+               ],
+               "host" : [
+                  "www.example.com"
+               ],
+               "md5" : [
+                  "09b9c392dc1f6e914cea287cb6be34b0"
+               ],
+               "hostCnt" : 1,
+               "responseHeaderCnt" : 11,
+               "uri" : [
+                  "//www.example.com/"
+               ],
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+               ],
+               "path" : [
+                  "/"
+               ],
+               "useragentCnt" : 1,
+               "methodCnt" : 1
             },
+            "lastPacket" : 1386090534579,
+            "tcpflags" : {
+               "psh" : 8,
+               "rst" : 0,
+               "urg" : 0,
+               "ack" : 8,
+               "syn" : 1,
+               "fin" : 2,
+               "syn-ack" : 1
+            },
+            "dstPort" : 1080,
             "tags" : [
                "socks:password"
-            ]
+            ],
+            "packetLenArray" : [
+               94,
+               90,
+               82,
+               87,
+               82,
+               84,
+               82,
+               101,
+               84,
+               82,
+               92,
+               92,
+               82,
+               228,
+               1530,
+               225,
+               82,
+               82,
+               82,
+               82
+            ],
+            "tagsCnt" : 1,
+            "srcPort" : 54072,
+            "srcGEO" : "USA",
+            "dstDataBytes" : 1605,
+            "srcDataBytes" : 180,
+            "protocolCnt" : 3
          },
          "header" : {
             "index" : {

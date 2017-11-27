@@ -1,15 +1,35 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131125"
+            }
+         },
          "body" : {
-            "dstBytes" : 313,
+            "dstPort" : 80,
             "firstPacket" : 1385394928482,
-            "dstDataBytes" : 107,
-            "totBytes" : 800,
+            "srcBytes" : 487,
+            "ipDst" : "192.30.252.130",
+            "protocolCnt" : 2,
+            "srcGEO" : "USA",
+            "srcDataBytes" : 145,
+            "ipSrc" : "10.180.156.141",
+            "srcPackets" : 5,
+            "fileIds" : [],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "dstRIR" : "ARIN",
             "length" : 125,
-            "ipProtocol" : 6,
+            "totPackets" : 8,
+            "dstDataBytes" : 107,
+            "segments" : 1,
+            "dstPackets" : 3,
+            "node" : "test",
             "dstGEO" : "USA",
-            "dstMacCnt" : 2,
             "packetPosArray" : [
                24,
                118,
@@ -20,76 +40,80 @@
                788,
                870
             ],
-            "srcPort" : 62341,
-            "srcPackets" : 5,
-            "segments" : 1,
-            "node" : "test",
+            "dstMacCnt" : 2,
             "srcMac" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "fileIds" : [],
-            "srcBytes" : 487,
+            "ipProtocol" : 6,
+            "srcMacCnt" : 1,
+            "srcPort" : 62341,
+            "totBytes" : 800,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "timestamp" : "SET",
-            "srcDataBytes" : 145,
-            "totPackets" : 8,
-            "srcGEO" : "USA",
-            "dstRIR" : "ARIN",
-            "protocolCnt" : 2,
+            "tcpflags" : {
+               "ack" : 3,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 1,
+               "fin" : 2,
+               "syn" : 1,
+               "syn-ack" : 1
+            },
+            "dstBytes" : 313,
             "http" : {
-               "statuscodeCnt" : 1,
-               "useragentCnt" : 1,
-               "host" : [
-                  "www.github.com"
+               "clientVersion" : [
+                  "1.1"
                ],
-               "uri" : [
-                  "//www.github.com/"
-               ],
-               "methodCnt" : 1,
-               "uricnt" : 1,
+               "serverVersionCnt" : 1,
                "statuscode" : [
                   301
                ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
+               "method" : [
+                  "GET"
                ],
-               "requestHeaderCnt" : 3,
+               "useragentCnt" : 1,
+               "uricnt" : 1,
+               "hostCnt" : 1,
+               "path" : [
+                  "/"
+               ],
                "serverVersion" : [
                   "1.1"
                ],
                "response-location" : [
                   "https://www.github.com/"
                ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "method" : [
-                  "GET"
-               ],
+               "responseHeaderCnt" : 3,
+               "methodCnt" : 1,
                "useragent" : [
                   "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
                ],
-               "hostCnt" : 1,
+               "host" : [
+                  "www.github.com"
+               ],
+               "uri" : [
+                  "//www.github.com/"
+               ],
                "responseHeader" : [
                   "content-length",
                   "connection",
                   "location"
                ],
-               "pathCnt" : 1,
-               "path" : [
-                  "/"
+               "statuscodeCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
                ],
-               "serverVersionCnt" : 1,
+               "requestHeaderCnt" : 3,
                "clientVersionCnt" : 1,
-               "responseHeaderCnt" : 3
+               "pathCnt" : 1
             },
-            "ipDst" : "192.30.252.130",
-            "dstPort" : 80,
+            "srcPayload8" : "474554202f204854",
+            "totDataBytes" : 252,
+            "timestamp" : "SET",
             "packetLenArray" : [
                94,
                90,
@@ -100,33 +124,9 @@
                82,
                82
             ],
-            "totDataBytes" : 252,
-            "dstPackets" : 3,
-            "srcMacCnt" : 1,
-            "srcPayload8" : "474554202f204854",
-            "dstASN" : "AS36459 GitHub, Inc.",
             "dstPayload8" : "485454502f312e31",
             "lastPacket" : 1385394928608,
-            "ipSrc" : "10.180.156.141",
-            "tcpflags" : {
-               "psh" : 1,
-               "syn-ack" : 1,
-               "ack" : 3,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "fin" : 2
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131125"
-            }
+            "dstASN" : "AS36459 GitHub, Inc."
          }
       }
    ]

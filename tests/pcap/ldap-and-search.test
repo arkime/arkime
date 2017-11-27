@@ -2,36 +2,27 @@
    "sessions2" : [
       {
          "body" : {
-            "dstPackets" : 5,
-            "totBytes" : 976,
-            "segments" : 1,
-            "ipProtocol" : 6,
-            "dstPort" : 389,
-            "dstDataBytes" : 28,
+            "node" : "test",
             "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "totDataBytes" : 102,
-            "tcpflags" : {
-               "syn" : 1,
-               "fin" : 2,
-               "ack" : 4,
-               "syn-ack" : 1,
-               "psh" : 5,
-               "rst" : 0,
-               "urg" : 0
+            "length" : 0,
+            "ldap" : {
+               "authtype" : [
+                  "none"
+               ],
+               "authtypeCnt" : 1,
+               "bindnameCnt" : 1,
+               "bindname" : [
+                  "<ROOT>"
+               ]
             },
-            "srcMac" : [
-               "00:00:00:00:00:00"
+            "protocol" : [
+               "ldap",
+               "tcp"
             ],
-            "lastPacket" : 1132019262678,
-            "firstPacket" : 1132019262677,
-            "srcPayload8" : "300c020101600702",
+            "totDataBytes" : 102,
             "srcDataBytes" : 74,
-            "dstBytes" : 366,
-            "ipDst" : "127.0.0.1",
-            "timestamp" : "SET",
-            "dstPayload8" : "300c02010161070a",
             "packetLenArray" : [
                90,
                90,
@@ -47,22 +38,28 @@
                82,
                82
             ],
-            "length" : 0,
-            "fileIds" : [],
-            "srcBytes" : 610,
-            "srcPackets" : 8,
+            "ipProtocol" : 6,
+            "srcPort" : 40848,
+            "dstDataBytes" : 28,
+            "timestamp" : "SET",
             "ipSrc" : "127.0.0.1",
+            "srcPayload8" : "300c020101600702",
+            "dstMacCnt" : 1,
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "firstPacket" : 1132019262677,
+            "totPackets" : 13,
+            "totBytes" : 976,
+            "lastPacket" : 1132019262678,
+            "dstPort" : 389,
+            "segments" : 1,
+            "ipDst" : "127.0.0.1",
+            "fileIds" : [],
+            "srcMacCnt" : 1,
+            "srcBytes" : 610,
             "protocolCnt" : 2,
-            "ldap" : {
-               "authtypeCnt" : 1,
-               "authtype" : [
-                  "none"
-               ],
-               "bindname" : [
-                  "<ROOT>"
-               ],
-               "bindnameCnt" : 1
-            },
+            "srcPackets" : 8,
             "packetPosArray" : [
                24,
                114,
@@ -78,15 +75,18 @@
                1044,
                1126
             ],
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "ldap",
-               "tcp"
-            ],
-            "srcMacCnt" : 1,
-            "totPackets" : 13,
-            "node" : "test",
-            "srcPort" : 40848
+            "dstPackets" : 5,
+            "dstPayload8" : "300c02010161070a",
+            "dstBytes" : 366,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 4,
+               "fin" : 2,
+               "rst" : 0,
+               "syn" : 1,
+               "psh" : 5
+            }
          },
          "header" : {
             "index" : {

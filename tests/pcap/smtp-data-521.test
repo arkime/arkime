@@ -1,46 +1,24 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131205"
-            }
-         },
          "body" : {
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "tags" : [
-               "smtp:authplain",
-               "srcip",
-               "smtp:statuscode:521"
-            ],
-            "ipProtocol" : 6,
-            "srcDataBytes" : 3122,
-            "fileIds" : [],
-            "dstDataBytes" : 854,
+            "userCnt" : 1,
+            "timestamp" : "SET",
             "node" : "test",
-            "ipDst" : "205.188.186.167",
+            "srcPayload8" : "45484c4f20787878",
+            "lastPacket" : 1386251823511,
             "email" : {
-               "src" : [
-                  "1234567899@aol.com"
-               ],
-               "subject" : [
-                  "Urgent Trip."
-               ],
-               "headersCnt" : 7,
-               "dstCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ],
-               "srcCnt" : 1,
                "subjectCnt" : 1,
                "contentType" : [
                   "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
                ],
-               "dst" : [
-                  "xxxxx-xxxx@xxxx.xxx.xx.jp"
+               "headersCnt" : 7,
+               "src" : [
+                  "1234567899@aol.com"
                ],
                "contentTypeCnt" : 1,
+               "srcCnt" : 1,
+               "dstCnt" : 1,
                "headers" : [
                   "reply-to",
                   "content-type",
@@ -50,115 +28,44 @@
                   "date",
                   "subject"
                ],
-               "mimeVersionCnt" : 1
-            },
-            "srcMac" : [
-               "00:0b:45:b7:08:80"
-            ],
-            "srcMacCnt" : 1,
-            "dstRIR" : "ARIN",
-            "tcpflags" : {
-               "rst" : 1,
-               "psh" : 21,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 12,
-               "fin" : 2,
-               "syn" : 1
-            },
-            "totDataBytes" : 3976,
-            "dstGEO" : "USA",
-            "dstBytes" : 2308,
-            "lastPacket" : 1386251823511,
-            "srcPort" : 56558,
-            "srcBytes" : 4186,
-            "dstPayload8" : "3232302d6d74616f",
-            "segments" : 1,
-            "protocolCnt" : 2,
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
+               "mimeVersionCnt" : 1,
+               "subject" : [
+                  "Urgent Trip."
                ],
+               "dst" : [
+                  "xxxxx-xxxx@xxxx.xxx.xx.jp"
+               ],
+               "mimeVersion" : [
+                  "1.0"
+               ]
+            },
+            "test" : {
                "number" : [
                   2814033101
-               ],
-               "GEO" : [
-                  "RUS"
                ],
                "string.snow" : [
                   "16777226:56558,-1480934195:587"
                ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
                "RIR" : [
                   ""
                ],
-               "ip" : [
-                  167772161
+               "GEO" : [
+                  "RUS"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
                ]
             },
-            "srcASN" : "AS0000 This is neat",
-            "length" : 8244,
-            "dstPort" : 587,
-            "user" : [
-               "123456789@aol.com"
-            ],
-            "srcPackets" : 16,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:ca:1f:c6"
-            ],
-            "userCnt" : 1,
-            "srcGEO" : "RUS",
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "totBytes" : 6494,
-            "ipSrc" : "10.0.0.1",
-            "dstPackets" : 22,
+            "dstASN" : "AS1668 AOL Transit Data Network",
             "firstPacket" : 1386251815266,
-            "srcPayload8" : "45484c4f20787878",
-            "timestamp" : "SET",
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               504,
-               109,
-               82,
-               291,
-               94,
-               88,
-               120,
-               82,
-               119,
-               88,
-               82,
-               96,
-               115,
-               82,
-               96,
-               119,
-               82,
-               96,
-               88,
-               82,
-               119,
-               397,
-               82,
-               1430,
-               83,
-               82,
-               82,
-               1375,
-               82,
-               183,
-               82,
-               82,
-               88,
-               82,
-               76
-            ],
-            "dstMacCnt" : 2,
+            "totBytes" : 6494,
+            "dstDataBytes" : 854,
+            "length" : 8244,
+            "segments" : 1,
+            "dstPort" : 587,
             "packetPosArray" : [
                24,
                114,
@@ -199,8 +106,101 @@
                6968,
                7050
             ],
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:ca:1f:c6"
+            ],
+            "ipDst" : "205.188.186.167",
+            "srcPort" : 56558,
+            "srcDataBytes" : 3122,
+            "fileIds" : [],
+            "ipSrc" : "10.0.0.1",
+            "srcGEO" : "RUS",
+            "srcBytes" : 4186,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "dstMacCnt" : 2,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               504,
+               109,
+               82,
+               291,
+               94,
+               88,
+               120,
+               82,
+               119,
+               88,
+               82,
+               96,
+               115,
+               82,
+               96,
+               119,
+               82,
+               96,
+               88,
+               82,
+               119,
+               397,
+               82,
+               1430,
+               83,
+               82,
+               82,
+               1375,
+               82,
+               183,
+               82,
+               82,
+               88,
+               82,
+               76
+            ],
+            "dstRIR" : "ARIN",
+            "totPackets" : 38,
+            "dstPackets" : 22,
+            "tags" : [
+               "smtp:authplain",
+               "srcip",
+               "smtp:statuscode:521"
+            ],
+            "dstBytes" : 2308,
+            "srcASN" : "AS0000 This is neat",
+            "protocolCnt" : 2,
+            "totDataBytes" : 3976,
+            "user" : [
+               "123456789@aol.com"
+            ],
+            "tcpflags" : {
+               "ack" : 12,
+               "syn-ack" : 1,
+               "psh" : 21,
+               "syn" : 1,
+               "rst" : 1,
+               "fin" : 2,
+               "urg" : 0
+            },
+            "ipProtocol" : 6,
+            "dstGEO" : "USA",
+            "dstPayload8" : "3232302d6d74616f",
+            "srcMacCnt" : 1,
+            "srcPackets" : 16,
             "tagsCnt" : 3,
-            "totPackets" : 38
+            "srcMac" : [
+               "00:0b:45:b7:08:80"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131205",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -1,72 +1,72 @@
 {
    "sessions2" : [
       {
-         "body" : {
-            "dstASN" : "AS43515 Google Ireland Limited",
-            "totDataBytes" : 2879,
-            "node" : "test",
-            "dstPackets" : 1,
-            "dstPort" : 443,
-            "dstDataBytes" : 111,
-            "ipDst" : "64.15.116.182",
-            "srcPackets" : 2,
-            "ipSrc" : "10.0.2.15",
-            "fileIds" : [],
-            "dstPayload8" : "0a79f24eb64a9c07",
-            "totBytes" : 2903,
-            "protocolCnt" : 2,
-            "timestamp" : "SET",
-            "segments" : 1,
-            "length" : 195,
-            "firstPacket" : 1462966377795,
-            "ipProtocol" : 17,
-            "srcMacCnt" : 1,
-            "packetLenArray" : [
-               1408,
-               1408,
-               135
-            ],
-            "srcMac" : [
-               "08:00:27:cc:18:37"
-            ],
-            "dstRIR" : "ARIN",
-            "dstMacCnt" : 1,
-            "dstGEO" : "USA",
-            "srcPayload8" : "0979f24eb64a9c07",
-            "srcBytes" : 2784,
-            "quic" : {
-               "version-termCnt" : 1,
-               "hostCnt" : 1,
-               "version-term" : [
-                  "Q033"
-               ],
-               "host" : [
-                  "www.google.com"
-               ]
-            },
-            "srcPort" : 40482,
-            "dstBytes" : 119,
-            "packetPosArray" : [
-               24,
-               1432,
-               2840
-            ],
-            "dstMac" : [
-               "52:54:00:12:35:02"
-            ],
-            "lastPacket" : 1462966377990,
-            "protocol" : [
-               "udp",
-               "quic"
-            ],
-            "srcDataBytes" : 2768,
-            "totPackets" : 3
-         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-160511"
             }
+         },
+         "body" : {
+            "length" : 195,
+            "ipDst" : "64.15.116.182",
+            "protocol" : [
+               "udp",
+               "quic"
+            ],
+            "quic" : {
+               "host" : [
+                  "www.google.com"
+               ],
+               "hostCnt" : 1,
+               "version-term" : [
+                  "Q033"
+               ],
+               "version-termCnt" : 1
+            },
+            "ipProtocol" : 17,
+            "dstDataBytes" : 111,
+            "srcPort" : 40482,
+            "totDataBytes" : 2879,
+            "packetPosArray" : [
+               24,
+               1432,
+               2840
+            ],
+            "totPackets" : 3,
+            "ipSrc" : "10.0.2.15",
+            "srcMacCnt" : 1,
+            "node" : "test",
+            "dstMacCnt" : 1,
+            "dstPayload8" : "0a79f24eb64a9c07",
+            "timestamp" : "SET",
+            "dstGEO" : "USA",
+            "dstMac" : [
+               "52:54:00:12:35:02"
+            ],
+            "firstPacket" : 1462966377795,
+            "dstBytes" : 119,
+            "dstPackets" : 1,
+            "dstASN" : "AS43515 Google Ireland Limited",
+            "srcMac" : [
+               "08:00:27:cc:18:37"
+            ],
+            "lastPacket" : 1462966377990,
+            "totBytes" : 2903,
+            "fileIds" : [],
+            "srcPayload8" : "0979f24eb64a9c07",
+            "srcBytes" : 2784,
+            "protocolCnt" : 2,
+            "dstPort" : 443,
+            "srcDataBytes" : 2768,
+            "segments" : 1,
+            "srcPackets" : 2,
+            "packetLenArray" : [
+               1408,
+               1408,
+               135
+            ],
+            "dstRIR" : "ARIN"
          }
       }
    ]

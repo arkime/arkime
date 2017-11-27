@@ -2,48 +2,10 @@
    "sessions2" : [
       {
          "body" : {
-            "dstDataBytes" : 879,
-            "dstBytes" : 1359,
-            "dstMacCnt" : 1,
-            "packetLenArray" : [
-               82,
-               82,
-               82,
-               82,
-               80,
-               162,
-               283,
-               80,
-               257,
-               428,
-               80,
-               541,
-               218,
-               80,
-               145,
-               124,
-               80,
-               147,
-               127,
-               80,
-               157,
-               143
-            ],
-            "vlan" : [
-               1113
-            ],
-            "srcPackets" : 14,
-            "protocolCnt" : 2,
-            "segments" : 1,
-            "ipSrc" : "10.10.0.3",
-            "node" : "test",
-            "srcPort" : 2204,
-            "timestamp" : "SET",
-            "srcMacCnt" : 1,
-            "ipProtocol" : 6,
-            "totDataBytes" : 1844,
             "srcBytes" : 1829,
-            "length" : 4258,
+            "totBytes" : 3188,
+            "totPackets" : 22,
+            "protocolCnt" : 2,
             "packetPosArray" : [
                24,
                106,
@@ -69,67 +31,105 @@
                3421
             ],
             "tcpflags" : {
-               "fin" : 0,
-               "urg" : 0,
+               "psh" : 12,
                "syn" : 2,
+               "urg" : 0,
+               "fin" : 0,
                "rst" : 0,
-               "syn-ack" : 2,
                "ack" : 6,
-               "psh" : 12
+               "syn-ack" : 2
             },
-            "dstMac" : [
-               "00:50:56:a8:45:c0"
-            ],
-            "dstPackets" : 8,
+            "srcDataBytes" : 965,
             "firstPacket" : 1429783872765,
-            "vlanCnt" : 1,
-            "srcPayload8" : "00000054ff534d42",
-            "srcMac" : [
-               "00:50:56:a8:1f:7c"
+            "dstPackets" : 8,
+            "vlan" : [
+               1113
             ],
-            "fileIds" : [],
-            "dstPort" : 445,
-            "ipDst" : "10.10.0.2",
-            "totBytes" : 3188,
-            "smb" : {
-               "os" : [
-                  "Windows 2000 2195"
-               ],
-               "versionCnt" : 1,
-               "shareCnt" : 2,
-               "filenameCnt" : 1,
-               "share" : [
-                  "\\\\10.10.0.2\\IPC$",
-                  "\\\\10.10.0.2\\ADMIN$"
-               ],
-               "userCnt" : 1,
-               "filename" : [
-                  "XXXXXXXX.exe"
-               ],
-               "domainCnt" : 1,
-               "user" : [
-                  "Administrator"
-               ],
-               "domain" : [
-                  "LAB"
-               ],
-               "osCnt" : 1,
-               "host" : [
-                  "THEHOSTNAMEHEREX"
-               ],
-               "hostCnt" : 1,
-               "version" : [
-                  "Windows 2000 5.0"
-               ]
-            },
+            "srcPackets" : 14,
             "protocol" : [
                "smb",
                "tcp"
             ],
+            "timestamp" : "SET",
+            "length" : 4258,
+            "srcPayload8" : "00000054ff534d42",
             "dstPayload8" : "000000cdff534d42",
-            "totPackets" : 22,
+            "ipDst" : "10.10.0.2",
+            "dstMac" : [
+               "00:50:56:a8:45:c0"
+            ],
+            "smb" : {
+               "user" : [
+                  "Administrator"
+               ],
+               "filename" : [
+                  "XXXXXXXX.exe"
+               ],
+               "versionCnt" : 1,
+               "host" : [
+                  "THEHOSTNAMEHEREX"
+               ],
+               "userCnt" : 1,
+               "domainCnt" : 1,
+               "share" : [
+                  "\\\\10.10.0.2\\IPC$",
+                  "\\\\10.10.0.2\\ADMIN$"
+               ],
+               "version" : [
+                  "Windows 2000 5.0"
+               ],
+               "osCnt" : 1,
+               "filenameCnt" : 1,
+               "hostCnt" : 1,
+               "domain" : [
+                  "LAB"
+               ],
+               "shareCnt" : 2,
+               "os" : [
+                  "Windows 2000 2195"
+               ]
+            },
+            "dstMacCnt" : 1,
+            "node" : "test",
+            "dstDataBytes" : 879,
+            "srcMacCnt" : 1,
+            "vlanCnt" : 1,
+            "srcMac" : [
+               "00:50:56:a8:1f:7c"
+            ],
+            "dstBytes" : 1359,
+            "fileIds" : [],
             "lastPacket" : 1429783877023,
-            "srcDataBytes" : 965
+            "srcPort" : 2204,
+            "ipProtocol" : 6,
+            "ipSrc" : "10.10.0.3",
+            "segments" : 1,
+            "totDataBytes" : 1844,
+            "dstPort" : 445,
+            "packetLenArray" : [
+               82,
+               82,
+               82,
+               82,
+               80,
+               162,
+               283,
+               80,
+               257,
+               428,
+               80,
+               541,
+               218,
+               80,
+               145,
+               124,
+               80,
+               147,
+               127,
+               80,
+               157,
+               143
+            ]
          },
          "header" : {
             "index" : {

@@ -1,72 +1,72 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160618",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "dstMacCnt" : 1,
-            "totDataBytes" : 289,
-            "protocol" : [
-               "udp",
-               "krb5"
-            ],
-            "dstPort" : 88,
+            "ipProtocol" : 17,
             "krb5" : {
                "realm" : [
                   "xx.xxx.xxxxx.NET"
                ],
-               "cnameCnt" : 1,
+               "snameCnt" : 1,
                "realmCnt" : 1,
-               "cname" : [
-                  "xxxxxxxx$"
-               ],
+               "cnameCnt" : 1,
                "sname" : [
                   "krbtgt/xx.xxx.xxxxx.NET"
                ],
-               "snameCnt" : 1
+               "cname" : [
+                  "xxxxxxxx$"
+               ]
             },
-            "node" : "test",
-            "lastPacket" : 1466252055201,
-            "totPackets" : 1,
-            "dstMac" : [
-               "00:00:5e:00:01:01"
-            ],
-            "dstPackets" : 0,
-            "srcBytes" : 297,
-            "ipProtocol" : 17,
-            "srcPackets" : 1,
-            "srcMacCnt" : 1,
-            "protocolCnt" : 2,
-            "segments" : 1,
-            "srcDataBytes" : 289,
-            "timestamp" : "SET",
-            "ipSrc" : "10.172.10.172",
-            "totBytes" : 297,
-            "packetLenArray" : [
-               313
-            ],
-            "vlan" : [
-               300
-            ],
-            "srcPort" : 58412,
-            "firstPacket" : 1466252055201,
-            "dstDataBytes" : 0,
-            "packetPosArray" : [
-               24
-            ],
             "srcMac" : [
                "00:1b:17:00:02:30"
             ],
+            "totDataBytes" : 289,
+            "packetPosArray" : [
+               24
+            ],
             "vlanCnt" : 1,
-            "fileIds" : [],
             "srcPayload8" : "6a81f83081f5a103",
+            "protocol" : [
+               "udp",
+               "krb5"
+            ],
+            "segments" : 1,
+            "lastPacket" : 1466252055201,
+            "timestamp" : "SET",
+            "vlan" : [
+               300
+            ],
+            "srcDataBytes" : 289,
+            "node" : "test",
+            "ipSrc" : "10.172.10.172",
+            "srcBytes" : 297,
+            "totPackets" : 1,
+            "dstMacCnt" : 1,
+            "packetLenArray" : [
+               313
+            ],
+            "dstBytes" : 0,
+            "srcPort" : 58412,
+            "protocolCnt" : 2,
             "ipDst" : "10.150.10.150",
+            "srcPackets" : 1,
+            "dstDataBytes" : 0,
             "length" : 0,
-            "dstBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160618"
-            }
+            "dstPackets" : 0,
+            "srcMacCnt" : 1,
+            "fileIds" : [],
+            "dstPort" : 88,
+            "firstPacket" : 1466252055201,
+            "dstMac" : [
+               "00:00:5e:00:01:01"
+            ],
+            "totBytes" : 297
          }
       }
    ]

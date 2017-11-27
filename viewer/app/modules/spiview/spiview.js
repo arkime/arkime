@@ -2,7 +2,7 @@
 
   'use strict';
 
-  const defaultSpi = 'a2:100,prot-term:100,a1:100';
+  const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
 
   // local variable to save query state
   let _query = {  // set query defaults:
@@ -165,23 +165,6 @@
             field.active = false;
 
             if (field.noFacet || field.regex) { continue; }
-            else if (field.dbField.match(/\.snow$/)) {
-              newField = {
-                friendlyName: field.friendlyName + ' Tokens',
-                dbField     : field.dbField,
-                group       : field.group,
-                exp         : field.exp
-              };
-              field.dbField = field.dbField.replace('.snow', '.raw');
-            } else if (field.rawField) {
-              newField = {
-                friendlyName: field.friendlyName + ' Tokens',
-                dbField     : field.dbField,
-                group       : field.group,
-                exp         : field.exp
-              };
-              field.dbField = field.rawField;
-            }
 
             if (this.categoryObjects.hasOwnProperty(field.group)) {
               // already created, just add a new field

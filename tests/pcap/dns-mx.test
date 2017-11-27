@@ -8,76 +8,76 @@
             }
          },
          "body" : {
+            "srcPayload8" : "4c17010000010000",
+            "protocolCnt" : 2,
             "timestamp" : "SET",
-            "firstPacket" : 1386104996973,
-            "srcMacCnt" : 1,
-            "length" : 83,
-            "dstMacCnt" : 2,
+            "srcPackets" : 1,
+            "fileIds" : [],
             "srcPort" : 51427,
-            "ipDst" : "10.2.95.39",
-            "dstPort" : 53,
-            "lastPacket" : 1386104997055,
-            "ipSrc" : "10.180.156.185",
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstPayload8" : "4c17818000010002",
-            "protocolCnt" : 2,
-            "srcPackets" : 1,
+            "totBytes" : 282,
+            "ipDst" : "10.2.95.39",
+            "dstMacCnt" : 2,
+            "segments" : 1,
+            "node" : "test",
+            "srcBytes" : 66,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "totDataBytes" : 266,
-            "srcBytes" : 66,
-            "fileIds" : [],
-            "totBytes" : 282,
-            "segments" : 1,
-            "srcGEO" : "USA",
-            "totPackets" : 2,
-            "packetLenArray" : [
-               82,
-               232
-            ],
-            "srcDataBytes" : 58,
-            "ipProtocol" : 17,
-            "srcPayload8" : "4c17010000010000",
+            "dstPackets" : 1,
             "packetPosArray" : [
                24,
                106
             ],
-            "dstPackets" : 1,
-            "dstDataBytes" : 208,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
+            "dstPayload8" : "4c17818000010002",
+            "ipProtocol" : 17,
             "dns" : {
+               "qcCnt" : 1,
                "hostCnt" : 3,
                "qtCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "host" : [
+                  "cluster5.us.messagelabs.com",
+                  "mx.com",
+                  "cluster5a.us.messagelabs.com"
+               ],
+               "statusCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
                "qc" : [
                   "IN"
                ],
-               "host" : [
-                  "cluster5.us.messagelabs.com",
-                  "mx.com",
-                  "cluster5a.us.messagelabs.com"
-               ],
                "qt" : [
                   "MX"
-               ],
-               "statusCnt" : 1,
-               "opcodeCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1
+               ]
             },
+            "srcMacCnt" : 1,
+            "length" : 83,
+            "totDataBytes" : 266,
+            "srcDataBytes" : 58,
+            "firstPacket" : 1386104996973,
+            "lastPacket" : 1386104997055,
+            "srcGEO" : "USA",
             "dstBytes" : 216,
-            "node" : "test"
+            "dstPort" : 53,
+            "dstDataBytes" : 208,
+            "ipSrc" : "10.180.156.185",
+            "totPackets" : 2,
+            "packetLenArray" : [
+               82,
+               232
+            ]
          }
       }
    ]
