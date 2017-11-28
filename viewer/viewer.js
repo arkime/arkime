@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 37;
+var MIN_DB_VERSION = 38;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -308,6 +308,7 @@ function loadFields() {
     // Everything will use dbField2 as dbField
     for (let i = 0, ilen = data.length; i < ilen; i++) {
       data[i]._source.dbField = data[i]._source.dbField2 || undefined;
+      data[i]._source.portField = data[i]._source.portField2 || undefined;
       delete data[i]._source.rawField;
     }
     Config.loadFields(data);
@@ -369,16 +370,6 @@ function queryValueToArray(val) {
     val = [val];
   }
   return val.join(",").split(",");
-}
-
-var FMEnum = Object.freeze({other: 0, ip: 1});
-function fmenum(field) {
-  var fieldsMap = Config.getFieldsMap();
-  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
-      fieldsMap[field] && fieldsMap[field].type === "ip") {
-    return FMEnum.ip;
-  }
-  return FMEnum.other;
 }
 
 function errorString(err, result) {
@@ -916,8 +907,8 @@ var settingDefaults = {
   showTimestamps: 'last',
   sortColumn    : 'start',
   sortDirection : 'asc',
-  spiGraph      : 'no',
-  connSrcField  : 'a1',
+  spiGraph      : 'node',
+  connSrcField  : 'srcIp',
   connDstField  : 'ip.dst:port',
   numPackets    : 'last',
   theme         : 'default-theme'
@@ -2920,20 +2911,6 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     var field = req.query.field || "node";
     query.aggregations.field = {terms: {field: field, size: size}};
 
-    /* Need the setImmediate so we don't blow max stack frames */
-    var eachCb;
-    switch (fmenum(field)) {
-    case FMEnum.other:
-      eachCb = function (item, cb) {setImmediate(cb);};
-      break;
-    case FMEnum.ip:
-      eachCb = function(item, cb) {
-        item.name = Pcap.inet_ntoa(item.name);
-        setImmediate(cb);
-      };
-      break;
-    }
-
     Db.healthCache(function(err, health) {results.health = health;});
     Db.numberOfDocuments('sessions2-*', function (err, total) {results.recordsTotal = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
@@ -2981,28 +2958,26 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
           }
 
           r.map = mapMerge(result.responses[i].aggregations);
-          eachCb(r, function () {
-            results.items.push(r);
-            r.lpHisto = 0.0;
-            r.dbHisto = 0.0;
-            r.paHisto = 0.0;
-            var graph = r.graph;
-            for (let i = 0; i < graph.lpHisto.length; i++) {
-              r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-              r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
-            }
-            if (results.items.length === result.responses.length) {
-              var s = req.query.sort || "lpHisto";
-              results.items = results.items.sort(function (a, b) {
-                var result;
-                if (s === 'name') { result = a.name.localeCompare(b.name); }
-                else { result = b[s] - a[s]; }
-                return result;
-              });
-              return res.send(results);
-            }
-          });
+          results.items.push(r);
+          r.lpHisto = 0.0;
+          r.dbHisto = 0.0;
+          r.paHisto = 0.0;
+          var graph = r.graph;
+          for (let i = 0; i < graph.lpHisto.length; i++) {
+            r.lpHisto += graph.lpHisto[i][1];
+            r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+            r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
+          }
+          if (results.items.length === result.responses.length) {
+            var s = req.query.sort || "lpHisto";
+            results.items = results.items.sort(function (a, b) {
+              var result;
+              if (s === 'name') { result = a.name.localeCompare(b.name); }
+              else { result = b[s] - a[s]; }
+              return result;
+            });
+            return res.send(results);
+          }
         });
       });
     });
@@ -3090,8 +3065,8 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
             }
           }
 
-          if (result.aggregations.pr) {
-            result.aggregations.pr.buckets.forEach(function (item) {
+          if (result.aggregations.ipProtocol) {
+            result.aggregations.ipProtocol.buckets.forEach(function (item) {
               item.key = Pcap.protocol2Name(item.key);
             });
           }
@@ -3188,25 +3163,26 @@ function buildConnections(req, res, cb) {
 
   req.query.srcField       = req.query.srcField || "srcIp";
   req.query.dstField       = req.query.dstField || "dstIp";
-  var fsrc                 = req.query.srcField.replace(".snow", "");
-  var fdst                 = req.query.dstField.replace(".snow", "");
+  var fsrc                 = req.query.srcField;
+  var fdst                 = req.query.dstField;
   var minConn              = req.query.minConn  || 1;
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
 
+  var srcIsIp              = fsrc.match(/(\.ip|Ip)$/);
+  var dstIsIp              = fdst.match(/(\.ip|Ip)$/);
+
   var nodesHash = {};
   var connects = {};
-  var tsrc = fmenum(fsrc);
-  var tdst = fmenum(fdst);
 
-  function process(vsrc, vdst, f, cb) {
+  function process(vsrc, vdst, f) {
     if (nodesHash[vsrc] === undefined) {
       nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
     }
 
     nodesHash[vsrc].sessions++;
-    nodesHash[vsrc].by += f.by;
-    nodesHash[vsrc].db += f.db;
-    nodesHash[vsrc].pa += f.pa;
+    nodesHash[vsrc].by += f.totBytes;
+    nodesHash[vsrc].db += f.totDataBytes;
+    nodesHash[vsrc].pa += f.totPackets;
     nodesHash[vsrc].type |= 1;
 
     if (nodesHash[vdst] === undefined) {
@@ -3214,9 +3190,9 @@ function buildConnections(req, res, cb) {
     }
 
     nodesHash[vdst].sessions++;
-    nodesHash[vdst].by += f.by;
-    nodesHash[vdst].db += f.db;
-    nodesHash[vdst].pa += f.pa;
+    nodesHash[vdst].by += f.totBytes;
+    nodesHash[vdst].db += f.totDataBytes;
+    nodesHash[vdst].pa += f.totPackets;
     nodesHash[vdst].type |= 2;
 
     var n = "" + vsrc + "->" + vdst;
@@ -3227,36 +3203,10 @@ function buildConnections(req, res, cb) {
     }
 
     connects[n].value++;
-    connects[n].by += f.by;
-    connects[n].db += f.db;
-    connects[n].pa += f.pa;
+    connects[n].by += f.totBytes;
+    connects[n].db += f.totDataBytes;
+    connects[n].pa += f.totPackets;
     connects[n].node[f.node] = 1;
-    return setImmediate(cb);
-  }
-
-  function processDst(vsrc, adst, f, cb) {
-    async.each(adst, function(vdst, dstCb) {
-      if (tdst === FMEnum.other) {
-        process(vsrc, vdst, f, dstCb);
-      } else if (tdst === FMEnum.ip) {
-        vdst = Pcap.inet_ntoa(vdst);
-        if (dstipport) {
-          vdst += ":" + f.p2;
-        }
-        process(vsrc, vdst, f, dstCb);
-      } else {
-        Db.tagIdToName(vdst, function (name) {
-          if (tdst === FMEnum.tags) {
-            vdst = name;
-          } else {
-            vdst = name.substring(12);
-          }
-          process(vsrc, vdst, f, dstCb);
-        });
-      }
-    }, function (err) {
-      return setImmediate(cb);
-    });
   }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -3306,25 +3256,16 @@ function buildConnections(req, res, cb) {
           adst = [adst];
         }
 
-        async.each(asrc, function(vsrc, srcCb) {
-          if (tsrc === FMEnum.other) {
-            processDst(vsrc, adst, f, srcCb);
-          } else if (tsrc === FMEnum.ip) {
-            vsrc = Pcap.inet_ntoa(vsrc);
-            processDst(vsrc, adst, f, srcCb);
-          } else {
-            Db.tagIdToName(vsrc, function (name) {
-              if (tsrc === FMEnum.tags) {
-                vsrc = name;
-              } else {
-                vsrc = name.substring(12);
-              }
-              processDst(vsrc, adst, f, srcCb);
-            });
+        for (let vsrc of asrc) {
+          for (let vdst of adst) {
+            if (dstIsIp && dstipport) {
+              if (vdst.includes(":")) {vdst = '[' + vdst + ']'};
+              vdst += ":" + f.dstPort;
+            }
+            process(vsrc, vdst, f);
           }
-        }, function (err) {
-          setImmediate(hitCb);
-        });
+        }
+        setImmediate(hitCb);
       }, function (err) {
         var nodes = [];
         for (var node in nodesHash) {
@@ -3414,24 +3355,9 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
     var values = [];
     for (let k = 0, klen = fields.length; k < klen; ++k) {
       let value = sessionData[fields[k]];
-      if (fields[k] === 'pr' && value) {
-        switch (value) {
-          case 1:
-            value = 'icmp';
-            break;
-          case 6:
-            value = 'tcp';
-            break;
-          case 17:
-            value =  'udp';
-            break;
-          case 58:
-            value =  'icmpv6';
-            break;
-        }
-      } else if (fieldObjects[fields[k]].type === 'ip' && value) {
-        value = Pcap.inet_ntoa(value);
-      }
+      if (fields[k] === 'ipProtocol' && value) {
+        value = Pcap.protocol2Name(value);
+      } 
 
       if (Array.isArray(value)) {
         let singleValue = '"' + value.join(', ') +  '"';
@@ -3579,25 +3505,13 @@ app.get('/unique.txt', logAction(), function(req, res) {
   }
 
   /* How should each item be processed. */
-  var eachCb;
-  switch (fmenum(req.query.field)) {
-  case FMEnum.other:
-    eachCb = writeCb;
-    break;
-  case FMEnum.ip:
-    eachCb = function(item, cb) {
-      item.key = Pcap.inet_ntoa(item.key);
-      writeCb(item, cb);
-    };
-    break;
-  }
+  var eachCb = writeCb;
 
-  if (req.query.field === "ip.src:p1" || req.query.field === "ip.dst:p2" ||
-      req.query.field === "a1:p1" || req.query.field === "a2:p2") {
+    if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field == "srcIp:srtPort" ||
+        req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field == "dstIp:dstPort") {
     eachCb = function(item, cb) {
-      var key = Pcap.inet_ntoa(item.key);
       item.field2.buckets.forEach(function (item2) {
-        item2.key = key + ":" + item2.key;
+        item2.key = item.key + ":" + item2.key;
         writeCb(item2, function() {});
       });
       cb();
@@ -3647,9 +3561,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
         });
       });
     } else {
-      if (req.query.field === "ip.src:p1" || req.query.field === "a1:p1") {
+      if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field == "srcIp:srtPort") {
         query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
-      } else if (req.query.field === "ip.dst:p2" || req.query.field === "a2:p2") {
+      } else if (req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field == "dstIp:dstPort") {
         query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
       } else  {
         query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
@@ -3838,13 +3752,8 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      var key;
-      if (session["tipv61-term"]) {
-        key = session["tipv61-term"];
-      } else {
-        key = Pcap.inet_ntoa(session.a1);
-      }
-      Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.p1, function(err, results) {
+      var key = session.srcIp;
+      Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.srcPort, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 17) {
@@ -4036,8 +3945,8 @@ function sortFields(session) {
   if (session.email && session.email.headers) {
     session.email.headers = session.email.headers.sort();
   }
-  if (session.pr) {
-    session.pr = Pcap.protocol2Name(session.pr);
+  if (session.ipProtocol) {
+    session.ipProtocol = Pcap.protocol2Name(session.ipProtocol);
   }
 }
 
@@ -4089,13 +3998,8 @@ function localSessionDetail(req, res) {
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 6) {
-      var key;
-      if (session["tipv61-term"]) {
-        key = session["tipv61-term"];
-      } else {
-        key = Pcap.inet_ntoa(session.a1);
-      }
-      Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.p1, function(err, results) {
+      var key = session.srcIp;
+      Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -4157,7 +4061,6 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
  * Get Session Packets
  */
 app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
-  console.log("ALW", req.params);
   isLocalView(req.params.nodeName, function () {
      noCache(req, res);
      req.packetsOnly = true;

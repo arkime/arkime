@@ -77,18 +77,6 @@
 
     });
 
-
-    describe('Extract IP String Filter ->', function() {
-
-      it('should return the appropriate ip string', function() {
-        let ip = 3232235777;
-        let result  = $filter('extractIPString')(ip);
-        expect(result).toEqual('192.168.1.1');
-      });
-
-    });
-
-
     describe('Extract IPv6 String Filter ->', function() {
 
       it('should return the appropriate ipv6 string', function() {

@@ -26,7 +26,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 34
+#define MOLOCH_MIN_DB_VERSION 38
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;

@@ -197,17 +197,6 @@
     parseValue() {
       if (!this.field || !this.value) { return; }
 
-      // TODO: this goes away with ES5
-      if (this.session && this.field.dbField === 'a1' && this.session['tipv61-term']) {
-        this.expr   = 'tipv6.src';
-        this.field  = {dbField:'tipv61-term',exp:'tipv6.src',friendlyName:'IPv6 Src',group:'general',help:'Temporary IPv6 Source',portField:'p1',transform:'ipv6ToHex',type:'lotermfield'};
-        this.value  = this.session['tipv61-term'];
-      } else if (this.session && this.field.dbField === 'a2' && this.session['tipv62-term']) {
-        this.expr   = 'tipv6.dst';
-        this.field  = {dbField:'tipv62-term',exp:'tipv6.dst',friendlyName:'IPv6 Dst',group:'general',help:'Temporary IPv6 Destination',portField:'p2',transform:'ipv6ToHex',type:'lotermfield'};
-        this.value  = this.session['tipv62-term'];
-      }
-
       this.parsed = {
         queryVal: this.value,
         value   : this.value
@@ -240,7 +229,7 @@
               val   = this.$filter('extractIPv6String')(val);
               qVal  = val; // don't save original value (parsed val is query val)
             } else if (this.field.transform === 'ipProtocolLookup') {
-              val   = this.$filter('protocol')(val);
+              val   = this.$filter('ipProtocol')(val);
               qVal  = val; // don't save original value (parsed val is query val)
             }
             break;

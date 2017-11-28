@@ -89,17 +89,12 @@ var    moment         = require('moment');
 function parseIpPort(yy, field, ipPortStr) {
   var dbField = yy.fieldsMap[field].dbField;
 
-  function singleIp(dbField, ip1, ip2, port) {
+  function singleIp(dbField, ip, port) {
     var obj;
 
-    if (ip1 !== undefined) {
-      if (ip1 === ip2) {
-        obj = {term: {}};
-        obj.term[dbField] = ip1>>>0;
-      } else {
-        obj = {range: {}};
-        obj.range[dbField] = {from: ip1>>>0, to: ip2>>>0};
-      }
+    if (ip !== undefined) {
+      obj = {term: {}};
+      obj.term[dbField] = ip;
     }
 
     if (port !== -1) {
@@ -110,7 +105,7 @@ function parseIpPort(yy, field, ipPortStr) {
         throw field + " doesn't support port";
       }
 
-      if (ip1 === undefined) {
+      if (ip === undefined) {
         obj = obj.bool.must[1];
       }
     }
@@ -138,7 +133,7 @@ function parseIpPort(yy, field, ipPortStr) {
 
   // Support '10.10.10/16:4321'
 
-  var ip1, ip2;
+  var ip;
   var colons = ipPortStr.split(':');
   var slash = colons[0].split('/');
   var dots = slash[0].split('.');
@@ -148,30 +143,26 @@ function parseIpPort(yy, field, ipPortStr) {
   }
 
   if (dots.length === 4) {
-    ip1 = ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8) | parseInt(dots[3], 10);
+    ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
   } else if (dots.length === 3) {
-    ip1 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8);
-    ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8) | 255;
+    ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
+    if (slash[1] === undefined) {slash[1] = '24';}
   } else if (dots.length === 2) {
-    ip1 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16);
-    ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (255 << 8) | 255;
+    ip = `${dots[0]}.${dots[1]}.0.0`;
+    if (slash[1] === undefined) {slash[1] = '16';}
   } else if (dots.length === 1 && dots[0].length > 0) {
-    ip1 = (parseInt(dots[0], 10) << 24);
-    ip2 = (parseInt(dots[0], 10) << 24) | (255 << 16) | (255 << 8) | 255;
+    ip = `${dots[0]}.0.0.0`;
+    if (slash[1] === undefined) {slash[1] = '8';}
   }
+
 
   // Can't shift by 32 bits in javascript, who knew!
   if (slash[1] && slash[1] !== '32') {
-    if (ip1 === undefined) {
-      ip1 = ip2 = 0xffffffff;
-    }
-    var s = parseInt(slash[1], 10);
-    ip1 = ip1 & (0xffffffff << (32 - s));
-    ip2 = ip2 | (0xffffffff >>> s);
+    ip = `${ip}/${slash[1]}`;
   }
   
   if (dbField !== "ipall") {
-    return singleIp(dbField, ip1, ip2, port);
+    return singleIp(dbField, ip, port);
   }
 
   var ors = [];
@@ -195,7 +186,7 @@ function parseIpPort(yy, field, ipPortStr) {
     if (info.requiredRight && yy[info.requiredRight] !== true) {
       continue;
     }
-    obj = singleIp(info.dbField, ip1, ip2, port);
+    obj = singleIp(info.dbField, ip, port);
     if (obj) {
       ors.push(obj);
     }

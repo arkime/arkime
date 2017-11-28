@@ -274,8 +274,8 @@
               <span class="fa fa-close"></span>
             </a>
             <small>
-              <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                expr="ip.protocol" value="{{::session.pr}}"
+              <session-field field="::{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                expr="ip.protocol" value="{{::session.ipProtocol}}"
                 session="::session" parse="true" pull-left="true">
               </session-field>
             </small>

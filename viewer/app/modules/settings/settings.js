@@ -8,7 +8,7 @@
 
   let interval;
 
-  const defaultSpiviewConfig = { fields: ['a2','prot-term','a1'] };
+  const defaultSpiviewConfig = { fields: ['dstIp','protocol','srcIp'] };
   const defaultColConfig = {
     order   : [['firstPacket', 'asc']],
     columns : ['firstPacket','lastPacket','src','srcPort','dst','dstPort','totPackets','dbby','node','info']
