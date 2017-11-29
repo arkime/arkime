@@ -293,7 +293,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     }
 
     if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
-        snprintf(dbField2, sizeof(dbField2), "%.*sGEO", minfo->dbFieldLen-2, dbField);
+        int l = strlen(dbField)-2;
+        snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.country", expression);
@@ -302,17 +303,16 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
 
-        snprintf(dbField2, sizeof(dbField2), "%.*sASN", minfo->dbFieldLen-2, dbField);
+        snprintf(dbField2, sizeof(dbField2), "%.*sASN", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(dbField2, sizeof(dbField2), "%sASN", dbField);
             snprintf(expression2, sizeof(expression2), "%s.asn", expression);
             snprintf(friendlyName2, sizeof(friendlyName2), "%s ASN", friendlyName);
             snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
             moloch_db_add_field(group, "termfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
 
-        snprintf(dbField2, sizeof(dbField2), "%.*sRIR", minfo->dbFieldLen-2, dbField);
+        snprintf(dbField2, sizeof(dbField2), "%.*sRIR", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.rir", expression);

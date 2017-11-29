@@ -49,18 +49,18 @@ var internals = {
 
 var fieldsMap = {
   "_id":              "ignore",
-  "fileand":          "ignore",
-  "viewand":          "ignore",
-  "ipall":            "ignore",
+  "fileand":          "ignore", // special
+  "viewand":          "ignore", // special
+  "ipall":            "ignore", // special
   "tipv61-term":      "ignore", // Becomes srcIp
   "tipv62-term":      "ignore", // Becomes dstIp
-  "ta":               "ignore", // use tag
-  "fp":               "ignore",
-  "lp":               "ignore",
-  "lpd":              "ignore",
-  "fpd":              "ignore",
-  "a1":               "ignore",
-  "a2":               "ignore",
+  "ta":               "ignore", // Becomes tags
+  "fp":               "ignore", // Becomes firstPacket when lpd not set
+  "lp":               "ignore", // Becomes lastPacket when lpd not set
+  "lpd":              "ignore", // Becomes firstPacket
+  "fpd":              "ignore", // Becomes lastPacket
+  "a1":               "ignore", // Becomes srcIp
+  "a2":               "ignore", // Becomes dstIp
 
   "ps":               "packetPosArray",
   "psl":              "packetLenArray",

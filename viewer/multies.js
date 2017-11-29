@@ -955,15 +955,20 @@ if (nodes.length === 0 || nodes[0] === "") {
   process.exit(1);
 }
 
+// First connect
 nodes.forEach((node) => {
   tags[node] = {tagName2Id: {}, tagId2Name: {}};
 
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
     apiVersion: "5.3",
-    requestTimeout: 300000
+    requestTimeout: 300000,
+    keepAlive: true
   });
+});
 
+// Now check version numbers
+nodes.forEach((node) => {
   clients[node].info((err,data) => {
     if (err) {
       console.log(err);

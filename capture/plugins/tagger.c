@@ -459,11 +459,6 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
         }
     }
 
-    int tag = 0;
-    for (tag = 0; file->tags[tag]; tag++) {
-        moloch_db_get_tag(NULL, tagsField, file->tags[tag], NULL);
-    }
-
     patricia_node_t *node;
     TaggerIP_t *tip;
 

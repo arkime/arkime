@@ -389,8 +389,8 @@ dl
   div.tag-list
     +arrayList(session, "tags", "Tags", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-theme-secondary margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
 
-  if (session.fs && session.fs.length > 0)
-    +arrayList(session, "fs", "Files", "file")
+  if (session.fileIds && session.fileIds.length > 0)
+    +arrayList(session, "fileIds", "Files", "file")
 
   if (session.scrubby)
     dt
