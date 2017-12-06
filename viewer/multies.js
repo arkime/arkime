@@ -960,7 +960,7 @@ nodes.forEach((node) => {
 
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
-    apiVersion: "1.2",
+    apiVersion: "2.4",
     requestTimeout: 300000
   });
 
