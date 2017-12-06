@@ -184,6 +184,15 @@ int moloch_field_define_text(char *text, int *shortcut)
     return pos;
 }
 /******************************************************************************/
+/* Changes ... to va_list */
+static void moloch_session_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
+{
+    va_list args;
+    va_start(args, help);
+    moloch_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args);
+    va_end(args);
+}
+/******************************************************************************/
 int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...)
 {
     char dbField2[100];
@@ -292,7 +301,37 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         return -1;
     }
 
-    if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
+    if (flags & MOLOCH_FIELD_FLAG_IPPRE) {
+        int l = strlen(dbField)-2;
+        int fnlen = strlen(friendlyName);
+        snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
+        if (!info) {
+            snprintf(expression2, sizeof(expression2), "country.%s", expression+3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s GEO", fnlen-2, friendlyName);
+            LOG("ALW %s - %s - %s - %s", dbField, expression2, friendlyName, friendlyName2);
+            snprintf(help2, sizeof(help2), "GeoIP country string calculated from the %s", help);
+            moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+        }
+
+        snprintf(dbField2, sizeof(dbField2), "%.*sASN", l, dbField);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
+        if (!info) {
+            snprintf(expression2, sizeof(expression2), "asn.%s", expression+3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s ASN", fnlen-2, friendlyName);
+            snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
+            moloch_db_add_field(group, "textfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+        }
+
+        snprintf(dbField2, sizeof(dbField2), "%.*sRIR", l, dbField);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
+        if (!info) {
+            snprintf(expression2, sizeof(expression2), "rir.%s", expression+3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s RIR", fnlen-2, friendlyName);
+            snprintf(help2, sizeof(help2), "Regional Internet Registry string calculated from %s", help);
+            moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+        }
+    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
         int l = strlen(dbField)-2;
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);

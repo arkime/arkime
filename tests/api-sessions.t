@@ -102,11 +102,11 @@ my $pwd = getcwd() . "/pcap";
     is ($json->{graph}->{interval}, 3600, "multi correct interval ALL");
 
 # Check ip.protocol=blah
-    my $json = viewerGet("/sessions.json?date=-1&&spi=a1&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    my $json = viewerGet("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
     is($json->{bsqErr}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # multi Check ip.protocol=blah
-    my $json = multiGet("/sessions.json?date=-1&&spi=a1&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    my $json = multiGet("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
     is($json->{bsqErr}, "Unknown protocol string blah", "multi ip.protocol==blah");
 
 # csv

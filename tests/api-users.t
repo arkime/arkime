@@ -81,21 +81,21 @@ my $pwd = getcwd() . "/pcap";
     my $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
-    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["a1","a2"], "order": [["lp", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["srcIp","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
     $info = viewerGet("/user/columns?molochRegressionUser=anonymous&userId=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item admin");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(! $info->{success}, "column: delete not found");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["a1","a2"]}]'), "column: 1 item");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");
@@ -112,21 +112,21 @@ my $pwd = getcwd() . "/pcap";
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
-    $info = viewerPostToken("/user/spiview/fields/create?molochRegressionUser=test1", '{"name": "sfields1", "fields": ["a1","a2"]}', $test1Token);
+    $info = viewerPostToken("/user/spiview/fields/create?molochRegressionUser=test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
     ok($info->{success}, "spiview fields: create success");
     is($info->{name}, "sfields1", "spiview fields: create name");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item");
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=anonymous&userId=test1");
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item admin");
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item admin");
 
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["a1","a2"]}]'), "spiview fields: 1 item");
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=sfields1', $test1Token);
     ok($info->{success}, "spiview fields: delete found");

@@ -274,10 +274,10 @@ void moloch_parser_init()
     ipField = moloch_field_define("socks", "ip",
         "ip.socks", "IP", "socks.ip",
         "SOCKS destination IP",
-        MOLOCH_FIELD_TYPE_IP, 0, 
-        "aliases", "[\"ip.socks\"]",
-        "portField", "socks.port", 
-        "category", "user",
+        MOLOCH_FIELD_TYPE_IP, MOLOCH_FIELD_FLAG_IPPRE, 
+        "aliases", "[\"socks.ip\"]",
+        "portField", "sockspo", 
+        "portField2", "socks.port", 
         NULL);
 
     hostField = moloch_field_define("socks", "lotermfield",

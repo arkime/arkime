@@ -31,31 +31,31 @@ my $files = uri_escape($filestr);
 #
 my $txt = get("");
 my $mtxt = get("", 1);
-is ($txt, "Missing field or exp parameter\n", "unique.txt no field parameter");
+is ($txt, "Missing field or exp parameter\n", "unique.txt node field parameter");
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 
 #
-$txt = get("date=-1&field=no");
-$mtxt = get("date=-1&field=no", 1);
+$txt = get("date=-1&field=node");
+$mtxt = get("date=-1&field=node", 1);
 eq_or_diff($txt, "test\n", "Nodes", { context => 3 });
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=no&autocomplete=1&expression=" . uri_escape("node=te*"));
-$mtxt = get("date=-1&field=no&autocomplete=1&expression=" . uri_escape("node=te*"), 1);
+$txt = get("date=-1&field=node&autocomplete=1&expression=" . uri_escape("node=te*"));
+$mtxt = get("date=-1&field=node&autocomplete=1&expression=" . uri_escape("node=te*"), 1);
 eq_or_diff($txt, "[\"test\"]\n", "Autocomplete Nodes", { context => 3 });
 eq_or_diff($mtxt, "[]\n", "Multi Autocomplete Nodes", { context => 3 });
 
 #
-$txt = get("date=-1&field=no&expression=$files&counts=1");
-$mtxt = get("date=-1&field=no&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=node&expression=$files&counts=1");
+$mtxt = get("date=-1&field=node&expression=$files&counts=1", 1);
 eq_or_diff($txt, "test, 13\n", "Nodes count", { context => 3 });
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=a1&expression=$files&counts=1");
-$mtxt = get("date=-1&field=a1&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=srcIp&expression=$files&counts=1");
+$mtxt = get("date=-1&field=srcIp&expression=$files&counts=1", 1);
 eq_or_diff($txt, 
 "10.0.0.1, 2
 10.0.0.2, 1
@@ -65,14 +65,14 @@ eq_or_diff($txt,
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=a1&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"));
-$mtxt = get("date=-1&field=a1&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"), 1);
+$txt = get("date=-1&field=srcIp&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"));
+$mtxt = get("date=-1&field=srcIp&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"), 1);
 eq_or_diff($txt, "[\"10.180.156.185\"]\n", "Autocomplete IPs", { context => 3 });
 eq_or_diff($mtxt, "[]\n", "Multi Autocomplete IPs", { context => 3 });
 
 #
-$txt = get("date=-1&field=ta&expression=$files&counts=1");
-$mtxt = get("date=-1&field=ta&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=tags&expression=$files&counts=1");
+$mtxt = get("date=-1&field=tags&expression=$files&counts=1", 1);
 eq_or_diff($txt, 
 "byhost2, 7
 byip1, 1
@@ -93,8 +93,8 @@ wisebyip1, 1
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=hh1&expression=$files&counts=1");
-$mtxt = get("date=-1&field=hh1&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=http.requestHeader&expression=$files&counts=1");
+$mtxt = get("date=-1&field=http.requestHeader&expression=$files&counts=1", 1);
 eq_or_diff($txt, 
 "accept, 6
 accept-encoding, 2
@@ -108,8 +108,8 @@ user-agent, 6
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=hmd5&expression=$files");
-$mtxt = get("date=-1&field=hmd5&expression=$files", 1);
+$txt = get("date=-1&field=http.md5&expression=$files");
+$mtxt = get("date=-1&field=http.md5&expression=$files", 1);
 eq_or_diff($txt,
 "09b9c392dc1f6e914cea287cb6be34b0
 2069181ae704855f29caf964ca52ec49
@@ -119,14 +119,14 @@ b0cecae354b9eab1f04f70e46a612cb1
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=hmd5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"));
-$mtxt = get("date=-1&field=hmd5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"), 1);
+$txt = get("date=-1&field=http.md5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"));
+$mtxt = get("date=-1&field=http.md5&autocomplete=1&expression=" . uri_escape("$filestr && http.md5=2*"), 1);
 eq_or_diff($txt, "[\"2069181ae704855f29caf964ca52ec49\",\"222315d36e1313774cb1c2f0eb06864f\",\"b0cecae354b9eab1f04f70e46a612cb1\"]\n", "Autocomplete HTTP md5s", { context => 3 });
 eq_or_diff($mtxt, "[]\n", "Multi Autocomplete HTTP md5s", { context => 3 });
 
 #
-$txt = get("date=-1&field=hmd5&expression=$files&counts=1");
-$mtxt = get("date=-1&field=hmd5&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=http.md5&expression=$files&counts=1");
+$mtxt = get("date=-1&field=http.md5&expression=$files&counts=1", 1);
 eq_or_diff($txt,
 "09b9c392dc1f6e914cea287cb6be34b0, 4
 2069181ae704855f29caf964ca52ec49, 1
@@ -136,8 +136,8 @@ b0cecae354b9eab1f04f70e46a612cb1, 1
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=rawus&expression=$files&counts=0");
-$mtxt = get("date=-1&field=rawus&expression=$files&counts=0", 1);
+$txt = get("date=-1&field=http.uri&expression=$files&counts=0");
+$mtxt = get("date=-1&field=http.uri&expression=$files&counts=0", 1);
 eq_or_diff($txt,
 "//www.example.com/
 //www.google.com/
@@ -147,8 +147,8 @@ eq_or_diff($txt,
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=rawus&expression=$files&counts=1");
-$mtxt = get("date=-1&field=rawus&expression=$files&counts=1", 1);
+$txt = get("date=-1&field=http.uri&expression=$files&counts=1");
+$mtxt = get("date=-1&field=http.uri&expression=$files&counts=1", 1);
 eq_or_diff($txt,
 "//www.example.com/, 4
 //www.google.com/, 1
@@ -158,8 +158,8 @@ eq_or_diff($txt,
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
-$txt = get("date=-1&field=rawua&expression=$files&counts=0");
-$mtxt = get("date=-1&field=rawua&expression=$files&counts=0", 1);
+$txt = get("date=-1&field=http.useragent&expression=$files&counts=0");
+$mtxt = get("date=-1&field=http.useragent&expression=$files&counts=0", 1);
 eq_or_diff($txt,
 "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)
 Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0

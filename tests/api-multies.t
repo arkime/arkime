@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 28;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -20,10 +20,6 @@ my $json;
     $json = mesGet("/MULTIPREFIX_stats/_stats");
     is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
     is (exists $json->{indices}->{MULTIPREFIX_stats_v2}, 1, "Correct stats/_stats index");
-
-    $json = mesGet("/MULTIPREFIX_tags/_stats");
-    is (exists $json->{indices}->{MULTIPREFIX_tags_v3}, 1, "Correct tags/_stats version");
-    cmp_ok($json->{indices}->{MULTIPREFIX_tags_v3}->{total}->{docs}->{count}, '>=', 60, "tags count is at least 60");
 
     $json = mesGet("/MULTIPREFIX_files/_stats");
     cmp_ok($json->{indices}->{MULTIPREFIX_files_v4}->{total}->{docs}->{count}, '>=', 60, "files count is at least 60");

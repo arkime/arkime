@@ -887,6 +887,7 @@ sub fieldsUpdate
       "group": "general",
       "help": "Session Start Time",
       "type": "seconds",
+      "type2": "date",
       "dbField": "fp",
       "dbField2": "firstPacket"
     }');
@@ -895,6 +896,7 @@ sub fieldsUpdate
       "group": "general",
       "help": "Session Stop Time",
       "type": "seconds",
+      "type2": "date",
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
@@ -2678,6 +2680,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
+        fieldsUpdate();
     } elsif ($main::versionNumber <= 33) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
@@ -2685,12 +2688,14 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
+        fieldsUpdate();
     } elsif ($main::versionNumber <= 38) {
         usersUpdate();
         historyUpdate();
         sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
+        fieldsUpdate();
     } else {
         print "db.pl is hosed\n";
     }

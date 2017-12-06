@@ -476,7 +476,8 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   }
 
-  switch (info.type) {
+  console.log("TYPE:", info.type2 || info.type);
+  switch (info.type2 || info.type) {
   case "ip":
     if (value[0] === "/")
       throw value + " - Regex not supported for ip queries";
@@ -571,6 +572,27 @@ function formatQuery(yy, field, op, value)
     obj = {range: {}};
     obj.range[info.dbField] = {};
     obj.range[info.dbField][op] = parseSeconds(stripQuotes(value));
+    return obj;
+  case "date":
+  case "ms":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for date queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsDate(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = moment.unix(parseSeconds(stripQuotes(value))).format();
+    console.log("ALW", obj.range);
     return obj;
   default:
     throw "Unknown field type: " + info.type;
@@ -710,34 +732,6 @@ global.moloch.utf8ToHex = function (utf8) {
     return hex;
 }
 
-global.moloch.ipv6ToHex = function (ip) {
-  ip = stripQuotes(ip);
-  if (ip[0] === "[") {
-    var closing = ip.indexOf(']');
-    ip =  ip.substring(1, closing);
-  }
-
-  if (ip.indexOf("*") !== -1 && ip.indexOf("::") !== -1) {
-    throw "Can't use :: in ipv6 and * at the same time";
-  }
-  var parts = ip.split(":");
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i].indexOf("*") !== -1) {
-      continue;
-    }
-    if (parts[i] === "") {
-      for (var j = 0; j <= 8 - parts.length; j++) {
-        parts[i] += "0000";
-      }
-    } else {
-      while (parts[i].length < 4) {
-        parts[i] = "0" + parts[i];
-      }
-    }
-  }
-  return parts.join("");
-}
-
 var protocols = {
     icmp:   1,
     tcp:    6,
@@ -806,6 +800,23 @@ function termOrTermsSeconds(dbField, str) {
     str = parseSeconds(stripQuotes(str));
     obj = {term: {}};
     obj.term[dbField] = str;
+  }
+  return obj;
+}
+
+function termOrTermsDate(dbField, str, multiply) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {terms: {}};
+    obj.terms[dbField] = ListToArray(str);
+    obj.terms[dbField].forEach(function(str) {
+      str = parseSeconds(stripQuotes(str)) * multiply;
+    });
+  } else {
+    let d = moment.unix(parseSeconds(stripQuotes(str))).format();
+    obj = {range: {}};
+    obj.range[dbField] = {gte: d, lte: d};
+    console.log("ALW", d, obj.range);
   }
   return obj;
 }

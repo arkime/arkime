@@ -161,6 +161,9 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_FLAG_DISABLED           0x0020
 /* Added Cnt */
 #define MOLOCH_FIELD_FLAG_CNT                0x1000
+/* prepend ip stuff - dont use*/
+#define MOLOCH_FIELD_FLAG_IPPRE              0x4000
+
 
 
 typedef struct moloch_field_info {
