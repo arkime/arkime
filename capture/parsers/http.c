@@ -710,7 +710,7 @@ static const char *method_strings[] =
     xffField = moloch_field_define("http", "ip",
         "ip.xff", "XFF IP", "http.xffIp",
         "X-Forwarded-For Header",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "category", "ip",
         NULL);
 

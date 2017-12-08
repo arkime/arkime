@@ -363,7 +363,7 @@ void moloch_parser_init()
     ipField = moloch_field_define("dns", "ip",
         "ip.dns", "IP",  "dns.ip",
         "IP from DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "aliases", "[\"dns.ip\"]",
         "category", "ip",
         NULL);

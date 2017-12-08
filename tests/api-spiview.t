@@ -14,9 +14,6 @@ my $pwd = getcwd() . "/pcap";
     my $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     my $djson = multiGet("/spiview.json?startTime=1332734457&stopTime=1389743152&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
 
-    diag Dumper($djson);
-    exit 0;
-
     eq_or_diff($json->{map}, from_json('{"src": {}, "dst":{}}'), "map bigendian");
     eq_or_diff($json->{protocols}, from_json('{"icmp": 1}'), "protocols bigendian");
     eq_or_diff($json->{graph}, from_json('{"xmin":null,"pa2Histo":[[1335956400000,0]],"pa1Histo":[[1335956400000,2]],"xmax":null,"db2Histo":[[1335956400000,0]],"interval":3600,"lpHisto":[[1335956400000,1]],"db1Histo":[[1335956400000,0]]}'), "graph bigendian");
@@ -105,14 +102,14 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
 # Check facets ALL
-    $json = viewerGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:3,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:3,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    $djson = viewerGet("/spiview.json?startTime=1332734457&stopTime=1482563001&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:3,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = viewerGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $djson = viewerGet("/spiview.json?startTime=1332734457&stopTime=1482563001&facets=1&spi=srcIp,dstIp,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     # Sort alpha since counts are the same and could come back in random order
-    @{$json->{spi}->{http.requestHeader}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$json->{spi}->{http.requestHeader}->{buckets}});
-    @{$mjson->{spi}->{http.requestHeader}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$mjson->{spi}->{http.requestHeader}->{buckets}});
-    @{$djson->{spi}->{http.requestHeader}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$djson->{spi}->{http.requestHeader}->{buckets}});
+    @{$json->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$json->{spi}->{"http.requestHeader"}->{buckets}});
+    @{$mjson->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$mjson->{spi}->{"http.requestHeader"}->{buckets}});
+    @{$djson->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$djson->{spi}->{"http.requestHeader"}->{buckets}});
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
     eq_or_diff($json->{protocols}, from_json('{"tcp": 5, "http": 3, "socks": 3, "bittorrent": 2, "icmp": 1}'), "protocols ALL");
@@ -143,10 +140,10 @@ my $pwd = getcwd() . "/pcap";
     my @dbuckets = sort {$a->{key} cmp $b->{key}} @{$djson->{spi}->{tags}->{buckets}};
     $djson->{spi}->{tags}->{buckets} = \@dbuckets;
 
-    eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 14,
-            "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"}]}'), "ALL ta");
+    eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 8,
+            "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"domainwise"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"},{"doc_count":3, "key":"wisebyhost2"}]}'), "ALL ta");
 
-    eq_or_diff($json->{spi}->{http.requestHeader}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
+    eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
 
     delete $json->{health};

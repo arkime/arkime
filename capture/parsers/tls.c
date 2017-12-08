@@ -728,13 +728,13 @@ void moloch_parser_init()
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    moloch_field_define("cert", "termfield",
         "cert.issuer.on", "Issuer ON", "cert.issuerON",
         "Issuer's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    moloch_field_define("cert", "termfield",
         "cert.subject.on", "Subject ON", "cert.subjectON",
         "Subject's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
@@ -750,12 +750,14 @@ void moloch_parser_init()
         "cert.notbefore", "Not Before", "cert.notBefore",
         "Certificate is not valid before this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
+        "type2", "date",
         NULL);
 
     moloch_field_define("cert", "seconds",
         "cert.notafter", "Not After", "cert.notAfter",
         "Certificate is not valid after this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
+        "type2", "date",
         NULL);
 
     moloch_field_define("cert", "integer",

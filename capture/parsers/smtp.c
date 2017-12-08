@@ -873,7 +873,7 @@ void moloch_parser_init()
         "category", "host",
         NULL);
 
-    uaField = moloch_field_define("email", "lotermfield",
+    uaField = moloch_field_define("email", "termfield",
         "email.x-mailer", "X-Mailer Header", "email.useragent",
         "Email X-Mailer header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
@@ -949,7 +949,7 @@ void moloch_parser_init()
     ipField = moloch_field_define("email", "ip",
         "ip.email", "IP", "email.ip",
         "Email IP address",
-        MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
         "category", "ip",
         NULL);

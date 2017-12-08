@@ -2686,7 +2686,7 @@ function graphMerge(req, query, aggregations) {
     pa2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
+    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval/1000 || 60 : 60
   };
 
   if (!aggregations || !aggregations.dbHisto) {
@@ -3268,7 +3268,11 @@ function buildConnections(req, res, cb) {
         setImmediate(hitCb);
       }, function (err) {
         var nodes = [];
-        for (var node in nodesHash) {
+        var nodeKeys = Object.keys(nodesHash);
+        if (Config.get("regressionTests", false)) {
+          nodeKeys = nodeKeys.sort(function(a,b){return nodesHash[a].id.localeCompare(nodesHash[b].id);});
+        }
+        for (var node of nodeKeys) {
           if (nodesHash[node].cnt < minConn) {
             nodesHash[node].pos = -1;
           } else {
@@ -3397,41 +3401,6 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
       csvListWriter(req, res, list, reqFields);
     });
   }
-});
-
-app.get('/uniqueValue.json', logAction(), function(req, res) {
-  if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
-    res.send([]);
-    return;
-  }
-
-  noCache(req, res);
-
-  var query;
-
-  if (req.query.type === "tags") {
-    query = {bool: {must: {wildcard: {_uid: "tag#" + req.query.filter + "*"}},
-                  must_not: {wildcard: {_uid: "tag#http:header:*"}}
-                     }
-          };
-  } else {
-    query = {wildcard: {_uid: "tag#http:header:" + req.query.filter + "*"}};
-  }
-
-  console.log("uniqueValue query", JSON.stringify(query));
-  Db.search('tags', 'tag', {size:200, query: query}, function(err, result) {
-    var terms = [];
-    if (req.query.type === "tags") {
-      result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id);
-      });
-    } else {
-      result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id.substring(12));
-      });
-    }
-    res.send(terms);
-  });
 });
 
 app.get('/unique.txt', logAction(), function(req, res) {
@@ -3578,6 +3547,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
         if (Config.debug) {
           console.log("unique.txt result", util.inspect(result, false, 50));
         }
+        if (!result.aggregations || !result.aggregations.field) {
+          return doneCb?doneCb():res.end();
+        }
 
         async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
           return doneCb?doneCb():res.end();
@@ -3715,8 +3687,8 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
           return endCb(err, fields);
         }
 
-        if (!fields.ta) {
-          fields.ta = [];
+        if (!fields.tags) {
+          fields.tags = [];
         }
 
         fixFields(fields, endCb);
@@ -4691,7 +4663,7 @@ function removeTagsList(res, allTagNames, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
 
-    if (!fields || !fields.ta) {
+    if (!fields || !fields.tags) {
       return nextCb(null);
     }
 
@@ -4865,7 +4837,7 @@ function searchAndTagList(req, tags, list, doneCb) {
     }
 
     var doit = false;
-    if (fields.ta) {
+    if (fields.tags) {
       for (let i = 0, ilen = tags.length; i < ilen; i++) {
         if (fields.tags.indexOf(tags[i]) === -1) {
           doit = true;

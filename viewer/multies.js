@@ -473,7 +473,7 @@ function fixQuery(node, body, doneCb) {
         outstanding--;
         obj.bool = {should: []};
         result.hits.hits.forEach((file) => {
-          obj.bool.should.push({bool: {must:[{term: {no: file._source.node}}, {term: {fs: file._source.num}}]}});
+          obj.bool.should.push({bool: {must:[{term: {node: file._source.node}}, {term: {fileIds: file._source.num}}]}});
         });
         if (obj.bool.should.length === 0) {
           err = "No matching files found";

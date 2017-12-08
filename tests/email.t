@@ -11,8 +11,8 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # asn.email
     countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001 Cool Beans!\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS0001\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS0001*\""));
 
 # ip.email
     countTest(2, "date=-1&expression=" . uri_escape("$files&&ip.email==10.0.0.4"));
@@ -77,8 +77,8 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # email.x-mailer
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"Mutt/1.5.20 (2009-12-10)\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"mutt/1.5.20 (2009-12-10)\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==Mutt"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"mutt/1.5.20 (2009-12-10)\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==Mutt*"));
     countTest(3, "date=-1&expression=" . uri_escape("$files&&email.x-mailer.cnt==1"));
 
 # host.email

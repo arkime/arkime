@@ -749,7 +749,7 @@ void moloch_parsers_init()
     );
 
     // Set tags field up AFTER loading plugins
-    config.tagsStringField = moloch_field_define("general", "lotermfield",
+    config.tagsStringField = moloch_field_define("general", "termfield",
         "tags", "Tags", "tags",
         "Tags set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
