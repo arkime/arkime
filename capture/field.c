@@ -320,7 +320,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             snprintf(expression2, sizeof(expression2), "asn.%s", expression+3);
             snprintf(friendlyName2, sizeof(friendlyName2), "%.*s ASN", fnlen-2, friendlyName);
             snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
-            moloch_db_add_field(group, "textfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+            moloch_db_add_field(group, "termfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
 
         snprintf(dbField2, sizeof(dbField2), "%.*sRIR", l, dbField);

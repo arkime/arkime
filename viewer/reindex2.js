@@ -349,8 +349,8 @@ var fieldsMap = {
   "icmpType":                  "icmp.type",
 
 //THREATSTREAM
-  "threatstream.maltype-term":        "threatstream.malwareType",
-  "threatstream.maltype-term-cnt":    "threatstream.malwareTypeCnt",
+  "threatstream.maltype-term":        "threatstream.maltype",
+  "threatstream.maltype-term-cnt":    "threatstream.maltypeCnt",
   "threatstream.type-term":           "threatstream.type",
   "threatstream.type-term-cnt":       "threatstream.typeCnt",
   "threatstream.id":                  "threatstream.id",
@@ -359,8 +359,8 @@ var fieldsMap = {
   "threatstream.confidence-cnt":      "threatstream.confidenceCnt",
   "threatstream.importId":            "threatstream.importId",
   "threatstream.importId-cnt":        "threatstream.importIdCnt",
-  "threatstream.sessionid":           "threatstream.sessionId",
-  "threatstream.sessionid-cnt":       "threatstream.sessionIdCnt",
+  "threatstream.sessionid":           "ignore",
+  "threatstream.sessionid-cnt":       "ignore",
   "threatstream.severity-term":       "threatstream.severity",
   "threatstream.severity-term-cnt":   "threatstream.severityCnt",
   "threatstream.source-term":         "threatstream.source",

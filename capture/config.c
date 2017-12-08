@@ -582,7 +582,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 
         switch (type) {
         case 0:
-            kind = "textfield";
+            kind = "termfield";
             if (unique)
                 t = MOLOCH_FIELD_TYPE_STR_HASH;
             else
