@@ -647,7 +647,6 @@ app.post("/:index/:type/_search", function(req, res) {
 });
 
 function msearch(req, res) {
-  console.log("ALW", req.body);
   var lines = req.body.split(/[\r\n]/);
   var bodies = {};
 

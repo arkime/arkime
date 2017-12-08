@@ -476,7 +476,6 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   }
 
-  console.log("TYPE:", info.type2 || info.type);
   switch (info.type2 || info.type) {
   case "ip":
     if (value[0] === "/")
@@ -574,7 +573,6 @@ function formatQuery(yy, field, op, value)
     obj.range[info.dbField][op] = parseSeconds(stripQuotes(value));
     return obj;
   case "date":
-  case "ms":
     if (value[0] === "/")
       throw value + " - Regex queries not supported for date queries";
 
@@ -592,7 +590,6 @@ function formatQuery(yy, field, op, value)
     obj = {range: {}};
     obj.range[info.dbField] = {};
     obj.range[info.dbField][op] = moment.unix(parseSeconds(stripQuotes(value))).format();
-    console.log("ALW", obj.range);
     return obj;
   default:
     throw "Unknown field type: " + info.type;
@@ -804,19 +801,19 @@ function termOrTermsSeconds(dbField, str) {
   return obj;
 }
 
-function termOrTermsDate(dbField, str, multiply) {
+function termOrTermsDate(dbField, str) {
   var obj = {};
   if (str[0] === "[" && str[str.length -1] === "]") {
-    obj = {terms: {}};
-    obj.terms[dbField] = ListToArray(str);
-    obj.terms[dbField].forEach(function(str) {
-      str = parseSeconds(stripQuotes(str)) * multiply;
+    obj = {bool: {should: []}};
+    ListToArray(str).forEach(function(str) {
+      let r = {range: {}};
+      r.range[dbField] = {gte: d, lte: d};
+      obj.bool.should.push(r);
     });
   } else {
     let d = moment.unix(parseSeconds(stripQuotes(str))).format();
     obj = {range: {}};
     obj.range[dbField] = {gte: d, lte: d};
-    console.log("ALW", d, obj.range);
   }
   return obj;
 }

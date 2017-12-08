@@ -604,7 +604,7 @@ function termOrTermsSeconds(dbField, str) {
   return obj;
 }
 
-function termOrTermsDate(dbField, str, multiply) {
+function termOrTermsDate(dbField, str) {
   var obj = {};
   if (str[0] === "[" && str[str.length -1] === "]") {
     obj = {bool: {should: []}};
@@ -612,7 +612,7 @@ function termOrTermsDate(dbField, str, multiply) {
       let r = {range: {}};
       r.range[dbField] = {gte: d, lte: d};
       obj.bool.should.push(r);
-    }
+    });
   } else {
     let d = moment.unix(parseSeconds(stripQuotes(str))).format();
     obj = {range: {}};
