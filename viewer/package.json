@@ -43,7 +43,7 @@
     "viewerlint": "jshint viewer.js db.js config.js multies.js",
     "bundle": "webpack --progress --display-error-details --bail",
     "bundle:min": "webpack --define process.env.NODE_ENV=production --progress --bail",
-    "test": "karma start --single-run",
+    "test": "karma start --single-run --debug",
     "test:watch": "karma start --auto-watch",
     "pretest": "npm run lint",
     "pretest:watch": "npm run lint"

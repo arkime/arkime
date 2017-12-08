@@ -8,14 +8,14 @@
     length: 50,   // page length
     start : 0,    // first item index
     facets: 1,    // facets
-    sorts : [ [ 'fp', 'asc' ] ],
-    fields: [ 'pr', 'tipv61-term', 'tipv62-term', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch' ]
+    sorts : [ [ 'firstPacket', 'asc' ] ],
+    fields: [ 'ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'dstIp', 'dstPort', 'totPackets', 'totBytes', 'node', 'http.uri', 'email.src', 'email.dst', 'email.subject', 'email.filename', 'dns.host', 'cert.alt', 'irc.channel' ]
   };
 
   // default table state
   let defaultTableState = {
-    order         : [['fp', 'asc']],
-    visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+    order         : [['firstPacket', 'asc']],
+    visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
   };
 
   // sample session json
@@ -24,23 +24,23 @@
     recordsTotal    : 50,
     data: [
       {
-        pa2     :0,
-        p1      :10000,
-        no      :'demo',
-        pa1     :1,
-        p2      :2948,
-        pr      :17,
-        lp      :0,
-        fp      :0,
-        a1      :16843009,
-        a2      :33686018,
-        pa      :1,
-        db1     :437,
-        db2     :0,
-        by      :445,
-        by2     :0,
-        by1     :445,
-        db      :437,
+        pdstIp       :0,
+        srcPort      :10000,
+        node         :'demo',
+        srcPackets   :1,
+        dstPort      :2948,
+        ipProtocol   :17,
+        lastPacket   :0,
+        firstPacket  :0,
+        srcIp        :16843009,
+        dstIp        :33686018,
+        totPackets   :1,
+        srcDataBytes :437,
+        dstDataBytes :0,
+        totBytes     :445,
+        dstBytes     :0,
+        srcBytes     :445,
+        totDataBytes :437,
         index   :'sessions-',
         id      :'sessionid',
         expanded:false
@@ -50,7 +50,7 @@
 
   let fields = {
     'protocols': {
-      dbField: 'prot-term',
+      dbField: 'protocol',
       exp: 'protocols',
       group: 'general',
       friendlyName: 'Protocols',
@@ -58,7 +58,7 @@
       type: 'termfield'
     },
     'starttime': {
-      dbField: 'fp',
+      dbField: 'firstPacket',
       exp: 'starttime',
       group: 'general',
       friendlyName: 'Start Time',
@@ -66,7 +66,7 @@
       type: 'seconds'
     },
     'stoptime': {
-      dbField: 'lp',
+      dbField: 'lastPacket',
       exp: 'stoptime',
       group: 'general',
       friendlyName: 'Stop Time',
@@ -74,7 +74,7 @@
       type: 'seconds'
     },
     'ip.src': {
-      dbField: 'a1',
+      dbField: 'srcIp',
       exp: 'ip.src',
       type: 'ip',
       category: 'ip',
@@ -83,7 +83,7 @@
       help: 'Source IP'
     },
     'ip.dst': {
-      dbField: 'a2',
+      dbField: 'dstIp',
       exp: 'ip.dst',
       type: 'ip',
       category: 'ip',
@@ -92,7 +92,7 @@
       help: 'Destination IP'
     },
     'port.src': {
-      dbField: 'p1',
+      dbField: 'srcPort',
       exp: 'port.src',
       type: 'integer',
       category: 'port',
@@ -101,7 +101,7 @@
       help: 'Source Port'
     },
     'port.dst': {
-      dbField: 'p2',
+      dbField: 'dstPort',
       exp: 'port.dst',
       type: 'integer',
       category: 'port',
@@ -110,7 +110,7 @@
       help: 'Destination Port'
     },
     'packets': {
-      dbField: 'pa',
+      dbField: 'totPackets',
       exp: 'packets',
       type: 'integer',
       group: 'general',
@@ -118,15 +118,15 @@
       help: 'Total number of packets sent AND received in a session'
     },
     'bytes': {
-      dbField: 'by',
+      dbField: 'totBytes',
       exp: 'bytes',
       type: 'integer',
       group: 'general',
       friendlyName: 'Bytes',
       help: 'Total number of raw bytes sent AND received in a session'
     },
-    'no': {
-      dbField: 'no',
+    'node': {
+      dbField: 'node',
       exp: 'node',
       group: 'general',
       friendlyName: 'Moloch Node',
@@ -141,16 +141,16 @@
       friendlyName: 'Info',
       help: 'Information',
       unsortable: true,
-      children: ['us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch']
+      children: ['http.uri', 'email.src', 'email.dst', 'email.subject', 'email.filename', 'dns.host', 'cert.alt', 'irc.channel']
     },
-    'http.uri': { dbField: 'us', exp: 'http.uri' },
-    'email.src': { dbField: 'esrc', exp: 'email.src' },
-    'email.dst': { dbField: 'edst', exp: 'email.dst' },
-    'email.subject': { dbField: 'esub', exp: 'email.subject' },
-    'email.fn': { dbField: 'efn', exp: 'email.fn' },
-    'host.dns': { dbField: 'dnsho', exp: 'host.dns' },
-    'cert.alt': { dbField: 'tls.alt', exp: 'cert.alt' },
-    'irc.channel': { dbField: 'ircch', exp: 'irc.channel' }
+    'http.uri': { dbField: 'http.uri', exp: 'http.uri' },
+    'email.src': { dbField: 'email.src', exp: 'email.src' },
+    'email.dst': { dbField: 'email.dst', exp: 'email.dst' },
+    'email.subject': { dbField: 'email.subject', exp: 'email.subject' },
+    'email.fn': { dbField: 'email.filename', exp: 'email.fn' },
+    'host.dns': { dbField: 'dns.host', exp: 'host.dns' },
+    'cert.alt': { dbField: 'cert.alt', exp: 'cert.alt' },
+    'irc.channel': { dbField: 'irc.channel', exp: 'irc.channel' }
   };
 
   let settings = {
@@ -159,8 +159,8 @@
     showTimestamps: 'last',
     sortColumn    : 'last',
     sortDirection : 'asc',
-    spiGraph      : 'no',
-    connSrcField  : 'a1',
+    spiGraph      : 'node',
+    connSrcField  : 'srcIp',
     connDstField  : 'ip.dst:port',
     numPackets    : 'last',
     theme         : 'cotton-candy-theme'
@@ -173,7 +173,7 @@
 
     let scope, sessionComponent, sessionService, $httpBackend;
     let sessionsEndpoint    = 'sessions.json';
-    let defaultParameters   = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
+    let defaultParameters   = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=firstPacket:asc';
     let tableStateEndpoint  = 'state/sessionsNew';
 
     // Initialize and a mock scope
@@ -277,8 +277,8 @@
       expect(sessionComponent.tableState).toBeDefined();
 
       sessionComponent.tableState = {
-        order         : [['pr', 'desc']],
-        visibleHeaders: ['dst', 'src', 'info', 'p1', 'p2', 'pa', 'fp', 'lp', 'dbby', 'no', 'pr']
+        order         : [['ipProtocol', 'desc']],
+        visibleHeaders: ['dst', 'src', 'info', 'srcPort', 'dstPort', 'totPackets', 'firstPacket', 'lastPacket', 'dbby', 'node', 'ipProtocol']
       };
 
       sessionComponent.loadColumnConfiguration();
@@ -289,8 +289,8 @@
 
     it('should fetch the table state and remove empty entry in visible headers', function() {
       let tableState = {
-        order         : [['fp', 'asc']],
-        visibleHeaders: ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+        order         : [['firstPacket', 'asc']],
+        visibleHeaders: ['', 'firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
       };
 
       $httpBackend.expectGET(tableStateEndpoint)
@@ -336,64 +336,64 @@
     describe('table sorting ->', function() {
       afterEach(function() {
         // cleanup table state
-        sessionComponent.tableState.order = [['fp', 'asc']];
+        sessionComponent.tableState.order = [['firstPacket', 'asc']];
         sessionComponent.query.sorts      = sessionComponent.tableState.order;
       });
 
       it('should have smart default sorts', function() {
-        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
-        expect(sessionComponent.getSortOrder('fp')).toEqual('asc');
+        expect(sessionComponent.isSorted('firstPacket')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('firstPacket')).toEqual('asc');
       });
 
       it('should toggle sort order', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:desc';
+        let newParameters = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=firstPacket:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
-        sessionComponent.sortBy({},'fp');
+        sessionComponent.sortBy({},'firstPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
-        expect(sessionComponent.getSortOrder('fp')).toEqual('desc');
+        expect(sessionComponent.isSorted('firstPacket')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('firstPacket')).toEqual('desc');
       });
 
       it('should change sort order', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=lp:asc';
+        let newParameters = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=lastPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
-        sessionComponent.sortBy({},'lp');
+        sessionComponent.sortBy({},'lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isSorted('lp')).toBeGreaterThan(-1);
-        expect(sessionComponent.getSortOrder('lp')).toEqual('asc');
+        expect(sessionComponent.isSorted('lastPacket')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('lastPacket')).toEqual('asc');
       });
 
       it('should add sort on shift click', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc,lp:asc';
+        let newParameters = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=firstPacket:asc,lastPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
-        sessionComponent.sortBy({ shiftKey:true },'lp');
+        sessionComponent.sortBy({ shiftKey:true },'lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
-        expect(sessionComponent.getSortOrder('fp')).toEqual('asc');
+        expect(sessionComponent.isSorted('firstPacket')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('firstPacket')).toEqual('asc');
 
-        expect(sessionComponent.isSorted('lp')).toBeGreaterThan(-1);
-        expect(sessionComponent.getSortOrder('lp')).toEqual('asc');
+        expect(sessionComponent.isSorted('lastPacket')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('lastPacket')).toEqual('asc');
       });
     });
 
@@ -401,12 +401,12 @@
     describe('column interactions ->', function() {
       afterEach(function() {
         // cleanup table state
-        sessionComponent.tableState.order = [['fp','asc']];
-        sessionComponent.tableState.visibleHeaders = ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
+        sessionComponent.tableState.order = [['firstPacket','asc']];
+        sessionComponent.tableState.visibleHeaders = ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info'];
       });
 
       it('should have smart default visible headers', function() {
-        let defaultHeaders = ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
+        let defaultHeaders = ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info'];
 
         expect(sessionComponent.tableState.visibleHeaders).toEqual(defaultHeaders);
       });
@@ -415,96 +415,96 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        sessionComponent.toggleVisibility('lp');
+        sessionComponent.toggleVisibility('lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isVisible('lp')).toEqual(-1);
+        expect(sessionComponent.isVisible('lastPacket')).toEqual(-1);
       });
 
       it('should issue query when adding a header', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
-        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&flatten=1&length=50&order=fp:asc';
+        let newParameters = '?facets=1&fields=ipProtocol,firstPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel,lastPacket&flatten=1&length=50&order=firstPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        sessionComponent.toggleVisibility('lp');
-        sessionComponent.toggleVisibility('lp');
+        sessionComponent.toggleVisibility('lastPacket');
+        sessionComponent.toggleVisibility('lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isVisible('lp')).toBeGreaterThan(-1);
+        expect(sessionComponent.isVisible('lastPacket')).toBeGreaterThan(-1);
       });
 
       it('should reset sort field and order to default', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=lp:asc';
+        let newParameters = '?facets=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&flatten=1&length=50&order=lastPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
-        newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc';
+        newParameters = '?facets=1&fields=ipProtocol,firstPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&flatten=1&length=50&order=firstPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        sessionComponent.sortBy({}, 'lp');
+        sessionComponent.sortBy({}, 'lastPacket');
 
-        expect(sessionComponent.tableState.order).toEqual([['lp','asc']]);
+        expect(sessionComponent.tableState.order).toEqual([['lastPacket','asc']]);
 
-        sessionComponent.toggleVisibility('lp');
+        sessionComponent.toggleVisibility('lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isVisible('lp')).toEqual(-1);
-        expect(sessionComponent.tableState.order).toEqual([['fp','asc']]);
+        expect(sessionComponent.isVisible('lastPacket')).toEqual(-1);
+        expect(sessionComponent.tableState.order).toEqual([['firstPacket','asc']]);
       });
 
       it('should remove non-visible column from sort order', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc,lp:asc';
+        let newParameters = '?facets=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&flatten=1&length=50&order=firstPacket:asc,lastPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
-        newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&flatten=1&length=50&order=fp:asc';
+        newParameters = '?facets=1&fields=ipProtocol,firstPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&flatten=1&length=50&order=firstPacket:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        sessionComponent.sortBy({ shiftKey:true },'lp');
+        sessionComponent.sortBy({ shiftKey:true },'lastPacket');
 
-        expect(sessionComponent.tableState.order).toEqual([['fp','asc'],['lp','asc']]);
+        expect(sessionComponent.tableState.order).toEqual([['firstPacket','asc'],['lastPacket','asc']]);
 
-        sessionComponent.toggleVisibility('lp');
+        sessionComponent.toggleVisibility('lastPacket');
 
         $httpBackend.flush();
 
-        expect(sessionComponent.isVisible('lp')).toEqual(-1);
-        expect(sessionComponent.tableState.order).toEqual([['fp','asc']]);
+        expect(sessionComponent.isVisible('lastPacket')).toEqual(-1);
+        expect(sessionComponent.tableState.order).toEqual([['firstPacket','asc']]);
       });
 
       it('should load a saved column configuration', function() {
         let columnConfigurations = [{
           name    : 'column config name',
-          columns : ['fp', 'a1', 'p1'],
-          order   : [['a1','asc']]
+          columns : ['firstPacket', 'srcIp', 'srcPort'],
+          order   : [['srcIp','asc']]
         }];
 
         $httpBackend.expectPOST(tableStateEndpoint)
           .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1&flatten=1&length=50&order=a1:asc';
+        let newParameters = '?facets=1&fields=ipProtocol,firstPacket,srcIp,srcPort&flatten=1&length=50&order=srcIp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -532,15 +532,15 @@
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.name).toEqual('new col config name');
-             expect(jsonData.columns).toEqual(['fp', 'a1', 'p1']);
-             expect(jsonData.order).toEqual([['a1','asc']]);
+             expect(jsonData.columns).toEqual(['firstPacket', 'srcIp', 'srcPort']);
+             expect(jsonData.order).toEqual([['srcIp','asc']]);
              return true;
            }).respond({name: 'new col config name'}, 200);
 
         sessionComponent.colConfigs = [];
         sessionComponent.newColConfigName = 'new col config name';
-        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1'];
-        sessionComponent.tableState.order = [['a1','asc']];
+        sessionComponent.tableState.visibleHeaders = ['firstPacket', 'srcIp', 'srcPort'];
+        sessionComponent.tableState.order = [['srcIp','asc']];
 
         sessionComponent.saveColumnConfiguration();
 
@@ -575,8 +575,8 @@
 
         sessionComponent.colConfigs = [{
           name    : 'new col config name',
-          columns : ['fp', 'a1', 'p1'],
-          order   : [['fp','asc']]
+          columns : ['firstPacket', 'srcIp', 'srcPort'],
+          order   : [['firstPacket','asc']]
         }];
 
         sessionComponent.deleteColumnConfiguration('new col config name');
@@ -590,15 +590,15 @@
       it('should determine if a col config is the same as the visible headers', function() {
         sessionComponent.colConfigs = [{
           name    : 'new col config name',
-          columns : ['fp', 'a1', 'p1'],
-          order   : [['fp','asc']]
+          columns : ['firstPacket', 'srcIp', 'srcPort'],
+          order   : [['firstPacket','asc']]
         }];
 
-        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1'];
+        sessionComponent.tableState.visibleHeaders = ['firstPacket', 'srcIp', 'srcPort'];
         let isSame = sessionComponent.isSameAsVisible(0);
         expect(isSame).toBeTruthy();
 
-        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1', 'lp', 'a2', 'p2'];
+        sessionComponent.tableState.visibleHeaders = ['firstPacket', 'srcIp', 'srcPort', 'lastPacket', 'dstIp', 'dstPort'];
         isSame = sessionComponent.isSameAsVisible(0);
         expect(isSame).toBeFalsy();
       });
@@ -606,7 +606,7 @@
 
 
     describe('listeners ->', function() {
-      let sorts       = [['fp', 'asc']];
+      let sorts       = [['firstPacket', 'asc']];
       let length      = 200;
       let currentPage = 2;
       let start       = (currentPage - 1) * length;
@@ -629,7 +629,7 @@
       });
 
       it('should listen for "change:search" event', function() {
-        let newParameters = '?date=-1&facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
+        let newParameters = '?date=-1&facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=firstPacket:asc';
         $httpBackend.whenGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
@@ -649,7 +649,7 @@
       });
 
       it('should listen for "change:pagination" event', function() {
-        let newParameters = '?facets=1&flatten=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=200&order=fp:asc&start=200';
+        let newParameters = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=200&order=firstPacket:asc&start=200';
         $httpBackend.whenGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -685,13 +685,13 @@
       });
 
       it('should call SessionService when exporting unique column values', function() {
-        sessionComponent.exportUnique('a1', 0);
+        sessionComponent.exportUnique('srcIp', 0);
         expect(sessionService.exportUniqueValues).toHaveBeenCalled();
-        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('a1', 0);
+        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('srcIp', 0);
 
-        sessionComponent.exportUnique('a1:p1', 0);
+        sessionComponent.exportUnique('srcIp:srcPort', 0);
         expect(sessionService.exportUniqueValues).toHaveBeenCalled();
-        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('a1:p1', 0);
+        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('srcIp:srcPort', 0);
 
         sessionComponent.exportUnique('g2', 1);
         expect(sessionService.exportUniqueValues).toHaveBeenCalled();

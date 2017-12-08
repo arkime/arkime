@@ -51,27 +51,27 @@
 
       it('should return the appropriate protocol strings', function () {
         let protocolInt = 1;
-        let result = $filter('protocol')(protocolInt);
+        let result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('icmp');
 
         protocolInt = 6;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('tcp');
 
         protocolInt = 17;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('udp');
 
         protocolInt = 47;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('gre');
 
         protocolInt = 58;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('icmp6');
 
         protocolInt = 'default';
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('default');
       });
 
