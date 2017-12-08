@@ -2,26 +2,100 @@
    "sessions2" : [
       {
          "body" : {
-            "srcPayload8" : "8080010301005700",
-            "srcMacCnt" : 1,
-            "ipSrc" : "10.180.156.141",
-            "dstRIR" : "ARIN",
-            "srcDataBytes" : 613,
-            "protocolCnt" : 2,
-            "srcPackets" : 14,
-            "firstPacket" : 1385410273592,
-            "srcBytes" : 1513,
-            "dstPayload8" : "1603010051020000",
-            "totBytes" : 6319,
-            "tlscnt" : 2,
-            "segments" : 1,
-            "length" : 536,
-            "ipProtocol" : 6,
+            "timestamp" : "SET",
+            "lastPacket" : 1385410274128,
+            "fileIds" : [],
             "srcMac" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "timestamp" : "SET",
-            "dstBytes" : 4806,
+            "srcMacCnt" : 1,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "dstRIR" : "ARIN",
+            "dstMacCnt" : 2,
+            "dstASN" : "AS36459 GitHub, Inc.",
+            "node" : "test",
+            "dstPort" : 443,
+            "cert" : [
+               {
+                  "notAfter" : 1441195200000,
+                  "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "subjectON" : "GitHub, Inc.",
+                  "validDays" : 814,
+                  "issuerCN" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
+                  "subjectCN" : [
+                     "github.com"
+                  ],
+                  "altCnt" : 2,
+                  "notBefore" : 1370822400000,
+                  "issuerON" : "DigiCert Inc"
+               },
+               {
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "validDays" : 5114,
+                  "subjectON" : "DigiCert Inc",
+                  "notAfter" : 1636502400000,
+                  "serial" : "0337b928347c60a6aec5adb1217f3860",
+                  "issuerON" : "DigiCert Inc",
+                  "notBefore" : 1194609600000,
+                  "subjectCN" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8"
+               }
+            ],
+            "dstDataBytes" : 4204,
+            "tls" : {
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "dstSessionId" : [
+                  "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
+               ],
+               "version" : [
+                  "TLSv1"
+               ]
+            },
+            "totBytes" : 6319,
+            "srcBytes" : 1513,
+            "totDataBytes" : 4817,
+            "srcPayload8" : "8080010301005700",
+            "tcpflags" : {
+               "fin" : 2,
+               "syn-ack" : 1,
+               "rst" : 3,
+               "psh" : 8,
+               "syn" : 1,
+               "ack" : 8,
+               "urg" : 0
+            },
+            "firstPacket" : 1385410273592,
+            "dstPackets" : 9,
+            "dstGEO" : "USA",
+            "srcPackets" : 14,
+            "totPackets" : 23,
+            "length" : 536,
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "certCnt" : 2,
+            "segments" : 1,
+            "ipProtocol" : 6,
+            "dstIp" : "192.30.252.131",
             "packetLenArray" : [
                94,
                90,
@@ -47,39 +121,6 @@
                70,
                70
             ],
-            "dstGEO" : "USA",
-            "fileIds" : [],
-            "dstPackets" : 9,
-            "protocol" : [
-               "tls",
-               "tcp"
-            ],
-            "lastPacket" : 1385410274128,
-            "dstPort" : 443,
-            "tls" : {
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
-               ]
-            },
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstDataBytes" : 4204,
-            "ipDst" : "192.30.252.131",
-            "dstMacCnt" : 2,
-            "totPackets" : 23,
-            "node" : "test",
-            "srcPort" : 50754,
-            "dstASN" : "AS36459 GitHub, Inc.",
             "packetPosArray" : [
                24,
                118,
@@ -105,16 +146,12 @@
                6571,
                6641
             ],
-            "tcpflags" : {
-               "urg" : 0,
-               "ack" : 8,
-               "psh" : 8,
-               "fin" : 2,
-               "syn" : 1,
-               "rst" : 3,
-               "syn-ack" : 1
-            },
-            "totDataBytes" : 4817,
+            "protocolCnt" : 2,
+            "srcDataBytes" : 613,
+            "srcIp" : "10.180.156.141",
+            "dstBytes" : 4806,
+            "srcPort" : 50754,
+            "dstPayload8" : "1603010051020000",
             "srcGEO" : "USA"
          },
          "header" : {

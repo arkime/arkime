@@ -26,7 +26,7 @@
                "psh" : 3,
                "rst" : 0
             },
-            "ipSrc" : "10.0.0.32",
+            "srcIp" : "10.0.0.32",
             "dstMacCnt" : 1,
             "totPackets" : 13,
             "srcPayload8" : "474554202f312048",
@@ -49,7 +49,7 @@
             ],
             "dstBytes" : 12880,
             "ipProtocol" : 6,
-            "ipDst" : "10.0.0.33",
+            "dstIp" : "10.0.0.33",
             "http" : {
                "requestHeaderCnt" : 7,
                "pathCnt" : 1,

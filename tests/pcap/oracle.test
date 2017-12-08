@@ -29,7 +29,7 @@
                "syn-ack" : 1
             },
             "fileIds" : [],
-            "ipSrc" : "10.0.0.16",
+            "srcIp" : "10.0.0.16",
             "vlanCnt" : 2,
             "totBytes" : 676,
             "srcPackets" : 5,
@@ -48,7 +48,7 @@
                "80:71:1f:84:ef:cc"
             ],
             "segments" : 1,
-            "ipDst" : "10.0.0.17",
+            "dstIp" : "10.0.0.17",
             "dstDataBytes" : 0,
             "dstBytes" : 78,
             "totPackets" : 6,

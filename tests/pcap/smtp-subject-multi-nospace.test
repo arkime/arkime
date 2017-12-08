@@ -38,7 +38,7 @@
                ]
             },
             "srcGEO" : "RUS",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "tagsCnt" : 2,
             "protocolCnt" : 2,
             "length" : 2,
@@ -66,7 +66,7 @@
                ],
                "dstCnt" : 1
             },
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcBytes" : 561,
             "firstPacket" : 1394730057309,
             "srcASN" : "AS0000 This is neat",

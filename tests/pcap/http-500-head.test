@@ -88,11 +88,11 @@
                1020
             ],
             "fileIds" : [],
-            "ipSrc" : "10.172.10.16",
+            "srcIp" : "10.172.10.16",
             "dstMac" : [
                "00:10:db:ff:26:00"
             ],
-            "ipDst" : "10.156.206.202",
+            "dstIp" : "10.156.206.202",
             "srcPackets" : 5,
             "dstPackets" : 5,
             "segments" : 1,

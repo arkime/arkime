@@ -9,7 +9,7 @@
          },
          "body" : {
             "length" : 195,
-            "ipDst" : "64.15.116.182",
+            "dstIp" : "64.15.116.182",
             "protocol" : [
                "udp",
                "quic"
@@ -34,7 +34,7 @@
                2840
             ],
             "totPackets" : 3,
-            "ipSrc" : "10.0.2.15",
+            "srcIp" : "10.0.2.15",
             "srcMacCnt" : 1,
             "node" : "test",
             "dstMacCnt" : 1,

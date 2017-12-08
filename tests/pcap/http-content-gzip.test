@@ -3,7 +3,7 @@
       {
          "body" : {
             "srcASN" : "AS0000 This is neat",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcBytes" : 843,
             "dstDataBytes" : 478,
             "dstMacCnt" : 2,
@@ -12,7 +12,7 @@
                "00:0a:f3:31:90:00"
             ],
             "tagsCnt" : 2,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstPackets" : 5,
             "lastPacket" : 1407242225628,
             "test" : {

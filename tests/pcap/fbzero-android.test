@@ -141,7 +141,7 @@
                338,
                82
             ],
-            "ipDst" : "31.13.74.1",
+            "dstIp" : "31.13.74.1",
             "srcPackets" : 25,
             "srcRIR" : "ARIN",
             "dstMac" : [
@@ -153,7 +153,7 @@
             "timestamp" : "SET",
             "dstDataBytes" : 4416,
             "srcPort" : 39584,
-            "ipSrc" : "192.168.1.111",
+            "srcIp" : "192.168.1.111",
             "fileIds" : [],
             "totDataBytes" : 9220
          }

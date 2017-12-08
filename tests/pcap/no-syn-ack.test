@@ -37,7 +37,7 @@
             ],
             "srcPackets" : 4,
             "protocolCnt" : 2,
-            "ipDst" : "10.176.176.11",
+            "dstIp" : "10.176.176.11",
             "srcMac" : [
                "00:22:83:3f:17:cc"
             ],
@@ -72,7 +72,7 @@
             "tagsCnt" : 2,
             "node" : "test",
             "dstDataBytes" : 82,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "firstPacket" : 1482381409512
          },
          "header" : {
@@ -125,7 +125,7 @@
                "00:22:83:3f:17:c5",
                "2c:6b:f5:d6:17:c5"
             ],
-            "ipDst" : "10.13.13.13",
+            "dstIp" : "10.13.13.13",
             "protocolCnt" : 2,
             "packetLenArray" : [
                86,
@@ -201,7 +201,7 @@
             "srcPayload8" : "474554202f787878",
             "ipProtocol" : 6,
             "firstPacket" : 1483544164032,
-            "ipSrc" : "10.12.12.12",
+            "srcIp" : "10.12.12.12",
             "dstDataBytes" : 1460,
             "tagsCnt" : 1,
             "node" : "test",

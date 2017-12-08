@@ -30,7 +30,7 @@
                "aerospike",
                "tcp"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "totDataBytes" : 86,
             "tcpflags" : {
                "syn-ack" : 1,
@@ -105,7 +105,7 @@
             "protocolCnt" : 2,
             "fileIds" : [],
             "srcASN" : "AS0000 This is neat",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "timestamp" : "SET",
             "srcMac" : [
                "2c:6b:f5:d6:17:cc"
@@ -129,7 +129,7 @@
             "dstBytes" : 444,
             "protocolCnt" : 2,
             "fileIds" : [],
-            "ipSrc" : "10.0.0.4",
+            "srcIp" : "10.0.0.4",
             "srcPort" : 43178,
             "srcDataBytes" : 22,
             "srcPackets" : 6,
@@ -180,7 +180,7 @@
                "aerospike",
                "tcp"
             ],
-            "ipDst" : "10.0.0.3",
+            "dstIp" : "10.0.0.3",
             "packetLenArray" : [
                94,
                94,

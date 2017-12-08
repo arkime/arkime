@@ -184,11 +184,11 @@
                "smtp:statuscode:250"
             ],
             "totDataBytes" : 1969,
-            "ipDst" : "64.236.64.225",
+            "dstIp" : "64.236.64.225",
             "tagsCnt" : 1,
             "dstGEO" : "USA",
             "fileIds" : [],
-            "ipSrc" : "10.180.156.249"
+            "srcIp" : "10.180.156.249"
          },
          "header" : {
             "index" : {

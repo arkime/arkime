@@ -42,7 +42,7 @@
             "srcPort" : 40848,
             "dstDataBytes" : 28,
             "timestamp" : "SET",
-            "ipSrc" : "127.0.0.1",
+            "srcIp" : "127.0.0.1",
             "srcPayload8" : "300c020101600702",
             "dstMacCnt" : 1,
             "srcMac" : [
@@ -54,7 +54,7 @@
             "lastPacket" : 1132019262678,
             "dstPort" : 389,
             "segments" : 1,
-            "ipDst" : "127.0.0.1",
+            "dstIp" : "127.0.0.1",
             "fileIds" : [],
             "srcMacCnt" : 1,
             "srcBytes" : 610,

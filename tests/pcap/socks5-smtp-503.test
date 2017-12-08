@@ -62,7 +62,7 @@
             "segments" : 1,
             "dstPackets" : 10,
             "fileIds" : [],
-            "ipSrc" : "10.0.0.2",
+            "srcIp" : "10.0.0.2",
             "dstBytes" : 854,
             "srcRIR" : "TEST",
             "srcMacCnt" : 1,
@@ -90,7 +90,7 @@
             ],
             "dstMacCnt" : 2,
             "firstPacket" : 1385474626674,
-            "ipDst" : "10.0.0.1",
+            "dstIp" : "10.0.0.1",
             "srcDataBytes" : 47,
             "lastPacket" : 1385474639455,
             "dstMac" : [

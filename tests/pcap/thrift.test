@@ -16,7 +16,7 @@
             ],
             "srcDataBytes" : 40,
             "srcGEO" : "RUS",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "dstRIR" : "TEST",
             "timestamp" : "SET",
             "lastPacket" : 1463682642100,
@@ -36,7 +36,7 @@
             "srcMac" : [
                "00:22:83:3f:17:cc"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcBytes" : 262,
             "dstDataBytes" : 104,
             "segments" : 1,
@@ -120,7 +120,7 @@
                "00:1b:17:00:01:24"
             ],
             "srcDataBytes" : 261,
-            "ipSrc" : "10.10.10.20",
+            "srcIp" : "10.10.10.20",
             "timestamp" : "SET",
             "packetPosArray" : [
                704,
@@ -136,7 +136,7 @@
                "00:22:83:3f:17:c5"
             ],
             "srcBytes" : 479,
-            "ipDst" : "10.10.10.30",
+            "dstIp" : "10.10.10.30",
             "dstBytes" : 78,
             "dstDataBytes" : 0,
             "segments" : 1,

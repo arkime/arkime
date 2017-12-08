@@ -84,7 +84,7 @@
             "dstDataBytes" : 327,
             "node" : "test",
             "dstMacCnt" : 1,
-            "ipDst" : "10.0.13.120",
+            "dstIp" : "10.0.13.120",
             "postgresql" : {
                "app" : "pgAdmin III - Browser",
                "db" : "dbdbdbdb",
@@ -109,7 +109,7 @@
                "00:0c:29:18:7f:fe"
             ],
             "timestamp" : "SET",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcPort" : 36060
          }
       }

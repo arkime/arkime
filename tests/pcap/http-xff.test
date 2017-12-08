@@ -26,7 +26,7 @@
             ],
             "srcPort" : 41954,
             "fileIds" : [],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcMacCnt" : 1,
             "srcGEO" : "RUS",
             "dstPayload8" : "485454502f312e31",
@@ -50,7 +50,7 @@
                1591,
                1667
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcBytes" : 680,
             "srcDataBytes" : 312,
             "totDataBytes" : 881,

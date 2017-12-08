@@ -18,7 +18,7 @@
             "srcPort" : 50759,
             "dstBytes" : 0,
             "dstMacCnt" : 1,
-            "ipSrc" : "255.255.255.255",
+            "srcIp" : "255.255.255.255",
             "totDataBytes" : 137,
             "packetLenArray" : [
                161
@@ -26,7 +26,7 @@
             "packetPosArray" : [
                103
             ],
-            "ipDst" : "0.0.0.0",
+            "dstIp" : "0.0.0.0",
             "protocolCnt" : 2,
             "segments" : 1,
             "lastPacket" : 1387253713030,

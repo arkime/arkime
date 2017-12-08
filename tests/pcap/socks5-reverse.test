@@ -122,7 +122,7 @@
             "srcPackets" : 31,
             "srcPort" : 54263,
             "dstRIR" : "TEST",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "lastPacket" : 1386790404657,
             "packetPosArray" : [
                24,
@@ -184,7 +184,7 @@
                "00:0a:f3:31:94:00"
             ],
             "dstPackets" : 21,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "tags" : [
                "srcip",
                "dstip"

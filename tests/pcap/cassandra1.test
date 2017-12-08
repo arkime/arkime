@@ -38,7 +38,7 @@
             "vlanCnt" : 2,
             "srcPackets" : 3,
             "fileIds" : [],
-            "ipDst" : "10.176.171.11",
+            "dstIp" : "10.176.171.11",
             "totPackets" : 4,
             "protocolCnt" : 3,
             "segments" : 1,
@@ -64,7 +64,7 @@
             "srcDataBytes" : 41,
             "dstPackets" : 1,
             "dstMacCnt" : 1,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "packetLenArray" : [
                98,
                94,

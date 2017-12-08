@@ -47,7 +47,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
             if (socks->ip)
-                moloch_field_int_add(ipField, session, socks->ip);
+                moloch_field_ip4_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
             moloch_session_add_protocol(session, "socks");
 
@@ -150,7 +150,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
         if (data[3] == 1) { // IPV4
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
             memcpy(&socks->ip, data+4, 4);
-            moloch_field_int_add(ipField, session, socks->ip);
+            moloch_field_ip4_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name

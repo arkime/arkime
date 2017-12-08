@@ -29,7 +29,7 @@
                "00:00:5e:00:01:02",
                "00:1d:b5:ce:ef:c0"
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "packetPosArray" : [
                24,
                106,
@@ -78,7 +78,7 @@
                138
             ],
             "srcGEO" : "RUS",
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstPackets" : 1,
             "tagsCnt" : 2,
             "srcPort" : 1203,
@@ -115,7 +115,7 @@
             ],
             "dstMacCnt" : 1,
             "dstPackets" : 1,
-            "ipDst" : "10.11.11.11",
+            "dstIp" : "10.11.11.11",
             "srcPort" : 43890,
             "dstDataBytes" : 0,
             "tcpflags" : {
@@ -157,7 +157,7 @@
                "00:1b:17:00:02:30"
             ],
             "protocolCnt" : 2,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "packetPosArray" : [
                402,
                496,

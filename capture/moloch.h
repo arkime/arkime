@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 19
+#define MOLOCH_API_VERSION 20
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -146,7 +146,6 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_TYPE_IP_GHASH   7
 #define MOLOCH_FIELD_TYPE_CERTSINFO  8
 #define MOLOCH_FIELD_TYPE_INT_GHASH  9
-#define MOLOCH_FIELD_TYPE_IP_HASH   10
 
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
@@ -973,6 +972,8 @@ int  moloch_field_by_exp(const char *exp);
 const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
+gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);
+gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
 int  moloch_field_count(int pos, MolochSession_t *session);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
@@ -983,6 +984,11 @@ void moloch_field_ops_init(MolochFieldOps_t *ops, int numOps, uint16_t flags);
 void moloch_field_ops_free(MolochFieldOps_t *ops);
 void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int valuelen);
 void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops);
+
+void *moloch_field_parse_ip(const char *str);
+gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2);
+guint moloch_field_ip_hash (gconstpointer v);
+
 
 /******************************************************************************/
 /*

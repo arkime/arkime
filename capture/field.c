@@ -331,7 +331,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             snprintf(help2, sizeof(help2), "Regional Internet Registry string calculated from %s", help);
             moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
-    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
+    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
         int l = strlen(dbField)-2;
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
@@ -610,8 +610,6 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         session->fields[pos] = field;
         field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10;
         switch (config.fields[pos]->type) {
-        case MOLOCH_FIELD_TYPE_IP:
-            field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT:
             field->i = i;
             goto added;
@@ -619,8 +617,6 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             field->iarray = g_array_new(FALSE, FALSE, 4);
             g_array_append_val(field->iarray, i);
             goto added;
-        case MOLOCH_FIELD_TYPE_IP_HASH:
-            field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochIntHashStd_t);
             HASH_INIT(i_, *hash, moloch_int_hash, moloch_int_cmp);
@@ -628,8 +624,6 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
             HASH_ADD(i_, *hash, (void *)(long)i, hint);
             goto added;
-        case MOLOCH_FIELD_TYPE_IP_GHASH:
-            field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             field->ghash = g_hash_table_new(NULL, NULL);
             g_hash_table_add(field->ghash, (void *)(long)i);
@@ -642,16 +636,12 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     field = session->fields[pos];
     field->jsonSize += (3 + 10);
     switch (config.fields[pos]->type) {
-    case MOLOCH_FIELD_TYPE_IP:
-        field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT:
         field->i = i;
         goto added;
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
         g_array_append_val(field->iarray, i);
         goto added;
-    case MOLOCH_FIELD_TYPE_IP_HASH:
-        field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT_HASH:
         HASH_FIND_INT(i_, *(field->ihash), i, hint);
         if (hint) {
@@ -661,14 +651,6 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
         goto added;
-    case MOLOCH_FIELD_TYPE_IP_GHASH:
-        if (!g_hash_table_add(field->ghash, (void *)(long)i)) {
-            field->jsonSize -= 13;
-            return FALSE;
-        } else {
-            field->jsonSize += 100;
-            goto added;
-        }
     case MOLOCH_FIELD_TYPE_INT_GHASH:
         if (!g_hash_table_add(field->ghash, (void *)(long)i)) {
             field->jsonSize -= 13;
@@ -682,6 +664,157 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
 added:
     if (config.fields[pos]->ruleEnabled)
       moloch_rules_run_field_set(session, pos, (gpointer)(long)i);
+
+    return TRUE;
+}
+/******************************************************************************/
+gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2)
+{
+  return memcmp (v1, v2, 16) == 0;
+}
+/******************************************************************************/
+guint moloch_field_ip_hash (gconstpointer v)
+{
+  const signed char *p;
+  guint32 h = 5381;
+  int i;
+
+  for (i = 0, p = v; i < 16; i++, p++) {
+    h = (h << 5) + h + *p;
+  }
+
+  return h;
+}
+
+/******************************************************************************/
+void *moloch_field_parse_ip(const char *str) {
+
+    struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
+
+    if (memchr(str, '.', 4)) {
+        struct in_addr addr;
+        if (inet_aton(str, &addr) == 0) {
+            g_free(v);
+            return NULL;
+        }
+
+        ((uint32_t *)v->s6_addr)[0] = 0;
+        ((uint32_t *)v->s6_addr)[1] = 0;
+        ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
+        ((uint32_t *)v->s6_addr)[3] = addr.s_addr;
+    } else {
+        if (inet_pton(AF_INET6, str, v) == 0) {
+            g_free(v);
+            return NULL;
+        }
+    }
+
+    return v;
+}
+/******************************************************************************/
+gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
+{
+    MolochField_t        *field;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+        return FALSE;
+
+    struct in6_addr *v = moloch_field_parse_ip(str);
+
+    if (!v) {
+        return FALSE;
+    }
+
+    if (!session->fields[pos]) {
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
+        session->fields[pos] = field;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+            field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
+
+            if (!g_hash_table_add(field->ghash, v)) {
+                g_free(v);
+            }
+            goto added;
+        default:
+            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        }
+    }
+
+    field = session->fields[pos];
+    field->jsonSize += (3 + 10 + 100);
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_IP:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+        if (!g_hash_table_add(field->ghash, v)) {
+            field->jsonSize -= 3 + 10 + 100;
+            return FALSE;
+        } else {
+            goto added;
+        }
+    default:
+        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+    }
+
+added:
+    if (config.fields[pos]->ruleEnabled)
+      moloch_rules_run_field_set(session, pos, v);
+
+    return TRUE;
+}
+/******************************************************************************/
+gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
+{
+    MolochField_t        *field;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+        return FALSE;
+
+    struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
+
+    ((uint32_t *)v->s6_addr)[0] = 0;
+    ((uint32_t *)v->s6_addr)[1] = 0;
+    ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
+    ((uint32_t *)v->s6_addr)[3] = i;
+
+    if (!session->fields[pos]) {
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
+        session->fields[pos] = field;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+            field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
+
+            if (!g_hash_table_add(field->ghash, v)) {
+                g_free(v);
+            }
+            goto added;
+        default:
+            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        }
+    }
+
+    field = session->fields[pos];
+    field->jsonSize += (3 + 10 + 100);
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_IP:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+        if (!g_hash_table_add(field->ghash, v)) {
+            field->jsonSize -= 3 + 10 + 100;
+            return FALSE;
+        } else {
+            goto added;
+        }
+    default:
+        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+    }
+
+added:
+    if (config.fields[pos]->ruleEnabled)
+      moloch_rules_run_field_set(session, pos, v);
 
     return TRUE;
 }
@@ -807,7 +940,6 @@ void moloch_field_free(MolochSession_t *session)
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             g_array_free(field->iarray, TRUE);
             break;
-        case MOLOCH_FIELD_TYPE_IP_HASH:
         case MOLOCH_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
             HASH_FORALL_POP_HEAD(i_, *ihash, hint,
@@ -883,7 +1015,6 @@ int moloch_field_count(int pos, MolochSession_t *session)
     case MOLOCH_FIELD_TYPE_STR_HASH:
         return HASH_COUNT(s_, *(field->shash));
     case MOLOCH_FIELD_TYPE_INT_HASH:
-    case MOLOCH_FIELD_TYPE_IP_HASH:
         return HASH_COUNT(s_, *(field->ihash));
     case MOLOCH_FIELD_TYPE_INT_GHASH:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
@@ -923,10 +1054,11 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         case  MOLOCH_FIELD_TYPE_INT_GHASH:
         case  MOLOCH_FIELD_TYPE_INT:
         case  MOLOCH_FIELD_TYPE_INT_ARRAY:
-        case  MOLOCH_FIELD_TYPE_IP:
-        case  MOLOCH_FIELD_TYPE_IP_HASH:
-        case  MOLOCH_FIELD_TYPE_IP_GHASH:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
+            break;
+        case  MOLOCH_FIELD_TYPE_IP:
+        case  MOLOCH_FIELD_TYPE_IP_GHASH:
+            moloch_field_ip_add_str(op->fieldPos, session, op->str);
             break;
         case  MOLOCH_FIELD_TYPE_STR:
         case  MOLOCH_FIELD_TYPE_STR_ARRAY:
@@ -1002,17 +1134,13 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case  MOLOCH_FIELD_TYPE_STR:
         case  MOLOCH_FIELD_TYPE_STR_ARRAY:
         case  MOLOCH_FIELD_TYPE_STR_HASH:
+        case  MOLOCH_FIELD_TYPE_IP:
+        case  MOLOCH_FIELD_TYPE_IP_GHASH:
             if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)
                 op->str = g_strndup(value, valuelen);
             else
                 op->str = value;
             op->strLenOrInt = valuelen;
-            break;
-        case  MOLOCH_FIELD_TYPE_IP:
-        case  MOLOCH_FIELD_TYPE_IP_HASH:
-        case  MOLOCH_FIELD_TYPE_IP_GHASH:
-            op->str = 0;
-            op->strLenOrInt = inet_addr(value);
             break;
         default:
             LOG("WARNING - Unsupported expression type %d for %s", config.fields[fieldPos]->type, value);

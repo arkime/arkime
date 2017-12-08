@@ -50,7 +50,7 @@
             "dstRIR" : "TEST",
             "srcPackets" : 1,
             "fileIds" : [],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstASN" : "AS0001 Cool Beans!",
             "srcMac" : [
                "00:13:72:c4:f1:e1"
@@ -63,7 +63,7 @@
                "udp",
                "dns"
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "timestamp" : "SET",
             "segments" : 1,
             "srcBytes" : 72,

@@ -672,13 +672,16 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_IP: {
-            const uint32_t        value = session->fields[pos]->i;
+            ghash = session->fields[pos]->ghash;
             char                 *as;
             char                 *g;
             char                 *rir;
             int                   asFree;
 
-            moloch_db_geo_lookup4(session, value, &g, &as, &rir, &asFree);
+            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_next (&iter, &ikey, NULL);
+
+            moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &as, &rir, &asFree);
             if (g) {
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, g);
             }
@@ -696,81 +699,15 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, rir);
             }
 
-            snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
+            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
+                uint32_t ip = MOLOCH_V6_TO_V4(*(struct in6_addr *)ikey);
+                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            } else {
+                inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
+            }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":\"%s\",", config.fields[pos]->dbField, ipsrc);
             }
             break;
-        case MOLOCH_FIELD_TYPE_IP_HASH: {
-            ihash = session->fields[pos]->ihash;
-            if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
-            }
-
-            char                 *as[MAX_IPS];
-            char                 *g[MAX_IPS];
-            char                 *rir[MAX_IPS];
-            int                   asFree[MAX_IPS];
-            int                   i;
-            int                   cnt = 0;
-
-            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            HASH_FORALL(i_, *ihash, hint,
-                moloch_db_geo_lookup4(session, hint->i_hash, &g[cnt], &as[cnt], &rir[cnt], &asFree[cnt]);
-                cnt++;
-                if (cnt >= MAX_IPS)
-                    break;
-
-                const uint32_t value = hint->i_hash;
-                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
-                BSB_EXPORT_sprintf(jbsb, "\"%s\",", ipsrc);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
-
-            BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":[", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
-            for (i = 0; i < cnt; i++) {
-                if (g[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\",", g[i]);
-                } else {
-                    BSB_EXPORT_cstr(jbsb, "\"---\",");
-                }
-            }
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
-
-            BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":[", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
-            for (i = 0; i < cnt; i++) {
-                if (as[i]) {
-                    moloch_db_js0n_str(&jbsb, (unsigned char*)as[i], TRUE);
-                    BSB_EXPORT_u08(jbsb, ',');
-                    if(asFree[i])
-                        free(as[i]);
-                } else {
-                    BSB_EXPORT_cstr(jbsb, "\"---\",");
-                }
-            }
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
-
-            BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":[", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
-            for (i = 0; i < cnt; i++) {
-                if (rir[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\",", rir[i]);
-                } else {
-                    BSB_EXPORT_cstr(jbsb, "\"\",");
-                }
-            }
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
-
-            if (freeField) {
-                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
-                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
-                );
-                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
-            }
-            break;
-        }
         case MOLOCH_FIELD_TYPE_IP_GHASH: {
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
@@ -787,14 +724,18 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                moloch_db_geo_lookup4(session, (int)(long)ikey, &g[cnt], &as[cnt], &rir[cnt], &asFree[cnt]);
+                moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g[cnt], &as[cnt], &rir[cnt], &asFree[cnt]);
                 cnt++;
                 if (cnt >= MAX_IPS)
                     break;
+               
+                if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
+                    uint32_t ip = MOLOCH_V6_TO_V4(*(struct in6_addr *)ikey);
+                    snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                } else {
+                    inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
+                }
 
-                //const uint32_t value = htonl((int)(long)ikey);
-                const uint32_t value = (int)(long)ikey;
-                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
                 BSB_EXPORT_sprintf(jbsb, "\"%s\",", ipsrc);
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma

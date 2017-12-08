@@ -35,7 +35,7 @@
             "dstPort" : 25,
             "length" : 128,
             "srcBytes" : 1011,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcGEO" : "RUS",
             "srcPayload8" : "45484c4f20787878",
             "srcASN" : "AS0000 This is neat",
@@ -127,7 +127,7 @@
             "dstPayload8" : "3232302d78787878",
             "srcMacCnt" : 1,
             "ipProtocol" : 6,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "fileIds" : [],
             "packetPosArray" : [
                24,

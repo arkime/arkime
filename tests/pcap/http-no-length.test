@@ -151,7 +151,7 @@
             "fileIds" : [],
             "srcBytes" : 734,
             "ipProtocol" : 6,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "packetPosArray" : [
                24,
                106,
@@ -186,7 +186,7 @@
             "tagsCnt" : 2,
             "dstMacCnt" : 1,
             "node" : "test",
-            "ipDst" : "10.0.0.2"
+            "dstIp" : "10.0.0.2"
          }
       }
    ]

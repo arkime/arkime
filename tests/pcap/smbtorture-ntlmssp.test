@@ -69,9 +69,9 @@
             "firstPacket" : 1132371118535,
             "protocolCnt" : 2,
             "fileIds" : [],
-            "ipSrc" : "192.168.114.1",
+            "srcIp" : "192.168.114.1",
             "length" : 56,
-            "ipDst" : "192.168.114.129",
+            "dstIp" : "192.168.114.129",
             "lastPacket" : 1132371118592,
             "srcMacCnt" : 1,
             "packetPosArray" : [

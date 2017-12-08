@@ -44,7 +44,7 @@
             "fileIds" : [],
             "dstBytes" : 170,
             "totPackets" : 2,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcBytes" : 170,
             "srcPackets" : 1,
             "dstASN" : "AS0001 Cool Beans!",
@@ -53,7 +53,7 @@
                "srcip",
                "dstip"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcMac" : [
                "3c:8a:b0:6f:27:c5",
                "3c:8a:b0:6e:77:c5"

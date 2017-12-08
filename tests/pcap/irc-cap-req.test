@@ -24,8 +24,8 @@
                "tcp"
             ],
             "dstDataBytes" : 1219,
-            "ipDst" : "10.11.11.11",
-            "ipSrc" : "10.10.10.10",
+            "dstIp" : "10.11.11.11",
+            "srcIp" : "10.10.10.10",
             "totBytes" : 3177,
             "packetPosArray" : [
                24,

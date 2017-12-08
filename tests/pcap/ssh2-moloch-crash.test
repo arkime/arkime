@@ -98,7 +98,7 @@
             "totDataBytes" : 2516,
             "srcPort" : 61672,
             "srcASN" : "AS0000 This is neat",
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstBytes" : 2037,
             "protocol" : [
                "ssh",
@@ -106,7 +106,7 @@
             ],
             "srcPayload8" : "5353482d322e302d",
             "dstMacCnt" : 2,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "timestamp" : "SET",
             "dstPayload8" : "5353482d312e3939",
             "ipProtocol" : 6,

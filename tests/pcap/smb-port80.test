@@ -23,7 +23,7 @@
             "srcDataBytes" : 168,
             "node" : "test",
             "srcGEO" : "CAN",
-            "ipSrc" : "10.0.0.2",
+            "srcIp" : "10.0.0.2",
             "protocol" : [
                "smb",
                "tcp"
@@ -38,7 +38,7 @@
                "syn-ack" : 1
             },
             "timestamp" : "SET",
-            "ipDst" : "10.0.0.1",
+            "dstIp" : "10.0.0.1",
             "length" : 784,
             "srcBytes" : 506,
             "ipProtocol" : 6,

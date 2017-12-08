@@ -21,7 +21,7 @@
                "srcip",
                "dstip"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "node" : "test",
             "length" : 181520,
             "srcGEO" : "RUS",
@@ -32,7 +32,7 @@
                "ldap",
                "tcp"
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "test" : {
                "GEO" : [
                   "RUS"

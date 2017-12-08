@@ -150,7 +150,7 @@
             "totPackets" : 14,
             "timestamp" : "SET",
             "protocolCnt" : 3,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "dstMacCnt" : 2,
             "dstRIR" : "TEST",
             "length" : 117939,
@@ -197,7 +197,7 @@
             "lastPacket" : 1385474412431,
             "srcPayload8" : "050100050100030e",
             "dstGEO" : "CAN",
-            "ipDst" : "10.0.0.2"
+            "dstIp" : "10.0.0.2"
          }
       }
    ]

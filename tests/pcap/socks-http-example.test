@@ -17,9 +17,9 @@
             "totPackets" : 14,
             "dstPayload8" : "005adfb20ab49cf9",
             "dstBytes" : 2003,
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "totBytes" : 2698,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "protocol" : [
                "http",
                "socks",
@@ -286,7 +286,7 @@
                "port" : 80,
                "host" : "www.example.com"
             },
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "protocol" : [
                "http",
                "socks",
@@ -295,7 +295,7 @@
             "totBytes" : 2780,
             "dstBytes" : 2069,
             "dstPayload8" : "005adfb30ab49cf9",
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "totPackets" : 15,
             "totDataBytes" : 1770,
             "tcpflags" : {
@@ -464,9 +464,9 @@
             "totDataBytes" : 1763,
             "dstBytes" : 2073,
             "dstPayload8" : "0500050000010ab4",
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "totPackets" : 17,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "protocol" : [
                "http",
                "socks",

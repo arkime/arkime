@@ -63,10 +63,10 @@
             "packetLenArray" : [
                106
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcDataBytes" : 82,
             "dstGEO" : "CAN",
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstRIR" : "TEST",
             "srcASN" : "AS0000 This is neat",
             "dstMacCnt" : 1,
@@ -88,7 +88,7 @@
       {
          "body" : {
             "srcASN" : "AS0002 Hmm!@#$%^&*()",
-            "ipDst" : "10.0.0.4",
+            "dstIp" : "10.0.0.4",
             "packetPosArray" : [
                130
             ],
@@ -103,7 +103,7 @@
             "node" : "test",
             "totPackets" : 1,
             "srcDataBytes" : 171,
-            "ipSrc" : "10.0.0.3",
+            "srcIp" : "10.0.0.3",
             "packetLenArray" : [
                195
             ],
@@ -168,14 +168,14 @@
                "ack" : 0,
                "rst" : 0
             },
-            "ipDst" : "10.0.0.5",
+            "dstIp" : "10.0.0.5",
             "srcDataBytes" : 86,
             "packetLenArray" : [
                86,
                86,
                160
             ],
-            "ipSrc" : "10.0.0.6",
+            "srcIp" : "10.0.0.6",
             "totDataBytes" : 86,
             "firstPacket" : 1483325250913,
             "srcPayload8" : "5253502f312e3020",
@@ -219,7 +219,7 @@
                86
             ],
             "ipProtocol" : 17,
-            "ipSrc" : "10.0.0.7",
+            "srcIp" : "10.0.0.7",
             "srcBytes" : 70,
             "srcPackets" : 1,
             "srcDataBytes" : 62,
@@ -251,7 +251,7 @@
             ],
             "srcPort" : 1144,
             "length" : 0,
-            "ipDst" : "10.0.0.10",
+            "dstIp" : "10.0.0.10",
             "protocolCnt" : 2,
             "fileIds" : [],
             "lastPacket" : 1483326849006
@@ -273,7 +273,7 @@
          "body" : {
             "fileIds" : [],
             "protocolCnt" : 2,
-            "ipDst" : "10.0.0.11",
+            "dstIp" : "10.0.0.11",
             "lastPacket" : 1483331734283,
             "srcPort" : 62919,
             "dstMac" : [
@@ -303,7 +303,7 @@
             "firstPacket" : 1483331734283,
             "totDataBytes" : 62,
             "srcBytes" : 70,
-            "ipSrc" : "10.0.0.8",
+            "srcIp" : "10.0.0.8",
             "packetLenArray" : [
                86
             ],
@@ -316,7 +316,7 @@
       },
       {
          "body" : {
-            "ipDst" : "10.0.0.12",
+            "dstIp" : "10.0.0.12",
             "protocolCnt" : 2,
             "fileIds" : [],
             "lastPacket" : 1483331743573,
@@ -348,7 +348,7 @@
             "dstPort" : 3478,
             "totDataBytes" : 67,
             "srcBytes" : 75,
-            "ipSrc" : "10.0.0.9",
+            "srcIp" : "10.0.0.9",
             "packetLenArray" : [
                91
             ],

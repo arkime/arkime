@@ -11,7 +11,7 @@
                "dstip"
             ],
             "srcASN" : "AS0000 This is neat",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "dstPackets" : 1,
             "srcPort" : 45210,
             "dstASN" : "AS0001 Cool Beans!",
@@ -93,7 +93,7 @@
                "udp",
                "radius"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "packetPosArray" : [
                24,
                429

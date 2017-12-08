@@ -21,7 +21,7 @@
                "srcip"
             ],
             "dstPackets" : 7,
-            "ipDst" : "64.12.168.40",
+            "dstIp" : "64.12.168.40",
             "totPackets" : 16,
             "email" : {
                "srcCnt" : 1,
@@ -122,7 +122,7 @@
                "00:0a:f3:31:84:00"
             ],
             "protocolCnt" : 2,
-            "ipSrc" : "10.0.0.1"
+            "srcIp" : "10.0.0.1"
          },
          "header" : {
             "index" : {

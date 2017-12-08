@@ -54,7 +54,7 @@
             "length" : 4258,
             "srcPayload8" : "00000054ff534d42",
             "dstPayload8" : "000000cdff534d42",
-            "ipDst" : "10.10.0.2",
+            "dstIp" : "10.10.0.2",
             "dstMac" : [
                "00:50:56:a8:45:c0"
             ],
@@ -102,7 +102,7 @@
             "lastPacket" : 1429783877023,
             "srcPort" : 2204,
             "ipProtocol" : 6,
-            "ipSrc" : "10.10.0.3",
+            "srcIp" : "10.10.0.3",
             "segments" : 1,
             "totDataBytes" : 1844,
             "dstPort" : 445,

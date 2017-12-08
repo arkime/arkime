@@ -3,7 +3,7 @@
       {
          "body" : {
             "node" : "test",
-            "ipDst" : "52.43.228.156",
+            "dstIp" : "52.43.228.156",
             "totDataBytes" : 1339,
             "ipProtocol" : 6,
             "dstBytes" : 1800,
@@ -101,7 +101,7 @@
             "dstPackets" : 4,
             "dstDataBytes" : 1167,
             "fileIds" : [],
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "dstASN" : "AS16509 Amazon.com, Inc.",
             "dstGEO" : "USA",
             "tcpflags" : {

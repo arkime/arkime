@@ -13,7 +13,7 @@
                "tcp"
             ],
             "dstPayload8" : "3232302057656c63",
-            "ipDst" : "129.21.171.72",
+            "dstIp" : "129.21.171.72",
             "srcMacCnt" : 1,
             "dstASN" : "AS4385 Rochester Institute of Technology",
             "length" : 78,
@@ -81,7 +81,7 @@
             "firstPacket" : 1454301530932,
             "dstMacCnt" : 1,
             "srcBytes" : 376,
-            "ipSrc" : "10.10.30.26",
+            "srcIp" : "10.10.30.26",
             "timestamp" : "SET",
             "srcPackets" : 5
          }

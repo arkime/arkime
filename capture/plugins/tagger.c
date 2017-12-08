@@ -162,34 +162,27 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
     }
 
-    // ALW - Fix when we support ipv6 for other ips
-    prefix.family = AF_INET;
-    prefix.bitlen = 32;
     if (httpXffField != -1 && session->fields[httpXffField]) {
-        if (config.fields[httpXffField]->type == MOLOCH_FIELD_TYPE_IP_HASH) {
-            MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
-            MolochInt_t        *xff;
+        GHashTable            *ghash;
+        GHashTableIter         iter;
+        gpointer               ikey;
 
-            HASH_FORALL(i_, *ihash, xff,
-                prefix.add.sin.s_addr = xff->i_hash;
-                cnt = patricia_search_all(allIps, &prefix, 1, nodes);
-                for (i = 0; i < cnt; i++) {
-                    tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
-                }
-            );
-        } else {
-            GHashTable            *ghash;
-            GHashTableIter         iter;
-            gpointer               ikey;
+        ghash = session->fields[httpXffField]->ghash;
+        g_hash_table_iter_init (&iter, ghash);
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr*)ikey)) {
+                prefix.family = AF_INET;
+                prefix.bitlen = 32;
+                prefix.add.sin.s_addr = MOLOCH_V6_TO_V4(*(struct in6_addr*)ikey);
+            } else {
+                prefix.family = AF_INET6;
+                prefix.bitlen = 128;
+                memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
+            }
 
-            ghash = session->fields[httpXffField]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                prefix.add.sin.s_addr = (int)(long)ikey;
-                cnt = patricia_search_all(allIps, &prefix, 1, nodes);
-                for (i = 0; i < cnt; i++) {
-                    tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
-                }
+            cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+            for (i = 0; i < cnt; i++) {
+                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
             }
         }
     }

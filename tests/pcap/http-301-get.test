@@ -11,11 +11,11 @@
             "dstPort" : 80,
             "firstPacket" : 1385394928482,
             "srcBytes" : 487,
-            "ipDst" : "192.30.252.130",
+            "dstIp" : "192.30.252.130",
             "protocolCnt" : 2,
             "srcGEO" : "USA",
             "srcDataBytes" : 145,
-            "ipSrc" : "10.180.156.141",
+            "srcIp" : "10.180.156.141",
             "srcPackets" : 5,
             "fileIds" : [],
             "protocol" : [

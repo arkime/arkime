@@ -113,7 +113,7 @@
                "md5Cnt" : 1
             },
             "dstPort" : 80,
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "ipProtocol" : 6,
             "dstBytes" : 5773,
             "dstMacCnt" : 1,
@@ -135,7 +135,7 @@
             },
             "srcPort" : 61450,
             "totBytes" : 6465,
-            "ipSrc" : "10.180.156.141",
+            "srcIp" : "10.180.156.141",
             "srcDataBytes" : 152,
             "srcMac" : [
                "00:1f:5b:ff:51:cb"

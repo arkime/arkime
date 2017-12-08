@@ -41,7 +41,7 @@
             "srcMacCnt" : 1,
             "timestamp" : "SET",
             "dstPort" : 9092,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "protocolCnt" : 2,
             "vlan" : [
                300
@@ -59,7 +59,7 @@
                302,
                467
             ],
-            "ipDst" : "10.176.192.13",
+            "dstIp" : "10.176.192.13",
             "fileIds" : [],
             "tagsCnt" : 1,
             "totPackets" : 5,

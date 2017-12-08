@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "firstPacket" : 1404135320459,
             "srcASN" : "AS0000 This is neat",
             "http" : {
@@ -204,7 +204,7 @@
             ],
             "lastPacket" : 1404135330336,
             "srcPort" : 61462,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcMac" : [
                "a4:93:4c:43:13:9b"
             ],

@@ -55,7 +55,7 @@
                "psh" : 11,
                "fin" : 1
             },
-            "ipSrc" : "127.0.0.1",
+            "srcIp" : "127.0.0.1",
             "srcMacCnt" : 1,
             "packetLenArray" : [
                90,
@@ -147,7 +147,7 @@
             "protocolCnt" : 2,
             "totBytes" : 11131,
             "dstPackets" : 13,
-            "ipDst" : "127.0.0.1"
+            "dstIp" : "127.0.0.1"
          }
       }
    ]

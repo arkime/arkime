@@ -133,7 +133,7 @@
             "ipProtocol" : 6,
             "dstPayload8" : "32323020616f6c6d",
             "srcGEO" : "RUS",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "dstPort" : 25,
             "srcDataBytes" : 1834,
             "srcPayload8" : "45484c4f20736d74",
@@ -181,7 +181,7 @@
                82,
                82
             ],
-            "ipDst" : "64.236.64.226",
+            "dstIp" : "64.236.64.226",
             "dstASN" : "AS1668 AOL Transit Data Network",
             "dstMacCnt" : 1
          }

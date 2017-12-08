@@ -49,7 +49,7 @@
                   "AS0000 This is neat"
                ]
             },
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],
@@ -81,7 +81,7 @@
             "srcBytes" : 187,
             "srcDataBytes" : 5,
             "node" : "test",
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "protocolCnt" : 2,
             "tagsCnt" : 2,
             "dstBytes" : 66,
@@ -125,7 +125,7 @@
             "srcPort" : 54869,
             "srcBytes" : 0,
             "srcDataBytes" : 0,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "node" : "test",
             "tagsCnt" : 2,
             "protocolCnt" : 2,
@@ -176,7 +176,7 @@
             "packetLenArray" : [
                76
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],

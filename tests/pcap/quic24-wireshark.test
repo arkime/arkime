@@ -19,7 +19,7 @@
             "lastPacket" : 1429686316327,
             "firstPacket" : 1429686316293,
             "srcPackets" : 3,
-            "ipDst" : "216.58.208.195",
+            "dstIp" : "216.58.208.195",
             "dstBytes" : 2784,
             "timestamp" : "SET",
             "fileIds" : [],
@@ -66,7 +66,7 @@
             },
             "dstPort" : 443,
             "ipProtocol" : 17,
-            "ipSrc" : "10.44.100.22",
+            "srcIp" : "10.44.100.22",
             "totDataBytes" : 5610,
             "srcPayload8" : "0d00db40daa3bbe2"
          },

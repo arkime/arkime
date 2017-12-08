@@ -55,7 +55,7 @@
             ],
             "srcDataBytes" : 0,
             "totPackets" : 4,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "segments" : 1,
             "srcPackets" : 2,
             "tags" : [
@@ -66,7 +66,7 @@
             "firstPacket" : 1387759542002,
             "srcMacCnt" : 1,
             "ipProtocol" : 6,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "totDataBytes" : 18,
             "dstDataBytes" : 18,
             "tagsCnt" : 2,

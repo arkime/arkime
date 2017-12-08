@@ -38,7 +38,7 @@
                "00:1d:b5:ce:ef:c1"
             ],
             "length" : 973,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "tcpflags" : {
                "urg" : 0,
                "psh" : 1,
@@ -69,7 +69,7 @@
             "dstPackets" : 2,
             "srcASN" : "AS0000 This is neat",
             "srcBytes" : 122,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcGEO" : "RUS",
             "dstASN" : "AS0001 Cool Beans!",
             "totPackets" : 4,

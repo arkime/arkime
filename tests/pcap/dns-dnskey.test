@@ -52,7 +52,7 @@
             "srcMac" : [
                "00:1a:e3:dc:2e:c0"
             ],
-            "ipDst" : "8.8.8.8",
+            "dstIp" : "8.8.8.8",
             "dns" : {
                "opcodeCnt" : 1,
                "qtCnt" : 1,
@@ -84,7 +84,7 @@
                24
             ],
             "srcDataBytes" : 66,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "protocolCnt" : 2,
             "dstPackets" : 0,
             "totPackets" : 1,

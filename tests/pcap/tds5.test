@@ -60,7 +60,7 @@
                "00:22:83:3f:17:c5",
                "2c:6b:f5:d6:17:c5"
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstPayload8" : "040100a300000000",
             "segments" : 1,
             "totBytes" : 1514,
@@ -84,7 +84,7 @@
                194
             ],
             "srcMacCnt" : 2,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "fileIds" : [],
             "firstPacket" : 1465335293231,
             "user" : [

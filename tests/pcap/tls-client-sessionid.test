@@ -8,55 +8,23 @@
             }
          },
          "body" : {
-            "lastPacket" : 1420490708431,
-            "dstRIR" : "ARIN",
-            "protocolCnt" : 2,
-            "totDataBytes" : 1077,
-            "http" : {
-               "hostCnt" : 1,
-               "host" : [
-                  "bl.a.im"
-               ]
-            },
-            "srcPayload8" : "16030100c0010000",
-            "node" : "test",
-            "dstMacCnt" : 1,
-            "dstMac" : [
-               "60:73:5c:b4:90:00"
-            ],
-            "totPackets" : 16,
-            "dstBytes" : 983,
-            "length" : 91,
-            "srcMacCnt" : 1,
-            "dstDataBytes" : 459,
             "srcMac" : [
                "b8:ca:3a:8d:c1:87"
             ],
-            "timestamp" : "SET",
-            "packetPosArray" : [
-               24,
-               102,
-               180,
-               256,
-               523,
-               599,
-               814,
-               943,
-               1019,
-               1451,
-               1527,
-               1874,
-               1981,
-               2057,
-               2133,
-               2209
-            ],
-            "ipDst" : "74.217.87.13",
-            "firstPacket" : 1420490708340,
+            "totBytes" : 2005,
+            "dstRIR" : "ARIN",
+            "fileIds" : [],
+            "http" : {
+               "host" : [
+                  "bl.a.im"
+               ],
+               "hostCnt" : 1
+            },
+            "length" : 91,
             "dstPackets" : 9,
             "srcPort" : 62938,
-            "segments" : 1,
-            "dstPort" : 443,
+            "srcBytes" : 1022,
+            "dstGEO" : "USA",
             "packetLenArray" : [
                78,
                78,
@@ -75,49 +43,81 @@
                76,
                76
             ],
-            "totBytes" : 2005,
+            "segments" : 1,
+            "dstPort" : 443,
+            "totPackets" : 16,
+            "timestamp" : "SET",
+            "node" : "test",
+            "packetPosArray" : [
+               24,
+               102,
+               180,
+               256,
+               523,
+               599,
+               814,
+               943,
+               1019,
+               1451,
+               1527,
+               1874,
+               1981,
+               2057,
+               2133,
+               2209
+            ],
+            "tls" : {
+               "ja3" : [
+                  "42e6d8174e649efbf780f0d9b6ef9610"
+               ],
+               "ja3Cnt" : 1,
+               "cipher" : [
+                  "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
+               ],
+               "versionCnt" : 1,
+               "srcSessionId" : [
+                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+               ],
+               "version" : [
+                  "TLSv1"
+               ]
+            },
+            "protocolCnt" : 2,
+            "srcPackets" : 7,
+            "totDataBytes" : 1077,
+            "dstPayload8" : "1603010051020000",
+            "dstMacCnt" : 1,
+            "srcDataBytes" : 618,
+            "srcMacCnt" : 1,
             "protocol" : [
                "tls",
                "tcp"
             ],
-            "srcPackets" : 7,
-            "ipProtocol" : 6,
-            "fileIds" : [],
-            "dstPayload8" : "1603010051020000",
-            "dstGEO" : "USA",
-            "ipSrc" : "10.23.46.37",
-            "tls" : {
-               "cipherCnt" : 1,
-               "versionCnt" : 1,
-               "ja3" : [
-                  "42e6d8174e649efbf780f0d9b6ef9610"
-               ],
-               "srcSessionId" : [
-                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-               ],
-               "ja3Cnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "cipher" : [
-                  "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
-               ],
-               "dstSessionId" : [
-                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-               ]
-            },
+            "dstMac" : [
+               "60:73:5c:b4:90:00"
+            ],
+            "dstASN" : "AS10913 Internap Network Services Corporation",
+            "firstPacket" : 1420490708340,
+            "dstBytes" : 983,
+            "lastPacket" : 1420490708431,
+            "srcIp" : "10.23.46.37",
             "tcpflags" : {
-               "psh" : 6,
                "rst" : 0,
-               "urg" : 0,
                "syn" : 1,
-               "ack" : 6,
+               "fin" : 2,
+               "psh" : 6,
                "syn-ack" : 1,
-               "fin" : 2
+               "urg" : 0,
+               "ack" : 6
             },
-            "srcDataBytes" : 618,
-            "srcBytes" : 1022,
-            "dstASN" : "AS10913 Internap Network Services Corporation"
+            "srcPayload8" : "16030100c0010000",
+            "dstDataBytes" : 459,
+            "dstIp" : "74.217.87.13",
+            "ipProtocol" : 6
          }
       }
    ]

@@ -20,7 +20,7 @@
                181,
                89
             ],
-            "ipSrc" : "217.70.190.232",
+            "srcIp" : "217.70.190.232",
             "srcDataBytes" : 157,
             "totBytes" : 238,
             "protocol" : [
@@ -73,7 +73,7 @@
             ],
             "protocolCnt" : 2,
             "node" : "test",
-            "ipDst" : "204.62.14.153",
+            "dstIp" : "204.62.14.153",
             "totPackets" : 2,
             "srcGEO" : "FRA",
             "dstBytes" : 73,

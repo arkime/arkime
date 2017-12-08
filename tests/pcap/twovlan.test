@@ -49,7 +49,7 @@
                200,
                201
             ],
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "totDataBytes" : 4457,
             "dstRIR" : "TEST",
             "lastPacket" : 1456042921761,
@@ -148,7 +148,7 @@
                "methodCnt" : 1,
                "clientVersionCnt" : 1
             },
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "test" : {
                "number" : [
                   33554442

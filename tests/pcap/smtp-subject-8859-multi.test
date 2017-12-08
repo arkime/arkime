@@ -10,7 +10,7 @@
          "body" : {
             "dstASN" : "AS1668 AOL Transit Data Network",
             "tagsCnt" : 1,
-            "ipDst" : "64.236.64.225",
+            "dstIp" : "64.236.64.225",
             "segments" : 1,
             "fileIds" : [],
             "dstMac" : [
@@ -174,7 +174,7 @@
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "ipSrc" : "10.180.156.249",
+            "srcIp" : "10.180.156.249",
             "totPackets" : 28,
             "length" : 302,
             "srcGEO" : "USA",

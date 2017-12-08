@@ -228,10 +228,10 @@ GPtrArray *moloch_rules_get_values(YamlNode_t *parent, char *path)
 /******************************************************************************/
 void moloch_rules_process_add_field(MolochRule_t *rule, int pos, char *key)
 {
-    struct in_addr in;
     uint32_t       n;
     char          *key2;
     GPtrArray     *rules;
+    void          *v;
 
     config.fields[pos]->ruleEnabled = 1;
 
@@ -239,6 +239,7 @@ void moloch_rules_process_add_field(MolochRule_t *rule, int pos, char *key)
     case MOLOCH_FIELD_TYPE_INT:
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
     case MOLOCH_FIELD_TYPE_INT_HASH:
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
         if (!fieldsHash[pos])
             fieldsHash[pos] = g_hash_table_new(NULL, NULL);
 
@@ -252,23 +253,23 @@ void moloch_rules_process_add_field(MolochRule_t *rule, int pos, char *key)
         }
         g_ptr_array_add(rules, rule);
         break;
+
     case MOLOCH_FIELD_TYPE_IP:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
-    case MOLOCH_FIELD_TYPE_INT_GHASH:
-    case MOLOCH_FIELD_TYPE_IP_HASH:
         if (!fieldsHash[pos])
-            fieldsHash[pos] = g_hash_table_new(NULL, NULL);
+            fieldsHash[pos] = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
 
-        inet_aton(key, &in);
-        g_hash_table_add(rule->hash[pos], (void *)(long)in.s_addr);
+        v = moloch_field_parse_ip(key);
+        g_hash_table_add(rule->hash[pos], v);
 
-        rules = g_hash_table_lookup(fieldsHash[pos], (void *)(long)in.s_addr);
+        rules = g_hash_table_lookup(fieldsHash[pos], v);
         if (!rules) {
             rules = g_ptr_array_new();
-            g_hash_table_insert(fieldsHash[pos], (void *)(long)in.s_addr, rules);
+            g_hash_table_insert(fieldsHash[pos], v, rules);
         }
         g_ptr_array_add(rules, rule);
         break;
+
 
     case MOLOCH_FIELD_TYPE_STR:
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
@@ -378,12 +379,13 @@ void moloch_rules_process_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_INT:
             case MOLOCH_FIELD_TYPE_INT_ARRAY:
             case MOLOCH_FIELD_TYPE_INT_HASH:
-            case MOLOCH_FIELD_TYPE_IP:
-            case MOLOCH_FIELD_TYPE_IP_GHASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
-            case MOLOCH_FIELD_TYPE_IP_HASH:
                 rule->hash[pos] = g_hash_table_new(NULL, NULL);
                 break;
+
+            case MOLOCH_FIELD_TYPE_IP:
+            case MOLOCH_FIELD_TYPE_IP_GHASH:
+                rule->hash[pos] = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
 
             case MOLOCH_FIELD_TYPE_STR:
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
@@ -503,7 +505,6 @@ void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule
             }
             break;
         case MOLOCH_FIELD_TYPE_INT_HASH:
-        case MOLOCH_FIELD_TYPE_IP_HASH:
             ihash = session->fields[p]->ihash;
             good = 0;
             HASH_FORALL(i_, *ihash, hint,

@@ -4,7 +4,7 @@
          "body" : {
             "totBytes" : 1311,
             "length" : 1953,
-            "ipSrc" : "10.0.0.2",
+            "srcIp" : "10.0.0.2",
             "timestamp" : "SET",
             "srcPort" : 1087,
             "tagsCnt" : 2,
@@ -157,7 +157,7 @@
             "srcPackets" : 3,
             "segments" : 1,
             "dstPackets" : 3,
-            "ipDst" : "10.0.0.1",
+            "dstIp" : "10.0.0.1",
             "firstPacket" : 1414604109610,
             "dstGEO" : "RUS",
             "dstMacCnt" : 2,

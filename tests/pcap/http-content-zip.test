@@ -139,8 +139,8 @@
             "dstPackets" : 5,
             "protocolCnt" : 2,
             "tagsCnt" : 2,
-            "ipSrc" : "10.0.0.1",
-            "ipDst" : "10.0.0.2",
+            "srcIp" : "10.0.0.1",
+            "dstIp" : "10.0.0.2",
             "tcpflags" : {
                "syn-ack" : 1,
                "rst" : 0,

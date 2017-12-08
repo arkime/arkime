@@ -11,7 +11,7 @@
             "length" : 4376,
             "dstPort" : 0,
             "totBytes" : 196,
-            "ipDst" : "10.64.11.49",
+            "dstIp" : "10.64.11.49",
             "protocolCnt" : 1,
             "dstPackets" : 0,
             "dstMac" : [
@@ -39,7 +39,7 @@
                "icmp"
             ],
             "lastPacket" : 1335958317529,
-            "ipSrc" : "192.168.177.160",
+            "srcIp" : "192.168.177.160",
             "dstBytes" : 0,
             "packetLenArray" : [
                114,

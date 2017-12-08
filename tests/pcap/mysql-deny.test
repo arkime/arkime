@@ -20,7 +20,7 @@
             "srcPayload8" : "3d00000105a60f00",
             "dstPackets" : 5,
             "dstRIR" : "ARIN",
-            "ipDst" : "192.168.1.3",
+            "dstIp" : "192.168.1.3",
             "srcPackets" : 5,
             "srcRIR" : "ARIN",
             "totDataBytes" : 240,
@@ -30,7 +30,7 @@
             "dstMacCnt" : 1,
             "timestamp" : "SET",
             "dstPort" : 3306,
-            "ipSrc" : "192.168.1.3",
+            "srcIp" : "192.168.1.3",
             "mysql" : {
                "user" : "user0",
                "version" : "5.5.35-0FUNntu0.12.04.2"

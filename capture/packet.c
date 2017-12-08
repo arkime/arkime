@@ -685,8 +685,8 @@ LOCAL void *moloch_packet_thread(void *threadp)
             switch(packet->vpnType) {
             case MOLOCH_PACKET_VPNTYPE_GRE:
                 ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
-                moloch_field_int_add(greIpField, session, ip4->ip_src.s_addr);
-                moloch_field_int_add(greIpField, session, ip4->ip_dst.s_addr);
+                moloch_field_ip4_add(greIpField, session, ip4->ip_src.s_addr);
+                moloch_field_ip4_add(greIpField, session, ip4->ip_dst.s_addr);
                 moloch_session_add_protocol(session, "gre");
                 break;
             case MOLOCH_PACKET_VPNTYPE_PPPOE:

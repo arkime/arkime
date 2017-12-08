@@ -45,7 +45,7 @@
                82
             ],
             "dstPort" : 25,
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "firstPacket" : 1398431422481,
             "lastPacket" : 1398431453159,
             "fileIds" : [],
@@ -77,7 +77,7 @@
             },
             "dstRIR" : "TEST",
             "length" : 30678,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "dstPayload8" : "3232302d78787878",
             "dstPackets" : 14,
             "tags" : [

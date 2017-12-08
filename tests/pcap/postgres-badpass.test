@@ -50,7 +50,7 @@
                1124
             ],
             "ipProtocol" : 6,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "length" : 18,
             "dstMacCnt" : 1,
             "srcPort" : 53499,
@@ -112,7 +112,7 @@
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "totPackets" : 13,
             "postgresql" : {
                "app" : "psql",

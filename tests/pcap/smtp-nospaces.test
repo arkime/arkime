@@ -42,7 +42,7 @@
                   "reciever@example.com"
                ]
             },
-            "ipDst" : "127.0.0.1",
+            "dstIp" : "127.0.0.1",
             "protocol" : [
                "smtp",
                "tcp"
@@ -74,7 +74,7 @@
             "timestamp" : "SET",
             "dstBytes" : 872,
             "protocolCnt" : 2,
-            "ipSrc" : "127.0.0.1",
+            "srcIp" : "127.0.0.1",
             "srcDataBytes" : 82,
             "srcPort" : 42971,
             "srcMacCnt" : 1,

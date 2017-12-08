@@ -1,49 +1,50 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-141015",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "dstIp" : "74.125.228.238",
+            "dstDataBytes" : 4337,
+            "dstPackets" : 8,
             "srcPayload8" : "1603000087010000",
-            "protocolCnt" : 2,
-            "dstPort" : 443,
-            "srcPackets" : 12,
-            "ipSrc" : "10.0.0.1",
-            "tlscnt" : 3,
-            "tls" : {
-               "version" : [
-                  "SSLv3"
-               ],
-               "versionCnt" : 1,
-               "ja3" : [
-                  "f917ae2520ef9784557b0a3c02489c2c"
-               ],
-               "dstSessionId" : [
-                  "95c3c5ac6f647c1b7214c7bcf4387b6f34819f9f17095c690caafbdbcf6a36ec"
-               ],
-               "ja3Cnt" : 1,
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
-               ],
-               "cipherCnt" : 1
-            },
-            "srcMacCnt" : 1,
-            "ipDst" : "74.125.228.238",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
             "protocol" : [
                "tls",
                "tcp"
             ],
-            "dstDataBytes" : 4337,
+            "totPackets" : 20,
+            "srcPort" : 45680,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               222,
+               82,
+               1500,
+               82,
+               1500,
+               1342,
+               252,
+               82,
+               82,
+               82,
+               228,
+               153,
+               82,
+               109,
+               82,
+               82,
+               82
+            ],
+            "protocolCnt" : 2,
+            "lastPacket" : 1413337770679,
+            "ipProtocol" : 6,
             "srcBytes" : 1113,
-            "dstPayload8" : "1603000051020000",
+            "dstMacCnt" : 2,
+            "segments" : 1,
             "node" : "test",
+            "totBytes" : 5986,
+            "dstGEO" : "USA",
+            "dstPayload8" : "1603000051020000",
+            "srcMacCnt" : 1,
             "test" : {
                "RIR" : [
                   ""
@@ -51,18 +52,123 @@
                "ip" : [
                   "10.0.0.1"
                ],
-               "number" : [
-                  4007951690
-               ],
                "ASN" : [
                   "AS0000 This is neat"
                ],
-               "string.snow" : [
-                  "16777226:45680,-287015606:443"
-               ],
                "GEO" : [
                   "RUS"
+               ],
+               "number" : [
+                  4007951690
+               ],
+               "string.snow" : [
+                  "16777226:45680,-287015606:443"
                ]
+            },
+            "cert" : [
+               {
+                  "serial" : "12bbe6",
+                  "subjectON" : "GeoTrust Inc.",
+                  "issuerON" : "Equifax",
+                  "validDays" : 5936,
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "subjectCN" : [
+                     "geotrust global ca"
+                  ],
+                  "notAfter" : 1534824000000,
+                  "notBefore" : 1021953600000
+               },
+               {
+                  "issuerON" : "GeoTrust Inc.",
+                  "validDays" : 1366,
+                  "subjectON" : "Google Inc",
+                  "serial" : "023a76",
+                  "subjectCN" : [
+                     "google internet authority g2"
+                  ],
+                  "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
+                  "notBefore" : 1365174955000,
+                  "issuerCN" : [
+                     "geotrust global ca"
+                  ],
+                  "notAfter" : 1483228799000
+               },
+               {
+                  "notBefore" : 1411553285000,
+                  "issuerCN" : [
+                     "google internet authority g2"
+                  ],
+                  "notAfter" : 1419292800000,
+                  "alt" : [
+                     "*.google.com",
+                     "*.android.com",
+                     "*.appengine.google.com",
+                     "*.cloud.google.com",
+                     "*.google-analytics.com",
+                     "*.google.ca",
+                     "*.google.cl",
+                     "*.google.co.in",
+                     "*.google.co.jp",
+                     "*.google.co.uk",
+                     "*.google.com.ar",
+                     "*.google.com.au",
+                     "*.google.com.br",
+                     "*.google.com.co",
+                     "*.google.com.mx",
+                     "*.google.com.tr",
+                     "*.google.com.vn",
+                     "*.google.de",
+                     "*.google.es",
+                     "*.google.fr",
+                     "*.google.hu",
+                     "*.google.it",
+                     "*.google.nl",
+                     "*.google.pl",
+                     "*.google.pt",
+                     "*.googleadapis.com",
+                     "*.googleapis.cn",
+                     "*.googlecommerce.com",
+                     "*.googlevideo.com",
+                     "*.gstatic.cn",
+                     "*.gstatic.com",
+                     "*.gvt1.com",
+                     "*.gvt2.com",
+                     "*.urchin.com",
+                     "*.url.google.com",
+                     "*.youtube-nocookie.com",
+                     "*.youtube.com",
+                     "*.youtubeeducation.com",
+                     "*.ytimg.com",
+                     "android.com",
+                     "g.co",
+                     "goo.gl",
+                     "google-analytics.com",
+                     "google.com",
+                     "googlecommerce.com",
+                     "urchin.com",
+                     "youtu.be",
+                     "youtube.com",
+                     "youtubeeducation.com"
+                  ],
+                  "altCnt" : 49,
+                  "validDays" : 89,
+                  "issuerON" : "Google Inc",
+                  "subjectON" : "Google Inc",
+                  "serial" : "7a5b0bd895632f87",
+                  "subjectCN" : [
+                     "*.google.com"
+                  ],
+                  "hash" : "0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91"
+               }
+            ],
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "psh" : 6,
+               "ack" : 10,
+               "urg" : 0,
+               "rst" : 0,
+               "fin" : 2,
+               "syn" : 1
             },
             "packetPosArray" : [
                24,
@@ -86,65 +192,55 @@
                6166,
                6248
             ],
-            "totPackets" : 20,
-            "firstPacket" : 1413337769995,
-            "srcPort" : 45680,
-            "segments" : 1,
-            "tagsCnt" : 1,
-            "timestamp" : "SET",
-            "lastPacket" : 1413337770679,
-            "dstBytes" : 4873,
             "totDataBytes" : 4650,
+            "dstBytes" : 4873,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstASN" : "AS15169 Google Inc.",
+            "srcDataBytes" : 313,
+            "certCnt" : 3,
+            "tls" : {
+               "dstSessionId" : [
+                  "95c3c5ac6f647c1b7214c7bcf4387b6f34819f9f17095c690caafbdbcf6a36ec"
+               ],
+               "version" : [
+                  "SSLv3"
+               ],
+               "ja3" : [
+                  "f917ae2520ef9784557b0a3c02489c2c"
+               ],
+               "versionCnt" : 1,
+               "ja3Cnt" : 1,
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
+               ],
+               "cipherCnt" : 1
+            },
             "tags" : [
                "srcip"
             ],
-            "dstASN" : "AS15169 Google Inc.",
-            "dstMacCnt" : 2,
-            "srcDataBytes" : 313,
-            "dstPackets" : 8,
+            "timestamp" : "SET",
+            "srcGEO" : "RUS",
+            "firstPacket" : 1413337769995,
+            "length" : 685,
             "dstRIR" : "ARIN",
             "srcASN" : "AS0000 This is neat",
-            "tcpflags" : {
-               "ack" : 10,
-               "syn" : 1,
-               "psh" : 6,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "fin" : 2
-            },
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               222,
-               82,
-               1500,
-               82,
-               1500,
-               1342,
-               252,
-               82,
-               82,
-               82,
-               228,
-               153,
-               82,
-               109,
-               82,
-               82,
-               82
-            ],
-            "srcGEO" : "RUS",
-            "length" : 685,
-            "dstGEO" : "USA",
-            "totBytes" : 5986,
+            "tagsCnt" : 1,
+            "srcPackets" : 12,
+            "dstPort" : 443,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "fileIds" : [],
-            "ipProtocol" : 6
+            "srcIp" : "10.0.0.1",
+            "fileIds" : []
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-141015"
+            }
          }
       }
    ]

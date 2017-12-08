@@ -9,7 +9,7 @@
          },
          "body" : {
             "fileIds" : [],
-            "ipDst" : "64.236.55.17",
+            "dstIp" : "64.236.55.17",
             "packetPosArray" : [
                24,
                114,
@@ -160,7 +160,7 @@
             ],
             "length" : 302,
             "totBytes" : 3458,
-            "ipSrc" : "10.180.156.249",
+            "srcIp" : "10.180.156.249",
             "srcPort" : 35803,
             "srcDataBytes" : 1101,
             "protocolCnt" : 2,

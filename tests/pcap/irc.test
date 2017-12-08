@@ -27,7 +27,7 @@
             "srcPayload8" : "5553455220787878",
             "fileIds" : [],
             "srcMacCnt" : 1,
-            "ipSrc" : "10.180.156.249",
+            "srcIp" : "10.180.156.249",
             "firstPacket" : 1387554241634,
             "srcGEO" : "USA",
             "timestamp" : "SET",
@@ -118,7 +118,7 @@
                "tcp"
             ],
             "dstMacCnt" : 2,
-            "ipDst" : "38.229.70.20",
+            "dstIp" : "38.229.70.20",
             "totPackets" : 29,
             "totDataBytes" : 7015,
             "segments" : 1,

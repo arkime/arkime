@@ -253,26 +253,22 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     case MOLOCH_FIELD_TYPE_STR_HASH:
         moloch_field_string_add(pos, session, s, l, TRUE);
         break;
-    case MOLOCH_FIELD_TYPE_IP_HASH:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
         int i;
         gchar **parts = g_strsplit(http->valueString[http->which]->str, ",", 0);
 
         for (i = 0; parts[i]; i++) {
-            gchar *ip = parts[i];
-            while (*ip == ' ')
-                ip++;
+            moloch_field_ip_add_str(pos, session, parts[i]);
 
-            in_addr_t ia = inet_addr(ip);
+            /* Add back maybe
             if (ia == 0 || ia == 0xffffffff) {
                 moloch_session_add_tag(session, "http:bad-xff");
                 if (config.debug)
                     LOG("INFO - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
                 continue;
             }
-
-            moloch_field_int_add(pos, session, ia);
+            */
         }
 
         g_strfreev(parts);

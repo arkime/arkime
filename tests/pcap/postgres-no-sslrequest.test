@@ -8,45 +8,52 @@
             }
          },
          "body" : {
-            "ipDst" : "127.0.0.1",
-            "srcMacCnt" : 1,
+            "ipProtocol" : 6,
+            "node" : "test",
+            "dstBytes" : 432,
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "dstPackets" : 4,
+            "dstPayload8" : "5200000008000000",
             "totDataBytes" : 256,
-            "length" : 104,
-            "ipSrc" : "127.0.0.1",
-            "srcBytes" : 566,
+            "firstPacket" : 1103485433560,
             "dstMacCnt" : 1,
+            "dstPort" : 5432,
+            "dstIp" : "127.0.0.1",
+            "srcPort" : 57827,
+            "timestamp" : "SET",
+            "protocolCnt" : 2,
+            "srcBytes" : 566,
+            "srcMacCnt" : 1,
+            "lastPacket" : 1103485433664,
+            "fileIds" : [],
+            "srcDataBytes" : 96,
+            "srcIp" : "127.0.0.1",
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 2,
+               "syn" : 1,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "psh" : 3,
+               "ack" : 4
+            },
+            "srcPackets" : 7,
+            "totBytes" : 998,
+            "segments" : 1,
+            "srcPayload8" : "0000005b00030000",
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "postgresql" : {
+               "user" : "user",
+               "db" : "dbdb"
+            },
             "protocol" : [
                "tcp",
                "postgresql"
             ],
-            "dstBytes" : 432,
-            "srcPackets" : 7,
-            "totPackets" : 11,
-            "firstPacket" : 1103485433560,
-            "srcDataBytes" : 96,
-            "segments" : 1,
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstDataBytes" : 160,
-            "lastPacket" : 1103485433664,
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               173,
-               82,
-               242,
-               82,
-               87,
-               82,
-               82,
-               82
-            ],
-            "protocolCnt" : 2,
-            "srcPort" : 57827,
-            "srcPayload8" : "0000005b00030000",
-            "timestamp" : "SET",
             "packetPosArray" : [
                24,
                114,
@@ -60,29 +67,22 @@
                1034,
                1116
             ],
-            "dstPayload8" : "5200000008000000",
-            "dstPackets" : 4,
-            "fileIds" : [],
-            "totBytes" : 998,
-            "tcpflags" : {
-               "psh" : 3,
-               "syn" : 1,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 4,
-               "rst" : 0
-            },
-            "srcMac" : [
-               "00:00:00:00:00:00"
+            "dstDataBytes" : 160,
+            "totPackets" : 11,
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               173,
+               82,
+               242,
+               82,
+               87,
+               82,
+               82,
+               82
             ],
-            "ipProtocol" : 6,
-            "dstPort" : 5432,
-            "postgresql" : {
-               "user" : "user",
-               "db" : "dbdb"
-            },
-            "node" : "test"
+            "length" : 104
          }
       }
    ]

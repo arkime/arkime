@@ -13,8 +13,8 @@
             "firstPacket" : 1132371118535,
             "timestamp" : "SET",
             "srcPort" : 52703,
-            "ipSrc" : "192.168.114.1",
-            "ipDst" : "192.168.114.129",
+            "srcIp" : "192.168.114.1",
+            "dstIp" : "192.168.114.129",
             "dstPort" : 445,
             "tags" : [
                "smb:bad-security-blob"

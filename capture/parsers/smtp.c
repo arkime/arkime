@@ -122,24 +122,13 @@ smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
     case MOLOCH_FIELD_TYPE_STR_HASH:
         moloch_field_string_add(pos, session, s, l, TRUE);
         break;
-    case MOLOCH_FIELD_TYPE_IP_HASH:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
         for (i = 0; parts[i]; i++) {
-            gchar *ip = parts[i];
-            while (*ip == ' ')
-                ip++;
-
-            in_addr_t ia = inet_addr(ip);
-            if (ia == 0 || ia == 0xffffffff) {
-                moloch_session_add_tag(session, "http:bad-xff");
-                LOG("ERROR - Didn't understand ip: %s %s %d", s, ip, ia);
-                continue;
-            }
-
-            moloch_field_int_add(pos, session, ia);
+            moloch_field_ip_add_str(pos, session, parts[i]);
         }
 
         g_strfreev(parts);
@@ -351,10 +340,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                     while (data < end && *data != ']') data++;
                     *data = 0;
                     data++;
-                    in_addr_t ia = inet_addr(ipstart);
-                    if (ia == 0 || ia == 0xffffffff)
-                        continue;
-                    moloch_field_int_add(ipField, session, ia);
+                    moloch_field_ip_add_str(ipField, session, ipstart);
                     continue;
                 }
 
@@ -389,10 +375,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
             char *ipstart = data;
             while (data < end && *data != ']') data++;
             *data = 0;
-            in_addr_t ia = inet_addr(ipstart);
-            if (ia == 0 || ia == 0xffffffff)
-                continue;
-            moloch_field_int_add(ipField, session, ia);
+            moloch_field_ip_add_str(ipField, session, ipstart);
         }
         data++;
     }
@@ -612,10 +595,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
                         char *ip = smtp_remove_matching(line->str+l+1, '[', ']');
-                        in_addr_t ia = inet_addr(ip);
-                        if (ia == 0 || ia == 0xffffffff)
-                            break;
-                        moloch_field_int_add(ipField, session, ia);
+                        moloch_field_ip_add_str(ipField, session, ip);
                     }
                 }
             }
@@ -949,7 +929,7 @@ void moloch_parser_init()
     ipField = moloch_field_define("email", "ip",
         "ip.email", "IP", "email.ip",
         "Email IP address",
-        MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        MOLOCH_FIELD_TYPE_IP_GHASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
         "category", "ip",
         NULL);

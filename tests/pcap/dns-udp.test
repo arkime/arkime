@@ -11,7 +11,7 @@
             "ipProtocol" : 17,
             "lastPacket" : 1385400647218,
             "srcPackets" : 1,
-            "ipDst" : "10.2.95.39",
+            "dstIp" : "10.2.95.39",
             "dstBytes" : 254,
             "srcGEO" : "USA",
             "dstMac" : [
@@ -71,7 +71,7 @@
             "srcDataBytes" : 66,
             "dstMacCnt" : 2,
             "timestamp" : "SET",
-            "ipSrc" : "10.180.156.141",
+            "srcIp" : "10.180.156.141",
             "srcPort" : 62563,
             "srcBytes" : 74,
             "totDataBytes" : 312,
@@ -94,7 +94,7 @@
       },
       {
          "body" : {
-            "ipDst" : "10.178.8.71",
+            "dstIp" : "10.178.8.71",
             "dstBytes" : 254,
             "lastPacket" : 1385400648228,
             "srcPackets" : 1,
@@ -118,7 +118,7 @@
             "totDataBytes" : 312,
             "srcBytes" : 74,
             "dstPayload8" : "e039818000010002",
-            "ipSrc" : "10.180.156.141",
+            "srcIp" : "10.180.156.141",
             "srcDataBytes" : 66,
             "dns" : {
                "opcode" : [
@@ -215,10 +215,10 @@
             "totDataBytes" : 88,
             "srcBytes" : 96,
             "dstBytes" : 0,
-            "ipDst" : "10.10.10.11",
+            "dstIp" : "10.10.10.11",
             "srcPort" : 5353,
             "srcPackets" : 1,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "lastPacket" : 1482767159342,
             "packetLenArray" : [
                112

@@ -41,7 +41,7 @@
                131
             ],
             "totDataBytes" : 2028,
-            "ipDst" : "192.168.170.20",
+            "dstIp" : "192.168.170.20",
             "node" : "test",
             "dstMacCnt" : 1,
             "dstPayload8" : "1032818000010001",
@@ -116,7 +116,7 @@
             "dstPort" : 53,
             "timestamp" : "SET",
             "srcDataBytes" : 796,
-            "ipSrc" : "192.168.170.8",
+            "srcIp" : "192.168.170.8",
             "length" : 271237,
             "lastPacket" : 1112172737733,
             "packetPosArray" : [
@@ -177,7 +177,7 @@
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
             ],
-            "ipDst" : "192.168.170.20",
+            "dstIp" : "192.168.170.20",
             "totDataBytes" : 171,
             "node" : "test",
             "dstMacCnt" : 1,
@@ -220,7 +220,7 @@
             ],
             "length" : 0,
             "lastPacket" : 1112172737737,
-            "ipSrc" : "192.168.170.8",
+            "srcIp" : "192.168.170.8",
             "srcDataBytes" : 74,
             "timestamp" : "SET",
             "srcPayload8" : "5a53010000010000",
@@ -276,10 +276,10 @@
             "dstPackets" : 1,
             "node" : "test",
             "dstMacCnt" : 1,
-            "ipDst" : "192.168.170.20",
+            "dstIp" : "192.168.170.20",
             "totDataBytes" : 217,
             "srcDataBytes" : 59,
-            "ipSrc" : "192.168.170.8",
+            "srcIp" : "192.168.170.8",
             "timestamp" : "SET",
             "lastPacket" : 1112172737758,
             "length" : 18,
@@ -318,7 +318,7 @@
       {
          "body" : {
             "totDataBytes" : 242,
-            "ipDst" : "217.13.4.24",
+            "dstIp" : "217.13.4.24",
             "node" : "test",
             "dstMacCnt" : 1,
             "srcPackets" : 1,
@@ -382,7 +382,7 @@
             "lastPacket" : 1112172737775,
             "timestamp" : "SET",
             "srcDataBytes" : 121,
-            "ipSrc" : "192.168.170.56",
+            "srcIp" : "192.168.170.56",
             "packetPosArray" : [
                2930,
                3257
@@ -410,7 +410,7 @@
             ],
             "node" : "test",
             "dstMacCnt" : 1,
-            "ipDst" : "217.13.4.24",
+            "dstIp" : "217.13.4.24",
             "totDataBytes" : 180,
             "srcPackets" : 1,
             "dstPayload8" : "f161858300010000",
@@ -448,7 +448,7 @@
             "dstBytes" : 98,
             "length" : 17,
             "lastPacket" : 1112172737793,
-            "ipSrc" : "192.168.170.56",
+            "srcIp" : "192.168.170.56",
             "srcDataBytes" : 90,
             "timestamp" : "SET",
             "packetPosArray" : [
@@ -486,7 +486,7 @@
             "dstMacCnt" : 1,
             "node" : "test",
             "totDataBytes" : 264,
-            "ipDst" : "217.13.4.24",
+            "dstIp" : "217.13.4.24",
             "dstPackets" : 1,
             "dns" : {
                "qc" : [
@@ -550,7 +550,7 @@
             ],
             "srcDataBytes" : 132,
             "timestamp" : "SET",
-            "ipSrc" : "192.168.170.56",
+            "srcIp" : "192.168.170.56",
             "length" : 19,
             "lastPacket" : 1112172737813
          }
@@ -568,7 +568,7 @@
                "00:60:08:45:e4:55"
             ],
             "totBytes" : 166,
-            "ipDst" : "217.13.4.24",
+            "dstIp" : "217.13.4.24",
             "totDataBytes" : 150,
             "node" : "test",
             "dstMacCnt" : 1,
@@ -612,7 +612,7 @@
             ],
             "srcDataBytes" : 75,
             "timestamp" : "SET",
-            "ipSrc" : "192.168.170.56",
+            "srcIp" : "192.168.170.56",
             "lastPacket" : 1112172737932,
             "length" : 16,
             "srcPayload8" : "d060010000010000",
@@ -654,7 +654,7 @@
                99,
                99
             ],
-            "ipDst" : "217.13.4.24",
+            "dstIp" : "217.13.4.24",
             "totDataBytes" : 150,
             "node" : "test",
             "dstMacCnt" : 1,
@@ -696,7 +696,7 @@
             "length" : 18,
             "timestamp" : "SET",
             "srcDataBytes" : 75,
-            "ipSrc" : "192.168.170.56",
+            "srcIp" : "192.168.170.56",
             "packetPosArray" : [
                4140,
                4239

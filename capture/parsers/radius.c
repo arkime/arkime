@@ -55,7 +55,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
             break;*/
         case 8:
             memcpy(&in.s_addr, value, 4);
-            moloch_field_int_add(framedIpField, session, in.s_addr);
+            moloch_field_ip4_add(framedIpField, session, in.s_addr);
             break;
         case 31:
             if (length == 12) {
@@ -76,8 +76,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
         case 66:
             memcpy(str, value, length);
             str[length] = 0;
-            inet_aton(str, &in);
-            moloch_field_int_add(endpointIpField, session, in.s_addr);
+            moloch_field_ip_add_str(endpointIpField, session, str);
             break;
 
 /*        default:

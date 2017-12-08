@@ -12,7 +12,7 @@
             "dstMac" : [
                "00:22:83:3f:17:cc"
             ],
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "vlanCnt" : 1,
             "firstPacket" : 1466265698248,
             "dstBytes" : 70,
@@ -25,7 +25,7 @@
                272
             ],
             "srcPayload8" : "0000010d6a820109",
-            "ipDst" : "10.11.11.11",
+            "dstIp" : "10.11.11.11",
             "srcBytes" : 461,
             "dstMacCnt" : 1,
             "totDataBytes" : 273,

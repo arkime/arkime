@@ -69,9 +69,9 @@
             "ipProtocol" : 6,
             "dstGEO" : "CAN",
             "protocolCnt" : 3,
-            "ipDst" : "10.0.0.2",
+            "dstIp" : "10.0.0.2",
             "srcBytes" : 405,
-            "ipSrc" : "10.0.0.3",
+            "srcIp" : "10.0.0.3",
             "dstPayload8" : "0500050000010000",
             "totPackets" : 10,
             "packetLenArray" : [

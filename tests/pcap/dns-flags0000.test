@@ -27,7 +27,7 @@
                "00:10:db:ff:26:00"
             ],
             "timestamp" : "SET",
-            "ipDst" : "10.0.0.1",
+            "dstIp" : "10.0.0.1",
             "protocolCnt" : 2,
             "dstPayload8" : "b2b5800500010000",
             "srcBytes" : 82,
@@ -51,7 +51,7 @@
                "dns"
             ],
             "dstASN" : "AS0000 This is neat",
-            "ipSrc" : "10.0.0.2",
+            "srcIp" : "10.0.0.2",
             "srcRIR" : "TEST",
             "tags" : [
                "srcip",

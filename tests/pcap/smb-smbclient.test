@@ -84,7 +84,7 @@
             ],
             "srcPort" : 41823,
             "srcBytes" : 2262,
-            "ipDst" : "127.0.0.1",
+            "dstIp" : "127.0.0.1",
             "srcMac" : [
                "00:00:00:00:00:00"
             ],
@@ -95,7 +95,7 @@
             "ipProtocol" : 6,
             "totPackets" : 34,
             "srcPackets" : 21,
-            "ipSrc" : "127.0.0.1",
+            "srcIp" : "127.0.0.1",
             "dstPort" : 445,
             "length" : 3669,
             "dstMac" : [

@@ -33,7 +33,7 @@
             "srcDataBytes" : 247,
             "dstDataBytes" : 0,
             "totDataBytes" : 247,
-            "ipDst" : "10.10.10.11",
+            "dstIp" : "10.10.10.11",
             "srcPort" : 51822,
             "ipProtocol" : 6,
             "tcpflags" : {
@@ -59,7 +59,7 @@
             "dstPackets" : 1,
             "srcPackets" : 5,
             "firstPacket" : 1483459978959,
-            "ipSrc" : "10.10.10.10",
+            "srcIp" : "10.10.10.10",
             "length" : 343,
             "srcPayload8" : "f700000098366e4d",
             "lastPacket" : 1483459979301,
@@ -109,7 +109,7 @@
             "srcPackets" : 5,
             "dstPackets" : 1,
             "firstPacket" : 1483558834969,
-            "ipSrc" : "10.10.10.12",
+            "srcIp" : "10.10.10.12",
             "srcPayload8" : "3b00000000000000",
             "length" : 163,
             "lastPacket" : 1483558835131,
@@ -152,7 +152,7 @@
             "dstDataBytes" : 0,
             "ipProtocol" : 6,
             "srcPort" : 55582,
-            "ipDst" : "10.10.10.13"
+            "dstIp" : "10.10.10.13"
          }
       },
       {
@@ -185,7 +185,7 @@
             "timestamp" : "SET",
             "ipProtocol" : 6,
             "srcPort" : 61503,
-            "ipDst" : "10.10.10.15",
+            "dstIp" : "10.10.10.15",
             "totDataBytes" : 58,
             "dstDataBytes" : 0,
             "tcpflags" : {
@@ -208,7 +208,7 @@
             "dstMacCnt" : 1,
             "dstPort" : 27017,
             "segments" : 1,
-            "ipSrc" : "10.10.10.14",
+            "srcIp" : "10.10.10.14",
             "firstPacket" : 1483726705497,
             "fileIds" : [],
             "packetPosArray" : [
@@ -248,7 +248,7 @@
             "srcDataBytes" : 269,
             "protocolCnt" : 2,
             "timestamp" : "SET",
-            "ipDst" : "10.10.10.17",
+            "dstIp" : "10.10.10.17",
             "srcPort" : 51358,
             "ipProtocol" : 6,
             "dstDataBytes" : 0,
@@ -273,7 +273,7 @@
             "dstMac" : [
                "00:1b:17:00:01:24"
             ],
-            "ipSrc" : "10.10.10.16",
+            "srcIp" : "10.10.10.16",
             "firstPacket" : 1483737232974,
             "node" : "test",
             "vlanCnt" : 1,
@@ -318,7 +318,7 @@
             "totDataBytes" : 73,
             "dstDataBytes" : 0,
             "ipProtocol" : 6,
-            "ipDst" : "10.10.10.19",
+            "dstIp" : "10.10.10.19",
             "srcPort" : 64566,
             "timestamp" : "SET",
             "srcDataBytes" : 73,
@@ -371,7 +371,7 @@
             "node" : "test",
             "vlanCnt" : 2,
             "firstPacket" : 1483814916005,
-            "ipSrc" : "10.10.10.18"
+            "srcIp" : "10.10.10.18"
          }
       }
    ]

@@ -13,7 +13,7 @@
             ],
             "segments" : 1,
             "dstBytes" : 0,
-            "ipDst" : "216.58.194.195",
+            "dstIp" : "216.58.194.195",
             "vlanCnt" : 1,
             "protocol" : [
                "udp",
@@ -46,7 +46,7 @@
             "srcPackets" : 1,
             "lastPacket" : 1467241187446,
             "dstASN" : "AS15169 Google Inc.",
-            "ipSrc" : "10.0.0.4",
+            "srcIp" : "10.0.0.4",
             "fileIds" : [],
             "srcMacCnt" : 1,
             "totPackets" : 1,

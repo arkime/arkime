@@ -19,7 +19,7 @@
                "dns"
             ],
             "totBytes" : 282,
-            "ipDst" : "10.2.95.39",
+            "dstIp" : "10.2.95.39",
             "dstMacCnt" : 2,
             "segments" : 1,
             "node" : "test",
@@ -72,7 +72,7 @@
             "dstBytes" : 216,
             "dstPort" : 53,
             "dstDataBytes" : 208,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "totPackets" : 2,
             "packetLenArray" : [
                82,

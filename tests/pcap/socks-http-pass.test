@@ -13,7 +13,7 @@
                "00:13:72:c4:f1:e1"
             ],
             "totPackets" : 11,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "node" : "test",
             "segments" : 1,
             "protocol" : [
@@ -29,7 +29,7 @@
             "dstPayload8" : "05ff",
             "fileIds" : [],
             "timestamp" : "SET",
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "dstGEO" : "USA",
             "srcDataBytes" : 4,
             "protocolCnt" : 1,
@@ -98,7 +98,7 @@
             ],
             "node" : "test",
             "segments" : 1,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "totPackets" : 14,
             "dstMac" : [
                "00:13:72:c4:f1:e1"
@@ -113,7 +113,7 @@
             "length" : 8,
             "firstPacket" : 1386090528538,
             "dstGEO" : "USA",
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "socks" : {
                "user" : "testuser"
             },
@@ -181,7 +181,7 @@
       {
          "body" : {
             "dstGEO" : "USA",
-            "ipDst" : "10.180.156.249",
+            "dstIp" : "10.180.156.249",
             "socks" : {
                "port" : 80,
                "user" : "testuser",
@@ -211,7 +211,7 @@
                "00:13:72:c4:f1:e1"
             ],
             "totPackets" : 20,
-            "ipSrc" : "10.180.156.185",
+            "srcIp" : "10.180.156.185",
             "srcMacCnt" : 1,
             "dstMacCnt" : 1,
             "srcBytes" : 984,

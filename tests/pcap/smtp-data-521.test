@@ -110,11 +110,11 @@
                "00:00:5e:00:01:01",
                "00:26:88:ca:1f:c6"
             ],
-            "ipDst" : "205.188.186.167",
+            "dstIp" : "205.188.186.167",
             "srcPort" : 56558,
             "srcDataBytes" : 3122,
             "fileIds" : [],
-            "ipSrc" : "10.0.0.1",
+            "srcIp" : "10.0.0.1",
             "srcGEO" : "RUS",
             "srcBytes" : 4186,
             "protocol" : [
