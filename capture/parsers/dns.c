@@ -279,6 +279,22 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
                 g_free(lower);
             }
         }
+        case 28: {
+            if (rdlength != 16)
+                break;
+            struct in_addr in;
+            unsigned char *ptr = BSB_WORK_PTR(bsb);
+
+            moloch_field_ip6_add(ipField, session, ptr);
+
+            if (opcode == 5) {
+                char *lower = g_ascii_strdown((char*)name, namelen);
+                if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
+                    g_free(lower);
+                }
+            }
+            break;
+        }
         } /* switch */
         BSB_IMPORT_skip(bsb, rdlength);
     }

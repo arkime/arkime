@@ -973,6 +973,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);
+gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val);
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
 int  moloch_field_count(int pos, MolochSession_t *session);

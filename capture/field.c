@@ -819,6 +819,55 @@ added:
     return TRUE;
 }
 /******************************************************************************/
+gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val)
+{
+    MolochField_t        *field;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+        return FALSE;
+
+    struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
+
+    if (!session->fields[pos]) {
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
+        session->fields[pos] = field;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+            field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
+
+            if (!g_hash_table_add(field->ghash, v)) {
+                g_free(v);
+            }
+            goto added;
+        default:
+            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        }
+    }
+
+    field = session->fields[pos];
+    field->jsonSize += (3 + 10 + 100);
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_IP:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+        if (!g_hash_table_add(field->ghash, v)) {
+            field->jsonSize -= 3 + 10 + 100;
+            return FALSE;
+        } else {
+            goto added;
+        }
+    default:
+        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+    }
+
+added:
+    if (config.fields[pos]->ruleEnabled)
+      moloch_rules_run_field_set(session, pos, v);
+
+    return TRUE;
+}
+/******************************************************************************/
 uint32_t moloch_field_certsinfo_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
