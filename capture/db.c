@@ -1560,35 +1560,61 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
 void moloch_db_check()
 {
     size_t             data_len;
-    char               key[100];
+    char               key[1000];
     int                key_len;
+    char               tname[100];
     unsigned char     *data;
 
-    key_len = snprintf(key, sizeof(key), "/%sdstats/version/version/_source", config.prefix);
+    snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
+
+    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
+    uint32_t           template_len;
+    unsigned char     *template = 0;
+
+    template = moloch_js0n_get(data, data_len, tname, &template_len);
+    if(!template || template_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           mappings_len;
+    unsigned char     *mappings = 0;
+
+    mappings = moloch_js0n_get(template, template_len, "mappings", &mappings_len);
+    if(!mappings || mappings_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           session_len;
+    unsigned char     *session = 0;
+
+    session = moloch_js0n_get(mappings, mappings_len, "session", &session_len);
+    if(!session || session_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           meta_len;
+    unsigned char     *meta = 0;
+
+    meta = moloch_js0n_get(session, session_len, "_meta", &meta_len);
+    if(!meta || meta_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
     uint32_t           version_len;
     unsigned char     *version = 0;
 
-    version = moloch_js0n_get(data, data_len, "version", &version_len);
+    version = moloch_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
 
     if (!version || atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
     }
     free(data);
-
-    if (config.compressES) {
-        key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process&flat_settings");
-        data = moloch_http_get(esServer, key, key_len, &data_len);
-        if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
-            LOGEXIT("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
-        }
-        free(data);
-    }
 }
 
 /******************************************************************************/

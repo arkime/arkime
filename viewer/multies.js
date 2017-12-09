@@ -139,6 +139,7 @@ function simpleGather(req, res, bodies, doneCb) {
         asyncCb(null, result);
       });
     });
+    preq.setHeader('content-type', "application/json");
     if (req._body) {
       if (bodies && bodies[node]) {
         preq.end(bodies[node]);
@@ -235,11 +236,13 @@ app.get("/:index/_stats", (req, res) => {
   });
 });
 
-app.get("/MULTIPREFIX_dstats/version/version", (req, res) => {
+app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
+    //console.log("DEBUG -", util.inspect(results, false, 50));
+
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
-      if (results[i]._source.version < obj._source.version) {
+      if (results[i].MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion) {
         obj = results[i];
       }
     }
@@ -610,7 +613,7 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
 app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
-  console.log("DEBUG - INCOMING SEARCH", util.inspect(search, false, 50));
+  //console.log("DEBUG - INCOMING SEARCH", util.inspect(search, false, 50));
 
   var doField = search.aggregations &&
                 search.aggregations.field &&
@@ -619,7 +622,7 @@ app.post("/:index/:type/_search", function(req, res) {
 
   async.each(nodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
-      console.log("DEBUG - OUTGOING SEARCH", node, util.inspect(body, false, 50));
+      //console.log("DEBUG - OUTGOING SEARCH", node, util.inspect(body, false, 50));
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
@@ -662,7 +665,7 @@ function msearch(req, res) {
         lineCb();
       });
     }, (err) => {
-      bodies[node] = nlines.join("\n");
+      bodies[node] = nlines.join("\n") + "\n";
       var prefix = node2Prefix(node);
       bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
       nodeCb();
@@ -728,7 +731,7 @@ if (nodes.length === 0 || nodes[0] === "") {
 nodes.forEach((node) => {
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
-    apiVersion: "5.3",
+    apiVersion: "5.6",
     requestTimeout: 300000,
     keepAlive: true
   });

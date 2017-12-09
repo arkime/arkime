@@ -52,7 +52,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 38;
+my $VERSION = 50;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -344,7 +344,7 @@ sub filesUpdate
         "any": {
           "match": "*",
           "mapping": {
-            "index": "no"
+            "index": false
           }
         }
       }
@@ -354,15 +354,13 @@ sub filesUpdate
         "type": "long"
       },
       "node": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "first": {
         "type": "long"
       },
       "name": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "filesize": {
         "type": "long"
@@ -419,12 +417,10 @@ my $mapping = '
     ],
     "properties": {
       "hostname": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "nodeName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "currentTime": {
         "type": "date",
@@ -470,7 +466,7 @@ my $mapping = '
           "match_mapping_type": "long",
           "mapping": {
             "type": "long",
-            "index": "no"
+            "index": false
           }
         }
       },
@@ -478,15 +474,14 @@ my $mapping = '
         "noindex": {
           "match": "*",
           "mapping": {
-            "index": "no"
+            "index": false
           }
         }
       }
     ],
     "properties": {
       "nodeName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "interval": {
         "type": "short"
@@ -532,7 +527,7 @@ sub fieldsUpdate
         "string_template": {
           "match_mapping_type": "string",
           "mapping": {
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       }
@@ -584,7 +579,7 @@ sub fieldsUpdate
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
-      "type": "textfield",
+      "type": "termfield",
       "dbField": "asnall",
       "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
@@ -593,7 +588,7 @@ sub fieldsUpdate
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
-      "type": "lotextfield",
+      "type": "lotermfield",
       "dbField": "hostall",
       "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
@@ -622,7 +617,7 @@ sub fieldsUpdate
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
-      "type": "textfield",
+      "type": "termfield",
       "dbField": "as1",
       "dbField2": "srcASN",
       "rawField": "rawas1",
@@ -670,7 +665,7 @@ sub fieldsUpdate
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
-      "type": "textfield",
+      "type": "termfield",
       "dbField": "as2",
       "dbField2": "dstASN",
       "rawField": "rawas2",
@@ -929,8 +924,7 @@ sub queriesUpdate
     "dynamic": "strict",
     "properties": {
       "name": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "enabled": {
         "type": "boolean"
@@ -945,20 +939,16 @@ sub queriesUpdate
         "type": "long"
       },
       "query": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "action": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "creator": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "tags": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       }
     }
   }
@@ -970,705 +960,14 @@ sub queriesUpdate
 }
 
 ################################################################################
-sub sessionsUpdate
-{
-    my $mapping = '
-{
-  "session": {
-    "_all": {"enabled": "false"},
-    "dynamic": "true",
-    "dynamic_templates": [
-      {
-        "template_hdrs": {
-          "path_match": "hdrs.*",
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "string",
-            "index": "no",
-            "fields": {
-              "snow": {"type": "string", "analyzer" : "snowball"},
-              "raw": {"type": "string", "index" : "not_analyzed"}
-            }
-          }
-        }
-      }, {
-        "template_georir": {
-          "match_pattern": "regex",
-          "path_match": ".*-(geo|rir|term)$",
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "string",
-            "index": "not_analyzed"
-          }
-        }
-      }, {
-        "template_string": {
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "string",
-            "index": "no",
-            "fields": {
-              "snow" : {"type": "string", "analyzer" : "snowball"},
-              "raw" : {"type": "string", "index" : "not_analyzed"}
-            }
-          }
-        }
-      }
-    ],
-    "properties": {
-      "timestamp": {
-        "type": "date"
-      },
-      "firstPacket": {
-        "type": "date"
-      },
-      "lastPacket": {
-        "type": "date"
-      },
-      "ipSrc": {
-        "type": "ip"
-      },
-      "portSrc": {
-        "type": "integer"
-      },
-      "ipDst": {
-        "type": "ip"
-      },
-      "portDst": {
-        "type": "integer"
-      },
-      "us": {
-        "type": "string",
-        "analyzer": "url_analyzer",
-        "copy_to": "rawus",
-        "norms": {"enabled": "false"}
-      },
-      "rawus": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "uscnt": {
-        "type": "integer"
-      },
-      "ua": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawua",
-        "norms": {"enabled": "false"}
-      },
-      "rawua": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "uacnt": {
-        "type": "integer"
-      },
-      "ps": {
-        "type": "long",
-        "index": "no"
-      },
-      "psl": {
-        "type": "integer",
-        "index": "no"
-      },
-      "fs": {
-        "type": "long"
-      },
-      "lp": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "lpd": {
-        "type": "date",
-        "doc_values": "true"
-      },
-      "fp": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "fpd": {
-        "type": "date",
-        "doc_values": "true"
-      },
-      "a1": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "g1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "as1": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawas1",
-        "norms": {"enabled": "false"}
-      },
-      "rawas1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rir1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "p1": {
-        "type": "integer",
-        "doc_values": "true"
-      },
-      "fb1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "a2": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "g2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "as2": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawas2",
-        "norms": {"enabled": "false"}
-      },
-      "rawas2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rir2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "p2": {
-        "type": "integer",
-        "doc_values": "true"
-      },
-      "fb2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "xff": {
-        "type": "long"
-      },
-      "xffcnt": {
-        "type": "integer"
-      },
-      "xffscnt": {
-        "type": "integer"
-      },
-      "gxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "asxff": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawasxff",
-        "norms": {"enabled": "false"}
-      },
-      "rawasxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hmd5cnt": {
-        "type": "short"
-      },
-      "hmd5": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "dnshocnt": {
-        "type": "integer"
-      },
-      "dnsho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "dnsip": {
-        "type": "long"
-      },
-      "dnsipcnt": {
-        "type": "integer"
-      },
-      "gdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "asdnsip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawasdnsip",
-        "norms": {"enabled": "false"}
-      },
-      "rawasdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "pr": {
-        "type": "short"
-      },
-      "pa": {
-        "type": "integer"
-      },
-      "pa1": {
-        "type": "integer"
-      },
-      "pa2": {
-        "type": "integer"
-      },
-      "by": {
-        "type": "long"
-      },
-      "by1": {
-        "type": "long"
-      },
-      "by2": {
-        "type": "long"
-      },
-      "db": {
-        "type": "long"
-      },
-      "db1": {
-        "type": "long"
-      },
-      "db2": {
-        "type": "long"
-      },
-      "ro": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "no": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hocnt": {
-        "type": "integer"
-      },
-      "ta": {
-        "type": "integer"
-      },
-      "tacnt": {
-        "type": "integer"
-      },
-      "hh": {
-        "type": "integer"
-      },
-      "hh1": {
-        "type": "integer"
-      },
-      "hh2": {
-        "type": "integer"
-      },
-      "hh1cnt": {
-        "type": "integer"
-      },
-      "hh2cnt": {
-        "type": "integer"
-      },
-      "hsver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hsvercnt": {
-        "type": "integer"
-      },
-      "hdver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hdvercnt": {
-        "type": "integer"
-      },
-      "hpath": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hpathcnt": {
-        "type": "integer"
-      },
-      "hkey": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hkeycnt": {
-        "type": "integer"
-      },
-      "hval": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hvalcnt": {
-        "type": "integer"
-      },
-      "user": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "usercnt": {
-        "type": "integer"
-      },
-      "tls": {
-        "type": "object",
-        "dynamic": "strict",
-        "properties": {
-          "iCn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "iOn": {
-            "type": "string",
-            "analyzer": "snowball",
-            "norms": {"enabled": "false"},
-            "fields": {
-              "rawiOn": {"type": "string", "index": "not_analyzed"}
-            }
-          },
-          "sCn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "sOn": {
-            "type": "string",
-            "analyzer": "snowball",
-            "norms": {"enabled": "false"},
-            "fields": {
-              "rawsOn": {"type": "string", "index": "not_analyzed"}
-            }
-          },
-          "sn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "alt": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "altcnt": {
-            "type": "integer"
-          },
-          "notBefore": {
-            "type": "long"
-          },
-          "notAfter": {
-            "type": "long"
-          },
-          "diffDays": {
-            "type": "integer"
-          },
-          "hash": {
-            "type": "string",
-            "index": "not_analyzed"
-          }
-        }
-      },
-      "tlscnt": {
-        "type": "integer"
-      },
-      "sshkey": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sshkeycnt": {
-        "type": "short"
-      },
-      "sshver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sshvercnt": {
-        "type": "short"
-      },
-      "euacnt": {
-        "type": "short"
-      },
-      "eua": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "raweua",
-        "norms": {"enabled": "false"}
-      },
-      "raweua": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "esubcnt": {
-        "type": "short"
-      },
-      "esub": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawesub",
-        "norms": {"enabled": "false"}
-      },
-      "rawesub": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "eidcnt": {
-        "type": "short"
-      },
-      "eid": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ectcnt": {
-        "type": "short"
-      },
-      "ect": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "emvcnt": {
-        "type": "short"
-      },
-      "emv": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "efncnt": {
-        "type": "short"
-      },
-      "efn": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "emd5cnt": {
-        "type": "short"
-      },
-      "emd5": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "esrccnt": {
-        "type": "short"
-      },
-      "esrc": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "edstcnt": {
-        "type": "short"
-      },
-      "edst": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "eho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ehocnt": {
-        "type": "integer"
-      },
-      "eip": {
-        "type": "long"
-      },
-      "eipcnt": {
-        "type": "integer"
-      },
-      "ehh": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ehhcnt": {
-        "type": "integer"
-      },
-      "geip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "aseip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawaseip",
-        "norms": {"enabled": "false"}
-      },
-      "rawaseip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rireip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircnck": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircnckcnt": {
-        "type": "integer"
-      },
-      "ircch": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircchcnt": {
-        "type": "integer"
-      },
-      "hdrs": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "plugin": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "scrubat": {
-        "type": "date"
-      },
-      "scrubby": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbdmcnt": {
-        "type": "short"
-      },
-      "smbdm": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbfncnt": {
-        "type": "short"
-      },
-      "smbfn": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbhocnt": {
-        "type": "short"
-      },
-      "smbho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smboscnt": {
-        "type": "short"
-      },
-      "smbos": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbshcnt": {
-        "type": "short"
-      },
-      "smbsh": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbusercnt": {
-        "type": "short"
-      },
-      "smbuser": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbvercnt": {
-        "type": "short"
-      },
-      "smbver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "socksip": {
-        "type": "long"
-      },
-      "gsocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "assocksip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawassocksip",
-        "norms": {"enabled": "false"}
-      },
-      "rawassocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirsocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sockspo": {
-        "type": "integer"
-      },
-      "socksuser": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "socksho": {
-        "type": "string",
-        "index": "not_analyzed"
-      }
-    }
-  }
-}
-';
-
-$REPLICAS = 0 if ($REPLICAS < 0);
-my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
-
-    my $template = '
-{
-  "template": "' . $PREFIX . 'sessions-*",
-  "settings": {
-    "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
-      "refresh_interval": "60s",
-      "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . ',
-      "analysis": {
-        "analyzer": {
-          "url_analyzer": {
-            "type": "custom",
-            "tokenizer": "pattern",
-            "filter": ["lowercase"]
-          }
-        }
-      }
-    }
-  },
-  "mappings":' . $mapping . '
-}';
-
-    print "Creating sessions template\n" if ($verbose > 0);
-    #print "$template\n";
-    esPut("/_template/${PREFIX}sessions_template", $template);
-
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
-
-    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-    foreach my $i (keys %{$indices}) {
-        progress("$i ");
-        esPut("/$i/session/_mapping", $mapping, 1);
-    }
-
-    print "\n";
-}
-
-################################################################################
 sub sessions2Update
 {
     my $mapping = '
 {
   "session": {
+    "_meta": {
+      "molochDbVersion": ' . $VERSION . '
+    },
     "_all": {"enabled": "false"},
     "dynamic": "true",
     "dynamic_templates": [
@@ -1692,9 +991,7 @@ sub sessions2Update
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
-            "type": "string",
-            "index": "not_analyzed",
-            "norms": {"enabled": false}
+            "type": "keyword"
           }
         }
       }
@@ -1711,11 +1008,11 @@ sub sessions2Update
       },
       "packetPosArray": {
         "type": "long",
-        "index": "no"
+        "index": false
       },
       "packetLenArray": {
         "type": "integer",
-        "index": "no"
+        "index": false
       },
       "cert": {
         "type": "object",
@@ -1775,24 +1072,19 @@ sub historyUpdate
     "dynamic": "strict",
     "properties": {
       "uiPage": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "userId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "method": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "api": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "expression": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "view": {
         "type": "object",
@@ -1805,8 +1097,7 @@ sub historyUpdate
         "type": "integer"
       },
       "query": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "queryTime": {
         "type": "integer"
@@ -1882,12 +1173,10 @@ sub usersUpdate
     "dynamic": "strict",
     "properties": {
       "userId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "userName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "enabled": {
         "type": "boolean"
@@ -1908,12 +1197,10 @@ sub usersUpdate
         "type": "boolean"
       },
       "passStore": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "expression": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "settings": {
         "type": "object",
@@ -2012,6 +1299,19 @@ sub dbESVersion {
 ################################################################################
 sub dbVersion {
 my ($loud) = @_;
+    my $version;
+
+    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta", 1);
+
+    if (defined $version &&
+        exists $version->{"${PREFIX}sessions2_template"} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion}
+    ) {
+        $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion};
+        return;
+    }
 
     my $version = esGet("/${PREFIX}dstats/version/version", 1);
 
@@ -2065,16 +1365,13 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 20400 ||
-        ($main::esVersion >= 50000 && $main::esVersion < 50102) ||
-        ($main::esVersion == 50300) ||
-        ($main::esVersion >= 60000)
-    ) {
+    if ($main::esVersion < 50600 ||
+        $main::esVersion >= 70000)
+    {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+              "* < 5.6.0 are not supported\n",
               "* 5.6.x is recommended\n",
-              "* 2.4.x is supported\n",
-              "* 5.0 - 5.1.1, 5.3.0 are not supported\n",
-              "* 6.x is not supported\n",
+              "* >= 6.x is supported but not well tested\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -2085,13 +1382,6 @@ sub dbCheck {
     my $error = 0;
     my $nodes = esGet("/_nodes?flat_settings");
     my $nodeStats = esGet("/_nodes/stats");
-
-    if ($main::esVersion < 50000) {
-        esPut("/_cluster/settings", '{"persistent": {"threadpool.search.queue_size":10000}}');
-    } else {
-        # ALW - Not supported with 5.0, might need to require user setting
-        # esPut("/_cluster/settings", '{"persistent": {"thread_pool.search.queue_size":10000}}');
-    }
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
@@ -2574,7 +1864,7 @@ dbCheck();
 if ($ARGV[1] =~ /(init|wipe)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        print "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
@@ -2620,7 +1910,6 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     filesCreate();
     statsCreate();
     dstatsCreate();
-    sessionsUpdate();
     sessions2Update();
     fieldsCreate();
     historyUpdate();
@@ -2677,7 +1966,6 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
         esDelete("/_template/${PREFIX}template_1", 1);
         historyUpdate();
-        sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
         fieldsUpdate();
@@ -2685,14 +1973,12 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
         historyUpdate();
-        sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
         fieldsUpdate();
     } elsif ($main::versionNumber <= 38) {
         usersUpdate();
         historyUpdate();
-        sessionsUpdate();
         sessions2Update();
         checkForOldIndices();
         fieldsUpdate();
@@ -2705,4 +1991,4 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 print "Finished\n";
 
 sleep 1;
-esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
+#esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");

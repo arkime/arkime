@@ -1,11 +1,14 @@
-NOTICE: 0.20.x will be the last series to support ES 2.
+NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_50
 
-NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
-        outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
+NOTICE: ES 5.6 and node 6.x required
 
-NOTICE: Restart wiseService before capture when upgrading
+0.50.0 2018/01/01
+  - NOTICE: Supported ES Versions: 5.6.x, 6.x
+  - all - rename field names
+  - all - no more analyzed ES fields, everything is a keyword field
+  - all - full ipv6 support
+  - all - tags index removed, tags/hasheader stored as first class fields
 
-NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
 
 0.20.2 2017/12/XX
   - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported

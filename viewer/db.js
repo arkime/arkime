@@ -74,7 +74,6 @@ exports.initialize = function (info, cb) {
       process.exit();
       throw new Error("Exiting");
     }
-    exports.isES5 = data.version.number.match(/^5/);
 
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
@@ -252,7 +251,7 @@ exports.indexStats = function(index, cb) {
 };
 
 exports.getAliases = function(index, cb) {
-  return internals.elasticSearchClient.indices.getAliases({index: fixIndex(index)}, cb);
+  return internals.elasticSearchClient.indices.getAlias({index: fixIndex(index)}, cb);
 };
 
 exports.getAliasesCache = function (index, cb) {
@@ -447,22 +446,20 @@ exports.healthCache = function (cb) {
   }
 
   return exports.health((err, health) => {
-      if (err) {
-        // Even if an error, if we have a cache use it
-        if (internals.healthCache._timeStamp !== undefined) {
-          return cb(null, internals.healthCache);
-        }
-        return cb(err, null);
+    if (err) {
+      // Even if an error, if we have a cache use it
+      if (internals.healthCache._timeStamp !== undefined) {
+        return cb(null, internals.healthCache);
       }
+      return cb(err, null);
+    }
 
-      exports.get("dstats", "version", "version", (err, doc) => {
-        if (doc !== undefined && doc._source !== undefined) {
-          health.molochDbVersion = doc._source.version;
-        }
-        internals.healthCache = health;
-        internals.healthCache._timeStamp = Date.now();
-        cb(null, health);
-      });
+    internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
+      health.molochDbVersion = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
+      internals.healthCache = health;
+      internals.healthCache._timeStamp = Date.now();
+      cb(null, health);
+    });
   });
 };
 
@@ -578,8 +575,8 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 40600) {
-    console.log("ERROR - Need at least node 4.6.0, currently using", process.version);
+  if (version < 60000) {
+    console.log("ERROR - Need at least node 6.0.0, currently using", process.version);
     process.exit(1);
     throw new Error("Exiting");
   }
@@ -596,23 +593,21 @@ exports.checkVersion = function(minVersion, checkUsers) {
     });
   });
 
-  exports.get("dstats", "version", "version", (err, doc) => {
-    var version;
+  internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
-      throw new Error("Exiting");
     }
-    if (!doc.found) {
-      version = 0;
-    } else {
-      version = doc._source.version;
-    }
+    try {
+      var version = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
 
-    if (version < minVersion) {
-        console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
-        process.exit(1);
-        throw new Error("Exiting");
+      if (version < minVersion) {
+          console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
+          process.exit(1);
+      }
+    } catch (e) {
+      console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?");
+      process.exit(0);
     }
   });
 
@@ -626,7 +621,6 @@ exports.checkVersion = function(minVersion, checkUsers) {
 };
 
 exports.isLocalView = function(node, yesCB, noCB) {
-  console.log("CHECKING", node, internals.nodeName);
   if (node === internals.nodeName) {
     return yesCB();
   }

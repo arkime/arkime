@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 38;
+var MIN_DB_VERSION = 50;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -2075,7 +2075,7 @@ app.get('/history/list', function(req, res) {
       query.query.bool.must.push({
         query_string: {
           query : req.query.searchTerm,
-          fields: ['expression','userId','api','view.name','view.expression']
+          _source: ['expression','userId','api','view.name','view.expression']
         }
       });
     }
@@ -2825,7 +2825,8 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
       graph.interval = query.aggregations.dbHisto.histogram.interval;
     }
 
-    console.log("sessions.json query", JSON.stringify(query));
+    //console.log("sessions.json query indices", indices);
+    //console.log("sessions.json query", JSON.stringify(query));
 
     async.parallel({
       sessions: function (sessionsCb) {
@@ -3218,11 +3219,8 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
     query._source = ["totBytes", "totDataBytes", "totPackets", "node"];
-    if (Db.isES5) {
-      query.docvalue_fields = [fsrc, fdst];
-    } else {
-      query.fields = [fsrc, fdst];
-    }
+    query.docvalue_fields = [fsrc, fdst];
+
     if (dstipport) {
       query._source.push("dstPort");
     }
