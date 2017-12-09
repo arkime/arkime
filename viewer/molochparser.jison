@@ -134,7 +134,15 @@ function parseIpPort(yy, field, ipPortStr) {
   // Support '10.10.10/16:4321'
 
   var ip;
+  var ipv6 = false;
   var colons = ipPortStr.split(':');
+
+  // This is ip6, unsplit on colon
+  if (colons.length > 2) {
+    ipv6 = true;
+    colons = [ipPortStr];
+  }
+
   var slash = colons[0].split('/');
   var dots = slash[0].split('.');
   var port = -1;
@@ -142,7 +150,9 @@ function parseIpPort(yy, field, ipPortStr) {
     port = parseInt(colons[1], 10);
   }
 
-  if (dots.length === 4) {
+  if (ipv6) {
+    ip = dots[0];
+  } else if (dots.length === 4) {
     ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
   } else if (dots.length === 3) {
     ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
@@ -156,7 +166,6 @@ function parseIpPort(yy, field, ipPortStr) {
   }
 
 
-  // Can't shift by 32 bits in javascript, who knew!
   if (slash[1] && slash[1] !== '32') {
     ip = `${ip}/${slash[1]}`;
   }

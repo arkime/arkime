@@ -1,4 +1,4 @@
-use Test::More tests => 70;
+use Test::More tests => 76;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -47,3 +47,8 @@ countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host==*hub.com"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host==/.*hub.com/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host!=/.*hub.com/"));
+
+# dns ip v6 tests
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410::2c0:dfff:fe47:33e"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
+    countTest(16, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
