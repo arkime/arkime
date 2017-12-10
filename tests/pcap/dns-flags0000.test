@@ -8,83 +8,83 @@
             }
          },
          "body" : {
-            "dstBytes" : 82,
-            "dstPackets" : 1,
-            "srcPayload8" : "b2b5000000010000",
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ],
-            "firstPacket" : 1393422583830,
-            "srcDataBytes" : 74,
-            "node" : "test",
-            "totDataBytes" : 148,
-            "dstPort" : 53,
-            "totBytes" : 164,
-            "srcMacCnt" : 2,
-            "srcPackets" : 1,
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "timestamp" : "SET",
-            "dstIp" : "10.0.0.1",
-            "protocolCnt" : 2,
-            "dstPayload8" : "b2b5800500010000",
-            "srcBytes" : 82,
-            "dstMacCnt" : 1,
-            "packetPosArray" : [
-               24,
-               122
-            ],
-            "fileIds" : [],
-            "tagsCnt" : 2,
             "srcPort" : 61912,
-            "packetLenArray" : [
-               98,
-               98
-            ],
-            "ipProtocol" : 17,
-            "srcASN" : "AS0001 Cool Beans!",
             "dstDataBytes" : 74,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstASN" : "AS0000 This is neat",
-            "srcIp" : "10.0.0.2",
-            "srcRIR" : "TEST",
-            "tags" : [
-               "srcip",
-               "dstip"
+            "dstIp" : "10.0.0.1",
+            "dstMacCnt" : 1,
+            "srcMacCnt" : 2,
+            "firstPacket" : 1393422583830,
+            "dstMac" : [
+               "00:10:db:ff:26:00"
             ],
+            "srcPayload8" : "b2b5000000010000",
+            "dstBytes" : 82,
             "dstGEO" : "RUS",
-            "lastPacket" : 1393422583932,
+            "fileIds" : [],
+            "protocolCnt" : 2,
+            "srcDataBytes" : 74,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcPackets" : 1,
+            "dstPackets" : 1,
+            "dstPort" : 53,
+            "srcBytes" : 82,
+            "tagsCnt" : 2,
+            "timestamp" : "SET",
             "srcGEO" : "CAN",
-            "segments" : 1,
             "length" : 102,
+            "totBytes" : 164,
+            "packetPosArray" : [
+               24,
+               122
+            ],
             "dns" : {
-               "qcCnt" : 1,
+               "opcodeCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qc" : [
+                  "IN"
+               ],
+               "statusCnt" : 1,
+               "status" : [
+                  "REFUSED"
+               ],
+               "hostCnt" : 1,
                "qtCnt" : 1,
+               "qcCnt" : 1,
                "opcode" : [
                   "QUERY"
                ],
                "host" : [
                   "flashservice.adobe.com"
-               ],
-               "status" : [
-                  "REFUSED"
-               ],
-               "hostCnt" : 1,
-               "statusCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qt" : [
-                  "A"
-               ],
-               "opcodeCnt" : 1
+               ]
             },
-            "totPackets" : 2
+            "segments" : 1,
+            "srcMac" : [
+               "00:00:5e:00:01:03",
+               "88:e0:f3:f1:91:f2"
+            ],
+            "ipProtocol" : 17,
+            "packetLenArray" : [
+               98,
+               98
+            ],
+            "dstPayload8" : "b2b5800500010000",
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "totPackets" : 2,
+            "srcRIR" : "TEST",
+            "srcIp" : "10.0.0.2",
+            "lastPacket" : 1393422583932,
+            "totDataBytes" : 148,
+            "node" : "test",
+            "dstASN" : "AS0000 This is neat"
          }
       }
    ]

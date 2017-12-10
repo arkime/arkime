@@ -2,13 +2,6 @@
    "sessions2" : [
       {
          "body" : {
-            "srcGEO" : "RUS",
-            "protocol" : [
-               "imap",
-               "tcp"
-            ],
-            "srcPort" : 4643,
-            "dstPackets" : 2,
             "test" : {
                "RIR" : [
                   ""
@@ -16,84 +9,93 @@
                "string.snow" : [
                   "16777226:4643,33554442:143"
                ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
                "number" : [
                   33554442
                ],
                "GEO" : [
                   "RUS"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
                ]
             },
-            "fileIds" : [],
-            "protocolCnt" : 2,
-            "dstBytes" : 134,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:1d:b5:ce:ef:c0"
-            ],
-            "dstGEO" : "CAN",
-            "srcMac" : [
-               "00:0f:f7:76:82:80"
-            ],
-            "srcASN" : "AS0000 This is neat",
+            "segments" : 1,
+            "dstASN" : "AS0001 Cool Beans!",
             "node" : "test",
+            "timestamp" : "SET",
+            "packetPosArray" : [
+               24,
+               102,
+               180,
+               256
+            ],
+            "srcGEO" : "RUS",
             "srcBytes" : 122,
             "totBytes" : 256,
-            "dstMacCnt" : 2,
-            "timestamp" : "SET",
+            "srcDataBytes" : 0,
+            "srcASN" : "AS0000 This is neat",
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "srcMacCnt" : 1,
+            "dstPayload8" : "2a204f4b20494d41",
             "lastPacket" : 1387759542236,
+            "srcIp" : "10.0.0.1",
             "packetLenArray" : [
                78,
                78,
                76,
                88
             ],
-            "srcDataBytes" : 0,
+            "dstBytes" : 134,
+            "length" : 233,
+            "dstDataBytes" : 18,
             "totPackets" : 4,
-            "srcIp" : "10.0.0.1",
-            "segments" : 1,
+            "totDataBytes" : 18,
+            "srcMac" : [
+               "00:0f:f7:76:82:80"
+            ],
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:1d:b5:ce:ef:c0"
+            ],
+            "firstPacket" : 1387759542002,
+            "dstIp" : "10.0.0.2",
+            "srcPort" : 4643,
+            "dstPort" : 143,
+            "dstPackets" : 2,
             "srcPackets" : 2,
-            "tags" : [
-               "srcip",
-               "dstip"
+            "dstMacCnt" : 2,
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "urg" : 0,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "ack" : 1,
+               "syn" : 1,
+               "fin" : 0,
+               "psh" : 1
+            },
+            "fileIds" : [],
+            "dstGEO" : "CAN",
+            "protocol" : [
+               "imap",
+               "tcp"
             ],
             "dstRIR" : "TEST",
-            "firstPacket" : 1387759542002,
-            "srcMacCnt" : 1,
             "ipProtocol" : 6,
-            "dstIp" : "10.0.0.2",
-            "totDataBytes" : 18,
-            "dstDataBytes" : 18,
-            "tagsCnt" : 2,
-            "length" : 233,
-            "dstASN" : "AS0001 Cool Beans!",
-            "tcpflags" : {
-               "fin" : 0,
-               "psh" : 1,
-               "ack" : 1,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "syn" : 1,
-               "urg" : 0
-            },
-            "dstPort" : 143,
-            "dstPayload8" : "2a204f4b20494d41",
-            "packetPosArray" : [
-               24,
-               102,
-               180,
-               256
-            ]
+            "protocolCnt" : 2
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131223",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131223"
             }
          }
       }

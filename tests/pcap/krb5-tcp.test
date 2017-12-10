@@ -1,87 +1,89 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-160618",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "node" : "test",
-            "dstMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "srcIp" : "10.10.10.10",
-            "vlanCnt" : 1,
-            "firstPacket" : 1466265698248,
-            "dstBytes" : 70,
-            "srcPort" : 57167,
-            "dstPort" : 88,
-            "packetPosArray" : [
-               24,
-               110,
-               196,
-               272
+            "dstMacCnt" : 1,
+            "protocol" : [
+               "tcp",
+               "krb5"
             ],
             "srcPayload8" : "0000010d6a820109",
-            "dstIp" : "10.11.11.11",
-            "srcBytes" : 461,
-            "dstMacCnt" : 1,
-            "totDataBytes" : 273,
-            "segments" : 1,
-            "tcpflags" : {
-               "fin" : 0,
-               "syn" : 1,
-               "psh" : 1,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 1
-            },
             "krb5" : {
-               "snameCnt" : 1,
-               "realmCnt" : 1,
                "cname" : [
                   "xxxxxxxxxxx$"
                ],
                "realm" : [
                   "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
                ],
-               "cnameCnt" : 1,
+               "realmCnt" : 1,
                "sname" : [
                   "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ]
+               ],
+               "cnameCnt" : 1,
+               "snameCnt" : 1
             },
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "protocol" : [
-               "tcp",
-               "krb5"
-            ],
-            "srcDataBytes" : 273,
-            "dstDataBytes" : 0,
-            "timestamp" : "SET",
-            "dstPackets" : 1,
-            "lastPacket" : 1466265698251,
             "vlan" : [
                50
             ],
-            "srcPackets" : 3,
-            "srcMacCnt" : 1,
-            "totPackets" : 4,
-            "fileIds" : [],
-            "ipProtocol" : 6,
-            "protocolCnt" : 2,
-            "totBytes" : 531,
-            "length" : 2,
             "packetLenArray" : [
                86,
                86,
                76,
                347
-            ]
+            ],
+            "vlanCnt" : 1,
+            "srcMacCnt" : 1,
+            "fileIds" : [],
+            "dstIp" : "10.11.11.11",
+            "node" : "test",
+            "totBytes" : 531,
+            "dstPackets" : 1,
+            "dstPort" : 88,
+            "totPackets" : 4,
+            "protocolCnt" : 2,
+            "length" : 2,
+            "totDataBytes" : 273,
+            "dstBytes" : 70,
+            "dstDataBytes" : 0,
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 1,
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "srcZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "dstZero" : 0
+            },
+            "srcBytes" : 461,
+            "srcPort" : 57167,
+            "segments" : 1,
+            "firstPacket" : 1466265698248,
+            "packetPosArray" : [
+               24,
+               110,
+               196,
+               272
+            ],
+            "lastPacket" : 1466265698251,
+            "srcIp" : "10.10.10.10",
+            "srcDataBytes" : 273,
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcPackets" : 3,
+            "ipProtocol" : 6,
+            "dstMac" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "timestamp" : "SET"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160618",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -454,6 +454,8 @@ typedef enum {
     MOLOCH_TCPFLAG_FIN,
     MOLOCH_TCPFLAG_RST,
     MOLOCH_TCPFLAG_URG,
+    MOLOCH_TCPFLAG_SRC_ZERO,
+    MOLOCH_TCPFLAG_DST_ZERO,
     MOLOCH_TCPFLAG_MAX
 } MolochSesTcpFlags;
 /******************************************************************************/

@@ -185,13 +185,13 @@ int moloch_field_define_text(char *text, int *shortcut)
 }
 /******************************************************************************/
 /* Changes ... to va_list */
-static void moloch_session_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
+/*static void moloch_session_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
 {
     va_list args;
     va_start(args, help);
     moloch_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args);
     va_end(args);
-}
+}*/
 /******************************************************************************/
 int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...)
 {

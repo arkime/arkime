@@ -26,7 +26,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 38
+#define MOLOCH_MIN_DB_VERSION 50
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -425,7 +425,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                            "\"psh\": %d,"
                            "\"fin\": %d,"
                            "\"rst\": %d,"
-                           "\"urg\": %d"
+                           "\"urg\": %d,"
+                           "\"srcZero\": %d,"
+                           "\"dstZero\": %d"
                            "},",
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK],
@@ -433,7 +435,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_RST],
-                           session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]);
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_URG],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_DST_ZERO]
+                           );
     }
 
     if (session->firstBytesLen[0] > 0) {

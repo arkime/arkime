@@ -1,13 +1,123 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-160203"
+            }
+         },
          "body" : {
-            "srcASN" : "AS0000 This is neat",
-            "timestamp" : "SET",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "5c:5e:ab:b3:67:c2"
+            "srcMacCnt" : 1,
+            "dstPackets" : 5,
+            "http" : {
+               "value" : [
+                  "xxxxxxxxxxxx"
+               ],
+               "hostCnt" : 1,
+               "requestHeader" : [
+                  "user-agent",
+                  "x-forwarded-for",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host"
+               ],
+               "method" : [
+                  "GET"
+               ],
+               "requestHeaderCnt" : 6,
+               "host" : [
+                  "www.xxxxxxxxx.xx"
+               ],
+               "methodCnt" : 1,
+               "useragentCnt" : 1,
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "uricnt" : 1,
+               "statuscode" : [
+                  403
+               ],
+               "pathCnt" : 1,
+               "clientVersionCnt" : 1,
+               "responseHeader" : [
+                  "content-type",
+                  "transfer-encoding",
+                  "cf-ray",
+                  "date",
+                  "content-encoding",
+                  "connection",
+                  "server",
+                  "set-cookie"
+               ],
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "bodyMagicCnt" : 1,
+               "xffASN" : [
+                  "AS0002 Hmm!@#$%^&*()"
+               ],
+               "md5" : [
+                  "9daa848cbed13db71c8cce96e14a6d57"
+               ],
+               "xffGEO" : [
+                  "---"
+               ],
+               "md5Cnt" : 1,
+               "xffIp" : [
+                  "10.0.0.3"
+               ],
+               "responseHeaderCnt" : 8,
+               "request-referer" : [
+                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
+               ],
+               "xffRIR" : [
+                  ""
+               ],
+               "keyCnt" : 1,
+               "request-refererCnt" : 1,
+               "path" : [
+                  "/xx/xxxxx"
+               ],
+               "statuscodeCnt" : 1,
+               "key" : [
+                  "xx"
+               ],
+               "xffIpCnt" : 1,
+               "serverVersionCnt" : 1,
+               "uri" : [
+                  "//www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
+               ],
+               "valueCnt" : 1
+            },
+            "protocol" : [
+               "http",
+               "tcp"
             ],
+            "protocolCnt" : 2,
+            "dstPayload8" : "485454502f312e31",
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 3,
+               "fin" : 1,
+               "srcZero" : 0,
+               "rst" : 1,
+               "urg" : 0,
+               "ack" : 4,
+               "dstZero" : 0,
+               "syn-ack" : 1
+            },
+            "node" : "test",
+            "timestamp" : "SET",
+            "length" : 145,
+            "lastPacket" : 1454513228516,
             "srcMac" : [
                "00:0a:f3:31:90:00"
             ],
@@ -24,19 +134,40 @@
                76,
                76
             ],
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
             "srcPort" : 41954,
-            "fileIds" : [],
-            "dstIp" : "10.0.0.2",
-            "srcMacCnt" : 1,
+            "srcBytes" : 680,
             "srcGEO" : "RUS",
-            "dstPayload8" : "485454502f312e31",
-            "ipProtocol" : 6,
-            "totBytes" : 1543,
-            "dstMacCnt" : 2,
-            "dstPort" : 80,
-            "lastPacket" : 1454513228516,
-            "dstASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS0000 This is neat",
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:41954,33554442:80"
+               ]
+            },
             "srcPackets" : 6,
+            "dstMacCnt" : 2,
+            "fileIds" : [],
+            "segments" : 1,
+            "dstASN" : "AS0001 Cool Beans!",
+            "totBytes" : 1543,
             "packetPosArray" : [
                24,
                114,
@@ -51,152 +182,23 @@
                1667
             ],
             "srcIp" : "10.0.0.1",
-            "srcBytes" : 680,
-            "srcDataBytes" : 312,
-            "totDataBytes" : 881,
-            "dstPackets" : 5,
-            "http" : {
-               "requestHeader" : [
-                  "user-agent",
-                  "x-forwarded-for",
-                  "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host"
-               ],
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
-               ],
-               "host" : [
-                  "www.xxxxxxxxx.xx"
-               ],
-               "md5Cnt" : 1,
-               "xffRIR" : [
-                  ""
-               ],
-               "xffGEO" : [
-                  "---"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "statuscode" : [
-                  403
-               ],
-               "xffIp" : [
-                  "10.0.0.3"
-               ],
-               "keyCnt" : 1,
-               "hostCnt" : 1,
-               "value" : [
-                  "xxxxxxxxxxxx"
-               ],
-               "bodyMagic" : [
-                  "application/x-gzip"
-               ],
-               "requestHeaderCnt" : 6,
-               "responseHeaderCnt" : 8,
-               "serverVersionCnt" : 1,
-               "responseHeader" : [
-                  "content-type",
-                  "transfer-encoding",
-                  "cf-ray",
-                  "date",
-                  "content-encoding",
-                  "connection",
-                  "server",
-                  "set-cookie"
-               ],
-               "xffASN" : [
-                  "AS0002 Hmm!@#$%^&*()"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "md5" : [
-                  "9daa848cbed13db71c8cce96e14a6d57"
-               ],
-               "key" : [
-                  "xx"
-               ],
-               "statuscodeCnt" : 1,
-               "clientVersionCnt" : 1,
-               "xffIpCnt" : 1,
-               "valueCnt" : 1,
-               "methodCnt" : 1,
-               "pathCnt" : 1,
-               "request-refererCnt" : 1,
-               "bodyMagicCnt" : 1,
-               "request-referer" : [
-                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
-               ],
-               "path" : [
-                  "/xx/xxxxx"
-               ],
-               "uricnt" : 1,
-               "uri" : [
-                  "//www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
-               ],
-               "useragentCnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ]
-            },
-            "dstBytes" : 863,
             "dstGEO" : "CAN",
-            "dstRIR" : "TEST",
-            "srcPayload8" : "474554202f78782f",
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "tagsCnt" : 2,
-            "length" : 145,
-            "node" : "test",
-            "test" : {
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "string.snow" : [
-                  "16777226:41954,33554442:80"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "GEO" : [
-                  "RUS"
-               ]
-            },
-            "protocolCnt" : 2,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "tcpflags" : {
-               "fin" : 1,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "ack" : 4,
-               "psh" : 3,
-               "rst" : 1,
-               "urg" : 0
-            },
-            "totPackets" : 11,
-            "firstPacket" : 1454513228371,
+            "dstIp" : "10.0.0.2",
+            "totDataBytes" : 881,
+            "dstBytes" : 863,
             "dstDataBytes" : 569,
-            "segments" : 1
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160203"
-            }
+            "ipProtocol" : 6,
+            "srcPayload8" : "474554202f78782f",
+            "dstRIR" : "TEST",
+            "tagsCnt" : 2,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "5c:5e:ab:b3:67:c2"
+            ],
+            "dstPort" : 80,
+            "totPackets" : 11,
+            "srcDataBytes" : 312,
+            "firstPacket" : 1454513228371
          }
       }
    ]

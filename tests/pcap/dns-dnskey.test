@@ -2,23 +2,35 @@
    "sessions2" : [
       {
          "body" : {
-            "segments" : 1,
-            "dstBytes" : 0,
-            "dstRIR" : "ARIN",
-            "node" : "test",
+            "totDataBytes" : 66,
+            "length" : 0,
             "vlanCnt" : 1,
+            "srcIp" : "10.0.0.1",
+            "dstPort" : 53,
+            "vlan" : [
+               500
+            ],
+            "node" : "test",
+            "fileIds" : [],
+            "dstIp" : "8.8.8.8",
+            "packetPosArray" : [
+               24
+            ],
+            "srcDataBytes" : 66,
+            "firstPacket" : 1393428477365,
+            "totBytes" : 74,
+            "srcBytes" : 74,
             "packetLenArray" : [
                90
             ],
-            "firstPacket" : 1393428477365,
+            "dstDataBytes" : 0,
             "srcPayload8" : "f376011000010000",
-            "srcPackets" : 1,
             "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
                "RIR" : [
                   ""
-               ],
-               "string.snow" : [
-                  "16777226:53869,134744072:53"
                ],
                "number" : [
                   134744072
@@ -26,79 +38,67 @@
                "ip" : [
                   "10.0.0.1"
                ],
+               "string.snow" : [
+                  "16777226:53869,134744072:53"
+               ],
                "GEO" : [
                   "RUS"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
                ]
             },
+            "srcPort" : 53869,
+            "dstMacCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcPackets" : 1,
+            "dstMac" : [
+               "00:19:e2:ba:2f:c1"
+            ],
+            "ipProtocol" : 17,
+            "segments" : 1,
+            "totPackets" : 1,
+            "srcMacCnt" : 1,
+            "protocolCnt" : 2,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "srcMacCnt" : 1,
-            "totBytes" : 74,
-            "dstASN" : "AS15169 Google Inc.",
-            "dstMacCnt" : 1,
-            "totDataBytes" : 66,
-            "dstMac" : [
-               "00:19:e2:ba:2f:c1"
-            ],
-            "vlan" : [
-               500
-            ],
-            "srcPort" : 53869,
-            "srcMac" : [
-               "00:1a:e3:dc:2e:c0"
-            ],
-            "dstIp" : "8.8.8.8",
+            "srcGEO" : "RUS",
+            "timestamp" : "SET",
             "dns" : {
-               "opcodeCnt" : 1,
+               "hostCnt" : 1,
+               "qt" : [
+                  "DNSKEY"
+               ],
                "qtCnt" : 1,
+               "opcodeCnt" : 1,
                "qc" : [
                   "IN"
                ],
-               "hostCnt" : 1,
                "host" : [
                   "<root>"
-               ],
-               "qt" : [
-                  "DNSKEY"
                ],
                "opcode" : [
                   "QUERY"
                ],
                "qcCnt" : 1
             },
-            "dstPort" : 53,
-            "length" : 0,
-            "srcGEO" : "RUS",
-            "srcBytes" : 74,
-            "tagsCnt" : 1,
-            "lastPacket" : 1393428477365,
-            "srcASN" : "AS0000 This is neat",
-            "dstGEO" : "USA",
-            "timestamp" : "SET",
-            "packetPosArray" : [
-               24
+            "dstASN" : "AS15169 Google Inc.",
+            "srcMac" : [
+               "00:1a:e3:dc:2e:c0"
             ],
-            "srcDataBytes" : 66,
-            "srcIp" : "10.0.0.1",
-            "protocolCnt" : 2,
-            "dstPackets" : 0,
-            "totPackets" : 1,
-            "ipProtocol" : 17,
-            "dstDataBytes" : 0,
-            "fileIds" : [],
+            "lastPacket" : 1393428477365,
+            "dstGEO" : "USA",
+            "tagsCnt" : 1,
+            "dstRIR" : "ARIN",
+            "dstBytes" : 0,
             "tags" : [
                "srcip"
-            ]
+            ],
+            "dstPackets" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140226",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-140226"
             }
          }
       }

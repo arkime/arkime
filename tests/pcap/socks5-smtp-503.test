@@ -8,32 +8,22 @@
             }
          },
          "body" : {
-            "node" : "test",
-            "packetPosArray" : [
-               24,
-               106,
-               188,
-               264,
-               340,
-               416,
-               492,
-               568,
-               644,
-               735,
-               811,
-               891,
-               967,
-               1113,
-               1194,
-               1270,
-               1489,
-               1571,
-               1647,
-               1760
+            "segments" : 1,
+            "lastPacket" : 1385474639455,
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
             ],
+            "totBytes" : 1492,
+            "srcIp" : "10.0.0.2",
+            "tagsCnt" : 3,
             "srcPayload8" : "050100050100030e",
-            "totDataBytes" : 327,
-            "srcGEO" : "CAN",
+            "tags" : [
+               "smtp:authlogin",
+               "srcip",
+               "dstip"
+            ],
+            "ipProtocol" : 6,
+            "dstPayload8" : "0500050000010a00",
             "packetLenArray" : [
                82,
                82,
@@ -56,64 +46,76 @@
                113,
                76
             ],
-            "totPackets" : 20,
-            "dstPayload8" : "0500050000010a00",
-            "dstDataBytes" : 280,
-            "segments" : 1,
-            "dstPackets" : 10,
-            "fileIds" : [],
-            "srcIp" : "10.0.0.2",
-            "dstBytes" : 854,
-            "srcRIR" : "TEST",
-            "srcMacCnt" : 1,
-            "srcMac" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "srcPackets" : 10,
-            "timestamp" : "SET",
-            "length" : 12781,
-            "tagsCnt" : 3,
-            "srcBytes" : 638,
             "tcpflags" : {
-               "syn" : 2,
                "fin" : 0,
-               "ack" : 6,
-               "syn-ack" : 1,
+               "syn" : 2,
+               "dstZero" : 0,
                "psh" : 10,
+               "urg" : 0,
                "rst" : 1,
-               "urg" : 0
+               "srcZero" : 0,
+               "ack" : 6,
+               "syn-ack" : 1
             },
+            "firstPacket" : 1385474626674,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "node" : "test",
+            "srcPackets" : 10,
+            "dstPort" : 1080,
+            "dstASN" : "AS0000 This is neat",
             "protocol" : [
                "socks",
                "smtp",
                "tcp"
             ],
-            "dstMacCnt" : 2,
-            "firstPacket" : 1385474626674,
-            "dstIp" : "10.0.0.1",
+            "srcMacCnt" : 1,
             "srcDataBytes" : 47,
-            "lastPacket" : 1385474639455,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "dstASN" : "AS0000 This is neat",
-            "ipProtocol" : 6,
-            "srcASN" : "AS0001 Cool Beans!",
+            "totDataBytes" : 327,
             "socks" : {
                "host" : "010.000.00.003",
                "port" : 25
             },
-            "totBytes" : 1492,
+            "length" : 12781,
+            "srcBytes" : 638,
+            "dstBytes" : 854,
             "dstGEO" : "RUS",
-            "srcPort" : 53709,
-            "dstPort" : 1080,
+            "dstPackets" : 10,
+            "totPackets" : 20,
             "protocolCnt" : 3,
-            "tags" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ]
+            "timestamp" : "SET",
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcGEO" : "CAN",
+            "packetPosArray" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               492,
+               568,
+               644,
+               735,
+               811,
+               891,
+               967,
+               1113,
+               1194,
+               1270,
+               1489,
+               1571,
+               1647,
+               1760
+            ],
+            "dstIp" : "10.0.0.1",
+            "dstDataBytes" : 280,
+            "dstMacCnt" : 2,
+            "srcRIR" : "TEST",
+            "srcPort" : 53709,
+            "fileIds" : []
          }
       }
    ]

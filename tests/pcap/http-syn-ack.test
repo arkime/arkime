@@ -1,37 +1,26 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160701"
-            }
-         },
          "body" : {
-            "srcPort" : 10882,
-            "totBytes" : 13424,
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "timestamp" : "SET",
-            "srcBytes" : 544,
-            "firstPacket" : 1467366160266,
             "tcpflags" : {
-               "fin" : 0,
-               "urg" : 0,
-               "ack" : 9,
                "syn" : 0,
-               "syn-ack" : 1,
+               "fin" : 0,
                "psh" : 3,
-               "rst" : 0
+               "dstZero" : 0,
+               "syn-ack" : 1,
+               "ack" : 9,
+               "urg" : 0,
+               "rst" : 0,
+               "srcZero" : 0
             },
-            "srcIp" : "10.0.0.32",
+            "totBytes" : 13424,
+            "dstPayload8" : "485454502f312e31",
+            "srcMacCnt" : 1,
+            "node" : "test",
+            "srcDataBytes" : 427,
+            "srcPort" : 10882,
             "dstMacCnt" : 1,
-            "totPackets" : 13,
-            "srcPayload8" : "474554202f312048",
-            "dstPort" : 80,
-            "lastPacket" : 1467366160339,
+            "fileIds" : [],
             "packetPosArray" : [
                24,
                108,
@@ -47,81 +36,12 @@
                11032,
                12564
             ],
-            "dstBytes" : 12880,
+            "lastPacket" : 1467366160339,
+            "srcIp" : "10.0.0.32",
             "ipProtocol" : 6,
-            "dstIp" : "10.0.0.33",
-            "http" : {
-               "requestHeaderCnt" : 7,
-               "pathCnt" : 1,
-               "uricnt" : 1,
-               "bodyMagic" : [
-                  "application/x-gzip"
-               ],
-               "bodyMagicCnt" : 1,
-               "hostCnt" : 1,
-               "request-refererCnt" : 1,
-               "clientVersionCnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "useragentCnt" : 1,
-               "serverVersionCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "uri" : [
-                  "//js.navigator.io/1"
-               ],
-               "statuscodeCnt" : 1,
-               "md5Cnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "md5" : [
-                  "38bf34783fc26180631a614a88301cab"
-               ],
-               "responseHeader" : [
-                  "pragma",
-                  "expires",
-                  "content-type",
-                  "transfer-encoding",
-                  "vary",
-                  "cache-control",
-                  "access-control-allow-origin",
-                  "date",
-                  "content-encoding",
-                  "connection",
-                  "server"
-               ],
-               "host" : [
-                  "js.navigator.io"
-               ],
-               "path" : [
-                  "/1"
-               ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "accept-language"
-               ],
-               "methodCnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "request-referer" : [
-                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ],
-               "responseHeaderCnt" : 11
-            },
-            "srcMacCnt" : 1,
-            "dstPackets" : 11,
+            "dstMac" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
             "packetLenArray" : [
                84,
                76,
@@ -138,21 +58,103 @@
                1092
             ],
             "dstDataBytes" : 12252,
-            "fileIds" : [],
-            "length" : 73,
-            "dstPayload8" : "485454502f312e31",
-            "node" : "test",
+            "totPackets" : 13,
+            "dstIp" : "10.0.0.33",
+            "dstPort" : 80,
+            "firstPacket" : 1467366160266,
             "srcPackets" : 2,
+            "dstBytes" : 12880,
+            "protocolCnt" : 2,
+            "timestamp" : "SET",
             "srcMac" : [
                "aa:aa:aa:aa:aa:aa"
             ],
-            "protocolCnt" : 2,
+            "length" : 73,
+            "dstPackets" : 11,
+            "http" : {
+               "useragentCnt" : 1,
+               "host" : [
+                  "js.navigator.io"
+               ],
+               "requestHeaderCnt" : 7,
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "clientVersionCnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "serverVersionCnt" : 1,
+               "responseHeaderCnt" : 11,
+               "methodCnt" : 1,
+               "uri" : [
+                  "//js.navigator.io/1"
+               ],
+               "pathCnt" : 1,
+               "bodyMagicCnt" : 1,
+               "hostCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host",
+                  "accept-language"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+               ],
+               "request-refererCnt" : 1,
+               "request-referer" : [
+                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "method" : [
+                  "GET"
+               ],
+               "uricnt" : 1,
+               "responseHeader" : [
+                  "pragma",
+                  "expires",
+                  "content-type",
+                  "transfer-encoding",
+                  "vary",
+                  "cache-control",
+                  "access-control-allow-origin",
+                  "date",
+                  "content-encoding",
+                  "connection",
+                  "server"
+               ],
+               "path" : [
+                  "/1"
+               ],
+               "statuscodeCnt" : 1,
+               "md5Cnt" : 1,
+               "md5" : [
+                  "38bf34783fc26180631a614a88301cab"
+               ],
+               "serverVersion" : [
+                  "1.1"
+               ]
+            },
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
             "segments" : 1,
-            "srcDataBytes" : 427,
             "totDataBytes" : 12679,
-            "dstMac" : [
-               "aa:aa:aa:aa:aa:aa"
-            ]
+            "srcPayload8" : "474554202f312048",
+            "srcBytes" : 544
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160701",
+               "_type" : "session"
+            }
          }
       }
    ]

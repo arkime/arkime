@@ -1,138 +1,13 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-050330"
-            }
-         },
          "body" : {
-            "totPackets" : 24,
-            "srcDataBytes" : 796,
-            "srcRIR" : "ARIN",
-            "srcPackets" : 12,
-            "totBytes" : 2220,
-            "srcPort" : 32795,
-            "firstPacket" : 1112172466496,
-            "dstBytes" : 1328,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "protocolCnt" : 2,
-            "dstPayload8" : "1032818000010001",
-            "dstMac" : [
-               "00:c0:9f:32:41:8c"
-            ],
-            "srcMacCnt" : 1,
-            "dstDataBytes" : 1232,
-            "packetLenArray" : [
-               86,
-               114,
-               86,
-               314,
-               86,
-               86,
-               101,
-               145,
-               90,
-               106,
-               90,
-               118,
-               90,
-               118,
-               90,
-               110,
-               92,
-               92,
-               91,
-               91,
-               95,
-               95,
-               87,
-               131
-            ],
             "fileIds" : [],
-            "node" : "test",
-            "lastPacket" : 1112172737733,
+            "srcDataBytes" : 796,
             "dstPackets" : 12,
-            "timestamp" : "SET",
-            "dstPort" : 53,
-            "srcBytes" : 892,
-            "srcIp" : "192.168.170.8",
-            "ipProtocol" : 17,
-            "dstIp" : "192.168.170.20",
-            "length" : 271237,
-            "dstMacCnt" : 1,
-            "totDataBytes" : 2028,
-            "dns" : {
-               "opcode" : [
-                  "QUERY"
-               ],
-               "RIR" : [
-                  "ARIN",
-                  "",
-                  "",
-                  "ARIN"
-               ],
-               "qcCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "opcodeCnt" : 1,
-               "ASN" : [
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc."
-               ],
-               "qtCnt" : 7,
-               "host" : [
-                  "www.isc.org",
-                  "www.example.notginh",
-                  "smtp1.google.com",
-                  "www.google.com",
-                  "www.netbsd.org",
-                  "google.com",
-                  "smtp6.google.com",
-                  "smtp5.google.com",
-                  "smtp4.google.com",
-                  "104.9.192.66.in-addr.arpa",
-                  "smtp3.google.com",
-                  "www.example.com",
-                  "smtp2.google.com",
-                  "www.l.google.com"
-               ],
-               "status" : [
-                  "NXDOMAIN",
-                  "NOERROR"
-               ],
-               "qt" : [
-                  "AAAA",
-                  "A",
-                  "MX",
-                  "PTR",
-                  "LOC",
-                  "TXT",
-                  "ANY"
-               ],
-               "GEO" : [
-                  "USA",
-                  "USA",
-                  "USA",
-                  "USA"
-               ],
-               "statusCnt" : 2,
-               "ip" : [
-                  "204.152.190.12",
-                  "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
-                  "2001:4f8:0:2::d",
-                  "204.152.184.88"
-               ],
-               "ipCnt" : 4,
-               "hostCnt" : 14
-            },
+            "node" : "test",
+            "segments" : 1,
+            "dstPayload8" : "1032818000010001",
             "packetPosArray" : [
                24,
                110,
@@ -159,90 +34,215 @@
                2410,
                2497
             ],
-            "dstRIR" : "ARIN",
+            "dstMac" : [
+               "00:c0:9f:32:41:8c"
+            ],
+            "dstBytes" : 1328,
+            "srcIp" : "192.168.170.8",
+            "timestamp" : "SET",
             "srcPayload8" : "1032010000010000",
-            "segments" : 1,
-            "srcMac" : [
-               "00:e0:18:b1:0c:ad"
-            ]
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-050330",
-               "_type" : "session"
-            }
-         },
-         "body" : {
-            "totPackets" : 2,
-            "srcDataBytes" : 74,
+            "dstDataBytes" : 1232,
+            "srcPort" : 32795,
+            "protocolCnt" : 2,
+            "srcPackets" : 12,
+            "dstPort" : 53,
+            "length" : 271237,
+            "srcBytes" : 892,
             "srcRIR" : "ARIN",
-            "srcPackets" : 1,
-            "totBytes" : 187,
-            "srcPort" : 32796,
-            "firstPacket" : 1112172737737,
-            "dstBytes" : 105,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "protocolCnt" : 2,
-            "dstPayload8" : "5a53858000010001",
-            "dstMac" : [
-               "00:c0:9f:32:41:8c"
-            ],
-            "srcMacCnt" : 1,
-            "dstDataBytes" : 97,
-            "packetLenArray" : [
-               98,
-               121
-            ],
-            "fileIds" : [],
-            "node" : "test",
-            "timestamp" : "SET",
-            "dstPackets" : 1,
-            "lastPacket" : 1112172737737,
-            "dstPort" : 53,
-            "srcBytes" : 82,
-            "srcIp" : "192.168.170.8",
-            "ipProtocol" : 17,
-            "dstIp" : "192.168.170.20",
-            "length" : 0,
             "dstMacCnt" : 1,
-            "packetPosArray" : [
-               2628,
-               2726
+            "ipProtocol" : 17,
+            "packetLenArray" : [
+               86,
+               114,
+               86,
+               314,
+               86,
+               86,
+               101,
+               145,
+               90,
+               106,
+               90,
+               118,
+               90,
+               118,
+               90,
+               110,
+               92,
+               92,
+               91,
+               91,
+               95,
+               95,
+               87,
+               131
             ],
+            "totBytes" : 2220,
+            "totPackets" : 24,
+            "srcMacCnt" : 1,
+            "lastPacket" : 1112172737733,
             "dns" : {
-               "hostCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "statusCnt" : 1,
                "host" : [
-                  "1.0.0.127.in-addr.arpa"
+                  "www.isc.org",
+                  "www.example.notginh",
+                  "smtp1.google.com",
+                  "www.google.com",
+                  "www.netbsd.org",
+                  "google.com",
+                  "smtp6.google.com",
+                  "smtp5.google.com",
+                  "smtp4.google.com",
+                  "104.9.192.66.in-addr.arpa",
+                  "smtp3.google.com",
+                  "www.example.com",
+                  "smtp2.google.com",
+                  "www.l.google.com"
                ],
+               "opcodeCnt" : 1,
                "status" : [
+                  "NXDOMAIN",
                   "NOERROR"
                ],
-               "qtCnt" : 1,
-               "opcodeCnt" : 1,
+               "qtCnt" : 7,
+               "statusCnt" : 2,
+               "GEO" : [
+                  "USA",
+                  "USA",
+                  "USA",
+                  "USA"
+               ],
+               "qt" : [
+                  "AAAA",
+                  "A",
+                  "MX",
+                  "PTR",
+                  "LOC",
+                  "TXT",
+                  "ANY"
+               ],
+               "hostCnt" : 14,
+               "ip" : [
+                  "204.152.190.12",
+                  "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
+                  "2001:4f8:0:2::d",
+                  "204.152.184.88"
+               ],
+               "qcCnt" : 1,
                "qc" : [
                   "IN"
                ],
                "opcode" : [
                   "QUERY"
                ],
-               "qcCnt" : 1
+               "ipCnt" : 4,
+               "ASN" : [
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc."
+               ],
+               "RIR" : [
+                  "ARIN",
+                  "",
+                  "",
+                  "ARIN"
+               ]
             },
-            "totDataBytes" : 171,
             "dstRIR" : "ARIN",
-            "srcPayload8" : "5a53010000010000",
-            "segments" : 1,
+            "firstPacket" : 1112172466496,
+            "dstIp" : "192.168.170.20",
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
-            ]
+            ],
+            "totDataBytes" : 2028
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-050330"
+            }
+         },
+         "body" : {
+            "srcPayload8" : "5a53010000010000",
+            "timestamp" : "SET",
+            "srcIp" : "192.168.170.8",
+            "dstBytes" : 105,
+            "dstMac" : [
+               "00:c0:9f:32:41:8c"
+            ],
+            "packetPosArray" : [
+               2628,
+               2726
+            ],
+            "segments" : 1,
+            "dstPayload8" : "5a53858000010001",
+            "node" : "test",
+            "dstPackets" : 1,
+            "srcDataBytes" : 74,
+            "fileIds" : [],
+            "totDataBytes" : 171,
+            "srcMac" : [
+               "00:e0:18:b1:0c:ad"
+            ],
+            "dstIp" : "192.168.170.20",
+            "firstPacket" : 1112172737737,
+            "dstRIR" : "ARIN",
+            "lastPacket" : 1112172737737,
+            "dns" : {
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qt" : [
+                  "PTR"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "host" : [
+                  "1.0.0.127.in-addr.arpa"
+               ],
+               "opcodeCnt" : 1,
+               "qtCnt" : 1,
+               "statusCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ]
+            },
+            "srcMacCnt" : 1,
+            "totPackets" : 2,
+            "totBytes" : 187,
+            "packetLenArray" : [
+               98,
+               121
+            ],
+            "ipProtocol" : 17,
+            "dstMacCnt" : 1,
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "srcRIR" : "ARIN",
+            "srcBytes" : 82,
+            "length" : 0,
+            "dstPort" : 53,
+            "srcPackets" : 1,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 97,
+            "srcPort" : 32796
          }
       },
       {
@@ -253,17 +253,18 @@
             }
          },
          "body" : {
-            "dstIp" : "192.168.170.20",
-            "totDataBytes" : 217,
+            "totBytes" : 233,
+            "packetLenArray" : [
+               83,
+               182
+            ],
+            "ipProtocol" : 17,
+            "dstMacCnt" : 1,
+            "dstRIR" : "ARIN",
+            "lastPacket" : 1112172737758,
+            "srcMacCnt" : 1,
             "dns" : {
-               "qcCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qc" : [
-                  "IN"
-               ],
-               "opcodeCnt" : 1,
+               "statusCnt" : 1,
                "qtCnt" : 1,
                "status" : [
                   "NOERROR"
@@ -271,450 +272,449 @@
                "host" : [
                   "isc.org"
                ],
-               "statusCnt" : 1,
+               "opcodeCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
                "qt" : [
                   "NS"
                ],
                "hostCnt" : 1
             },
-            "packetPosArray" : [
-               2847,
-               3075
-            ],
-            "dstMacCnt" : 1,
-            "length" : 18,
-            "srcPayload8" : "208a010000010000",
-            "dstRIR" : "ARIN",
+            "totPackets" : 2,
+            "firstPacket" : 1112172737740,
+            "totDataBytes" : 217,
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
             ],
-            "segments" : 1,
-            "node" : "test",
-            "lastPacket" : 1112172737758,
-            "timestamp" : "SET",
-            "dstPackets" : 1,
-            "ipProtocol" : 17,
-            "srcIp" : "192.168.170.8",
-            "srcBytes" : 67,
+            "dstIp" : "192.168.170.20",
+            "srcPackets" : 1,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 158,
+            "srcPort" : 32797,
+            "length" : 18,
             "dstPort" : 53,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstPayload8" : "208a818000010004",
-            "protocolCnt" : 2,
-            "srcMacCnt" : 1,
+            "srcRIR" : "ARIN",
+            "srcBytes" : 67,
             "dstMac" : [
                "00:c0:9f:32:41:8c"
             ],
-            "fileIds" : [],
-            "packetLenArray" : [
-               83,
-               182
-            ],
-            "dstDataBytes" : 158,
-            "totPackets" : 2,
-            "srcDataBytes" : 59,
-            "srcPackets" : 1,
-            "srcRIR" : "ARIN",
             "dstBytes" : 166,
-            "firstPacket" : 1112172737740,
-            "srcPort" : 32797,
-            "totBytes" : 233
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-050330"
-            }
-         },
-         "body" : {
-            "srcMacCnt" : 1,
-            "dstMac" : [
-               "00:12:a9:00:32:23"
-            ],
-            "fileIds" : [],
-            "packetLenArray" : [
-               145,
-               145
-            ],
-            "dstDataBytes" : 121,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstPayload8" : "326e858300010000",
-            "protocolCnt" : 2,
-            "srcPackets" : 1,
-            "srcRIR" : "ARIN",
-            "dstBytes" : 129,
-            "srcPort" : 1707,
-            "firstPacket" : 1112172737755,
-            "totBytes" : 258,
-            "totPackets" : 2,
-            "srcDataBytes" : 121,
-            "srcPayload8" : "326e010000010000",
-            "dstRIR" : "RIPE",
-            "srcMac" : [
-               "00:60:08:45:e4:55"
-            ],
-            "segments" : 1,
-            "dstGEO" : "NOR",
-            "dstIp" : "217.13.4.24",
-            "dns" : {
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "host" : [
-                  "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
-               ],
-               "qtCnt" : 1,
-               "hostCnt" : 1,
-               "statusCnt" : 1,
-               "qt" : [
-                  "SRV"
-               ],
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1
-            },
-            "totDataBytes" : 242,
-            "packetPosArray" : [
-               2930,
-               3257
-            ],
-            "dstMacCnt" : 1,
-            "dstASN" : "AS15659 NextGenTel AS",
-            "length" : 19,
-            "ipProtocol" : 17,
-            "srcIp" : "192.168.170.56",
-            "srcBytes" : 129,
-            "dstPort" : 53,
-            "node" : "test",
-            "lastPacket" : 1112172737775,
-            "dstPackets" : 1,
-            "timestamp" : "SET"
-         }
-      },
-      {
-         "body" : {
-            "dstIp" : "217.13.4.24",
-            "dstGEO" : "NOR",
-            "dstMacCnt" : 1,
-            "dstASN" : "AS15659 NextGenTel AS",
-            "length" : 17,
-            "dns" : {
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "opcodeCnt" : 1,
-               "qtCnt" : 1,
-               "host" : [
-                  "_ldap._tcp.dc._msdcs.utelsystems.local"
-               ],
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "qt" : [
-                  "SRV"
-               ],
-               "statusCnt" : 1,
-               "hostCnt" : 1
-            },
-            "packetPosArray" : [
-               3402,
-               3516
-            ],
-            "totDataBytes" : 180,
-            "dstRIR" : "RIPE",
-            "srcPayload8" : "f161010000010000",
-            "segments" : 1,
-            "srcMac" : [
-               "00:60:08:45:e4:55"
-            ],
-            "node" : "test",
-            "lastPacket" : 1112172737793,
+            "srcIp" : "192.168.170.8",
+            "srcPayload8" : "208a010000010000",
             "timestamp" : "SET",
             "dstPackets" : 1,
-            "dstPort" : 53,
-            "srcBytes" : 98,
-            "ipProtocol" : 17,
-            "srcIp" : "192.168.170.56",
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstPayload8" : "f161858300010000",
-            "protocolCnt" : 2,
-            "dstMac" : [
-               "00:12:a9:00:32:23"
-            ],
-            "srcMacCnt" : 1,
-            "packetLenArray" : [
-               114,
-               114
-            ],
-            "dstDataBytes" : 90,
-            "fileIds" : [],
-            "totPackets" : 2,
-            "srcDataBytes" : 90,
-            "srcRIR" : "ARIN",
-            "srcPackets" : 1,
-            "totBytes" : 196,
-            "dstBytes" : 98,
-            "firstPacket" : 1112172737776,
-            "srcPort" : 1708
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-050330"
-            }
-         }
-      },
-      {
-         "body" : {
-            "totPackets" : 2,
-            "srcDataBytes" : 132,
-            "srcRIR" : "ARIN",
-            "srcPackets" : 1,
-            "totBytes" : 280,
-            "dstBytes" : 140,
-            "firstPacket" : 1112172737794,
-            "srcPort" : 1709,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstPayload8" : "8361858300010000",
-            "protocolCnt" : 2,
-            "dstMac" : [
-               "00:12:a9:00:32:23"
-            ],
-            "srcMacCnt" : 1,
-            "packetLenArray" : [
-               156,
-               156
-            ],
-            "dstDataBytes" : 132,
-            "fileIds" : [],
             "node" : "test",
-            "lastPacket" : 1112172737813,
-            "timestamp" : "SET",
-            "dstPackets" : 1,
-            "dstPort" : 53,
-            "srcBytes" : 140,
-            "ipProtocol" : 17,
-            "srcIp" : "192.168.170.56",
-            "dstGEO" : "NOR",
-            "dstIp" : "217.13.4.24",
-            "dstMacCnt" : 1,
-            "length" : 19,
-            "dstASN" : "AS15659 NextGenTel AS",
-            "packetPosArray" : [
-               3630,
-               3786
-            ],
-            "dns" : {
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "hostCnt" : 1,
-               "qt" : [
-                  "SRV"
-               ],
-               "statusCnt" : 1,
-               "host" : [
-                  "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
-               ],
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "qtCnt" : 1
-            },
-            "totDataBytes" : 264,
-            "dstRIR" : "RIPE",
-            "srcPayload8" : "8361010000010000",
+            "srcDataBytes" : 59,
+            "fileIds" : [],
             "segments" : 1,
-            "srcMac" : [
-               "00:60:08:45:e4:55"
+            "dstPayload8" : "208a818000010004",
+            "packetPosArray" : [
+               2847,
+               3075
             ]
-         },
+         }
+      },
+      {
          "header" : {
             "index" : {
                "_index" : "tests_sessions2-050330",
                "_type" : "session"
             }
+         },
+         "body" : {
+            "srcPayload8" : "326e010000010000",
+            "timestamp" : "SET",
+            "srcIp" : "192.168.170.56",
+            "dstBytes" : 129,
+            "dstMac" : [
+               "00:12:a9:00:32:23"
+            ],
+            "packetPosArray" : [
+               2930,
+               3257
+            ],
+            "segments" : 1,
+            "dstPayload8" : "326e858300010000",
+            "dstPackets" : 1,
+            "node" : "test",
+            "srcDataBytes" : 121,
+            "fileIds" : [],
+            "dstGEO" : "NOR",
+            "totDataBytes" : 242,
+            "srcMac" : [
+               "00:60:08:45:e4:55"
+            ],
+            "dstIp" : "217.13.4.24",
+            "firstPacket" : 1112172737755,
+            "dstRIR" : "RIPE",
+            "dns" : {
+               "host" : [
+                  "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
+               ],
+               "opcodeCnt" : 1,
+               "qtCnt" : 1,
+               "statusCnt" : 1,
+               "status" : [
+                  "NXDOMAIN"
+               ],
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qt" : [
+                  "SRV"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ]
+            },
+            "lastPacket" : 1112172737775,
+            "srcMacCnt" : 1,
+            "totPackets" : 2,
+            "totBytes" : 258,
+            "packetLenArray" : [
+               145,
+               145
+            ],
+            "ipProtocol" : 17,
+            "dstMacCnt" : 1,
+            "dstASN" : "AS15659 NextGenTel AS",
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "srcRIR" : "ARIN",
+            "srcBytes" : 129,
+            "length" : 19,
+            "dstPort" : 53,
+            "srcPackets" : 1,
+            "protocolCnt" : 2,
+            "srcPort" : 1707,
+            "dstDataBytes" : 121
          }
       },
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-050330"
+               "_index" : "tests_sessions2-050330",
+               "_type" : "session"
             }
          },
          "body" : {
-            "dstDataBytes" : 75,
-            "packetLenArray" : [
-               99,
-               99
+            "packetPosArray" : [
+               3402,
+               3516
             ],
+            "segments" : 1,
+            "dstPayload8" : "f161858300010000",
             "fileIds" : [],
+            "srcDataBytes" : 90,
+            "node" : "test",
+            "dstPackets" : 1,
+            "dstGEO" : "NOR",
+            "timestamp" : "SET",
+            "srcPayload8" : "f161010000010000",
+            "srcIp" : "192.168.170.56",
+            "dstBytes" : 98,
             "dstMac" : [
                "00:12:a9:00:32:23"
             ],
-            "srcMacCnt" : 1,
-            "protocolCnt" : 2,
-            "dstPayload8" : "d060858300010000",
+            "dstASN" : "AS15659 NextGenTel AS",
+            "srcBytes" : 98,
+            "srcRIR" : "ARIN",
             "protocol" : [
                "udp",
                "dns"
             ],
-            "totBytes" : 166,
-            "firstPacket" : 1112172737915,
-            "srcPort" : 1710,
-            "dstBytes" : 83,
-            "srcRIR" : "ARIN",
+            "dstPort" : 53,
+            "length" : 17,
+            "srcPort" : 1708,
+            "dstDataBytes" : 90,
             "srcPackets" : 1,
-            "srcDataBytes" : 75,
-            "totPackets" : 2,
-            "segments" : 1,
+            "protocolCnt" : 2,
+            "dstIp" : "217.13.4.24",
             "srcMac" : [
                "00:60:08:45:e4:55"
             ],
-            "dstRIR" : "RIPE",
-            "srcPayload8" : "d060010000010000",
-            "length" : 16,
-            "dstASN" : "AS15659 NextGenTel AS",
-            "dstMacCnt" : 1,
-            "packetPosArray" : [
-               3942,
-               4041
-            ],
+            "totDataBytes" : 180,
+            "firstPacket" : 1112172737776,
+            "totPackets" : 2,
             "dns" : {
                "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "hostCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "statusCnt" : 1,
                "host" : [
-                  "grimm.utelsystems.local"
+                  "_ldap._tcp.dc._msdcs.utelsystems.local"
                ],
+               "qtCnt" : 1,
+               "statusCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],
-               "qtCnt" : 1
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "hostCnt" : 1,
+               "qt" : [
+                  "SRV"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ]
             },
-            "totDataBytes" : 150,
-            "dstGEO" : "NOR",
-            "dstIp" : "217.13.4.24",
-            "dstPort" : 53,
-            "srcBytes" : 83,
-            "srcIp" : "192.168.170.56",
+            "lastPacket" : 1112172737793,
+            "srcMacCnt" : 1,
+            "dstRIR" : "RIPE",
+            "dstMacCnt" : 1,
             "ipProtocol" : 17,
+            "packetLenArray" : [
+               114,
+               114
+            ],
+            "totBytes" : 196
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-050330",
+               "_type" : "session"
+            }
+         },
+         "body" : {
+            "dstPayload8" : "8361858300010000",
+            "segments" : 1,
+            "packetPosArray" : [
+               3630,
+               3786
+            ],
+            "dstGEO" : "NOR",
+            "node" : "test",
             "dstPackets" : 1,
-            "lastPacket" : 1112172737932,
+            "srcDataBytes" : 132,
+            "fileIds" : [],
+            "srcIp" : "192.168.170.56",
+            "srcPayload8" : "8361010000010000",
             "timestamp" : "SET",
-            "node" : "test"
+            "dstMac" : [
+               "00:12:a9:00:32:23"
+            ],
+            "dstBytes" : 140,
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "srcRIR" : "ARIN",
+            "srcBytes" : 140,
+            "dstASN" : "AS15659 NextGenTel AS",
+            "srcPackets" : 1,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 132,
+            "srcPort" : 1709,
+            "length" : 19,
+            "dstPort" : 53,
+            "firstPacket" : 1112172737794,
+            "totDataBytes" : 264,
+            "srcMac" : [
+               "00:60:08:45:e4:55"
+            ],
+            "dstIp" : "217.13.4.24",
+            "totBytes" : 280,
+            "packetLenArray" : [
+               156,
+               156
+            ],
+            "ipProtocol" : 17,
+            "dstMacCnt" : 1,
+            "dstRIR" : "RIPE",
+            "dns" : {
+               "host" : [
+                  "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
+               ],
+               "opcodeCnt" : 1,
+               "statusCnt" : 1,
+               "qtCnt" : 1,
+               "status" : [
+                  "NXDOMAIN"
+               ],
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qt" : [
+                  "SRV"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ]
+            },
+            "lastPacket" : 1112172737813,
+            "srcMacCnt" : 1,
+            "totPackets" : 2
          }
       },
       {
          "body" : {
-            "srcRIR" : "ARIN",
-            "srcPackets" : 1,
-            "totBytes" : 166,
-            "dstBytes" : 83,
-            "srcPort" : 1711,
-            "firstPacket" : 1112172745357,
-            "totPackets" : 2,
-            "srcDataBytes" : 75,
+            "srcIp" : "192.168.170.56",
+            "srcPayload8" : "d060010000010000",
+            "timestamp" : "SET",
             "dstMac" : [
                "00:12:a9:00:32:23"
             ],
-            "srcMacCnt" : 1,
-            "packetLenArray" : [
-               99,
-               99
+            "dstBytes" : 83,
+            "segments" : 1,
+            "dstPayload8" : "d060858300010000",
+            "packetPosArray" : [
+               3942,
+               4041
             ],
-            "dstDataBytes" : 75,
-            "fileIds" : [],
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstPayload8" : "7663858300010000",
-            "protocolCnt" : 2,
-            "dstPort" : 53,
-            "srcBytes" : 83,
-            "ipProtocol" : 17,
-            "srcIp" : "192.168.170.56",
+            "dstGEO" : "NOR",
             "node" : "test",
             "dstPackets" : 1,
-            "timestamp" : "SET",
-            "lastPacket" : 1112172745375,
-            "dstRIR" : "RIPE",
-            "srcPayload8" : "7663010000010000",
-            "segments" : 1,
+            "srcDataBytes" : 75,
+            "fileIds" : [],
+            "firstPacket" : 1112172737915,
+            "totDataBytes" : 150,
             "srcMac" : [
                "00:60:08:45:e4:55"
             ],
             "dstIp" : "217.13.4.24",
-            "dstGEO" : "NOR",
+            "totBytes" : 166,
+            "packetLenArray" : [
+               99,
+               99
+            ],
+            "ipProtocol" : 17,
             "dstMacCnt" : 1,
-            "length" : 18,
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstRIR" : "RIPE",
             "dns" : {
+               "host" : [
+                  "grimm.utelsystems.local"
+               ],
+               "opcodeCnt" : 1,
+               "status" : [
+                  "NXDOMAIN"
+               ],
+               "qtCnt" : 1,
+               "statusCnt" : 1,
                "qt" : [
                   "A"
                ],
-               "statusCnt" : 1,
                "hostCnt" : 1,
-               "qtCnt" : 1,
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ]
+            },
+            "lastPacket" : 1112172737932,
+            "srcMacCnt" : 1,
+            "totPackets" : 2,
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "srcRIR" : "ARIN",
+            "srcBytes" : 83,
+            "dstASN" : "AS15659 NextGenTel AS",
+            "protocolCnt" : 2,
+            "srcPackets" : 1,
+            "srcPort" : 1710,
+            "dstDataBytes" : 75,
+            "length" : 16,
+            "dstPort" : 53
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-050330"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 83,
+            "dstMac" : [
+               "00:12:a9:00:32:23"
+            ],
+            "timestamp" : "SET",
+            "srcPayload8" : "7663010000010000",
+            "srcIp" : "192.168.170.56",
+            "dstPackets" : 1,
+            "node" : "test",
+            "fileIds" : [],
+            "srcDataBytes" : 75,
+            "dstGEO" : "NOR",
+            "packetPosArray" : [
+               4140,
+               4239
+            ],
+            "segments" : 1,
+            "dstPayload8" : "7663858300010000",
+            "srcMacCnt" : 1,
+            "dns" : {
+               "hostCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
                "host" : [
                   "grimm.utelsystems.local"
                ],
                "status" : [
                   "NXDOMAIN"
                ],
-               "opcodeCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "qc" : [
-                  "IN"
-               ]
+               "qtCnt" : 1,
+               "statusCnt" : 1
             },
+            "lastPacket" : 1112172745375,
+            "dstRIR" : "RIPE",
+            "totPackets" : 2,
+            "packetLenArray" : [
+               99,
+               99
+            ],
+            "totBytes" : 166,
+            "dstMacCnt" : 1,
+            "ipProtocol" : 17,
             "totDataBytes" : 150,
-            "packetPosArray" : [
-               4140,
-               4239
-            ]
+            "dstIp" : "217.13.4.24",
+            "srcMac" : [
+               "00:60:08:45:e4:55"
+            ],
+            "firstPacket" : 1112172745357,
+            "length" : 18,
+            "dstPort" : 53,
+            "protocolCnt" : 2,
+            "srcPackets" : 1,
+            "dstDataBytes" : 75,
+            "srcPort" : 1711,
+            "dstASN" : "AS15659 NextGenTel AS",
+            "srcRIR" : "ARIN",
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "srcBytes" : 83
          },
          "header" : {
             "index" : {

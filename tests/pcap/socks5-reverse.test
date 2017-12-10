@@ -2,128 +2,42 @@
    "sessions2" : [
       {
          "body" : {
-            "totPackets" : 52,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:83:9f:c6"
-            ],
-            "srcPayload8" : "4e5a8d08874e0500",
-            "totBytes" : 27311,
-            "fileIds" : [],
-            "srcGEO" : "RUS",
-            "dstPayload8" : "050100050100014a",
+            "tcpflags" : {
+               "urg" : 0,
+               "psh" : 29,
+               "srcZero" : 0,
+               "fin" : 1,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "ack" : 20,
+               "dstZero" : 0,
+               "syn" : 1
+            },
+            "srcDataBytes" : 23392,
+            "dstDataBytes" : 954,
+            "dstPackets" : 21,
             "test" : {
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "string.snow" : [
-                  "16777226:54263,33554442:8855"
-               ],
-               "RIR" : [
-                  ""
+               "GEO" : [
+                  "RUS"
                ],
                "number" : [
                   33554442
                ],
+               "string.snow" : [
+                  "16777226:54263,33554442:8855"
+               ],
                "ASN" : [
                   "AS0000 This is neat"
                ],
-               "GEO" : [
-                  "RUS"
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "RIR" : [
+                  ""
                ]
             },
-            "srcDataBytes" : 23392,
-            "socks" : {
-               "port" : 80,
-               "ip" : "74.125.131.103",
-               "ASN" : "AS15169 Google Inc.",
-               "GEO" : "USA",
-               "RIR" : "ARIN"
-            },
-            "length" : 37537,
+            "totBytes" : 27311,
             "totDataBytes" : 24346,
-            "protocol" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "dstPort" : 8855,
-            "tcpflags" : {
-               "ack" : 20,
-               "psh" : 29,
-               "rst" : 0,
-               "fin" : 1,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "urg" : 0
-            },
-            "ipProtocol" : 6,
-            "firstPacket" : 1386790367120,
-            "srcBytes" : 25112,
-            "protocolCnt" : 3,
-            "timestamp" : "SET",
-            "tagsCnt" : 2,
-            "packetLenArray" : [
-               82,
-               82,
-               76,
-               76,
-               76,
-               80,
-               76,
-               76,
-               76,
-               80,
-               363,
-               76,
-               1094,
-               76,
-               1430,
-               424,
-               76,
-               1430,
-               1430,
-               76,
-               1430,
-               76,
-               1430,
-               76,
-               1430,
-               1430,
-               154,
-               76,
-               76,
-               1430,
-               758,
-               76,
-               1430,
-               758,
-               76,
-               1430,
-               758,
-               76,
-               1430,
-               76,
-               758,
-               1430,
-               76,
-               758,
-               76,
-               1238,
-               718,
-               76,
-               1054,
-               76,
-               76,
-               76
-            ],
-            "dstBytes" : 2199,
-            "dstMacCnt" : 2,
-            "srcPackets" : 31,
-            "srcPort" : 54263,
-            "dstRIR" : "TEST",
-            "srcIp" : "10.0.0.1",
-            "lastPacket" : 1386790404657,
             "packetPosArray" : [
                24,
                106,
@@ -178,25 +92,100 @@
                28015,
                28091
             ],
-            "dstASN" : "AS0001 Cool Beans!",
             "dstGEO" : "CAN",
+            "srcMacCnt" : 1,
+            "srcPort" : 54263,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:83:9f:c6"
+            ],
+            "dstIp" : "10.0.0.2",
+            "srcPayload8" : "4e5a8d08874e0500",
+            "srcPackets" : 31,
+            "ipProtocol" : 6,
+            "node" : "test",
+            "fileIds" : [],
+            "dstPayload8" : "050100050100014a",
             "srcMac" : [
                "00:0a:f3:31:94:00"
             ],
-            "dstPackets" : 21,
-            "dstIp" : "10.0.0.2",
-            "tags" : [
-               "srcip",
-               "dstip"
+            "dstBytes" : 2199,
+            "srcIp" : "10.0.0.1",
+            "firstPacket" : 1386790367120,
+            "tagsCnt" : 2,
+            "protocolCnt" : 3,
+            "srcGEO" : "RUS",
+            "length" : 37537,
+            "dstMacCnt" : 2,
+            "srcASN" : "AS0000 This is neat",
+            "protocol" : [
+               "http",
+               "socks",
+               "tcp"
             ],
             "http" : {
+               "uricnt" : 2,
                "cookieValueCnt" : 2,
-               "cookieKey" : [
-                  "NID",
-                  "PREF"
+               "methodCnt" : 1,
+               "keyCnt" : 8,
+               "hostCnt" : 1,
+               "responseHeaderCnt" : 15,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "host",
+                  "cookie"
                ],
-               "clientVersionCnt" : 1,
+               "host" : [
+                  "www.google.com"
+               ],
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "bodyMagicCnt" : 2,
+               "cookieValue" : [
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "method" : [
+                  "GET"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
                "request-refererCnt" : 2,
+               "pathCnt" : 1,
+               "cookieKeyCnt" : 2,
+               "serverVersionCnt" : 1,
+               "clientVersionCnt" : 1,
+               "bodyMagic" : [
+                  "application/x-gzip",
+                  "text/html"
+               ],
+               "valueCnt" : 7,
+               "statuscode" : [
+                  302,
+                  200
+               ],
+               "key" : [
+                  "uule",
+                  "hl",
+                  "client",
+                  "start",
+                  "rls",
+                  "q",
+                  "num",
+                  "gl"
+               ],
+               "request-referer" : [
+                  "",
+                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
+               ],
+               "useragent" : [
+                  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
+               ],
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -214,56 +203,23 @@
                   "set-cookie",
                   "location"
                ],
-               "bodyMagic" : [
-                  "application/x-gzip",
-                  "text/html"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "useragent" : [
-                  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
-               ],
-               "pathCnt" : 1,
-               "responseHeaderCnt" : 15,
                "path" : [
                   "/search"
-               ],
-               "methodCnt" : 1,
-               "requestHeaderCnt" : 6,
-               "valueCnt" : 7,
-               "cookieKeyCnt" : 2,
-               "request-referer" : [
-                  "",
-                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
                ],
                "md5" : [
                   "2069181ae704855f29caf964ca52ec49",
                   "b0cecae354b9eab1f04f70e46a612cb1"
                ],
                "statuscodeCnt" : 2,
-               "statuscode" : [
-                  302,
-                  200
+               "useragentCnt" : 1,
+               "cookieKey" : [
+                  "NID",
+                  "PREF"
                ],
-               "cookieValue" : [
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               "uri" : [
+                  "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                ],
-               "host" : [
-                  "www.google.com"
-               ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "referer",
-                  "accept-encoding",
-                  "host",
-                  "cookie"
-               ],
-               "keyCnt" : 8,
-               "bodyMagicCnt" : 2,
-               "serverVersionCnt" : 1,
                "value" : [
                   "firefox",
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -273,39 +229,85 @@
                   "0",
                   "us"
                ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "useragentCnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "uri" : [
-                  "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                  "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ],
+               "requestHeaderCnt" : 6,
                "response-location" : [
                   "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                ],
-               "key" : [
-                  "uule",
-                  "hl",
-                  "client",
-                  "start",
-                  "rls",
-                  "q",
-                  "num",
-                  "gl"
-               ],
-               "uricnt" : 2,
-               "md5Cnt" : 2,
-               "hostCnt" : 1
+               "md5Cnt" : 2
             },
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstRIR" : "TEST",
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstPort" : 8855,
             "segments" : 1,
-            "dstDataBytes" : 954,
-            "node" : "test",
-            "srcASN" : "AS0000 This is neat",
-            "srcMacCnt" : 1
+            "packetLenArray" : [
+               82,
+               82,
+               76,
+               76,
+               76,
+               80,
+               76,
+               76,
+               76,
+               80,
+               363,
+               76,
+               1094,
+               76,
+               1430,
+               424,
+               76,
+               1430,
+               1430,
+               76,
+               1430,
+               76,
+               1430,
+               76,
+               1430,
+               1430,
+               154,
+               76,
+               76,
+               1430,
+               758,
+               76,
+               1430,
+               758,
+               76,
+               1430,
+               758,
+               76,
+               1430,
+               76,
+               758,
+               1430,
+               76,
+               758,
+               76,
+               1238,
+               718,
+               76,
+               1054,
+               76,
+               76,
+               76
+            ],
+            "timestamp" : "SET",
+            "srcBytes" : 25112,
+            "totPackets" : 52,
+            "lastPacket" : 1386790404657,
+            "socks" : {
+               "port" : 80,
+               "GEO" : "USA",
+               "ip" : "74.125.131.103",
+               "RIR" : "ARIN",
+               "ASN" : "AS15169 Google Inc."
+            }
          },
          "header" : {
             "index" : {

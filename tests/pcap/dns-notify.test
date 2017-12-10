@@ -1,86 +1,86 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-130923"
-            }
-         },
          "body" : {
-            "srcASN" : "AS29169 GANDI SAS",
-            "dstPayload8" : "9668a40000010000",
-            "timestamp" : "SET",
             "dstASN" : "AS46636 NatCoWeb Corp.",
-            "segments" : 1,
-            "ipProtocol" : 17,
-            "srcPort" : 55612,
-            "dstGEO" : "USA",
-            "packetLenArray" : [
-               181,
-               89
-            ],
-            "srcIp" : "217.70.190.232",
-            "srcDataBytes" : 157,
-            "totBytes" : 238,
+            "srcASN" : "AS29169 GANDI SAS",
+            "dstPackets" : 1,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstMac" : [
-               "52:54:00:d9:83:b3"
-            ],
-            "dstMacCnt" : 1,
-            "dstPort" : 53,
-            "dstRIR" : "ARIN",
-            "totDataBytes" : 222,
+            "dstGEO" : "USA",
+            "firstPacket" : 1379970300840,
+            "lastPacket" : 1379970300840,
+            "timestamp" : "SET",
+            "srcPayload8" : "9668240000010001",
             "srcMac" : [
                "00:23:33:69:4d:00",
                "00:00:5e:00:01:01"
             ],
-            "srcPayload8" : "9668240000010001",
-            "dns" : {
-               "host" : [
-                  "bortzmeyer.42"
-               ],
-               "opcodeCnt" : 1,
-               "qt" : [
-                  "SOA"
-               ],
-               "status" : [
-                  "NOERROR"
-               ],
-               "qcCnt" : 1,
-               "hostCnt" : 1,
-               "qtCnt" : 1,
-               "statusCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "opcode" : [
-                  "NOTIFY"
-               ]
-            },
-            "srcPackets" : 1,
-            "fileIds" : [],
-            "dstDataBytes" : 65,
-            "srcMacCnt" : 2,
-            "srcRIR" : "RIPE",
-            "firstPacket" : 1379970300840,
+            "length" : 0,
             "packetPosArray" : [
                24,
                205
             ],
-            "protocolCnt" : 2,
+            "dstPayload8" : "9668a40000010000",
+            "srcIp" : "217.70.190.232",
+            "ipProtocol" : 17,
             "node" : "test",
-            "dstIp" : "204.62.14.153",
-            "totPackets" : 2,
-            "srcGEO" : "FRA",
+            "packetLenArray" : [
+               181,
+               89
+            ],
+            "srcPort" : 55612,
+            "srcRIR" : "RIPE",
+            "segments" : 1,
+            "srcPackets" : 1,
+            "totDataBytes" : 222,
             "dstBytes" : 73,
-            "dstPackets" : 1,
+            "dstMac" : [
+               "52:54:00:d9:83:b3"
+            ],
+            "dstDataBytes" : 65,
+            "srcDataBytes" : 157,
+            "totBytes" : 238,
+            "dns" : {
+               "hostCnt" : 1,
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "qt" : [
+                  "SOA"
+               ],
+               "opcode" : [
+                  "NOTIFY"
+               ],
+               "statusCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "opcodeCnt" : 1,
+               "host" : [
+                  "bortzmeyer.42"
+               ],
+               "qcCnt" : 1
+            },
+            "srcMacCnt" : 2,
+            "dstPort" : 53,
             "srcBytes" : 165,
-            "length" : 0,
-            "lastPacket" : 1379970300840
+            "totPackets" : 2,
+            "fileIds" : [],
+            "dstRIR" : "ARIN",
+            "dstIp" : "204.62.14.153",
+            "dstMacCnt" : 1,
+            "srcGEO" : "FRA",
+            "protocolCnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-130923",
+               "_type" : "session"
+            }
          }
       }
    ]

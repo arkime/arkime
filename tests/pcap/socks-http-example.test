@@ -2,44 +2,45 @@
    "sessions2" : [
       {
          "body" : {
+            "node" : "test",
+            "ipProtocol" : 6,
+            "srcPackets" : 8,
+            "srcIp" : "10.180.156.185",
+            "srcPort" : 53533,
+            "totBytes" : 2698,
             "dstDataBytes" : 1599,
-            "fileIds" : [],
             "tcpflags" : {
-               "psh" : 4,
+               "fin" : 2,
                "ack" : 6,
                "syn" : 1,
+               "srcZero" : 0,
+               "psh" : 4,
+               "dstZero" : 0,
+               "urg" : 0,
                "rst" : 0,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "urg" : 0
+               "syn-ack" : 1
             },
-            "totDataBytes" : 1754,
             "totPackets" : 14,
-            "dstPayload8" : "005adfb20ab49cf9",
-            "dstBytes" : 2003,
-            "dstIp" : "10.180.156.249",
-            "totBytes" : 2698,
-            "srcIp" : "10.180.156.185",
-            "protocol" : [
-               "http",
-               "socks",
-               "tcp"
+            "totDataBytes" : 1754,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "socks" : {
-               "ip" : "93.184.216.119",
-               "GEO" : "USA",
-               "port" : 80,
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "RIR" : "RIPE"
-            },
-            "protocolCnt" : 3,
-            "srcDataBytes" : 155,
-            "srcBytes" : 695,
+            "length" : 10,
+            "dstIp" : "10.180.156.249",
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "lastPacket" : 1386004309478,
+            "dstPort" : 1080,
+            "segments" : 1,
             "http" : {
-               "uricnt" : 1,
-               "pathCnt" : 1,
-               "methodCnt" : 1,
                "serverVersionCnt" : 1,
+               "hostCnt" : 1,
+               "useragentCnt" : 1,
+               "pathCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
                "responseHeader" : [
                   "expires",
                   "content-type",
@@ -53,56 +54,52 @@
                   "x-ec-custom-error",
                   "server"
                ],
-               "host" : [
-                  "www.example.com"
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
                ],
-               "hostCnt" : 1,
-               "useragentCnt" : 1,
-               "bodyMagic" : [
-                  "text/html"
-               ],
+               "responseHeaderCnt" : 11,
                "useragent" : [
                   "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
                ],
-               "statuscodeCnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "clientVersionCnt" : 1,
                "requestHeader" : [
                   "accept",
                   "user-agent",
                   "host"
                ],
-               "bodyMagicCnt" : 1,
-               "md5Cnt" : 1,
+               "bodyMagic" : [
+                  "text/html"
+               ],
                "md5" : [
                   "09b9c392dc1f6e914cea287cb6be34b0"
                ],
                "uri" : [
                   "//www.example.com/"
                ],
-               "method" : [
-                  "GET"
+               "statuscodeCnt" : 1,
+               "host" : [
+                  "www.example.com"
                ],
-               "clientVersionCnt" : 1,
-               "requestHeaderCnt" : 3,
                "serverVersion" : [
                   "1.1"
                ],
-               "clientVersion" : [
-                  "1.1"
-               ],
+               "uricnt" : 1,
+               "methodCnt" : 1,
                "path" : [
                   "/"
                ],
-               "statuscode" : [
-                  200
-               ],
-               "responseHeaderCnt" : 11
+               "md5Cnt" : 1,
+               "requestHeaderCnt" : 3
             },
-            "dstPort" : 1080,
-            "srcPort" : 53533,
-            "timestamp" : "SET",
-            "dstPackets" : 6,
-            "ipProtocol" : 6,
             "srcPayload8" : "040100505db8d877",
+            "dstGEO" : "USA",
+            "srcDataBytes" : 155,
+            "srcMacCnt" : 1,
+            "srcGEO" : "USA",
             "packetPosArray" : [
                24,
                118,
@@ -119,14 +116,12 @@
                2782,
                2864
             ],
-            "srcGEO" : "USA",
-            "dstMacCnt" : 1,
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
+            "protocol" : [
+               "http",
+               "socks",
+               "tcp"
             ],
-            "srcMacCnt" : 1,
-            "node" : "test",
-            "length" : 10,
+            "dstPayload8" : "005adfb20ab49cf9",
             "packetLenArray" : [
                94,
                90,
@@ -143,57 +138,40 @@
                82,
                82
             ],
-            "srcPackets" : 8,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "segments" : 1,
-            "dstGEO" : "USA",
-            "lastPacket" : 1386004309478,
-            "firstPacket" : 1386004309468
+            "dstPackets" : 6,
+            "srcBytes" : 695,
+            "fileIds" : [],
+            "timestamp" : "SET",
+            "socks" : {
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+               "RIR" : "RIPE",
+               "port" : 80,
+               "GEO" : "USA",
+               "ip" : "93.184.216.119"
+            },
+            "firstPacket" : 1386004309468,
+            "dstMacCnt" : 1,
+            "protocolCnt" : 3,
+            "dstBytes" : 2003
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131202"
             }
          }
       },
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131202"
+            }
+         },
          "body" : {
-            "lastPacket" : 1386004312384,
-            "firstPacket" : 1386004312331,
             "dstGEO" : "USA",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "segments" : 1,
-            "srcPackets" : 8,
-            "length" : 53,
-            "packetLenArray" : [
-               94,
-               90,
-               82,
-               107,
-               82,
-               90,
-               82,
-               228,
-               82,
-               1530,
-               225,
-               82,
-               82,
-               82,
-               82
-            ],
-            "srcMacCnt" : 1,
-            "node" : "test",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
-            "srcGEO" : "USA",
+            "srcPayload8" : "0401005000000001",
+            "srcDataBytes" : 171,
             "packetPosArray" : [
                2946,
                3040,
@@ -211,126 +189,116 @@
                5802,
                5884
             ],
-            "srcPayload8" : "0401005000000001",
-            "dstPackets" : 7,
-            "ipProtocol" : 6,
-            "timestamp" : "SET",
-            "srcPort" : 53534,
-            "dstPort" : 1080,
-            "http" : {
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "useragentCnt" : 1,
-               "hostCnt" : 1,
-               "statuscodeCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
-               ],
-               "pathCnt" : 1,
-               "uricnt" : 1,
-               "host" : [
-                  "www.example.com"
-               ],
-               "methodCnt" : 1,
-               "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "x-cache",
-                  "cache-control",
-                  "accept-ranges",
-                  "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
-                  "x-ec-custom-error",
-                  "server"
-               ],
-               "serverVersionCnt" : 1,
-               "requestHeaderCnt" : 3,
-               "clientVersionCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "responseHeaderCnt" : 11,
-               "path" : [
-                  "/"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "bodyMagicCnt" : 1,
-               "md5Cnt" : 1,
-               "uri" : [
-                  "//www.example.com/"
-               ],
-               "md5" : [
-                  "09b9c392dc1f6e914cea287cb6be34b0"
-               ]
-            },
-            "srcBytes" : 711,
-            "srcDataBytes" : 171,
-            "protocolCnt" : 3,
-            "socks" : {
-               "port" : 80,
-               "host" : "www.example.com"
-            },
-            "srcIp" : "10.180.156.185",
+            "packetLenArray" : [
+               94,
+               90,
+               82,
+               107,
+               82,
+               90,
+               82,
+               228,
+               82,
+               1530,
+               225,
+               82,
+               82,
+               82,
+               82
+            ],
+            "dstPayload8" : "005adfb30ab49cf9",
             "protocol" : [
                "http",
                "socks",
                "tcp"
             ],
-            "totBytes" : 2780,
+            "srcMacCnt" : 1,
+            "srcGEO" : "USA",
+            "srcBytes" : 711,
+            "fileIds" : [],
+            "timestamp" : "SET",
+            "dstPackets" : 7,
+            "protocolCnt" : 3,
             "dstBytes" : 2069,
-            "dstPayload8" : "005adfb30ab49cf9",
-            "dstIp" : "10.180.156.249",
+            "dstMacCnt" : 1,
+            "socks" : {
+               "host" : "www.example.com",
+               "port" : 80
+            },
+            "firstPacket" : 1386004312331,
+            "srcPackets" : 8,
+            "ipProtocol" : 6,
+            "node" : "test",
+            "srcIp" : "10.180.156.185",
+            "srcPort" : 53534,
             "totPackets" : 15,
-            "totDataBytes" : 1770,
+            "dstDataBytes" : 1599,
+            "totBytes" : 2780,
             "tcpflags" : {
-               "syn-ack" : 1,
-               "fin" : 2,
-               "urg" : 0,
                "psh" : 4,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "dstZero" : 0,
                "ack" : 7,
                "syn" : 1,
-               "rst" : 0
+               "fin" : 2,
+               "srcZero" : 0
             },
-            "fileIds" : [],
-            "dstDataBytes" : 1599
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131202"
-            }
-         },
-         "body" : {
-            "srcDataBytes" : 160,
-            "protocolCnt" : 3,
-            "dstPort" : 1080,
+            "lastPacket" : 1386004312384,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstIp" : "10.180.156.249",
+            "totDataBytes" : 1770,
+            "length" : 53,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
             "http" : {
-               "serverVersionCnt" : 1,
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+               ],
+               "responseHeaderCnt" : 11,
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "uri" : [
+                  "//www.example.com/"
+               ],
+               "md5" : [
+                  "09b9c392dc1f6e914cea287cb6be34b0"
+               ],
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "clientVersionCnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "host" : [
+                  "www.example.com"
+               ],
+               "statuscodeCnt" : 1,
                "methodCnt" : 1,
+               "uricnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "requestHeaderCnt" : 3,
+               "md5Cnt" : 1,
+               "serverVersionCnt" : 1,
+               "hostCnt" : 1,
+               "useragentCnt" : 1,
+               "pathCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
                "responseHeader" : [
                   "expires",
                   "content-type",
@@ -344,77 +312,124 @@
                   "x-ec-custom-error",
                   "server"
                ],
-               "host" : [
-                  "www.example.com"
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ]
+            },
+            "segments" : 1,
+            "dstPort" : 1080
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131202",
+               "_type" : "session"
+            }
+         },
+         "body" : {
+            "tcpflags" : {
+               "fin" : 2,
+               "ack" : 7,
+               "syn" : 1,
+               "srcZero" : 0,
+               "psh" : 6,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "dstZero" : 0,
+               "rst" : 0
+            },
+            "totBytes" : 2905,
+            "dstDataBytes" : 1603,
+            "totPackets" : 17,
+            "srcPort" : 53535,
+            "srcIp" : "10.180.156.185",
+            "node" : "test",
+            "ipProtocol" : 6,
+            "srcPackets" : 10,
+            "dstPort" : 1080,
+            "segments" : 1,
+            "http" : {
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
                ],
-               "uricnt" : 1,
-               "pathCnt" : 1,
+               "responseHeaderCnt" : 11,
+               "md5" : [
+                  "09b9c392dc1f6e914cea287cb6be34b0"
+               ],
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "uri" : [
+                  "//www.example.com/"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "clientVersionCnt" : 1,
                "requestHeader" : [
                   "accept",
                   "user-agent",
                   "host"
                ],
-               "statuscodeCnt" : 1,
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "hostCnt" : 1,
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "useragentCnt" : 1,
-               "uri" : [
-                  "//www.example.com/"
-               ],
-               "md5" : [
-                  "09b9c392dc1f6e914cea287cb6be34b0"
-               ],
-               "bodyMagicCnt" : 1,
-               "md5Cnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "responseHeaderCnt" : 11,
-               "statuscode" : [
-                  200
-               ],
+               "methodCnt" : 1,
+               "uricnt" : 1,
                "serverVersion" : [
                   "1.1"
                ],
+               "statuscodeCnt" : 1,
+               "host" : [
+                  "www.example.com"
+               ],
                "requestHeaderCnt" : 3,
-               "clientVersionCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "md5Cnt" : 1,
+               "serverVersionCnt" : 1,
+               "useragentCnt" : 1,
+               "hostCnt" : 1,
+               "responseHeader" : [
+                  "expires",
+                  "content-type",
+                  "x-cache",
+                  "cache-control",
+                  "accept-ranges",
+                  "content-length",
+                  "etag",
+                  "date",
+                  "last-modified",
+                  "x-ec-custom-error",
+                  "server"
+               ],
                "method" : [
                   "GET"
-               ]
+               ],
+               "pathCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "bodyMagicCnt" : 1
             },
-            "srcBytes" : 832,
-            "timestamp" : "SET",
-            "srcPort" : 53535,
-            "packetPosArray" : [
-               5966,
-               6060,
-               6150,
-               6232,
-               6318,
-               6400,
-               6484,
-               6566,
-               6658,
-               6750,
-               6832,
-               7060,
-               8590,
-               8815,
-               8897,
-               8979,
-               9061
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "srcPayload8" : "0502000105010001",
-            "dstPackets" : 7,
-            "ipProtocol" : 6,
+            "length" : 9,
+            "totDataBytes" : 1763,
+            "dstIp" : "10.180.156.249",
+            "lastPacket" : 1386004317989,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcGEO" : "USA",
+            "srcMacCnt" : 1,
+            "protocol" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "dstPayload8" : "0500050000010ab4",
             "packetLenArray" : [
                94,
                90,
@@ -434,52 +449,43 @@
                82,
                82
             ],
-            "length" : 9,
-            "node" : "test",
-            "srcMacCnt" : 1,
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
+            "packetPosArray" : [
+               5966,
+               6060,
+               6150,
+               6232,
+               6318,
+               6400,
+               6484,
+               6566,
+               6658,
+               6750,
+               6832,
+               7060,
+               8590,
+               8815,
+               8897,
+               8979,
+               9061
             ],
-            "dstMacCnt" : 1,
-            "srcGEO" : "USA",
-            "srcPackets" : 10,
-            "lastPacket" : 1386004317989,
-            "firstPacket" : 1386004317979,
+            "srcDataBytes" : 160,
+            "srcPayload8" : "0502000105010001",
             "dstGEO" : "USA",
-            "segments" : 1,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "tcpflags" : {
-               "rst" : 0,
-               "psh" : 6,
-               "ack" : 7,
-               "syn" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "syn-ack" : 1
-            },
-            "fileIds" : [],
-            "dstDataBytes" : 1603,
-            "totDataBytes" : 1763,
-            "dstBytes" : 2073,
-            "dstPayload8" : "0500050000010ab4",
-            "dstIp" : "10.180.156.249",
-            "totPackets" : 17,
-            "srcIp" : "10.180.156.185",
-            "protocol" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "totBytes" : 2905,
+            "firstPacket" : 1386004317979,
             "socks" : {
-               "RIR" : "RIPE",
                "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+               "RIR" : "RIPE",
                "ip" : "93.184.216.119",
                "port" : 80,
                "GEO" : "USA"
-            }
+            },
+            "dstMacCnt" : 1,
+            "dstBytes" : 2073,
+            "protocolCnt" : 3,
+            "dstPackets" : 7,
+            "timestamp" : "SET",
+            "srcBytes" : 832,
+            "fileIds" : []
          }
       }
    ]

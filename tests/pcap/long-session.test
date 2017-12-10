@@ -2,192 +2,196 @@
    "sessions2" : [
       {
          "body" : {
+            "dstPort" : 80,
             "totDataBytes" : 5,
+            "dstGEO" : "CAN",
+            "dstIp" : "10.0.0.2",
+            "test" : {
+               "GEO" : [
+                  "RUS"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "string.snow" : [
+                  "16777226:54869,33554442:80"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "RIR" : [
+                  ""
+               ]
+            },
+            "dstDataBytes" : 0,
+            "lastPacket" : 1401386288595,
+            "firstPacket" : 1401385380102,
+            "timestamp" : "SET",
+            "srcMacCnt" : 1,
+            "dstPackets" : 1,
+            "dstMacCnt" : 2,
             "tcpflags" : {
-               "ack" : 1,
+               "rst" : 0,
+               "syn" : 1,
                "fin" : 0,
                "syn-ack" : 1,
-               "urg" : 0,
-               "rst" : 0,
+               "srcZero" : 0,
+               "dstZero" : 0,
                "psh" : 1,
-               "syn" : 1
+               "urg" : 0,
+               "ack" : 1
             },
-            "packetPosArray" : [
-               24,
-               114,
-               196,
-               266
-            ],
-            "fileIds" : [],
-            "totBytes" : 253,
-            "srcPayload8" : "4745540d0a",
             "dstRIR" : "TEST",
+            "tagsCnt" : 2,
+            "rootId" : "SET",
+            "srcDataBytes" : 5,
+            "srcBytes" : 187,
+            "srcGEO" : "RUS",
+            "srcIp" : "10.0.0.1",
+            "length" : 908493,
+            "node" : "test",
             "srcPackets" : 3,
+            "srcPort" : 54869,
+            "totPackets" : 4,
+            "fileIds" : [],
+            "srcASN" : "AS0000 This is neat",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstBytes" : 66,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
             "packetLenArray" : [
                90,
                82,
                70,
                75
             ],
-            "test" : {
-               "string.snow" : [
-                  "16777226:54869,33554442:80"
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "dstIp" : "10.0.0.2",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "firstPacket" : 1401385380102,
-            "segments" : 1,
-            "dstGEO" : "CAN",
-            "length" : 908493,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstPort" : 80,
-            "dstDataBytes" : 0,
-            "dstPackets" : 1,
-            "srcASN" : "AS0000 This is neat",
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "ipProtocol" : 6,
-            "dstMacCnt" : 2,
-            "timestamp" : "SET",
             "protocol" : [
                "http",
                "tcp"
             ],
-            "rootId" : "SET",
-            "srcPort" : 54869,
-            "srcBytes" : 187,
-            "srcDataBytes" : 5,
-            "node" : "test",
-            "srcIp" : "10.0.0.1",
+            "segments" : 1,
+            "totBytes" : 253,
             "protocolCnt" : 2,
-            "tagsCnt" : 2,
-            "dstBytes" : 66,
-            "lastPacket" : 1401386288595,
             "dstASN" : "AS0001 Cool Beans!",
-            "srcMacCnt" : 1,
+            "srcPayload8" : "4745540d0a",
+            "ipProtocol" : 6,
+            "packetPosArray" : [
+               24,
+               114,
+               196,
+               266
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140529",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "packetPosArray" : [
+               341
+            ],
+            "srcPayload8" : "4745540d0a",
+            "ipProtocol" : 6,
+            "protocolCnt" : 2,
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 60,
+            "packetLenArray" : [
+               76
+            ],
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "segments" : 2,
+            "totBytes" : 60,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcASN" : "AS0000 This is neat",
+            "srcPackets" : 0,
+            "srcPort" : 54869,
+            "fileIds" : [],
+            "totPackets" : 1,
+            "length" : 908494,
+            "node" : "test",
+            "srcBytes" : 0,
+            "srcDataBytes" : 0,
             "srcGEO" : "RUS",
-            "totPackets" : 4
+            "srcIp" : "10.0.0.1",
+            "dstMacCnt" : 2,
+            "dstRIR" : "TEST",
+            "tcpflags" : {
+               "syn" : 0,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn-ack" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "dstZero" : 0,
+               "urg" : 0,
+               "ack" : 0
+            },
+            "tagsCnt" : 2,
+            "rootId" : "SET",
+            "dstPackets" : 1,
+            "firstPacket" : 1401385380102,
+            "timestamp" : "SET",
+            "srcMacCnt" : 1,
+            "dstDataBytes" : 0,
+            "test" : {
+               "RIR" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:54869,33554442:80"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ]
+            },
+            "lastPacket" : 1401386288597,
+            "dstIp" : "10.0.0.2",
+            "dstGEO" : "CAN",
+            "dstPort" : 80,
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-140529"
             }
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-140529",
-               "_type" : "session"
-            }
-         },
-         "body" : {
-            "dstDataBytes" : 0,
-            "dstPort" : 80,
-            "dstPackets" : 1,
-            "srcASN" : "AS0000 This is neat",
-            "ipProtocol" : 6,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "timestamp" : "SET",
-            "dstMacCnt" : 2,
-            "rootId" : "SET",
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "srcPort" : 54869,
-            "srcBytes" : 0,
-            "srcDataBytes" : 0,
-            "srcIp" : "10.0.0.1",
-            "node" : "test",
-            "tagsCnt" : 2,
-            "protocolCnt" : 2,
-            "dstBytes" : 60,
-            "lastPacket" : 1401386288597,
-            "srcMacCnt" : 1,
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcGEO" : "RUS",
-            "totPackets" : 1,
-            "packetPosArray" : [
-               341
-            ],
-            "tcpflags" : {
-               "rst" : 1,
-               "urg" : 0,
-               "psh" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "fin" : 0,
-               "ack" : 0
-            },
-            "totDataBytes" : 0,
-            "fileIds" : [],
-            "totBytes" : 60,
-            "srcPayload8" : "4745540d0a",
-            "srcPackets" : 0,
-            "dstRIR" : "TEST",
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:54869,33554442:80"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "GEO" : [
-                  "RUS"
-               ]
-            },
-            "packetLenArray" : [
-               76
-            ],
-            "dstIp" : "10.0.0.2",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "firstPacket" : 1401385380102,
-            "segments" : 2,
-            "dstGEO" : "CAN",
-            "length" : 908494,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ]
          }
       }
    ]

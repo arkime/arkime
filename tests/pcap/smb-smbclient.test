@@ -2,50 +2,23 @@
    "sessions2" : [
       {
          "body" : {
+            "srcDataBytes" : 868,
+            "lastPacket" : 1387494791811,
             "tcpflags" : {
                "urg" : 0,
-               "syn-ack" : 1,
+               "srcZero" : 0,
                "rst" : 0,
-               "psh" : 20,
                "ack" : 10,
                "fin" : 2,
-               "syn" : 1
+               "syn" : 1,
+               "psh" : 20,
+               "syn-ack" : 1,
+               "dstZero" : 0
             },
-            "srcDataBytes" : 868,
-            "dstBytes" : 1667,
-            "srcPayload8" : "000000beff534d42",
-            "dstDataBytes" : 801,
             "protocolCnt" : 2,
-            "firstPacket" : 1387494788141,
-            "dstPayload8" : "00000061ff534d42",
-            "dstMacCnt" : 1,
-            "smb" : {
-               "filenameCnt" : 1,
-               "domain" : [
-                  "WORKGROUP"
-               ],
-               "share" : [
-                  "\\\\LOCALHOST\\MP3"
-               ],
-               "osCnt" : 1,
-               "domainCnt" : 1,
-               "os" : [
-                  "Unix"
-               ],
-               "filename" : [
-                  "\\tmp\\foo"
-               ],
-               "shareCnt" : 1,
-               "userCnt" : 1,
-               "version" : [
-                  "Samba 3.6.3"
-               ],
-               "versionCnt" : 1,
-               "user" : [
-                  "user"
-               ]
-            },
-            "fileIds" : [],
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
             "packetPosArray" : [
                24,
                114,
@@ -82,29 +55,58 @@
                4333,
                4415
             ],
-            "srcPort" : 41823,
-            "srcBytes" : 2262,
-            "dstIp" : "127.0.0.1",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
+            "smb" : {
+               "userCnt" : 1,
+               "share" : [
+                  "\\\\LOCALHOST\\MP3"
+               ],
+               "versionCnt" : 1,
+               "domainCnt" : 1,
+               "filename" : [
+                  "\\tmp\\foo"
+               ],
+               "os" : [
+                  "Unix"
+               ],
+               "domain" : [
+                  "WORKGROUP"
+               ],
+               "user" : [
+                  "user"
+               ],
+               "osCnt" : 1,
+               "filenameCnt" : 1,
+               "shareCnt" : 1,
+               "version" : [
+                  "Samba 3.6.3"
+               ]
+            },
+            "fileIds" : [],
+            "firstPacket" : 1387494788141,
+            "timestamp" : "SET",
+            "dstBytes" : 1667,
             "protocol" : [
                "smb",
                "tcp"
             ],
-            "ipProtocol" : 6,
-            "totPackets" : 34,
-            "srcPackets" : 21,
-            "srcIp" : "127.0.0.1",
-            "dstPort" : 445,
-            "length" : 3669,
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "segments" : 1,
-            "totBytes" : 3929,
+            "srcMacCnt" : 1,
             "node" : "test",
-            "timestamp" : "SET",
+            "ipProtocol" : 6,
+            "length" : 3669,
+            "srcBytes" : 2262,
+            "srcPayload8" : "000000beff534d42",
+            "dstPayload8" : "00000061ff534d42",
+            "srcPort" : 41823,
+            "dstDataBytes" : 801,
+            "dstPackets" : 13,
+            "totDataBytes" : 1669,
+            "totBytes" : 3929,
+            "dstPort" : 445,
+            "segments" : 1,
+            "srcPackets" : 21,
+            "dstIp" : "127.0.0.1",
+            "dstMacCnt" : 1,
+            "totPackets" : 34,
             "packetLenArray" : [
                90,
                90,
@@ -141,10 +143,10 @@
                82,
                82
             ],
-            "lastPacket" : 1387494791811,
-            "srcMacCnt" : 1,
-            "dstPackets" : 13,
-            "totDataBytes" : 1669
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcIp" : "127.0.0.1"
          },
          "header" : {
             "index" : {

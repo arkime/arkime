@@ -252,6 +252,10 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
 
     const uint32_t seq = ntohl(tcphdr->th_seq);
 
+    if (tcphdr->th_win == 0 && (tcphdr->th_flags & TH_RST) == 0) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO + packet->direction]++;
+    }
+
     if (len < 0)
         return 1;
 

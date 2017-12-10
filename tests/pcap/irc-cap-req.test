@@ -1,63 +1,48 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-170104",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "srcPackets" : 14,
+            "protocolCnt" : 2,
             "dstPayload8" : "3a746d692e747769",
-            "dstMacCnt" : 1,
-            "length" : 375017,
-            "srcBytes" : 1110,
-            "dstPackets" : 12,
-            "totDataBytes" : 1337,
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "srcMacCnt" : 1,
-            "srcPort" : 59604,
+            "srcIp" : "10.10.10.10",
             "protocol" : [
                "irc",
                "tcp"
             ],
-            "dstDataBytes" : 1219,
-            "dstIp" : "10.11.11.11",
-            "srcIp" : "10.10.10.10",
+            "node" : "test",
+            "lastPacket" : 1483561951602,
+            "totDataBytes" : 1337,
             "totBytes" : 3177,
-            "packetPosArray" : [
-               24,
-               122,
-               216,
-               302,
-               432,
-               518,
-               665,
-               751,
-               880,
-               966,
-               1067,
-               1153,
-               1572,
-               1838,
-               1924,
-               2010,
-               2112,
-               2198,
-               2342,
-               2994,
-               3080,
-               3166,
-               3273,
-               3359,
-               3445,
-               3531
-            ],
-            "dstPort" : 80,
+            "fileIds" : [],
+            "dstDataBytes" : 1219,
+            "dstMacCnt" : 1,
+            "srcPayload8" : "4341502052455120",
+            "vlanCnt" : 1,
             "srcDataBytes" : 118,
+            "srcBytes" : 1110,
+            "dstPackets" : 12,
+            "vlan" : [
+               100
+            ],
+            "length" : 375017,
+            "srcPort" : 59604,
             "timestamp" : "SET",
+            "dstIp" : "10.11.11.11",
+            "srcMacCnt" : 1,
+            "totPackets" : 26,
+            "ipProtocol" : 6,
+            "irc" : {
+               "channel" : [
+                  "#THE-USER"
+               ],
+               "channelCnt" : 1,
+               "nick" : [
+                  "THE-USER"
+               ],
+               "nickCnt" : 1
+            },
+            "firstPacket" : 1483561576585,
             "packetLenArray" : [
                98,
                94,
@@ -89,39 +74,56 @@
             "srcMac" : [
                "00:22:83:3f:17:c5"
             ],
-            "fileIds" : [],
-            "vlan" : [
-               100
+            "packetPosArray" : [
+               24,
+               122,
+               216,
+               302,
+               432,
+               518,
+               665,
+               751,
+               880,
+               966,
+               1067,
+               1153,
+               1572,
+               1838,
+               1924,
+               2010,
+               2112,
+               2198,
+               2342,
+               2994,
+               3080,
+               3166,
+               3273,
+               3359,
+               3445,
+               3531
+            ],
+            "dstBytes" : 2067,
+            "dstMac" : [
+               "00:1b:17:00:01:24"
             ],
             "segments" : 1,
-            "lastPacket" : 1483561951602,
-            "ipProtocol" : 6,
-            "totPackets" : 26,
-            "firstPacket" : 1483561576585,
-            "srcPayload8" : "4341502052455120",
-            "dstBytes" : 2067,
-            "irc" : {
-               "channel" : [
-                  "#THE-USER"
-               ],
-               "channelCnt" : 1,
-               "nick" : [
-                  "THE-USER"
-               ],
-               "nickCnt" : 1
-            },
-            "vlanCnt" : 1,
-            "node" : "test",
-            "srcPackets" : 14,
-            "protocolCnt" : 2,
             "tcpflags" : {
-               "fin" : 2,
                "ack" : 12,
+               "fin" : 2,
+               "rst" : 0,
                "urg" : 0,
-               "psh" : 10,
-               "syn" : 1,
                "syn-ack" : 1,
-               "rst" : 0
+               "syn" : 1,
+               "psh" : 10,
+               "dstZero" : 0,
+               "srcZero" : 0
+            },
+            "dstPort" : 80
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-170104"
             }
          }
       }

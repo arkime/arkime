@@ -8,47 +8,30 @@
             }
          },
          "body" : {
+            "dstMac" : [
+               "00:0c:29:30:60:27"
+            ],
+            "srcMacCnt" : 1,
+            "length" : 56,
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "ipProtocol" : 6,
+            "tagsCnt" : 1,
+            "totDataBytes" : 1824,
+            "srcRIR" : "ARIN",
             "srcPackets" : 8,
-            "dstPayload8" : "00000095ff534d42",
-            "firstPacket" : 1132371118535,
-            "timestamp" : "SET",
-            "srcPort" : 52703,
             "srcIp" : "192.168.114.1",
-            "dstIp" : "192.168.114.129",
-            "dstPort" : 445,
+            "dstRIR" : "ARIN",
             "tags" : [
                "smb:bad-security-blob"
             ],
-            "smb" : {
-               "versionCnt" : 1,
-               "domain" : [
-                  "VNET3"
-               ],
-               "shareCnt" : 1,
-               "domainCnt" : 1,
-               "os" : [
-                  "Unix"
-               ],
-               "osCnt" : 1,
-               "version" : [
-                  "Samba 3.9.0-SVN-build-11572"
-               ],
-               "share" : [
-                  "\\\\192.168.114.129\\TEST"
-               ]
-            },
-            "ipProtocol" : 6,
-            "dstBytes" : 1326,
-            "srcMacCnt" : 1,
-            "segments" : 1,
-            "srcRIR" : "ARIN",
-            "length" : 56,
-            "lastPacket" : 1132371118592,
-            "srcDataBytes" : 902,
+            "dstIp" : "192.168.114.129",
+            "firstPacket" : 1132371118535,
+            "srcPort" : 52703,
             "fileIds" : [],
-            "protocolCnt" : 2,
-            "srcBytes" : 1438,
-            "dstMacCnt" : 1,
+            "dstPort" : 445,
             "packetPosArray" : [
                24,
                114,
@@ -65,16 +48,7 @@
                2760,
                2881
             ],
-            "srcMac" : [
-               "00:50:56:c0:00:01"
-            ],
-            "totPackets" : 14,
-            "totBytes" : 2764,
-            "srcPayload8" : "000000dbff534d42",
-            "node" : "test",
-            "dstMac" : [
-               "00:0c:29:30:60:27"
-            ],
+            "dstPayload8" : "00000095ff534d42",
             "packetLenArray" : [
                90,
                90,
@@ -91,24 +65,52 @@
                121,
                131
             ],
-            "dstRIR" : "ARIN",
-            "totDataBytes" : 1824,
-            "dstPackets" : 6,
-            "protocol" : [
-               "smb",
-               "tcp"
-            ],
+            "totPackets" : 14,
             "dstDataBytes" : 922,
+            "srcMac" : [
+               "00:50:56:c0:00:01"
+            ],
+            "dstMacCnt" : 1,
+            "timestamp" : "SET",
+            "dstBytes" : 1326,
+            "protocolCnt" : 2,
+            "node" : "test",
             "tcpflags" : {
-               "fin" : 0,
                "psh" : 10,
-               "syn" : 1,
+               "rst" : 0,
                "syn-ack" : 1,
-               "urg" : 0,
                "ack" : 2,
-               "rst" : 0
+               "fin" : 0,
+               "urg" : 0,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "syn" : 1
             },
-            "tagsCnt" : 1
+            "srcBytes" : 1438,
+            "srcDataBytes" : 902,
+            "segments" : 1,
+            "dstPackets" : 6,
+            "lastPacket" : 1132371118592,
+            "srcPayload8" : "000000dbff534d42",
+            "totBytes" : 2764,
+            "smb" : {
+               "version" : [
+                  "Samba 3.9.0-SVN-build-11572"
+               ],
+               "shareCnt" : 1,
+               "versionCnt" : 1,
+               "share" : [
+                  "\\\\192.168.114.129\\TEST"
+               ],
+               "os" : [
+                  "Unix"
+               ],
+               "domain" : [
+                  "VNET3"
+               ],
+               "domainCnt" : 1,
+               "osCnt" : 1
+            }
          }
       }
    ]

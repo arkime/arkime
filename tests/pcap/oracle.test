@@ -2,39 +2,40 @@
    "sessions2" : [
       {
          "body" : {
-            "dstPort" : 1522,
-            "totDataBytes" : 224,
+            "protocol" : [
+               "tcp",
+               "oracle"
+            ],
+            "oracle" : {
+               "service" : "xxxxx.xxx",
+               "host" : "10.000.000.11",
+               "user" : "user"
+            },
+            "srcDataBytes" : 224,
+            "srcIp" : "10.0.0.16",
+            "segments" : 1,
             "timestamp" : "SET",
-            "srcBytes" : 598,
-            "dstMacCnt" : 2,
-            "srcPort" : 64084,
-            "ipProtocol" : 6,
-            "protocolCnt" : 2,
+            "length" : 183,
             "vlan" : [
                50,
                300
             ],
-            "oracle" : {
-               "service" : "xxxxx.xxx",
-               "user" : "user",
-               "host" : "10.000.000.11"
-            },
-            "tcpflags" : {
-               "urg" : 0,
-               "fin" : 0,
-               "rst" : 0,
-               "syn" : 2,
-               "ack" : 2,
-               "psh" : 1,
-               "syn-ack" : 1
-            },
-            "fileIds" : [],
-            "srcIp" : "10.0.0.16",
+            "firstPacket" : 1476102172344,
+            "srcBytes" : 598,
+            "totDataBytes" : 224,
+            "dstPort" : 1522,
+            "srcMac" : [
+               "00:1b:17:00:14:30",
+               "80:71:1f:84:ef:cc"
+            ],
             "vlanCnt" : 2,
-            "totBytes" : 676,
-            "srcPackets" : 5,
-            "srcDataBytes" : 224,
             "lastPacket" : 1476102172528,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:84:ef:c5"
+            ],
+            "srcPort" : 64084,
+            "dstMacCnt" : 2,
             "packetLenArray" : [
                98,
                98,
@@ -43,26 +44,28 @@
                86,
                310
             ],
-            "srcMac" : [
-               "00:1b:17:00:14:30",
-               "80:71:1f:84:ef:cc"
-            ],
-            "segments" : 1,
-            "dstIp" : "10.0.0.17",
-            "dstDataBytes" : 0,
-            "dstBytes" : 78,
-            "totPackets" : 6,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:84:ef:c5"
-            ],
-            "protocol" : [
-               "tcp",
-               "oracle"
-            ],
-            "srcPayload8" : "00e0000001000000",
-            "firstPacket" : 1476102172344,
+            "ipProtocol" : 6,
+            "fileIds" : [],
+            "srcPackets" : 5,
             "dstPackets" : 1,
+            "tcpflags" : {
+               "psh" : 1,
+               "urg" : 0,
+               "dstZero" : 0,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "fin" : 0,
+               "syn" : 2,
+               "srcZero" : 0,
+               "ack" : 2
+            },
+            "dstIp" : "10.0.0.17",
+            "srcMacCnt" : 2,
+            "totBytes" : 676,
+            "totPackets" : 6,
+            "dstDataBytes" : 0,
+            "srcPayload8" : "00e0000001000000",
+            "protocolCnt" : 2,
             "packetPosArray" : [
                24,
                122,
@@ -71,14 +74,13 @@
                400,
                486
             ],
-            "srcMacCnt" : 2,
-            "node" : "test",
-            "length" : 183
+            "dstBytes" : 78,
+            "node" : "test"
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-161010"
+               "_index" : "tests_sessions2-161010",
+               "_type" : "session"
             }
          }
       }

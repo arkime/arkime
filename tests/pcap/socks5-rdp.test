@@ -1,38 +1,50 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131210"
+            }
+         },
          "body" : {
-            "dstMacCnt" : 1,
-            "dstRIR" : "TEST",
-            "srcPackets" : 6,
+            "srcPayload8" : "050100050100010a",
             "srcMac" : [
                "00:00:5e:00:01:01",
                "80:71:1f:82:cf:c6"
             ],
-            "node" : "test",
-            "lastPacket" : 1386644257101,
-            "userCnt" : 1,
+            "packetLenArray" : [
+               82,
+               82,
+               76,
+               76,
+               76,
+               80,
+               80,
+               111,
+               89,
+               76
+            ],
+            "protocolCnt" : 3,
+            "dstASN" : "AS0001 Cool Beans!",
             "srcASN" : "AS0002 Hmm!@#$%^&*()",
-            "srcPort" : 2276,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
+            "dstMacCnt" : 1,
+            "dstPayload8" : "0500050000010000",
+            "srcIp" : "10.0.0.3",
+            "srcMacCnt" : 2,
+            "dstRIR" : "TEST",
             "firstPacket" : 1386644255859,
-            "user" : [
-               "XXX"
-            ],
-            "srcPayload8" : "050100050100010a",
+            "segments" : 1,
             "socks" : {
-               "port" : 3389,
                "ip" : "10.0.0.1",
+               "port" : 3389,
                "ASN" : "AS0000 This is neat",
                "GEO" : "RUS"
             },
-            "totDataBytes" : 85,
-            "srcMacCnt" : 2,
+            "userCnt" : 1,
+            "srcDataBytes" : 54,
+            "timestamp" : "SET",
             "totBytes" : 668,
-            "tagsCnt" : 2,
             "packetPosArray" : [
                24,
                106,
@@ -46,58 +58,48 @@
                776
             ],
             "dstBytes" : 263,
-            "srcDataBytes" : 54,
-            "timestamp" : "SET",
-            "dstDataBytes" : 31,
             "dstMac" : [
                "00:0a:f3:31:94:00"
             ],
-            "fileIds" : [],
-            "dstPackets" : 4,
-            "dstPort" : 42356,
-            "tcpflags" : {
-               "fin" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 2,
-               "psh" : 6
-            },
-            "segments" : 1,
             "length" : 1242,
-            "ipProtocol" : 6,
-            "dstGEO" : "CAN",
-            "protocolCnt" : 3,
+            "tagsCnt" : 2,
             "dstIp" : "10.0.0.2",
-            "srcBytes" : 405,
-            "srcIp" : "10.0.0.3",
-            "dstPayload8" : "0500050000010000",
-            "totPackets" : 10,
-            "packetLenArray" : [
-               82,
-               82,
-               76,
-               76,
-               76,
-               80,
-               80,
-               111,
-               89,
-               76
-            ],
+            "srcPort" : 2276,
             "protocol" : [
                "rdp",
                "socks",
                "tcp"
             ],
-            "dstASN" : "AS0001 Cool Beans!"
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131210"
-            }
+            "dstPackets" : 4,
+            "fileIds" : [],
+            "totDataBytes" : 85,
+            "node" : "test",
+            "dstPort" : 42356,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "tcpflags" : {
+               "rst" : 0,
+               "urg" : 0,
+               "ack" : 2,
+               "syn" : 1,
+               "dstZero" : 0,
+               "psh" : 6,
+               "syn-ack" : 1,
+               "fin" : 0,
+               "srcZero" : 0
+            },
+            "totPackets" : 10,
+            "user" : [
+               "XXX"
+            ],
+            "dstDataBytes" : 31,
+            "srcBytes" : 405,
+            "ipProtocol" : 6,
+            "srcPackets" : 6,
+            "dstGEO" : "CAN",
+            "lastPacket" : 1386644257101
          }
       }
    ]

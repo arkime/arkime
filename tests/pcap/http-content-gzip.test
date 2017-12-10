@@ -2,154 +2,6 @@
    "sessions2" : [
       {
          "body" : {
-            "srcASN" : "AS0000 This is neat",
-            "srcIp" : "10.0.0.1",
-            "srcBytes" : 843,
-            "dstDataBytes" : 478,
-            "dstMacCnt" : 2,
-            "timestamp" : "SET",
-            "srcMac" : [
-               "00:0a:f3:31:90:00"
-            ],
-            "tagsCnt" : 2,
-            "dstIp" : "10.0.0.2",
-            "dstPackets" : 5,
-            "lastPacket" : 1407242225628,
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:50638,33554442:80"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ]
-            },
-            "srcGEO" : "RUS",
-            "dstGEO" : "CAN",
-            "srcPayload8" : "474554202f63726f",
-            "node" : "test",
-            "ipProtocol" : 6,
-            "srcDataBytes" : 417,
-            "firstPacket" : 1407242224712,
-            "totPackets" : 12,
-            "http" : {
-               "requestHeaderCnt" : 9,
-               "uri" : [
-                  "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
-               ],
-               "cookieValueCnt" : 1,
-               "methodCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
-               ],
-               "md5Cnt" : 1,
-               "hostCnt" : 1,
-               "useragentCnt" : 1,
-               "uricnt" : 1,
-               "cookieValue" : [
-                  "xxx"
-               ],
-               "path" : [
-                  "/crossdomain.xml"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "bodyMagic" : [
-                  "application/x-gzip"
-               ],
-               "host" : [
-                  "xxxxxxxxxxx.xxxxxxx.xxx"
-               ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "referer",
-                  "accept-encoding",
-                  "if-none-match",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "accept-language"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "statuscodeCnt" : 1,
-               "responseHeaderCnt" : 10,
-               "request-referer" : [
-                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
-               ],
-               "cookieKeyCnt" : 1,
-               "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "alternate-protocol",
-                  "cache-control",
-                  "content-length",
-                  "etag",
-                  "date",
-                  "content-encoding",
-                  "server",
-                  "age"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "cookieKey" : [
-                  "xxxxxxxxxx"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersionCnt" : 1,
-               "md5" : [
-                  "5ff7b2c69c3b22826a717cd5ea4c9f32"
-               ],
-               "request-refererCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "pathCnt" : 1
-            },
-            "protocolCnt" : 2,
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcPackets" : 7,
-            "dstBytes" : 1250,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:d8:bf:c2"
-            ],
-            "totBytes" : 2093,
-            "dstPayload8" : "485454502f312e31",
-            "srcPort" : 50638,
-            "dstPort" : 80,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "fileIds" : [],
-            "srcMacCnt" : 1,
-            "tcpflags" : {
-               "psh" : 3,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "rst" : 0,
-               "fin" : 2,
-               "ack" : 5
-            },
-            "length" : 916,
             "packetPosArray" : [
                24,
                106,
@@ -164,7 +16,24 @@
                2157,
                2233
             ],
-            "segments" : 1,
+            "protocolCnt" : 2,
+            "lastPacket" : 1407242225628,
+            "srcPayload8" : "474554202f63726f",
+            "tagsCnt" : 2,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "dstMacCnt" : 2,
+            "dstPort" : 80,
+            "dstASN" : "AS0001 Cool Beans!",
+            "srcPackets" : 7,
+            "dstDataBytes" : 478,
+            "totBytes" : 2093,
+            "firstPacket" : 1407242224712,
+            "length" : 916,
+            "dstBytes" : 1250,
+            "fileIds" : [],
             "packetLenArray" : [
                82,
                82,
@@ -179,12 +48,145 @@
                76,
                76
             ],
-            "protocol" : [
-               "http",
-               "tcp"
+            "ipProtocol" : 6,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "tcpflags" : {
+               "srcZero" : 0,
+               "ack" : 5,
+               "fin" : 2,
+               "dstZero" : 0,
+               "urg" : 0,
+               "rst" : 0,
+               "psh" : 3,
+               "syn-ack" : 1,
+               "syn" : 1
+            },
+            "segments" : 1,
+            "srcMac" : [
+               "00:0a:f3:31:90:00"
+            ],
+            "dstPayload8" : "485454502f312e31",
+            "srcDataBytes" : 417,
+            "dstRIR" : "TEST",
+            "totPackets" : 12,
+            "http" : {
+               "cookieKey" : [
+                  "xxxxxxxxxx"
+               ],
+               "cookieValueCnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "pathCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "cookieKeyCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "if-none-match",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "path" : [
+                  "/crossdomain.xml"
+               ],
+               "host" : [
+                  "xxxxxxxxxxx.xxxxxxx.xxx"
+               ],
+               "request-referer" : [
+                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
+               ],
+               "responseHeaderCnt" : 10,
+               "statuscode" : [
+                  200
+               ],
+               "bodyMagicCnt" : 1,
+               "request-refererCnt" : 1,
+               "md5Cnt" : 1,
+               "responseHeader" : [
+                  "expires",
+                  "content-type",
+                  "alternate-protocol",
+                  "cache-control",
+                  "content-length",
+                  "etag",
+                  "date",
+                  "content-encoding",
+                  "server",
+                  "age"
+               ],
+               "requestHeaderCnt" : 9,
+               "uricnt" : 1,
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "hostCnt" : 1,
+               "serverVersionCnt" : 1,
+               "uri" : [
+                  "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
+               ],
+               "md5" : [
+                  "5ff7b2c69c3b22826a717cd5ea4c9f32"
+               ],
+               "statuscodeCnt" : 1,
+               "methodCnt" : 1,
+               "cookieValue" : [
+                  "xxx"
+               ],
+               "useragentCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+               ],
+               "clientVersionCnt" : 1
+            },
+            "srcMacCnt" : 1,
+            "srcGEO" : "RUS",
+            "dstIp" : "10.0.0.2",
+            "srcIp" : "10.0.0.1",
+            "dstGEO" : "CAN",
+            "srcPort" : 50638,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c2"
             ],
             "totDataBytes" : 895,
-            "dstRIR" : "TEST"
+            "dstPackets" : 5,
+            "srcBytes" : 843,
+            "srcASN" : "AS0000 This is neat",
+            "timestamp" : "SET",
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:50638,33554442:80"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ]
+            },
+            "node" : "test"
          },
          "header" : {
             "index" : {

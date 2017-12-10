@@ -1,54 +1,54 @@
 {
    "sessions2" : [
       {
-         "body" : {
-            "length" : 0,
-            "dstPackets" : 0,
-            "timestamp" : "SET",
-            "fileIds" : [],
-            "node" : "test",
-            "srcBytes" : 145,
-            "srcMac" : [
-               "78:fe:3d:11:21:f2"
-            ],
-            "srcPayload8" : "64313a6164323a69",
-            "srcDataBytes" : 137,
-            "ipProtocol" : 17,
-            "dstPort" : 3207,
-            "srcPort" : 50759,
-            "dstBytes" : 0,
-            "dstMacCnt" : 1,
-            "srcIp" : "255.255.255.255",
-            "totDataBytes" : 137,
-            "packetLenArray" : [
-               161
-            ],
-            "packetPosArray" : [
-               103
-            ],
-            "dstIp" : "0.0.0.0",
-            "protocolCnt" : 2,
-            "segments" : 1,
-            "lastPacket" : 1387253713030,
-            "totBytes" : 145,
-            "srcMacCnt" : 1,
-            "totPackets" : 1,
-            "firstPacket" : 1387253713030,
-            "srcPackets" : 1,
-            "dstDataBytes" : 0,
-            "protocol" : [
-               "udp",
-               "bittorrent"
-            ],
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ]
-         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-131217"
             }
+         },
+         "body" : {
+            "srcDataBytes" : 137,
+            "dstPort" : 3207,
+            "length" : 0,
+            "dstIp" : "0.0.0.0",
+            "timestamp" : "SET",
+            "totDataBytes" : 137,
+            "totPackets" : 1,
+            "dstPackets" : 0,
+            "packetLenArray" : [
+               161
+            ],
+            "segments" : 1,
+            "srcMacCnt" : 1,
+            "dstDataBytes" : 0,
+            "dstMacCnt" : 1,
+            "fileIds" : [],
+            "protocolCnt" : 2,
+            "dstMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "firstPacket" : 1387253713030,
+            "lastPacket" : 1387253713030,
+            "srcBytes" : 145,
+            "srcPackets" : 1,
+            "srcPort" : 50759,
+            "node" : "test",
+            "protocol" : [
+               "udp",
+               "bittorrent"
+            ],
+            "srcIp" : "255.255.255.255",
+            "ipProtocol" : 17,
+            "srcPayload8" : "64313a6164323a69",
+            "dstBytes" : 0,
+            "totBytes" : 145,
+            "packetPosArray" : [
+               103
+            ],
+            "srcMac" : [
+               "78:fe:3d:11:21:f2"
+            ]
          }
       }
    ]

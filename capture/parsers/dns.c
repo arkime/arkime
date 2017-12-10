@@ -282,7 +282,6 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
         case 28: {
             if (rdlength != 16)
                 break;
-            struct in_addr in;
             unsigned char *ptr = BSB_WORK_PTR(bsb);
 
             moloch_field_ip6_add(ipField, session, ptr);

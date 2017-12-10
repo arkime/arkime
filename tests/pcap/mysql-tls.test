@@ -1,55 +1,19 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-161224",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "dstPort" : 3306,
-            "srcBytes" : 550,
-            "tls" : {
-               "versionCnt" : 1,
-               "dstSessionId" : [
-                  "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
-               ],
-               "version" : [
-                  "TLSv1.1"
-               ],
-               "cipherCnt" : 1,
-               "ja3" : [
-                  "3509fd9d38bde48d8abc69cd321c0ba0"
-               ],
-               "cipher" : [
-                  "TLS_RSA_WITH_AES_256_CBC_SHA"
-               ],
-               "ja3Cnt" : 1
-            },
-            "dstMac" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
+            "srcMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
             ],
-            "totPackets" : 10,
-            "node" : "test",
-            "cert" : [
-               {
-                  "notBefore" : 1464103436000,
-                  "validDays" : 3650,
-                  "serial" : "02",
-                  "notAfter" : 1779463436000,
-                  "subjectCN" : [
-                     "mysql_server_5.7.12_auto_generated_server_certificate"
-                  ],
-                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
-                  "issuerCN" : [
-                     "mysql_server_5.7.12_auto_generated_ca_certificate"
-                  ]
-               }
-            ],
-            "mysql" : {
-               "version" : "5.7.16"
-            },
-            "ipProtocol" : 6,
-            "length" : 4,
-            "dstPackets" : 5,
+            "lastPacket" : 1482552218503,
             "srcMacCnt" : 2,
-            "dstPayload8" : "4a0000000a352e37",
             "packetLenArray" : [
                94,
                94,
@@ -62,41 +26,37 @@
                86,
                959
             ],
-            "totBytes" : 1859,
-            "timestamp" : "SET",
-            "srcPayload8" : "200000018faa3a00",
-            "srcDataBytes" : 192,
-            "vlanCnt" : 1,
-            "tcpflags" : {
-               "ack" : 4,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "psh" : 4,
-               "urg" : 0
-            },
-            "firstPacket" : 1482552218498,
-            "srcMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
             "totDataBytes" : 1143,
-            "dstMacCnt" : 2,
-            "fileIds" : [],
-            "dstBytes" : 1309,
-            "protocol" : [
-               "tls",
-               "mysql",
-               "tcp"
+            "cert" : [
+               {
+                  "serial" : "02",
+                  "notAfter" : 1779463436000,
+                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
+                  "validDays" : 3650,
+                  "notBefore" : 1464103436000,
+                  "subjectCN" : [
+                     "mysql_server_5.7.12_auto_generated_server_certificate"
+                  ],
+                  "issuerCN" : [
+                     "mysql_server_5.7.12_auto_generated_ca_certificate"
+                  ]
+               }
             ],
-            "srcPort" : 41324,
-            "certCnt" : 1,
-            "dstDataBytes" : 951,
+            "mysql" : {
+               "version" : "5.7.16"
+            },
             "dstIp" : "10.10.10.11",
+            "srcDataBytes" : 192,
             "srcIp" : "10.10.10.10",
-            "segments" : 1,
-            "protocolCnt" : 3,
+            "dstMac" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "totBytes" : 1859,
+            "dstDataBytes" : 951,
+            "dstMacCnt" : 2,
+            "srcPort" : 41324,
+            "ipProtocol" : 6,
             "packetPosArray" : [
                24,
                118,
@@ -109,17 +69,59 @@
                998,
                1084
             ],
+            "srcPayload8" : "200000018faa3a00",
+            "dstPayload8" : "4a0000000a352e37",
+            "srcPackets" : 5,
+            "certCnt" : 1,
+            "fileIds" : [],
+            "timestamp" : "SET",
+            "length" : 4,
+            "dstPackets" : 5,
+            "vlanCnt" : 1,
+            "protocolCnt" : 3,
+            "dstBytes" : 1309,
+            "totPackets" : 10,
+            "protocol" : [
+               "tls",
+               "mysql",
+               "tcp"
+            ],
+            "dstPort" : 3306,
+            "segments" : 1,
             "vlan" : [
                50
             ],
-            "srcPackets" : 5,
-            "lastPacket" : 1482552218503
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-161224"
-            }
+            "tcpflags" : {
+               "ack" : 4,
+               "psh" : 4,
+               "dstZero" : 0,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "fin" : 0,
+               "srcZero" : 0
+            },
+            "tls" : {
+               "version" : [
+                  "TLSv1.1"
+               ],
+               "ja3Cnt" : 1,
+               "versionCnt" : 1,
+               "dstSessionId" : [
+                  "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
+               ],
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_256_CBC_SHA"
+               ],
+               "ja3" : [
+                  "3509fd9d38bde48d8abc69cd321c0ba0"
+               ],
+               "cipherCnt" : 1
+            },
+            "node" : "test",
+            "firstPacket" : 1482552218498,
+            "srcBytes" : 550
          }
       }
    ]

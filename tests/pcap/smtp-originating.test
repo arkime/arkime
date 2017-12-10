@@ -1,60 +1,61 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140113",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "totDataBytes" : 2172,
-            "length" : 822,
-            "srcPort" : 55713,
-            "srcMacCnt" : 2,
-            "protocolCnt" : 2,
-            "totBytes" : 3766,
-            "tagsCnt" : 2,
+            "fileIds" : [],
             "dstPackets" : 11,
-            "srcBytes" : 2515,
-            "dstPort" : 25,
-            "dstPayload8" : "3232302078787878",
-            "srcDataBytes" : 1655,
-            "dstMacCnt" : 1,
             "tcpflags" : {
                "urg" : 0,
                "rst" : 1,
+               "srcZero" : 0,
                "psh" : 11,
-               "syn" : 1,
                "syn-ack" : 1,
+               "fin" : 2,
+               "dstZero" : 0,
                "ack" : 8,
-               "fin" : 2
+               "syn" : 1
             },
+            "dstMacCnt" : 1,
+            "lastPacket" : 1389625274669,
+            "ipProtocol" : 6,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
             "timestamp" : "SET",
-            "segments" : 1,
+            "srcPayload8" : "45484c4f20787878",
             "srcPackets" : 13,
+            "dstPort" : 25,
+            "protocolCnt" : 2,
+            "srcDataBytes" : 1655,
+            "dstBytes" : 1251,
+            "srcMac" : [
+               "00:00:5e:00:01:01",
+               "82:71:1f:83:98:f6"
+            ],
+            "tagsCnt" : 2,
+            "segments" : 1,
             "dstIp" : "10.0.0.6",
-            "packetLenArray" : [
-               90,
-               90,
-               82,
-               153,
-               82,
-               123,
-               82,
-               262,
-               181,
-               122,
-               82,
-               138,
-               82,
-               128,
-               82,
-               1530,
-               143,
-               82,
-               113,
-               88,
-               82,
-               175,
-               82,
-               76
+            "totPackets" : 24,
+            "tags" : [
+               "smtp:statuscode:250",
+               "dstip"
+            ],
+            "dstPayload8" : "3232302078787878",
+            "totDataBytes" : 2172,
+            "dstDataBytes" : 517,
+            "length" : 822,
+            "dstMac" : [
+               "00:25:90:a2:c2:6c"
             ],
             "srcIp" : "10.0.0.5",
+            "srcMacCnt" : 2,
             "packetPosArray" : [
                24,
                114,
@@ -81,47 +82,81 @@
                4016,
                4098
             ],
-            "totPackets" : 24,
             "firstPacket" : 1389625273848,
-            "tags" : [
-               "smtp:statuscode:250",
-               "dstip"
+            "packetLenArray" : [
+               90,
+               90,
+               82,
+               153,
+               82,
+               123,
+               82,
+               262,
+               181,
+               122,
+               82,
+               138,
+               82,
+               128,
+               82,
+               1530,
+               143,
+               82,
+               113,
+               88,
+               82,
+               175,
+               82,
+               76
             ],
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
+            "srcBytes" : 2515,
+            "srcPort" : 55713,
+            "node" : "test",
             "email" : {
-               "header-x-elnk-trace" : [
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               "contentType" : [
+                  "text/plain; charset=us-ascii"
+               ],
+               "subject" : [
+                  "xxxxxxxxxxxxxxxxxx"
+               ],
+               "GEO" : [
+                  "CAN",
+                  "---",
+                  "---"
                ],
                "src" : [
                   "xxxxxxxx@xxxxxxxxx.net"
                ],
+               "host" : [
+                  "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
+               ],
+               "useragentCnt" : 1,
+               "subjectCnt" : 1,
+               "header-x-elnk-trace" : [
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "idCnt" : 1,
+               "headersCnt" : 13,
+               "dstCnt" : 1,
+               "mimeVersion" : [
+                  "1.0 (Apple Message framework v1283)"
+               ],
+               "hostCnt" : 1,
+               "ipCnt" : 3,
                "dst" : [
                   "xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com"
                ],
                "useragent" : [
                   "Apple Mail (2.1283)"
                ],
-               "mimeVersionCnt" : 1,
-               "hostCnt" : 1,
-               "contentType" : [
-                  "text/plain; charset=us-ascii"
+               "ASN" : [
+                  "AS0001 Cool Beans!",
+                  "AS0002 Hmm!@#$%^&*()",
+                  "---"
                ],
-               "ipCnt" : 3,
                "contentTypeCnt" : 1,
                "id" : [
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@xxxxxxxxx.net"
-               ],
-               "subjectCnt" : 1,
-               "dstCnt" : 1,
-               "host" : [
-                  "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
-               ],
-               "useragentCnt" : 1,
-               "mimeVersion" : [
-                  "1.0 (Apple Message framework v1283)"
                ],
                "headers" : [
                   "content-type",
@@ -138,53 +173,20 @@
                   "subject",
                   "x-originating-ip"
                ],
-               "headersCnt" : 13,
-               "idCnt" : 1,
-               "ip" : [
-                  "10.0.0.2",
-                  "10.0.0.3",
-                  "10.0.0.4"
-               ],
-               "subject" : [
-                  "xxxxxxxxxxxxxxxxxx"
-               ],
-               "ASN" : [
-                  "AS0001 Cool Beans!",
-                  "AS0002 Hmm!@#$%^&*()",
-                  "---"
-               ],
+               "mimeVersionCnt" : 1,
                "RIR" : [
                   "TEST",
                   "",
                   ""
                ],
-               "srcCnt" : 1,
-               "GEO" : [
-                  "CAN",
-                  "---",
-                  "---"
-               ]
+               "ip" : [
+                  "10.0.0.2",
+                  "10.0.0.3",
+                  "10.0.0.4"
+               ],
+               "srcCnt" : 1
             },
-            "dstBytes" : 1251,
-            "fileIds" : [],
-            "dstMac" : [
-               "00:25:90:a2:c2:6c"
-            ],
-            "srcMac" : [
-               "00:00:5e:00:01:01",
-               "82:71:1f:83:98:f6"
-            ],
-            "node" : "test",
-            "srcPayload8" : "45484c4f20787878",
-            "ipProtocol" : 6,
-            "lastPacket" : 1389625274669,
-            "dstDataBytes" : 517
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-140113"
-            }
+            "totBytes" : 3766
          }
       }
    ]

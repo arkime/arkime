@@ -1,18 +1,16 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131217"
+            }
+         },
          "body" : {
-            "totPackets" : 28,
-            "dstDataBytes" : 470,
-            "srcGEO" : "USA",
-            "firstPacket" : 1387291817187,
-            "protocolCnt" : 2,
-            "dstPackets" : 14,
-            "srcMacCnt" : 1,
+            "dstPort" : 25,
+            "srcBytes" : 2431,
             "ipProtocol" : 6,
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
             "packetLenArray" : [
                90,
                90,
@@ -43,23 +41,131 @@
                82,
                82
             ],
+            "srcMacCnt" : 1,
+            "srcPackets" : 14,
+            "totPackets" : 28,
+            "dstDataBytes" : 470,
+            "dstMacCnt" : 2,
+            "dstPayload8" : "3232302078787878",
+            "dstGEO" : "USA",
+            "email" : {
+               "headersCnt" : 10,
+               "md5" : [
+                  "40be8f5100e9beabab293c9d7bacaff0"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "srcCnt" : 1,
+               "contentType" : [
+                  "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
+               ],
+               "headers" : [
+                  "content-type",
+                  "message-id",
+                  "mime-version",
+                  "from",
+                  "to",
+                  "user-agent",
+                  "received",
+                  "content-disposition",
+                  "date",
+                  "subject"
+               ],
+               "filenameCnt" : 1,
+               "ipCnt" : 1,
+               "host" : [
+                  "localhost",
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "idCnt" : 1,
+               "mimeVersionCnt" : 1,
+               "src" : [
+                  "xxxxx@xxx.net"
+               ],
+               "filename" : [
+                  "a.zip"
+               ],
+               "ip" : [
+                  "127.0.0.1"
+               ],
+               "bodyMagicCnt" : 1,
+               "dst" : [
+                  "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "useragentCnt" : 1,
+               "contentTypeCnt" : 1,
+               "id" : [
+                  "20131217145016.GA29077@xxx.net"
+               ],
+               "dstCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "subject" : [
+                  "zip test"
+               ],
+               "hostCnt" : 2,
+               "subjectCnt" : 1,
+               "bodyMagic" : [
+                  "application/zip"
+               ],
+               "md5Cnt" : 1,
+               "ASN" : [
+                  "---"
+               ],
+               "useragent" : [
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "GEO" : [
+                  "---"
+               ]
+            },
+            "protocolCnt" : 2,
             "lastPacket" : 1387291817565,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "tcpflags" : {
-               "fin" : 2,
                "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 11,
                "syn" : 1,
                "urg" : 0,
-               "psh" : 13
+               "ack" : 11,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "psh" : 13,
+               "fin" : 2,
+               "rst" : 0
             },
-            "dstMacCnt" : 2,
+            "dstRIR" : "ARIN",
+            "tags" : [
+               "smtp:statuscode:250"
+            ],
+            "srcPayload8" : "45484c4f20787878",
             "srcPort" : 46671,
+            "firstPacket" : 1387291817187,
+            "tagsCnt" : 1,
+            "srcGEO" : "USA",
+            "segments" : 1,
+            "totDataBytes" : 1969,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "node" : "test",
+            "dstPackets" : 14,
+            "srcIp" : "10.180.156.249",
+            "fileIds" : [],
+            "srcDataBytes" : 1499,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "dstPort" : 25,
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "length" : 377,
+            "timestamp" : "SET",
+            "totBytes" : 3833,
+            "dstBytes" : 1402,
             "packetPosArray" : [
                24,
                114,
@@ -90,111 +196,7 @@
                4141,
                4223
             ],
-            "email" : {
-               "contentType" : [
-                  "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
-               ],
-               "md5Cnt" : 1,
-               "src" : [
-                  "xxxxx@xxx.net"
-               ],
-               "hostCnt" : 2,
-               "GEO" : [
-                  "---"
-               ],
-               "dst" : [
-                  "xxxxxxxxx@xxxxxxx.com"
-               ],
-               "ip" : [
-                  "127.0.0.1"
-               ],
-               "ipCnt" : 1,
-               "mimeVersionCnt" : 1,
-               "bodyMagic" : [
-                  "application/zip"
-               ],
-               "dstCnt" : 1,
-               "headers" : [
-                  "content-type",
-                  "message-id",
-                  "mime-version",
-                  "from",
-                  "to",
-                  "user-agent",
-                  "received",
-                  "content-disposition",
-                  "date",
-                  "subject"
-               ],
-               "md5" : [
-                  "40be8f5100e9beabab293c9d7bacaff0"
-               ],
-               "subjectCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ],
-               "id" : [
-                  "20131217145016.GA29077@xxx.net"
-               ],
-               "host" : [
-                  "localhost",
-                  "xxxxxxxxxxxxx.xxx.com"
-               ],
-               "useragentCnt" : 1,
-               "filename" : [
-                  "a.zip"
-               ],
-               "subject" : [
-                  "zip test"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "---"
-               ],
-               "idCnt" : 1,
-               "useragent" : [
-                  "Mutt/1.5.20 (2009-12-10)"
-               ],
-               "bodyMagicCnt" : 1,
-               "headersCnt" : 10,
-               "srcCnt" : 1,
-               "contentTypeCnt" : 1,
-               "filenameCnt" : 1
-            },
-            "totBytes" : 3833,
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "timestamp" : "SET",
-            "srcPackets" : 14,
-            "srcDataBytes" : 1499,
-            "dstRIR" : "ARIN",
-            "segments" : 1,
-            "length" : 377,
-            "dstPayload8" : "3232302078787878",
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "dstBytes" : 1402,
-            "node" : "test",
-            "srcBytes" : 2431,
-            "srcPayload8" : "45484c4f20787878",
-            "tags" : [
-               "smtp:statuscode:250"
-            ],
-            "totDataBytes" : 1969,
-            "dstIp" : "64.236.64.225",
-            "tagsCnt" : 1,
-            "dstGEO" : "USA",
-            "fileIds" : [],
-            "srcIp" : "10.180.156.249"
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131217",
-               "_type" : "session"
-            }
+            "dstIp" : "64.236.64.225"
          }
       }
    ]

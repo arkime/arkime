@@ -2,98 +2,6 @@
    "sessions2" : [
       {
          "body" : {
-            "dstDataBytes" : 188,
-            "vlan" : [
-               50
-            ],
-            "tcpflags" : {
-               "syn" : 1,
-               "ack" : 3,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "psh" : 6,
-               "rst" : 1,
-               "urg" : 0
-            },
-            "dstMacCnt" : 2,
-            "dstPackets" : 4,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "dstIp" : "10.0.0.2",
-            "node" : "test",
-            "length" : 181520,
-            "srcGEO" : "RUS",
-            "vlanCnt" : 1,
-            "totPackets" : 12,
-            "srcPayload8" : "3032020101602d02",
-            "protocol" : [
-               "ldap",
-               "tcp"
-            ],
-            "srcIp" : "10.0.0.1",
-            "test" : {
-               "GEO" : [
-                  "RUS"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "string.snow" : [
-                  "16777226:25936,33554442:3268"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ]
-            },
-            "firstPacket" : 1463256456040,
-            "ldap" : {
-               "bindname" : [
-                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
-                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
-               ],
-               "bindnameCnt" : 2,
-               "authtype" : [
-                  "simple"
-               ],
-               "authtypeCnt" : 1
-            },
-            "totDataBytes" : 446,
-            "segments" : 1,
-            "dstBytes" : 432,
-            "dstMac" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "dstGEO" : "CAN",
-            "srcPort" : 25936,
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcBytes" : 742,
-            "srcPackets" : 8,
-            "tagsCnt" : 2,
-            "ipProtocol" : 6,
-            "srcDataBytes" : 258,
-            "srcASN" : "AS0000 This is neat",
-            "srcMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "timestamp" : "SET",
-            "protocolCnt" : 2,
-            "lastPacket" : 1463256637560,
-            "dstPayload8" : "3084000000100201",
-            "totBytes" : 1174,
-            "fileIds" : [],
-            "srcMacCnt" : 2,
-            "dstPort" : 3268,
-            "dstRIR" : "TEST",
             "packetPosArray" : [
                24,
                110,
@@ -108,6 +16,94 @@
                1238,
                1314
             ],
+            "vlan" : [
+               50
+            ],
+            "fileIds" : [],
+            "srcMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "totDataBytes" : 446,
+            "dstGEO" : "CAN",
+            "tagsCnt" : 2,
+            "segments" : 1,
+            "length" : 181520,
+            "srcGEO" : "RUS",
+            "dstDataBytes" : 188,
+            "dstMacCnt" : 2,
+            "protocolCnt" : 2,
+            "srcPackets" : 8,
+            "firstPacket" : 1463256456040,
+            "node" : "test",
+            "srcBytes" : 742,
+            "protocol" : [
+               "ldap",
+               "tcp"
+            ],
+            "ldap" : {
+               "authtypeCnt" : 1,
+               "authtype" : [
+                  "simple"
+               ],
+               "bindname" : [
+                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
+                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
+               ],
+               "bindnameCnt" : 2
+            },
+            "totPackets" : 12,
+            "vlanCnt" : 1,
+            "totBytes" : 1174,
+            "dstPackets" : 4,
+            "dstPayload8" : "3084000000100201",
+            "dstPort" : 3268,
+            "dstMac" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "tcpflags" : {
+               "urg" : 0,
+               "rst" : 1,
+               "psh" : 6,
+               "ack" : 3,
+               "syn" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "srcZero" : 0
+            },
+            "lastPacket" : 1463256637560,
+            "srcPayload8" : "3032020101602d02",
+            "srcIp" : "10.0.0.1",
+            "srcDataBytes" : 258,
+            "ipProtocol" : 6,
+            "dstIp" : "10.0.0.2",
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstRIR" : "TEST",
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:25936,33554442:3268"
+               ]
+            },
+            "srcPort" : 25936,
+            "srcASN" : "AS0000 This is neat",
+            "timestamp" : "SET",
             "packetLenArray" : [
                86,
                86,
@@ -121,12 +117,18 @@
                96,
                76,
                76
+            ],
+            "srcMacCnt" : 2,
+            "dstBytes" : 432,
+            "tags" : [
+               "srcip",
+               "dstip"
             ]
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160514"
+               "_index" : "tests_sessions2-160514",
+               "_type" : "session"
             }
          }
       }

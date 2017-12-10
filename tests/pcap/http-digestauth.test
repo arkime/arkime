@@ -2,97 +2,58 @@
    "sessions2" : [
       {
          "body" : {
-            "fileIds" : [],
-            "packetPosArray" : [
-               24,
-               102,
-               180,
-               256
+            "dstPort" : 80,
+            "srcDataBytes" : 581,
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:0f:f7:76:82:80"
             ],
             "timestamp" : "SET",
-            "srcMacCnt" : 1,
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "srcGEO" : "RUS",
-            "test" : {
-               "string.snow" : [
-                  "16777226:4411,33554442:80"
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ]
-            },
-            "srcDataBytes" : 581,
-            "tagsCnt" : 2,
-            "node" : "test",
-            "protocolCnt" : 2,
-            "dstPort" : 80,
-            "totDataBytes" : 581,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 1,
-               "fin" : 0,
-               "syn" : 1,
-               "urg" : 0,
-               "psh" : 1
-            },
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
             "packetLenArray" : [
                78,
                78,
                76,
                651
             ],
-            "srcIp" : "10.0.0.1",
-            "dstGEO" : "CAN",
-            "dstPackets" : 1,
-            "dstIp" : "10.0.0.2",
             "dstASN" : "AS0001 Cool Beans!",
-            "srcMac" : [
-               "00:0f:f7:76:82:80"
-            ],
-            "dstDataBytes" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1414887555242,
-            "dstBytes" : 62,
-            "srcPort" : 4411,
+            "dstIp" : "10.0.0.2",
+            "totPackets" : 4,
+            "srcPayload8" : "474554202f787878",
+            "srcMacCnt" : 1,
+            "totDataBytes" : 581,
             "srcBytes" : 757,
+            "srcGEO" : "RUS",
+            "fileIds" : [],
+            "tagsCnt" : 2,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
             "dstMac" : [
                "00:00:5e:00:01:01",
                "00:1d:b5:ce:ef:c0"
             ],
-            "firstPacket" : 1414887555048,
             "length" : 194,
-            "srcPackets" : 3,
-            "srcPayload8" : "474554202f787878",
+            "dstDataBytes" : 0,
+            "dstMacCnt" : 2,
             "srcASN" : "AS0000 This is neat",
-            "segments" : 1,
+            "node" : "test",
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "srcPort" : 4411,
             "dstRIR" : "TEST",
             "http" : {
-               "request-authorization" : [
-                  "Digest username=\"user12345678@domain.xxxx\",realm=\"xxxxxxx\",nonce=\"xxxxxxxxxxxxxxxx\",uri=\"/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx\",algorithm=\"MD5\",cnonce=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",nc=00000003,qop=\"auth\",response=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",opaque=\"\""
+               "userCnt" : 1,
+               "methodCnt" : 1,
+               "authType" : [
+                  "digest"
                ],
-               "path" : [
-                  "/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
+               "useragent" : [
+                  "xxxxxxxxxxxxxxxxxx"
                ],
+               "hostCnt" : 1,
                "requestHeader" : [
                   "pragma",
                   "user-agent",
@@ -101,46 +62,87 @@
                   "host",
                   "authorization"
                ],
-               "user" : [
-                  "user12345678@domain.xxxx"
+               "clientVersionCnt" : 1,
+               "path" : [
+                  "/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
                ],
+               "uricnt" : 1,
+               "authTypeCnt" : 1,
                "clientVersion" : [
                   "1.1"
                ],
-               "pathCnt" : 1,
-               "clientVersionCnt" : 1,
-               "useragent" : [
-                  "xxxxxxxxxxxxxxxxxx"
-               ],
+               "useragentCnt" : 1,
+               "requestHeaderCnt" : 6,
                "method" : [
                   "GET"
                ],
-               "request-authorizationCnt" : 1,
-               "host" : [
-                  "xxxxxxx.xxxxxxxxxxx.xxx"
+               "user" : [
+                  "user12345678@domain.xxxx"
                ],
-               "authTypeCnt" : 1,
-               "useragentCnt" : 1,
                "uri" : [
                   "//xxxxxxx.xxxxxxxxxxx.xxx/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
                ],
-               "hostCnt" : 1,
-               "userCnt" : 1,
-               "methodCnt" : 1,
-               "authType" : [
-                  "digest"
+               "pathCnt" : 1,
+               "request-authorization" : [
+                  "Digest username=\"user12345678@domain.xxxx\",realm=\"xxxxxxx\",nonce=\"xxxxxxxxxxxxxxxx\",uri=\"/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx\",algorithm=\"MD5\",cnonce=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",nc=00000003,qop=\"auth\",response=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",opaque=\"\""
                ],
-               "uricnt" : 1,
-               "requestHeaderCnt" : 6
+               "host" : [
+                  "xxxxxxx.xxxxxxxxxxx.xxx"
+               ],
+               "request-authorizationCnt" : 1
+            },
+            "firstPacket" : 1414887555048,
+            "ipProtocol" : 6,
+            "lastPacket" : 1414887555242,
+            "dstGEO" : "CAN",
+            "packetPosArray" : [
+               24,
+               102,
+               180,
+               256
+            ],
+            "srcPackets" : 3,
+            "dstPackets" : 1,
+            "protocolCnt" : 2,
+            "dstBytes" : 62,
+            "tcpflags" : {
+               "ack" : 1,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 1,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "syn" : 1
             },
             "totBytes" : 819,
-            "totPackets" : 4,
-            "dstMacCnt" : 2
+            "segments" : 1,
+            "test" : {
+               "GEO" : [
+                  "RUS"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:4411,33554442:80"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-141102",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-141102"
             }
          }
       }
