@@ -19,6 +19,7 @@ AC_CONFIG_FILES([
   tests/plugins/Makefile
   viewer/Makefile
   viewer/version.js
+  parliament/Makefile
   release/Makefile
 ])
 
