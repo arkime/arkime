@@ -25,7 +25,7 @@ const version = 1;
 
 (function() { // parse arguments
   let appArgs = process.argv.slice(2);
-  let port, file;
+  let file, port;
 
   function setPasswordHash(err, hash) {
     if (err) {
@@ -36,21 +36,66 @@ const version = 1;
     app.set('password', hash);
   }
 
-  for (let arg of appArgs) {
-    if (arg.startsWith('--port'))     { port = arg.slice(7); }
-    if (arg.startsWith('--file'))     { file = arg.slice(7); }
-    if (arg.startsWith('--keyFile'))  { app.set('keyFile', arg.slice(10)); }
-    if (arg.startsWith('--certFile')) { app.set('certFile', arg.slice(11)); }
-    if (arg.startsWith('--password')) {
-      bcrypt.hash(arg.slice(11), 10, setPasswordHash);
+  function help() {
+    console.log('server.js [<config options>]\n');
+    console.log('Config Options:');
+    console.log('  -c     Parliament config file to use');
+    console.log('  -pass  Password for updating the parliament');
+    console.log('  -port  Port for the web app to listen on');
+    console.log('  -cert  Public certificate to use for https');
+    console.log('  -key   Private certificate to use for https');
+
+    process.exit(0);
+  }
+
+  for (let i = 0, len = appArgs.length; i < len; i++) {
+    switch(appArgs[i]) {
+      case '-c':
+      case '--c':
+        file = appArgs[i+1];
+        i++;
+        break;
+
+      case '-pass':
+      case '--pass':
+        bcrypt.hash(appArgs[i+1], 10, setPasswordHash);
+        i++;
+        break;
+
+      case '-port':
+      case '--port':
+        port = appArgs[i+1];
+        i++;
+        break;
+
+      case '-cert':
+      case '--cert':
+        app.set('certFile', appArgs[i+1]);
+        i++;
+        break;
+
+      case '-key':
+      case '--key':
+        app.set('keyFile', appArgs[i+1]);
+        i++;
+        break;
+
+      case '-help':
+      case '--help':
+        help();
+        break;
+
+      default:
+        help();
+        break;
     }
   }
 
   if (!appArgs.length) {
-    console.log('WARNING: No arguments, starting Parliament in view only mode with defaults.\n');
+    console.log('WARNING: No config options were set, starting Parliament in view only mode with defaults.\n');
   }
 
-  // set arguments
+  // set optional config options that reqiure defaults
   app.set('port', port || 8008);
   app.set('file', file || './parliament.json');
 }());

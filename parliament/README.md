@@ -30,21 +30,29 @@ You should find that you have a new folder:
 
 To start the app for production, simply run:
 ```
-npm start -- --password=somepassword --port=8765 --file=./absolute/path/to/parliament.json --keyFile=./absolute/path/to/keyFile.pem --certFile=./absolute/path/to/certFile.pem
+npm start -s -- -pass somepassword -port 8765 -c ./absolute/path/to/parliament.json -key ./absolute/path/to/keyFile.pem -cert ./absolute/path/to/certFile.pem
 ```
-This command starts the app, passing in the password, port, file location, and key and cert file locations. It also bundles the application files into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, and `parliament/dist/styles.bundle.js`.
+This command starts the app, passing in the password, port, config file location, and key and cert file locations. It also bundles the application files into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, and `parliament/dist/styles.bundle.js`.
+
+_**Important**: when using `npm start` the leading `--`, before the parameters is essential._
+
+You can also run the app by building then starting the app. Like so:
+```
+npm run build
+```
+```
+node server.js -pass somepassword -port 8765 -c ./absolute/path/to/parliament.json -key ./absolute/path/to/keyFile.pem -cert ./absolute/path/to/certFile.pem
+```
 
 **The parameters are defined as follows:**
 
 | Parameter | Default | Description |
 | --------- | ------- | ----------- |
-| password  | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. |
-| port      | 8008    | Port for the web app to listen on. |
-| file      | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
-| keyFile   | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
-| certFile  | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
-
-_**Important**: the leading `--`, before the parameters is essential. As are the leading `--` before each parameter._
+| -pass     | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. |
+| -port     | 8008    | Port for the web app to listen on. |
+| -c        | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
+| -key      | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
+| -cert     | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
 
 _Note: if you do not pass in the port or file arguments, the defaults are used._
 
@@ -59,7 +67,7 @@ To start the app for development and testing, simply run:
 npm run dev
 ```
 
-This command starts the app with the necessary flags set (`--password=admin --port=8008 --file=./parliament.dev.json`) and bundles the application files into into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, `parliament/dist/styles.bundle.js`, and `parliament/dist/vendor.bundle.js` with corresponding map files for debugging.
+This command starts the app with the necessary config options set (`-pass admin -port 8008 -file ./parliament.dev.json`) and bundles the application files into into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, `parliament/dist/styles.bundle.js`, and `parliament/dist/vendor.bundle.js` with corresponding map files for debugging.
 
 `ng build` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
@@ -74,13 +82,13 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ### Contributing
 
-Before submitting a pull request with your contribution, execute both `npm run tslint` and `npm run jslint`, and correct any errors. The first command runs [tslint][tslint], a static code analysis tool that checks TypeScript code for readability, maintainability, and functionality errors (for client code). The second runs [jshint][jshint], another static code analysis tool for checking if JavaScript source code complies with coding rules (for server code).
+Before submitting a pull request with your contribution, please run `npm run lint`, and correct any errors. This executes both `npm run jslint` and `npm run tslint`. The first command runs [jshint][jshint], a static code analysis tool for checking if JavaScript source code complies with coding rules (for server code). The second command runs [tslint][tslint], another static code analysis tool that checks TypeScript code for readability, maintainability, and functionality errors (for client code).
 
 :octocat: Please use a fork to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 
 ### Parliament Definition
-parliament.json (or whatever you pass into the --file flag when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied parliament.example.json to view an example parliament configuration.
+parliament.json (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied parliament.example.json to view an example parliament configuration.
 
 **Parliament model:**
 ```javascript

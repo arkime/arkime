@@ -5,9 +5,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng build --prod && node server.js",
-    "dev": "node server.js -- --password=admin --port=8008 --file=./parliament.dev.json & ng build --watch",
+    "dev": "node server.js -pass admin -port 8008 -c ./parliament.dev.json & ng build --watch",
     "build": "ng build",
     "test": "ng test",
+    "lint": "npm run jslint && npm run tslint",
     "tslint": "ng lint",
     "jslint": "jshint server.js",
     "e2e": "ng e2e"
