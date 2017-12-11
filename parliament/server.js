@@ -39,11 +39,11 @@ const version = 1;
   function help() {
     console.log('server.js [<config options>]\n');
     console.log('Config Options:');
-    console.log('  -c     Parliament config file to use');
-    console.log('  -pass  Password for updating the parliament');
-    console.log('  -port  Port for the web app to listen on');
-    console.log('  -cert  Public certificate to use for https');
-    console.log('  -key   Private certificate to use for https');
+    console.log('  -c, --config   Parliament config file to use');
+    console.log('  --pass         Password for updating the parliament');
+    console.log('  --port         Port for the web app to listen on');
+    console.log('  --cert         Public certificate to use for https');
+    console.log('  --key          Private certificate to use for https');
 
     process.exit(0);
   }
@@ -51,36 +51,32 @@ const version = 1;
   for (let i = 0, len = appArgs.length; i < len; i++) {
     switch(appArgs[i]) {
       case '-c':
-      case '--c':
+      case '--config':
         file = appArgs[i+1];
         i++;
         break;
 
-      case '-pass':
       case '--pass':
         bcrypt.hash(appArgs[i+1], 10, setPasswordHash);
         i++;
         break;
 
-      case '-port':
       case '--port':
         port = appArgs[i+1];
         i++;
         break;
 
-      case '-cert':
       case '--cert':
         app.set('certFile', appArgs[i+1]);
         i++;
         break;
 
-      case '-key':
       case '--key':
         app.set('keyFile', appArgs[i+1]);
         i++;
         break;
 
-      case '-help':
+      case '-h':
       case '--help':
         help();
         break;
