@@ -24,3 +24,13 @@ a.no-href:hover { color: #0056b3; }
 .alert.alert-sm > .close {
   line-height: .75;
 }
+
+
+/* media queries ----------------------------- */
+@media (min-width: 1600px) {
+  .col-xxl-2 {
+    -ms-flex: 0 0 16.666667%;
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+  }
+}

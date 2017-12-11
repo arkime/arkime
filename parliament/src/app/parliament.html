@@ -316,23 +316,25 @@
       <ul class="cluster-group d-flex flex-wrap row mb-4"
         [@clusters]="group.filteredClusters.length">
         <li *ngFor="let cluster of group.filteredClusters; trackBy:getTrackingId"
-          class="cluster col-sm-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+          class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
           <div class="card bg-light">
             <div class="card-body">
-              <div>
-                <h5 class="mb-1" style="display:inline-block">
+              <div> <!-- card title -->
+                <h6 style="display:inline-block">
+                  <span class="fa fa-sitemap text-muted cursor-help" *ngIf="cluster.multiviewer"
+                    placement="top" ngbTooltip="Mutiviewer cluster"></span>
+                  <span class="text-muted fa fa-eye-slash cursor-help" *ngIf="cluster.disabled"
+                    placement="top" ngbTooltip="Disabled cluster"></span>
                   <a *ngIf="!cluster.disabled"
                     class="no-decoration" href="{{ cluster.url }}/sessions">
                     {{ cluster.title }}
                   </a>
                   <span *ngIf="cluster.disabled">{{ cluster.title }}</span>
-                  <small class="text-muted" *ngIf="cluster.multiviewer">
-                    (multiviewer)
-                  </small>
-                  <small class="text-muted" *ngIf="cluster.disabled">
-                    (disabled)
-                  </small>
-                </h5>
+                  <a href="{{ cluster.url }}/stats" class="no-decoration ml-2"
+                    placement="top" ngbTooltip="Go to the Stats page of this cluster">
+                    <span class="fa fa-bar-chart"></span>
+                  </a>
+                </h6>
                 <span *ngIf="!cluster.disabled" style="display:inline-table;"
                   class="badge badge-pill badge-secondary cursor-help pull-right"
                   [ngClass]="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
@@ -341,7 +343,7 @@
                   <span *ngIf="cluster.healthError" class="fa fa-exclamation-triangle"></span>
                   <span *ngIf="!cluster.status && !cluster.healthError">????</span>
                 </span>
-              </div>
+              </div> <!-- /card title -->
               <hr>
               <p class="text-muted small mb-2">{{ cluster.description }}</p>
               <!-- cluster error -->
@@ -356,52 +358,53 @@
               <!-- cluster stats -->
               <small *ngIf="(!cluster.statsError && !cluster.showEditClusterForm && !cluster.disabled && !cluster.multiviewer) || (cluster.showEditClusterForm && !cluster.newDisabled && !cluster.newMultiviewer)">
                 <div class="row">
-                  <div class="col-12 col-sm-6 col-md-12 col-lg-12 col-xl-6"
-                    *ngIf="cluster.showEditClusterForm || !cluster.hideDeltaBPS">
+                  <div class="col-6" *ngIf="cluster.showEditClusterForm || !cluster.hideDeltaBPS">
                     <label [ngClass]="{'form-check-label':cluster.showEditClusterForm}">
                       <input class="form-check-input" type="checkbox"
                         [checked]="!cluster.hideDeltaBPS"
                         *ngIf="cluster.showEditClusterForm && auth.hasAuth"
                         (change)="cluster.hideDeltaBPS = !cluster.hideDeltaBPS" />
-                      <strong style="display: inline-block;">{{ cluster.deltaBPS | commaString: '' }}</strong>
-                      <span style="display: inline-block;">Bytes/Sec</span>
+                      <strong style="display:inline-block;">{{ cluster.deltaBPS | commaString: '' }}</strong>
+                      <span style="display:inline-block;font-size:90%;">Bytes/Sec</span>
                     </label>
                   </div>
-                  <div class="col-12 col-sm-6 col-md-12 col-lg-12 col-xl-6"
-                    *ngIf="cluster.showEditClusterForm || !cluster.hideDeltaTDPS">
+                  <div class="col-6" *ngIf="cluster.showEditClusterForm || !cluster.hideDeltaTDPS">
                     <label [ngClass]="{'form-check-label':cluster.showEditClusterForm}">
                       <input class="form-check-input" type="checkbox"
                         [checked]="!cluster.hideDeltaTDPS"
                         *ngIf="cluster.showEditClusterForm && auth.hasAuth"
                         (change)="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS" />
-                      <strong style="display: inline-block;">{{ cluster.deltaTDPS | commaString: '' }}</strong>
-                      <span style="display: inline-block;">Packet Drops/Sec</span>
+                      <strong style="display:inline-block;">{{ cluster.deltaTDPS | commaString: '' }}</strong>
+                      <span style="display:inline-block;font-size:90%;">Packet Drops/Sec</span>
                     </label>
                   </div>
-                  <div class="col-12 col-sm-6 col-md-12 col-lg-12 col-xl-6 mt-2"
-                    *ngIf="cluster.showEditClusterForm || !cluster.hideDataNodes">
+                  <div class="col-6" *ngIf="cluster.showEditClusterForm || !cluster.hideDataNodes">
                     <label [ngClass]="{'form-check-label':cluster.showEditClusterForm}">
                       <input class="form-check-input" type="checkbox"
                         [checked]="!cluster.hideDataNodes"
                         *ngIf="cluster.showEditClusterForm && auth.hasAuth"
                         (change)="cluster.hideDataNodes = !cluster.hideDataNodes" />
-                      <strong style="display: inline-block;">{{ cluster.dataNodes | commaString: '' }}</strong>
-                      <span style="display: inline-block;">Data Nodes</span>
+                      <strong style="display:inline-block;">{{ cluster.dataNodes | commaString: '' }}</strong>
+                      <span style="display:inline-block;font-size:90%;">Data Nodes</span>
                     </label>
                   </div>
-                  <div class="col-12 col-sm-6 col-md-12 col-lg-12 col-xl-6 mt-2"
-                    *ngIf="cluster.showEditClusterForm || !cluster.hideTotalNodes">
+                  <div class="col-6" *ngIf="cluster.showEditClusterForm || !cluster.hideTotalNodes">
                     <label [ngClass]="{'form-check-label':cluster.showEditClusterForm}">
                       <input class="form-check-input" type="checkbox"
                         [checked]="!cluster.hideTotalNodes"
                         *ngIf="cluster.showEditClusterForm && auth.hasAuth"
                         (change)="cluster.hideTotalNodes = !cluster.hideTotalNodes" />
-                      <strong style="display: inline-block;">{{ cluster.totalNodes | commaString: '' }}</strong>
-                      <span style="display: inline-block;">Total Nodes</span>
+                      <strong style="display:inline-block;">{{ cluster.totalNodes | commaString: '' }}</strong>
+                      <span style="display:inline-block;font-size:90%;">Total Nodes</span>
                     </label>
                   </div>
                 </div>
               </small> <!-- /cluster stats -->
+              <!-- cluster stats error -->
+              <small *ngIf="!cluster.multiviewer && cluster.statsError">
+                <span class="fa fa-exclamation-triangle text-danger"></span>&nbsp;
+                <em class="text-danger">{{ cluster.statsError }}</em>
+              </small> <!-- cluster stats error -->
               <!-- edit cluster -->
               <div *ngIf="cluster.showEditClusterForm && auth.hasAuth" class="small">
                 <hr class="mt-2">
@@ -447,42 +450,34 @@
                 </form>
               </div> <!-- /edit cluster -->
             </div>
-            <div class="card-footer small">
-              <span *ngIf="!cluster.multiviewer && cluster.statsError"
-                placement="right" ngbTooltip="{{ cluster.statsError }}">
-                <span class="fa fa-exclamation-triangle text-danger"></span>&nbsp;
-                <em class="text-danger"></em>
-              </span>
-              <a href="{{ cluster.url }}/stats" class="no-decoration"
-                placement="right" ngbTooltip="Go to the Stats page">
-                view stats
-              </a>
-              <a *ngIf="!cluster.showEditClusterForm && loggedIn"
+            <!-- edit cluster buttons -->
+            <div class="card-footer small" *ngIf="loggedIn">
+              <a *ngIf="!cluster.showEditClusterForm"
                 class="btn btn-sm btn-outline-warning pull-right cursor-pointer"
                 (click)="displayEditClusterForm(cluster)"
                 placement="top" ngbTooltip="Edit cluster">
                 <span class="fa fa-pencil"></span>
               </a>
-              <a *ngIf="cluster.showEditClusterForm && loggedIn"
+              <a *ngIf="cluster.showEditClusterForm"
                 class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1"
                 (click)="editCluster(group, cluster)"
                 placement="top" ngbTooltip="Save cluster">
                 <span class="fa fa-save"></span>&nbsp;
                 Save
               </a>
-              <a *ngIf="cluster.showEditClusterForm && loggedIn"
+              <a *ngIf="cluster.showEditClusterForm"
                 class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
                 (click)="cluster.showEditClusterForm = false;"
                 placement="top" ngbTooltip="Cancel">
                 <span class="fa fa-ban"></span>
               </a>
-              <a *ngIf="cluster.showEditClusterForm && loggedIn"
+              <a *ngIf="cluster.showEditClusterForm"
                 class="btn btn-sm btn-outline-danger pull-right cursor-pointer mr-1"
                 (click)="deleteCluster(group, cluster)"
                 placement="top" ngbTooltip="Delete cluster">
                 <span class="fa fa-trash-o"></span>
               </a>
-            </div>
+            </div> <!-- /edit cluster buttons -->
           </div>
         </li>
       </ul> <!-- /clusters -->
