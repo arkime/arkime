@@ -14,7 +14,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-            - test-ui: (cd viewer; npm install ; npm test)
+            - test-ui: (cd viewer; npm install ; sudo -u nobody npm test)
             - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
