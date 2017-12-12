@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   hasAuth(): Observable<Auth> {
-    return this.http.get<Auth>('/api/auth');
+    return this.http.get<Auth>('api/auth');
   }
 
 }

@@ -11,7 +11,7 @@ export class ParliamentService {
   constructor(private http: HttpClient) {}
 
   getParliament(): Observable<Parliament> {
-    return this.http.get<Parliament>('/api/parliament');
+    return this.http.get<Parliament>('api/parliament');
   }
 
   createGroup(group): Observable<GroupCreated> {
@@ -31,10 +31,10 @@ export class ParliamentService {
   }
 
   editCluster(groupId, clusterId, cluster): Observable<Response> {
-    return this.http.put<Response>(`/api/groups/${groupId}/clusters/${clusterId}`, cluster);
+    return this.http.put<Response>(`api/groups/${groupId}/clusters/${clusterId}`, cluster);
   }
 
   deleteCluster(groupId, clusterId): Observable<Response> {
-    return this.http.delete<Response>(`/api/groups/${groupId}/clusters/${clusterId}`);
+    return this.http.delete<Response>(`api/groups/${groupId}/clusters/${clusterId}`);
   }
 }
