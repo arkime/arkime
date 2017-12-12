@@ -95,6 +95,14 @@ module.exports = function(config) {
       '/header_logo.png': '/base/public/header_logo.png'
     },
 
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
+    },
+
     // karma-webpack only needs loaders
     webpack: require('./webpack.loaders.js')
 
