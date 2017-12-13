@@ -415,6 +415,22 @@ router.get('/parliament', (req, res, next) => {
   return res.json(parliamentWithData);
 });
 
+// Updates the parliament order of clusters and groups
+router.put('/parliament', verifyToken, (req, res, next) => {
+  if (!req.body.reorderedParliament) {
+    const error = new Error('You must provide the new parliament order');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  parliament = req.body.reorderedParliament;
+  updateParliament();
+
+  let successObj  = { success: true, text: 'Successfully reordered items in your parliament.' };
+  let errorText   = 'Unable to update the order of items in your parliament.';
+  writeParliament(req, res, next, successObj, errorText);
+});
+
 // Create a new group in the parliament
 router.post('/groups', verifyToken, (req, res, next) => {
   if (!req.body.title) {

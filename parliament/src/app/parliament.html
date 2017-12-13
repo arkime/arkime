@@ -1,8 +1,10 @@
 <div class="container-fluid">
-  <div class="mr-3 ml-3">
+  <div class="mr-3 ml-3" dnd-sortable-container [dropZones]="['groups']"
+    [sortableData]="parliament.groups">
 
+    <!-- all the style="cursor: x !important;" are because of: https://github.com/akserg/ng2-dnd/issues/135 -->
     <!-- page header -->
-    <div class="row mt-4">
+    <div class="row mt-4" style="cursor: auto !important;">
       <div class="col-md-12">
         <h2>
           <!-- logged out -->
@@ -58,7 +60,7 @@
     </div> <!-- /page header -->
 
     <!-- page error -->
-    <div class="alert alert-danger" *ngIf="error">
+    <div class="alert alert-danger" *ngIf="error" style="cursor: auto !important;">
       <span class="fa fa-exclamation-triangle"></span>&nbsp;
       {{ error }}
       <button type="button" class="close cursor-pointer"
@@ -68,7 +70,7 @@
     </div> <!-- /page error -->
 
     <!-- search & create group -->
-    <div class="row">
+    <div class="row" style="cursor: auto !important;">
       <!-- search -->
       <div class="col-md-8">
         <div class="input-group">
@@ -105,7 +107,7 @@
     <hr>
 
     <!-- new group form -->
-    <div *ngIf="showNewGroupForm && auth.hasAuth" class="row">
+    <div *ngIf="showNewGroupForm && auth.hasAuth" class="row" style="cursor: auto !important;">
       <div class="col-md-12">
         <form>
           <div class="form-group row">
@@ -135,7 +137,7 @@
 
     <!-- no results for searchTerm filter -->
     <div *ngIf="searchTerm && !numFilteredClusters && parliament.groups.length"
-      class="info-area vertical-center">
+      class="info-area vertical-center" style="cursor: auto !important;">
       <div class="text-muted">
         <span class="fa fa-3x fa-folder-open text-muted-more"></span>
         No clusters match your search
@@ -144,7 +146,7 @@
 
     <!-- no groups -->
     <div *ngIf="!parliament.groups.length && !showNewGroupForm"
-      class="info-area vertical-center">
+      class="info-area vertical-center" style="cursor: auto !important;">
       <div class="text-muted">
         <span class="fa fa-3x fa-folder-open text-muted-more"></span>
         No groups in your cluster.
@@ -154,10 +156,13 @@
     </div> <!-- /no groups -->
 
     <!-- groups -->
-    <div *ngFor="let group of parliament.groups; trackBy:getTrackingId" class="mb-4">
+    <div *ngFor="let group of parliament.groups; trackBy:getTrackingId; let i = index;"
+      class="mb-4" dnd-sortable [sortableIndex]="i" [dragEnabled]="!searchTerm && loggedIn && dragGroups"
+      [dragData]="group" (onDropSuccess)="onDrop($event)" (onDragStart)="onGroupDragStart()">
 
       <!-- group title/description -->
-      <div class="row" *ngIf="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm)">
+      <div class="row" *ngIf="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm) || !dragGroups"
+        style="cursor: move !important;">
         <div class="col-md-12">
           <h5 class="mb-1">
             <!-- group action buttons -->
@@ -216,7 +221,7 @@
       </div> <!-- /group title/description -->
 
       <!-- edit group form -->
-      <div *ngIf="group.showEditGroupForm && auth.hasAuth" class="row">
+      <div *ngIf="group.showEditGroupForm && auth.hasAuth" class="row" style="cursor: auto !important;">
         <div class="col-md-12">
           <form>
             <div class="form-group row">
@@ -245,7 +250,7 @@
       </div> <!-- /edit group form -->
 
       <!-- create cluster form -->
-      <div *ngIf="group.showNewClusterForm && auth.hasAuth">
+      <div *ngIf="group.showNewClusterForm && auth.hasAuth" style="cursor: auto !important;">
         <div class="col-md-12">
           <hr>
           <form>
@@ -314,10 +319,14 @@
 
       <!-- clusters -->
       <ul class="cluster-group d-flex flex-wrap row mb-4"
-        [@clusters]="group.filteredClusters.length">
-        <li *ngFor="let cluster of group.filteredClusters; trackBy:getTrackingId"
+        [@clusters]="group.filteredClusters.length" dnd-sortable-container
+        [sortableData]="group.filteredClusters" [dropZones]="['clusters']">
+        <li *ngFor="let cluster of group.filteredClusters; trackBy:getTrackingId; let i = index;"
+          dnd-sortable [dragEnabled]="!searchTerm && loggedIn && dragClusters" [sortableIndex]="i"
+          [dragData]="cluster" (onDropSuccess)="onDrop($event)"
+          (onDragStart)="onClusterDragStart()" (onDragStop)="onClusterDragStop()"
           class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-          <div class="card bg-light">
+          <div class="card bg-light" style="cursor: move !important;">
             <div class="card-body">
               <div> <!-- card title -->
                 <h6 style="display:inline-block">
@@ -483,11 +492,14 @@
       </ul> <!-- /clusters -->
 
       <!-- no clusters -->
-      <div *ngIf="!group.clusters.length && !searchTerm && !group.showNewClusterForm">
-        No clusters in this group.
-        <a (click)="group.showNewClusterForm = true"
-          *ngIf="loggedIn"
-          class="no-decoration cursor-pointer no-href">Create one</a>
+      <div dnd-sortable-container [sortableData]="group.filteredClusters" [dropZones]="['clusters']"
+        style="margin-top:-1rem;">
+        <span *ngIf="!group.clusters.length && !searchTerm && !group.showNewClusterForm">
+          No clusters in this group.
+          <a (click)="group.showNewClusterForm = true"
+            *ngIf="loggedIn"
+            class="no-decoration cursor-pointer no-href">Create one</a>
+        </span>
       </div> <!-- no clusters -->
 
     </div> <!-- groups -->

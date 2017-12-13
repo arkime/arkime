@@ -37,4 +37,8 @@ export class ParliamentService {
   deleteCluster(groupId, clusterId): Observable<Response> {
     return this.http.delete<Response>(`api/groups/${groupId}/clusters/${clusterId}`);
   }
+
+  updateClusterOrder(reorderedParliament): Observable<Response> {
+    return this.http.put<Response>(`api/parliament`, { reorderedParliament: reorderedParliament });
+  }
 }

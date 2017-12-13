@@ -6,6 +6,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { DndModule } from 'ng2-dnd';
 
 import { ParliamentComponent } from './parliament.component';
 import { CommaStringPipe } from './app.pipes';
@@ -25,7 +26,8 @@ import { AutofocusDirective } from './directives';
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
-    NgbModule.forRoot()
+    NgbModule.forRoot(),
+    DndModule.forRoot()
   ],
   bootstrap   : [ ParliamentComponent ],
   providers   : [
