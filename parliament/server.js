@@ -352,7 +352,7 @@ function updateParliament() {
 // Writes the parliament to the parliament json file, updates the parliament
 // with health and stats, then sends success or error
 function writeParliament(req, res, next, successObj, errorText, sendParliament) {
-  fs.writeFile(app.get('file'), JSON.stringify(parliament), 'utf8', () => {
+  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8', () => {
 
     parliamentWithData = JSON.parse(JSON.stringify(parliament));
 
