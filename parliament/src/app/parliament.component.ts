@@ -105,6 +105,7 @@ export class ParliamentComponent implements OnInit {
   }
 
   startAutoRefresh() {
+    if (!this.refreshInterval) { return; }
     const timer = TimerObservable.create(parseInt(this.refreshInterval, 10), parseInt(this.refreshInterval, 10));
     this.sub = timer.subscribe(() => {
       if (this.refreshInterval) { this.loadData(); }
@@ -112,7 +113,7 @@ export class ParliamentComponent implements OnInit {
   }
 
   stopAutoRefresh() {
-    this.sub.unsubscribe();
+    if (this.sub) { this.sub.unsubscribe(); }
   }
 
   // Updates fetched parliament with current view flags and values

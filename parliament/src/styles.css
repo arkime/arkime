@@ -1,5 +1,4 @@
 @import "~font-awesome/css/font-awesome.css";
-@import "../node_modules/ng2-dnd/bundles/style.css";
 
 
 /* general styles -------------------------------------- */
@@ -36,4 +35,25 @@ a.no-href:hover { color: #0056b3 !important; }
     flex: 0 0 16.666667%;
     max-width: 16.666667%;
   }
+}
+
+/* dnd styles -------------------------------- */
+/* https://github.com/akserg/ng2-dnd/issues/80 */
+.dnd-drag-start {
+  opacity :0.7;
+  border: 2px dashed #000;
+}
+
+.dnd-drag-enter {
+  opacity: 0.7;
+  border: 2px dashed #000;
+}
+
+.dnd-drag-over {
+  border: 2px dashed #000;
+}
+
+.dnd-sortable-drag {
+  opacity: 0.7;
+  border: 1px dashed #000;
 }

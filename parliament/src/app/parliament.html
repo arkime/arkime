@@ -161,8 +161,8 @@
       [dragData]="group" (onDropSuccess)="onDrop($event)" (onDragStart)="onGroupDragStart()">
 
       <!-- group title/description -->
-      <div class="row" *ngIf="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm) || !dragGroups"
-        style="cursor: move !important;">
+      <div class="row" [ngClass]="{'cursor-move':!searchTerm && loggedIn && dragGroups}" style="cursor:auto;"
+        *ngIf="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm) || !dragGroups">
         <div class="col-md-12">
           <h5 class="mb-1">
             <!-- group action buttons -->
@@ -326,7 +326,7 @@
           [dragData]="cluster" (onDropSuccess)="onDrop($event)"
           (onDragStart)="onClusterDragStart()" (onDragStop)="onClusterDragStop()"
           class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-          <div class="card bg-light" style="cursor: move !important;">
+          <div class="card bg-light" [ngClass]="{'cursor-move':!searchTerm && loggedIn && dragClusters}" style="cursor:auto;">
             <div class="card-body">
               <div> <!-- card title -->
                 <h6 style="display:inline-block">
