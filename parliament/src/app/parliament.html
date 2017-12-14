@@ -197,14 +197,13 @@
                 <span class="fa fa-pencil"></span>&nbsp;
                 Edit Group
               </a>
-              <a *ngIf="!group.showNewClusterForm && group.showEditGroupForm"
-                (click)="deleteGroup(group)"
-                class="btn btn-sm btn-outline-danger pull-right cursor-pointer mr-1 mb-1">
-                <span class="fa fa-trash-o"></span>&nbsp;
-                Delete Group
-              </a>
             </span> <!-- /group action buttons -->
-            {{ group.title }}
+            {{ group.title }}&nbsp;
+            <a *ngIf="!group.showNewClusterForm && group.showEditGroupForm && loggedIn"
+              (click)="deleteGroup(group)" placement="top" ngbTooltip="Delete Group"
+              class="btn btn-sm btn-outline-danger cursor-pointer ml-2">
+              <span class="fa fa-trash-o"></span>
+            </a>
           </h5>
           <p class="lead mb-2" style="font-size:1rem;">
             {{ group.description }}
@@ -481,7 +480,7 @@
                 <span class="fa fa-ban"></span>
               </a>
               <a *ngIf="cluster.showEditClusterForm"
-                class="btn btn-sm btn-outline-danger pull-right cursor-pointer mr-1"
+                class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
                 (click)="deleteCluster(group, cluster)"
                 placement="top" ngbTooltip="Delete cluster">
                 <span class="fa fa-trash-o"></span>
