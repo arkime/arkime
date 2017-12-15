@@ -1505,13 +1505,13 @@ void moloch_packet_init()
         NULL);
 
     icmpTypeField = moloch_field_define("general", "integer",
-        "icmp", "ICMP Type", "icmpType",
+        "icmp.type", "ICMP Type", "icmpType",
         "ICMP type field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);
 
     icmpCodeField = moloch_field_define("general", "integer",
-        "icmp", "ICMP Code", "icmpCode",
+        "icmp.code", "ICMP Code", "icmpCode",
         "ICMP code field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);

@@ -1,5 +1,5 @@
 #field:wise.str;kind:lotermfield;count:true;friendly:Str;db:wise.str-term;help:Help String;shortcut:0
-#field:wise.int;kind:integer;count:true;friendly:Int;db:wise.ip;help:Help Int;shortcut:1
+#field:wise.int;kind:integer;count:true;friendly:Int;db:wise.int;help:Help Int;shortcut:1
 #field:tags;shortcut:2
 #field:email.dst
 #view:if (session.wise)
