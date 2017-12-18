@@ -309,10 +309,17 @@ function initalizeParliament() {
     }
 
     let json = JSON.stringify(parliament);
-    fs.writeFile(app.get('file'), json, 'utf8', () => {
-      parliamentWithData = JSON.parse(JSON.stringify(parliament));
-      return resolve();
-    }); // TODO - error?
+    fs.writeFile(app.get('file'), json, 'utf8',
+      (err) => {
+        if (err) {
+          console.error('Parliament initialization error:', err.message || err);
+          return reject();
+        }
+
+        parliamentWithData = JSON.parse(JSON.stringify(parliament));
+        return resolve();
+      }
+    );
   });
 }
 
@@ -352,25 +359,34 @@ function updateParliament() {
 // Writes the parliament to the parliament json file, updates the parliament
 // with health and stats, then sends success or error
 function writeParliament(req, res, next, successObj, errorText, sendParliament) {
-  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8', () => {
-
-    parliamentWithData = JSON.parse(JSON.stringify(parliament));
-
-    updateParliament()
-      .then(() => {
-        // send the updated parliament with the response
-        if (sendParliament && successObj.parliament) {
-          successObj.parliament = parliamentWithData;
-        }
-        return res.json(successObj);
-      })
-      .catch((err) => {
-        const error = new Error(errorText || 'Error updating parliament.');
+  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
+    (err) => {
+      if (err) {
+        const errorMsg = `Unable to write parliament data: ${err.message || err}`;
+        console.error(errorMsg);
+        const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
-      });
+      }
 
-  }); // TODO - handle error with json file writing
+      parliamentWithData = JSON.parse(JSON.stringify(parliament));
+
+      updateParliament()
+        .then(() => {
+          // send the updated parliament with the response
+          if (sendParliament && successObj.parliament) {
+            successObj.parliament = parliamentWithData;
+          }
+          return res.json(successObj);
+        })
+        .catch((err) => {
+          const error = new Error(errorText || 'Error updating parliament.');
+          error.httpStatusCode = 500;
+          return next(error);
+        });
+
+    }
+  );
 }
 
 
@@ -635,7 +651,7 @@ if (app.get('keyFile') && app.get('certFile')) {
 
 server
   .on('error', function (e) {
-    console.log(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
+    console.error(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
     process.exit(1);
     throw new Error('Exiting');
   })
@@ -644,7 +660,13 @@ server
   })
   .listen(app.get('port'), () => {
     initalizeParliament()
-      .then(() => { updateParliament(); });
+      .then(() => {
+        updateParliament();
+      })
+      .catch(() => {
+        process.exit(1);
+        throw new Error('Exiting');
+      });
 
     timeout = setInterval(() => {
       updateParliament();
