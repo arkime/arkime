@@ -62,7 +62,7 @@
       <td class="no-wrap">{{stat.searches|number:0}}</td>
     </tr>
     <tr ng-if="!$ctrl.filteredStats.length">
-      <td colspan="6" class="text-danger">
+      <td colspan="{{::$ctrl.columns.length}}" class="text-danger text-center">
         <span class="fa fa-warning"></span>&nbsp;
         No results match your search
       </td>
