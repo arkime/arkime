@@ -7,7 +7,7 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
 my ($json, $mjson);
 
@@ -82,29 +82,33 @@ my ($json, $mjson);
     my @mitems = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
     eq_or_diff(\@items, \@items, "multi items field: srcIp");
 
+    SKIP: {
+        skip "Upgrade test", 15 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have requestHeader
+
 #http.requestHeader
-    $json = viewerGet("/spigraph.json?date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map field: http.requestHeader");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "lpHisto field: h1");
-    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000, 3]]'), "pa1Histo field: h1");
-    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000, 1]]'), "pa2Histo field: h1");
-    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1335956400000", 0], ["1386003600000", 486], [1387742400000, 68], [1482552000000, 68]]'), "db1Histo field: h1");
-    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000, 0]]'), "db2Histo field: h1");
-    my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
-    eq_or_diff(\@items, from_json('[{"name":"accept","count":3,"dbHisto":5287,"map":{"dst":{"USA":3},"src":{"USA":3}},"graph":{"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"interval":3600,"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"db2Histo":[[1386003600000,4801]]},"paHisto":46,"lpHisto":3},{"lpHisto":3,"name":"host","count":3,"map":{"dst":{"USA":3},"src":{"USA":3}},"dbHisto":5287,"graph":{"db2Histo":[[1386003600000,4801]],"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"interval":3600},"paHisto":46},{"lpHisto":3,"name":"user-agent","count":3,"dbHisto":5287,"graph":{"interval":3600,"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db2Histo":[[1386003600000,4801]]},"map":{"src":{"USA":3},"dst":{"USA":3}},"paHisto":46}]'), "items field: http.requestHeader", { context => 3 });
+        $json = viewerGet("/spigraph.json?date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+        eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map field: http.requestHeader");
+        eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "lpHisto field: h1");
+        eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000, 3]]'), "pa1Histo field: h1");
+        eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000, 1]]'), "pa2Histo field: h1");
+        eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1335956400000", 0], ["1386003600000", 486], [1387742400000, 68], [1482552000000, 68]]'), "db1Histo field: h1");
+        eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000, 0]]'), "db2Histo field: h1");
+        my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
+        eq_or_diff(\@items, from_json('[{"name":"accept","count":3,"dbHisto":5287,"map":{"dst":{"USA":3},"src":{"USA":3}},"graph":{"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"interval":3600,"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"db2Histo":[[1386003600000,4801]]},"paHisto":46,"lpHisto":3},{"lpHisto":3,"name":"host","count":3,"map":{"dst":{"USA":3},"src":{"USA":3}},"dbHisto":5287,"graph":{"db2Histo":[[1386003600000,4801]],"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"interval":3600},"paHisto":46},{"lpHisto":3,"name":"user-agent","count":3,"dbHisto":5287,"graph":{"interval":3600,"pa2Histo":[[1386003600000,20]],"pa1Histo":[[1386003600000,26]],"db1Histo":[[1386003600000,486]],"xmin":1335956400000,"lpHisto":[[1386003600000,3]],"xmax":1482552000000,"db2Histo":[[1386003600000,4801]]},"map":{"src":{"USA":3},"dst":{"USA":3}},"paHisto":46}]'), "items field: http.requestHeader", { context => 3 });
 
 #http.requestHeader multi
-    $mjson = multiGet("/spigraph.json?date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    eq_or_diff($mjson->{map}, $json->{map}, "multi map field: http.requestHeader");
-    eq_or_diff($mjson->{graph}->{lpHisto}, $json->{graph}->{lpHisto}, "multi lpHisto field: http.requestHeader");
-    eq_or_diff($mjson->{graph}->{pa1Histo}, $json->{graph}->{pa1Histo}, "multi pa1Histo field: http.requestHeader");
-    eq_or_diff($mjson->{graph}->{pa2Histo}, $json->{graph}->{pa2Histo}, "multi pa2Histo field: http.requestHeader");
-    eq_or_diff($mjson->{graph}->{db1Histo}, $json->{graph}->{db1Histo}, "multi db1Histo field: http.requestHeader");
-    eq_or_diff($mjson->{graph}->{db2Histo}, $json->{graph}->{db2Histo}, "multi db2Histo field: http.requestHeader");
-    eq_or_diff($mjson->{items}, $json->{items}, "multi items field: http.requestHeader");
+        $mjson = multiGet("/spigraph.json?date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+        eq_or_diff($mjson->{map}, $json->{map}, "multi map field: http.requestHeader");
+        eq_or_diff($mjson->{graph}->{lpHisto}, $json->{graph}->{lpHisto}, "multi lpHisto field: http.requestHeader");
+        eq_or_diff($mjson->{graph}->{pa1Histo}, $json->{graph}->{pa1Histo}, "multi pa1Histo field: http.requestHeader");
+        eq_or_diff($mjson->{graph}->{pa2Histo}, $json->{graph}->{pa2Histo}, "multi pa2Histo field: http.requestHeader");
+        eq_or_diff($mjson->{graph}->{db1Histo}, $json->{graph}->{db1Histo}, "multi db1Histo field: http.requestHeader");
+        eq_or_diff($mjson->{graph}->{db2Histo}, $json->{graph}->{db2Histo}, "multi db2Histo field: http.requestHeader");
+        eq_or_diff($mjson->{items}, $json->{items}, "multi items field: http.requestHeader");
 
-    my @mitems = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
-    eq_or_diff(\@items, \@items, "multi items field: http.requestHeader");
+        my @mitems = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
+        eq_or_diff(\@items, \@items, "multi items field: http.requestHeader");
+    }
 
 
 #http.useragent

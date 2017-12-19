@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/smtp-subject-8859-b.pcap||file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-originating.pcap||file=$pwd/smtp-zip.pcap||file=$pwd/smtp-subject-multi-nospace.pcap||file=$pwd/smtp-subject-utf8-q.pcap)";
 
 countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));

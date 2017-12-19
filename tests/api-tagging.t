@@ -6,7 +6,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
 my $json;
 

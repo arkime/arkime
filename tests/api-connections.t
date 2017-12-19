@@ -7,7 +7,7 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*";
 my $files = "(file=$pwd/socks-http-example.pcap||file=$pwd/socks-http-pass.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/socks5-http-302.pcap||file=$pwd/socks5-rdp.pcap||file=$pwd/socks5-reverse.pcap||file=$pwd/socks5-smtp-503.pcap)";
 
 

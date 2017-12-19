@@ -5,7 +5,7 @@ use MolochTest;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
 # stats.json
     my $stats = viewerGet("/stats.json");

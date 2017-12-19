@@ -110,7 +110,7 @@ eq_or_diff($wise, 'Not found', "Zeus aol.com");
 }
 
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
 # wise tests 2
 

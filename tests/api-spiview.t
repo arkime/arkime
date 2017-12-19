@@ -7,7 +7,8 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
+my $fpwd = getcwd() . "/pcap";
 
 # bigendian pcap file tests
     my $json = viewerGet("/spiview.json?date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
@@ -21,7 +22,7 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"192.168.177.160"}]}'), "bigendian srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"10.64.11.49"}]}'), "bigendian dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"$pwd/bigendian.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"$fpwd/bigendian.pcap"}]})), "bigendian fileand");
 
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct health number_of_data_nodes bigendian");
     is ($mjson->{health}->{number_of_data_nodes}, 2, "Correct health number_of_data_nodes multi bigendian");
@@ -69,7 +70,7 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.185"}]}'), "short srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.249"}]}'), "short dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"tcp"}]}'), "short ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$pwd/socks-http-example.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$fpwd/socks-http-example.pcap"}]})), "bigendian fileand");
 
     delete $json->{health};
     delete $mjson->{health};
@@ -129,7 +130,7 @@ my $pwd = getcwd() . "/pcap";
             "buckets":[{"doc_count":3, "key":"10.180.156.249"}, {"doc_count":1, "key":"10.0.0.2"}, {"doc_count":1, "key":"10.11.11.11"}, {"doc_count":1, "key":"10.64.11.49"}]}'), "ALL dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":5, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$pwd/socks-http-example.pcap"}, {"doc_count":2, "key":"$pwd/bt-tcp.pcap"},{"doc_count":1, "key":"$pwd/bigendian.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$fpwd/socks-http-example.pcap"}, {"doc_count":2, "key":"$fpwd/bt-tcp.pcap"},{"doc_count":1, "key":"$fpwd/bigendian.pcap"}]})), "bigendian fileand");
 
     my @buckets = sort {$a->{key} cmp $b->{key}} @{$json->{spi}->{tags}->{buckets}};
     $json->{spi}->{tags}->{buckets} = \@buckets;
@@ -143,8 +144,11 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 8,
             "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"domainwise"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"},{"doc_count":3, "key":"wisebyhost2"}]}'), "ALL ta");
 
-    eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-            "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
+    SKIP: {
+        skip "Upgrade test", 1 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have http.requestHeader 
+        eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
+                "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
+    }
 
     delete $json->{health};
     delete $mjson->{health};

@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/smb-port80.pcap||file=$pwd/smb-smbclient.pcap)";
 
 countTest(2, "date=-1&expression=" . uri_escape("$files&&protocols==smb"));

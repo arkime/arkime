@@ -307,8 +307,12 @@ function loadFields() {
 
     // Everything will use dbField2 as dbField
     for (let i = 0, ilen = data.length; i < ilen; i++) {
-      data[i]._source.dbField = data[i]._source.dbField2 || undefined;
-      data[i]._source.portField = data[i]._source.portField2 || undefined;
+      data[i]._source.dbField = data[i]._source.dbField2;
+      if (data[i]._source.portField2) {
+        data[i]._source.portField = data[i]._source.portField2;
+      } else {
+        delete data[i]._source.portField;
+      }
       delete data[i]._source.rawField;
     }
     Config.loadFields(data);

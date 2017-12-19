@@ -117,7 +117,7 @@ var fieldsMap = {
   "pa":               "totPackets",
   "pr":               "ipProtocol",
 
-  "scrubby":          "scrubBy",
+  "scrubby":          "scrubby",
 
 //GRE
   "greip":            "greIp",
@@ -169,10 +169,10 @@ var fieldsMap = {
   "gxff":                           "http.xffGEO",
   "asxff":                          "http.xffASN",
   "rirxff":                         "http.xffRIR",
-  "hh1":                            "http.requestHeader",
-  "hh1cnt":                         "http.requestHeaderCnt",
-  "hh2":                            "http.responseHeader",
-  "hh2cnt":                         "http.responseHeaderCnt",
+  "hh1":                            "ignore",
+  "hh1cnt":                         "ignore",
+  "hh2":                            "ignore",
+  "hh2cnt":                         "ignore",
   "hmd5":                           "http.md5",
   "hmd5cnt":                        "http.md5Cnt",
   "hsver":                          "http.clientVersion",
@@ -217,8 +217,8 @@ var fieldsMap = {
   "efncnt":                         "email.filenameCnt",
   "efct":                           "email.fileContentType",
   "efctcnt":                        "email.fileContentTypeCnt",
-  "ehh":                            "email.headers",
-  "ehhcnt":                         "email.headersCnt",
+  "ehh":                            "ignore",
+  "ehhcnt":                         "ignore",
   "email.bodymagic-term":           "email.bodyMagic",
   "email.bodymagic-term-cnt":       "email.bodyMagicCnt",
 
@@ -439,7 +439,7 @@ function setField(result, path, value) {
     result = result[path[i]];
   }
 
-  if (path[ilen] === "ip" || path[ilen].endsWith("Ip")) {
+  if ((path[ilen] === "ip" || path[ilen].endsWith("Ip")) && typeof(value) !== "string") {
     result[path[ilen]] = ipString(value);
   } else {
     result[path[ilen]] = value;
@@ -582,7 +582,8 @@ function checkFields(fields) {
   var error = 0;
 
   for (const field of fields) {
-    if (field._source.regex !== undefined) {
+  try {
+    if (field._source.regex !== undefined || field._source.dbField == undefined) {
       continue;
     } 
     
@@ -600,12 +601,17 @@ function checkFields(fields) {
     }
 
     if (internals.sliceNum === 0) {
+      let doc = {dbField2: fieldsMap[dbField]};
+      if (field._source.type.includes("text")) {
+        doc.type2 = field._source.type.replace("text", "term");
+      }
+
       if (fieldsMap[dbField] === "ignore") {
       } else if (field._source.dbField2 === undefined) {
-        Db.update("fields", "field", field._id, {doc: {dbField2: fieldsMap[dbField]}});
+        Db.update("fields", "field", field._id, {doc: doc});
       } else if (field._source.dbField2 !== fieldsMap[dbField]) {
         console.log("WARNING - dbfield2", field._source.dbField2, "doesn't match", fieldsMap[dbField]);
-        Db.update("fields", "field", field._id, {doc: {dbField2: fieldsMap[dbField]}});
+        Db.update("fields", "field", field._id, {doc: doc});
       }
     }
 
@@ -615,6 +621,10 @@ function checkFields(fields) {
       console.log("Unknown field",dbField);
       error++;
     }
+
+  } catch(e) {
+    console.trace(e, field);
+  }
   }
 
   if (internals.sliceNum === 0) {

@@ -1923,8 +1923,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 19) {
-        print "No longer supported.  Please upgrade to Moloch 0.17.0 first. (Db version $main::VersionNumber)\n\n";
+    if ($main::versionNumber < 37) {
+        print "No longer supported.  Please upgrade to Moloch 0.20.x first. (Db version $main::VersionNumber)\n\n";
         exit 1;
     }
 
@@ -1938,54 +1938,18 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "Starting Upgrade\n";
 
-    if ($main::versionNumber <= 31) {
-        dbCheckForActivity();
-        esGet("/_flush", 0);
-        esGet("/_refresh", 0);
-
-        sequenceUpgrade();
-
-        if ($main::versionNumber < 20) {
-            queriesCreate();
-        } else {
-            createAliasedFromNonAliased("queries", "queries_v1", \&queriesCreate);
-        }
-
-        esDelete("/${PREFIX}users_v1", 1);
-        esDelete("/${PREFIX}users_v2", 1);
-        createNewAliasesFromOld("users", "users_v4", "users_v3", \&usersCreate);
-
-        esDelete("/${PREFIX}files_v1", 1);
-        esDelete("/${PREFIX}files_v2", 1);
-        createNewAliasesFromOld("files", "files_v4", "files_v3", \&filesCreate);
-
-        if ($main::versionNumber <= 30) {
-            createNewAliasesFromOld("dstats", "dstats_v2", "dstats_v1", \&dstatsCreate);
-            createAliasedFromNonAliased("stats", "stats_v2", \&statsCreate);
-        }
-
-        esDelete("/_template/${PREFIX}template_1", 1);
-        historyUpdate();
-        sessions2Update();
-        checkForOldIndices();
-        fieldsUpdate();
-    } elsif ($main::versionNumber <= 33) {
-        createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
+    if ($main::versionNumber <= 38) {
+        esDelete("/_template/${PREFIX}sessions_template", 1);
         usersUpdate();
         historyUpdate();
         sessions2Update();
         checkForOldIndices();
         fieldsUpdate();
-    } elsif ($main::versionNumber <= 38) {
-        usersUpdate();
-        historyUpdate();
+    } elsif ($main::versionNumber <= 50) {
         sessions2Update();
-        checkForOldIndices();
-        fieldsUpdate();
     } else {
         print "db.pl is hosed\n";
     }
-
 }
 
 print "Finished\n";
