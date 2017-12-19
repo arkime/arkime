@@ -47,6 +47,11 @@
 
       // LISTEN!
       this.$scope.$on('update:time', (event, args) => {
+        if (!args) {
+          this.change();
+          return;
+        }
+
         if (args.start) { // start time changed
           this.startTime  = parseInt(args.start * 1000, 10);
         }
@@ -56,7 +61,6 @@
 
         this.changeDate();
       });
-
 
       // watch for the url parameters to change and update the page
       // date, startTime, stopTime, bounding, and interval parameters
@@ -137,11 +141,11 @@
     change() {
       let useDateRange = false;
 
+      currentTime = new Date().getTime();
+
       // build the parameters to send to the parent controller that makes the req
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time
-        currentTime = new Date().getTime();
-
         this.stopTime   = currentTime;
         this.startTime  = currentTime - (hourMS * this.timeRange);
       }

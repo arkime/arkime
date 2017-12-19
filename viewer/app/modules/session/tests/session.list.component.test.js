@@ -175,6 +175,7 @@
     let sessionsEndpoint    = 'sessions.json';
     let defaultParameters   = '?facets=1&flatten=1&fields=ipProtocol,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,totBytes,node,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel&length=50&order=firstPacket:asc';
     let tableStateEndpoint  = 'state/sessionsNew';
+    let columnWidthEndpoint = 'state/sessionsColWidths';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -208,6 +209,10 @@
         // initial query for sessions
         $httpBackend.whenGET(sessionsEndpoint + defaultParameters)
            .respond(sessionsJSON);
+
+       // initial query for table state
+       $httpBackend.whenGET(columnWidthEndpoint)
+          .respond({});
 
         scope = $rootScope.$new();
 

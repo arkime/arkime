@@ -210,7 +210,10 @@
 
       this.applyExpression();
 
-      this.change();
+      // update the stop/start times in time.component, which in turn
+      // notifies this controller (usin the 'change:time:input' event), which
+      // then updates the time params and calls this.change()
+      this.$scope.$broadcast('update:time');
     }
 
     /**

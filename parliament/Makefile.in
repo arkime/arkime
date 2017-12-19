@@ -1,0 +1,20 @@
+install_sh = @install_sh@
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+PARLIAMENTDIR = @prefix@/parliament
+CP = /bin/cp
+
+
+all:
+
+install:
+	@mkdir -p "$(PARLIAMENTDIR)"
+	$(INSTALL) *.js package.json $(PARLIAMENTDIR)
+	npm update
+	npm run build
+	$(CP) -pr public dist $(PARLIAMENTDIR)
+	(cd $(PARLIAMENTDIR) ; npm update --production)
+
+distclean realclean clean:
+	rm -rf node_modules
+	rm -rf dist

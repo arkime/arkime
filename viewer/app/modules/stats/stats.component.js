@@ -344,9 +344,20 @@
         }
 
         if (div[0][0]) {
+          let axis = context.axis();
+
+          let timeFormat = d3.time.format('%H:%M:%S');
+          if (self.settings.timezone === 'gmt') {
+            timeFormat = d3.time.format.utc('%H:%M:%SZ');
+          }
+
           div.append('div')
              .attr('class', 'axis')
-             .call(context.axis().orient('top'));
+             .call(
+               axis.orient('top')
+                 .tickFormat(timeFormat)
+                 .focusFormat(timeFormat)
+             );
 
           div.selectAll('.horizon')
              .data(metrics)

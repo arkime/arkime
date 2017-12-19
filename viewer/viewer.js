@@ -300,6 +300,12 @@ app.use(function(req, res, next) {
 
 logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 
+// Explicit sigint handler for running under docker
+// See https://github.com/nodejs/node/issues/4182
+process.on('SIGINT', function() {
+    process.exit();
+});
+
 function loadFields() {
   Db.loadFields(function (err, data) {
     if (err) {data = [];}

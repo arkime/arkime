@@ -1,0 +1,89 @@
+/* parliament page styles ------------------------------ */
+
+/* refresh interval select box */
+.refresh-interval-control { -webkit-appearance: none; }
+
+
+/* cluster styles */
+.cluster-group {
+  list-style: none;
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+.cluster-group .cluster {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+.cluster-group .card {
+  height:100%;
+  box-shadow: 0 20px 40px -14px rgba(0,0,0,0.25);
+}
+.cluster-group .card .card-body {
+  padding: 0.5rem;
+}
+.cluster-group .card .card-body hr {
+  margin-top: 0;
+  margin-bottom: .3rem;
+}
+.cluster-group .card .card-footer {
+  padding: 0.2rem 0.5rem;
+}
+
+
+/* compact form for editing clusters */
+form.edit-cluster label {
+  margin:0;
+}
+form.edit-cluster .form-group {
+  margin-bottom: .25rem;
+}
+
+
+/* displays large text for important information
+ * note: must contain an inner div with the text
+ * example:
+ * <div class="info-area">
+ *   <div>Some important text!</div>
+ * </div>
+ */
+.info-area {
+  font-size : 1.5rem;
+  color     : #777777;
+}
+
+.info-area span.fa {
+  display         : flex;
+  justify-content : center;
+}
+
+.vertical-center {
+  min-height      : 30vh;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  flex-direction  : column;
+}
+
+
+/* animations */
+.hide-login, .show-login, .show-cancel-btn, .hide-cancel-btn {
+  transition: width 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940),
+              opacity 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+.show-login {
+  width: 250px;
+}
+.hide-login {
+  width: 0px;
+  opacity: 0;
+  padding: 0;
+}
+.show-cancel-btn {
+  width: 38px;
+}
+.hide-cancel-btn {
+  width: 0px;
+  opacity: 0;
+  padding: 0;
+}
