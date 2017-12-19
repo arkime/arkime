@@ -11,9 +11,9 @@
   </div>
 </div>
 
-<table class="table table-condensed table-striped margined-top-xxxlg text-right"
+<table class="table small table-condensed table-striped margined-top-xxxlg text-right"
   ng-if="!$ctrl.error && $ctrl.stats">
-  <thead class="small">
+  <thead>
     <tr>
       <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer text-right"
         ng-click="$ctrl.columnClick(column.sort)">
@@ -27,7 +27,28 @@
     </tr>
   </thead>
   <tbody>
-  <tbody>
+    <tr class="bold no-stripe" ng-if="$ctrl.filteredStats.length > 9">
+      <td class="no-wrap">Average</td>
+      <td class="no-wrap">{{$ctrl.averageValues.docs|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.storeSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.heapSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.load|number:2}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
+      <td class="no-wrap">{{$ctrl.averageValues.read|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.write|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.searches|number:0}}</td>
+    </tr>
+    <tr class="bold no-stripe border-bottom-bold" ng-if="$ctrl.filteredStats.length > 9">
+      <td class="no-wrap">Total</td>
+      <td class="no-wrap">{{$ctrl.totalValues.docs|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.storeSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.heapSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.load|number:2}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
+      <td class="no-wrap">{{$ctrl.totalValues.read|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.write|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.searches|number:0}}</td>
+    </tr>
     <tr class="animate-repeat"
       ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.name">
       <td class="no-wrap">{{stat.name}}</td>
