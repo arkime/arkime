@@ -224,6 +224,9 @@
       this.selectedTab = index;
       this.$location.search('statsTab', index);
 
+      // close expanded nodes when switching tabs
+      this.expandedNodeStats = {};
+
       if (index !== 0) { // not on the nodes tab
         this.$interval.cancel(reqPromise); // cancel the node req interval
         reqPromise = null;
