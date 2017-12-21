@@ -19,46 +19,46 @@ session form.sessions-nav .form-inline {
 }
 
 /* sessions table -------------------------- */
-session table {
+session table.sessions-table {
   table-layout  : fixed;
   border-top    : var(--color-gray-light) solid 1px;
   margin-bottom : 20px;
 }
 
-session table thead tr th {
+session table.sessions-table thead tr th {
   vertical-align: top;
   border-bottom : 2px solid var(--color-gray);
   border-right  : 1px dotted var(--color-gray);
 }
-session table thead tr th:first-child {
+session table.sessions-table thead tr th:first-child {
   border-right: none;
 }
 
-session table thead tr th:first-child {
+session table.sessions-table thead tr th:first-child {
   padding       : 0;
   vertical-align: middle;
 }
 
-session table tbody tr:not(.session-detail-row):hover {
+session table.sessions-table tbody tr:not(.session-detail-row):hover {
   background-color: var(--color-tertiary-lightest);
 }
 
-session table tbody tr:not(.session-detail-row):hover td.active {
+session table.sessions-table tbody tr:not(.session-detail-row):hover td.active {
   background-color: var(--color-tertiary-light);
 }
 
-session table tbody tr.session-detail-row {
+session table.sessions-table tbody tr.session-detail-row {
   background-color: var(--color-quaternary-lightest) !important;
 }
 
-session table tbody tr td {
+session table.sessions-table tbody tr td {
   padding       : 0 2px;
   line-height   : 1.42857143;
   vertical-align: top;
   border-top    : 1px solid #ddd;
 }
 
-/*!* table column reorder *!*/
+/*!* table.sessions-table column reorder *!*/
 .JColResizer > tbody > tr > td, .JColResizer > tbody > tr > th {
   overflow: visible !important; /* show overflow for clickable fields */
 }
