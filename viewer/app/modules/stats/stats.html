@@ -61,6 +61,24 @@
         </div>
       </div> <!-- /graph interval select -->
 
+      <!-- graph hide select -->
+      <div class="form-group margined-bottom" ng-if="$ctrl.selectedTab === 0">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon help-cursor"
+            uib-tooltip="Hide rows"
+            tooltip-placement="bottom">
+           Hide
+          </span>
+          <select ng-model="$ctrl.graphHide" ng-change="$ctrl.changeGraphHide()"
+            class="form-control input-sm">
+            <option value="none">None</option>
+            <option value="old">Out of date</option>
+            <option value="nosession">No sessions</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+      </div> <!-- /graph hide select -->
+
       <!-- table data interval select -->
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">

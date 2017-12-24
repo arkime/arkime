@@ -2556,6 +2556,21 @@ app.get('/stats.json', function(req, res) {
     }
   }
 
+  if (req.query.hide !== undefined && req.query.hide !== "none") {
+    if (query.query === undefined) {
+      query.query = { bool: { must: [] } };
+    } else {
+      query.query.bool.must = [];
+    }
+
+    if (req.query.hide === "old" || req.query.hide === "both") {
+      query.query.bool.must.push({range: {currentTime: {gte: "now-5m"}}});
+    }
+    if (req.query.hide === "nosession" || req.query.hide === "both") {
+      query.query.bool.must.push({range: {monitoring: {gte: "1"}}});
+    }
+  }
+
   if (req.query.sortField !== undefined || req.query.desc !== undefined) {
     query.sort = {};
     req.query.sortField = req.query.sortField || "nodeName";
