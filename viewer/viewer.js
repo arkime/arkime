@@ -2560,7 +2560,7 @@ app.get('/stats.json', function(req, res) {
     if (query.query === undefined) {
       query.query = { bool: { must: [] } };
     } else {
-      query.query.bool.must = [];
+      query.query.bool = {must: [{bool: query.query.bool}]};
     }
 
     if (req.query.hide === "old" || req.query.hide === "both") {
