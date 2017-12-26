@@ -472,10 +472,6 @@ void moloch_session_process_commands(int thread)
             break;
 
         switch (cmd->cmd) {
-        case MOLOCH_SES_CMD_ADD_TAG:
-            moloch_field_int_add((long)cmd->uw1, cmd->session, (long)cmd->uw2);
-            moloch_session_decr_outstanding(cmd->session);
-            break;
         case MOLOCH_SES_CMD_FUNC:
             cmd->func(cmd->session, cmd->uw1, cmd->uw2);
             break;

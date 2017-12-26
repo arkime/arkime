@@ -215,7 +215,7 @@
                "statuscodeCnt" : 1,
                "pathCnt" : 1,
                "uri" : [
-                  "//www.example.com/"
+                  "www.example.com/"
                ],
                "serverVersion" : [
                   "1.1"

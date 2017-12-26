@@ -103,7 +103,7 @@
                ],
                "bodyMagicCnt" : 1,
                "uri" : [
-                  "//xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
+                  "xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
                ],
                "requestHeaderCnt" : 10,
                "uricnt" : 1,

@@ -822,7 +822,6 @@ int      moloch_session_thread_outstanding(int thread);
 int      moloch_session_cmd_outstanding();
 
 typedef enum {
-    MOLOCH_SES_CMD_ADD_TAG,
     MOLOCH_SES_CMD_FUNC
 } MolochSesCmd;
 typedef void (*MolochCmd_func)(MolochSession_t *session, gpointer uw1, gpointer uw2);

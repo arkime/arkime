@@ -357,8 +357,9 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
     if (parser->method) {
         if (strcasecmp("host", http->header[http->which]) == 0) {
             if (!http->hostString)
-                http->hostString = g_string_new_len("//", 2);
-            g_string_append_len(http->hostString, at, length);
+                http->hostString = g_string_new_len(at, length);
+            else
+                g_string_append_len(http->hostString, at, length);
         } else if (strcasecmp("cookie", http->header[http->which]) == 0) {
             if (!http->cookieString)
                 http->cookieString = g_string_new_len(at, length);
@@ -455,11 +456,11 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
     gboolean truncated = FALSE;
     if (http->urlString && http->hostString) {
-        char *colon = strchr(http->hostString->str+2, ':');
+        char *colon = strchr(http->hostString->str, ':');
         if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
         }
 
         char *question = strchr(http->urlString->str, '?');
@@ -507,7 +508,7 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
         }
 
         if (http->urlString->str[0] != '/') {
-            char *result = strstr(http->urlString->str, http->hostString->str+2);
+            char *result = strstr(http->urlString->str, http->hostString->str);
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - http->urlString->str <= 8) {
@@ -557,11 +558,11 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
         http->urlString = NULL;
     } else if (http->hostString) {
-        char *colon = strchr(http->hostString->str+2, ':');
+        char *colon = strchr(http->hostString->str, ':');
         if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
         }
 
         g_string_free(http->hostString, TRUE);

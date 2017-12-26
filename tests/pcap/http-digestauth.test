@@ -80,7 +80,7 @@
                   "user12345678@domain.xxxx"
                ],
                "uri" : [
-                  "//xxxxxxx.xxxxxxxxxxx.xxx/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
+                  "xxxxxxx.xxxxxxxxxxx.xxx/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
                ],
                "pathCnt" : 1,
                "request-authorization" : [

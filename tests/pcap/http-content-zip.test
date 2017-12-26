@@ -20,7 +20,7 @@
                   "accept-language"
                ],
                "uri" : [
-                  "//xxxxxxxxxxxxx.xxx.com/a.zip"
+                  "xxxxxxxxxxxxx.xxx.com/a.zip"
                ],
                "useragentCnt" : 1,
                "serverVersionCnt" : 1,

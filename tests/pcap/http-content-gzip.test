@@ -135,7 +135,7 @@
                "hostCnt" : 1,
                "serverVersionCnt" : 1,
                "uri" : [
-                  "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
+                  "xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
                ],
                "md5" : [
                   "5ff7b2c69c3b22826a717cd5ea4c9f32"

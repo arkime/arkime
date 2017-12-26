@@ -48,7 +48,7 @@
             ],
             "http" : {
                "uri" : [
-                  "//xxxxxxxxxxxxx.xxx.com/"
+                  "xxxxxxxxxxxxx.xxx.com/"
                ],
                "requestHeaderCnt" : 3,
                "clientVersion" : [

@@ -68,7 +68,7 @@
             "srcDataBytes" : 157,
             "http" : {
                "uri" : [
-                  "//samples.example.com/UpdataConfig.dat"
+                  "samples.example.com/UpdataConfig.dat"
                ],
                "serverVersion" : [
                   "1.1"

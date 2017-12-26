@@ -118,7 +118,7 @@
             "dstMacCnt" : 2,
             "http" : {
                "uri" : [
-                  "//www.google.com/"
+                  "www.google.com/"
                ],
                "host" : [
                   "www.google.com"

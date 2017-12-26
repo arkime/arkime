@@ -87,7 +87,7 @@
                "xffIpCnt" : 1,
                "serverVersionCnt" : 1,
                "uri" : [
-                  "//www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
+                  "www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
                ],
                "clientVersion" : [
                   "1.1"

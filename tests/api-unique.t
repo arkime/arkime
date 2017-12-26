@@ -95,6 +95,9 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 #
 $txt = get("date=-1&field=http.requestHeader&expression=$files&counts=1");
 $mtxt = get("date=-1&field=http.requestHeader&expression=$files&counts=1", 1);
+
+SKIP: {
+    skip "Upgrade test", 1 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have http.has-header
 eq_or_diff($txt, 
 "accept, 6
 accept-encoding, 2
@@ -105,6 +108,7 @@ host, 6
 referer, 1
 user-agent, 6
 ", "http header count", { context => 3 });
+}
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
@@ -139,10 +143,10 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 $txt = get("date=-1&field=http.uri&expression=$files&counts=0");
 $mtxt = get("date=-1&field=http.uri&expression=$files&counts=0", 1);
 eq_or_diff($txt,
-"//www.example.com/
-//www.google.com/
-//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+"www.example.com/
+www.google.com/
+www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ", "http uri", { context => 3 });
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
@@ -150,10 +154,10 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 $txt = get("date=-1&field=http.uri&expression=$files&counts=1");
 $mtxt = get("date=-1&field=http.uri&expression=$files&counts=1", 1);
 eq_or_diff($txt,
-"//www.example.com/, 4
-//www.google.com/, 1
-//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
-//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
+"www.example.com/, 4
+www.google.com/, 1
+www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
+www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
 ", "http uri", { context => 3 });
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 

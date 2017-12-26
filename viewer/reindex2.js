@@ -44,6 +44,7 @@ var internals = {
   sliceMax: 3,
   sliceNum: 0,
   scrollSize: 2000,
+  index: "sessions-*",
   stats: {}
 };
 
@@ -421,6 +422,14 @@ var fieldsMap = {
   "passivetotal.tags-term-cnt":     "passivetotal.tagsCnt",
 };
 
+var typesMap = {
+  "tls.iOn":                   "termfield",
+  "tls.sOn":                   "termfield",
+  "eua":                       "termfield",
+  "tls.notBefore":             "date",
+  "tls.notAfter":              "date",
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 function ipString(ip) {
   if (Array.isArray(ip)) {
@@ -488,7 +497,20 @@ function remap (result, item, prefix) {
       result.firstPacket = item.fpd || item.fp*1000;
       result.lastPacket = item.lpd || item.lp*1000;
     }
-    
+
+    if (result.cert !== undefined) {
+      for (let cert of result.cert) {
+        if (cert.notAfter) {cert.notAfter *= 1000;}
+        if (cert.notBefore) {cert.notBefore *= 1000;}
+      }
+    }
+
+    if (result.http && result.http.uri) {
+      for (let i = 0; i < result.http.uri.length; i++) {
+        result.http.uri[i] = result.http.uri[i].substring(2);
+      }
+    }
+
     if (item["tipv61-term"] !== undefined) {
       result.srcIp = item["tipv61-term"].match(/.{4}/g).join(':');
       result.dstIp = item["tipv62-term"].match(/.{4}/g).join(':');
@@ -544,7 +566,8 @@ function reindex (item, index2, cb) {
                       count: count,
                       total: item['docs.count'],
                       diff: (endTime-startTime),
-                      pos: internals.sliceNum
+                      pos: internals.sliceNum,
+                      index: internals.index
                      });
       }
 
@@ -571,7 +594,7 @@ function reindex (item, index2, cb) {
       body.push(obj);
     }
 
-    Db.bulk({body: body}, function(err, msg) { 
+    Db.bulk({body: body}, function(err, msg) {
       if (err) {console.log("ERROR", index2, err, msg);}
     });
   });
@@ -585,8 +608,8 @@ function checkFields(fields) {
   try {
     if (field._source.regex !== undefined || field._source.dbField == undefined) {
       continue;
-    } 
-    
+    }
+
     var dbField = field._source.dbField;
     if (dbField.match(/\.snow$/) || dbField.match(/\.snowcnt$/)) {
       dbField = dbField.replace(".snow", "");
@@ -602,7 +625,10 @@ function checkFields(fields) {
 
     if (internals.sliceNum === 0) {
       let doc = {dbField2: fieldsMap[dbField]};
-      if (field._source.type.includes("text")) {
+
+      if (typesMap[dbField]) {
+        doc.type2 = typesMap[dbField];
+      } else if (!doc.type2 && field._source.type.includes("text")) {
         doc.type2 = field._source.type.replace("text", "term");
       }
 
@@ -657,99 +683,140 @@ function checkFields(fields) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-function main () {
+function mainWorker () {
+  async.forEachSeries(internals.sessions, function(item, cb) {
+    let index2 = item.index.replace("sessions-", "sessions2-");
+    reindex(item, index2, cb);
+  }, function () {
+    Db.flush();
+    setTimeout(() => {
+      Promise.all([Db.flush(),
+                   Db.refresh()
+                  ]).then(() => {
+        console.log(datestr(), internals.sliceNum, "- DONE");
+        setTimeout(() => {process.exit()}, 5000); // Force quit in 5 seconds
+      });
+    }, 5000);
+  });
+}
+//////////////////////////////////////////////////////////////////////////////////
+function mainMaster () {
+  // Load local fields and merge into fieldsMap
   try {
     let content = fs.readFileSync("reindex2.local.json");
     let json = JSON.parse(content);
     Db.merge(fieldsMap, json);
   } catch (err) {
-    if (internals.sliceNum !== 0) {process.exit();}
     console.log("reindex2.local.json not loaded", err);
+    process.exit();
   }
 
   Db.checkVersion(MIN_DB_VERSION, false);
-  Promise.all([Db.indices(undefined, "sessions-*"), 
+  Promise.all([Db.indices(undefined, internals.index),
                Db.indices(undefined, "sessions2-*"),
                Db.loadFields()
-             ]).then(([sessions, sessions2, fields]) => { 
+             ]).then(([sessions, sessions2, fields]) => {
 
-      fields = fields.hits.hits;
-      checkFields(fields);
+    fields = fields.hits.hits;
+    checkFields(fields);
 
-      var sessions2Map = sessions2.reduce(function(map, obj) {
-        map[obj.index] = obj;
-        return map;
-      }, {});
+    // Array 2 Map for faster lookups
+    var sessions2Map = sessions2.reduce(function(map, obj) {
+      map[obj.index] = obj;
+      return map;
+    }, {});
 
-      async.forEachSeries(sessions, function(item, cb) {
-        var index2 = item.index.replace("sessions-", "sessions2-");
-        if (sessions2Map[index2] === undefined) {
-          reindex(item, index2, cb);
-        } else if (sessions2Map[index2]['docs.count'] === item['docs.count']) {
-          return cb();
-        } else {
-          reindex(item, index2, cb);
-        }
-      }, function () {
-        Db.flush();
-        setTimeout(() => {
-          Promise.all([Db.flush(), 
-                       Db.refresh()
-                      ]).then(() => {
-            console.log(datestr(), internals.sliceNum, "- DONE");
-            setTimeout(() => {process.exit()}, 5000); // Force quit in 5 seconds
-          });
-        }, 5000);
+    let newSessions = [];
+    sessions = sessions.sort(function(a,b){return b.index.localeCompare(a.index);});
+
+    // Go thru all the sessions
+    sessions.forEach((item) => {
+      let index2 = item.index.replace("sessions-", "sessions2-");
+
+      if (sessions2Map[index2] === undefined) {
+        newSessions.push(item);
+      } else if (sessions2Map[index2]['docs.count'] === item['docs.count']) {
+        return;
+      } else {
+        Db.deleteIndex(index2);
+        newSessions.push(item);
+      }
+    });
+
+    Db.flush();
+    Db.refresh();
+
+    // Now tell all the workers
+    for (let i = 0; i < internals.sliceMax; i++) {
+      let worker = cluster.fork();
+
+      worker.send({sliceMax: internals.sliceMax,
+                   sliceNum: i,
+                   scrollSize: internals.scrollSize,
+                   sessions: newSessions,
+                   fieldsMap: fieldsMap,
+                   host: internals.elasticBase,
+                   prefix: Config.get("prefix", ""),
+                   nodeName: Config.nodeName(),
       });
+      worker.on('message', stats);
+    }
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// Start
 //////////////////////////////////////////////////////////////////////////////////
-
 for (let i = 0; i < process.argv.length; i++) {
-  if (process.argv[i] === "--slices") {
-	  i++;
+  switch(process.argv[i]) {
+  case "--slices":
+    i++;
     internals.sliceMax = +process.argv[i] || 1;
-	}
-  if (process.argv[i] === "--size") {
-	 i++;
+    break;
+  case "--size":
+    i++;
     internals.scrollSize = +process.argv[i] || 1000;
-	}
+    break;
+  case "--index":
+    i++;
+    internals.index = process.argv[i] || "sessions-*";
+    break;
+  case "--help":
+    console.log("--config <file>                = moloch config.ini file");
+    console.log("--size <scroll size>           = batch size [2000]");
+    console.log("--slices <parallel processes>  = number of parallel processes");
+    console.log("--index <index pattern>        = indices to process [sessions-*]");
+    process.exit(0);
+  }
 }
 
 if (internals.sliceMax <= 1) {internals.sliceMax = 2;}
 if (internals.scrollSize <= 100) {internals.scrollSize = 100;}
 
 if (cluster.isMaster) {
+// If master connect to DB and call mainMaster
   var Config            = require('./config.js');
   internals.elasticBase = Config.get("elasticsearch", "http://localhost:9200").split(",");
 
-  for (let i = 0; i < internals.sliceMax; i++) {
-    let worker = cluster.fork();
-
-    worker.send({sliceMax: internals.sliceMax,
-                 sliceNum: i,
-                 scrollSize: internals.scrollSize,
-                 host: internals.elasticBase,
-                 prefix: Config.get("prefix", ""),
-                 nodeName: Config.nodeName(),
-    });
-    worker.on('message', stats);
-  }
+  Db.initialize({host:        internals.elasticBase,
+                 prefix:      Config.get("prefix", ""),
+                 nodeName:    Config.nodeName(),
+                 dontMapTags: false}, mainMaster);
 
   cluster.on('exit', (worker, code, signal) => {
     console.log(`worker ${worker.process.pid} died`);
   });
 } else {
+// If worker wait for msg from master and then connect to DB and call mainWorker
   process.on('message', function(msg) {
-    internals.sliceMax = msg.sliceMax;
-    internals.sliceNum = msg.sliceNum;
+    internals.sliceMax   = msg.sliceMax;
+    internals.sliceNum   = msg.sliceNum;
     internals.scrollSize = msg.scrollSize;
+    internals.sessions   = msg.sessions;
+    fieldsMap            = msg.fieldsMap
 
     Db.initialize({host: msg.host,
                    prefix: msg.prefix,
                    nodeName: msg.nodeName,
-                   dontMapTags: false}, main);
+                   dontMapTags: false}, mainWorker);
   });
 }

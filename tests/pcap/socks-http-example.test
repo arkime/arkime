@@ -78,7 +78,7 @@
                   "09b9c392dc1f6e914cea287cb6be34b0"
                ],
                "uri" : [
-                  "//www.example.com/"
+                  "www.example.com/"
                ],
                "statuscodeCnt" : 1,
                "host" : [
@@ -264,7 +264,7 @@
                   "text/html"
                ],
                "uri" : [
-                  "//www.example.com/"
+                  "www.example.com/"
                ],
                "md5" : [
                   "09b9c392dc1f6e914cea287cb6be34b0"
@@ -362,7 +362,7 @@
                   "text/html"
                ],
                "uri" : [
-                  "//www.example.com/"
+                  "www.example.com/"
                ],
                "statuscode" : [
                   200

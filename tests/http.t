@@ -27,8 +27,8 @@ my $pwd = "*/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.method!=[GET,HEAD]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.method==/.*E.*/"));
 # http.uri tests
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==//samples.example.com/UpdataConfig.dat"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==//samples.example.com*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==samples.example.com/UpdataConfig.dat"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==samples.example.com*"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==UpdataConfig.dat"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==*Config.dat"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==Config.dat"));
@@ -39,10 +39,10 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==/.*a.zip/"));
 # http.uri.path slash tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/.*\\/js\\/xxxxxx.js/"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/*/js/xxxxxx.j*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==*/js/xxxxxx.j*"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/.*js\\/xxxxxx.js/]"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[\"/.*js\\/xxxxxx.js/\"]"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/*/js/xxxxxx.j*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[*/js/xxxxxx.j*]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==/js/xxxxxx.js"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==//js/xxxxxx.js"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==js/xxxxxx"));
@@ -72,6 +72,9 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/\\/js\\/.*.js/,*a.zip*]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/js/xxxxxx.js*,*a.zip*]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[//js/xxxxxx.js*,*a.zip*]"));
+
+SKIP: {
+    skip "Upgrade test", 42 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have http.has-header
 # http.hasheader, http.hasheader.src, http.hasheader.dst tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==server"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==server"));
@@ -100,6 +103,8 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==[content-length]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==[content-length]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==[accept-encoding]"));
+}
+
 # http.version tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==1.1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==1.1"));

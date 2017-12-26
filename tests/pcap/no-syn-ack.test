@@ -133,7 +133,7 @@
             "http" : {
                "serverVersionCnt" : 1,
                "uri" : [
-                  "//xxxx.xxxxxxxx.com/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
+                  "xxxx.xxxxxxxx.com/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
                ],
                "clientVersionCnt" : 1,
                "host" : [

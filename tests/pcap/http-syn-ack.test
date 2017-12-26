@@ -88,7 +88,7 @@
                "responseHeaderCnt" : 11,
                "methodCnt" : 1,
                "uri" : [
-                  "//js.navigator.io/1"
+                  "js.navigator.io/1"
                ],
                "pathCnt" : 1,
                "bodyMagicCnt" : 1,

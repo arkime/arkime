@@ -1,13 +1,16 @@
-NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_50
+NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
 NOTICE: ES 5.6 and node 6.x required
 
-0.50.0 2018/01/01
+1.0.0 2018/01/01
   - NOTICE: Supported ES Versions: 5.6.x, 6.x
+  - NOTICE: hasheader for email/http for old sessions will not be migrated
   - all - rename field names
   - all - no more analyzed ES fields, everything is a keyword field
   - all - full ipv6 support
   - all - tags index removed, tags/hasheader stored as first class fields
+  - all - new reindex2 script to move from pre 1.0 to 1.0
+  - capture - http uri field no longer starts with // (issue #732)
 
 
 0.20.2 2017/12/XX
