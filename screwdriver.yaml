@@ -18,17 +18,16 @@ jobs:
             - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                if [ "$GIT_BRANCH" = "origin/master" ]; then
-                  fpm -s dir -t rpm -n moloch -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/moloch
-                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-master.x86_64.rpm --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-master.x86_64.rpm --acl public-read
+                if [ "$GIT_BRANCH" = "origin/1.0.0" ]; then
+                  fpm -s dir -t rpm -n moloch-alpha -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/moloch
+                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-1-alpha.x86_64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-1-alpha.x86_64.rpm --acl public-read
                 fi
             - slack-success: |
-                if [ "$GIT_BRANCH" = "origin/master" ]; then
+                if [ "$GIT_BRANCH" = "origin/1.0.0" ]; then
                   BUILD_VERSION=`git describe --tags`
                   MSG=`git log -1 --format=%s`
                   BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - moloch-$MOLOCH_VERSION-$SD_BUILD_ID - $MSG\"}"
-                  ls -l moloch*
                   curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
                 fi
         secrets:
