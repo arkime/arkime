@@ -689,7 +689,6 @@ static const char *method_strings[] =
     0
     };
 
-    // Also in tls.c
     hostField = moloch_field_define("http", "lotermfield",
         "host.http", "Hostname", "http.host",
         "HTTP host header field",

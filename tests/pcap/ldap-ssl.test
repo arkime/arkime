@@ -1,63 +1,61 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150131",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "srcDataBytes" : 1651,
-            "packetPosArray" : [
-               24,
-               134,
-               244,
-               346,
-               479,
-               581,
-               697,
-               799,
-               1018,
-               1206,
-               1308,
-               1939,
-               2041,
-               2152,
-               2254,
-               2495,
-               2603,
-               2838,
-               2940,
-               3048,
-               3331,
-               3433,
-               3876,
-               4207,
-               4458,
-               4560,
-               4731,
-               5318,
-               5420,
-               6039,
-               6306,
-               6408,
-               6579,
-               6878,
-               6980,
-               7311
-            ],
+            "lastPacket" : 1422673558484,
             "node" : "test",
-            "dstDataBytes" : 2050,
+            "dstMacCnt" : 1,
+            "totDataBytes" : 3701,
+            "certCnt" : 1,
+            "srcMacCnt" : 1,
+            "srcPackets" : 20,
+            "dstBytes" : 3422,
+            "timestamp" : "SET",
+            "protocol" : [
+               "tls",
+               "ldap",
+               "tcp"
+            ],
+            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "dstPackets" : 16,
             "cert" : [
                {
+                  "serial" : "008a07e08d4ab50a7b",
                   "issuerCN" : [
                      "ldap ssl test"
                   ],
-                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
-                  "notAfter" : 1738030709000,
-                  "validDays" : 3650,
-                  "notBefore" : 1422670709000,
                   "subjectCN" : [
                      "ldap ssl test"
                   ],
-                  "serial" : "008a07e08d4ab50a7b"
+                  "notAfter" : 1738030709000,
+                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
+                  "validDays" : 3650,
+                  "notBefore" : 1422670709000
                }
             ],
+            "firstPacket" : 1422673532664,
+            "totPackets" : 36,
+            "tcpflags" : {
+               "srcZero" : 0,
+               "syn" : 1,
+               "fin" : 1,
+               "syn-ack" : 1,
+               "dstZero" : 0,
+               "rst" : 1,
+               "psh" : 21,
+               "ack" : 11,
+               "urg" : 0
+            },
+            "srcDataBytes" : 1651,
+            "srcPort" : 37386,
+            "srcPayload8" : "301d020101771880",
+            "srcBytes" : 3379,
             "packetLenArray" : [
                110,
                110,
@@ -96,75 +94,77 @@
                331,
                90
             ],
-            "srcBytes" : 3379,
-            "timestamp" : "SET",
-            "segments" : 1,
+            "length" : 25820,
             "ipProtocol" : 6,
-            "fileIds" : [],
-            "dstPayload8" : "300c02010178070a",
-            "lastPacket" : 1422673558484,
             "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "srcPayload8" : "301d020101771880",
-            "srcMacCnt" : 1,
-            "tcpflags" : {
-               "ack" : 11,
-               "dstZero" : 0,
-               "psh" : 21,
-               "rst" : 1,
-               "fin" : 1,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 3701,
-            "srcPort" : 37386,
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
+            "dstPayload8" : "300c02010178070a",
             "tls" : {
-               "ja3" : [
-                  "3f8b7a5c41878630f67e660533be80fc"
+               "ja3Cnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_128_CBC_SHA"
+               ],
+               "version" : [
+                  "TLSv1.2"
                ],
                "dstSessionId" : [
                   "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
                ],
-               "cipher" : [
-                  "TLS_RSA_WITH_AES_128_CBC_SHA"
-               ],
-               "ja3Cnt" : 1,
-               "version" : [
-                  "TLSv1.2"
-               ],
+               "versionCnt" : 1,
                "cipherCnt" : 1,
-               "versionCnt" : 1
+               "ja3" : [
+                  "3f8b7a5c41878630f67e660533be80fc"
+               ]
             },
-            "certCnt" : 1,
-            "dstBytes" : 3422,
-            "dstIp" : "::1",
-            "length" : 25820,
-            "totBytes" : 6801,
-            "srcPackets" : 20,
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "tls",
-               "ldap",
-               "tcp"
-            ],
-            "totPackets" : 36,
-            "srcIp" : "::1",
-            "dstPort" : 389,
             "protocolCnt" : 3,
-            "dstPackets" : 16,
-            "firstPacket" : 1422673532664
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-150131",
-               "_type" : "session"
-            }
+            "dstDataBytes" : 2050,
+            "packetPosArray" : [
+               24,
+               134,
+               244,
+               346,
+               479,
+               581,
+               697,
+               799,
+               1018,
+               1206,
+               1308,
+               1939,
+               2041,
+               2152,
+               2254,
+               2495,
+               2603,
+               2838,
+               2940,
+               3048,
+               3331,
+               3433,
+               3876,
+               4207,
+               4458,
+               4560,
+               4731,
+               5318,
+               5420,
+               6039,
+               6306,
+               6408,
+               6579,
+               6878,
+               6980,
+               7311
+            ],
+            "dstPort" : 389,
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "segments" : 1,
+            "fileIds" : [],
+            "totBytes" : 6801,
+            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001"
          }
       }
    ]

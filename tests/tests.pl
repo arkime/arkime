@@ -115,7 +115,10 @@ my ($json) = @_;
         }
 
         if ($body->{srcIp} =~ /:/) {
-            $body->{srcIp} = inet_ntop(AF_INET6, inet_pton(AF_INET6, $body->{srcIp}));
+            $body->{srcIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{srcIp})) =~ m/(....)/g );
+        }
+        if ($body->{dstIp} =~ /:/) {
+            $body->{dstIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dstIp})) =~ m/(....)/g );
         }
     }
 
