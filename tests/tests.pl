@@ -120,6 +120,13 @@ my ($json) = @_;
         if ($body->{dstIp} =~ /:/) {
             $body->{dstIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dstIp})) =~ m/(....)/g );
         }
+        if (exists $body->{dns} && exists $body->{dns}->{ip}) {
+            for (my $i = 0; $i < @{$body->{dns}->{ip}}; $i++) {
+                if ($body->{dns}->{ip}[$i] =~ /:/) {
+                    $body->{dns}->{ip}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{ip}[$i])) =~ m/(....)/g );
+                }
+            }
+        }
     }
 
     @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};
