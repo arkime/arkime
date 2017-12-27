@@ -770,7 +770,7 @@ for (let i = 0; i < process.argv.length; i++) {
   switch(process.argv[i]) {
   case "--slices":
     i++;
-    internals.sliceMax = +process.argv[i] || 1;
+    internals.sliceMax = +process.argv[i] || 2;
     break;
   case "--size":
     i++;

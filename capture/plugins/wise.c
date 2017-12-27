@@ -655,7 +655,7 @@ void moloch_plugin_init()
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
     httpHostField  = moloch_field_by_db("http.host");
-    httpXffField   = moloch_field_by_db("http.xff");
+    httpXffField   = moloch_field_by_db("http.xffIp");
     httpMd5Field   = moloch_field_by_db("http.md5");
     emailMd5Field  = moloch_field_by_db("email.md5");
     emailSrcField  = moloch_field_by_db("email.src");

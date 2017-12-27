@@ -602,7 +602,11 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
         value = 0;
     }
 }
-
+/******************************************************************************/
+LOCAL int cstring_cmp(const void *a, const void *b)
+{
+   return strcmp(*(char **)a, *(char **)b);
+}
 /******************************************************************************/
 void moloch_parsers_init()
 {
@@ -691,13 +695,10 @@ void moloch_parsers_init()
             continue;
 
         const gchar *filename;
-        while (1) {
-            filename = g_dir_read_name(dir);
+        gchar *filenames[100];
+        int    flen = 0;
 
-            // No more files, stop processing this directory
-            if (!filename)
-                break;
-
+        while ((filename = g_dir_read_name(dir))) {
             // Skip hidden files/directories
             if (filename[0] == '.')
                 continue;
@@ -715,11 +716,19 @@ void moloch_parsers_init()
                 continue; /* Already loaded */
             }
 
-            gchar   *path = g_build_filename (config.parsersDir[d], filename, NULL);
+            filenames[flen] = g_strdup(filename);
+            flen++;
+        }
+
+        qsort((void *)filenames, (size_t)flen, sizeof(char *), cstring_cmp);
+
+        int i;
+        for (i = 0; i < flen; i++) {
+            gchar *path = g_build_filename (config.parsersDir[d], filenames[i], NULL);
             GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 
             if (!parser) {
-                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filename, path, g_module_error());
+                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
                 g_free (path);
                 continue;
             }
@@ -728,18 +737,23 @@ void moloch_parsers_init()
             MolochPluginInitFunc parser_init;
 
             if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
-                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filename);
+                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
+                g_free(filenames[i]);
                 continue;
             }
+
+            if (config.debug > 1) {
+                LOG("Loaded %s", path);
+            }
+
 
             parser_init();
 
             hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-            hstring->str = g_strdup(filename);
-            hstring->len = strlen(filename);
+            hstring->str = filenames[i];
+            hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
         }
-
         g_dir_close(dir);
     }
 
