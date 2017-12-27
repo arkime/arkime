@@ -766,7 +766,14 @@ void moloch_parser_init()
         0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
-    hostField = moloch_field_by_exp("host.http");
+    // Also in http.c
+    hostField = moloch_field_define("http", "lotermfield",
+        "host.http", "Hostname", "http.host",
+        "HTTP host header field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "aliases", "[\"http.host\"]",
+        "category", "host",
+        NULL);
 
     verField = moloch_field_define("tls", "termfield",
         "tls.version", "Version", "tls.version",

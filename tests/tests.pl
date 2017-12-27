@@ -11,6 +11,7 @@ use Cwd;
 use URI::Escape;
 use TAP::Harness;
 use MolochTest;
+use Socket qw(AF_INET6 inet_pton inet_ntop);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
@@ -111,6 +112,10 @@ my ($json) = @_;
         }
         if (exists $body->{timestamp}) {
             $body->{timestamp} = "SET";
+        }
+
+        if ($body->{srcIp} =~ /:/) {
+            $body->{srcIp} = inet_ntop(AF_INET6, inet_pton(AF_INET6, $body->{srcIp}));
         }
     }
 
