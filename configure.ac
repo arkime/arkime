@@ -42,7 +42,7 @@ darwin*)
   ;;
 *)
   SHARED_FLAGS="--shared"
-  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update"
+  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update -u g_uri_unescape_segment"
 esac
 AC_SUBST(SHARED_FLAGS)
 AC_SUBST(UNDEFINED_FLAGS)
