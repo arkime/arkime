@@ -2,55 +2,50 @@
    "sessions2" : [
       {
          "body" : {
-            "srcPort" : 50509,
-            "dstPayload8" : "0c00db40daa3bbe2",
-            "fileIds" : [],
             "totPackets" : 5,
-            "dstASN" : "AS15169 Google Inc.",
-            "srcIp" : "10.44.100.22",
-            "timestamp" : "SET",
-            "dstPackets" : 2,
-            "srcPackets" : 3,
             "ipProtocol" : 17,
-            "dstMac" : [
-               "00:12:ef:c0:d7:a3"
-            ],
-            "dstDataBytes" : 2768,
-            "segments" : 1,
-            "dstGEO" : "USA",
-            "totDataBytes" : 5610,
+            "srcPort" : 50509,
+            "fileIds" : [],
+            "srcDataBytes" : 2842,
             "dstIp" : "216.58.208.195",
-            "packetPosArray" : [
-               24,
-               1432,
-               2840,
-               4248,
-               4346
-            ],
-            "totBytes" : 5650,
-            "srcPayload8" : "0d00db40daa3bbe2",
             "srcMac" : [
                "a0:88:b4:1e:16:0c"
             ],
-            "srcMacCnt" : 1,
+            "segments" : 1,
+            "dstGEO" : "USA",
+            "dstRIR" : "ARIN",
+            "lastPacket" : 1429686316327,
+            "firstPacket" : 1429686316293,
             "dstPort" : 443,
-            "srcDataBytes" : 2842,
+            "dstASN" : "AS15169 Google LLC",
+            "dstPackets" : 2,
             "srcBytes" : 2866,
-            "protocolCnt" : 2,
+            "dstMac" : [
+               "00:12:ef:c0:d7:a3"
+            ],
+            "srcIp" : "10.44.100.22",
+            "dstDataBytes" : 2768,
+            "srcPackets" : 3,
             "quic" : {
-               "hostCnt" : 1,
                "useragentCnt" : 1,
-               "host" : [
-                  "www.google.fr"
+               "useragent" : [
+                  "canary Chrome/44.0.2375.0"
                ],
                "version-term" : [
                   "Q024"
                ],
                "version-termCnt" : 1,
-               "useragent" : [
-                  "canary Chrome/44.0.2375.0"
-               ]
+               "host" : [
+                  "www.google.fr"
+               ],
+               "hostCnt" : 1
             },
+            "protocol" : [
+               "udp",
+               "quic"
+            ],
+            "totDataBytes" : 5610,
+            "dstPayload8" : "0c00db40daa3bbe2",
             "packetLenArray" : [
                1408,
                1408,
@@ -58,22 +53,27 @@
                98,
                1408
             ],
-            "dstBytes" : 2784,
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "udp",
-               "quic"
+            "srcPayload8" : "0d00db40daa3bbe2",
+            "node" : "test",
+            "timestamp" : "SET",
+            "srcMacCnt" : 1,
+            "protocolCnt" : 2,
+            "packetPosArray" : [
+               24,
+               1432,
+               2840,
+               4248,
+               4346
             ],
             "length" : 33,
-            "firstPacket" : 1429686316293,
-            "lastPacket" : 1429686316327,
-            "dstRIR" : "ARIN",
-            "node" : "test"
+            "dstBytes" : 2784,
+            "totBytes" : 5650,
+            "dstMacCnt" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-150422"
+               "_index" : "tests_sessions2-150422",
+               "_type" : "session"
             }
          }
       }

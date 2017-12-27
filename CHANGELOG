@@ -2,7 +2,7 @@ NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrad
 
 NOTICE: ES 5.6 and node 6.x required
 
-1.0.0 2018/01/01
+1.0.0 2018/02/XX
   - NOTICE: Supported ES Versions: 5.6.x, 6.x
   - NOTICE: hasheader for email/http for old sessions will not be migrated
   - all - rename field names

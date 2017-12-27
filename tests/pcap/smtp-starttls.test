@@ -1,97 +1,34 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131226",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "cert" : [
-               {
-                  "serial" : "12bbe6",
-                  "validDays" : 5936,
-                  "subjectCN" : [
-                     "geotrust global ca"
-                  ],
-                  "notAfter" : 1534824000000,
-                  "subjectON" : "GeoTrust Inc.",
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "notBefore" : 1021953600000,
-                  "issuerON" : "Equifax"
-               },
-               {
-                  "subjectCN" : [
-                     "google internet authority g2"
-                  ],
-                  "validDays" : 729,
-                  "serial" : "023a69",
-                  "notBefore" : 1365174955000,
-                  "issuerCN" : [
-                     "geotrust global ca"
-                  ],
-                  "issuerON" : "GeoTrust Inc.",
-                  "subjectON" : "Google Inc",
-                  "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
-                  "notAfter" : 1428160555000
-               },
-               {
-                  "issuerON" : "Google Inc",
-                  "notBefore" : 1378726355000,
-                  "issuerCN" : [
-                     "google internet authority g2"
-                  ],
-                  "subjectON" : "Google Inc",
-                  "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
-                  "notAfter" : 1410262355000,
-                  "altCnt" : 20,
-                  "subjectCN" : [
-                     "mx.google.com"
-                  ],
-                  "alt" : [
-                     "aspmx.l.google.com",
-                     "alt1.aspmx.l.google.com",
-                     "alt2.aspmx.l.google.com",
-                     "alt3.aspmx.l.google.com",
-                     "alt4.aspmx.l.google.com",
-                     "gmail-smtp-in.l.google.com",
-                     "alt1.gmail-smtp-in.l.google.com",
-                     "alt2.gmail-smtp-in.l.google.com",
-                     "alt3.gmail-smtp-in.l.google.com",
-                     "alt4.gmail-smtp-in.l.google.com",
-                     "gmr-smtp-in.l.google.com",
-                     "alt1.gmr-smtp-in.l.google.com",
-                     "alt2.gmr-smtp-in.l.google.com",
-                     "alt3.gmr-smtp-in.l.google.com",
-                     "alt4.gmr-smtp-in.l.google.com",
-                     "mx.google.com",
-                     "aspmx2.googlemail.com",
-                     "aspmx3.googlemail.com",
-                     "aspmx4.googlemail.com",
-                     "aspmx5.googlemail.com"
-                  ],
-                  "validDays" : 365,
-                  "serial" : "325d8297987d50b0"
-               }
-            ],
-            "fileIds" : [],
-            "tagsCnt" : 2,
-            "protocolCnt" : 3,
-            "srcPackets" : 17,
+            "srcMacCnt" : 1,
+            "totDataBytes" : 6011,
+            "srcPayload8" : "45484c4f20787878",
             "tags" : [
                "srcip",
                "smtp:starttls"
             ],
-            "tls" : {
-               "cipherCnt" : 1,
-               "versionCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ]
+            "srcPackets" : 17,
+            "dstIp" : "173.194.68.26",
+            "fileIds" : [],
+            "node" : "test",
+            "srcPort" : 57406,
+            "length" : 478,
+            "firstPacket" : 1388017124762,
+            "srcASN" : "AS0000 This is neat",
+            "totPackets" : 36,
+            "dstBytes" : 5889,
+            "tcpflags" : {
+               "syn" : 1,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "fin" : 2,
+               "psh" : 20,
+               "ack" : 12,
+               "urg" : 0,
+               "dstZero" : 0,
+               "srcZero" : 0
             },
             "packetPosArray" : [
                24,
@@ -131,23 +68,41 @@
                8839,
                8921
             ],
-            "dstGEO" : "USA",
+            "protocol" : [
+               "tls",
+               "smtp",
+               "tcp"
+            ],
             "totBytes" : 8403,
-            "ipProtocol" : 6,
-            "length" : 478,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "srcZero" : 0,
-               "rst" : 0,
-               "urg" : 0,
-               "psh" : 20,
-               "fin" : 2,
-               "ack" : 12
+            "dstPackets" : 19,
+            "dstDataBytes" : 4627,
+            "certCnt" : 3,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "number" : [
+                  440713901
+               ],
+               "string.snow" : [
+                  "16777226:57406,440713901:25"
+               ]
             },
-            "srcASN" : "AS0000 This is neat",
-            "node" : "test",
+            "dstPort" : 25,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstMacCnt" : 2,
+            "timestamp" : "SET",
             "packetLenArray" : [
                90,
                90,
@@ -186,61 +141,106 @@
                82,
                82
             ],
-            "firstPacket" : 1388017124762,
-            "segments" : 1,
-            "timestamp" : "SET",
-            "dstPayload8" : "323230206d782e67",
-            "srcGEO" : "RUS",
-            "lastPacket" : 1388017125239,
-            "srcPort" : 57406,
-            "srcDataBytes" : 1384,
-            "dstIp" : "173.194.68.26",
-            "dstRIR" : "ARIN",
-            "totPackets" : 36,
-            "test" : {
-               "GEO" : [
-                  "RUS"
-               ],
-               "string.snow" : [
-                  "16777226:57406,440713901:25"
-               ],
-               "number" : [
-                  440713901
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "RIR" : [
-                  ""
-               ]
-            },
-            "dstBytes" : 5889,
-            "srcPayload8" : "45484c4f20787878",
-            "dstASN" : "AS15169 Google Inc.",
-            "certCnt" : 3,
-            "dstMacCnt" : 2,
-            "totDataBytes" : 6011,
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcMacCnt" : 1,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "dstDataBytes" : 4627,
-            "protocol" : [
-               "tls",
-               "smtp",
-               "tcp"
+            "cert" : [
+               {
+                  "issuerON" : "Equifax",
+                  "validDays" : 5936,
+                  "notBefore" : 1021953600000,
+                  "serial" : "12bbe6",
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "subjectCN" : [
+                     "geotrust global ca"
+                  ],
+                  "subjectON" : "GeoTrust Inc.",
+                  "notAfter" : 1534824000000
+               },
+               {
+                  "notAfter" : 1428160555000,
+                  "subjectON" : "Google Inc",
+                  "issuerCN" : [
+                     "geotrust global ca"
+                  ],
+                  "subjectCN" : [
+                     "google internet authority g2"
+                  ],
+                  "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
+                  "serial" : "023a69",
+                  "notBefore" : 1365174955000,
+                  "validDays" : 729,
+                  "issuerON" : "GeoTrust Inc."
+               },
+               {
+                  "notAfter" : 1410262355000,
+                  "alt" : [
+                     "aspmx.l.google.com",
+                     "alt1.aspmx.l.google.com",
+                     "alt2.aspmx.l.google.com",
+                     "alt3.aspmx.l.google.com",
+                     "alt4.aspmx.l.google.com",
+                     "gmail-smtp-in.l.google.com",
+                     "alt1.gmail-smtp-in.l.google.com",
+                     "alt2.gmail-smtp-in.l.google.com",
+                     "alt3.gmail-smtp-in.l.google.com",
+                     "alt4.gmail-smtp-in.l.google.com",
+                     "gmr-smtp-in.l.google.com",
+                     "alt1.gmr-smtp-in.l.google.com",
+                     "alt2.gmr-smtp-in.l.google.com",
+                     "alt3.gmr-smtp-in.l.google.com",
+                     "alt4.gmr-smtp-in.l.google.com",
+                     "mx.google.com",
+                     "aspmx2.googlemail.com",
+                     "aspmx3.googlemail.com",
+                     "aspmx4.googlemail.com",
+                     "aspmx5.googlemail.com"
+                  ],
+                  "subjectON" : "Google Inc",
+                  "issuerCN" : [
+                     "google internet authority g2"
+                  ],
+                  "subjectCN" : [
+                     "mx.google.com"
+                  ],
+                  "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
+                  "altCnt" : 20,
+                  "serial" : "325d8297987d50b0",
+                  "notBefore" : 1378726355000,
+                  "validDays" : 365,
+                  "issuerON" : "Google Inc"
+               }
             ],
+            "srcDataBytes" : 1384,
+            "srcIp" : "10.0.0.1",
             "srcBytes" : 2514,
-            "dstPackets" : 19,
-            "dstPort" : 25
+            "dstGEO" : "USA",
+            "dstRIR" : "ARIN",
+            "ipProtocol" : 6,
+            "tagsCnt" : 2,
+            "protocolCnt" : 3,
+            "lastPacket" : 1388017125239,
+            "dstASN" : "AS15169 Google LLC",
+            "tls" : {
+               "cipherCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "versionCnt" : 1,
+               "version" : [
+                  "TLSv1"
+               ]
+            },
+            "segments" : 1,
+            "srcGEO" : "RUS",
+            "dstPayload8" : "323230206d782e67"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131226"
+            }
          }
       }
    ]

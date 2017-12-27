@@ -2,36 +2,64 @@
    "sessions2" : [
       {
          "body" : {
-            "dstGEO" : "USA",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "dstRIR" : "ARIN",
+            "certCnt" : 2,
+            "tagsCnt" : 1,
+            "totPackets" : 19,
+            "srcPayload8" : "1603010102010000",
+            "timestamp" : "SET",
+            "tls" : {
+               "dstSessionId" : [
+                  "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+               ],
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_MD5"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1"
+               ],
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "ja3" : [
+                  "609a9998ac9d232d213aee990ec5162f"
+               ]
+            },
+            "srcPackets" : 11,
+            "srcIp" : "10.0.0.1",
+            "lastPacket" : 1413338075560,
+            "srcGEO" : "RUS",
+            "dstPackets" : 8,
+            "dstDataBytes" : 4005,
+            "tcpflags" : {
+               "rst" : 0,
+               "psh" : 7,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "ack" : 8,
+               "dstZero" : 0,
+               "urg" : 0
+            },
+            "dstBytes" : 4467,
             "cert" : [
                {
+                  "subjectCN" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "issuerON" : "Entrust.net",
+                  "validDays" : 3653,
+                  "serial" : "4c0e8c39",
+                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
                   "notAfter" : 1636685477000,
                   "issuerCN" : [
                      "entrust.net certification authority (2048)"
                   ],
                   "notBefore" : 1321026040000,
-                  "subjectON" : "Entrust, Inc.",
-                  "serial" : "4c0e8c39",
-                  "subjectCN" : [
-                     "entrust certification authority - l1c"
-                  ],
-                  "issuerON" : "Entrust.net",
-                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
-                  "validDays" : 3653
+                  "subjectON" : "Entrust, Inc."
                },
                {
-                  "altCnt" : 62,
-                  "serial" : "4c235548",
-                  "subjectCN" : [
-                     "www.aol.com"
-                  ],
-                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
-                  "validDays" : 1096,
-                  "issuerON" : "Entrust, Inc.",
-                  "notAfter" : 1497242632000,
                   "alt" : [
                      "toshiba.aol.ca",
                      "main-w.welcomescreen.aol.com",
@@ -96,19 +124,65 @@
                      "m.article.aol.com",
                      "hp.aol.ca"
                   ],
-                  "subjectON" : "AOL Inc.",
+                  "subjectCN" : [
+                     "www.aol.com"
+                  ],
+                  "altCnt" : 62,
+                  "serial" : "4c235548",
+                  "validDays" : 1096,
+                  "issuerON" : "Entrust, Inc.",
+                  "notAfter" : 1497242632000,
+                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
                   "issuerCN" : [
                      "entrust certification authority - l1c"
                   ],
-                  "notBefore" : 1402510723000
+                  "notBefore" : 1402510723000,
+                  "subjectON" : "AOL Inc."
                }
             ],
-            "totPackets" : 19,
             "firstPacket" : 1413338074954,
-            "certCnt" : 2,
-            "dstIp" : "64.12.21.3",
-            "dstBytes" : 4467,
-            "srcPackets" : 11,
+            "test" : {
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:40291,51711040:443"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "number" : [
+                  51711040
+               ]
+            },
+            "ipProtocol" : 6,
+            "dstPort" : 443,
+            "srcASN" : "AS0000 This is neat",
+            "dstPayload8" : "1603010f75020000",
+            "dstGEO" : "USA",
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "srcDataBytes" : 596,
+            "fileIds" : [],
+            "node" : "test",
+            "dstMacCnt" : 2,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "totDataBytes" : 4601,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "totBytes" : 5677,
+            "tags" : [
+               "srcip"
+            ],
             "packetPosArray" : [
                24,
                114,
@@ -130,56 +204,13 @@
                5859,
                5935
             ],
-            "tcpflags" : {
-               "dstZero" : 0,
-               "fin" : 2,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "psh" : 7,
-               "ack" : 8,
-               "rst" : 0
-            },
-            "srcDataBytes" : 596,
-            "srcGEO" : "RUS",
-            "ipProtocol" : 6,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "srcPayload8" : "1603010102010000",
-            "fileIds" : [],
-            "srcPort" : 40291,
-            "segments" : 1,
-            "lastPacket" : 1413338075560,
-            "dstPackets" : 8,
+            "length" : 606,
+            "srcBytes" : 1210,
+            "dstIp" : "64.12.21.3",
             "protocol" : [
                "tls",
                "tcp"
             ],
-            "srcMacCnt" : 1,
-            "dstDataBytes" : 4005,
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "tls" : {
-               "cipherCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_MD5"
-               ],
-               "ja3" : [
-                  "609a9998ac9d232d213aee990ec5162f"
-               ],
-               "dstSessionId" : [
-                  "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
-               ],
-               "ja3Cnt" : 1
-            },
-            "dstPort" : 443,
-            "node" : "test",
             "packetLenArray" : [
                90,
                82,
@@ -201,46 +232,15 @@
                76,
                70
             ],
-            "dstMacCnt" : 2,
-            "srcBytes" : 1210,
-            "test" : {
-               "number" : [
-                  51711040
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "string.snow" : [
-                  "16777226:40291,51711040:443"
-               ]
-            },
-            "totBytes" : 5677,
-            "totDataBytes" : 4601,
-            "tags" : [
-               "srcip"
-            ],
-            "length" : 606,
-            "dstPayload8" : "1603010f75020000",
-            "srcIp" : "10.0.0.1",
-            "tagsCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
-            "timestamp" : "SET",
             "protocolCnt" : 2,
-            "dstRIR" : "ARIN"
+            "srcMacCnt" : 1,
+            "segments" : 1,
+            "srcPort" : 40291
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-141015"
+               "_index" : "tests_sessions2-141015",
+               "_type" : "session"
             }
          }
       }

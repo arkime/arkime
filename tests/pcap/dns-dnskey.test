@@ -2,98 +2,98 @@
    "sessions2" : [
       {
          "body" : {
-            "totDataBytes" : 66,
-            "length" : 0,
-            "vlanCnt" : 1,
-            "srcIp" : "10.0.0.1",
-            "dstPort" : 53,
-            "vlan" : [
-               500
-            ],
-            "node" : "test",
-            "fileIds" : [],
-            "dstIp" : "8.8.8.8",
-            "packetPosArray" : [
-               24
-            ],
-            "srcDataBytes" : 66,
-            "firstPacket" : 1393428477365,
-            "totBytes" : 74,
-            "srcBytes" : 74,
-            "packetLenArray" : [
-               90
-            ],
-            "dstDataBytes" : 0,
-            "srcPayload8" : "f376011000010000",
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "number" : [
-                  134744072
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "string.snow" : [
-                  "16777226:53869,134744072:53"
-               ],
-               "GEO" : [
-                  "RUS"
-               ]
-            },
-            "srcPort" : 53869,
-            "dstMacCnt" : 1,
+            "ipProtocol" : 17,
+            "protocolCnt" : 2,
             "srcASN" : "AS0000 This is neat",
-            "srcPackets" : 1,
+            "dstRIR" : "ARIN",
             "dstMac" : [
                "00:19:e2:ba:2f:c1"
             ],
-            "ipProtocol" : 17,
-            "segments" : 1,
-            "totPackets" : 1,
-            "srcMacCnt" : 1,
-            "protocolCnt" : 2,
+            "packetLenArray" : [
+               90
+            ],
+            "srcDataBytes" : 66,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "srcGEO" : "RUS",
+            "vlanCnt" : 1,
+            "dstMacCnt" : 1,
             "timestamp" : "SET",
+            "srcPayload8" : "f376011000010000",
+            "vlan" : [
+               500
+            ],
+            "srcMacCnt" : 1,
+            "srcPort" : 53869,
+            "srcMac" : [
+               "00:1a:e3:dc:2e:c0"
+            ],
+            "totBytes" : 74,
+            "fileIds" : [],
+            "srcIp" : "10.0.0.1",
+            "dstPackets" : 0,
+            "test" : {
+               "number" : [
+                  134744072
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "GEO" : [
+                  "RUS"
+               ],
+               "string.snow" : [
+                  "16777226:53869,134744072:53"
+               ]
+            },
+            "lastPacket" : 1393428477365,
+            "length" : 0,
+            "dstIp" : "8.8.8.8",
+            "totDataBytes" : 66,
+            "node" : "test",
+            "srcGEO" : "RUS",
+            "srcBytes" : 74,
+            "tagsCnt" : 1,
+            "dstPort" : 53,
+            "totPackets" : 1,
+            "dstBytes" : 0,
+            "tags" : [
+               "srcip"
+            ],
+            "dstGEO" : "USA",
+            "dstDataBytes" : 0,
+            "segments" : 1,
             "dns" : {
-               "hostCnt" : 1,
                "qt" : [
                   "DNSKEY"
                ],
-               "qtCnt" : 1,
-               "opcodeCnt" : 1,
                "qc" : [
                   "IN"
                ],
+               "qcCnt" : 1,
+               "qtCnt" : 1,
+               "hostCnt" : 1,
                "host" : [
                   "<root>"
                ],
                "opcode" : [
                   "QUERY"
                ],
-               "qcCnt" : 1
+               "opcodeCnt" : 1
             },
-            "dstASN" : "AS15169 Google Inc.",
-            "srcMac" : [
-               "00:1a:e3:dc:2e:c0"
+            "firstPacket" : 1393428477365,
+            "packetPosArray" : [
+               24
             ],
-            "lastPacket" : 1393428477365,
-            "dstGEO" : "USA",
-            "tagsCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstBytes" : 0,
-            "tags" : [
-               "srcip"
-            ],
-            "dstPackets" : 0
+            "srcPackets" : 1,
+            "dstASN" : "AS15169 Google LLC"
          },
          "header" : {
             "index" : {
