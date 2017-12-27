@@ -397,6 +397,7 @@ typedef struct {
 /******************************************************************************/
 #define MOLOCH_PACKET_VPNTYPE_GRE    1
 #define MOLOCH_PACKET_VPNTYPE_PPPOE  2
+#define MOLOCH_PACKET_VPNTYPE_MPLS   3
 typedef struct molochpacket_t
 {
     struct molochpacket_t   *packet_next, *packet_prev;

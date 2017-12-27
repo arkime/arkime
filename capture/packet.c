@@ -692,6 +692,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
             case MOLOCH_PACKET_VPNTYPE_PPPOE:
                 moloch_session_add_protocol(session, "pppoe");
                 break;
+            case MOLOCH_PACKET_VPNTYPE_MPLS:
+                moloch_session_add_protocol(session, "mpls");
+                break;
             }
 
         }
@@ -1239,6 +1242,39 @@ int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     }
 }
 /******************************************************************************/
+int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    while (1) {
+        if (len < 4 + (int)sizeof(struct ip)) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Len %d", len);
+#endif
+            return MOLOCH_PACKET_CORRUPT;
+        }
+
+        int S = data[3] & 0x1;
+
+        data += 4;
+        len -= 4;
+
+        if (S) {
+            packet->vpnType = MOLOCH_PACKET_VPNTYPE_MPLS;
+            switch (data[0] >> 4) {
+            case 4:
+                return moloch_packet_ip4(batch, packet, data, len);
+            case 6:
+                return moloch_packet_ip6(batch, packet, data, len);
+            default:
+#ifdef DEBUG_PACKET
+                LOG("BAD PACKET: Unknown mpls type %d", data[0] >> 4);
+#endif
+                return MOLOCH_PACKET_UNKNOWN;
+            }
+        }
+    }
+    return MOLOCH_PACKET_CORRUPT;
+}
+/******************************************************************************/
 int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
@@ -1258,6 +1294,8 @@ int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const pack
             return moloch_packet_ip6(batch, packet, data+n, len - n);
         case 0x8864:
             return moloch_packet_pppoe(batch, packet, data+n, len - n);
+        case 0x8847:
+            return moloch_packet_mpls(batch, packet, data+n, len - n);
         case 0x8100:
             n += 2;
             break;
