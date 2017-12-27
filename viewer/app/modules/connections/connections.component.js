@@ -178,6 +178,9 @@
 
       this.svg.remove();
       this.svg = null;
+
+      // show the footer for all other pages
+      $('footer').show();
     }
 
     /* sets up d3 graph and saves variables for use in other functions */

@@ -201,6 +201,15 @@
         expect(result).toEqual('1970/01/01 05:00:00Z');
       });
 
+      it('should return a string date in the requested format', function() {
+        let time   = 18000;
+        let result = $filter('timezoneDateString')(time, 'local', 'HH:mm:ss');
+        expect(result).toEqual('00:00:00');
+
+        result = $filter('timezoneDateString')(time, 'local', 'yyyy/MM/dd');
+        expect(result).toEqual('1970/01/01');
+      });
+
     });
 
     describe('Human Readable Bytes Filter ->', function() {

@@ -333,7 +333,7 @@
 
         if (field) {
           category = SpiviewController.setupCategory(this.categoryObjects, field);
-          
+
           category.isopen   = true; // open the category to display the field
           category.loading  = true; // loading is set to false in getSingleSpiData
 
@@ -474,11 +474,19 @@
     /* updates protocols and protocol counts for categories
        should only run when issuing a new query */
     updateProtocols() {
+      // clean up any old protocols
+      for (let c in this.categoryObjects) {
+        if (this.categoryObjects.hasOwnProperty(c)) {
+          this.categoryObjects[c].protocols = {};
+        }
+      }
+
       for (let key in this.protocols) {
         if (this.protocols.hasOwnProperty(key)) {
 
           let category;
 
+          // find the category that the protocol belongs to
           if (this.categoryObjects.hasOwnProperty(key)) {
             category = this.categoryObjects[key];
           } else { // categorize special protocols that don't match category
@@ -490,7 +498,6 @@
           }
 
           if (category) {
-            if (!category.protocols) { category.protocols = {}; }
             category.protocols[key] = this.protocols[key];
           }
 

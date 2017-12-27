@@ -24,6 +24,8 @@ NOTICE: ES 5.6 and node 6.x required
   - viewer - cleanup sessionErro
   - viewer - remove dead code
   - tests - more viewer tests
+  - viewer - upgrade Cyberchef to 6.8.0
+  - capture - basic mpls stripping (issue #779)
 
 0.20.1 2017/11/06
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
