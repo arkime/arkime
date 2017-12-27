@@ -366,9 +366,10 @@ int moloch_field_by_db(const char *dbField)
 {
     MolochFieldInfo_t *info = 0;
     HASH_FIND(d_, fieldsByDb, dbField, info);
-    if (info)
-        return info->pos;
-    return -1;
+    if (!info || info->pos == -1)
+        LOGEXIT("dbField %s wasn't defined", dbField);
+
+    return info->pos;
 }
 /******************************************************************************/
 int moloch_field_by_exp(const char *exp)
@@ -391,7 +392,8 @@ int moloch_field_by_exp(const char *exp)
         config.fields[info->pos] = info;
         return info->pos;
     }
-    return -1;
+
+    LOGEXIT("expr %s wasn't defined", exp);
 }
 /******************************************************************************/
 void moloch_field_by_exp_add_special(char *exp, int pos)
