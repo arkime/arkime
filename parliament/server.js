@@ -282,6 +282,22 @@ function getStats(cluster) {
         }
       }
 
+      // Look for issues
+      cluster.issues = [];
+      for (let stat of stats.data) {
+        if ((Date.now()/1000 - stat.currentTime) > 30) {
+          cluster.issues.push({type: "outOfDate", node: stat.nodeName, value: Math.round(Date.now()/1000 - stat.currentTime)});
+        }
+
+        if (stat.deltaPacketsPerSec === 0) {
+          cluster.issues.push({type: "noPackets", node: stat.nodeName, value: 0});
+        }
+
+        if (stat.deltaESDroppedPerSec > 0) {
+          cluster.issues.push({type: "esDropped", node: stat.nodeName, value: stat.deltaESDroppedPerSec});
+        }
+      }
+
       return resolve();
     })
     .catch((error) => {
@@ -290,7 +306,6 @@ function getStats(cluster) {
       cluster.statsError = message;
       return resolve();
     });
-
   });
 }
 
@@ -327,7 +342,6 @@ function initalizeParliament() {
 // in the parliament
 function updateParliament() {
   return new Promise((resolve, reject) => {
-
     let promises = [];
     for (let group of parliamentWithData.groups) {
       if (group.clusters) {
