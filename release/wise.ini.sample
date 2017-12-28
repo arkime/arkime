@@ -1,0 +1,14 @@
+# WISE Service Config, usually in its own file, but it can live in the same
+[wiseService]
+#port = 8081
+
+#[file:ip]
+#file=/data/moloch/wise/ip.wise
+#tags=ipwise
+#type=ip
+#format=tagger
+
+[right-click]
+VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
+VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
+VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url
