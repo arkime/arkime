@@ -369,6 +369,7 @@
 
           div.append('div')
              .attr('class', 'axis')
+             .attr('height', 28)
              .call(
                axis.orient('top')
                  .tickFormat(timeFormat)
