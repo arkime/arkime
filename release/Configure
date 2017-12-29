@@ -16,6 +16,26 @@ if [ "$MOLOCH_INSTALL_DIR" == "BUILD_MOLOCH_""INSTALL_DIR" ]; then
 MOLOCH_INSTALL_DIR=/data/$MOLOCH_NAME
 fi
 
+if [ $1 eq "--wise" ]; then
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Installing systemd start files, use systemctl"
+        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.systemd.service > /etc/systemd/system/molochwise.service
+    elif [ -d "/etc/init" ]; then
+        echo "Installing upstart start files, use start"
+        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.upstart.conf > /etc/init/molochwise.conf
+    fi
+
+    if [ ! -f "$MOLOCH_INSTALL_DIR/etc/wise.ini" ]; then
+        echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
+        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
+    else
+        echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
+        sleep 1
+    fi
+
+    exit 0;
+fi
+
 ################################################################################
 ### Ask config questions
 if [ -z "$MOLOCH_INTERFACE" ]; then
