@@ -202,6 +202,7 @@ typedef struct {
         MolochIntHashStd_t       *ihash;
         MolochCertsInfoHashStd_t *cihash;
         GHashTable               *ghash;
+        struct in6_addr          *ip;
     };
     uint32_t                   jsonSize;
 } MolochField_t;

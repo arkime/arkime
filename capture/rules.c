@@ -491,6 +491,9 @@ void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule
 
         switch (config.fields[p]->type) {
         case MOLOCH_FIELD_TYPE_IP:
+            good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->ip);
+            break;
+
         case MOLOCH_FIELD_TYPE_INT:
             good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->i);
             break;

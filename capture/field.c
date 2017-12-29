@@ -143,8 +143,8 @@ int moloch_field_define_text(char *text, int *shortcut)
         return -1;
     }
 
-    if (strstr(kind, "termfield") != 0 && strstr(db, "-term") == 0) {
-        LOGEXIT("ERROR - db field %s for %s should end with -term in '%s'", kind, db, text);
+    if (strstr(kind, "termfield") != 0 && strstr(db, "-term") != 0) {
+        LOGEXIT("ERROR - db field %s for %s should NOT end with -term in '%s' with Moloch 1.0", kind, db, text);
     }
 
     char groupbuf[100];
@@ -732,6 +732,8 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
         field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
+            field->ip = v;
+            goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
 
@@ -748,6 +750,9 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
     field->jsonSize += (3 + 10 + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
+        g_free(field->ip);
+        field->ip = v;
+        goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
             field->jsonSize -= 3 + 10 + 100;
@@ -786,6 +791,8 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
         field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
+            field->ip = v;
+            goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
 
@@ -802,6 +809,9 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
     field->jsonSize += (3 + 10 + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
+        g_free(field->ip);
+        field->ip = v;
+        goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
             field->jsonSize -= 3 + 10 + 100;
@@ -835,6 +845,8 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
         field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
+            field->ip = v;
+            goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
 
@@ -851,6 +863,9 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     field->jsonSize += (3 + 10 + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
+        g_free(field->ip);
+        field->ip = v;
+        goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
             field->jsonSize -= 3 + 10 + 100;
@@ -996,6 +1011,9 @@ void moloch_field_free(MolochSession_t *session)
                 MOLOCH_TYPE_FREE(MolochInt_t, hint);
             );
             MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
+            break;
+        case MOLOCH_FIELD_TYPE_IP:
+            g_free(session->fields[pos]->ip);
             break;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:

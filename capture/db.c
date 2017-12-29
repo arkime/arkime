@@ -677,15 +677,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_IP: {
-            ghash = session->fields[pos]->ghash;
             char                 *as;
             char                 *g;
             char                 *rir;
             int                   asFree;
 
-            g_hash_table_iter_init (&iter, ghash);
-            g_hash_table_iter_next (&iter, &ikey, NULL);
-
+            ikey = session->fields[pos]->ip;
             moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &as, &rir, &asFree);
             if (g) {
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, g);
