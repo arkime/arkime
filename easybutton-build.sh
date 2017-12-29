@@ -65,7 +65,7 @@ MAKE=make
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
-  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6
   if [ $? -ne 0 ]; then
     echo "MOLOCH: yum failed"
     exit 1
@@ -73,7 +73,7 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf
+  sudo apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl
   if [ $? -ne 0 ]; then
     echo "MOLOCH: apt-get failed"
     exit 1
