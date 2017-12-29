@@ -11,7 +11,7 @@ use Cwd;
 use URI::Escape;
 use TAP::Harness;
 use MolochTest;
-use Socket qw(AF_INET6 inet_pton inet_ntop);
+use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
