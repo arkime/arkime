@@ -121,6 +121,7 @@ jobs:
         image: andywick/moloch-build-7:6
         steps:
             - slack-success: |
+                export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)\'.*$/\1/"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
                   BUILD_VERSION=`git describe --tags`
                   MSG=`git log -1 --format=%s`
