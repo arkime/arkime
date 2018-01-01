@@ -11,11 +11,9 @@ jobs:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh"
             - export PATH=/data/moloch/bin:$PATH
-            - installing: make install
+            - installing: scl enable devtoolset-3 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
-            - export TZ=US/Eastern
-            - wise-npm: (cd capture/plugins/wiseService; scl enable devtoolset-3 "npm install")
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -40,7 +38,6 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
             - test-ui: (cd viewer; npm install ; npm test)
-            - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -63,9 +60,6 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
-            - export TZ=US/Eastern
-            - test-ui: (cd viewer; npm install ; npm test)
-            - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -88,8 +82,6 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-            - test-ui: (cd viewer; npm install ; npm test)
-            - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
@@ -111,9 +103,6 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
-            - export TZ=US/Eastern
-            - test-ui: (cd viewer; npm install ; npm test)
-            - wise-npm: (cd capture/plugins/wiseService; npm install)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
