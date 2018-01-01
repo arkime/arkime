@@ -9,14 +9,14 @@ jobs:
         image: andywick/moloch-build-6:0.20.2
         steps:
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
+            - build: scl enable devtoolset-3 "./easybutton-build.sh"
             - export PATH=/data/moloch/bin:$PATH
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-            - test-ui: (cd viewer; npm install ; npm test)
-            - wise-npm: (cd capture/plugins/wiseService; npm install)
+            - test-ui: (cd viewer; scl enable devtoolset-3 "npm install" ; npm test)
+            - wise-npm: (cd capture/plugins/wiseService; scl enable devtoolset-3 "npm install")
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
