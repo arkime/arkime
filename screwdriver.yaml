@@ -4,8 +4,9 @@ shared:
             addresses: [moloch.build@oath.com]
             statuses: [SUCCESS, FAILURE]
 jobs:
-    main:
-        image: andywick/moloch-build-7:6
+    centos-6:
+        requires: [~pr, ~commit]
+        image: andywick/moloch-build-6:0.20.2
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
@@ -20,9 +21,39 @@ jobs:
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
                   fpm -s dir -t rpm -n moloch -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/moloch
-                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-master.x86_64.rpm --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-master.x86_64.rpm --acl public-read
+                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-master.centos6.x86_64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-master.centos6.x86_64.rpm --acl public-read
                 fi
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+    centos-7:
+        requires: [~pr, ~commit]
+        image: andywick/moloch-build-7:0.20.2
+        steps:
+            - ln -s /thirdparty .
+            - build: ./easybutton-build.sh
+            - export PATH=/data/moloch/bin:$PATH
+            - installing: make install
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - test-capture: (cd tests ; ./tests.pl)
+            - export TZ=US/Eastern
+            - test-ui: (cd viewer; npm install ; npm test)
+            - wise-npm: (cd capture/plugins/wiseService; npm install)
+            - build-package: |
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
+                if [ "$GIT_BRANCH" = "origin/master" ]; then
+                  fpm -s dir -t rpm -n moloch -v $MOLOCH_VERSION --iteration $SD_BUILD_ID /data/moloch
+                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-master.centos7.x86_64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-master.centos7.x86_64.rpm --acl public-read
+                fi
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+    slack:
+        requires: [centos-6, centos-7]
+        image: andywick/moloch-build-7:6
+        steps:
             - slack-success: |
                 if [ "$GIT_BRANCH" = "origin/master" ]; then
                   BUILD_VERSION=`git describe --tags`
@@ -33,6 +64,3 @@ jobs:
                 fi
         secrets:
             - SLACK
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
-
