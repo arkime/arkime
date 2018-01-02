@@ -440,6 +440,12 @@ router.get('/auth', (req, res, next) => {
   return res.json({ hasAuth:hasAuth });
 });
 
+// Get whether the user is logged in
+// If it passes the verifyToken middleware, the user is logged in
+router.get('/auth/loggedin', verifyToken, (req, res, next) => {
+  return res.json({ loggedin:true });
+});
+
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
   return res.json(parliamentWithData);
