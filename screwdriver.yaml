@@ -80,12 +80,15 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - apt-get update
+            - apt-get install -y docker
+            - docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:5.5.3 &
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
+            - test-viewer: (cd tests ; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
