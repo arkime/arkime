@@ -21,7 +21,7 @@ export class AuthService {
   }
 
   login(password): Observable<Login> {
-    return this.http.post<Login>('parliament/api/auth', { password: password });
+    return this.http.post<Login>('api/auth', { password: password });
   }
 
   saveToken(token): boolean {
@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   hasAuth(): Observable<Auth> {
-    return this.http.get<Auth>('parliament/api/auth');
+    return this.http.get<Auth>('api/auth');
   }
 
 }
