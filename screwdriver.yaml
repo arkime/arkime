@@ -80,7 +80,7 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - apt-get update
-            - apt-get install -y docker
+            - apt-get install -y docker.io
             - docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:5.5.3 &
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
