@@ -8,83 +8,83 @@
             }
          },
          "body" : {
-            "srcPort" : 61912,
-            "dstDataBytes" : 74,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstIp" : "10.0.0.1",
-            "dstMacCnt" : 1,
-            "srcMacCnt" : 2,
+            "dstPayload8" : "b2b5800500010000",
+            "totPackets" : 2,
             "firstPacket" : 1393422583830,
+            "srcPayload8" : "b2b5000000010000",
+            "node" : "test",
+            "lastPacket" : 1393422583932,
+            "timestamp" : "SET",
+            "srcIp" : "10.0.0.2",
+            "srcRIR" : "TEST",
+            "srcPackets" : 1,
+            "dstIp" : "10.0.0.1",
             "dstMac" : [
                "00:10:db:ff:26:00"
             ],
-            "srcPayload8" : "b2b5000000010000",
-            "dstBytes" : 82,
-            "dstGEO" : "RUS",
-            "fileIds" : [],
-            "protocolCnt" : 2,
-            "srcDataBytes" : 74,
-            "srcASN" : "AS0001 Cool Beans!",
-            "srcPackets" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 53,
-            "srcBytes" : 82,
-            "tagsCnt" : 2,
-            "timestamp" : "SET",
-            "srcGEO" : "CAN",
-            "length" : 102,
-            "totBytes" : 164,
-            "packetPosArray" : [
-               24,
-               122
-            ],
-            "dns" : {
-               "opcodeCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qc" : [
-                  "IN"
-               ],
-               "statusCnt" : 1,
-               "status" : [
-                  "REFUSED"
-               ],
-               "hostCnt" : 1,
-               "qtCnt" : 1,
-               "qcCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "host" : [
-                  "flashservice.adobe.com"
-               ]
-            },
-            "segments" : 1,
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ],
-            "ipProtocol" : 17,
             "packetLenArray" : [
                98,
                98
             ],
-            "dstPayload8" : "b2b5800500010000",
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "dstDataBytes" : 74,
+            "packetPosArray" : [
+               24,
+               122
+            ],
+            "protocolCnt" : 2,
+            "srcPort" : 61912,
+            "length" : 102,
+            "srcGEO" : "CA",
+            "segments" : 1,
+            "dstMacCnt" : 1,
+            "srcBytes" : 82,
+            "dstPackets" : 1,
+            "dstPort" : 53,
+            "dns" : {
+               "qc" : [
+                  "IN"
+               ],
+               "qt" : [
+                  "A"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ],
+               "qcCnt" : 1,
+               "opcodeCnt" : 1,
+               "host" : [
+                  "flashservice.adobe.com"
+               ],
+               "qtCnt" : 1,
+               "statusCnt" : 1,
+               "hostCnt" : 1,
+               "status" : [
+                  "REFUSED"
+               ]
+            },
+            "dstBytes" : 82,
+            "dstGEO" : "RU",
             "tags" : [
                "srcip",
                "dstip"
             ],
-            "totPackets" : 2,
-            "srcRIR" : "TEST",
-            "srcIp" : "10.0.0.2",
-            "lastPacket" : 1393422583932,
+            "srcDataBytes" : 74,
+            "totBytes" : 164,
+            "srcASN" : "AS0001 Cool Beans!",
+            "ipProtocol" : 17,
+            "tagsCnt" : 2,
+            "srcMacCnt" : 2,
+            "fileIds" : [],
             "totDataBytes" : 148,
-            "node" : "test",
-            "dstASN" : "AS0000 This is neat"
+            "dstASN" : "AS0000 This is neat",
+            "srcMac" : [
+               "00:00:5e:00:01:03",
+               "88:e0:f3:f1:91:f2"
+            ]
          }
       }
    ]

@@ -3,118 +3,52 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-131202"
             }
          },
          "body" : {
-            "dstBytes" : 9145,
-            "segments" : 1,
-            "node" : "test",
-            "length" : 57,
-            "srcPayload8" : "040101bb5db8d877",
-            "dstPort" : 1080,
-            "fileIds" : [],
-            "socks" : {
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "ip" : "93.184.216.119",
-               "RIR" : "RIPE",
-               "GEO" : "USA",
-               "port" : 443
-            },
-            "srcPackets" : 17,
-            "certCnt" : 2,
-            "timestamp" : "SET",
-            "tcpflags" : {
-               "fin" : 2,
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 15,
-               "psh" : 11
-            },
-            "packetLenArray" : [
-               94,
-               90,
-               82,
-               91,
-               82,
-               90,
-               82,
-               202,
-               1530,
-               94,
-               82,
-               1530,
-               1530,
-               82,
-               1530,
-               82,
-               836,
-               82,
-               396,
-               129,
-               82,
-               253,
-               428,
-               82,
-               1402,
-               82,
-               109,
-               82,
-               82,
-               82
-            ],
-            "firstPacket" : 1386004472572,
-            "dstIp" : "10.180.156.249",
-            "dstMacCnt" : 1,
-            "srcDataBytes" : 641,
-            "srcIp" : "10.180.156.185",
-            "srcMacCnt" : 1,
-            "ipProtocol" : 6,
-            "srcGEO" : "USA",
-            "srcPort" : 53554,
-            "http" : {
-               "host" : [
-                  "www.example.com"
-               ],
-               "hostCnt" : 1
-            },
-            "lastPacket" : 1386004472629,
             "srcMac" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "totBytes" : 10920,
-            "totDataBytes" : 8920,
+            "dstGEO" : "US",
             "tls" : {
+               "dstSessionId" : [
+                  "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
+               ],
                "version" : [
                   "TLSv1"
                ],
                "ja3" : [
                   "06a92bf69b367389d2feb0d70501ddfe"
                ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
-               ],
+               "ja3Cnt" : 1,
+               "versionCnt" : 1,
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_SHA"
                ],
-               "ja3Cnt" : 1,
-               "versionCnt" : 1
+               "cipherCnt" : 1
             },
-            "dstGEO" : "USA",
-            "dstDataBytes" : 8279,
-            "totPackets" : 30,
+            "firstPacket" : 1386004472572,
             "srcBytes" : 1775,
+            "http" : {
+               "host" : [
+                  "www.example.com"
+               ],
+               "hostCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "srcPayload8" : "040101bb5db8d877",
+            "segments" : 1,
+            "timestamp" : "SET",
+            "srcPort" : 53554,
             "protocol" : [
                "tls",
                "socks",
                "tcp"
             ],
+            "dstDataBytes" : 8279,
+            "srcDataBytes" : 641,
             "packetPosArray" : [
                24,
                118,
@@ -147,14 +81,33 @@
                11260,
                11342
             ],
+            "srcPackets" : 17,
+            "dstMacCnt" : 1,
+            "fileIds" : [],
             "dstPackets" : 13,
+            "tcpflags" : {
+               "psh" : 11,
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "dstZero" : 0,
+               "ack" : 15,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "srcZero" : 0
+            },
             "dstPayload8" : "005a99b40ab49cf9",
+            "totDataBytes" : 8920,
+            "dstPort" : 1080,
             "cert" : [
                {
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "issuerON" : "DigiCert Inc",
+                  "altCnt" : 149,
+                  "issuerCN" : [
+                     "digicert high assurance ca-3"
+                  ],
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
-                  "validDays" : 1164,
+                  "subjectON" : "EdgeCast Networks, Inc.",
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "notBefore" : 1317600000000,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
@@ -307,48 +260,142 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "altCnt" : 149,
-                  "subjectON" : "EdgeCast Networks, Inc.",
-                  "issuerCN" : [
-                     "digicert high assurance ca-3"
-                  ],
+                  "issuerON" : "DigiCert Inc",
                   "notAfter" : 1418212800000,
+                  "validDays" : 1164,
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
                   ]
                },
                {
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "issuerON" : "DigiCert Inc",
-                  "notBefore" : 1207137600000,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
-                  "validDays" : 5113,
+                  "subjectON" : "DigiCert Inc",
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "issuerON" : "DigiCert Inc",
+                  "notBefore" : 1207137600000,
+                  "validDays" : 5113,
                   "notAfter" : 1648944000000,
                   "subjectCN" : [
                      "digicert high assurance ca-3"
-                  ],
-                  "subjectON" : "DigiCert Inc"
+                  ]
                }
             ],
+            "srcGEO" : "US",
             "dstMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "protocolCnt" : 3
+            "socks" : {
+               "RIR" : "RIPE",
+               "ip" : "93.184.216.119",
+               "port" : 443,
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+               "GEO" : "US"
+            },
+            "dstIp" : "10.180.156.249",
+            "srcIp" : "10.180.156.185",
+            "lastPacket" : 1386004472629,
+            "certCnt" : 2,
+            "protocolCnt" : 3,
+            "totPackets" : 30,
+            "packetLenArray" : [
+               94,
+               90,
+               82,
+               91,
+               82,
+               90,
+               82,
+               202,
+               1530,
+               94,
+               82,
+               1530,
+               1530,
+               82,
+               1530,
+               82,
+               836,
+               82,
+               396,
+               129,
+               82,
+               253,
+               428,
+               82,
+               1402,
+               82,
+               109,
+               82,
+               82,
+               82
+            ],
+            "length" : 57,
+            "srcMacCnt" : 1,
+            "totBytes" : 10920,
+            "dstBytes" : 9145,
+            "node" : "test"
          }
       },
       {
          "body" : {
-            "srcBytes" : 1791,
+            "segments" : 1,
+            "srcPayload8" : "040101bb00000001",
+            "ipProtocol" : 6,
             "protocol" : [
                "tls",
                "socks",
                "tcp"
             ],
-            "dstPayload8" : "005a99b50ab49cf9",
+            "srcPort" : 53555,
+            "timestamp" : "SET",
+            "srcBytes" : 1791,
+            "http" : {
+               "host" : [
+                  "www.example.com"
+               ],
+               "hostCnt" : 1
+            },
+            "tls" : {
+               "dstSessionId" : [
+                  "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "ja3" : [
+                  "06a92bf69b367389d2feb0d70501ddfe"
+               ],
+               "ja3Cnt" : 1,
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "cipherCnt" : 1
+            },
+            "firstPacket" : 1386004475691,
+            "dstGEO" : "US",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "fileIds" : [],
+            "dstMacCnt" : 1,
+            "tcpflags" : {
+               "urg" : 0,
+               "rst" : 0,
+               "syn" : 1,
+               "psh" : 11,
+               "srcZero" : 0,
+               "fin" : 2,
+               "ack" : 15,
+               "syn-ack" : 1,
+               "dstZero" : 0
+            },
             "dstPackets" : 13,
+            "dstDataBytes" : 8254,
+            "srcPackets" : 17,
             "packetPosArray" : [
                11424,
                11518,
@@ -381,17 +428,13 @@
                22651,
                22733
             ],
-            "protocolCnt" : 3,
+            "srcDataBytes" : 657,
+            "srcGEO" : "US",
             "dstMac" : [
                "00:13:72:c4:f1:e1"
             ],
             "cert" : [
                {
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "issuerON" : "DigiCert Inc",
-                  "serial" : "062d488986c9a6d7f94901c2b5906882",
-                  "validDays" : 1164,
-                  "notBefore" : 1317600000000,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -543,83 +586,49 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
+                  "issuerON" : "DigiCert Inc",
+                  "notBefore" : 1317600000000,
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
+                  "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectON" : "EdgeCast Networks, Inc.",
-                  "altCnt" : 149,
-                  "notAfter" : 1418212800000,
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
+                  "altCnt" : 149,
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
-                  ]
+                  ],
+                  "validDays" : 1164,
+                  "notAfter" : 1418212800000
                },
                {
+                  "issuerON" : "DigiCert Inc",
                   "notBefore" : 1207137600000,
-                  "validDays" : 5113,
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "subjectON" : "DigiCert Inc",
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "notAfter" : 1648944000000,
                   "subjectCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "subjectON" : "DigiCert Inc",
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "issuerON" : "DigiCert Inc"
+                  "validDays" : 5113,
+                  "notAfter" : 1648944000000
                }
             ],
-            "srcPort" : 53555,
-            "http" : {
-               "hostCnt" : 1,
-               "host" : [
-                  "www.example.com"
-               ]
-            },
-            "srcGEO" : "USA",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "lastPacket" : 1386004475761,
-            "tls" : {
-               "ja3Cnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "dstSessionId" : [
-                  "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
-               ],
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "cipherCnt" : 1,
-               "versionCnt" : 1
-            },
-            "dstGEO" : "USA",
-            "totDataBytes" : 8911,
-            "totBytes" : 10911,
-            "totPackets" : 30,
-            "dstDataBytes" : 8254,
-            "dstMacCnt" : 1,
+            "dstIp" : "10.180.156.249",
             "srcIp" : "10.180.156.185",
-            "srcDataBytes" : 657,
-            "srcMacCnt" : 1,
-            "ipProtocol" : 6,
-            "srcPayload8" : "040101bb00000001",
-            "length" : 69,
-            "segments" : 1,
-            "node" : "test",
-            "dstBytes" : 9120,
             "socks" : {
                "port" : 443,
                "host" : "www.example.com"
             },
-            "fileIds" : [],
             "dstPort" : 1080,
-            "certCnt" : 2,
+            "totDataBytes" : 8911,
+            "dstPayload8" : "005a99b50ab49cf9",
+            "totBytes" : 10911,
+            "srcMacCnt" : 1,
+            "length" : 69,
             "packetLenArray" : [
                94,
                90,
@@ -652,21 +661,12 @@
                82,
                82
             ],
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "fin" : 2,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 15,
-               "psh" : 11
-            },
-            "timestamp" : "SET",
-            "srcPackets" : 17,
-            "dstIp" : "10.180.156.249",
-            "firstPacket" : 1386004475691
+            "node" : "test",
+            "dstBytes" : 9120,
+            "protocolCnt" : 3,
+            "lastPacket" : 1386004475761,
+            "certCnt" : 2,
+            "totPackets" : 30
          },
          "header" : {
             "index" : {
@@ -676,33 +676,11 @@
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131202"
-            }
-         },
          "body" : {
-            "ipProtocol" : 6,
-            "srcMacCnt" : 1,
-            "srcIp" : "10.180.156.185",
-            "srcDataBytes" : 646,
-            "dstMacCnt" : 1,
-            "dstIp" : "10.180.156.249",
-            "firstPacket" : 1386004480852,
-            "tcpflags" : {
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 16,
-               "psh" : 13,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "urg" : 0
-            },
+            "lastPacket" : 1386004480888,
             "certCnt" : 2,
-            "timestamp" : "SET",
+            "protocolCnt" : 3,
+            "totPackets" : 33,
             "packetLenArray" : [
                94,
                90,
@@ -738,34 +716,24 @@
                82,
                82
             ],
-            "srcPackets" : 19,
-            "socks" : {
-               "port" : 443,
-               "GEO" : "USA",
-               "RIR" : "RIPE",
-               "ip" : "93.184.216.119",
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
-            },
-            "dstPort" : 1080,
-            "fileIds" : [],
             "length" : 35,
-            "srcPayload8" : "0502000105010001",
-            "segments" : 1,
-            "node" : "test",
+            "srcMacCnt" : 1,
+            "totBytes" : 11127,
             "dstBytes" : 9215,
-            "protocolCnt" : 3,
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "node" : "test",
+            "dstPayload8" : "0500050000010ab4",
+            "totDataBytes" : 8929,
+            "dstPort" : 1080,
             "cert" : [
                {
-                  "notAfter" : 1418212800000,
+                  "subjectON" : "EdgeCast Networks, Inc.",
+                  "serial" : "062d488986c9a6d7f94901c2b5906882",
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "subjectCN" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ],
+                  "altCnt" : 149,
+                  "issuerON" : "DigiCert Inc",
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -917,32 +885,44 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "altCnt" : 149,
-                  "subjectON" : "EdgeCast Networks, Inc.",
                   "notBefore" : 1317600000000,
-                  "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "validDays" : 1164,
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "issuerON" : "DigiCert Inc"
+                  "notAfter" : 1418212800000,
+                  "subjectCN" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ]
                },
                {
-                  "issuerON" : "DigiCert Inc",
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "notBefore" : 1207137600000,
-                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
-                  "validDays" : 5113,
-                  "subjectCN" : [
-                     "digicert high assurance ca-3"
-                  ],
-                  "notAfter" : 1648944000000,
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "subjectON" : "DigiCert Inc"
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
+                  "subjectON" : "DigiCert Inc",
+                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600000,
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1648944000000,
+                  "validDays" : 5113,
+                  "subjectCN" : [
+                     "digicert high assurance ca-3"
+                  ]
                }
             ],
-            "dstPayload8" : "0500050000010ab4",
-            "dstPackets" : 14,
+            "srcGEO" : "US",
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "socks" : {
+               "ip" : "93.184.216.119",
+               "RIR" : "RIPE",
+               "port" : 443,
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+               "GEO" : "US"
+            },
+            "dstIp" : "10.180.156.249",
+            "srcIp" : "10.180.156.185",
+            "dstDataBytes" : 8283,
+            "srcDataBytes" : 646,
             "packetPosArray" : [
                22815,
                22909,
@@ -978,46 +958,66 @@
                34306,
                34388
             ],
+            "srcPackets" : 19,
+            "dstMacCnt" : 1,
+            "fileIds" : [],
+            "dstPackets" : 14,
+            "tcpflags" : {
+               "fin" : 2,
+               "syn-ack" : 1,
+               "ack" : 16,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "psh" : 13,
+               "urg" : 0,
+               "rst" : 0
+            },
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "tls" : {
+               "dstSessionId" : [
+                  "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
+               ],
+               "ja3" : [
+                  "06a92bf69b367389d2feb0d70501ddfe"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "ja3Cnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "versionCnt" : 1,
+               "cipherCnt" : 1
+            },
+            "dstGEO" : "US",
+            "firstPacket" : 1386004480852,
+            "srcBytes" : 1912,
+            "http" : {
+               "hostCnt" : 1,
+               "host" : [
+                  "www.example.com"
+               ]
+            },
+            "ipProtocol" : 6,
+            "segments" : 1,
+            "srcPayload8" : "0502000105010001",
+            "timestamp" : "SET",
+            "srcPort" : 53556,
             "protocol" : [
                "tls",
                "socks",
                "tcp"
-            ],
-            "srcBytes" : 1912,
-            "totPackets" : 33,
-            "dstDataBytes" : 8283,
-            "tls" : {
-               "versionCnt" : 1,
-               "dstSessionId" : [
-                  "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
-               ],
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "ja3Cnt" : 1,
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "cipherCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ]
-            },
-            "dstGEO" : "USA",
-            "totDataBytes" : 8929,
-            "totBytes" : 11127,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "lastPacket" : 1386004480888,
-            "http" : {
-               "host" : [
-                  "www.example.com"
-               ],
-               "hostCnt" : 1
-            },
-            "srcPort" : 53556,
-            "srcGEO" : "USA"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131202",
+               "_type" : "session"
+            }
          }
       }
    ]

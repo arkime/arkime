@@ -112,7 +112,7 @@ void reader_libpcap_start() {
     }
 }
 /******************************************************************************/
-void reader_libpcap_stop() 
+void reader_libpcap_stop()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

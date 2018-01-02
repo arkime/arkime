@@ -238,7 +238,7 @@ app.get("/:index/_stats", (req, res) => {
 
 app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    //console.log("DEBUG -", util.inspect(results, false, 50));
+    console.log("DEBUG -", util.inspect(results, false, 50));
 
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {

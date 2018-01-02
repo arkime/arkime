@@ -1,86 +1,86 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-130923"
+            }
+         },
          "body" : {
-            "dstASN" : "AS46636 NatCoWeb Corp.",
-            "srcASN" : "AS29169 GANDI SAS",
-            "dstPackets" : 1,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "dstGEO" : "USA",
-            "firstPacket" : 1379970300840,
-            "lastPacket" : 1379970300840,
-            "timestamp" : "SET",
-            "srcPayload8" : "9668240000010001",
-            "srcMac" : [
-               "00:23:33:69:4d:00",
-               "00:00:5e:00:01:01"
-            ],
-            "length" : 0,
-            "packetPosArray" : [
-               24,
-               205
-            ],
-            "dstPayload8" : "9668a40000010000",
             "srcIp" : "217.70.190.232",
-            "ipProtocol" : 17,
-            "node" : "test",
-            "packetLenArray" : [
-               181,
-               89
-            ],
-            "srcPort" : 55612,
-            "srcRIR" : "RIPE",
             "segments" : 1,
-            "srcPackets" : 1,
-            "totDataBytes" : 222,
-            "dstBytes" : 73,
-            "dstMac" : [
-               "52:54:00:d9:83:b3"
-            ],
-            "dstDataBytes" : 65,
-            "srcDataBytes" : 157,
-            "totBytes" : 238,
+            "firstPacket" : 1379970300840,
             "dns" : {
-               "hostCnt" : 1,
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
+               "statusCnt" : 1,
                "qt" : [
                   "SOA"
                ],
+               "qtCnt" : 1,
                "opcode" : [
                   "NOTIFY"
                ],
-               "statusCnt" : 1,
+               "qcCnt" : 1,
                "qc" : [
                   "IN"
                ],
                "opcodeCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
                "host" : [
                   "bortzmeyer.42"
                ],
-               "qcCnt" : 1
+               "hostCnt" : 1
             },
-            "srcMacCnt" : 2,
-            "dstPort" : 53,
-            "srcBytes" : 165,
-            "totPackets" : 2,
-            "fileIds" : [],
-            "dstRIR" : "ARIN",
+            "srcPackets" : 1,
+            "timestamp" : "SET",
             "dstIp" : "204.62.14.153",
+            "dstPayload8" : "9668a40000010000",
+            "srcRIR" : "RIPE",
+            "protocolCnt" : 2,
+            "ipProtocol" : 17,
+            "packetLenArray" : [
+               181,
+               89
+            ],
+            "srcMacCnt" : 2,
+            "totDataBytes" : 222,
+            "lastPacket" : 1379970300840,
+            "srcPort" : 55612,
+            "fileIds" : [],
+            "srcMac" : [
+               "00:23:33:69:4d:00",
+               "00:00:5e:00:01:01"
+            ],
+            "srcGEO" : "FR",
+            "srcASN" : "AS29169 GANDI SAS",
+            "length" : 0,
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "totBytes" : 238,
+            "dstPackets" : 1,
+            "dstASN" : "AS46636 NatCoWeb Corp.",
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "dstGEO" : "US",
+            "srcPayload8" : "9668240000010001",
+            "srcBytes" : 165,
+            "dstDataBytes" : 65,
+            "packetPosArray" : [
+               24,
+               205
+            ],
+            "dstMac" : [
+               "52:54:00:d9:83:b3"
+            ],
             "dstMacCnt" : 1,
-            "srcGEO" : "FRA",
-            "protocolCnt" : 2
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-130923",
-               "_type" : "session"
-            }
+            "node" : "test",
+            "totPackets" : 2,
+            "dstBytes" : 73,
+            "srcDataBytes" : 157
          }
       }
    ]

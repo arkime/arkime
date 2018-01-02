@@ -44,3 +44,11 @@ rules:
 #        - 00:11:f5:13:d7:a3
     ops:
       "protocols": "tlsrulestest"
+
+  - name: "socks test"
+    when: "fieldSet"
+    fields:
+      ip.socks:
+        - 74.125.131.103
+    ops:
+      "protocols": "socksipset"

@@ -1,119 +1,119 @@
 {
    "sessions2" : [
       {
-         "body" : {
-            "vlanCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
-            "dstGEO" : "CAN",
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "srcPort" : 51031,
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "string.snow" : [
-                  "16777226:51031,33554442:53"
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "totPackets" : 2,
-            "fileIds" : [],
-            "timestamp" : "SET",
-            "packetPosArray" : [
-               24,
-               210
-            ],
-            "length" : 24,
-            "dstMacCnt" : 1,
-            "vlan" : [
-               100
-            ],
-            "srcPackets" : 1,
-            "totDataBytes" : 324,
-            "dstRIR" : "TEST",
-            "srcGEO" : "RUS",
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "protocolCnt" : 2,
-            "dstIp" : "10.0.0.2",
-            "dstASN" : "AS0001 Cool Beans!",
-            "dns" : {
-               "hostCnt" : 1,
-               "GEO" : [
-                  "RUS"
-               ],
-               "opcodeCnt" : 1,
-               "status" : [
-                  "NOTIMPL"
-               ],
-               "statusCnt" : 1,
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "opcode" : [
-                  "UPDATE"
-               ],
-               "host" : [
-                  "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
-               ],
-               "ipCnt" : 1
-            },
-            "ipProtocol" : 17,
-            "srcMacCnt" : 2,
-            "dstPort" : 53,
-            "dstDataBytes" : 162,
-            "packetLenArray" : [
-               186,
-               186
-            ],
-            "srcBytes" : 170,
-            "srcMac" : [
-               "3c:8a:b0:6f:27:c5",
-               "3c:8a:b0:6e:77:c5"
-            ],
-            "segments" : 1,
-            "lastPacket" : 1467464485007,
-            "firstPacket" : 1467464484984,
-            "srcDataBytes" : 162,
-            "dstBytes" : 170,
-            "tagsCnt" : 2,
-            "dstPayload8" : "6919a80400010000",
-            "totBytes" : 340,
-            "srcPayload8" : "6919280000010001",
-            "srcIp" : "10.0.0.1",
-            "dstPackets" : 1,
-            "dstMac" : [
-               "00:1b:17:00:03:24"
-            ],
-            "node" : "test"
-         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-160702"
             }
+         },
+         "body" : {
+            "srcPort" : 51031,
+            "dstBytes" : 170,
+            "srcGEO" : "RU",
+            "dstIp" : "10.0.0.2",
+            "dstRIR" : "TEST",
+            "dstDataBytes" : 162,
+            "tagsCnt" : 2,
+            "dns" : {
+               "host" : [
+                  "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "ipCnt" : 1,
+               "status" : [
+                  "NOTIMPL"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "UPDATE"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "opcodeCnt" : 1,
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "statusCnt" : 1
+            },
+            "packetPosArray" : [
+               24,
+               210
+            ],
+            "firstPacket" : 1467464484984,
+            "segments" : 1,
+            "totBytes" : 340,
+            "dstPackets" : 1,
+            "srcMac" : [
+               "3c:8a:b0:6f:27:c5",
+               "3c:8a:b0:6e:77:c5"
+            ],
+            "dstGEO" : "CA",
+            "vlanCnt" : 1,
+            "vlan" : [
+               100
+            ],
+            "length" : 24,
+            "srcPackets" : 1,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstPort" : 53,
+            "test" : {
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:51031,33554442:53"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "GEO" : [
+                  "RU"
+               ]
+            },
+            "node" : "test",
+            "dstASN" : "AS0001 Cool Beans!",
+            "srcMacCnt" : 2,
+            "dstPayload8" : "6919a80400010000",
+            "ipProtocol" : 17,
+            "dstMacCnt" : 1,
+            "totDataBytes" : 324,
+            "dstMac" : [
+               "00:1b:17:00:03:24"
+            ],
+            "timestamp" : "SET",
+            "fileIds" : [],
+            "srcBytes" : 170,
+            "lastPacket" : 1467464485007,
+            "totPackets" : 2,
+            "srcDataBytes" : 162,
+            "srcPayload8" : "6919280000010001",
+            "protocolCnt" : 2,
+            "srcIp" : "10.0.0.1",
+            "packetLenArray" : [
+               186,
+               186
+            ],
+            "srcASN" : "AS0000 This is neat",
+            "protocol" : [
+               "udp",
+               "dns"
+            ]
          }
       }
    ]

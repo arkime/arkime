@@ -11,6 +11,8 @@ NOTICE: ES 5.6 and node 6.x required
   - all - tags index removed, tags/hasheader stored as first class fields
   - all - new reindex2 script to move from pre 1.0 to 1.0
   - capture - http uri field no longer starts with // (issue #732)
+  - capture - use maxminddb instead of geoip now (issue #771)
+  - all - Country codes are now 2 letters instead of 3 letters
 
 
 0.20.2 2017/12/XX

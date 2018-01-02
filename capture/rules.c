@@ -84,7 +84,7 @@ void moloch_rules_free_node(YamlNode_t *node)
     MOLOCH_TYPE_FREE(YamlNode_t, node);
 }
 /******************************************************************************/
-YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value) 
+YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value)
 {
     YamlNode_t *node = MOLOCH_TYPE_ALLOC(YamlNode_t);
     node->key = key;
@@ -182,7 +182,7 @@ void moloch_rules_parse_print(YamlNode_t *node, int level)
 /******************************************************************************/
 YamlNode_t *moloch_rules_get(YamlNode_t *node, char *path)
 {
-    
+
     while (1) {
         char *colon = strchr(path, ':');
         int   len;
@@ -451,7 +451,7 @@ void moloch_rules_recompile()
     deadPcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
     for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
         for (i = 0; i < rulesLen[t]; i++) {
-            if (!rules[t][i]->bpf) 
+            if (!rules[t][i]->bpf)
                 continue;
 
             pcap_freecode(&rules[t][i]->bpfp);

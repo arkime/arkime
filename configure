@@ -647,8 +647,8 @@ CURL_LIBS
 CURL_CFLAGS
 GLIB2_LIBS
 GLIB2_CFLAGS
-GEOIP_LIBS
-GEOIP_CFLAGS
+MAXMINDDB_LIBS
+MAXMINDDB_CFLAGS
 YARA_LIBS
 YARA_CFLAGS
 PCAP_LIBS
@@ -759,7 +759,7 @@ with_pfring
 with_libpcap
 with_libnl
 with_yara
-with_GeoIP
+with_maxminddb
 with_glib2
 with_curl
 with_lua
@@ -1418,7 +1418,7 @@ Optional Packages:
   --without-libnl         disable libnl support [default=yes, on Linux, if
                           present]
   --with-yara=DIR use yara build directory
-  --with-GeoIP=DIR use GeoIP build directory
+  --with-maxminddb=DIR use maxminddb build directory
   --with-glib2=DIR use glib2 build directory
   --with-curl=DIR use curl build directory
   --with-lua=DIR use lua build directory
@@ -5963,12 +5963,12 @@ fi
 
 
 
-{ $as_echo "$as_me:$LINENO: checking for GeoIP" >&5
-$as_echo_n "checking for GeoIP... " >&6; }
+{ $as_echo "$as_me:$LINENO: checking for maxminddb" >&5
+$as_echo_n "checking for maxminddb... " >&6; }
 
-# Check whether --with-GeoIP was given.
-if test "${with_GeoIP+set}" = set; then
-  withval=$with_GeoIP;  case "$withval" in
+# Check whether --with-maxminddb was given.
+if test "${with_maxminddb+set}" = set; then
+  withval=$with_maxminddb;  case "$withval" in
   yes|no)
      { $as_echo "$as_me:$LINENO: result: no" >&5
 $as_echo "no" >&6; }
@@ -5976,51 +5976,51 @@ $as_echo "no" >&6; }
   *)
   { $as_echo "$as_me:$LINENO: result: $withval" >&5
 $as_echo "$withval" >&6; }
-    if test -f $withval/libGeoIP/GeoIP.h -a -f $withval/libGeoIP/.libs/libGeoIP.a; then
+    if test -f $withval/include/maxminddb.h -a -f $withval/src/.libs/libmaxminddb.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
         cd $owd;
       fi
-      GEOIP_CFLAGS="-I$withval/libGeoIP"
-      GEOIP_LIBS="$withval/libGeoIP/.libs/libGeoIP.a"
-    elif test -f $withval/include/GeoIP.h -a -f $withval/lib/libGeoIP.a; then
+      MAXMINDDB_CFLAGS="-I$withval/include"
+      MAXMINDDB_LIBS="$withval/src/.libs/libmaxminddb.a"
+    elif test -f $withval/include/maxminddb.h -a -f $withval/lib/libmaxminddb.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
         cd $owd;
       fi
-      GEOIP_CFLAGS="-I$withval/include"
-      GEOIP_LIBS="$withval/lib/libGeoIP.a"
+      MAXMINDDB_CFLAGS="-I$withval/include"
+      MAXMINDDB_LIBS="$withval/lib/libmaxminddb.a"
     else
-      { { $as_echo "$as_me:$LINENO: error: GeoIP.h or GeoIP.a not found in $withval" >&5
-$as_echo "$as_me: error: GeoIP.h or GeoIP.a not found in $withval" >&2;}
+      { { $as_echo "$as_me:$LINENO: error: maxminddb.h or libmaxminddb.a not found in $withval" >&5
+$as_echo "$as_me: error: maxminddb.h or libmaxminddb.a not found in $withval" >&2;}
    { (exit 1); exit 1; }; }
     fi
     ;;
 esac
 else
 
-  if test -f ${prefix}/include/GeoIP/GeoIP.h; then
-     GEOIP_CFLAGS="-I${prefix}/include/GeoIP"
-     GEOIP_LIBS="-L${exec_prefix}/lib -lGeoIP"
-  elif test -f /usr/include/GeoIP/GeoIP.h; then
-     GEOIP_CFLAGS=""
-     GEOIP_LIBS="-lGeoIP"
+  if test -f ${prefix}/include/maxminddb.h; then
+     MAXMINDDB_CFLAGS="-I${prefix}/include"
+     MAXMINDDB_LIBS="-L${exec_prefix}/lib -lmaxminddb"
+  elif test -f /usr/include/maxminddb.h; then
+     MAXMINDDB_CFLAGS=""
+     MAXMINDDB_LIBS="-lmaxminddb"
   else
     TMP=$LIBS
-    LIBS="-lGeoIP $LIBS"
+    LIBS="-lmaxminddb $LIBS"
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <GeoIP.h>
+#include <maxminddb.h>
 int
 main ()
 {
-GeoIP_open(NULL, GEOIP_MEMORY_CACHE)
+MMDB_open(NULL, MMDB_MODE_MMAP, NULL)
   ;
   return 0;
 }
@@ -6046,23 +6046,23 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  LIBGEOIP_FOUND=1
+  LIBMAXMINDDB_FOUND=1
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	LIBGEOIP_FOUND=0
+	LIBMAXMINDDB_FOUND=0
 fi
 
 rm -rf conftest.dSYM
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
     LIBS=$TMP
-    if test $LIBGEOIP_FOUND = 1 ; then
-      GEOIP_LIBS="-lGeoIP"
+    if test $LIBMAXMINDDB_FOUND = 1 ; then
+      MAXMINDDB_LIBS="-lmaxminddb"
     else
-      { { $as_echo "$as_me:$LINENO: error: GeoIP not found" >&5
-$as_echo "$as_me: error: GeoIP not found" >&2;}
+      { { $as_echo "$as_me:$LINENO: error: maxminddb not found" >&5
+$as_echo "$as_me: error: maxminddb not found" >&2;}
    { (exit 1); exit 1; }; }
     fi
   fi

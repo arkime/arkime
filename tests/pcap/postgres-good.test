@@ -1,29 +1,44 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140505",
+               "_type" : "session"
+            }
+         },
          "body" : {
+            "srcASN" : "AS0000 This is neat",
+            "srcPackets" : 6,
+            "totPackets" : 11,
             "firstPacket" : 1399300685023,
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  2014117898
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:36060,2014117898:5432"
-               ],
-               "GEO" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ]
+            "srcGEO" : "RU",
+            "srcBytes" : 533,
+            "totBytes" : 1198,
+            "ipProtocol" : 6,
+            "dstPackets" : 5,
+            "postgresql" : {
+               "user" : "cooluser",
+               "db" : "dbdbdbdb",
+               "app" : "pgAdmin III - Browser"
             },
+            "dstIp" : "10.0.13.120",
+            "totDataBytes" : 456,
+            "protocol" : [
+               "tcp",
+               "postgresql"
+            ],
             "dstDataBytes" : 327,
+            "srcPort" : 36060,
+            "lastPacket" : 1399300685032,
+            "srcIp" : "10.0.0.1",
+            "timestamp" : "SET",
+            "node" : "test",
+            "srcMac" : [
+               "90:e2:ba:52:f6:2a",
+               "00:00:5e:00:01:71"
+            ],
+            "dstMacCnt" : 1,
             "packetLenArray" : [
                90,
                90,
@@ -37,59 +52,53 @@
                123,
                395
             ],
-            "srcGEO" : "RUS",
-            "srcMac" : [
-               "90:e2:ba:52:f6:2a",
-               "00:00:5e:00:01:71"
-            ],
+            "tagsCnt" : 1,
+            "protocolCnt" : 2,
+            "srcMacCnt" : 2,
+            "segments" : 1,
             "tcpflags" : {
-               "rst" : 0,
-               "srcZero" : 0,
+               "urg" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "psh" : 6,
                "ack" : 3,
                "syn" : 1,
-               "psh" : 6,
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "urg" : 0
+               "srcZero" : 0,
+               "rst" : 0
             },
-            "srcASN" : "AS0000 This is neat",
-            "dstBytes" : 665,
-            "totPackets" : 11,
-            "dstIp" : "10.0.13.120",
-            "srcMacCnt" : 2,
-            "node" : "test",
-            "lastPacket" : 1399300685032,
+            "dstPort" : 5432,
+            "length" : 8,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "number" : [
+                  2014117898
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "string.snow" : [
+                  "16777226:36060,2014117898:5432"
+               ],
+               "RIR" : [
+                  ""
+               ]
+            },
             "tags" : [
                "srcip"
             ],
-            "ipProtocol" : 6,
-            "tagsCnt" : 1,
-            "postgresql" : {
-               "app" : "pgAdmin III - Browser",
-               "db" : "dbdbdbdb",
-               "user" : "cooluser"
-            },
-            "dstMacCnt" : 1,
-            "totBytes" : 1198,
-            "srcDataBytes" : 129,
-            "protocol" : [
-               "tcp",
-               "postgresql"
-            ],
-            "srcBytes" : 533,
-            "protocolCnt" : 2,
-            "totDataBytes" : 456,
-            "timestamp" : "SET",
+            "srcPayload8" : "0000000804d2162f",
             "dstPayload8" : "4e520000000c0000",
+            "fileIds" : [],
             "dstMac" : [
                "00:0c:29:18:7f:fe"
             ],
-            "srcPort" : 36060,
-            "dstPackets" : 5,
-            "dstPort" : 5432,
-            "srcIp" : "10.0.0.1",
-            "srcPayload8" : "0000000804d2162f",
+            "srcDataBytes" : 129,
             "packetPosArray" : [
                24,
                114,
@@ -103,16 +112,7 @@
                880,
                1003
             ],
-            "length" : 8,
-            "segments" : 1,
-            "srcPackets" : 6,
-            "fileIds" : []
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-140505",
-               "_type" : "session"
-            }
+            "dstBytes" : 665
          }
       }
    ]

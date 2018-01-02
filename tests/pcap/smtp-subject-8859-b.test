@@ -1,21 +1,8 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131206",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "dstDataBytes" : 485,
-            "totPackets" : 23,
-            "dstMacCnt" : 1,
-            "dstPayload8" : "3232302078787878",
-            "tags" : [
-               "smtp:statuscode:250"
-            ],
-            "segments" : 1,
+            "srcPayload8" : "45484c4f20787878",
             "packetLenArray" : [
                82,
                82,
@@ -41,91 +28,18 @@
                76,
                76
             ],
-            "ipProtocol" : 6,
-            "srcMacCnt" : 2,
-            "srcPackets" : 11,
-            "srcGEO" : "USA",
-            "lastPacket" : 1386358271580,
-            "email" : {
-               "useragentCnt" : 1,
-               "src" : [
-                  "xxxxxxxxx@xxxxxxx.com"
-               ],
-               "contentType" : [
-                  "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
-               ],
-               "subjectCnt" : 1,
-               "idCnt" : 1,
-               "headersCnt" : 16,
-               "dst" : [
-                  "xxxxxxxx@gmail.com"
-               ],
-               "ip" : [
-                  "169.254.4.195",
-                  "10.180.121.108",
-                  "10.0.0.4"
-               ],
-               "srcCnt" : 1,
-               "GEO" : [
-                  "---",
-                  "USA",
-                  "---"
-               ],
-               "useragent" : [
-                  "Microsoft-MacOutlook/14.3.9.131030"
-               ],
-               "host" : [
-                  "xxxxxxxxxxxxxxxxx2.xxxxx.net",
-                  "xxxxxxxxxxxxxxxxx1.xxxxx.net"
-               ],
-               "id" : [
-                  "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
-               ],
-               "RIR" : [
-                  "ARIN",
-                  "",
-                  ""
-               ],
-               "mimeVersionCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ],
-               "headers" : [
-                  "content-type",
-                  "message-id",
-                  "mime-version",
-                  "from",
-                  "to",
-                  "user-agent",
-                  "x-ms-tnef-correlator",
-                  "received",
-                  "thread-index",
-                  "date",
-                  "subject",
-                  "content-language",
-                  "x-originating-ip",
-                  "x-ms-has-attach",
-                  "accept-language",
-                  "thread-topic"
-               ],
-               "subject" : [
-                  "test å é î ø ü"
-               ],
-               "ipCnt" : 3,
-               "ASN" : [
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "contentTypeCnt" : 1,
-               "dstCnt" : 1,
-               "hostCnt" : 2
-            },
-            "dstBytes" : 1169,
+            "dstASN" : "AS1668 AOL Transit Data Network",
             "srcDataBytes" : 1666,
-            "srcBytes" : 2296,
-            "protocolCnt" : 2,
-            "dstPackets" : 12,
+            "segments" : 1,
+            "srcMacCnt" : 2,
+            "dstMac" : [
+               "00:25:90:a2:c2:52"
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "ipProtocol" : 6,
             "packetPosArray" : [
                24,
                106,
@@ -151,44 +65,130 @@
                3705,
                3781
             ],
+            "srcPort" : 11084,
+            "tagsCnt" : 1,
+            "dstRIR" : "ARIN",
+            "dstBytes" : 1169,
+            "totPackets" : 23,
+            "lastPacket" : 1386358271580,
+            "dstDataBytes" : 485,
+            "dstGEO" : "US",
+            "dstPackets" : 12,
+            "length" : 518,
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 2,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "rst" : 0,
+               "ack" : 7,
+               "syn" : 1,
+               "psh" : 12,
+               "syn-ack" : 1
+            },
+            "dstPort" : 25,
+            "srcGEO" : "US",
+            "node" : "test",
+            "timestamp" : "SET",
+            "srcIp" : "10.180.121.109",
+            "srcPackets" : 11,
+            "totDataBytes" : 2151,
+            "dstMacCnt" : 1,
+            "fileIds" : [],
+            "email" : {
+               "id" : [
+                  "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+               ],
+               "host" : [
+                  "xxxxxxxxxxxxxxxxx2.xxxxx.net",
+                  "xxxxxxxxxxxxxxxxx1.xxxxx.net"
+               ],
+               "ipCnt" : 3,
+               "dst" : [
+                  "xxxxxxxx@gmail.com"
+               ],
+               "subject" : [
+                  "test å é î ø ü"
+               ],
+               "contentType" : [
+                  "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
+               ],
+               "ip" : [
+                  "169.254.4.195",
+                  "10.180.121.108",
+                  "10.0.0.4"
+               ],
+               "GEO" : [
+                  "---",
+                  "US",
+                  "---"
+               ],
+               "mimeVersionCnt" : 1,
+               "idCnt" : 1,
+               "dstCnt" : 1,
+               "contentTypeCnt" : 1,
+               "srcCnt" : 1,
+               "src" : [
+                  "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "ASN" : [
+                  "---",
+                  "---",
+                  "---"
+               ],
+               "useragentCnt" : 1,
+               "subjectCnt" : 1,
+               "headersCnt" : 16,
+               "headers" : [
+                  "content-type",
+                  "message-id",
+                  "mime-version",
+                  "from",
+                  "to",
+                  "user-agent",
+                  "x-ms-tnef-correlator",
+                  "received",
+                  "thread-index",
+                  "date",
+                  "subject",
+                  "content-language",
+                  "x-originating-ip",
+                  "x-ms-has-attach",
+                  "accept-language",
+                  "thread-topic"
+               ],
+               "hostCnt" : 2,
+               "useragent" : [
+                  "Microsoft-MacOutlook/14.3.9.131030"
+               ],
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "RIR" : [
+                  "ARIN",
+                  "",
+                  ""
+               ]
+            },
+            "totBytes" : 3465,
+            "srcBytes" : 2296,
+            "dstPayload8" : "3232302078787878",
+            "dstIp" : "64.236.55.18",
             "srcMac" : [
                "00:00:0c:07:ac:02",
                "00:0b:5f:6b:5c:00"
             ],
-            "tagsCnt" : 1,
-            "length" : 518,
-            "timestamp" : "SET",
-            "node" : "test",
-            "dstIp" : "64.236.55.18",
-            "dstGEO" : "USA",
             "firstPacket" : 1386358271061,
-            "totDataBytes" : 2151,
-            "tcpflags" : {
-               "ack" : 7,
-               "syn-ack" : 1,
-               "psh" : 12,
-               "rst" : 0,
-               "dstZero" : 0,
-               "syn" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "srcZero" : 0
-            },
-            "dstRIR" : "ARIN",
-            "srcPort" : 11084,
-            "srcIp" : "10.180.121.109",
-            "dstMac" : [
-               "00:25:90:a2:c2:52"
+            "tags" : [
+               "smtp:statuscode:250"
             ],
-            "srcPayload8" : "45484c4f20787878",
-            "dstPort" : 25,
-            "totBytes" : 3465,
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "fileIds" : []
+            "protocolCnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131206"
+            }
          }
       }
    ]

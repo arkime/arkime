@@ -107,7 +107,7 @@ void parse_args(int argc, char **argv)
 
     extern char *curl_version(void);
     extern char *pcre_version(void);
-    extern char *GeoIP_lib_version(void);
+    extern const char *MMDB_lib_version(void);
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
@@ -132,7 +132,7 @@ void parse_args(int argc, char **argv)
         printf("pcre: %s\n", pcre_version());
         //printf("magic: %d\n", magic_version());
         printf("yara: %s\n", moloch_yara_version());
-        printf("GeoIP: %s\n", GeoIP_lib_version());
+        printf("maxminddb: %s\n", MMDB_lib_version());
 
         exit(0);
     }

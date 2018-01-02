@@ -61,7 +61,7 @@ static uint64_t              outputFilePos = 0;
 static struct timeval        outputFileTime;
 
 #define MOLOCH_WRITE_NORMAL 0x00
-#define MOLOCH_WRITE_DIRECT 0x01 
+#define MOLOCH_WRITE_DIRECT 0x01
 #define MOLOCH_WRITE_MMAP   0x02
 #define MOLOCH_WRITE_THREAD 0x04
 
@@ -384,8 +384,7 @@ writer_disk_write(const MolochSession_t * const UNUSED(session), MolochPacket_t 
     MOLOCH_UNLOCK(output);
 }
 /******************************************************************************/
-gboolean 
-writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
+gboolean writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
 {
     static struct timeval tv;
     gettimeofday(&tv, 0);

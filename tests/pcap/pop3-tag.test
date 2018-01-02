@@ -3,18 +3,29 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131221"
+               "_index" : "tests_sessions2-131221",
+               "_type" : "session"
             }
          },
          "body" : {
+            "dstPort" : 110,
+            "segments" : 1,
+            "length" : 973,
+            "tcpflags" : {
+               "dstZero" : 0,
+               "syn" : 1,
+               "srcZero" : 0,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "ack" : 1,
+               "urg" : 0,
+               "psh" : 1
+            },
+            "totPackets" : 4,
+            "timestamp" : "SET",
+            "tagsCnt" : 5,
             "test" : {
-               "string.snow" : [
-                  "16777226:2464,33554442:110"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
                "RIR" : [
                   ""
                ],
@@ -22,66 +33,57 @@
                   33554442
                ],
                "GEO" : [
-                  "RUS"
+                  "RU"
                ],
                "ip" : [
                   "10.0.0.1"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "string.snow" : [
+                  "16777226:2464,33554442:110"
                ]
             },
+            "firstPacket" : 1387659689446,
+            "dstPackets" : 2,
+            "ipProtocol" : 6,
+            "protocol" : [
+               "pop3",
+               "tcp"
+            ],
             "packetPosArray" : [
                24,
                102,
                180,
                256
             ],
-            "packetLenArray" : [
-               78,
-               78,
-               76,
-               86
-            ],
-            "dstGEO" : "CAN",
-            "protocolCnt" : 2,
-            "firstPacket" : 1387659689446,
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcPackets" : 2,
+            "dstMacCnt" : 2,
+            "dstIp" : "10.0.0.2",
             "srcMacCnt" : 1,
-            "length" : 973,
+            "srcIp" : "10.0.0.1",
             "dstMac" : [
                "00:00:5e:00:01:02",
                "00:1d:b5:ce:ef:c1"
             ],
+            "srcDataBytes" : 0,
+            "srcASN" : "AS0000 This is neat",
+            "dstASN" : "AS0001 Cool Beans!",
+            "protocolCnt" : 2,
+            "dstBytes" : 132,
+            "srcGEO" : "RU",
             "lastPacket" : 1387659690419,
+            "totBytes" : 254,
+            "dstPayload8" : "2b4f4b20504f5033",
+            "fileIds" : [],
             "srcMac" : [
                "00:0f:f7:76:7d:40"
             ],
-            "totPackets" : 4,
-            "fileIds" : [],
-            "srcASN" : "AS0000 This is neat",
-            "srcDataBytes" : 0,
-            "dstMacCnt" : 2,
-            "dstPayload8" : "2b4f4b20504f5033",
-            "dstPackets" : 2,
-            "dstBytes" : 132,
             "dstDataBytes" : 16,
-            "timestamp" : "SET",
-            "tagsCnt" : 5,
-            "srcIp" : "10.0.0.1",
-            "segments" : 1,
-            "dstIp" : "10.0.0.2",
-            "dstRIR" : "TEST",
+            "totDataBytes" : 16,
+            "srcBytes" : 122,
             "srcPort" : 2464,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "rst" : 0,
-               "psh" : 1,
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "fin" : 0,
-               "ack" : 1
-            },
+            "dstRIR" : "TEST",
             "tags" : [
                "yara:tag1",
                "yara:tag2",
@@ -89,17 +91,15 @@
                "srcip",
                "dstip"
             ],
-            "node" : "test",
-            "srcGEO" : "RUS",
-            "dstPort" : 110,
-            "srcBytes" : 122,
-            "totBytes" : 254,
-            "ipProtocol" : 6,
-            "protocol" : [
-               "pop3",
-               "tcp"
+            "packetLenArray" : [
+               78,
+               78,
+               76,
+               86
             ],
-            "totDataBytes" : 16
+            "srcPackets" : 2,
+            "node" : "test",
+            "dstGEO" : "CA"
          }
       }
    ]

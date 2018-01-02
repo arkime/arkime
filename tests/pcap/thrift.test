@@ -3,99 +3,64 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160519"
+               "_index" : "tests_sessions2-160519",
+               "_type" : "session"
             }
          },
          "body" : {
-            "dstDataBytes" : 104,
+            "dstRIR" : "TEST",
+            "srcPackets" : 3,
+            "dstIp" : "10.0.0.2",
             "node" : "test",
-            "dstPayload8" : "800100030000001b",
-            "totDataBytes" : 144,
+            "protocolCnt" : 2,
+            "vlanCnt" : 1,
+            "srcIp" : "10.0.0.1",
+            "firstPacket" : 1463682642097,
+            "srcBytes" : 262,
+            "srcMac" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "srcPayload8" : "800100010000001b",
+            "tcpflags" : {
+               "ack" : 2,
+               "srcZero" : 0,
+               "rst" : 0,
+               "dstZero" : 0,
+               "psh" : 2,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "urg" : 0,
+               "fin" : 0
+            },
+            "srcASN" : "AS0000 This is neat",
+            "dstGEO" : "CA",
+            "timestamp" : "SET",
+            "dstASN" : "AS0001 Cool Beans!",
+            "srcMacCnt" : 1,
+            "length" : 2,
+            "totBytes" : 584,
             "test" : {
-               "RIR" : [
-                  ""
+               "GEO" : [
+                  "RU"
                ],
                "ASN" : [
                   "AS0000 This is neat"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "RIR" : [
+                  ""
                ],
                "string.snow" : [
                   "16777226:59602,33554442:9000"
                ],
                "number" : [
                   33554442
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "GEO" : [
-                  "RUS"
                ]
             },
-            "packetPosArray" : [
-               24,
-               122,
-               216,
-               302,
-               428,
-               514
-            ],
-            "fileIds" : [],
-            "dstPort" : 9000,
-            "dstGEO" : "CAN",
-            "totBytes" : 584,
-            "firstPacket" : 1463682642097,
-            "protocol" : [
-               "tcp",
-               "thrift"
-            ],
-            "tcpflags" : {
-               "srcZero" : 0,
-               "rst" : 0,
-               "fin" : 0,
-               "urg" : 0,
-               "ack" : 2,
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "psh" : 2,
-               "syn" : 1
-            },
-            "dstPackets" : 3,
-            "tagsCnt" : 2,
-            "srcPort" : 59602,
-            "timestamp" : "SET",
-            "srcPayload8" : "800100010000001b",
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "srcGEO" : "RUS",
-            "ipProtocol" : 6,
-            "srcPackets" : 3,
-            "srcMacCnt" : 1,
-            "segments" : 1,
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "vlan" : [
-               50
-            ],
-            "srcASN" : "AS0000 This is neat",
-            "dstASN" : "AS0001 Cool Beans!",
             "srcDataBytes" : 40,
-            "dstBytes" : 322,
-            "srcBytes" : 262,
-            "protocolCnt" : 2,
-            "dstMacCnt" : 1,
-            "vlanCnt" : 1,
-            "srcIp" : "10.0.0.1",
-            "lastPacket" : 1463682642100,
-            "srcMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "dstRIR" : "TEST",
-            "totPackets" : 6,
+            "dstPayload8" : "800100030000001b",
             "packetLenArray" : [
                98,
                94,
@@ -104,79 +69,114 @@
                86,
                190
             ],
-            "length" : 2
+            "totDataBytes" : 144,
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "srcGEO" : "RU",
+            "tagsCnt" : 2,
+            "dstPort" : 9000,
+            "ipProtocol" : 6,
+            "dstMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 3,
+            "dstBytes" : 322,
+            "protocol" : [
+               "tcp",
+               "thrift"
+            ],
+            "dstDataBytes" : 104,
+            "vlan" : [
+               50
+            ],
+            "fileIds" : [],
+            "totPackets" : 6,
+            "srcPort" : 59602,
+            "segments" : 1,
+            "packetPosArray" : [
+               24,
+               122,
+               216,
+               302,
+               428,
+               514
+            ],
+            "lastPacket" : 1463682642100
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-170107"
-            }
-         },
          "body" : {
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "dstIp" : "10.10.10.30",
-            "segments" : 1,
-            "srcMacCnt" : 1,
-            "srcPackets" : 3,
-            "ipProtocol" : 6,
-            "packetLenArray" : [
-               94,
-               94,
-               86,
-               347
-            ],
-            "length" : 5,
-            "totPackets" : 4,
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcIp" : "10.10.10.20",
             "lastPacket" : 1483833315778,
-            "vlanCnt" : 1,
-            "dstMacCnt" : 1,
-            "srcBytes" : 479,
-            "protocolCnt" : 2,
-            "dstBytes" : 78,
-            "srcDataBytes" : 261,
-            "vlan" : [
-               100
-            ],
-            "dstPort" : 30000,
-            "fileIds" : [],
+            "srcPort" : 32769,
+            "segments" : 1,
             "packetPosArray" : [
                704,
                798,
                892,
                978
             ],
-            "totDataBytes" : 261,
-            "node" : "test",
-            "dstDataBytes" : 0,
-            "timestamp" : "SET",
-            "srcPayload8" : "0000010180010001",
-            "srcPort" : 32769,
+            "totPackets" : 4,
+            "vlan" : [
+               100
+            ],
+            "fileIds" : [],
+            "dstMac" : [
+               "00:1b:17:00:01:24"
+            ],
+            "dstMacCnt" : 1,
+            "dstBytes" : 78,
             "dstPackets" : 1,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "psh" : 1,
-               "syn" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "fin" : 0,
-               "ack" : 1,
-               "urg" : 0,
-               "dstZero" : 0
-            },
             "protocol" : [
                "tcp",
                "thrift"
             ],
+            "dstDataBytes" : 0,
+            "dstPort" : 30000,
+            "ipProtocol" : 6,
+            "srcDataBytes" : 261,
+            "packetLenArray" : [
+               94,
+               94,
+               86,
+               347
+            ],
+            "totDataBytes" : 261,
+            "totBytes" : 557,
+            "timestamp" : "SET",
+            "srcMacCnt" : 1,
+            "length" : 5,
+            "tcpflags" : {
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "fin" : 0,
+               "srcZero" : 0,
+               "ack" : 1,
+               "rst" : 0,
+               "psh" : 1,
+               "dstZero" : 0
+            },
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcPayload8" : "0000010180010001",
             "firstPacket" : 1483833315772,
-            "totBytes" : 557
+            "srcBytes" : 479,
+            "vlanCnt" : 1,
+            "srcIp" : "10.10.10.20",
+            "srcPackets" : 3,
+            "dstIp" : "10.10.10.30",
+            "node" : "test",
+            "protocolCnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-170107"
+            }
          }
       }
    ]

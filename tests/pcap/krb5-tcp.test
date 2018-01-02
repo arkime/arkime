@@ -2,87 +2,87 @@
    "sessions2" : [
       {
          "body" : {
-            "dstMacCnt" : 1,
-            "protocol" : [
-               "tcp",
-               "krb5"
-            ],
-            "srcPayload8" : "0000010d6a820109",
-            "krb5" : {
-               "cname" : [
-                  "xxxxxxxxxxx$"
-               ],
-               "realm" : [
-                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "realmCnt" : 1,
-               "sname" : [
-                  "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "cnameCnt" : 1,
-               "snameCnt" : 1
-            },
-            "vlan" : [
-               50
-            ],
             "packetLenArray" : [
                86,
                86,
                76,
                347
             ],
-            "vlanCnt" : 1,
-            "srcMacCnt" : 1,
-            "fileIds" : [],
-            "dstIp" : "10.11.11.11",
-            "node" : "test",
-            "totBytes" : 531,
-            "dstPackets" : 1,
-            "dstPort" : 88,
-            "totPackets" : 4,
+            "dstMacCnt" : 1,
+            "dstMac" : [
+               "00:22:83:3f:17:cc"
+            ],
             "protocolCnt" : 2,
-            "length" : 2,
-            "totDataBytes" : 273,
-            "dstBytes" : 70,
+            "srcIp" : "10.10.10.10",
+            "ipProtocol" : 6,
+            "srcMacCnt" : 1,
+            "srcPort" : 57167,
+            "lastPacket" : 1466265698251,
+            "timestamp" : "SET",
+            "segments" : 1,
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "krb5" : {
+               "sname" : [
+                  "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ],
+               "cname" : [
+                  "xxxxxxxxxxx$"
+               ],
+               "realmCnt" : 1,
+               "realm" : [
+                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ],
+               "cnameCnt" : 1,
+               "snameCnt" : 1
+            },
+            "srcPayload8" : "0000010d6a820109",
+            "srcBytes" : 461,
+            "firstPacket" : 1466265698248,
+            "dstPort" : 88,
             "dstDataBytes" : 0,
             "tcpflags" : {
-               "rst" : 0,
-               "ack" : 1,
-               "urg" : 0,
+               "dstZero" : 0,
                "syn" : 1,
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "fin" : 0,
+               "urg" : 0,
                "psh" : 1,
-               "dstZero" : 0
+               "syn-ack" : 1,
+               "ack" : 1,
+               "fin" : 0,
+               "srcZero" : 0,
+               "rst" : 0
             },
-            "srcBytes" : 461,
-            "srcPort" : 57167,
-            "segments" : 1,
-            "firstPacket" : 1466265698248,
             "packetPosArray" : [
                24,
                110,
                196,
                272
             ],
-            "lastPacket" : 1466265698251,
-            "srcIp" : "10.10.10.10",
-            "srcDataBytes" : 273,
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
+            "dstPackets" : 1,
+            "dstIp" : "10.11.11.11",
+            "vlanCnt" : 1,
+            "vlan" : [
+               50
             ],
+            "protocol" : [
+               "tcp",
+               "krb5"
+            ],
+            "node" : "test",
+            "length" : 2,
+            "totPackets" : 4,
+            "dstBytes" : 70,
+            "totDataBytes" : 273,
+            "totBytes" : 531,
             "srcPackets" : 3,
-            "ipProtocol" : 6,
-            "dstMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "timestamp" : "SET"
+            "srcDataBytes" : 273,
+            "fileIds" : []
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160618",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-160618"
             }
          }
       }

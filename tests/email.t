@@ -18,8 +18,8 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&ip.email==10.0.0.4"));
 
 # country.email
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==USA"));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==usa"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==US"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==us"));
 
 # rir.email
     countTest(1, "date=-1&expression=" . uri_escape("$files&&rir.email==ARIN"));

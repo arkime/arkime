@@ -17,14 +17,20 @@
  */
 #include "moloch.h"
 #include "molochconfig.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <uuid/uuid.h>
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/statvfs.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 #include "patricia.h"
-#include "GeoIP.h"
+
+#include "maxminddb.h"
+MMDB_s                  geoCountry;
+MMDB_s                  geoASN;
 
 #define MOLOCH_MIN_DB_VERSION 50
 
@@ -35,10 +41,6 @@ static uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 
 LOCAL struct timeval    startTime;
-LOCAL GeoIP            *gi = 0;
-LOCAL GeoIP            *giASN = 0;
-LOCAL GeoIP            *gi6 = 0;
-LOCAL GeoIP            *giASN6 = 0;
 LOCAL char             *rirs[256];
 
 void *                  esServer = 0;
@@ -207,62 +209,53 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         }
     }
 
-    if (IN6_IS_ADDR_V4MAPPED(&addr)) {
-        if (!*g && gi) {
-            *g = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(MOLOCH_V6_TO_V4(addr)));
-        }
+    struct sockaddr    *sa;
+    struct sockaddr_in  sin;
+    struct sockaddr_in6 sin6;
 
-        if (!*as && giASN) {
-            *as = GeoIP_name_by_ipnum(giASN, htonl(MOLOCH_V6_TO_V4(addr)));
-            if (*as) {
-                *asFree = 1;
-            }
-        }
+    if (IN6_IS_ADDR_V4MAPPED(&addr)) {
+        sin.sin_family = AF_INET;
+        sin.sin_addr.s_addr   = MOLOCH_V6_TO_V4(addr);
+        sa = (struct sockaddr *)&sin;
 
         if (!*rir) {
             *rir = rirs[MOLOCH_V6_TO_V4(addr) & 0xff];
         }
     } else {
-        if (!*g && gi6) {
-            *g = (char *)GeoIP_country_code3_by_ipnum_v6(gi6, addr);
-        }
+        sin6.sin6_family = AF_INET6;
+        sin6.sin6_addr   = addr;
+        sa = (struct sockaddr *)&sin6;
+    }
 
-        if (!*as && giASN6) {
-            *as = GeoIP_name_by_ipnum_v6(giASN6, addr);
-            if (*as) {
-                *asFree = 1;
+
+    int error = 0;
+    if (!*g) {
+        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(&geoCountry, sa, &error);
+        if (error == MMDB_SUCCESS && result.found_entry) {
+            MMDB_entry_data_s entry_data;
+            int status = MMDB_get_value(&result.entry, &entry_data, "country", "iso_code", NULL);
+            if (status == MMDB_SUCCESS) {
+                *g = (char *)entry_data.utf8_string;
             }
         }
     }
-}
-/******************************************************************************/
-void moloch_db_geo_lookup4(MolochSession_t *session, uint32_t addr, char **g, char **as, char **rir, int *asFree)
-{
-    MolochIpInfo_t *ii = 0;
-    *g = *as = *rir = 0;
-    *asFree = 0;
 
-    if (ipTree) {
-        if ((ii = moloch_db_get_local_ip4(session, addr))) {
-            *g = ii->country;
-            *as = ii->asn;
-            *rir = ii->rir;
+    if (!*as) {
+        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(&geoASN, sa, &error);
+        if (error == MMDB_SUCCESS && result.found_entry) {
+            MMDB_entry_data_s org;
+            MMDB_entry_data_s num;
+
+            int status = MMDB_get_value(&result.entry, &org, "autonomous_system_organization", NULL);
+            status += MMDB_get_value(&result.entry, &num, "autonomous_system_number", NULL);
+
+            if (status == MMDB_SUCCESS) {
+                char buf[1000];
+                sprintf(buf, "AS%d %.*s", num.uint32, org.data_size, org.utf8_string);
+                *as = g_strdup(buf);
+                *asFree = 1;
+            }
         }
-    }
-
-    if (!*g && gi) {
-        *g = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(addr));
-    }
-
-    if (!*as && giASN) {
-        *as = GeoIP_name_by_ipnum(giASN, htonl(addr));
-        if (*as) {
-            *asFree = 1;
-        }
-    }
-
-    if (!*rir) {
-        *rir = rirs[addr & 0xff];
     }
 }
 /******************************************************************************/
@@ -485,9 +478,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     moloch_db_geo_lookup6(session, session->addr2, &g2, &as2, &rir2, &asFree2);
 
     if (g1)
-        BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%s\",", g1);
+        BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%2.2s\",", g1);
     if (g2)
-        BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%s\",", g2);
+        BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%2.2s\",", g2);
 
 
     if (as1) {
@@ -685,7 +678,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             ikey = session->fields[pos]->ip;
             moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &as, &rir, &asFree);
             if (g) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, g);
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%2.2s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, g);
             }
 
             if (as) {
@@ -730,7 +723,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 cnt++;
                 if (cnt >= MAX_IPS)
                     break;
-               
+
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                     uint32_t ip = MOLOCH_V6_TO_V4(*(struct in6_addr *)ikey);
                     snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
@@ -746,7 +739,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":[", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
             for (i = 0; i < cnt; i++) {
                 if (g[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\",", g[i]);
+                    BSB_EXPORT_sprintf(jbsb, "\"%2.2s\",", g[i]);
                 } else {
                     BSB_EXPORT_cstr(jbsb, "\"---\",");
                 }
@@ -1887,40 +1880,14 @@ void moloch_db_init()
 
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
-    if (config.geoipFile) {
-        gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);
-        if (!gi) {
-            printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoipFile);
-            exit(1);
-        }
-        GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
+    int status;
+    status = MMDB_open(config.geoLite2Country, MMDB_MODE_MMAP, &geoCountry);
+    if (MMDB_SUCCESS != status) {
+        LOGEXIT("Couldn't initialize Country file %s error %s", config.geoLite2Country, MMDB_strerror(status));
     }
-
-    if (config.geoip6File) {
-        gi6 = GeoIP_open(config.geoip6File, GEOIP_MEMORY_CACHE);
-        if (!gi6) {
-            printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoip6File);
-            exit(1);
-        }
-        GeoIP_set_charset(gi6, GEOIP_CHARSET_UTF8);
-    }
-
-    if (config.geoipASNFile) {
-        giASN = GeoIP_open(config.geoipASNFile, GEOIP_MEMORY_CACHE);
-        if (!giASN) {
-            printf("Couldn't initialize GeoIP ASN %s from %s", strerror(errno), config.geoipASNFile);
-            exit(1);
-        }
-        GeoIP_set_charset(giASN, GEOIP_CHARSET_UTF8);
-    }
-
-    if (config.geoipASN6File) {
-        giASN6 = GeoIP_open(config.geoipASN6File, GEOIP_MEMORY_CACHE);
-        if (!giASN6) {
-            printf("Couldn't initialize GeoIP ASN 6 %s from %s", strerror(errno), config.geoipASN6File);
-            exit(1);
-        }
-        GeoIP_set_charset(giASN6, GEOIP_CHARSET_UTF8);
+    status = MMDB_open(config.geoLite2ASN, MMDB_MODE_MMAP, &geoASN);
+    if (MMDB_SUCCESS != status) {
+        LOGEXIT("Couldn't initialize ASN file %s error %s", config.geoLite2ASN, MMDB_strerror(status));
     }
 
     moloch_db_load_rir();

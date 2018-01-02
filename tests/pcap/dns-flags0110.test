@@ -8,41 +8,24 @@
             }
          },
          "body" : {
-            "dstGEO" : "RUS",
-            "srcDataBytes" : 127,
-            "dstPackets" : 1,
-            "dstDataBytes" : 83,
-            "dstIp" : "10.0.0.1",
-            "dstMac" : [
-               "00:1a:e3:dc:2e:c0",
-               "00:23:04:17:9b:00"
-            ],
-            "vlan" : [
-               500
-            ],
-            "srcPayload8" : "5aae819000010003",
-            "tagsCnt" : 1,
-            "vlanCnt" : 1,
-            "srcPackets" : 1,
-            "protocolCnt" : 2,
-            "srcIp" : "8.8.8.8",
-            "dstBytes" : 91,
-            "packetPosArray" : [
-               24,
-               175
-            ],
-            "srcRIR" : "ARIN",
-            "totDataBytes" : 210,
-            "totBytes" : 226,
+            "segments" : 1,
+            "lastPacket" : 1393428477327,
+            "dstPort" : 62928,
+            "srcMacCnt" : 2,
             "dstMacCnt" : 2,
             "dns" : {
-               "status" : [
-                  "NOERROR"
+               "opcode" : [
+                  "QUERY"
                ],
-               "RIR" : [
-                  "RIPE",
-                  "RIPE",
-                  "RIPE"
+               "ipCnt" : 3,
+               "host" : [
+                  "start.ubuntu.com"
+               ],
+               "qtCnt" : 1,
+               "GEO" : [
+                  "GB",
+                  "GB",
+                  "GB"
                ],
                "opcodeCnt" : 1,
                "ASN" : [
@@ -50,16 +33,7 @@
                   "AS41231 Canonical Group Limited",
                   "AS41231 Canonical Group Limited"
                ],
-               "hostCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "ipCnt" : 3,
-               "GEO" : [
-                  "GBR",
-                  "GBR",
-                  "GBR"
-               ],
+               "qcCnt" : 1,
                "ip" : [
                   "91.189.90.40",
                   "91.189.90.41",
@@ -68,48 +42,74 @@
                "qt" : [
                   "A"
                ],
-               "qtCnt" : 1,
-               "host" : [
-                  "start.ubuntu.com"
+               "qc" : [
+                  "IN"
                ],
-               "opcode" : [
-                  "QUERY"
+               "hostCnt" : 1,
+               "RIR" : [
+                  "RIPE",
+                  "RIPE",
+                  "RIPE"
                ],
                "statusCnt" : 1,
-               "qcCnt" : 1
+               "status" : [
+                  "NOERROR"
+               ]
             },
-            "segments" : 1,
+            "dstPayload8" : "5aae011000010000",
+            "ipProtocol" : 17,
+            "dstMac" : [
+               "00:1a:e3:dc:2e:c0",
+               "00:23:04:17:9b:00"
+            ],
+            "srcGEO" : "US",
             "totPackets" : 2,
+            "timestamp" : "SET",
+            "tags" : [
+               "srcip"
+            ],
+            "fileIds" : [],
             "dstASN" : "AS0000 This is neat",
+            "protocolCnt" : 2,
             "srcPort" : 53,
-            "dstPort" : 62928,
+            "srcIp" : "8.8.8.8",
             "srcASN" : "AS15169 Google LLC",
+            "dstBytes" : 91,
+            "dstIp" : "10.0.0.1",
+            "dstGEO" : "RU",
             "srcMac" : [
                "00:19:e2:b1:ef:c6",
                "00:19:e2:ba:2f:c1"
             ],
-            "ipProtocol" : 17,
-            "dstPayload8" : "5aae011000010000",
+            "srcPayload8" : "5aae819000010003",
+            "totDataBytes" : 210,
             "node" : "test",
-            "tags" : [
-               "srcip"
+            "vlanCnt" : 1,
+            "srcRIR" : "ARIN",
+            "vlan" : [
+               500
             ],
+            "dstPackets" : 1,
             "packetLenArray" : [
                151,
                107
             ],
-            "srcMacCnt" : 2,
-            "lastPacket" : 1393428477327,
-            "firstPacket" : 1393428477363,
-            "timestamp" : "SET",
-            "srcBytes" : 135,
-            "srcGEO" : "USA",
+            "dstDataBytes" : 83,
+            "totBytes" : 226,
+            "length" : 4294967260,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "length" : 4294967260,
-            "fileIds" : []
+            "srcBytes" : 135,
+            "srcDataBytes" : 127,
+            "firstPacket" : 1393428477363,
+            "tagsCnt" : 1,
+            "packetPosArray" : [
+               24,
+               175
+            ],
+            "srcPackets" : 1
          }
       }
    ]

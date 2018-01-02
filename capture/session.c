@@ -142,7 +142,6 @@ uint32_t moloch_session_hash(const void *key)
     uint32_t *p = (uint32_t *)key;
     const uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
     uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
-    
 
     while (p < end) {
         h ^= *p;

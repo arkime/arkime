@@ -370,11 +370,9 @@ void moloch_config_load()
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
-    config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
-    config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
-    config.geoip6File       = moloch_config_str(keyfile, "geoip6File", NULL);
-    config.geoipASN6File    = moloch_config_str(keyfile, "geoipASN6File", NULL);
+    config.geoLite2ASN      = moloch_config_str(keyfile, "geoLite2ASN", NULL);
+    config.geoLite2Country  = moloch_config_str(keyfile, "geoLite2Country", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);

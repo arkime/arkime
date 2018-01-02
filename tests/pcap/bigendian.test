@@ -1,33 +1,23 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-120502",
+               "_type" : "session"
+            }
+         },
          "body" : {
+            "lastPacket" : 1335958317529,
             "dstPackets" : 0,
-            "protocolCnt" : 1,
-            "node" : "test",
             "dstIp" : "10.64.11.49",
-            "packetPosArray" : [
-               24,
-               138
-            ],
-            "length" : 4376,
-            "srcPackets" : 2,
-            "totBytes" : 196,
-            "dstPort" : 0,
-            "firstPacket" : 1335958313152,
-            "srcPort" : 0,
-            "segments" : 1,
-            "srcMac" : [
-               "00:21:28:05:29:ba"
-            ],
-            "srcDataBytes" : 0,
-            "srcBytes" : 196,
-            "srcRIR" : "ARIN",
+            "node" : "test",
+            "ipProtocol" : 1,
             "dstMac" : [
                "00:00:5e:00:01:b1"
             ],
-            "lastPacket" : 1335958317529,
-            "fileIds" : [],
+            "totBytes" : 196,
+            "segments" : 1,
             "icmp" : {
                "code" : [
                   8
@@ -36,28 +26,38 @@
                   0
                ]
             },
+            "fileIds" : [],
+            "srcPackets" : 2,
+            "srcBytes" : 196,
+            "totPackets" : 2,
+            "srcMacCnt" : 1,
+            "dstPort" : 0,
+            "protocolCnt" : 1,
             "srcIp" : "192.168.177.160",
+            "protocol" : [
+               "icmp"
+            ],
+            "srcDataBytes" : 0,
+            "firstPacket" : 1335958313152,
+            "srcRIR" : "ARIN",
             "packetLenArray" : [
                114,
                114
             ],
-            "ipProtocol" : 1,
-            "timestamp" : "SET",
-            "totDataBytes" : 0,
-            "protocol" : [
-               "icmp"
-            ],
             "dstDataBytes" : 0,
             "dstMacCnt" : 1,
-            "srcMacCnt" : 1,
-            "totPackets" : 2,
+            "srcPort" : 0,
+            "packetPosArray" : [
+               24,
+               138
+            ],
+            "srcMac" : [
+               "00:21:28:05:29:ba"
+            ],
+            "length" : 4376,
+            "totDataBytes" : 0,
+            "timestamp" : "SET",
             "dstBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-120502"
-            }
          }
       }
    ]

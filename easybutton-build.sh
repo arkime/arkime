@@ -11,7 +11,7 @@
 
 GLIB=2.52.3
 YARA=3.6.3
-GEOIP=1.6.11
+MAXMIND=1.3.1
 PCAP=1.8.1
 CURL=7.55.0
 LUA=5.3.4
@@ -136,35 +136,29 @@ else
   echo "MOLOCH: Not rebuilding yara"
 fi
 
-# GeoIP
-if [ ! -f "GeoIP-$GEOIP.tar.gz" ]; then
-  wget https://github.com/maxmind/geoip-api-c/releases/download/v$GEOIP/GeoIP-$GEOIP.tar.gz
+# Maxmind
+if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
+  wget https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
 fi
 
-if [ ! -f "GeoIP-$GEOIP/libGeoIP/.libs/libGeoIP.a" ]; then
-tar zxf GeoIP-$GEOIP.tar.gz
+if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
+  tar zxf libmaxminddb-$MAXMIND.tar.gz
 
-# Crossing fingers, this is no longer needed
-# Not sure why this is required on some platforms
-#  if [ -f "/usr/bin/libtoolize" ]; then
-#    (cd GeoIP-$GEOIP ; libtoolize -f)
-#  fi
-
-  (cd GeoIP-$GEOIP ; ./configure --enable-static; $MAKE)
+  (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
   fi
 else
-  echo "MOLOCH: Not rebuilding libGeoIP"
+  echo "MOLOCH: Not rebuilding libmaxmind"
 fi
 
 # libpcap
 if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
   wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
 fi
-tar zxf libpcap-$PCAP.tar.gz
 if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
+  tar zxf libpcap-$PCAP.tar.gz
   echo "MOLOCH: Building libpcap";
   (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth --with-snf=no; $MAKE)
   if [ $? -ne 0 ]; then
@@ -231,8 +225,8 @@ fi
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA"
-./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA
+echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA"
+./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA
 
 if [ $DOCLEAN -eq 1 ]; then
     $MAKE clean

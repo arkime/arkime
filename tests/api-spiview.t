@@ -56,7 +56,7 @@ my $fpwd = getcwd() . "/pcap";
     $json = viewerGet("/spiview.json?startTime=1386004308&stopTime=1386004400&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     $mjson = multiGet("/spiview.json?startTime=1386004308&stopTime=1386004400&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"src":{"USA": 3}, "dst":{"USA": 3}}'), "map short");
+    eq_or_diff($json->{map}, from_json('{"src":{"US": 3}, "dst":{"US": 3}}'), "map short");
     eq_or_diff($json->{protocols}, from_json('{"http": 3, "socks": 3, "tcp": 3}'), "protocols short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "pa1Histo short");
@@ -80,7 +80,7 @@ my $fpwd = getcwd() . "/pcap";
     $json = viewerGet("/spiview.json?startTime=1386004308&stopTime=1386349908&facets=1&spi=srcIp,dstIp,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     $mjson = multiGet("/spiview.json?startTime=1386004308&stopTime=1386349908&facets=1&spi=srcIp,dstIp,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"src":{"USA": 3}, "dst":{"USA": 3}}'), "map medium");
+    eq_or_diff($json->{map}, from_json('{"src":{"US": 3}, "dst":{"US": 3}}'), "map medium");
     eq_or_diff($json->{protocols}, from_json('{"http": 3, "socks": 3, "tcp": 3}'), "protocols medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "pa1Histo medium");
@@ -112,7 +112,7 @@ my $fpwd = getcwd() . "/pcap";
     @{$mjson->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$mjson->{spi}->{"http.requestHeader"}->{buckets}});
     @{$djson->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$djson->{spi}->{"http.requestHeader"}->{buckets}});
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}}'), "map ALL");
     eq_or_diff($json->{protocols}, from_json('{"tcp": 5, "http": 3, "socks": 3, "bittorrent": 2, "icmp": 1}'), "protocols ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "pa1Histo ALL");

@@ -3,91 +3,18 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131126"
+               "_index" : "tests_sessions2-131126",
+               "_type" : "session"
             }
          },
          "body" : {
-            "segments" : 1,
-            "lastPacket" : 1385474639455,
-            "srcMac" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "totBytes" : 1492,
-            "srcIp" : "10.0.0.2",
-            "tagsCnt" : 3,
             "srcPayload8" : "050100050100030e",
-            "tags" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ],
-            "ipProtocol" : 6,
-            "dstPayload8" : "0500050000010a00",
-            "packetLenArray" : [
-               82,
-               82,
-               76,
-               76,
-               76,
-               76,
-               76,
-               76,
-               91,
-               76,
-               80,
-               76,
-               146,
-               81,
-               76,
-               219,
-               82,
-               76,
-               113,
-               76
-            ],
-            "tcpflags" : {
-               "fin" : 0,
-               "syn" : 2,
-               "dstZero" : 0,
-               "psh" : 10,
-               "urg" : 0,
-               "rst" : 1,
-               "srcZero" : 0,
-               "ack" : 6,
-               "syn-ack" : 1
-            },
-            "firstPacket" : 1385474626674,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "node" : "test",
-            "srcPackets" : 10,
-            "dstPort" : 1080,
-            "dstASN" : "AS0000 This is neat",
-            "protocol" : [
-               "socks",
-               "smtp",
-               "tcp"
-            ],
-            "srcMacCnt" : 1,
-            "srcDataBytes" : 47,
-            "totDataBytes" : 327,
-            "socks" : {
-               "host" : "010.000.00.003",
-               "port" : 25
-            },
+            "srcGEO" : "CA",
             "length" : 12781,
-            "srcBytes" : 638,
-            "dstBytes" : 854,
-            "dstGEO" : "RUS",
-            "dstPackets" : 10,
-            "totPackets" : 20,
             "protocolCnt" : 3,
-            "timestamp" : "SET",
-            "srcASN" : "AS0001 Cool Beans!",
-            "srcGEO" : "CAN",
+            "srcRIR" : "TEST",
+            "dstPackets" : 10,
+            "dstGEO" : "RU",
             "packetPosArray" : [
                24,
                106,
@@ -110,12 +37,85 @@
                1647,
                1760
             ],
-            "dstIp" : "10.0.0.1",
+            "timestamp" : "SET",
+            "dstPort" : 1080,
+            "protocol" : [
+               "socks",
+               "smtp",
+               "tcp"
+            ],
+            "node" : "test",
+            "ipProtocol" : 6,
             "dstDataBytes" : 280,
-            "dstMacCnt" : 2,
-            "srcRIR" : "TEST",
+            "tagsCnt" : 3,
+            "srcBytes" : 638,
+            "dstIp" : "10.0.0.1",
+            "totBytes" : 1492,
+            "dstASN" : "AS0000 This is neat",
             "srcPort" : 53709,
-            "fileIds" : []
+            "srcASN" : "AS0001 Cool Beans!",
+            "totDataBytes" : 327,
+            "srcMacCnt" : 1,
+            "segments" : 1,
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "srcPackets" : 10,
+            "tags" : [
+               "smtp:authlogin",
+               "srcip",
+               "dstip"
+            ],
+            "totPackets" : 20,
+            "fileIds" : [],
+            "dstMacCnt" : 2,
+            "dstPayload8" : "0500050000010a00",
+            "srcDataBytes" : 47,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "dstBytes" : 854,
+            "srcIp" : "10.0.0.2",
+            "packetLenArray" : [
+               82,
+               82,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               91,
+               76,
+               80,
+               76,
+               146,
+               81,
+               76,
+               219,
+               82,
+               76,
+               113,
+               76
+            ],
+            "firstPacket" : 1385474626674,
+            "tcpflags" : {
+               "fin" : 0,
+               "rst" : 1,
+               "ack" : 6,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "psh" : 10
+            },
+            "lastPacket" : 1385474639455,
+            "socks" : {
+               "port" : 25,
+               "host" : "010.000.00.003"
+            }
          }
       }
    ]
