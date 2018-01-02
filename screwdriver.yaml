@@ -128,6 +128,10 @@ jobs:
         steps:
             - slack-success: |
                 export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)\'.*$/\1/"`
+                echo GIT_BRANCH: $GIT_BRANCH
+                echo MOLOCH_COPY_BRANCH: $MOLOCH_COPY_BRANCH
+                echo MOLOCH_VERSION: $MOLOCH_VERSION
+                echo MOLOCH_FILE_NAME: $MOLOCH_FILE_NAME
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   MSG=`git log -1 --format=%s`
                   BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - moloch-$MOLOCH_VERSION-$SD_BUILD_ID - $MSG\"}"
