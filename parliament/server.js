@@ -125,7 +125,7 @@ app.use(favicon(`${__dirname}/public/favicon.ico`));
 app.use('/parliament/public', express.static(`${__dirname}/public`, { maxAge:600*1000 }));
 
 // serve app bundles
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use('/parliament', express.static(path.join(__dirname, 'dist')));
 
 // define router to mount api related functions
 app.use('/parliament/api', router);
