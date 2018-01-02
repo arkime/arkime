@@ -114,7 +114,7 @@ let timeout;
 app.disable('x-powered-by');
 
 // parliament app page
-app.use('/', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
+app.use('/parliament', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
 
 // log requests
 app.use(logger('dev'));
@@ -122,13 +122,13 @@ app.use(logger('dev'));
 app.use(favicon(`${__dirname}/public/favicon.ico`));
 
 // serve public files
-app.use('/public', express.static(`${__dirname}/public`, { maxAge:600*1000 }));
+app.use('/parliament/public', express.static(`${__dirname}/public`, { maxAge:600*1000 }));
 
 // serve app bundles
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // define router to mount api related functions
-app.use('/api', router);
+app.use('/parliament/api', router);
 router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
