@@ -79,6 +79,7 @@ jobs:
         image: andywick/moloch-build-16:0.20.2
         steps:
             - ln -s /thirdparty .
+            - apt-get update
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
             - installing: make install
@@ -100,6 +101,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-18:0.20.2
         steps:
+            - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
