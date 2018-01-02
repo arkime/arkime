@@ -25,20 +25,12 @@ sub doGeo {
         system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
     }
 
-    if (! -f "GeoIPASNum.dat") {
-        system("wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip GeoIPASNum.dat.gz");
+    if (! -f "GeoLite2-Country.mmdb") {
+        system("wget -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'; gunzip GeoLite2-Country.mmdb.gz");
     }
 
-    if (! -f "GeoIPASNumv6.dat") {
-        system("wget http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip GeoIPASNumv6.dat.gz");
-    }
-
-    if (! -f "GeoIP.dat") {
-        system("wget http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz; gunzip GeoIP.dat.gz");
-    }
-
-    if (! -f "GeoIPv6.dat") {
-        system("wget http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz; gunzip GeoIPv6.dat.gz");
+    if (! -f "GeoLite2-ASN.mmdb") {
+        system("wget -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'; gunzip GeoLite2-ASN.mmdb.gz");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
