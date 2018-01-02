@@ -3,9 +3,9 @@ shared:
         email:
             addresses: [moloch.build@oath.com]
             statuses: [SUCCESS, FAILURE]
-        environment:
-            MOLOCH_COPY_BRANCH: "origin/1.0.0"
-            MOLOCH_FILE_NAME: 1
+    environment:
+        MOLOCH_COPY_BRANCH: "origin/1.0.0"
+        MOLOCH_FILE_NAME: 1
 
 jobs:
     centos-6:
@@ -127,6 +127,8 @@ jobs:
         image: andywick/moloch-build-7:6
         steps:
             - slack-success: |
+                echo 1: `grep PACKAGE_VERSION= configure`
+                echo 2: `grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)\'.*$/\1/"`
                 export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)\'.*$/\1/"`
                 echo GIT_BRANCH: $GIT_BRANCH
                 echo MOLOCH_COPY_BRANCH: $MOLOCH_COPY_BRANCH
