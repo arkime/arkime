@@ -7,33 +7,47 @@
     <div class="row mt-4" style="cursor: auto !important;">
       <div class="col-md-12">
         <h2>
-          <!-- logged out -->
-          <span *ngIf="!loggedIn && auth.hasAuth">
-            <!-- login button -->
-            <a class="btn btn-outline-success pull-right cursor-pointer ml-1"
-              (click)="login()">
-              <span class="fa fa-unlock"></span>&nbsp;
-              Login
-            </a> <!-- /login button -->
-            <!-- cancel login button -->
-            <a class="btn btn-outline-warning pull-right cursor-pointer"
-              (click)="cancelLogin()"
-              [ngClass]="{'hide-cancel-btn':!showLoginInput,'show-cancel-btn ml-1':showLoginInput}">
-              <span class="fa fa-ban"></span>
-            </a> <!-- /cancel login button -->
-            <!-- password input -->
-            <input class="form-control pull-right" type="password"
-              (keyup.enter)="login()"
-              [appAutofocus]="focusOnPasswordInput" [(ngModel)]="password"
-              [ngClass]="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
-              placeholder="password please"> <!-- /password input -->
-          </span> <!-- /logged out -->
+          <!-- login button -->
+          <a class="btn btn-outline-success pull-right cursor-pointer ml-1"
+            (click)="login()" *ngIf="!loggedIn && auth.hasAuth"
+            tabindex="6">
+            <span class="fa fa-unlock"></span>&nbsp;
+            Login
+          </a> <!-- /login button -->
           <!-- logged in -->
-          <a class="btn btn-outline-warning pull-right cursor-pointer"
-            (click)="logout()" *ngIf="loggedIn">
+          <a class="btn btn-outline-danger pull-right cursor-pointer"
+            (click)="logout()" *ngIf="loggedIn"
+            tabindex="7">
             <span class="fa fa-lock"></span>&nbsp;
             Logout
           </a> <!-- /logged in -->
+          <!-- update/create password button -->
+          <a class="btn btn-outline-info pull-right cursor-pointer mr-1 ml-1"
+            tabindex="5" (click)="updatePassword()"
+            *ngIf="(auth.hasAuth && loggedIn) || !auth.hasAuth">
+            <span class="fa fa-key"></span>
+            <span *ngIf="auth.hasAuth && loggedIn">Update</span>
+            <span *ngIf="!auth.hasAuth">Create</span>
+            Password
+          </a> <!-- /update/create password button -->
+          <!-- cancel login button -->
+          <a class="btn btn-outline-warning pull-right cursor-pointer"
+            (click)="cancelLogin()" tabindex="4"
+            [ngClass]="{'hide-cancel-btn':!showLoginInput,'show-cancel-btn ml-1':showLoginInput}">
+            <span class="fa fa-ban"></span>
+          </a> <!-- /cancel login button -->
+          <!-- password input -->
+          <input class="form-control pull-right ml-1" type="password"
+            (keyup.enter)="passwordInputSubmit()" tabindex="3"  [hidden]="!updatingPassword"
+            [appAutofocus]="focusOnPasswordInput" [(ngModel)]="passwordConfirm"
+            [ngClass]="{'hide-login':!showLoginInput && !updatingPassword,'show-login':showLoginInput && updatingPassword}"
+            placeholder="confirm password">
+          <input class="form-control pull-right" type="password"
+            (keyup.enter)="passwordInputSubmit()" tabindex="2"
+            [appAutofocus]="focusOnPasswordInput" [(ngModel)]="password"
+            [ngClass]="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
+            placeholder="password please">
+            <!-- /password input -->
           <!-- refresh interval select -->
           <span class="form-group pull-right mr-4">
             <div class="input-group">
@@ -42,7 +56,7 @@
                 <span class="fa fa-refresh"></span>
               </span>
               <select class="form-control refresh-interval-control"
-                [(ngModel)]="refreshInterval"
+                [(ngModel)]="refreshInterval" tabindex="1"
                 (ngModelChange)="changeRefreshInterval()">
                 <option value="">Never</option>
                 <option value="15000">15 seconds</option>
@@ -78,7 +92,7 @@
             <span class="fa fa-search"></span>
           </span>
           <input type="text" class="form-control" placeholder="Search clusters"
-            [(ngModel)]="searchTerm" (keyup)="debounceSearch()" />
+            [(ngModel)]="searchTerm" (keyup)="debounceSearch()" tabindex="8" />
         </div>
       </div> <!-- /search -->
       <!-- create group -->

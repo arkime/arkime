@@ -62,4 +62,9 @@ export class AuthService {
     return this.http.get<Auth>('api/auth');
   }
 
+  // update (or create) a password
+  updatePassword(password): Observable<Login> {
+    return this.http.put<Login>('api/auth/update', { password: password });
+  }
+
 }
