@@ -160,10 +160,14 @@ void wise_load_fields()
     BSB bsb;
     BSB_INIT(bsb, data, data_len);
 
-    int ver, cnt = 0;
+    int ver = -1, cnt = 0;
     BSB_IMPORT_u32(bsb, fieldsTS);
     BSB_IMPORT_u32(bsb, ver);
     BSB_IMPORT_u08(bsb, cnt);
+
+    if (ver != 0) {
+        LOGEXIT("Unsupported wise return value %d", ver);
+    }
 
     int i;
     for (i = 0; i < cnt; i++) {
@@ -216,7 +220,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 
     BSB_INIT(bsb, data, data_len);
 
-    uint32_t fts = 0, ver = 0;
+    uint32_t fts = 0, ver = 0xffffffff;
     BSB_IMPORT_u32(bsb, fts);
     BSB_IMPORT_u32(bsb, ver);
 
@@ -545,7 +549,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         HASH_FORALL(s_, *shash, hstring,
             if (hstring->uw) {
                 char str[1000];
-                snprintf(str, sizeof(str), "%s;%s", hstring->str, hstring->uw);
+                snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
                 wise_lookup(session, iRequest, str, INTEL_TYPE_MD5);
             } else {
                 wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_MD5);
