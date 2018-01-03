@@ -41,7 +41,7 @@ export class AuthService {
   }
 
   // determine whether the user is logged in by checking the jwt with the server
-  isLoggedIn(): boolean {
+  isLoggedIn(): any {
     this.http.get<LoggedIn>('api/auth/loggedin')
       .subscribe(
         (data) => {
