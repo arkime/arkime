@@ -291,6 +291,10 @@ exports.indices = function(cb, index) {
   return internals.elasticSearchClient.cat.indices({format: "json", index: fixIndex(index)}, cb);
 };
 
+exports.shards = function(cb) {
+  return internals.elasticSearchClient.cat.shards({format: "json"}, cb);
+};
+
 exports.tasks = function(cb) {
   return internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, cb);
 };

@@ -1,0 +1,44 @@
+<div class="row margined-top">
+  <div class="col-md-12">
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" class="form-control" ng-model="$ctrl.searchStats"
+        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+        placeholder="Begin typing to search for ES stats (hint: this input accepts regex)">
+    </div>
+  </div>
+</div>
+
+<table class="table table-condensed table-striped margined-top-xxxlg"
+  ng-if="!$ctrl.error && $ctrl.stats">
+  <thead class="small">
+    <tr>
+      <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+        ng-click="$ctrl.columnClick(column.sort)">
+        {{::column.name}}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+  <tbody>
+    <tr class="animate-repeat"
+      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats.indices) track by stat.name">
+      <td class="no-wrap">{{stat.name}}</td>
+      <td ng-repeat="node in $ctrl.stats.nodes">
+        <span ng-if="stat.nodes[node]" ng-repeat="item in stat.nodes[node] | orderBy:'shard'" ng-class="{'bold':item.prirep === 'p'}">
+          {{item.shard}}
+        </span>
+      </td>
+    </tr>
+    <tr ng-if="!$ctrl.filteredStats.length">
+      <td colspan="6" class="text-danger">
+        <span class="fa fa-warning"></span>&nbsp;
+        No results match your search
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<error ng-if="$ctrl.error" message="$ctrl.error"></error>

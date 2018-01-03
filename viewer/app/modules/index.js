@@ -43,6 +43,7 @@ require('./stats/stats.component');
 require('./stats/stats.es.component');
 require('./stats/stats.indices.component');
 require('./stats/stats.tasks.component');
+require('./stats/stats.shards.component');
 
 require('./spigraph/spigraph.component');
 require('./spigraph/spigraph.service');

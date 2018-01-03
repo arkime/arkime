@@ -2435,6 +2435,31 @@ app.post('/estask/cancel', logAction(), function(req, res) {
   });
 });
 
+app.get('/esshard/list', function(req, res) {
+  Db.shards(function(err, shards) {
+    let result = {};
+    let nodes = {};
+
+    for (var shard of shards) {
+      if (shard.node === null || shard.node === "null") { shard.node = "Unassigned"; }
+
+      if (result[shard.index] === undefined) {
+        result[shard.index] = {name: shard.index, nodes: {}};
+      }
+      if (result[shard.index].nodes[shard.node] === undefined) {
+        result[shard.index].nodes[shard.node] = [];
+      }
+      result[shard.index].nodes[shard.node].push(shard);
+      nodes[shard.node] = 1;
+      delete shard.node;
+      delete shard.index;
+    }
+
+    let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); })
+    res.send({nodes: Object.keys(nodes), indices: indices});
+  });
+});
+
 app.get('/esstats.json', function(req, res) {
   var stats = [];
   var r;
