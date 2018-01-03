@@ -7,3 +7,7 @@ export class Login {
 export class Auth {
   hasAuth: boolean;
 }
+
+export class LoggedIn {
+  loggedin: boolean;
+}

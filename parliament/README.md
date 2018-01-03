@@ -5,6 +5,16 @@ Moloch Parliament is an [Angular5][angular] web app to view multiple Moloch clus
 This project was generated with [Angular CLI][angularcli] version 1.5.5.
 
 
+## Running from RPM/DEB
+If using prepackaged version of Moloch, use "Configure --parliament" to setup.  It will use port 8008 by default.
+
+It is meant to sit behind a reverse proxy such as apache, with config like the following added.
+```
+ProxyPassMatch   ^/$ http://localhost:8008/parliament retry=0
+ProxyPass        /parliament/ http://localhost:8008/parliament/ retry=0
+```
+
+
 ### Install Dependencies
 
 The app uses dependencies that are all bundled using [webpack][webpack] via `ng build`. `ng build` compiles the application into an output directory, in this case `parliament/dist`. This is done automatically when starting the application.

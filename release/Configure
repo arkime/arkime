@@ -19,18 +19,33 @@ fi
 if [ $1 eq "--wise" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         echo "Installing systemd start files, use systemctl"
-        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.systemd.service > /etc/systemd/system/molochwise.service
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.systemd.service > /etc/systemd/system/molochwise.service
     elif [ -d "/etc/init" ]; then
         echo "Installing upstart start files, use start"
-        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.upstart.conf > /etc/init/molochwise.conf
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.upstart.conf > /etc/init/molochwise.conf
     fi
 
     if [ ! -f "$MOLOCH_INSTALL_DIR/etc/wise.ini" ]; then
-        echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
-        sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
+        sed -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
     else
         echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
         sleep 1
+    fi
+
+    exit 0;
+fi
+
+if [ $1 eq "--parliament" ]; then
+    while [ -z "$PARLIAMENT_PASSWORD" ]; do
+        echo -n "Initial password to admin parliament [no-default] "
+        read -r PARLIAMENT_PASSWORD
+    done
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Installing systemd start files, use systemctl"
+        sed -e "s/PARLIAMENT_PASSWORD/${PARLIAMENT_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.systemd.service > /etc/systemd/system/molochparliament.service
+    elif [ -d "/etc/init" ]; then
+        echo "Installing upstart start files, use start"
+        sed -e "s/PARLIAMENT_PASSWORD/${PARLIAMENT_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.upstart.conf > /etc/init/molochparliament.conf
     fi
 
     exit 0;

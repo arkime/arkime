@@ -207,6 +207,9 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
             if (len > 14 && strncasecmp(data, "<!doctype html", 14) == 0) {
                 return moloch_field_string_add(field, session, "text/html", 9, TRUE);
             }
+            if (len > 13 && strncasecmp(data, "<!doctype svg", 13) == 0) {
+                return moloch_field_string_add(field, session, "text/svg+xml", 13, TRUE);
+            }
             break;
         case '?':
             if (strncasecmp(data, "<?xml", 5) == 0) {
@@ -315,7 +318,10 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         if (memcmp(data, "PK\003\004", 4) == 0) {
             return moloch_field_string_add(field, session, "application/zip", 15, TRUE);
         }
-        if (memcmp(data, "PK\005\005", 4) == 0) {
+        if (memcmp(data, "PK\005\006", 4) == 0) {
+            return moloch_field_string_add(field, session, "application/zip", 15, TRUE);
+        }
+        if (memcmp(data, "PK\007\008PK", 6) == 0) {
             return moloch_field_string_add(field, session, "application/zip", 15, TRUE);
         }
         break;
