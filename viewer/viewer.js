@@ -2455,8 +2455,9 @@ app.get('/esshard/list', function(req, res) {
       delete shard.index;
     }
 
-    let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); })
-    res.send({nodes: Object.keys(nodes), indices: indices});
+    let returnNodes = Object.keys(nodes).sort(function(a,b){ return a.localeCompare(b); });
+    let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); });
+    res.send({nodes: returnNodes, indices: indices});
   });
 });
 
