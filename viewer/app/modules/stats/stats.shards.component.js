@@ -89,7 +89,7 @@
           this.stats    = response;
           this.columns.splice(1);
           for (var node of response.nodes) {
-            this.columns.push({name: node, sort: undefined, doStats: false})
+            this.columns.push({name: node, sort: undefined, doStats: false});
           }
           this.$scope.$broadcast('$$rebind::refreshShards');
         })
