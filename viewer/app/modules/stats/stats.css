@@ -53,6 +53,28 @@ moloch-stats table.table.table-condensed tr > td {
 }
 
 
+moloch-stats table .shards-col-header:hover .btn-group {
+  visibility: visible;
+}
+moloch-stats table .shards-col-header .btn-group {
+  visibility : hidden;
+  margin-left: -8px;
+}
+moloch-stats table .shards-col-header .header-text {
+  display : inline-block;
+  width   : calc(100% - 24px);
+}
+
+moloch-stats .badge {
+  font-weight : 500;
+  font-size   : 16px;
+}
+moloch-stats .badge.badge-primary {
+  font-weight     : bold;
+  background-color: var(--color-primary);
+}
+
+
 moloch-stats form.stats-form {
   position: fixed;
   top     : 36px;
