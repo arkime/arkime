@@ -1014,7 +1014,7 @@ function postSettingUser (req, res, next) {
 app.get('/user/settings', getSettingUser, function(req, res) {
   if (!req.settingUser) {
     res.status(404);
-    return res.send(JSON.stringify('User not found'));
+    return res.send(JSON.stringify({success:false, text:'User not found'}));
   }
 
   var settings = req.settingUser.settings || settingDefaults;
