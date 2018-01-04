@@ -15,19 +15,19 @@
   ng-if="!$ctrl.error && $ctrl.stats">
   <thead class="small">
     <tr>
-      <th ng-repeat="column in $ctrl.columns track by column.name" class="cursor-pointer">
-        {{::column.name}}
+      <th ng-repeat="column in :refreshShards:$ctrl.columns track by column.name" class="cursor-pointer">
+        {{:refreshShards:column.name}}
       </th>
     </tr>
   </thead>
   <tbody>
   <tbody>
     <tr class="animate-repeat"
-      ng-repeat="stat in $ctrl.stats.indices track by stat.name">
+      ng-repeat="stat in :refreshShards:$ctrl.stats.indices track by stat.name">
       <td class="no-wrap">{{stat.name}}</td>
       <td ng-repeat="node in $ctrl.stats.nodes">
-        <span ng-if="stat.nodes[node]" ng-repeat="item in stat.nodes[node] | orderBy:'shard'" ng-class="{'bold':item.prirep === 'p'}">
-          {{::item.shard}}
+        <span ng-if="stat.nodes[node]" ng-repeat="item in :refreshShards:stat.nodes[node] | orderBy:'shard'" ng-class="{'bold':item.prirep === 'p'}">
+          {{:refreshShards:item.shard}}
         </span>
       </td>
     </tr>

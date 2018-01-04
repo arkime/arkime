@@ -91,6 +91,7 @@
           for (var node of response.nodes) {
             this.columns.push({name: node, sort: undefined, doStats: false})
           }
+          this.$scope.$broadcast('$$rebind::refreshShards');
         })
         .catch((error) => {
           this.error    = error;
