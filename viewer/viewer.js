@@ -1019,10 +1019,13 @@ app.get('/user/settings', getSettingUser, function(req, res) {
 
   var settings = req.settingUser.settings || settingDefaults;
 
+  var cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
   res.cookie(
      'MOLOCH-COOKIE',
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
+     cookieOptions
   );
 
   return res.send(settings);
@@ -6001,11 +6004,14 @@ app.use(function (req, res) {
     return res.status(403).send('Permission denied');
   }
 
+  var cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
+     cookieOptions
   );
 
   console.log(req.user);
