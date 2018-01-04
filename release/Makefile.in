@@ -11,11 +11,14 @@ install:
 	$(INSTALL) molochcapture.upstart.conf $(etcdir)/
 	$(INSTALL) molochviewer.upstart.conf $(etcdir)/
 	$(INSTALL) molochwise.upstart.conf $(etcdir)/
+	$(INSTALL) molochparliament.upstart.conf $(etcdir)/
 	$(INSTALL) molochcapture.systemd.service $(etcdir)/
 	$(INSTALL) molochviewer.systemd.service $(etcdir)/
 	$(INSTALL) molochwise.systemd.service $(etcdir)/
+	$(INSTALL) molochparliament.systemd.service $(etcdir)/
 	$(INSTALL) elasticsearch.demo.yml $(etcdir)/
 	$(INSTALL) config.ini.sample $(etcdir)/
+	$(INSTALL) wise.ini.sample $(etcdir)/
 	sed -e "s,BUILD_MOLOCH_INSTALL_DIR,@prefix@,g" < moloch_update_geo.sh > @prefix@/bin/moloch_update_geo.sh
 	sed -e "s,BUILD_MOLOCH_INSTALL_DIR,@prefix@,g" < moloch_add_user.sh > @prefix@/bin/moloch_add_user.sh
 	sed -e "s,BUILD_MOLOCH_INSTALL_DIR,@prefix@,g" < Configure > @prefix@/bin/Configure
