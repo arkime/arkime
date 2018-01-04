@@ -1,16 +1,3 @@
-<div class="row margined-top">
-  <div class="col-md-12">
-    <div class="input-group input-group-sm">
-      <span class="input-group-addon">
-        <span class="fa fa-search"></span>
-      </span>
-      <input type="text" class="form-control" ng-model="$ctrl.searchStats"
-        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
-        placeholder="Begin typing to search for ES stats (hint: this input accepts regex)">
-    </div>
-  </div>
-</div>
-
 <table class="table table-condensed table-striped margined-top-xxxlg"
   ng-if="!$ctrl.error && $ctrl.stats">
   <thead class="small">
@@ -26,12 +13,18 @@
       ng-repeat="stat in :refreshShards:$ctrl.stats.indices track by stat.name">
       <td class="no-wrap">{{stat.name}}</td>
       <td ng-repeat="node in $ctrl.stats.nodes">
-        <span ng-if="stat.nodes[node]" ng-repeat="item in :refreshShards:stat.nodes[node] | orderBy:'shard'" ng-class="{'bold':item.prirep === 'p'}">
+        <span ng-if="stat.nodes[node]"
+          class="badge cursor-help margined-right" style="font-size:16px;"
+          ng-repeat="item in :refreshShards:stat.nodes[node] | orderBy:'shard'"
+          ng-class="{'bold':item.prirep === 'p'}"
+          uib-tooltip-html="'<div><strong>IP:</strong> {{:refreshShards:item.ip}}</div><div><strong>State:</strong> {{:refreshShards:item.state}}</div><div><strong>Size:</strong> {{:refreshShards:item.store}}</div><div><strong>Documents:</strong> {{:refreshShards:item.docs}}</div><strong><div>Primary/Replicate:</strong> {{:refreshShards:item.prirep}}</div>'"
+          tooltip-append-to-body="true"
+          tooltip-placement="left">
           {{:refreshShards:item.shard}}
         </span>
       </td>
     </tr>
-    <tr ng-if="!$ctrl.filteredStats.length">
+    <tr ng-if="!:refreshShards:$ctrl.stats.indices">
       <td colspan="6" class="text-danger">
         <span class="fa fa-warning"></span>&nbsp;
         No results match your search
