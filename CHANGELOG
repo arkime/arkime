@@ -7,7 +7,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
 
-0.20.2 2017/12/XX
+0.20.2 2017/01/04
   - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported
   - viewer - upgrade elasticsearch-js
   - capture - new --host commandline option to specify how viewers should talk to host
@@ -20,6 +20,10 @@ NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
   - tests - more viewer tests
   - viewer - upgrade Cyberchef to 6.8.0
   - capture - basic mpls stripping (issue #779)
+  - viewer - start of esshards tab in stats
+  - parliament - first version (can install with Configure --parliament)
+  - wise - can now install with Configure --wise
+  - release - node 6.12.3
 
 0.20.1 2017/11/06
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
