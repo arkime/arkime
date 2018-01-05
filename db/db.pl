@@ -1365,11 +1365,11 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 50600 ||
+    if ($main::esVersion < 50500 ||
         $main::esVersion >= 70000)
     {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 5.6.0 are not supported\n",
+              "* < 5.5.0 are not supported\n",
               "* 5.6.x is recommended\n",
               "* >= 6.x is supported but not well tested\n",
               "\n",

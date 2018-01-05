@@ -1,6 +1,18 @@
 NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
-NOTICE: ES 5.6 and node 6.x required
+ES Support:
+  * Moloch 1.0.x  supports ES > 5.5.0, most of 6.x, not 7.x
+  * Moloch 0.50.x supports ES > 5.5.0, not 6.x
+  * Moloch 0.20.x supports ES 2.4.x, > 5.3,1 not 6.x
+
+Node Support:
+  * Moloch > 0.20.x requires NodeJS 6.x
+  * Moloch > 0.16.x requires NodeJS 4.x
+
+NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
+        outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
+
+NOTICE: Restart wiseService before capture when upgrading
 
 1.0.0 2018/02/XX
   - NOTICE: Supported ES Versions: 5.6.x, 6.x
@@ -14,6 +26,8 @@ NOTICE: ES 5.6 and node 6.x required
   - capture - use maxminddb instead of geoip now (issue #771)
   - all - Country codes are now 2 letters instead of 3 letters
 
+0.50.0 2017/01/XX
+  - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
 
 0.20.2 2017/01/04
   - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported

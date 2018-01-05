@@ -1,54 +1,36 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131202"
-            }
-         },
          "body" : {
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "dstGEO" : "US",
-            "tls" : {
-               "dstSessionId" : [
-                  "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "ja3Cnt" : 1,
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "cipherCnt" : 1
-            },
+            "dstMacCnt" : 1,
+            "srcGEO" : "US",
             "firstPacket" : 1386004472572,
-            "srcBytes" : 1775,
-            "http" : {
-               "host" : [
-                  "www.example.com"
-               ],
-               "hostCnt" : 1
-            },
-            "ipProtocol" : 6,
-            "srcPayload8" : "040101bb5db8d877",
+            "protocolCnt" : 3,
+            "totDataBytes" : 8920,
             "segments" : 1,
-            "timestamp" : "SET",
-            "srcPort" : 53554,
+            "node" : "test",
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "protocol" : [
                "tls",
                "socks",
                "tcp"
             ],
-            "dstDataBytes" : 8279,
-            "srcDataBytes" : 641,
+            "length" : 57,
+            "ipProtocol" : 6,
+            "dstIp" : "10.180.156.249",
+            "tcpflags" : {
+               "fin" : 2,
+               "rst" : 0,
+               "ack" : 15,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "syn" : 1,
+               "urg" : 0,
+               "psh" : 11,
+               "syn-ack" : 1
+            },
             "packetPosArray" : [
                24,
                118,
@@ -81,34 +63,21 @@
                11260,
                11342
             ],
-            "srcPackets" : 17,
-            "dstMacCnt" : 1,
-            "fileIds" : [],
+            "dstBytes" : 9145,
+            "srcMacCnt" : 1,
             "dstPackets" : 13,
-            "tcpflags" : {
-               "psh" : 11,
-               "syn" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "dstZero" : 0,
-               "ack" : 15,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "srcZero" : 0
-            },
-            "dstPayload8" : "005a99b40ab49cf9",
-            "totDataBytes" : 8920,
-            "dstPort" : 1080,
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
             "cert" : [
                {
-                  "altCnt" : 149,
-                  "issuerCN" : [
-                     "digicert high assurance ca-3"
-                  ],
-                  "serial" : "062d488986c9a6d7f94901c2b5906882",
-                  "subjectON" : "EdgeCast Networks, Inc.",
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "notBefore" : 1317600000000,
+                  "serial" : "062d488986c9a6d7f94901c2b5906882",
+                  "subjectCN" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ],
+                  "validDays" : 1164,
+                  "altCnt" : 149,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -260,46 +229,30 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "issuerON" : "DigiCert Inc",
                   "notAfter" : 1418212800000,
-                  "validDays" : 1164,
-                  "subjectCN" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ]
+                  "issuerON" : "DigiCert Inc",
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
+                  "issuerCN" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "subjectON" : "EdgeCast Networks, Inc."
                },
                {
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectON" : "DigiCert Inc",
+                  "validDays" : 5113,
+                  "subjectCN" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600000,
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
                   "issuerON" : "DigiCert Inc",
-                  "notBefore" : 1207137600000,
-                  "validDays" : 5113,
-                  "notAfter" : 1648944000000,
-                  "subjectCN" : [
-                     "digicert high assurance ca-3"
-                  ]
+                  "notAfter" : 1648944000000
                }
             ],
-            "srcGEO" : "US",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "socks" : {
-               "RIR" : "RIPE",
-               "ip" : "93.184.216.119",
-               "port" : 443,
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "GEO" : "US"
-            },
-            "dstIp" : "10.180.156.249",
-            "srcIp" : "10.180.156.185",
-            "lastPacket" : 1386004472629,
-            "certCnt" : 2,
-            "protocolCnt" : 3,
-            "totPackets" : 30,
             "packetLenArray" : [
                94,
                90,
@@ -332,70 +285,93 @@
                82,
                82
             ],
-            "length" : 57,
-            "srcMacCnt" : 1,
+            "totPackets" : 30,
+            "srcIp" : "10.180.156.185",
+            "dstPayload8" : "005a99b40ab49cf9",
+            "dstGEO" : "US",
+            "srcPackets" : 17,
+            "dstPort" : 1080,
+            "socks" : {
+               "port" : 443,
+               "ip" : "93.184.216.119",
+               "RIR" : "RIPE",
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
+            },
+            "certCnt" : 2,
+            "srcDataBytes" : 641,
             "totBytes" : 10920,
-            "dstBytes" : 9145,
-            "node" : "test"
-         }
-      },
-      {
-         "body" : {
-            "segments" : 1,
-            "srcPayload8" : "040101bb00000001",
-            "ipProtocol" : 6,
-            "protocol" : [
-               "tls",
-               "socks",
-               "tcp"
-            ],
-            "srcPort" : 53555,
+            "srcPort" : 53554,
+            "dstDataBytes" : 8279,
             "timestamp" : "SET",
-            "srcBytes" : 1791,
+            "srcBytes" : 1775,
             "http" : {
                "host" : [
                   "www.example.com"
                ],
                "hostCnt" : 1
             },
+            "lastPacket" : 1386004472629,
             "tls" : {
+               "ja3Cnt" : 1,
                "dstSessionId" : [
-                  "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
+                  "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
                ],
+               "versionCnt" : 1,
                "version" : [
                   "TLSv1"
                ],
                "ja3" : [
                   "06a92bf69b367389d2feb0d70501ddfe"
                ],
-               "ja3Cnt" : 1,
-               "versionCnt" : 1,
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_SHA"
                ],
                "cipherCnt" : 1
             },
-            "firstPacket" : 1386004475691,
-            "dstGEO" : "US",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
             "fileIds" : [],
+            "srcPayload8" : "040101bb5db8d877"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131202",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "segments" : 1,
+            "node" : "test",
+            "totDataBytes" : 8911,
+            "protocolCnt" : 3,
             "dstMacCnt" : 1,
+            "srcGEO" : "US",
+            "firstPacket" : 1386004475691,
+            "ipProtocol" : 6,
+            "length" : 69,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "protocol" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
             "tcpflags" : {
                "urg" : 0,
-               "rst" : 0,
                "syn" : 1,
-               "psh" : 11,
-               "srcZero" : 0,
-               "fin" : 2,
-               "ack" : 15,
                "syn-ack" : 1,
-               "dstZero" : 0
+               "psh" : 11,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "ack" : 15,
+               "fin" : 2,
+               "rst" : 0
             },
+            "dstIp" : "10.180.156.249",
+            "srcMacCnt" : 1,
+            "dstBytes" : 9120,
             "dstPackets" : 13,
-            "dstDataBytes" : 8254,
-            "srcPackets" : 17,
             "packetPosArray" : [
                11424,
                11518,
@@ -428,207 +404,14 @@
                22651,
                22733
             ],
-            "srcDataBytes" : 657,
-            "srcGEO" : "US",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "cert" : [
-               {
-                  "alt" : [
-                     "gp1.wac.edgecastcdn.net",
-                     "www.edgecast.com",
-                     "wac.edgecastcdn.net",
-                     "ne.wac.edgecastcdn.net",
-                     "swf.mixpo.com",
-                     "cdn.traceregister.com",
-                     "s.tmocache.com",
-                     "s.my.tmocache.com",
-                     "e1.boxcdn.net",
-                     "e2.boxcdn.net",
-                     "e3.boxcdn.net",
-                     "www.sonos.com",
-                     "static-cache.tp-global.net",
-                     "ssl-cdn.sometrics.com",
-                     "cache.vehicleassets.captivelead.com",
-                     "static.woopra.com",
-                     "images.ink2.com",
-                     "assets-secure.razoo.com",
-                     "ec.pond5.com",
-                     "images.esellerpro.com",
-                     "use.typekit.com",
-                     "static.iseatz.com",
-                     "static.www.turnto.com",
-                     "inpath-static.iseatz.com",
-                     "secure.avelleassets.com",
-                     "static.dubli.com",
-                     "www-cdn.cinamuse.com",
-                     "www-cdn.cineble.com",
-                     "www-cdn.cinemaden.com",
-                     "www-cdn.filmlush.com",
-                     "www-cdn.flixaddict.com",
-                     "www-cdn.itshd.com",
-                     "www-cdn.moviease.com",
-                     "www-cdn.movielush.com",
-                     "www-cdn.reelhd.com",
-                     "www-cdn.pushplay.com",
-                     "cdn1.fishpond.co.nz",
-                     "cdn1.fishpond.com.au",
-                     "www.isaca.org",
-                     "cdn.optimizely.com",
-                     "static.shoedazzle.com",
-                     "www.travelrepublic.co.uk",
-                     "cdn.nprove.com",
-                     "sslbest.booztx.com",
-                     "www.travelrepublic.com",
-                     "www.blacklabelads.com",
-                     "cdn.whois.com.au",
-                     "ne1.wac.edgecastcdn.net",
-                     "gs1.wac.edgecastcdn.net",
-                     "c1.socialcastcontent.com",
-                     "www.steepandcheap.com",
-                     "www.whiskeymilitia.com",
-                     "www.chainlove.com",
-                     "www.tramdock.com",
-                     "www.bonktown.com",
-                     "www.brociety.com",
-                     "edgecast.onegrp.com",
-                     "cdn.psw.net",
-                     "cdn.gaggle.net",
-                     "www-cdn.reelvidz.com",
-                     "fast.fonts.com",
-                     "ec.xnglobalres.com",
-                     "images.vrbo.com",
-                     "beta.fileblaze.net",
-                     "cdn.brandsexclusive.com.au",
-                     "www-cdn.ireel.com",
-                     "cdcssl.ibsrv.net",
-                     "cdn.betchoice.com",
-                     "player.vzaar.com",
-                     "framegrabs.vzaar.com",
-                     "thumbs.vzaar.com",
-                     "stylistlounge.stelladot.com",
-                     "www.stelladot.com",
-                     "content.aqcdn.com",
-                     "content.ebgames.com.au",
-                     "content.ebgames.co.nz",
-                     "images.pagerage.com",
-                     "images.allsaints.com",
-                     "cdnb1.kodakgallery.com",
-                     "cdn.orbengine.com",
-                     "cdn.quickoffice.com",
-                     "content.glscrip.com",
-                     "cdn.bidfan.com",
-                     "media.quantumads.com",
-                     "cdn.allenbrothers.com",
-                     "pics.intelius.com",
-                     "pics.peoplelookup.com",
-                     "pics.lookupanyone.com",
-                     "cdn1-ssl.iha.com",
-                     "s.cdn-care.com",
-                     "cdn2-b.examiner.com",
-                     "cdn.trtk.net",
-                     "edgecdn.ink2.com",
-                     "ec.dstimage.disposolutions.com",
-                     "cdn.clytel.com",
-                     "welcome2.carsdirect.com",
-                     "s1.card-images.com",
-                     "update.alot.com",
-                     "www.outsystems.com",
-                     "www.drwmedia.com",
-                     "lookup.bluecava.com",
-                     "cdn.taxact.com",
-                     "cdn.taxactonline.com",
-                     "cdn.200581.com",
-                     "img.vxcdn.com",
-                     "js.vxcdn.com",
-                     "www.goal.com",
-                     "cdns1.kodakgallery.com",
-                     "edge.dropdowndeals.com",
-                     "edge.pagerage.com",
-                     "edge.sanityswitch.com",
-                     "edge.yontoo.com",
-                     "layers.yontoo.com",
-                     "cdn.widgetserver.com",
-                     "www.cloudwords.com",
-                     "edge.actaads.com",
-                     "images.skincarerx.com",
-                     "ssl.cdn-redfin.com",
-                     "small.outso-media.com",
-                     "cdn.foxycart.com",
-                     "edge.jeetyetmedia.com",
-                     "cdn.ticketfly.com",
-                     "images.cosmeticmall.com",
-                     "www.backcountry.com",
-                     "ssl.booztx.com",
-                     "p.typekit.net",
-                     "use.typekit.net",
-                     "cdn.thewatershed.com",
-                     "www.sf-cdn.net",
-                     "static.cdn.dollarsdirect.com.au",
-                     "edge.redfordmediallc.com",
-                     "edge.pluralmediallc.com",
-                     "www.gourmetgiftbaskets.com",
-                     "www.numberinvestigator.com",
-                     "b2bportal.disneylandparis.com",
-                     "b2bportal.disneytravelagents.co.uk",
-                     "www.nwf.org",
-                     "assets.zendesk.com",
-                     "a.cdnkic.com",
-                     "s.cdnkic.com",
-                     "www.superbiketoystore.com",
-                     "cdn.stylethread.com.au",
-                     "cdn.cartrawler.com",
-                     "publicstaticcdn.tableausoftware.com",
-                     "secure.33across.com",
-                     "c.ztstatic.com",
-                     "c.mscimg.com",
-                     "static.teamtreehouse.com",
-                     "wac.a8b5.edgecastcdn.net"
-                  ],
-                  "issuerON" : "DigiCert Inc",
-                  "notBefore" : 1317600000000,
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "serial" : "062d488986c9a6d7f94901c2b5906882",
-                  "subjectON" : "EdgeCast Networks, Inc.",
-                  "issuerCN" : [
-                     "digicert high assurance ca-3"
-                  ],
-                  "altCnt" : 149,
-                  "subjectCN" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ],
-                  "validDays" : 1164,
-                  "notAfter" : 1418212800000
-               },
-               {
-                  "issuerON" : "DigiCert Inc",
-                  "notBefore" : 1207137600000,
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
-                  "subjectON" : "DigiCert Inc",
-                  "issuerCN" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "subjectCN" : [
-                     "digicert high assurance ca-3"
-                  ],
-                  "validDays" : 5113,
-                  "notAfter" : 1648944000000
-               }
-            ],
-            "dstIp" : "10.180.156.249",
+            "dstGEO" : "US",
+            "srcPackets" : 17,
             "srcIp" : "10.180.156.185",
-            "socks" : {
-               "port" : 443,
-               "host" : "www.example.com"
-            },
-            "dstPort" : 1080,
-            "totDataBytes" : 8911,
+            "totPackets" : 30,
             "dstPayload8" : "005a99b50ab49cf9",
-            "totBytes" : 10911,
-            "srcMacCnt" : 1,
-            "length" : 69,
             "packetLenArray" : [
                94,
                90,
@@ -661,79 +444,20 @@
                82,
                82
             ],
-            "node" : "test",
-            "dstBytes" : 9120,
-            "protocolCnt" : 3,
-            "lastPacket" : 1386004475761,
-            "certCnt" : 2,
-            "totPackets" : 30
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131202"
-            }
-         }
-      },
-      {
-         "body" : {
-            "lastPacket" : 1386004480888,
-            "certCnt" : 2,
-            "protocolCnt" : 3,
-            "totPackets" : 33,
-            "packetLenArray" : [
-               94,
-               90,
-               82,
-               86,
-               82,
-               84,
-               82,
-               92,
-               92,
-               82,
-               202,
-               1530,
-               1530,
-               106,
-               82,
-               82,
-               1530,
-               82,
-               1530,
-               824,
-               82,
-               396,
-               129,
-               82,
-               253,
-               428,
-               82,
-               1402,
-               82,
-               109,
-               82,
-               82,
-               82
-            ],
-            "length" : 35,
-            "srcMacCnt" : 1,
-            "totBytes" : 11127,
-            "dstBytes" : 9215,
-            "node" : "test",
-            "dstPayload8" : "0500050000010ab4",
-            "totDataBytes" : 8929,
-            "dstPort" : 1080,
             "cert" : [
                {
                   "subjectON" : "EdgeCast Networks, Inc.",
-                  "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "altCnt" : 149,
+                  "notAfter" : 1418212800000,
                   "issuerON" : "DigiCert Inc",
+                  "subjectCN" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ],
+                  "altCnt" : 149,
+                  "validDays" : 1164,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -886,43 +610,81 @@
                      "wac.a8b5.edgecastcdn.net"
                   ],
                   "notBefore" : 1317600000000,
-                  "validDays" : 1164,
-                  "notAfter" : 1418212800000,
-                  "subjectCN" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ]
+                  "serial" : "062d488986c9a6d7f94901c2b5906882"
                },
                {
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1648944000000,
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "subjectON" : "DigiCert Inc",
-                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "notBefore" : 1207137600000,
-                  "issuerON" : "DigiCert Inc",
-                  "notAfter" : 1648944000000,
+                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "validDays" : 5113,
                   "subjectCN" : [
                      "digicert high assurance ca-3"
-                  ]
+                  ],
+                  "subjectON" : "DigiCert Inc"
                }
             ],
-            "srcGEO" : "US",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "timestamp" : "SET",
+            "srcBytes" : 1791,
+            "srcPort" : 53555,
+            "dstDataBytes" : 8254,
+            "certCnt" : 2,
+            "srcDataBytes" : 657,
+            "totBytes" : 10911,
             "socks" : {
-               "ip" : "93.184.216.119",
-               "RIR" : "RIPE",
                "port" : 443,
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "GEO" : "US"
+               "host" : "www.example.com"
             },
-            "dstIp" : "10.180.156.249",
-            "srcIp" : "10.180.156.185",
-            "dstDataBytes" : 8283,
-            "srcDataBytes" : 646,
+            "dstPort" : 1080,
+            "srcPayload8" : "040101bb00000001",
+            "lastPacket" : 1386004475761,
+            "fileIds" : [],
+            "tls" : {
+               "dstSessionId" : [
+                  "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
+               ],
+               "versionCnt" : 1,
+               "ja3Cnt" : 1,
+               "cipherCnt" : 1,
+               "ja3" : [
+                  "06a92bf69b367389d2feb0d70501ddfe"
+               ],
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "version" : [
+                  "TLSv1"
+               ]
+            },
+            "http" : {
+               "host" : [
+                  "www.example.com"
+               ],
+               "hostCnt" : 1
+            }
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131202"
+            }
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131202",
+               "_type" : "session"
+            }
+         },
+         "body" : {
+            "dstBytes" : 9215,
+            "srcMacCnt" : 1,
+            "dstPackets" : 14,
             "packetPosArray" : [
                22815,
                22909,
@@ -958,66 +720,302 @@
                34306,
                34388
             ],
-            "srcPackets" : 19,
-            "dstMacCnt" : 1,
-            "fileIds" : [],
-            "dstPackets" : 14,
             "tcpflags" : {
                "fin" : 2,
-               "syn-ack" : 1,
+               "rst" : 0,
                "ack" : 16,
-               "dstZero" : 0,
                "srcZero" : 0,
+               "dstZero" : 0,
                "syn" : 1,
-               "psh" : 13,
                "urg" : 0,
-               "rst" : 0
+               "psh" : 13,
+               "syn-ack" : 1
             },
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "tls" : {
-               "dstSessionId" : [
-                  "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
-               ],
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "version" : [
-                  "TLSv1"
-               ],
-               "ja3Cnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "versionCnt" : 1,
-               "cipherCnt" : 1
-            },
-            "dstGEO" : "US",
-            "firstPacket" : 1386004480852,
-            "srcBytes" : 1912,
-            "http" : {
-               "hostCnt" : 1,
-               "host" : [
-                  "www.example.com"
-               ]
-            },
+            "dstIp" : "10.180.156.249",
             "ipProtocol" : 6,
-            "segments" : 1,
-            "srcPayload8" : "0502000105010001",
-            "timestamp" : "SET",
-            "srcPort" : 53556,
+            "length" : 35,
+            "dstMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "protocol" : [
                "tls",
                "socks",
                "tcp"
+            ],
+            "segments" : 1,
+            "node" : "test",
+            "totDataBytes" : 8929,
+            "protocolCnt" : 3,
+            "srcGEO" : "US",
+            "dstMacCnt" : 1,
+            "firstPacket" : 1386004480852,
+            "srcPayload8" : "0502000105010001",
+            "lastPacket" : 1386004480888,
+            "tls" : {
+               "ja3Cnt" : 1,
+               "dstSessionId" : [
+                  "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
+               ],
+               "versionCnt" : 1,
+               "version" : [
+                  "TLSv1"
+               ],
+               "cipherCnt" : 1,
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "ja3" : [
+                  "06a92bf69b367389d2feb0d70501ddfe"
+               ]
+            },
+            "fileIds" : [],
+            "http" : {
+               "host" : [
+                  "www.example.com"
+               ],
+               "hostCnt" : 1
+            },
+            "timestamp" : "SET",
+            "srcBytes" : 1912,
+            "srcPort" : 53556,
+            "dstDataBytes" : 8283,
+            "certCnt" : 2,
+            "srcDataBytes" : 646,
+            "totBytes" : 11127,
+            "dstPort" : 1080,
+            "socks" : {
+               "port" : 443,
+               "ip" : "93.184.216.119",
+               "RIR" : "RIPE",
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
+            },
+            "dstGEO" : "US",
+            "srcPackets" : 19,
+            "srcIp" : "10.180.156.185",
+            "totPackets" : 33,
+            "dstPayload8" : "0500050000010ab4",
+            "cert" : [
+               {
+                  "notBefore" : 1317600000000,
+                  "serial" : "062d488986c9a6d7f94901c2b5906882",
+                  "validDays" : 1164,
+                  "altCnt" : 149,
+                  "alt" : [
+                     "gp1.wac.edgecastcdn.net",
+                     "www.edgecast.com",
+                     "wac.edgecastcdn.net",
+                     "ne.wac.edgecastcdn.net",
+                     "swf.mixpo.com",
+                     "cdn.traceregister.com",
+                     "s.tmocache.com",
+                     "s.my.tmocache.com",
+                     "e1.boxcdn.net",
+                     "e2.boxcdn.net",
+                     "e3.boxcdn.net",
+                     "www.sonos.com",
+                     "static-cache.tp-global.net",
+                     "ssl-cdn.sometrics.com",
+                     "cache.vehicleassets.captivelead.com",
+                     "static.woopra.com",
+                     "images.ink2.com",
+                     "assets-secure.razoo.com",
+                     "ec.pond5.com",
+                     "images.esellerpro.com",
+                     "use.typekit.com",
+                     "static.iseatz.com",
+                     "static.www.turnto.com",
+                     "inpath-static.iseatz.com",
+                     "secure.avelleassets.com",
+                     "static.dubli.com",
+                     "www-cdn.cinamuse.com",
+                     "www-cdn.cineble.com",
+                     "www-cdn.cinemaden.com",
+                     "www-cdn.filmlush.com",
+                     "www-cdn.flixaddict.com",
+                     "www-cdn.itshd.com",
+                     "www-cdn.moviease.com",
+                     "www-cdn.movielush.com",
+                     "www-cdn.reelhd.com",
+                     "www-cdn.pushplay.com",
+                     "cdn1.fishpond.co.nz",
+                     "cdn1.fishpond.com.au",
+                     "www.isaca.org",
+                     "cdn.optimizely.com",
+                     "static.shoedazzle.com",
+                     "www.travelrepublic.co.uk",
+                     "cdn.nprove.com",
+                     "sslbest.booztx.com",
+                     "www.travelrepublic.com",
+                     "www.blacklabelads.com",
+                     "cdn.whois.com.au",
+                     "ne1.wac.edgecastcdn.net",
+                     "gs1.wac.edgecastcdn.net",
+                     "c1.socialcastcontent.com",
+                     "www.steepandcheap.com",
+                     "www.whiskeymilitia.com",
+                     "www.chainlove.com",
+                     "www.tramdock.com",
+                     "www.bonktown.com",
+                     "www.brociety.com",
+                     "edgecast.onegrp.com",
+                     "cdn.psw.net",
+                     "cdn.gaggle.net",
+                     "www-cdn.reelvidz.com",
+                     "fast.fonts.com",
+                     "ec.xnglobalres.com",
+                     "images.vrbo.com",
+                     "beta.fileblaze.net",
+                     "cdn.brandsexclusive.com.au",
+                     "www-cdn.ireel.com",
+                     "cdcssl.ibsrv.net",
+                     "cdn.betchoice.com",
+                     "player.vzaar.com",
+                     "framegrabs.vzaar.com",
+                     "thumbs.vzaar.com",
+                     "stylistlounge.stelladot.com",
+                     "www.stelladot.com",
+                     "content.aqcdn.com",
+                     "content.ebgames.com.au",
+                     "content.ebgames.co.nz",
+                     "images.pagerage.com",
+                     "images.allsaints.com",
+                     "cdnb1.kodakgallery.com",
+                     "cdn.orbengine.com",
+                     "cdn.quickoffice.com",
+                     "content.glscrip.com",
+                     "cdn.bidfan.com",
+                     "media.quantumads.com",
+                     "cdn.allenbrothers.com",
+                     "pics.intelius.com",
+                     "pics.peoplelookup.com",
+                     "pics.lookupanyone.com",
+                     "cdn1-ssl.iha.com",
+                     "s.cdn-care.com",
+                     "cdn2-b.examiner.com",
+                     "cdn.trtk.net",
+                     "edgecdn.ink2.com",
+                     "ec.dstimage.disposolutions.com",
+                     "cdn.clytel.com",
+                     "welcome2.carsdirect.com",
+                     "s1.card-images.com",
+                     "update.alot.com",
+                     "www.outsystems.com",
+                     "www.drwmedia.com",
+                     "lookup.bluecava.com",
+                     "cdn.taxact.com",
+                     "cdn.taxactonline.com",
+                     "cdn.200581.com",
+                     "img.vxcdn.com",
+                     "js.vxcdn.com",
+                     "www.goal.com",
+                     "cdns1.kodakgallery.com",
+                     "edge.dropdowndeals.com",
+                     "edge.pagerage.com",
+                     "edge.sanityswitch.com",
+                     "edge.yontoo.com",
+                     "layers.yontoo.com",
+                     "cdn.widgetserver.com",
+                     "www.cloudwords.com",
+                     "edge.actaads.com",
+                     "images.skincarerx.com",
+                     "ssl.cdn-redfin.com",
+                     "small.outso-media.com",
+                     "cdn.foxycart.com",
+                     "edge.jeetyetmedia.com",
+                     "cdn.ticketfly.com",
+                     "images.cosmeticmall.com",
+                     "www.backcountry.com",
+                     "ssl.booztx.com",
+                     "p.typekit.net",
+                     "use.typekit.net",
+                     "cdn.thewatershed.com",
+                     "www.sf-cdn.net",
+                     "static.cdn.dollarsdirect.com.au",
+                     "edge.redfordmediallc.com",
+                     "edge.pluralmediallc.com",
+                     "www.gourmetgiftbaskets.com",
+                     "www.numberinvestigator.com",
+                     "b2bportal.disneylandparis.com",
+                     "b2bportal.disneytravelagents.co.uk",
+                     "www.nwf.org",
+                     "assets.zendesk.com",
+                     "a.cdnkic.com",
+                     "s.cdnkic.com",
+                     "www.superbiketoystore.com",
+                     "cdn.stylethread.com.au",
+                     "cdn.cartrawler.com",
+                     "publicstaticcdn.tableausoftware.com",
+                     "secure.33across.com",
+                     "c.ztstatic.com",
+                     "c.mscimg.com",
+                     "static.teamtreehouse.com",
+                     "wac.a8b5.edgecastcdn.net"
+                  ],
+                  "subjectCN" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ],
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1418212800000,
+                  "issuerCN" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
+                  "subjectON" : "EdgeCast Networks, Inc."
+               },
+               {
+                  "subjectON" : "DigiCert Inc",
+                  "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600000,
+                  "validDays" : 5113,
+                  "subjectCN" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1648944000000,
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05"
+               }
+            ],
+            "packetLenArray" : [
+               94,
+               90,
+               82,
+               86,
+               82,
+               84,
+               82,
+               92,
+               92,
+               82,
+               202,
+               1530,
+               1530,
+               106,
+               82,
+               82,
+               1530,
+               82,
+               1530,
+               824,
+               82,
+               396,
+               129,
+               82,
+               253,
+               428,
+               82,
+               1402,
+               82,
+               109,
+               82,
+               82,
+               82
+            ],
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
             ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
-            }
          }
       }
    ]

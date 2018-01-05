@@ -1246,7 +1246,7 @@ app.post('/user/cron/delete', [checkCookieToken, logAction(), postSettingUser], 
 
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
 
-  Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
+  Db.deleteDocument('queries', 'query', req.body.key, {refresh: true}, function(err, sq) {
     if (err) {
       console.log('/user/cron/delete error', err, sq);
       return res.molochError(500, 'Delete cron query failed');
@@ -1284,7 +1284,7 @@ app.post('/user/cron/update', [checkCookieToken, logAction(), postSettingUser], 
       return res.molochError(403, 'Unknown query');
     }
 
-    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
+    Db.update('queries', 'query', req.body.key, document, {refresh: true}, function(err, data) {
       if (err) {
         console.log('/user/cron/update error', err, document, data);
         return res.molochError(500, 'Cron query update failed');
@@ -4601,7 +4601,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
   Db.getUser(req.body.userId, function(err, user) {
     if (err || !user.found) {
       console.log('update user failed', err, user);
-      return res.molochErr(403, 'User not found');
+      return res.molochError(403, 'User not found');
     }
     user = user._source;
 
@@ -4618,7 +4618,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     if (req.body.userName !== undefined) {
       if (req.body.userName.match(/^\s*$/)) {
         console.log("ERROR - empty username", req.body);
-        return res.molochErr(403, 'Username can not be empty');
+        return res.molochError(403, 'Username can not be empty');
       } else {
         user.userName = req.body.userName;
       }
@@ -5707,7 +5707,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
             return setImmediate(whilstCb, "DONE");
           } else {
             var document = { doc: { count: (query.count || 0) + count} };
-            Db.update("queries", "query", options.qid, document, {refresh: 1}, function () {});
+            Db.update("queries", "query", options.qid, document, {refresh: true}, function () {});
           }
 
           query = {
@@ -5866,7 +5866,7 @@ function processCronQueries() {
                   count: (queries[qid].count || 0) + count
                 }
               };
-              Db.update("queries", "query", qid, document, {refresh: 1}, function () {
+              Db.update("queries", "query", qid, document, {refresh: true}, function () {
                 // If there is more time to catch up on, repeat the loop, although other queries
                 // will get processed first to be fair
                 if (lpValue !== endTime) {
