@@ -490,7 +490,6 @@ router.put('/auth/update', (req, res, next) => {
 
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
-  console.log(parliamentWithData);
   if (parliamentWithData.password) { parliamentWithData.password = undefined; }
   return res.json(parliamentWithData);
 });
