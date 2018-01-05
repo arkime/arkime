@@ -770,7 +770,7 @@ if (Config.get('demoMode', false)) {
     return res.send('Disabled in demo mode.');
   });
 
-  app.get(['/user/settings', '/user/cron', '/history/list'], function(req, res) {
+  app.get(['/user/cron', '/history/list'], function(req, res) {
     return res.molochError(403, "Disabled in demo mode.");
   });
 
