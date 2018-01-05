@@ -1958,7 +1958,7 @@ sub dbCheck {
 
     if ($main::esVersion < 50500 ||
         $main::esVersion >= 60000)
-    ) {
+    {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* < 5.5.0 are not supported\n",
               "* 5.6.x is recommended\n",
@@ -2457,7 +2457,7 @@ dbCheck();
 if ($ARGV[1] =~ /(init|wipe)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        print "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n;
+        print "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
