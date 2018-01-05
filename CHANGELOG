@@ -1,13 +1,14 @@
 NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
-ES Support:
-  * Moloch 1.0.x  supports ES > 5.5.0, most of 6.x, not 7.x
-  * Moloch 0.50.x supports ES > 5.5.0, not 6.x
-  * Moloch 0.20.x supports ES 2.4.x, > 5.3,1 not 6.x
+ES Versions:
+  * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (only for new installs), not 7.x
+  * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x
+  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3,1 not 6.x
 
-Node Support:
-  * Moloch > 0.20.x requires NodeJS 6.x
-  * Moloch > 0.16.x requires NodeJS 4.x
+Node Versions:
+  * Moloch >= 1.0.0 requires NodeJS 8.x
+  * Moloch >= 0.20.0 requires NodeJS 6.x
+  * Moloch >= 0.18.1 requires NodeJS 4.x
 
 NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
         outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
@@ -15,7 +16,7 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 NOTICE: Restart wiseService before capture when upgrading
 
 1.0.0 2018/02/XX
-  - NOTICE: Supported ES Versions: 5.6.x, 6.x
+  - NOTICE: Supported ES Versions: 5.6.x, 6.x (for new installs)
   - NOTICE: hasheader for email/http for old sessions will not be migrated
   - all - rename field names
   - all - no more analyzed ES fields, everything is a keyword field
@@ -25,6 +26,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - http uri field no longer starts with // (issue #732)
   - capture - use maxminddb instead of geoip now (issue #771)
   - all - Country codes are now 2 letters instead of 3 letters
+  - release - node 8.9.4
 
 0.50.0 2017/01/XX
   - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported

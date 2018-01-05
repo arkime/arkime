@@ -20,8 +20,8 @@ countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
 # country.socks
     countTest(1, "date=-1&expression=" . uri_escape("$files&&country.socks==US"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&country.socks==us"));
-    countTest(5, "date=-1&expression=" . uri_escape("$files&&country.socks==EU"));
-    countTest(5, "date=-1&expression=" . uri_escape("$files&&country.socks==eu"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&country.socks==EU"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&country.socks==eu"));
 
 # socks.rir
     countTest(5, "date=-1&expression=" . uri_escape("$files&&rir.socks==RIPE"));
