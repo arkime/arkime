@@ -3,127 +3,67 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131202"
+               "_index" : "tests_sessions-131202",
+               "_type" : "session"
             }
          },
          "body" : {
-            "by" : 2698,
-            "fp" : 1386004309,
-            "hdvercnt" : 1,
-            "pa1" : 8,
-            "by2" : 2003,
-            "a1" : "10.180.156.185",
-            "no" : "test",
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               381,
-               463,
-               553,
-               635,
-               863,
-               2393,
-               2618,
-               2700,
-               2782,
-               2864
-            ],
-            "hsvercnt" : 1,
-            "uacnt" : 1,
-            "uscnt" : 1,
-            "pr" : 6,
-            "ipSrc" : "10.180.156.185",
-            "portSrc" : 53533,
-            "lp" : 1386004309,
-            "rirsocksip" : "RIPE",
-            "fs" : [],
-            "tcpflags" : {
-               "psh" : 4,
-               "rst" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "ack" : 6,
-               "urg" : 0
-            },
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:cache-control",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:expires",
-               "http:header:last-modified",
-               "http:header:server",
-               "http:header:x-cache",
-               "http:header:x-ec-custom-error"
-            ],
-            "hocnt" : 1,
-            "sockspo" : 80,
-            "hdver" : [
-               "1.1"
-            ],
-            "hpath" : [
-               "/"
-            ],
-            "firstPacket" : 1386004309468,
-            "pa" : 14,
             "timestamp" : "SET",
-            "fpd" : 1386004309468,
+            "hsvercnt" : 1,
+            "uscnt" : 1,
+            "lpd" : 1386004309478,
+            "pa1" : 8,
+            "sockspo" : 80,
+            "hpathcnt" : 1,
+            "hh1cnt" : 3,
+            "a1" : "10.180.156.185",
+            "pa2" : 6,
             "ua" : [
                "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
-            "http" : {
-               "method-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode" : [
-                  200
-               ]
-            },
+            "rirsocksip" : "RIPE",
+            "ipDst" : "10.180.156.249",
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
+            ],
+            "db1" : 155,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "p1" : 53533,
+            "hdvercnt" : 1,
+            "fb2" : "005adfb20ab49cf9",
+            "a2" : "10.180.156.249",
+            "ho" : [
+               "www.example.com"
+            ],
+            "firstPacket" : 1386004309468,
+            "fs" : [],
+            "uacnt" : 1,
+            "no" : "test",
+            "mac1-term-cnt" : 1,
+            "g2" : "USA",
+            "hocnt" : 1,
+            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "lastPacket" : 1386004309478,
-            "lpd" : 1386004309478,
             "hh1" : [
                "http:header:accept",
                "http:header:host",
                "http:header:user-agent"
             ],
-            "db1" : 155,
-            "hmd5cnt" : 1,
-            "fb1" : "040100505db8d877",
-            "fb2" : "005adfb20ab49cf9",
-            "p1" : 53533,
-            "socksip" : "93.184.216.119",
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "g1" : "USA",
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "mac1-term-cnt" : 1,
-            "db2" : 1599,
-            "ho" : [
-               "www.example.com"
-            ],
-            "hpathcnt" : 1,
-            "by1" : 695,
             "prot-term" : [
                "http",
                "socks",
                "tcp"
             ],
+            "sl" : 10,
+            "gsocksip" : "EU",
             "prot-term-cnt" : 3,
+            "p2" : 1080,
+            "pr" : 6,
             "psl" : [
                94,
                90,
@@ -140,70 +80,102 @@
                82,
                82
             ],
-            "hh2cnt" : 11,
-            "portDst" : 1080,
-            "ipDst" : "10.180.156.249",
-            "g2" : "USA",
-            "hh1cnt" : 3,
-            "a2" : "10.180.156.249",
+            "g1" : "USA",
+            "hpath" : [
+               "/"
+            ],
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "bodymagic-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ]
+            },
+            "portSrc" : 53533,
+            "fp" : 1386004309,
+            "mac2-term-cnt" : 1,
+            "hmd5cnt" : 1,
+            "fpd" : 1386004309468,
             "hsver" : [
                "1.1"
             ],
-            "p2" : 1080,
-            "pa2" : 6,
-            "mac2-term-cnt" : 1,
-            "ss" : 1,
             "db" : 1754,
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
+            "pa" : 14,
+            "by2" : 2003,
+            "hh2cnt" : 11,
+            "socksip" : "93.184.216.119",
+            "db2" : 1599,
+            "hdver" : [
+               "1.1"
             ],
-            "sl" : 10,
-            "gsocksip" : "USA",
+            "by" : 2698,
+            "fb1" : "040100505db8d877",
+            "ss" : 1,
+            "lp" : 1386004309,
+            "ipSrc" : "10.180.156.185",
+            "by1" : 695,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:cache-control",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:expires",
+               "http:header:last-modified",
+               "http:header:server",
+               "http:header:x-cache",
+               "http:header:x-ec-custom-error"
+            ],
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               381,
+               463,
+               553,
+               635,
+               863,
+               2393,
+               2618,
+               2700,
+               2782,
+               2864
+            ],
+            "tcpflags" : {
+               "psh" : 4,
+               "ack" : 6,
+               "syn" : 1,
+               "urg" : 0,
+               "fin" : 2,
+               "rst" : 0,
+               "syn-ack" : 1
+            },
             "us" : [
                "//www.example.com/"
             ],
-            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
+            "portDst" : 1080
          }
       },
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131202",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-131202"
             }
          },
          "body" : {
-            "fs" : [],
-            "tcpflags" : {
-               "psh" : 4,
-               "syn" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "ack" : 7
-            },
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "socksho" : "www.example.com",
-            "lp" : 1386004312,
-            "ho" : [
-               "www.example.com"
-            ],
+            "g1" : "USA",
+            "hh1cnt" : 3,
             "hpathcnt" : 1,
-            "portSrc" : 53534,
-            "by1" : 711,
-            "hdver" : [
-               "1.1"
-            ],
-            "hh2cnt" : 11,
-            "portDst" : 1080,
-            "ipDst" : "10.180.156.249",
-            "sockspo" : 80,
-            "g2" : "USA",
             "psl" : [
                94,
                90,
@@ -221,8 +193,75 @@
                82,
                82
             ],
+            "portSrc" : 53534,
+            "a1" : "10.180.156.185",
+            "fp" : 1386004312,
+            "http" : {
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1,
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ]
+            },
+            "hpath" : [
+               "/"
+            ],
+            "socksho" : "www.example.com",
+            "hmd5cnt" : 1,
+            "mac2-term-cnt" : 1,
+            "pa2" : 7,
+            "fpd" : 1386004312331,
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "hsver" : [
+               "1.1"
+            ],
+            "db1" : 171,
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
+            ],
+            "db" : 1770,
+            "ipDst" : "10.180.156.249",
+            "hdvercnt" : 1,
+            "hh2cnt" : 11,
+            "by2" : 2069,
+            "pa" : 15,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "p1" : 53534,
+            "lastPacket" : 1386004312384,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "timestamp" : "SET",
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
             "prot-term-cnt" : 3,
-            "hocnt" : 1,
+            "sl" : 53,
+            "p2" : 1080,
+            "hsvercnt" : 1,
+            "uscnt" : 1,
+            "lpd" : 1386004312384,
+            "pr" : 6,
+            "pa1" : 8,
+            "sockspo" : 80,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:cache-control",
@@ -236,27 +275,6 @@
                "http:header:x-cache",
                "http:header:x-ec-custom-error"
             ],
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "by2" : 2069,
-            "a1" : "10.180.156.185",
-            "pa1" : 8,
-            "p1" : 53534,
-            "fp" : 1386004312,
-            "by" : 2780,
-            "hdvercnt" : 1,
-            "ipSrc" : "10.180.156.185",
-            "db2" : 1599,
-            "mac1-term-cnt" : 1,
-            "hsvercnt" : 1,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "pr" : 6,
-            "uacnt" : 1,
-            "uscnt" : 1,
-            "no" : "test",
             "ps" : [
                2946,
                3040,
@@ -274,103 +292,67 @@
                5802,
                5884
             ],
-            "g1" : "USA",
-            "db" : 1770,
+            "tcpflags" : {
+               "syn" : 1,
+               "ack" : 7,
+               "psh" : 4,
+               "fin" : 2,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0
+            },
+            "us" : [
+               "//www.example.com/"
+            ],
+            "uacnt" : 1,
+            "portDst" : 1080,
+            "no" : "test",
+            "mac1-term-cnt" : 1,
+            "g2" : "USA",
+            "hocnt" : 1,
+            "db2" : 1599,
+            "hdver" : [
+               "1.1"
+            ],
+            "fb2" : "005adfb30ab49cf9",
+            "by" : 2780,
+            "ss" : 1,
+            "a2" : "10.180.156.249",
+            "fb1" : "0401005000000001",
+            "ho" : [
+               "www.example.com"
+            ],
+            "lp" : 1386004312,
+            "firstPacket" : 1386004312331,
+            "by1" : 711,
+            "ipSrc" : "10.180.156.185",
+            "fs" : []
+         }
+      },
+      {
+         "body" : {
+            "hmd5cnt" : 1,
+            "mac2-term-cnt" : 1,
+            "fp" : 1386004317,
+            "portSrc" : 53535,
+            "hpath" : [
+               "/"
+            ],
             "http" : {
-               "method-term-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
                "method-term" : [
                   "GET"
                ],
-               "statuscode-cnt" : 1,
                "bodymagic-term" : [
                   "text/html"
                ],
                "statuscode" : [
                   200
-               ]
+               ],
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1,
+               "bodymagic-term-cnt" : 1
             },
-            "ss" : 1,
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-            ],
-            "mac2-term-cnt" : 1,
-            "us" : [
-               "//www.example.com/"
-            ],
-            "fb2" : "005adfb30ab49cf9",
-            "fb1" : "0401005000000001",
-            "sl" : 53,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "db1" : 171,
-            "hmd5cnt" : 1,
-            "lastPacket" : 1386004312384,
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
-            ],
-            "lpd" : 1386004312384,
-            "hsver" : [
-               "1.1"
-            ],
-            "hh1cnt" : 3,
-            "a2" : "10.180.156.249",
-            "hpath" : [
-               "/"
-            ],
-            "firstPacket" : 1386004312331,
-            "pa2" : 7,
-            "p2" : 1080,
-            "fpd" : 1386004312331,
-            "timestamp" : "SET",
-            "pa" : 15
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131202",
-               "_type" : "session"
-            }
-         },
-         "body" : {
-            "pa2" : 7,
-            "p2" : 1080,
-            "hsver" : [
-               "1.1"
-            ],
-            "a2" : "10.180.156.249",
-            "hh1cnt" : 3,
-            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-            "us" : [
-               "//www.example.com/"
-            ],
-            "sl" : 9,
-            "gsocksip" : "USA",
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
-            ],
-            "db" : 1763,
-            "mac2-term-cnt" : 1,
-            "ss" : 1,
-            "db2" : 1603,
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
             "g1" : "USA",
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "socksip" : "93.184.216.119",
-            "p1" : 53535,
-            "g2" : "USA",
-            "ipDst" : "10.180.156.249",
-            "hh2cnt" : 11,
-            "portDst" : 1080,
             "psl" : [
                94,
                90,
@@ -390,58 +372,46 @@
                82,
                82
             ],
+            "hh2cnt" : 11,
+            "by2" : 2073,
+            "pa" : 17,
+            "db" : 1763,
+            "hsver" : [
+               "1.1"
+            ],
+            "fpd" : 1386004317979,
             "prot-term-cnt" : 3,
+            "gsocksip" : "EU",
+            "sl" : 9,
             "prot-term" : [
                "http",
                "socks",
                "tcp"
             ],
-            "hpathcnt" : 1,
-            "by1" : 832,
-            "ho" : [
-               "www.example.com"
-            ],
-            "fpd" : 1386004317979,
-            "timestamp" : "SET",
-            "pa" : 17,
-            "firstPacket" : 1386004317979,
-            "hpath" : [
-               "/"
-            ],
-            "fb1" : "0502000105010001",
-            "fb2" : "0500050000010ab4",
-            "hmd5cnt" : 1,
-            "db1" : 160,
             "hh1" : [
                "http:header:accept",
                "http:header:host",
                "http:header:user-agent"
             ],
-            "lpd" : 1386004317989,
+            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
             "lastPacket" : 1386004317989,
-            "http" : {
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1
-            },
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "ipSrc" : "10.180.156.185",
             "pr" : 6,
-            "uscnt" : 1,
-            "uacnt" : 1,
-            "hsvercnt" : 1,
-            "no" : "test",
+            "p2" : 1080,
+            "us" : [
+               "//www.example.com/"
+            ],
+            "tcpflags" : {
+               "fin" : 2,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "ack" : 7,
+               "psh" : 6
+            },
             "ps" : [
                5966,
                6060,
@@ -461,17 +431,6 @@
                8979,
                9061
             ],
-            "pa1" : 10,
-            "by2" : 2073,
-            "a1" : "10.180.156.185",
-            "hdvercnt" : 1,
-            "by" : 2905,
-            "fp" : 1386004317,
-            "hdver" : [
-               "1.1"
-            ],
-            "sockspo" : 80,
-            "hocnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:cache-control",
@@ -485,19 +444,60 @@
                "http:header:x-cache",
                "http:header:x-ec-custom-error"
             ],
-            "fs" : [],
-            "tcpflags" : {
-               "psh" : 6,
-               "syn" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "ack" : 7
-            },
-            "rirsocksip" : "RIPE",
+            "portDst" : 1080,
             "lp" : 1386004317,
-            "portSrc" : 53535
+            "ss" : 1,
+            "fb1" : "0502000105010001",
+            "socksip" : "93.184.216.119",
+            "hdver" : [
+               "1.1"
+            ],
+            "db2" : 1603,
+            "by" : 2905,
+            "by1" : 832,
+            "ipSrc" : "10.180.156.185",
+            "pa2" : 7,
+            "a1" : "10.180.156.185",
+            "hh1cnt" : 3,
+            "hpathcnt" : 1,
+            "hdvercnt" : 1,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "p1" : 53535,
+            "db1" : 160,
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
+            ],
+            "ipDst" : "10.180.156.249",
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "rirsocksip" : "RIPE",
+            "timestamp" : "SET",
+            "sockspo" : 80,
+            "pa1" : 10,
+            "lpd" : 1386004317989,
+            "hsvercnt" : 1,
+            "uscnt" : 1,
+            "hocnt" : 1,
+            "g2" : "USA",
+            "mac1-term-cnt" : 1,
+            "no" : "test",
+            "uacnt" : 1,
+            "firstPacket" : 1386004317979,
+            "ho" : [
+               "www.example.com"
+            ],
+            "a2" : "10.180.156.249",
+            "fb2" : "0500050000010ab4",
+            "fs" : []
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131202",
+               "_type" : "session"
+            }
          }
       }
    ]
