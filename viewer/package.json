@@ -1,6 +1,6 @@
 {
   "name": "moloch",
-  "version": "0.16.0",
+  "version": "0.20.2",
   "description": "",
   "main": "viewer.js",
   "license": "Apache-2.0",

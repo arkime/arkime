@@ -7,7 +7,10 @@
         <span class="fa fa-square-o fa-stack-2x"></span>
       </span>&nbsp;
       <span>
-        Settings for {{::$ctrl.displayName}}
+        Settings
+        <span ng-if="$ctrl.displayName">
+          for {{::$ctrl.displayName}}
+        </span>
       </span>
     </span>
     <div class="pull-right small toast-container">

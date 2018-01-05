@@ -42,7 +42,9 @@ export class ParliamentComponent implements OnInit {
   parliament = { groups: [] };
 
   initialized = false;
+  updatingPassword = false;
   password = '';
+  passwordConfirm = '';
   error = '';
   loggedIn = false;
   showLoginInput = false;
@@ -232,7 +234,6 @@ export class ParliamentComponent implements OnInit {
             this.loggedIn = this.authService.saveToken(data.token);
           },
           (err) => {
-            console.error('login error:', err);
             this.password = '';
             this.loggedIn = false;
             this.error    = err.error.text || 'Unable to login';
@@ -245,13 +246,63 @@ export class ParliamentComponent implements OnInit {
   cancelLogin() {
     this.showLoginInput       = false;
     this.focusOnPasswordInput = false;
-    this.password = '';
-    this.error    = '';
+    this.updatingPassword     = false;
+    this.passwordConfirm      = '';
+    this.password             = '';
+    this.error                = '';
   }
 
   logout() {
     this.loggedIn = false;
     localStorage.setItem('token', ''); // clear token
+  }
+
+  updatePassword() {
+    this.updatingPassword     = !this.updatingPassword;
+    this.showLoginInput       = !this.showLoginInput;
+    this.focusOnPasswordInput = this.showLoginInput;
+
+    if (!this.showLoginInput) {
+      if (!this.password) {
+        this.error = 'Must provide a password.';
+        return;
+      }
+
+      if (!this.passwordConfirm) {
+        this.error = 'Must confirm your password.';
+        return;
+      }
+
+      if (this.password !== this.passwordConfirm) {
+        this.error = 'Passwords must match.';
+        this.password = '';
+        this.passwordConfirm = '';
+        return;
+      }
+
+      this.authService.updatePassword(this.password)
+        .subscribe(
+          (data) => {
+            this.error    = '';
+            this.password = '';
+            this.auth.hasAuth = true;
+            this.loggedIn     = this.authService.saveToken(data.token);
+          },
+          (err) => {
+            console.error('update password error:', err);
+            this.password = '';
+            this.loggedIn = false;
+            this.error    = err.error.text || 'Unable to update your password.';
+            this.loggedIn = this.authService.saveToken('');
+          }
+        );
+    }
+  }
+
+  // Fired when the user clicks enter on the password input
+  passwordInputSubmit() {
+    if (this.updatingPassword) { this.updatePassword(); }
+    else { this.login(); }
   }
 
   // Fired when interval refresh select input is changed

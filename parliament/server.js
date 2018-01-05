@@ -100,6 +100,15 @@ const version = 1;
 let parliament;
 try {
   parliament = require(`${app.get('file')}`);
+  // set the password if passed in when starting the server
+  // IMPORTANT! this will overwrite any password in the parliament json file
+  if (app.get('password')) {
+    parliament.password = app.get('password');
+  } else if (parliament.password) {
+    // if the password is not supplied when starting the server,
+    // use any existing password in the parliament json file
+    app.set('password', parliament.password);
+  }
 } catch (err) {
   parliament = { version:version, groups:[] };
 }
@@ -429,7 +438,7 @@ router.post('/auth', (req, res, next) => {
 
   res.json({ // return the information including token as JSON
     success : true,
-    message : 'Here\'s your token!',
+    text    : 'Here\'s your token!',
     token   : token
   });
 });
@@ -444,6 +453,39 @@ router.get('/auth', (req, res, next) => {
 // If it passes the verifyToken middleware, the user is logged in
 router.get('/auth/loggedin', verifyToken, (req, res, next) => {
   return res.json({ loggedin:true });
+});
+
+// Update (or create) a password for the parliament
+router.put('/auth/update', (req, res, next) => {
+  if (!req.body.password) {
+    const error = new Error('You must provide a password');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  bcrypt.hash(req.body.password, 10, (err, hash) => {
+    if (err) {
+      console.error(`Error hashing password: ${err}`);
+      const error = new Error('Hashing password failed.');
+      error.httpStatusCode = 401;
+      return next(error);
+    }
+
+    app.set('password', hash);
+
+    parliament.password = hash;
+
+    const payload = { admin:true };
+
+    let token = jwt.sign(payload, hash, {
+      expiresIn: 60*60*24 // expires in 24 hours
+    });
+
+    // return the information including token as JSON
+    let successObj  = { success: true, text: 'Here\'s your new token!', token: token };
+    let errorText   = 'Unable to update your password.';
+    writeParliament(req, res, next, successObj, errorText);
+  });
 });
 
 // Get parliament with stats

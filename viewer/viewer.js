@@ -1011,15 +1011,18 @@ function postSettingUser (req, res, next) {
 app.get('/user/settings', getSettingUser, function(req, res) {
   if (!req.settingUser) {
     res.status(404);
-    return res.send(JSON.stringify('User not found'));
+    return res.send(JSON.stringify({success:false, text:'User not found'}));
   }
 
   var settings = req.settingUser.settings || settingDefaults;
 
+  var cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
   res.cookie(
      'MOLOCH-COOKIE',
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
+     cookieOptions
   );
 
   return res.send(settings);
@@ -2366,6 +2369,32 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 
   Db.taskCancel(req.body.taskId, (err, result) => {
     return res.send(JSON.stringify({success: true, text: result}));
+  });
+});
+
+app.get('/esshard/list', function(req, res) {
+  Db.shards(function(err, shards) {
+    let result = {};
+    let nodes = {};
+
+    for (var shard of shards) {
+      if (shard.node === null || shard.node === "null") { shard.node = "Unassigned"; }
+
+      if (result[shard.index] === undefined) {
+        result[shard.index] = {name: shard.index, nodes: {}};
+      }
+      if (result[shard.index].nodes[shard.node] === undefined) {
+        result[shard.index].nodes[shard.node] = [];
+      }
+      result[shard.index].nodes[shard.node].push(shard);
+      nodes[shard.node] = 1;
+      delete shard.node;
+      delete shard.index;
+    }
+
+    let returnNodes = Object.keys(nodes).sort(function(a,b){ return a.localeCompare(b); });
+    let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); });
+    res.send({nodes: returnNodes, indices: indices});
   });
 });
 
@@ -5613,11 +5642,14 @@ app.use(function (req, res) {
     return res.status(403).send('Permission denied');
   }
 
+  var cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     { path: app.locals.basePath }
+     cookieOptions
   );
 
   console.log(req.user);

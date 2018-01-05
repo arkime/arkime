@@ -93,7 +93,7 @@
     }
 
     /**
-     * Gets moloch stats from the server
+     * Gets moloch tasks from the server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
@@ -111,7 +111,28 @@
           }, (error) => {
             reject(error);
           });
+      });
+    }
 
+    /**
+     * Gets moloch shards from the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getElasticsearchShards(options) {
+      return this.$q((resolve, reject) => {
+
+        let config = { method:'GET',
+                          url:'esshard/list',
+                        cache:false,
+                       params:options};
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
       });
     }
 

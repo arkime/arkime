@@ -58,7 +58,7 @@ node server.js --pass somepassword --port 8765 -c ./absolute/path/to/parliament.
 
 | Parameter    | Default | Description |
 | ------------ | ------- | ----------- |
-| --pass       | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. |
+| --pass       | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
 | --port       | 8008    | Port for the web app to listen on. |
 | -c, --config | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
 | --key        | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
@@ -68,7 +68,7 @@ _Note: if you do not pass in the port or file arguments, the defaults are used._
 
 Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
 
-To login, use the password that you passed into the `npm start` command.
+To login, use the password that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode or configure one by clicking the "Create Password" button.
 
 #### Development
 
@@ -100,14 +100,16 @@ Before submitting a pull request with your contribution, please run `npm run lin
 ### Parliament Definition
 parliament.json (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied parliament.example.json to view an example parliament configuration.
 
-**Parliament model:**
+##### Parliament model:
 ```javascript
-{                 // parliament object
-  version: x,     // version (number)
-  groups: [ ... ] // list of groups in the parliament
+{                   // parliament object
+  version: x,       // version (number)
+  password: 'hash', // hashed password
+  groups: [ ... ]   // list of groups in the parliament
 }
 ```
-**Group model:**
+**Note:** The password is hashed using [bcrypt][bcrypt]
+##### Group model:
 ```javascript
 {                                   // group object
   title: 'Group Title',             // group title (string, *required)
@@ -115,7 +117,7 @@ parliament.json (or whatever you pass into the -c config option when starting Pa
   clusters: [ ... ]                 // list of clusters in the group
 }
 ```
-**Cluster model:**
+##### Cluster model:
 ```javascript
 { // cluster object
 
@@ -198,3 +200,4 @@ tslint.json             --> used to configure which linting rules get run on the
 [npm]: https://www.npmjs.org/
 [tslint]: https://github.com/palantir/tslint
 [jshint]: https://github.com/jshint/jshint
+[bcrypt]: https://github.com/kelektiv/node.bcrypt.js

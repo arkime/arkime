@@ -89,7 +89,7 @@
             }
             resolve(settings);
           }, (error) => {
-            resolve(defaultSettings);
+            reject(error);
           });
 
       });

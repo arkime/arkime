@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/node server.js -c MOLOCH_INSTALL_DIR/etc/parliament.json --pass PARLIAMENT_PASSWORD >> MOLOCH_INSTALL_DIR/logs/parliament.log 2>&1'
+ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/node server.js -c MOLOCH_INSTALL_DIR/etc/parliament.json >> MOLOCH_INSTALL_DIR/logs/parliament.log 2>&1'
 WorkingDirectory=MOLOCH_INSTALL_DIR/parliament
 
 [Install]

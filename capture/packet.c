@@ -746,11 +746,8 @@ int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packe
         return MOLOCH_PACKET_UNKNOWN;
     }
 
-    uint16_t offset = 0;
-
     if (flags_version & (0x8000 | 0x4000)) {
-        BSB_IMPORT_skip(bsb, 2);
-        BSB_IMPORT_u16(bsb, offset);
+        BSB_IMPORT_skip(bsb, 4); // skip len and offset
     }
 
     // key
