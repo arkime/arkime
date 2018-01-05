@@ -1650,14 +1650,6 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
         esPut("/$i/session/_mapping", $mapping, 1);
-
-        # Before version 12 had soft, change to node, requires a close and open
-        if ($main::versionNumber < 12) {
-            esPost("/$i/_close", "");
-            #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
-            esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
-            esPost("/$i/_open", "");
-        }
     }
 
     print "\n";
@@ -1964,16 +1956,13 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 20400 ||
-        ($main::esVersion >= 50000 && $main::esVersion < 50102) ||
-        ($main::esVersion == 50300) ||
-        ($main::esVersion >= 60000)
+    if ($main::esVersion < 50500 ||
+        $main::esVersion >= 60000)
     ) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+              "* < 5.5.0 are not supported\n",
               "* 5.6.x is recommended\n",
-              "* 2.4.x is supported\n",
-              "* 5.0 - 5.1.1, 5.3.0 are not supported\n",
-              "* 6.x is not supported\n",
+              "* >= 6.x are not supported\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -1984,13 +1973,6 @@ sub dbCheck {
     my $error = 0;
     my $nodes = esGet("/_nodes?flat_settings");
     my $nodeStats = esGet("/_nodes/stats");
-
-    if ($main::esVersion < 50000) {
-        esPut("/_cluster/settings", '{"persistent": {"threadpool.search.queue_size":10000}}');
-    } else {
-        # ALW - Not supported with 5.0, might need to require user setting
-        # esPut("/_cluster/settings", '{"persistent": {"thread_pool.search.queue_size":10000}}');
-    }
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
@@ -2475,7 +2457,7 @@ dbCheck();
 if ($ARGV[1] =~ /(init|wipe)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        print "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n;
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";

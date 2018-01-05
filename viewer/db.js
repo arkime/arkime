@@ -35,7 +35,7 @@ var internals = {tagId2Name: {},
                  indicesCache: {},
                  usersCache: {},
                  qInProgress: 0,
-                 apiVersion: "2.4",
+                 apiVersion: "5.5",
                  q: []};
 
 exports.initialize = function (info, cb) {
