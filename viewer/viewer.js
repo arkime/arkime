@@ -2068,6 +2068,9 @@ function sessionsListFromQuery(req, res, fields, cb) {
       return res.send("Could not build query.  Err: " + err);
     }
     query._source = fields;
+    if (Config.debug) {
+      console.log("sessionsListFromQuery query", JSON.stringify(query, null, 1));
+    }
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
           console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
@@ -2999,7 +3002,9 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
       graph.interval = query.aggregations.dbHisto.histogram.interval;
     }
 
-    console.log("sessions.json query", JSON.stringify(query));
+    if (Config.debug) {
+      console.log("sessions.json query", JSON.stringify(query, null, 1));
+    }
 
     async.parallel({
       sessions: function (sessionsCb) {
@@ -3600,7 +3605,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   }
 
   for (var j = 0, jlen = list.length; j < jlen; j++) {
-    var sessionData = list[j]._source || list[j].fields;
+    var sessionData = flattenFields(list[j]._source || list[j].fields);
 
     if (!fields) { continue; }
 
