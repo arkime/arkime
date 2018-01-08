@@ -2444,6 +2444,10 @@ if (int($SHARDS) > $main::numberOfNodes) {
     die "Can't set shards ($SHARDS) greater then the number of nodes ($main::numberOfNodes)";
 } elsif ($SHARDS == -1) {
     $SHARDS = $main::numberOfNodes;
+    if ($SHARDS > 24) {
+        print "Setting # of shards to 24, use --shards for a different number\n";
+        $SHARDS = 24;
+    }
 }
 
 dbVersion(1);
