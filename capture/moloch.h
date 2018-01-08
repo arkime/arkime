@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 19
+#define MOLOCH_API_VERSION 50
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -782,6 +782,7 @@ int moloch_http_queue_length(void *server);
 uint64_t moloch_http_dropped_count(void *server);
 
 void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
+void moloch_http_set_retries(void *server, uint16_t retries);
 void moloch_http_set_headers(void *server, char **headers);
 void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);
 void moloch_http_free_server(void *server);
