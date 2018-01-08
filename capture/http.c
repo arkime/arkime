@@ -45,6 +45,7 @@ typedef struct molochhttprequest_t {
     MolochHttpServer_t   *server;
     CURL                 *easy;
     char                  url[1024];
+    char                  key[1024];
 
     unsigned char        *dataIn;
     uint32_t              used;
@@ -53,7 +54,8 @@ typedef struct molochhttprequest_t {
     struct curl_slist    *headerList;
     char                 *dataOut;
     uint32_t              dataOutLen;
-
+    uint16_t              namePos;
+    uint16_t              retries;
 } MolochHttpRequest_t;
 
 typedef struct {
@@ -84,29 +86,40 @@ static MOLOCH_LOCK_DEFINE(requests);
 
 uint64_t connectionsSet[2048];
 
+typedef struct {
+    MolochHttpServer_t  *server;
+    char                *name;
+    time_t               allowedAtSeconds;
+} MolochHttpServerName_t;
+
 struct molochhttpserver_t {
-    uint64_t              dropped;
-    char                **names;
-    char                **defaultHeaders;
-    int                   namesCnt;
-    int                   namesPos;
-    char                  compress;
-    uint16_t              maxConns;
-    uint16_t              maxOutstandingRequests;
-    uint16_t              outstanding;
-    uint16_t              connections;
+    uint64_t                 dropped;
+    char                   **names;
+    MolochHttpServerName_t  *snames;
+    char                   **defaultHeaders;
+    int                      namesCnt;
+    int                      namesPos;
+    char                     compress;
+    uint16_t                 maxConns;
+    uint16_t                 maxOutstandingRequests;
+    uint16_t                 outstanding;
+    uint16_t                 connections;
+    uint16_t                 maxRetries;
 
     MOLOCH_LOCK_EXTERN(syncRequest);
-    MolochHttpRequest_t   syncRequest;
-    CURL                 *multi;
-    guint                 multiTimer;
-    int                   multiRunning;
+    MolochHttpRequest_t      syncRequest;
+    CURL                    *multi;
+    guint                    multiTimer;
+    int                      multiRunning;
 
-    MolochHttpHeader_cb   headerCb;
+    MolochHttpHeader_cb      headerCb;
 };
 
 static z_stream z_strm;
 static MOLOCH_LOCK_DEFINE(z_strm);
+
+LOCAL gboolean moloch_http_send_timer_callback(gpointer);
+LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async);
 
 /******************************************************************************/
 int moloch_http_conn_cmp(const void *keyv, const void *elementv)
@@ -191,24 +204,40 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
     }
 
-    char url[1000];
-    char *host = server->names[server->namesPos];
-    server->namesPos = (server->namesPos + 1) % server->namesCnt;
+    memcpy(server->syncRequest.key, key, key_len);
+    server->syncRequest.key[key_len] = 0;
+    server->syncRequest.retries = 0;
 
-    snprintf(url, sizeof(url), "%s%.*s", host, key_len, key);
-    curl_easy_setopt(easy, CURLOPT_URL, url);
+    while (1) {
+        MOLOCH_LOCK(requests);
+        moloch_http_add_request(server, &server->syncRequest, FALSE);
+        MOLOCH_UNLOCK(requests);
 
-    server->syncRequest.used = 0;
-    int res = curl_easy_perform(easy);
+        server->syncRequest.used = 0;
+        int res = curl_easy_perform(easy);
+
+        if (res != CURLE_OK) {
+            if (server->syncRequest.retries < server->maxRetries) {
+                struct timeval now;
+                gettimeofday(&now, NULL);
+                server->snames[server->syncRequest.namePos].allowedAtSeconds = now.tv_sec + 30;
+                LOG("Retry %s error '%s'", server->syncRequest.url, curl_easy_strerror(res));
+                server->syncRequest.retries++;
+                continue;
+            }
+            LOG("libcurl failure %s error '%s'", server->syncRequest.url, curl_easy_strerror(res));
+            MOLOCH_UNLOCK(server->syncRequest);
+
+            if (headerList) {
+                curl_slist_free_all(headerList);
+            }
+            return 0;
+        }
+        break;
+    }
 
     if (headerList) {
         curl_slist_free_all(headerList);
-    }
-
-    if (res != CURLE_OK) {
-        LOG("libcurl failure %s error '%s'", url, curl_easy_strerror(res));
-        MOLOCH_UNLOCK(server->syncRequest);
-        return 0;
     }
 
     if (server->syncRequest.dataIn)
@@ -233,7 +262,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         LOG("%d/%d SYNC %ld %s %.0lf/%0.lf %.0lfms %.0lfms",
            1, 1,
            responseCode,
-           url,
+           server->syncRequest.url,
            uploadSize,
            downloadSize,
            connectTime*1000,
@@ -243,6 +272,46 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     server->syncRequest.dataIn = 0;
     MOLOCH_UNLOCK(server->syncRequest);
     return dataIn;
+}
+/******************************************************************************/
+LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    int startPos = server->namesPos;
+    int offset = 0;
+
+    while (server->snames[server->namesPos].allowedAtSeconds > now.tv_sec) {
+        server->snames[server->namesPos].allowedAtSeconds -= offset;
+        server->namesPos = (server->namesPos + 1) % server->namesCnt;
+        if (startPos == server->namesPos)
+            offset = 1;
+    }
+
+    request->namePos = server->namesPos;
+    server->namesPos = (server->namesPos + 1) % server->namesCnt;
+
+    char *host = server->names[request->namePos];
+    snprintf(request->url, sizeof(request->url), "%s%s", host, request->key);
+
+    curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
+
+    if (async) {
+        curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, &server->snames[request->namePos]);
+        curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, &server->snames[request->namePos]);
+
+#ifdef MOLOCH_HTTP_DEBUG
+        LOG("HTTPDEBUG INCR %p %d %s", request, server->outstanding, request->url);
+#endif
+        server->outstanding++;
+
+        DLL_PUSH_TAIL(rqt_, &requests, request);
+
+        if (!requestsTimer)
+            requestsTimer = g_timeout_add(0, moloch_http_send_timer_callback, NULL);
+        } else {
+    }
 }
 /******************************************************************************/
 static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
@@ -285,33 +354,44 @@ static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
             }
 
 #ifdef MOLOCH_HTTP_DEBUG
-            LOG("HTTPDEBUG DECR %s %p %d %s", server->names[0], request, server->outstanding, request->url);
+            LOG("HTTPDEBUG DECR %p %d %s", request, server->outstanding, request->url);
 #endif
 
+            if (responseCode == 0 && request->retries < server->maxRetries) {
+                curl_multi_remove_handle(server->multi, easy);
 
-            if (request->func) {
-                if (request->dataIn)
-                    request->dataIn[request->used] = 0;
-                request->func(responseCode, request->dataIn, request->used, request->uw);
-            }
+                request->retries++;
+                struct timeval now;
+                gettimeofday(&now, NULL);
+                MOLOCH_LOCK(requests);
+                server->snames[request->namePos].allowedAtSeconds = now.tv_sec + 30;
+                server->outstanding--;
+                moloch_http_add_request(server, request, TRUE);
+                MOLOCH_UNLOCK(requests);
+            } else {
+                if (request->func) {
+                    if (request->dataIn)
+                        request->dataIn[request->used] = 0;
+                    request->func(responseCode, request->dataIn, request->used, request->uw);
+                }
+                if (request->dataIn) {
+                    free(request->dataIn);
+                    request->dataIn = 0;
+                }
+                if (request->dataOut) {
+                    MOLOCH_SIZE_FREE(buffer, request->dataOut);
+                }
+                if (request->headerList) {
+                    curl_slist_free_all(request->headerList);
+                }
+                MOLOCH_TYPE_FREE(MolochHttpRequest_t, request);
 
-            if (request->dataIn) {
-                free(request->dataIn);
-                request->dataIn = 0;
+                curl_multi_remove_handle(server->multi, easy);
+                curl_easy_cleanup(easy);
+                MOLOCH_LOCK(requests);
+                server->outstanding--;
+                MOLOCH_UNLOCK(requests);
             }
-            if (request->dataOut) {
-                MOLOCH_SIZE_FREE(buffer, request->dataOut);
-            }
-            if (request->headerList) {
-                curl_slist_free_all(request->headerList);
-            }
-            MOLOCH_TYPE_FREE(MolochHttpRequest_t, request);
-
-            curl_multi_remove_handle(server->multi, easy);
-            curl_easy_cleanup(easy);
-            MOLOCH_LOCK(requests);
-            server->outstanding--;
-            MOLOCH_UNLOCK(requests);
         }
     }
 }
@@ -395,9 +475,10 @@ size_t moloch_http_curlm_header_function(char *buffer, size_t size, size_t nitem
     return sz;
 }
 /******************************************************************************/
-static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condition, gpointer serverV)
+static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condition, gpointer snameV)
 {
-    MolochHttpServer_t        *server = serverV;
+    MolochHttpServerName_t    *sname = snameV;
+    MolochHttpServer_t        *server = sname->server;
 
 
     struct sockaddr_storage localAddressStorage, remoteAddressStorage;
@@ -438,7 +519,7 @@ static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condit
     LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
             server->outstanding,
             server->connections,
-            server->names[0],
+            sname->name,
             localPort,
             remoteIp,
             remotePort,
@@ -474,12 +555,13 @@ curl_socket_t moloch_http_curl_open_callback(void *serverV, curlsocktype UNUSED(
     return fd;
 }
 /******************************************************************************/
-int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
+int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 {
-    MolochHttpServer_t        *server = serverV;
+    MolochHttpServerName_t    *sname = snameV;
+    MolochHttpServer_t        *server = sname->server;
 
     if (! BIT_ISSET(fd, connectionsSet)) {
-        LOG("Couldn't connect %s", server->names[0]);
+        LOG("Couldn't connect %s", sname->name);
         return 0;
     }
 
@@ -535,7 +617,7 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
     LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
             server->outstanding,
             server->connections,
-            server->names[0],
+            sname->name,
             localPort,
             remoteIp,
             remotePort,
@@ -561,7 +643,7 @@ static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
         MOLOCH_UNLOCK(requests);
 
 #ifdef MOLOCH_HTTP_DEBUG
-        LOG("HTTPDEBUG DO %s %p %d %s", request->server->names[0], request, request->server->outstanding, request->url);
+        LOG("HTTPDEBUG DO %p %d %s", request, request->server->outstanding, request->url);
 #endif
         curl_multi_add_handle(request->server->multi, request->easy);
     }
@@ -572,6 +654,10 @@ static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
 gboolean moloch_http_send(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
 {
     MolochHttpServer_t        *server = serverV;
+
+    if (key_len > 1000) {
+        LOGEXIT("Url too long %.*s", key_len, key);
+    }
 
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
@@ -639,9 +725,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     curl_easy_setopt(request->easy, CURLOPT_WRITEDATA, (void *)request);
     curl_easy_setopt(request->easy, CURLOPT_PRIVATE, (void *)request);
     curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETFUNCTION, moloch_http_curl_open_callback);
-    curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, server);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
-    curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, server);
     curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
 
     if (request->headerList) {
@@ -666,25 +750,12 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
 
-    char *host = server->names[server->namesPos];
-    server->namesPos = (server->namesPos + 1) % server->namesCnt;
-
-    snprintf(request->url, sizeof(request->url), "%s%.*s", host, key_len, key);
-
-    curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
+    memcpy(request->key, key, key_len);
+    request->key[key_len] = 0;
 
     MOLOCH_LOCK(requests);
-#ifdef MOLOCH_HTTP_DEBUG
-    LOG("HTTPDEBUG INCR %s %p %d %s", server->names[0], request, server->outstanding, request->url);
-#endif
-    server->outstanding++;
-
-    DLL_PUSH_TAIL(rqt_, &requests, request);
-
-    if (!requestsTimer)
-        requestsTimer = g_timeout_add(0, moloch_http_send_timer_callback, NULL);
+    moloch_http_add_request(server, request, TRUE);
     MOLOCH_UNLOCK(requests);
-
     return 0;
 }
 
@@ -746,6 +817,7 @@ void moloch_http_free_server(void *serverV)
 
 
     g_strfreev(server->names);
+    free(server->snames);
 
     MOLOCH_TYPE_FREE(MolochHttpServer_t, server);
 }
@@ -755,6 +827,13 @@ void moloch_http_set_headers(void *serverV, char **headers)
     MolochHttpServer_t        *server = serverV;
 
     server->defaultHeaders = headers;
+}
+/******************************************************************************/
+void moloch_http_set_retries(void *serverV, uint16_t retries)
+{
+    MolochHttpServer_t        *server = serverV;
+
+    server->maxRetries = retries;
 }
 /******************************************************************************/
 gboolean moloch_http_is_moloch(uint32_t hash, char *key)
@@ -780,6 +859,14 @@ void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;
+    server->snames = malloc(server->namesCnt * sizeof(MolochHttpServer_t));
+    server->maxRetries = 3;
+
+    for (i = 0; server->names[i]; i++) {
+        server->snames[i].server            = server;
+        server->snames[i].name              = server->names[i];
+        server->snames[i].allowedAtSeconds  = 0;
+    }
 
     server->multi = curl_multi_init();
     curl_multi_setopt(server->multi, CURLMOPT_SOCKETFUNCTION, moloch_http_curlm_socket_callback);

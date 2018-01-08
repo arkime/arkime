@@ -69,14 +69,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeNoSandbox'],
-
-    customLaunchers: {
-      ChromeNoSandbox: {
-        base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
-      }
-    },
+    browsers: ['ChromeHeadless'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
@@ -100,6 +93,14 @@ module.exports = function(config) {
 
     proxies :  {
       '/header_logo.png': '/base/public/header_logo.png'
+    },
+
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
     },
 
     // karma-webpack only needs loaders

@@ -192,16 +192,19 @@
       *
       * @param {int} seconds      The time in seconds from epoch
       * @param {string} timezone  The timezone to use ('gmt' or 'local')
+      * @param {string} format    The format to display the date string
       */
      .filter('timezoneDateString', ['$filter', function($filter) {
-       return function (seconds, timezone) {
+       return function (seconds, timezone, format) {
          let d = new Date(seconds * 1000);
 
+         if (!format) { format = 'yyyy/MM/dd HH:mm:ss'; }
+
          if (timezone === 'gmt') {
-           return $filter('date')(1000 * (seconds + d.getTimezoneOffset()*60), 'yyyy/MM/dd HH:mm:ss') + 'Z';
+           return $filter('date')(1000 * (seconds + d.getTimezoneOffset()*60), format) + 'Z';
          }
 
-         return $filter('date')(1000 * seconds, 'yyyy/MM/dd HH:mm:ss');
+         return $filter('date')(1000 * seconds, format);
        };
      }])
 

@@ -49,12 +49,14 @@
         start     : 0,
         filter    : null,
         sortField : 'nodeName',
-        desc      : false
+        desc      : false,
+        hide      : this.$routeParams.ghide || 'none'
       };
 
       this.graphType      = this.$routeParams.type || 'deltaPacketsPerSec';
       this.graphInterval  = this.$routeParams.gtime || '5';
       this.dataInterval   = this.$routeParams.refreshInterval ||'5000';
+      this.graphHide      = this.query.hide;
       this.graphsOpen     = true;
       this.nodeStatsOpen  = true;
       this.selectedTab    = 0; // select the first tab by default
@@ -186,6 +188,17 @@
       this.loadData();
     }
 
+    /* fired when select input is changed for graph hide */
+    changeGraphHide() {
+      // update url param
+      this.$location.search('ghide', this.graphHide);
+
+      // reinitialize the graph with new graphHide value
+      initialized = false;
+      this.query.hide = this.graphHide;
+      this.loadData();
+    }
+
     /* fired when select input is changed for graph type */
     changeGraphType() {
       this.$location.search('type', this.graphType);
@@ -223,6 +236,9 @@
     selectTab(index) {
       this.selectedTab = index;
       this.$location.search('statsTab', index);
+
+      // close expanded nodes when switching tabs
+      this.expandedNodeStats = {};
 
       if (index !== 0) { // not on the nodes tab
         this.$interval.cancel(reqPromise); // cancel the node req interval
@@ -344,9 +360,30 @@
         }
 
         if (div[0][0]) {
+          let axis = context.axis();
+
+          let timeStr;
+          if (self.graphInterval >= 600) {
+            timeStr = '%m/%d %H:%M:%S';
+          } else {
+            timeStr = '%H:%M:%S';
+          }
+
+          let timeFormat;
+          if (self.settings.timezone === 'gmt') {
+            timeFormat = d3.time.format(timeStr);
+          } else {
+            timeFormat = d3.time.format.utc(timeStr + 'Z');
+          }
+
           div.append('div')
              .attr('class', 'axis')
-             .call(context.axis().orient('top'));
+             .attr('height', 28)
+             .call(
+               axis.orient('top')
+                 .tickFormat(timeFormat)
+                 .focusFormat(timeFormat)
+             );
 
           div.selectAll('.horizon')
              .data(metrics)

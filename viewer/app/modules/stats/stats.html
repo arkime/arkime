@@ -61,6 +61,24 @@
         </div>
       </div> <!-- /graph interval select -->
 
+      <!-- graph hide select -->
+      <div class="form-group margined-bottom" ng-if="$ctrl.selectedTab === 0">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon help-cursor"
+            uib-tooltip="Hide rows"
+            tooltip-placement="bottom">
+           Hide
+          </span>
+          <select ng-model="$ctrl.graphHide" ng-change="$ctrl.changeGraphHide()"
+            class="form-control input-sm">
+            <option value="none">None</option>
+            <option value="old">Out of date</option>
+            <option value="nosession">No sessions</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+      </div> <!-- /graph hide select -->
+
       <!-- table data interval select -->
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
@@ -139,9 +157,9 @@
                 ng-class="{'fa-minus':$ctrl.nodeStatsOpen, 'fa-plus':!$ctrl.nodeStatsOpen}"></span>
             </uib-accordion-heading>
 
-            <table class="table table-condensed margined-top-xxxlg text-right"
+            <table class="table table-condensed margined-top-xxxlg text-right small"
               ng-if="$ctrl.nodeStatsOpen">
-              <thead class="small">
+              <thead>
               <tr>
                 <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer text-right"
                   ng-click="$ctrl.columnClick(column.sort)">
@@ -155,11 +173,42 @@
               </tr>
               </thead>
               <tbody>
-              <tbody>
+              <tr class="bold" ng-if="$ctrl.averageValues && $ctrl.totalValues && $ctrl.stats.data.length > 9">
+                <td class="no-wrap">&nbsp;</td>
+                <td class="no-wrap">Average</td>
+                <td class="no-wrap">&nbsp;</td>
+                <td class="no-wrap">{{$ctrl.averageValues.monitoring|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.averageValues.freeSpaceP|number:1}}%)</td>
+                <td class="no-wrap">{{$ctrl.averageValues.cpu/100.0|number:1}}%</td>
+                <td class="no-wrap">{{$ctrl.averageValues.memory|humanReadable}} ({{$ctrl.averageValues.memoryP|number:1}}%)</td>
+                <td class="no-wrap">{{$ctrl.averageValues.packetQueue|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaPacketsPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaBytesPerSec|humanReadable}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaSessionsPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaDroppedPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaOverloadDroppedPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.averageValues.deltaESDroppedPerSec|number:0}}</td>
+              </tr>
+              <tr class="bold border-bottom-bold" ng-if="$ctrl.averageValues && $ctrl.totalValues && $ctrl.stats.data.length > 9">
+                <td class="no-wrap">&nbsp;</td>
+                <td class="no-wrap">Total</td>
+                <td class="no-wrap">&nbsp;</td>
+                <td class="no-wrap">{{$ctrl.totalValues.monitoring|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
+                <td class="no-wrap">{{$ctrl.totalValues.cpu/100.0|number:1}}%</td>
+                <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>
+                <td class="no-wrap">{{$ctrl.totalValues.packetQueue|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaPacketsPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaBytesPerSec|humanReadable}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaSessionsPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaDroppedPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaOverloadDroppedPerSec|number:0}}</td>
+                <td class="no-wrap">{{$ctrl.totalValues.deltaESDroppedPerSec|number:0}}</td>
+              </tr>
               <tr class="animate-repeat" ng-if="$ctrl.stats.data"
                 ng-repeat-start="stat in $ctrl.stats.data track by stat.id">
                 <td class="no-wrap">
-                  <a class="btn btn-sm btn-toggle"
+                  <a class="btn btn-xs btn-toggle"
                     ng-class="{'collapsed':!$ctrl.expandedNodeStats[stat.id], 'btn-theme-tertiary':!$ctrl.expandedNodeStats[stat.id], 'btn-danger':$ctrl.expandedNodeStats[stat.id]}"
                     ng-click="$ctrl.toggleStatDetail(stat)">
                     <span class="fa fa-close"></span>
@@ -193,10 +242,10 @@
               </tr>
               </tbody>
               <tfoot class="bold" ng-if="$ctrl.averageValues && $ctrl.totalValues">
-              <tr>
-                <td class="no-wrap"></td>
+              <tr class="border-top-bold">
+                <td class="no-wrap">&nbsp;</td>
                 <td class="no-wrap">Average</td>
-                <td class="no-wrap"></td>
+                <td class="no-wrap">&nbsp;</td>
                 <td class="no-wrap">{{$ctrl.averageValues.monitoring|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.averageValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.averageValues.freeSpaceP|number:1}}%)</td>
                 <td class="no-wrap">{{$ctrl.averageValues.cpu/100.0|number:1}}%</td>
@@ -210,9 +259,9 @@
                 <td class="no-wrap">{{$ctrl.averageValues.deltaESDroppedPerSec|number:0}}</td>
               </tr>
               <tr>
-                <td class="no-wrap"></td>
+                <td class="no-wrap">&nbsp;</td>
                 <td class="no-wrap">Total</td>
-                <td class="no-wrap"></td>
+                <td class="no-wrap">&nbsp;</td>
                 <td class="no-wrap">{{$ctrl.totalValues.monitoring|number:0}}</td>
                 <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
                 <td class="no-wrap">{{$ctrl.totalValues.cpu/100.0|number:1}}%</td>
@@ -255,6 +304,14 @@
         <moloch-es-tasks ng-if="$ctrl.selectedTab === 3"
           has-permission="createEnabled" update-interval="$ctrl.dataInterval">
         </moloch-es-tasks>
+
+      </uib-tab>
+
+      <uib-tab index="4" heading="ES Shards" select="$ctrl.selectTab(4)" has-permission="createEnabled">
+
+        <moloch-es-shards ng-if="$ctrl.selectedTab === 4"
+          has-permission="createEnabled" update-interval="$ctrl.dataInterval">
+        </moloch-es-shards>
 
       </uib-tab>
 

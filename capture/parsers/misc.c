@@ -384,6 +384,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_port("aruba-papi",  NULL, 8211, MOLOCH_PARSERS_PORT_UDP, aruba_papi_udp_classify);
 
+    moloch_parsers_classifier_register_tcp("x11", "x11", 0, (unsigned char*)"\x6c\x00\x0b\x00", 4, misc_add_protocol_classify);
+
     userField = moloch_field_by_db("user");
 }
 

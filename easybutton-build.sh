@@ -16,7 +16,7 @@ PCAP=1.8.1
 CURL=7.55.0
 LUA=5.3.4
 DAQ=2.0.6
-NODE=6.11.5
+NODE=6.12.3
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -184,7 +184,7 @@ fi
 
 if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
   tar zxf curl-$CURL.tar.gz
-  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn --without-librtmp; $MAKE)
+  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1

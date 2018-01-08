@@ -187,6 +187,8 @@ body {
 .large  { font-size: 1.8rem; }
 .xlarge { font-size: 2rem; }
 
+.bold   { font-weight: bold; }
+
 
 /* wrapping */
 .no-wrap { white-space: nowrap; }

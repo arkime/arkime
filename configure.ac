@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.20.2-GIT])
+AC_INIT([moloch], [0.50.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -19,6 +19,7 @@ AC_CONFIG_FILES([
   tests/plugins/Makefile
   viewer/Makefile
   viewer/version.js
+  parliament/Makefile
   release/Makefile
 ])
 

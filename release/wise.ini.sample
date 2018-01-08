@@ -1,0 +1,63 @@
+# WISE Service Config - https://github.com/aol/moloch/wiki/WISE
+[wiseService]
+port = 8081
+
+# Global domains to never lookup
+excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.mcafee.com;*.avqs.mcafee.com;*.bl.barracuda.com;*.lbl8.mailshell.net;*.dnsbl.sorbs.net;*.s.sophosxl.net;*.metric.gstatic.com;*.ip6.arpa
+
+############## Redis Cache ##############
+
+# If you have many query sources, like elasticsearch or virustotal setup a redis server locally
+#[cache]
+#type=redis
+#url=redis://localhost/0
+
+
+############## Wise Sources ##############
+
+#[opendns]
+#key=
+
+
+#[emergingthreats]
+#key=
+
+
+# Reverse DNS lookup ips matching ips and set the field
+#[reversedns]
+#ips=10.0.0.0/8
+#field=asset
+
+
+# Load ips from /data/moloch/wise/ip.wise to tag
+#[file:ip]
+#file=/data/moloch/wise/ip.wise
+#tags=ipwise
+#type=ip
+#format=tagger
+
+
+#[threatstream]
+#user=
+#key=
+#mode=sqlite3
+#dbFile=/srv/opticlink/ts.db
+
+
+# Lets say you have a json file with ipam information.  Reload the url every 60 minutes.  The CIDR field in the JSON document is what to match against.  The shortcuts in the field definition are the JSON field names.
+#[url:ipam]
+#type = ip
+#format = json
+#url = https://foo.example.com/ipam/get.json
+#reload = 60
+#keyColumn = CIDR
+#fields=field:ipam.datacenter;kind:termfield;count:false;friendly:DataCenter;db:ipam.dc-term;help:DataCenter;shortcut:DataCenter\nfield:ipam.zone;kind:termfield;count:true;friendly:Security Zone;db:ipam.zone-term;help:Security Zone;shortcut:SecurityZone\nfield:ipam.name;kind:termfield;count:false;friendly:Name;db:ipam.name-term;help:Name;shortcut:name
+#view=if (session.ipam)\n  div.sessionDetailMeta.bold IPAM\n  dl.sessionDetailMeta\n    +arrayList(session.ipam, 'name-term', 'Name', 'ipam.name')\n    +arrayList(session.ipam, 'dc-term', 'Datacenter', 'ipam.datacenter')\n    +arrayList(session.ipam, 'zone-term', 'Security Zone', 'ipam.zone')
+
+
+
+############## Right Clicks ##############
+[right-click]
+VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
+VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
+VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url

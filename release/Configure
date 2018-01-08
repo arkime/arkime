@@ -1,9 +1,18 @@
 #!/bin/bash
 # Simple capital C Configure script for rpm/deb, like the old days
 
+if [ "$1" == "--help" ]; then
+    echo "Configure (--wise|--parliament|)  = Only 1 option can be used"
+    echo "--wise         = install and start wise"
+    echo "--parliament   = install and start parliament"
+    echo "               = install moloch capture and viewer"
+    echo "--help         = this help"
+    exit 0
+fi
+
 if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root"
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 MOLOCH_NAME=BUILD_MOLOCH_NAME
@@ -14,6 +23,46 @@ fi
 MOLOCH_INSTALL_DIR=BUILD_MOLOCH_INSTALL_DIR
 if [ "$MOLOCH_INSTALL_DIR" == "BUILD_MOLOCH_""INSTALL_DIR" ]; then
 MOLOCH_INSTALL_DIR=/data/$MOLOCH_NAME
+fi
+
+if [ "$1" == "--wise" ]; then
+    if [ ! -f "$MOLOCH_INSTALL_DIR/etc/wise.ini" ]; then
+        sed -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
+    else
+        echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
+        sleep 1
+    fi
+
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Installing systemd start files, use systemctl"
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.systemd.service > /etc/systemd/system/molochwise.service
+        systemctl daemon-reload
+        systemctl enable molochwise
+        systemctl start molochwise
+    elif [ -d "/etc/init" ]; then
+        echo "Installing upstart start files, use start"
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.upstart.conf > /etc/init/molochwise.conf
+        start molochwise
+    fi
+
+
+    exit 0;
+fi
+
+if [ "$1" == "--parliament" ]; then
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Installing systemd start files, use systemctl"
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.systemd.service > /etc/systemd/system/molochparliament.service
+        systemctl daemon-reload
+        systemctl enable molochparliament
+        systemctl start molochparliament
+    elif [ -d "/etc/init" ]; then
+        echo "Installing upstart start files, use 'start molochparliament'"
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.upstart.conf > /etc/init/molochparliament.conf
+        start molochparliament
+    fi
+
+    exit 0;
 fi
 
 ################################################################################

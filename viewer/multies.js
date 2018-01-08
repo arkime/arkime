@@ -192,6 +192,12 @@ function simpleGatherAdd(req, res) {
   });
 }
 
+function simpleGatherFirst(req, res) {
+  simpleGather(req, res, null, (err, results) => {
+    res.send(results[0]);
+  });
+}
+
 app.get("/_cluster/nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats/:kinds", simpleGatherCopy);
@@ -925,6 +931,8 @@ function msearch(req, res) {
   });
 }
 
+app.post("/:index/history", simpleGatherFirst);
+
 app.post("/:index/:type/_msearch", msearch);
 app.post("/_msearch", msearch);
 
@@ -960,7 +968,7 @@ nodes.forEach((node) => {
 
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
-    apiVersion: "1.2",
+    apiVersion: "5.5",
     requestTimeout: 300000
   });
 

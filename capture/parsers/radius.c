@@ -27,10 +27,8 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     BSB bsb;
 
     BSB_INIT(bsb, data, len);
-    unsigned char code;
 
-    BSB_IMPORT_u08(bsb, code);
-    BSB_IMPORT_skip(bsb, 19);
+    BSB_IMPORT_skip(bsb, 20);
 
     unsigned char type = 0, length = 0;
     unsigned char *value;

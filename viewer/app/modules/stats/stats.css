@@ -32,8 +32,48 @@ moloch-stats table.table-striped > tbody > tr:nth-of-type(odd) {
 }
 
 moloch-stats table.table > tfoot > tr:first-child > td {
-  border-top: 2px solid var(--color-gray-light);
+  border-top: 2px solid var(--color-gray);
 }
+
+moloch-stats table.table > thead > tr > th {
+  border-bottom: 2px solid var(--color-gray);
+}
+moloch-stats table.table tr.border-bottom-bold > td {
+  border-bottom: 2px solid var(--color-gray);
+}
+moloch-stats table.table tr.border-top-bold > td {
+  border-top: 2px solid var(--color-gray);
+}
+moloch-stats table.table-striped > tbody > tr.no-stripe {
+    background-color: var(--color-background);
+}
+
+moloch-stats table.table.table-condensed tr > td {
+  height: 27px !important;
+}
+
+
+moloch-stats table .shards-col-header:hover .btn-group {
+  visibility: visible;
+}
+moloch-stats table .shards-col-header .btn-group {
+  visibility : hidden;
+  margin-left: -8px;
+}
+moloch-stats table .shards-col-header .header-text {
+  display : inline-block;
+  width   : calc(100% - 24px);
+}
+
+moloch-stats .badge {
+  font-weight : 500;
+  font-size   : 16px;
+}
+moloch-stats .badge.badge-primary {
+  font-weight     : bold;
+  background-color: var(--color-primary);
+}
+
 
 moloch-stats form.stats-form {
   position: fixed;

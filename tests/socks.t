@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 36;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -18,8 +18,10 @@ countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
     countTest(3, "date=-1&expression=" . uri_escape("$files&&ip.socks==93.184.216.119:80"));
 
 # country.socks
-    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==USA"));
-    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==usa"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.socks==USA"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.socks==usa"));
+    countTest(5, "date=-1&expression=" . uri_escape("$files&&country.socks==EU"));
+    countTest(5, "date=-1&expression=" . uri_escape("$files&&country.socks==eu"));
 
 # rir.socks
     countTest(5, "date=-1&expression=" . uri_escape("$files&&rir.socks==RIPE"));

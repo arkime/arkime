@@ -177,8 +177,9 @@
           this.startClock();
         })
         .catch((error) => {
-          this.loading  = false;
-          this.error    = error.text;
+          this.loading      = false;
+          this.error        = error.data.text;
+          this.displayName  = '';
         });
     }
 

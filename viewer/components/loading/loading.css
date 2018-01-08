@@ -1,4 +1,9 @@
 /* loading overlay */
+loading {
+  display : block;
+  height  : calc(100vh - 300px);
+}
+
 loading .loading img {
   display     : flex;
   z-index     : 1499;

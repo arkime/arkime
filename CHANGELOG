@@ -1,14 +1,38 @@
-NOTICE: 0.20.x will be the last series to support ES 2.
+ES Support:
+  * Moloch 0.50.x supports ES > 5.5.0, not 6.x
+  * Moloch 0.20.x supports ES 2.4.x, > 5.3,1 not 6.x
+
+Node Support:
+  * Moloch > 0.20.x requires NodeJS 6.x
+  * Moloch > 0.16.x requires NodeJS 4.x
 
 NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
         outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
 
 NOTICE: Restart wiseService before capture when upgrading
 
-NOTICE: 0.20 and above require nodejs 6.x, included in rpm/deb
+0.50.0 2017/01/XX
+  - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
+  - viewer - Fixed CSV export of fields within objects (issue #790)
+  - capture - Retry http requests on connect failures
 
-0.20.2 2017/11/XX
-  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
+0.20.2 2017/01/04
+  - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported
+  - viewer - upgrade elasticsearch-js
+  - capture - new --host commandline option to specify how viewers should talk to host
+  - capture - added classify: dhcp, dhcpv6, splunk, isakmp, aruba-papi
+  - capture - improved classify: bitcoin, ntp, ssdp
+  - capture - index first N (default 256) bytes of post bodies, controlled by maxReqBody setting
+  - capture - more stats on packet processing/failures
+  - viewer - cleanup sessionErro
+  - viewer - remove dead code
+  - tests - more viewer tests
+  - viewer - upgrade Cyberchef to 6.8.0
+  - capture - basic mpls stripping (issue #779)
+  - viewer - start of esshards tab in stats
+  - parliament - first version (can install with Configure --parliament)
+  - wise - can now install with Configure --wise
+  - release - node 6.12.3
 
 0.20.1 2017/11/06
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x, 5.5.x, 5.6.x
