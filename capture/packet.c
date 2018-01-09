@@ -204,8 +204,8 @@ void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochP
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     if (packet->payloadLen >= 2) {
-        moloch_field_int_add(icmpCodeField, session, data[0]);
-        moloch_field_int_add(icmpTypeField, session, data[1]);
+        moloch_field_int_add(icmpTypeField, session, data[0]);
+        moloch_field_int_add(icmpCodeField, session, data[1]);
     }
 }
 /******************************************************************************/
