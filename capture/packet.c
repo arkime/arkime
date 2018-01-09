@@ -1309,6 +1309,34 @@ int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
+int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 16) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", len);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    int ethertype = data[14] << 8 | data[15];
+    switch (ethertype) {
+    case 0x0800:
+        return moloch_packet_ip4(batch, packet, data+16, len - 16);
+    case 0x86dd:
+        return moloch_packet_ip6(batch, packet, data+16, len - 16);
+    case 0x8864:
+        return moloch_packet_pppoe(batch, packet, data+16, len - 16);
+    case 0x8847:
+        return moloch_packet_mpls(batch, packet, data+16, len - 16);
+    default:
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Unknown ethertype %x", ethertype);
+#endif
+        return MOLOCH_PACKET_UNKNOWN;
+    } // switch
+    return MOLOCH_PACKET_CORRUPT;
+}
+/******************************************************************************/
 int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14 ||
@@ -1396,8 +1424,13 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         break;
     case 12: // LOOP
     case 101: // RAW
-    case 113: // SLL
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case 113: // SLL
+        if (packet->pkt[0] == 0 && packet->pkt[1] <= 4)
+            rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
+        else
+            rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 239: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
