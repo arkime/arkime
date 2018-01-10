@@ -35,7 +35,7 @@
         .catch((error)   => { this.settings = { timezone:'local' }; });
 
       this.columns = [
-        { name: 'Index', sort: 'action', doStats: false }
+        { name: 'Index', sort: 'action', doClick: false }
       ];
 
       this.loadData();
@@ -68,15 +68,26 @@
       }
     }
 
-    /**
-     * Loads data with sort parameter
-     * Fired when a column is clicked
-     * @param {string} name The name of the column
-     */
-    columnClick(name) {
-      this.sortField = name;
-      this.sortReverse = !this.sortReverse;
-      this.loadData();
+    exclude(type, value) {
+      this.StatsService.exclude(type, value)
+        .then((response) => {
+          this.loadData();
+        })
+        .catch((error) => {
+          this.error    = error;
+          this.loading  = false;
+        });
+    }
+
+    include(type, value) {
+      this.StatsService.include(type, value)
+        .then((response) => {
+          this.loadData();
+        })
+        .catch((error) => {
+          this.error    = error;
+          this.loading  = false;
+        });
     }
 
     /* loads the shards stats data and computes the total and average values */
@@ -88,8 +99,13 @@
           this.loading  = false;
           this.stats    = response;
           this.columns.splice(1);
-          for (var node of response.nodes) {
-            this.columns.push({name: node, sort: undefined, doStats: false});
+          this.nodes = Object.keys(response.nodes).sort(function(a,b){ return a.localeCompare(b);});
+          for (var node of this.nodes) {
+            if (node === 'Unassigned') {
+              this.columns.push({name: node, doClick: false});
+            } else {
+              this.columns.push({name: node, doClick: true, ip: response.nodes[node].ip, ipExcluded: response.nodes[node].ipExcluded, nodeExcluded: response.nodes[node].nodeExcluded});
+            }
           }
           this.$scope.$broadcast('$$rebind::refreshShards');
         })

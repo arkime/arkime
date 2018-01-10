@@ -58,11 +58,6 @@ moloch-stats table .shards-col-header:hover .btn-group {
 }
 moloch-stats table .shards-col-header .btn-group {
   visibility : hidden;
-  margin-left: -8px;
-}
-moloch-stats table .shards-col-header .header-text {
-  display : inline-block;
-  width   : calc(100% - 24px);
 }
 
 moloch-stats .badge {

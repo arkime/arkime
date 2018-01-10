@@ -174,7 +174,42 @@
 
       });
     }
-  }
+
+    /**
+     * exclude node/ip
+     */
+    exclude(type, value) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:`esshard/exclude/${type}/${value}`, method:'POST', data: {}};
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+      });
+    }
+
+    /**
+     * include node/ip
+     */
+    include(type, value) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:`esshard/include/${type}/${value}`, method:'POST', data: {}};
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+      });
+    }
+
+  } /* class */
 
 
   StatsService.$inject = ['$q', '$http'];

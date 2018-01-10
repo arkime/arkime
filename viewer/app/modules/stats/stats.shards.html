@@ -4,25 +4,35 @@
     <tr>
       <th ng-repeat="column in :refreshShards:$ctrl.columns track by column.name"
       class="shards-col-header">
+        {{:refreshShards:column.name}}
         <!-- column dropdown menu -->
-        <div class="btn-group pull-right margined-right" uib-dropdown>
+        <div class="btn-group" ng-if="column.doClick" uib-dropdown>
           <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
             <span class="fa fa-caret-down"></span>
           </button>
           <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
-            <li role="menuitem">
-              <a ng-click="">
-                Move indices from node
+            <li role="menuitem" ng-if="!column.nodeExcluded">
+              <a ng-click="$ctrl.exclude('node', column.name)">
+                Exclude node {{column.name}}
               </a>
             </li>
-            <li role="menuitem">
-              <a ng-click="">
-                Move indices from IP
+            <li role="menuitem" ng-if="column.nodeExcluded">
+              <a ng-click="$ctrl.include('node', column.name)">
+                Include node {{column.name}}
+              </a>
+            </li>
+            <li role="menuitem" ng-if="!column.ipExcluded">
+              <a ng-click="$ctrl.exclude('ip', column.ip)">
+                Exclude IP {{column.ip}}
+              </a>
+            </li>
+            <li role="menuitem" ng-if="column.ipExcluded">
+              <a ng-click="$ctrl.include('ip', column.ip)">
+                Include IP {{column.ip}}
               </a>
             </li>
           </ul>
         </div> <!-- /column dropdown menu -->
-        <div class="header-text">{{:refreshShards:column.name}}</div>
       </th>
     </tr>
   </thead>
@@ -30,9 +40,9 @@
   <tbody>
     <tr class="animate-repeat"
       ng-repeat="stat in :refreshShards:$ctrl.stats.indices track by stat.name">
-      <td class="no-wrap">{{stat.name}}</td>
-      <td ng-repeat="node in $ctrl.stats.nodes">
-        <span ng-if="stat.nodes[node]"
+      <td class="no-wrap">{{:refreshShards:stat.name}}</td>
+      <td ng-repeat="node in :refreshShards:$ctrl.nodes">
+        <span ng-if=":refreshShards:stat.nodes[node]"
           class="badge cursor-help margined-right"
           ng-repeat="item in :refreshShards:stat.nodes[node] | orderBy:'shard'"
           ng-class="{'badge-primary':item.prirep === 'p'}"
@@ -43,7 +53,7 @@
         </span>
       </td>
     </tr>
-    <tr ng-if="!:refreshShards:$ctrl.stats.indices">
+    <tr ng-if=":refreshShards:!$ctrl.stats.indices">
       <td colspan="6" class="text-danger">
         <span class="fa fa-warning"></span>&nbsp;
         No results match your search

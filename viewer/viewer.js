@@ -2442,7 +2442,25 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 });
 
 app.get('/esshard/list', function(req, res) {
-  Db.shards(function(err, shards) {
+  Promise.all([Db.shards(), 
+               Db.getClusterSettings({flatSettings: true})
+              ]).then(([shards, settings], reject) => {
+
+    if (reject) {
+      console.log(reject);
+      return res.send({nodes: [], indices: []});
+    }
+
+    let ipExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
+      ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
+    }
+
+    let nodeExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._name']) {
+      nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
+    }
+
     let result = {};
     let nodes = {};
 
@@ -2456,14 +2474,78 @@ app.get('/esshard/list', function(req, res) {
         result[shard.index].nodes[shard.node] = [];
       }
       result[shard.index].nodes[shard.node].push(shard);
-      nodes[shard.node] = 1;
+      nodes[shard.node] = {ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node)};
       delete shard.node;
       delete shard.index;
     }
 
-    let returnNodes = Object.keys(nodes).sort(function(a,b){ return a.localeCompare(b); });
     let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); });
-    res.send({nodes: returnNodes, indices: indices});
+    res.send({nodes: nodes, indices: indices});
+  });
+});
+
+app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+
+  Db.getClusterSettings({flatSettings: true}, function(err, settings) {
+    let exclude = [];
+    let settingName;
+
+    if (req.params.type === 'ip') {
+      settingName = 'cluster.routing.allocation.exclude._ip';
+    } else if (req.params.type === "node") {
+      settingName = 'cluster.routing.allocation.exclude._name';
+    } else {
+      return res.molochError(403, "Unknown exclude type");
+    }
+
+    if (settings.persistent[settingName]) {
+      exclude = settings.persistent[settingName].split(',');
+    }
+
+    if (!exclude.includes(req.params.value)) {
+      exclude.push(req.params.value);
+    }
+    var query = {body: {persistent: {}}};
+    query.body.persistent[settingName] = exclude.join(",");
+
+    Db.putClusterSettings(query, function(err, settings) {
+      if (err) {console.log("putSettings", err);}
+      return res.send(JSON.stringify({ success: true, text: 'Added'}));
+    });
+  });
+});
+
+app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+
+  Db.getClusterSettings({flatSettings: true}, function(err, settings) {
+    let exclude = [];
+    let settingName;
+
+    if (req.params.type === 'ip') {
+      settingName = 'cluster.routing.allocation.exclude._ip';
+    } else if (req.params.type === "node") {
+      settingName = 'cluster.routing.allocation.exclude._name';
+    } else {
+      return res.molochError(403, "Unknown exclude type");
+    }
+
+    if (settings.persistent[settingName]) {
+      exclude = settings.persistent[settingName].split(',');
+    }
+
+    let pos = exclude.indexOf(req.params.value);
+    if (pos > -1) {
+      exclude.splice(pos, 1);
+    }
+    var query = {body: {persistent: {}}};
+    query.body.persistent[settingName] = exclude.join(",");
+
+    Db.putClusterSettings(query, function(err, settings) {
+      if (err) {console.log("putSettings", err);}
+      return res.send(JSON.stringify({ success: true, text: 'Added'}));
+    });
   });
 });
 
@@ -4930,7 +5012,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     }
 
     Db.setUser(req.body.userId, user, function(err, info) {
-      console.log(user, err, info);
+      console.log("setUser", user, err, info);
       return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
     });
   });
@@ -6019,7 +6101,6 @@ app.use(function (req, res) {
      cookieOptions
   );
 
-  console.log(req.user);
   var theme = req.user.settings.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
 
