@@ -1744,15 +1744,6 @@ void moloch_db_check()
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
     }
     free(data);
-
-    if (config.compressES) {
-        key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process&flat_settings");
-        data = moloch_http_get(esServer, key, key_len, &data_len);
-        if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
-            LOGEXIT("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
-        }
-        free(data);
-    }
 }
 
 /******************************************************************************/
