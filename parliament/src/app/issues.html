@@ -27,7 +27,14 @@
       <td>{{ issue.title }}</td>
       <td>{{ issue.value | issueValue: issue.type }}</td>
       <td>{{ issue.node }}</td>
-      <td>{{ issue.ignoreUntil | date: 'yyyy/MM/dd HH:mm:ss' }}</td>
+      <td>
+        <span *ngIf="issue.ignoreUntil > -1">
+          {{ issue.ignoreUntil | date: 'yyyy/MM/dd HH:mm:ss' }}
+        </span>
+        <span *ngIf="issue.ignoreUntil === -1">
+          Forever
+        </span>
+      </td>
       <td *ngIf="authService.loggedIn">
         <!-- dismiss issue button -->
         <button type="button" class="btn btn-outline-danger btn-xs pull-right cursor-pointer ml-2"
@@ -63,7 +70,19 @@
             </button>
             <button class="dropdown-item cursor-pointer"
               (click)="ignoreIssue(issue, 86400000)">
-              Ignore for 24 hours
+              Ignore for 1 day
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 604800000)">
+              Ignore for 1 week
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 2592000000)">
+              Ignore for 1 month
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, -1)">
+              Ignore forever
             </button>
           </div>
         </div> <!-- /ignore until dropdown -->

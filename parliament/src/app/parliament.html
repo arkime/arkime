@@ -381,7 +381,19 @@
                       </button>
                       <button class="dropdown-item cursor-pointer"
                         (click)="ignoreIssue(group.id, cluster.id, issue, 86400000)">
-                        Ignore for 24 hours
+                        Ignore for 1 day
+                      </button>
+                      <button class="dropdown-item cursor-pointer"
+                        (click)="ignoreIssue(group.id, cluster.id, issue, 604800000)">
+                        Ignore for 1 week
+                      </button>
+                      <button class="dropdown-item cursor-pointer"
+                        (click)="ignoreIssue(group.id, cluster.id, issue, 2592000000)">
+                        Ignore for 1 month
+                      </button>
+                      <button class="dropdown-item cursor-pointer"
+                        (click)="ignoreIssue(group.id, cluster.id, issue, -1)">
+                        Ignore forever
                       </button>
                     </div>
                   </div> <!-- /ignore until dropdown -->

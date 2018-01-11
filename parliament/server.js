@@ -245,7 +245,8 @@ function setIssue(cluster, newIssue) {
         issue.firstNoticed  = Date.now();
       }
 
-      if (Date.now() > issue.ignoreUntil) {
+
+      if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
         issue.alerted     = undefined;
@@ -827,7 +828,7 @@ router.get('/issues', (req, res, next) => {
 });
 
 // Dismiss an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to dismiss.';
     const error = new Error(message);
@@ -853,7 +854,7 @@ router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', (req, res, next)
 });
 
 // Ignore an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to ignore.';
     const error = new Error(message);
@@ -862,7 +863,9 @@ router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) 
   }
 
   let ms = req.body.ms || 3600000; // Default to 1 hour
+
   let ignoreUntil = Date.now() + ms;
+  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
 
   let issue = findIssue(parseInt(req.params.groupId), parseInt(req.params.clusterId), req.body.type, req.body.node);
 
@@ -880,7 +883,7 @@ router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) 
 });
 
 // Allow an issue with a cluster to alert by removing ignoreUntil
-router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to remove the ignore.';
     const error = new Error(message);

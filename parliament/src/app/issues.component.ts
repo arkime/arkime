@@ -55,6 +55,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
     this.parliamentService.getIssues()
       .subscribe(
         (response) => {
+          this.error = '';
           this.issues = response.issues;
         },
         (err) => {
@@ -97,6 +98,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
     this.parliamentService.dismissIssue(issue.groupId, issue.clusterId, issue)
       .subscribe(
         (data) => {
+          this.error = '';
           issue.dismissed = data.dismissed;
         },
         (err) => {
@@ -115,6 +117,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
     this.parliamentService.ignoreIssue(issue.groupId, issue.clusterId, issue, forMs)
       .subscribe(
         (data) => {
+          this.error = '';
           issue.ignoreUntil = data.ignoreUntil;
         },
         (err) => {
@@ -132,6 +135,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
     this.parliamentService.removeIgnoreIssue(issue.groupId, issue.clusterId, issue)
       .subscribe(
         (data) => {
+          this.error = '';
           issue.ignoreUntil = undefined;
         },
         (err) => {
