@@ -1,129 +1,63 @@
 {
    "sessions2" : [
       {
-<<<<<<< HEAD
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-120502",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "lastPacket" : 1335958317529,
-            "dstPackets" : 0,
-            "dstIp" : "10.64.11.49",
-            "node" : "test",
-            "ipProtocol" : 1,
-            "dstMac" : [
-               "00:00:5e:00:01:b1"
-            ],
-            "totBytes" : 196,
-            "segments" : 1,
+            "srcPort" : 0,
             "icmp" : {
                "code" : [
-                  8
+                  0
                ],
                "type" : [
-                  0
+                  8
                ]
             },
-            "fileIds" : [],
-            "srcPackets" : 2,
+            "dstMacCnt" : 1,
+            "dstIp" : "10.64.11.49",
             "srcBytes" : 196,
             "totPackets" : 2,
-            "srcMacCnt" : 1,
-            "dstPort" : 0,
-            "protocolCnt" : 1,
-            "srcIp" : "192.168.177.160",
-            "protocol" : [
-               "icmp"
-            ],
-            "srcDataBytes" : 0,
-            "firstPacket" : 1335958313152,
-            "srcRIR" : "ARIN",
+            "segments" : 1,
             "packetLenArray" : [
                114,
                114
             ],
+            "node" : "test",
+            "totBytes" : 196,
+            "srcMac" : [
+               "00:21:28:05:29:ba"
+            ],
+            "srcMacCnt" : 1,
+            "totDataBytes" : 0,
             "dstDataBytes" : 0,
-            "dstMacCnt" : 1,
-            "srcPort" : 0,
+            "dstBytes" : 0,
+            "protocol" : [
+               "icmp"
+            ],
+            "srcIp" : "192.168.177.160",
+            "ipProtocol" : 1,
+            "length" : 4376,
+            "srcPackets" : 2,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "fileIds" : [],
+            "dstPort" : 0,
+            "dstMac" : [
+               "00:00:5e:00:01:b1"
+            ],
+            "firstPacket" : 1335958313152,
+            "protocolCnt" : 1,
             "packetPosArray" : [
                24,
                138
             ],
-            "srcMac" : [
-               "00:21:28:05:29:ba"
-            ],
-            "length" : 4376,
-            "totDataBytes" : 0,
-            "timestamp" : "SET",
-            "dstBytes" : 0
-=======
-         "body" : {
-            "a2" : "10.64.11.49",
-            "ipSrc" : "192.168.177.160",
-            "prot-term-cnt" : 1,
-            "fp" : 1335958313,
-            "by1" : 196,
-            "pa" : 2,
-            "icmpType" : [
-               8
-            ],
-            "portDst" : 0,
-            "prot-term" : [
-               "icmp"
-            ],
-            "portSrc" : 0,
-            "pr" : 1,
-            "ipDst" : "10.64.11.49",
-            "timestamp" : "SET",
-            "db" : 0,
-            "fpd" : 1335958313152,
-            "p1" : 0,
-            "mac2-term-cnt" : 1,
-            "fs" : [],
-            "lpd" : 1335958317529,
-            "pa2" : 0,
-            "pa1" : 2,
-            "ps" : [
-               24,
-               138
-            ],
-            "no" : "test",
-            "mac1-term" : [
-               "00:21:28:05:29:ba"
-            ],
-            "by2" : 0,
-            "lp" : 1335958317,
-            "db2" : 0,
-            "psl" : [
-               114,
-               114
-            ],
-            "mac2-term" : [
-               "00:00:5e:00:01:b1"
-            ],
-            "sl" : 4376,
-            "ss" : 1,
-            "p2" : 0,
-            "icmpCode" : [
-               0
-            ],
-            "a1" : "192.168.177.160",
-            "rir1" : "ARIN",
-            "firstPacket" : 1335958313152,
-            "by" : 196,
-            "db1" : 0,
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1335958317529
+            "dstPackets" : 0,
+            "lastPacket" : 1335958317529,
+            "srcDataBytes" : 0
          },
          "header" : {
             "index" : {
                "_type" : "session",
-               "_index" : "tests_sessions-120502"
+               "_index" : "tests_sessions2-120502"
             }
->>>>>>> origin/master
          }
       }
    ]
