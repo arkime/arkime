@@ -2155,6 +2155,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
         }
     }
 
+    my $nodes = esGet("/_nodes");
+    $main::numberOfNodes = dataNodes($nodes->{nodes});
+    my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+
     dbESVersion();
     $main::userAgent->timeout(3600);
     optimizeOther() unless $NOOPTIMIZE ;
@@ -2165,7 +2169,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esPost("/$i/_forcemerge?max_num_segments=4", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esGet("/$i/_flush", 1);
-                esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . '}}', 1);
+                esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
             }
         } else {
             esDelete("/$i", 1);
