@@ -2165,7 +2165,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esPost("/$i/_forcemerge?max_num_segments=4", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esGet("/$i/_flush", 1);
-                esPut("/$i/_settings", '{index: {"number_of_replicas":' . $REPLICAS . '}}', 1);
+                esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . '}}', 1);
             }
         } else {
             esDelete("/$i", 1);
