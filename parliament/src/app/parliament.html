@@ -388,7 +388,7 @@
                   <!-- issue text -->
                   <span class="fa fa-exclamation-triangle"></span>&nbsp;
                   <span *ngIf="issue.node">{{ issue.node }}</span>
-                  {{ issue.title }}<span *ngIf="issue.value !== undefined">: {{ issue.value }}</span>
+                  {{ issue.title }}<span *ngIf="issue.value !== undefined">: {{ issue.value | issueValue: issue.type }}</span>
                   <!-- /issue text -->
                 </div>
               </span>

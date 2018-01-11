@@ -379,7 +379,7 @@ function getStats(cluster) {
             type    : 'outOfDate',
             title   : 'Out of date',
             node    : stat.nodeName,
-            value   : Math.round(Date.now()/1000 - stat.currentTime),
+            value   : Date.now() - stat.currentTime,
             severity: 'red'
           });
         }
