@@ -40,6 +40,10 @@
 
       this.loadData();
       if (this.updateInterval !== '0') {
+        if (parseInt(this.updateInterval) < 30000) {
+          this.$scope.$emit('update:interval', {interval: '30000'});
+        }
+
         reqPromise = this.$interval(this.loadData.bind(this), parseInt(this.updateInterval));
       }
     }
@@ -104,7 +108,7 @@
             if (node === 'Unassigned') {
               this.columns.push({name: node, doClick: false});
             } else {
-              this.columns.push({name: node, doClick: true, ip: response.nodes[node].ip, ipExcluded: response.nodes[node].ipExcluded, nodeExcluded: response.nodes[node].nodeExcluded});
+              this.columns.push({name: node, doClick: (node.indexOf("->") === -1), ip: response.nodes[node].ip, ipExcluded: response.nodes[node].ipExcluded, nodeExcluded: response.nodes[node].nodeExcluded});
             }
           }
           this.$scope.$broadcast('$$rebind::refreshShards');

@@ -117,6 +117,10 @@
         this.loadData();
       });
 
+      this.$scope.$on('update:interval', (event, args) => {
+        this.dataInterval = args.interval;
+      });
+
       // watch for the user to leave or return to the page
       // Don't load graph data if the user is not focused on the page!
       // if data is loaded in an inactive (background) tab,
