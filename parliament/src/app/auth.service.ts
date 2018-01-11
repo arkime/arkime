@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
 import { Auth, Login, LoggedIn } from './auth';
@@ -10,15 +9,17 @@ import { Auth, Login, LoggedIn } from './auth';
 @Injectable()
 export class AuthService {
 
-  private loggedIn = false;
-  private _loggedIn = new BehaviorSubject<boolean>(false);
-  loggedIn$ = this._loggedIn.asObservable();
+  loggedIn = false;
 
   constructor(private http: HttpClient) {}
 
   // login the user using the supplied password
   login(password): Observable<Login> {
     return this.http.post<Login>('api/auth', { password: password });
+  }
+
+  logout(): void {
+    this.loggedIn = false;
   }
 
   // save the token in local storage and indicate the user is logged in
@@ -28,9 +29,6 @@ export class AuthService {
     if (!token) { token = ''; }
 
     localStorage.setItem('token', token);
-
-    // notify page whether the user is logged in
-    this._loggedIn.next(this.loggedIn);
 
     return this.loggedIn;
   }
@@ -46,12 +44,10 @@ export class AuthService {
       .subscribe(
         (data) => {
           this.loggedIn = data.loggedin;
-          this._loggedIn.next(this.loggedIn);
           return this.loggedIn;
         },
         (err) => {
           this.loggedIn = false;
-          this._loggedIn.next(this.loggedIn);
           return this.loggedIn;
         }
       );

@@ -27,3 +27,8 @@ export class Response {
   success: boolean;
   text: string;
 }
+
+// TODO define issue object
+export class Issues {
+  issues: [any];
+}
