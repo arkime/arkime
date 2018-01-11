@@ -19,14 +19,28 @@ a.no-href:hover { color: #0056b3 !important; }
 .text-muted-more{ color: #dddddd; }
 
 .alert.alert-sm  {
-  font-size: .85rem;
-  padding: .25rem .5rem;
+  font-size: .9rem;
+  padding: .25rem .4rem;
   margin-bottom: .5rem;
 }
 .alert.alert-sm > .close {
   line-height: .75;
 }
 
+.btn-xs {
+  padding: .1rem .2rem;
+  font-size: .9rem;
+  border-radius: .2rem;
+}
+
+.dropdown.dropdown-sm .dropdown-menu {
+  padding: 0;
+}
+.dropdown.dropdown-sm .dropdown-item {
+  padding: .25rem .5rem;
+  font-size: .9rem;
+  font-weight: normal;
+}
 
 /* media queries ----------------------------- */
 @media (min-width: 1600px) {

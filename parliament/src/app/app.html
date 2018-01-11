@@ -1,0 +1,98 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
+  <a class="navbar-brand" routerLink="">
+    <img src="public/header_logo.png" alt="">
+  </a>
+  <ul class="navbar-nav mr-auto ml-4">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Parliament
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link"  routerLink="/issues" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Issues
+      </a>
+    </li>
+  </ul>
+  <form class="form-inline">
+    <!-- refresh interval select -->
+    <span class="form-group mr-2" *ngIf="!showLoginInput">
+      <div class="input-group">
+        <span class="input-group-addon cursor-help"
+          placement="left" ngbTooltip="Refresh Interval">
+          <span class="fa fa-refresh"></span>
+        </span>
+        <select class="form-control refresh-interval-control"
+          name="refreshInterval" tabindex="1"
+          [(ngModel)]="refreshInterval"
+          (ngModelChange)="changeRefreshInterval()">
+          <option value="">Never</option>
+          <option value="15000">15 seconds</option>
+          <option value="30000">30 seconds</option>
+          <option value="45000">45 seconds</option>
+          <option value="60000">1 minute</option>
+          <option value="300000">5 minutes</option>
+        </select>
+      </div>
+    </span> <!-- /refresh interval select -->
+    <!-- password inputs -->
+    <input class="form-control" type="password"
+      (keyup.enter)="passwordInputSubmit()" tabindex="2"
+      [appAutofocus]="focusOnPasswordInput" [(ngModel)]="password"
+      [ngClass]="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
+      placeholder="password please" name="password">
+    <input class="form-control ml-1" type="password"
+      (keyup.enter)="passwordInputSubmit()" tabindex="3"  [hidden]="!updatingPassword"
+      [appAutofocus]="focusOnPasswordInput" [(ngModel)]="passwordConfirm"
+      [ngClass]="{'hide-login':!showLoginInput && !updatingPassword,'show-login':showLoginInput && updatingPassword}"
+      placeholder="confirm password" name="passwordConfirm">
+    <!-- /password inputs -->
+    <!-- cancel login button -->
+    <a class="btn btn-outline-warning cursor-pointer"
+      (click)="cancelLogin()" tabindex="4"
+      [ngClass]="{'hide-cancel-btn':!showLoginInput,'show-cancel-btn ml-1':showLoginInput}">
+      <span class="fa fa-ban"></span>
+    </a> <!-- /cancel login button -->
+    <!-- update/create password button -->
+    <a class="btn btn-outline-info cursor-pointer mr-1 ml-1"
+      tabindex="5" (click)="updatePassword()"
+      *ngIf="(auth.hasAuth && authService.loggedIn) || !auth.hasAuth">
+      <span class="fa fa-key"></span>
+      <span *ngIf="auth.hasAuth && authService.loggedIn">Update</span>
+      <span *ngIf="!auth.hasAuth">Create</span>
+      Password
+    </a> <!-- /update/create password button -->
+    <!-- login button -->
+    <a class="btn btn-outline-success cursor-pointer ml-1"
+      (click)="login()" *ngIf="!authService.loggedIn && auth.hasAuth"
+      tabindex="6">
+      <span class="fa fa-unlock"></span>&nbsp;
+      Login
+    </a> <!-- /login button -->
+    <!-- logged in -->
+    <a class="btn btn-outline-danger cursor-pointer"
+      (click)="logout()" *ngIf="authService.loggedIn"
+      tabindex="7">
+      <span class="fa fa-lock"></span>&nbsp;
+      Logout
+    </a> <!-- /logged in -->
+  </form>
+</nav>
+
+<div class="container-fluid mt-3">
+
+  <!-- login error -->
+  <div class="alert alert-danger" *ngIf="error" style="cursor: auto !important;">
+    <span class="fa fa-exclamation-triangle"></span>&nbsp;
+    {{ error }}
+    <button type="button" class="close cursor-pointer"
+      (click)="error = false">
+      <span>&times;</span>
+    </button>
+  </div> <!-- /login error -->
+
+  <router-outlet></router-outlet>
+
+</div>

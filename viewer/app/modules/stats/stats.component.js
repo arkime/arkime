@@ -117,6 +117,10 @@
         this.loadData();
       });
 
+      this.$scope.$on('update:interval', (event, args) => {
+        this.dataInterval = args.interval;
+      });
+
       // watch for the user to leave or return to the page
       // Don't load graph data if the user is not focused on the page!
       // if data is loaded in an inactive (background) tab,
@@ -362,9 +366,18 @@
         if (div[0][0]) {
           let axis = context.axis();
 
-          let timeFormat = d3.time.format('%H:%M:%S');
+          let timeStr;
+          if (self.graphInterval >= 600) {
+            timeStr = '%m/%d %H:%M:%S';
+          } else {
+            timeStr = '%H:%M:%S';
+          }
+
+          let timeFormat;
           if (self.settings.timezone === 'gmt') {
-            timeFormat = d3.time.format.utc('%H:%M:%SZ');
+            timeFormat = d3.time.format(timeStr);
+          } else {
+            timeFormat = d3.time.format.utc(timeStr + 'Z');
           }
 
           div.append('div')

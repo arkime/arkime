@@ -290,6 +290,14 @@ exports.shards = function(cb) {
   return internals.elasticSearchClient.cat.shards({format: "json"}, cb);
 };
 
+exports.getClusterSettings = function(options, cb) {
+  return internals.elasticSearchClient.cluster.getSettings(options, cb);
+};
+
+exports.putClusterSettings = function(options, cb) {
+  return internals.elasticSearchClient.cluster.putSettings(options, cb);
+};
+
 exports.tasks = function(cb) {
   return internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, cb);
 };

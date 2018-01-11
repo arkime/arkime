@@ -673,6 +673,7 @@ void moloch_plugin_init()
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);
     wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
+    moloch_http_set_retries(wiseService, 1);
     g_free(host);
 
     moloch_plugins_register("wise", FALSE);

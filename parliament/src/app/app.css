@@ -1,0 +1,32 @@
+/* navbar styles ----------------------------- */
+/* position the owl so it looks like it's sitting on the bottom of the navbar */
+nav.navbar > .navbar-brand > img {
+  position: absolute;
+  height: 52px;
+  top: 7px;
+}
+
+/* remove browser select box styling */
+.refresh-interval-control { -webkit-appearance: none; }
+
+/* animations -------------------------------- */
+.hide-login, .show-login, .show-cancel-btn, .hide-cancel-btn {
+  transition: width 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940),
+              opacity 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+.show-login {
+  width: 200px;
+}
+.hide-login {
+  width: 0px;
+  opacity: 0;
+  padding: 0;
+}
+.show-cancel-btn {
+  width: 38px;
+}
+.hide-cancel-btn {
+  width: 0px;
+  opacity: 0;
+  padding: 0;
+}

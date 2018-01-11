@@ -1,0 +1,75 @@
+<div>
+
+  <!-- page error -->
+  <div class="alert alert-danger" *ngIf="error">
+    <span class="fa fa-exclamation-triangle"></span>&nbsp;
+    {{ error }}
+    <button type="button" class="close cursor-pointer"
+      (click)="error = false">
+      <span>&times;</span>
+    </button>
+  </div> <!-- /page error -->
+
+  <table class="table table-hover table-sm">
+  <thead>
+    <tr>
+      <th scope="col">Cluster</th>
+      <th scope="col">Issue</th>
+      <th scope="col">Value</th>
+      <th scope="col">Node</th>
+      <th scope="col">Ignore Until</th>
+      <th scope="col" width="100px" *ngIf="authService.loggedIn">&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let issue of issues" [ngClass]="getIssueRowClass(issue)">
+      <td>{{ issue.cluster }}</td>
+      <td>{{ issue.title }}</td>
+      <td>{{ issue.value | issueValue: issue.type }}</td>
+      <td>{{ issue.node }}</td>
+      <td>{{ issue.ignoreUntil | date: 'yyyy/MM/dd HH:mm:ss' }}</td>
+      <td *ngIf="authService.loggedIn">
+        <!-- dismiss issue button -->
+        <button type="button" class="btn btn-outline-danger btn-xs pull-right cursor-pointer ml-2"
+          placement="bottom-right" ngbTooltip="Dismiss this issue for 24 hours"
+          (click)="dismissIssue(issue)" *ngIf="!issue.dismissed">
+          <span class="fa fa-check fa-fw"></span>
+        </button> <!-- /dismiss issue button -->
+        <!-- un-ignore button -->
+        <button type="button" *ngIf="issue.ignoreUntil"
+          class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
+          placement="bottom" ngbTooltip="Remove ignore"
+          (click)="removeIgnore(issue)">
+          <span class="fa fa-eye fa-fw"></span>
+        </button> <!-- /un-ignore button -->
+        <!-- ignore until dropdown -->
+        <div ngbDropdown placement="bottom-right" class="dropdown-sm pull-right"
+          *ngIf="!issue.ignoreUntil">
+          <button class="btn btn-outline-dark btn-xs cursor-pointer" ngbDropdownToggle>
+            <span class="fa fa-eye-slash fa-fw"></span>
+          </button>
+          <div ngbDropdownMenu>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 3600000)">
+              Ignore for 1 hour
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 21600000)">
+              Ignore for 6 hours
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 43200000)">
+              Ignore for 12 hours
+            </button>
+            <button class="dropdown-item cursor-pointer"
+              (click)="ignoreIssue(issue, 86400000)">
+              Ignore for 24 hours
+            </button>
+          </div>
+        </div> <!-- /ignore until dropdown -->
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</div>

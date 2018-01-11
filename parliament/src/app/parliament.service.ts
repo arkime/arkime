@@ -2,13 +2,28 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subject } from 'rxjs/Subject';
 
-import { Parliament, GroupCreated, ClusterCreated, Response } from './parliament';
+import { Parliament, GroupCreated, ClusterCreated, Response, Issues } from './parliament';
 
 @Injectable()
 export class ParliamentService {
 
-  constructor(private http: HttpClient) {}
+  refreshInterval = new BehaviorSubject<string>('15000');
+  refreshInterval$ = this.refreshInterval.asObservable();
+
+  constructor(private http: HttpClient) {
+    const interval = localStorage.getItem('refreshInterval');
+    if (interval !== null) {
+      this.setRefreshInterval(interval);
+    }
+  }
+
+  setRefreshInterval(interval: string): void {
+    this.refreshInterval.next(interval);
+    localStorage.setItem('refreshInterval', interval);
+  }
 
   getParliament(): Observable<Parliament> {
     return this.http.get<Parliament>('api/parliament');
@@ -40,5 +55,30 @@ export class ParliamentService {
 
   updateClusterOrder(reorderedParliament): Observable<Response> {
     return this.http.put<Response>(`api/parliament`, { reorderedParliament: reorderedParliament });
+  }
+
+  getIssues(): Observable<Issues> {
+    return this.http.get<Issues>(`api/issues`);
+  }
+
+  dismissIssue(groupId, clusterId, issue): Observable<any> {
+    return this.http.put<Response>(
+      `api/groups/${groupId}/clusters/${clusterId}/dismissIssue`,
+      { type: issue.type, node: issue.node }
+    );
+  }
+
+  ignoreIssue(groupId, clusterId, issue, forMs): Observable<any> {
+    return this.http.put<Response>(
+      `api/groups/${groupId}/clusters/${clusterId}/ignoreIssue`,
+      { type: issue.type, node: issue.node, ms: forMs }
+    );
+  }
+
+  removeIgnoreIssue(groupId, clusterId, issue): Observable<any> {
+    return this.http.put<Response>(
+      `api/groups/${groupId}/clusters/${clusterId}/removeIgnoreIssue`,
+      { type: issue.type, node: issue.node }
+    );
   }
 }

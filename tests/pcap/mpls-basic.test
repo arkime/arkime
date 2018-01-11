@@ -1,7 +1,14 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-000303"
+            }
+         },
          "body" : {
+<<<<<<< HEAD
             "firstPacket" : 952109329022,
             "srcMacCnt" : 1,
             "dstPort" : 711,
@@ -21,6 +28,37 @@
                "udp"
             ],
             "packetPosArray" : [
+=======
+            "prot-term" : [
+               "udp"
+            ],
+            "mac1-term" : [
+               "00:30:96:05:28:38"
+            ],
+            "pa" : 6,
+            "db" : 324,
+            "lpd" : 952109351633,
+            "db1" : 324,
+            "ss" : 1,
+            "mac2-term-cnt" : 1,
+            "ipSrc" : "10.1.2.1",
+            "firstPacket" : 952109329022,
+            "fpd" : 952109329022,
+            "db2" : 0,
+            "ipDst" : "255.255.255.255",
+            "by" : 372,
+            "portDst" : 711,
+            "lastPacket" : 952109351633,
+            "by2" : 0,
+            "timestamp" : "SET",
+            "prot-term-cnt" : 1,
+            "portSrc" : 711,
+            "p2" : 711,
+            "fb1" : "000100100a010001",
+            "p1" : 711,
+            "fs" : [],
+            "ps" : [
+>>>>>>> origin/master
                24,
                436,
                2002,
@@ -28,6 +66,7 @@
                3181,
                5412
             ],
+<<<<<<< HEAD
             "totDataBytes" : 324,
             "totPackets" : 6,
             "protocolCnt" : 1,
@@ -58,6 +97,30 @@
                "_index" : "tests_sessions2-000303",
                "_type" : "session"
             }
+=======
+            "pa1" : 6,
+            "mac2-term" : [
+               "ff:ff:ff:ff:ff:ff"
+            ],
+            "psl" : [
+               78,
+               78,
+               78,
+               78,
+               78,
+               78
+            ],
+            "pr" : 17,
+            "a2" : "255.255.255.255",
+            "mac1-term-cnt" : 1,
+            "by1" : 372,
+            "lp" : 952109351,
+            "pa2" : 0,
+            "sl" : 22610,
+            "no" : "test",
+            "a1" : "10.1.2.1",
+            "fp" : 952109329
+>>>>>>> origin/master
          }
       },
       {
@@ -68,6 +131,7 @@
             }
          },
          "body" : {
+<<<<<<< HEAD
             "dstBytes" : 0,
             "packetPosArray" : [
                102,
@@ -90,6 +154,46 @@
             "firstPacket" : 952109332196,
             "dstPort" : 711,
             "packetLenArray" : [
+=======
+            "mac1-term" : [
+               "00:30:96:e6:fc:39"
+            ],
+            "pa" : 6,
+            "db" : 324,
+            "db1" : 324,
+            "lpd" : 952109353515,
+            "prot-term" : [
+               "udp"
+            ],
+            "mac2-term-cnt" : 1,
+            "ss" : 1,
+            "firstPacket" : 952109332196,
+            "fpd" : 952109332196,
+            "ipSrc" : "10.1.2.2",
+            "ipDst" : "255.255.255.255",
+            "db2" : 0,
+            "timestamp" : "SET",
+            "by2" : 0,
+            "prot-term-cnt" : 1,
+            "portSrc" : 711,
+            "by" : 372,
+            "portDst" : 711,
+            "lastPacket" : 952109353515,
+            "fs" : [],
+            "ps" : [
+               102,
+               514,
+               2601,
+               3013,
+               5154,
+               5566
+            ],
+            "pa1" : 6,
+            "p2" : 711,
+            "fb1" : "000100100a200001",
+            "p1" : 711,
+            "psl" : [
+>>>>>>> origin/master
                78,
                78,
                78,
@@ -97,6 +201,7 @@
                78,
                78
             ],
+<<<<<<< HEAD
             "srcPackets" : 6,
             "srcPayload8" : "000100100a200001",
             "srcPort" : 711,
@@ -118,16 +223,36 @@
             "dstDataBytes" : 0,
             "node" : "test",
             "timestamp" : "SET"
+=======
+            "pr" : 17,
+            "a2" : "255.255.255.255",
+            "mac2-term" : [
+               "ff:ff:ff:ff:ff:ff"
+            ],
+            "pa2" : 0,
+            "sl" : 21318,
+            "no" : "test",
+            "a1" : "10.1.2.2",
+            "fp" : 952109332,
+            "mac1-term-cnt" : 1,
+            "lp" : 952109353,
+            "by1" : 372
+>>>>>>> origin/master
          }
       },
       {
          "header" : {
             "index" : {
+<<<<<<< HEAD
                "_index" : "tests_sessions2-000303",
+=======
+               "_index" : "tests_sessions-000303",
+>>>>>>> origin/master
                "_type" : "session"
             }
          },
          "body" : {
+<<<<<<< HEAD
             "dstPackets" : 5,
             "protocolCnt" : 2,
             "totPackets" : 10,
@@ -147,6 +272,45 @@
                "mpls"
             ],
             "packetPosArray" : [
+=======
+            "prot-term" : [
+               "icmp",
+               "mpls"
+            ],
+            "db" : 0,
+            "lpd" : 952109337204,
+            "db1" : 0,
+            "mac1-term" : [
+               "00:30:96:05:28:38"
+            ],
+            "pa" : 10,
+            "ss" : 1,
+            "mac2-term-cnt" : 1,
+            "ipSrc" : "10.1.2.1",
+            "icmpCode" : [
+               0
+            ],
+            "fpd" : 952109337199,
+            "firstPacket" : 952109337199,
+            "db2" : 0,
+            "ipDst" : "10.34.0.1",
+            "portDst" : 0,
+            "lastPacket" : 952109337204,
+            "by" : 1160,
+            "portSrc" : 0,
+            "timestamp" : "SET",
+            "by2" : 570,
+            "prot-term-cnt" : 2,
+            "icmpType" : [
+               8,
+               0
+            ],
+            "p1" : 0,
+            "p2" : 0,
+            "pa1" : 5,
+            "fs" : [],
+            "ps" : [
+>>>>>>> origin/master
                682,
                816,
                946,
@@ -158,12 +322,21 @@
                1738,
                1872
             ],
+<<<<<<< HEAD
             "totDataBytes" : 0,
             "dstBytes" : 570,
             "srcPackets" : 5,
             "srcPort" : 0,
             "dstPort" : 0,
             "packetLenArray" : [
+=======
+            "mac2-term" : [
+               "00:30:96:e6:fc:39"
+            ],
+            "a2" : "10.34.0.1",
+            "pr" : 1,
+            "psl" : [
+>>>>>>> origin/master
                134,
                130,
                134,
@@ -175,6 +348,7 @@
                134,
                130
             ],
+<<<<<<< HEAD
             "srcMacCnt" : 1,
             "firstPacket" : 952109337199,
             "ipProtocol" : 1,
@@ -195,6 +369,16 @@
             "srcMac" : [
                "00:30:96:05:28:38"
             ]
+=======
+            "mac1-term-cnt" : 1,
+            "by1" : 590,
+            "lp" : 952109337,
+            "no" : "test",
+            "a1" : "10.1.2.1",
+            "fp" : 952109337,
+            "pa2" : 5,
+            "sl" : 4
+>>>>>>> origin/master
          }
       },
       {
@@ -205,6 +389,7 @@
             }
          },
          "body" : {
+<<<<<<< HEAD
             "dstIp" : "10.34.0.1",
             "srcBytes" : 678,
             "timestamp" : "SET",
@@ -214,9 +399,24 @@
                "ack" : 5,
                "dstZero" : 0,
                "srcZero" : 0,
+=======
+            "mac2-term-cnt" : 1,
+            "ss" : 1,
+            "pa" : 19,
+            "mac1-term" : [
+               "00:30:96:05:28:38"
+            ],
+            "db" : 75,
+            "lpd" : 952109348977,
+            "db1" : 26,
+            "tcpflags" : {
+               "psh" : 9,
+               "rst" : 3,
+>>>>>>> origin/master
                "urg" : 0,
                "fin" : 2,
                "syn-ack" : 1,
+<<<<<<< HEAD
                "rst" : 3,
                "psh" : 9
             },
@@ -271,6 +471,24 @@
                "mpls"
             ],
             "packetPosArray" : [
+=======
+               "fin" : 2,
+               "syn" : 1,
+               "ack" : 5
+            },
+            "prot-term" : [
+               "tcp",
+               "mpls"
+            ],
+            "ipDst" : "10.34.0.1",
+            "db2" : 49,
+            "firstPacket" : 952109346874,
+            "fpd" : 952109346874,
+            "ipSrc" : "10.1.2.1",
+            "fb2" : "fffb01fffb03fffd",
+            "fs" : [],
+            "ps" : [
+>>>>>>> origin/master
                3349,
                3427,
                3503,
@@ -291,9 +509,57 @@
                5002,
                5078
             ],
+<<<<<<< HEAD
             "totDataBytes" : 75,
             "dstPackets" : 8,
             "totPackets" : 19
+=======
+            "pa1" : 11,
+            "p2" : 23,
+            "fb1" : "fffd03fffb1ffffb",
+            "p1" : 11001,
+            "by2" : 517,
+            "timestamp" : "SET",
+            "prot-term-cnt" : 2,
+            "portSrc" : 11001,
+            "by" : 1195,
+            "portDst" : 23,
+            "lastPacket" : 952109348977,
+            "sl" : 2103,
+            "pa2" : 8,
+            "no" : "test",
+            "a1" : "10.1.2.1",
+            "fp" : 952109346,
+            "by1" : 678,
+            "mac1-term-cnt" : 1,
+            "lp" : 952109348,
+            "pr" : 6,
+            "psl" : [
+               78,
+               76,
+               76,
+               83,
+               76,
+               82,
+               77,
+               77,
+               83,
+               107,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76
+            ],
+            "a2" : "10.34.0.1",
+            "mac2-term" : [
+               "00:30:96:e6:fc:39"
+            ]
+>>>>>>> origin/master
          }
       }
    ]
