@@ -42,6 +42,7 @@
           (click)="dismissIssue(issue)" *ngIf="!issue.dismissed">
           <span class="fa fa-check fa-fw"></span>
         </button> <!-- /dismiss issue button -->
+        
         <!-- un-ignore button -->
         <button type="button" *ngIf="issue.ignoreUntil"
           class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
@@ -49,6 +50,7 @@
           (click)="removeIgnore(issue)">
           <span class="fa fa-eye fa-fw"></span>
         </button> <!-- /un-ignore button -->
+
         <!-- ignore until dropdown -->
         <div ngbDropdown placement="bottom-right" class="dropdown-sm pull-right"
           *ngIf="!issue.ignoreUntil">

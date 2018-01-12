@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
-import { ParliamentService } from './parliament.service';
-import { AuthService } from './auth.service';
+import { ParliamentService } from '../parliament/parliament.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   templateUrl: './issues.html'

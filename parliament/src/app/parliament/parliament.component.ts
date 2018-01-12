@@ -4,9 +4,9 @@ import { trigger, style, transition, animate, keyframes, query } from '@angular/
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 import { ParliamentService } from './parliament.service';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { Parliament } from './parliament';
-import { Auth, Login } from './auth';
+import { Auth, Login } from '../auth/auth';
 
 @Component({
   templateUrl : './parliament.html',
