@@ -77,6 +77,12 @@ export class IssuesComponent implements OnInit, OnDestroy {
   }
 
   /* page functions -------------------------------------------------------- */
+  getIssueTrackingId(index, issue) {
+    let id = `${issue.groupId}-${issue.clusterId}`;
+    if (issue.node) { id += `-${issue.node.replace(/\s/g, '')}`; }
+    id += `-${issue.type}`;
+  }
+
   getIssueRowClass(issue) {
     if (issue.ignoreUntil) {
       return 'table-secondary text-muted';
@@ -89,59 +95,13 @@ export class IssuesComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  /**
-   * Sends a request to dismiss an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to be dismissed
-   */
-  dismissIssue(issue) {
-    this.parliamentService.dismissIssue(issue.groupId, issue.clusterId, issue)
-      .subscribe(
-        (data) => {
-          this.error = '';
-          issue.dismissed = data.dismissed;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to dismiss this issue';
-        }
-      );
-  }
-
-  /**
-   * Sends a request to ignore an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to be ignored
-   * @param {number} forMs - the amount of time (in ms) that the issue should be ignored
-   */
-  ignoreIssue(issue, forMs) {
-    this.parliamentService.ignoreIssue(issue.groupId, issue.clusterId, issue, forMs)
-      .subscribe(
-        (data) => {
-          this.error = '';
-          issue.ignoreUntil = data.ignoreUntil;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to ignore this issue';
-        }
-      );
-  }
-
-  /**
-   * Sends a request to remove an ignore for an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to remove the ignore for
-   */
-  removeIgnore(issue) {
-    this.parliamentService.removeIgnoreIssue(issue.groupId, issue.clusterId, issue)
-      .subscribe(
-        (data) => {
-          this.error = '';
-          issue.ignoreUntil = undefined;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to ignore this issue';
-        }
-      );
+  // Fired when an issue is changed within the issue.actions.component
+  issueChange($event) {
+    if ($event.success) {
+      this.error = '';
+    } else {
+      this.error = $event.message;
+    }
   }
 
 }

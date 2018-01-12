@@ -1,3 +1,5 @@
+import { Issue } from '../issues/issue';
+
 export class Parliament {
   version: string;
   groups: [Object];
@@ -28,7 +30,6 @@ export class Response {
   text: string;
 }
 
-// TODO define issue object
 export class Issues {
-  issues: [any];
+  issues: [ Issue ];
 }

@@ -13,6 +13,7 @@ import { AppComponent } from './app.component';
 import { ParliamentComponent } from './parliament/parliament.component';
 import { ParliamentService } from './parliament/parliament.service';
 import { IssuesComponent } from './issues/issues.component';
+import { IssueActionsComponent } from './issues/issue.actions.component';
 import { CommaStringPipe, IssueValuePipe } from './app.pipes';
 import { TokenInterceptor } from './auth/token.interceptor';
 import { AuthService } from './auth/auth.service';
@@ -30,6 +31,7 @@ const appRoutes: Routes = [
     AppComponent,
     ParliamentComponent,
     IssuesComponent,
+    IssueActionsComponent,
     CommaStringPipe,
     IssueValuePipe,
     AutofocusDirective

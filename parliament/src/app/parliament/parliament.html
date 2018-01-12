@@ -352,51 +352,11 @@
             </small> <!-- /cluster stats -->
             <!-- cluster issues -->
             <small *ngIf="cluster.issues">
-              <span *ngFor="let issue of cluster.issues">
+              <span *ngFor="let issue of cluster.issues; trackBy:getIssueTrackingId;">
                 <div *ngIf="!issue.dismissed && !issue.ignoreUntil" class="alert alert-sm"
                   [ngClass]="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
-                  <!-- dismiss issue button -->
-                  <button type="button" class="btn pull-right btn-outline-danger btn-xs cursor-pointer"
-                    placement="left" ngbTooltip="Dismiss this issue for 24 hours"
-                    (click)="dismissIssue(group.id, cluster.id, issue)" *ngIf="authService.loggedIn">
-                    <span class="fa fa-check"></span>
-                  </button> <!-- /dismiss issue button -->
-                  <!-- ignore until dropdown -->
-                  <div ngbDropdown placement="bottom-right" class="pull-right mr-1 dropdown-sm" *ngIf="authService.loggedIn">
-                    <button class="btn btn-outline-dark btn-xs cursor-pointer" ngbDropdownToggle>
-                      <span class="fa fa-eye-slash"></span>
-                    </button>
-                    <div ngbDropdownMenu>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 3600000)">
-                        Ignore for 1 hour
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 21600000)">
-                        Ignore for 6 hours
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 43200000)">
-                        Ignore for 12 hours
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 86400000)">
-                        Ignore for 1 day
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 604800000)">
-                        Ignore for 1 week
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, 2592000000)">
-                        Ignore for 1 month
-                      </button>
-                      <button class="dropdown-item cursor-pointer"
-                        (click)="ignoreIssue(group.id, cluster.id, issue, -1)">
-                        Ignore forever
-                      </button>
-                    </div>
-                  </div> <!-- /ignore until dropdown -->
+                  <app-issue-actions [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
+                    (change)="issueChange($event)"></app-issue-actions>
                   <!-- issue text -->
                   <span class="fa fa-exclamation-triangle"></span>&nbsp;
                   <span *ngIf="issue.node">{{ issue.node }}</span>
