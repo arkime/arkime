@@ -227,7 +227,7 @@ export class ParliamentComponent implements OnInit, OnDestroy {
     if (issue.node) {
       return `${issue.node.replace(/\s/g, '')}-${issue.type}`;
     } else {
-      id = issue.type;
+      return issue.type;
     }
   }
 
