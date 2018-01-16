@@ -13,11 +13,31 @@
   <table class="table table-hover table-sm">
   <thead>
     <tr>
-      <th scope="col">Cluster</th>
-      <th scope="col">Issue</th>
+      <th scope="col" class="cursor-pointer" (click)="sortBy('cluster');">
+        Cluster
+        <span class="fa fa-sort fa-fw" *ngIf="sort !== 'cluster'"></span>
+        <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'cluster' && order === 'asc'"></span>
+        <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'cluster' && order === 'desc'"></span>
+      </th>
+      <th scope="col" class="cursor-pointer" (click)="sortBy('title');">
+        Issue
+        <span class="fa fa-sort fa-fw" *ngIf="sort !== 'title'"></span>
+        <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'title' && order === 'asc'"></span>
+        <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'title' && order === 'desc'"></span>
+      </th>
       <th scope="col">Value</th>
-      <th scope="col">Node</th>
-      <th scope="col">Ignore Until</th>
+      <th scope="col" class="cursor-pointer" (click)="sortBy('node');">
+        Node
+        <span class="fa fa-sort fa-fw" *ngIf="sort !== 'node'"></span>
+        <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'node' && order === 'asc'"></span>
+        <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'node' && order === 'desc'"></span>
+      </th>
+      <th scope="col" class="cursor-pointer" (click)="sortBy('ignoreUntil');">
+        Ignore Until
+        <span class="fa fa-sort fa-fw" *ngIf="sort !== 'ignoreUntil'"></span>
+        <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'ignoreUntil' && order === 'asc'"></span>
+        <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'ignoreUntil' && order === 'desc'"></span>
+      </th>
       <th scope="col" width="100px" *ngIf="authService.loggedIn">&nbsp;</th>
     </tr>
   </thead>

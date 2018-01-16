@@ -814,14 +814,38 @@ router.get('/issues', (req, res, next) => {
         for (let issue of cluster.issues) {
           if (issue && !issue.dismissed) {
             let issueClone = JSON.parse(JSON.stringify(issue));
-            issueClone.groupId = group.id;
-            issueClone.clusterId = cluster.id;
-            issueClone.cluster = cluster.title;
+            issueClone.groupId    = group.id;
+            issueClone.clusterId  = cluster.id;
+            issueClone.cluster    = cluster.title;
             issues.push(issueClone);
           }
         }
       }
     }
+  }
+
+  let sortBy = req.query.sort, type = 'string';
+  if (sortBy === 'ignoreUntil') { type = 'number'; }
+
+  if (sortBy) {
+    let order = req.query.order || 'desc';
+    issues.sort((a,b) => {
+      if (type === 'string') {
+        let aVal = '', bVal = '';
+
+        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
+        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
+
+        return order === 'asc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+      } else if (type === 'number') {
+        let aVal = 0, bVal = 0;
+
+        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
+        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
+
+        return order === 'asc' ? bVal - aVal : aVal - bVal;
+      }
+    });
   }
 
   return res.json({ issues:issues });
