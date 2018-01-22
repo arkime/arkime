@@ -14,8 +14,11 @@
 
     /**
      * Initialize global variables for this controller
-     * @param UserService  Transacts users with the server
-     * TODO
+     * @param $scope          Angular application model object
+     * @param $timeout        Angular's wrapper for window.setTimeout
+     * @param $location       Exposes browser address bar URL (based on the window.location)
+     * @param $anchorScroll   Scrolls to the element related to given hash
+     * @param UserService     Transacts users and user data with the server
      *
      * @ngInject
      */
@@ -94,7 +97,7 @@
     }
 
     columnClick(name) {
-      this.sortField=name; 
+      this.sortField=name;
       this.sortReverse = !this.sortReverse;
       this.loadData();
     }
@@ -114,6 +117,11 @@
         .then((response) => {
           this.loading  = false;
           this.users    = response;
+          for (let user of this.users.data) {
+            if (user.expression) { // format user expression
+              user.expression = user.expression.replace(/&amp;/g, '&');
+            }
+          }
         })
         .catch((error) => {
           this.loading  = false;
