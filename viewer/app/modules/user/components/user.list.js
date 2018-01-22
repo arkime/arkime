@@ -117,11 +117,6 @@
         .then((response) => {
           this.loading  = false;
           this.users    = response;
-          for (let user of this.users.data) {
-            if (user.expression) { // format user expression
-              user.expression = user.expression.replace(/&amp;/g, '&');
-            }
-          }
         })
         .catch((error) => {
           this.loading  = false;

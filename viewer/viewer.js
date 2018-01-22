@@ -2442,7 +2442,7 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 });
 
 app.get('/esshard/list', function(req, res) {
-  Promise.all([Db.shards(), 
+  Promise.all([Db.shards(),
                Db.getClusterSettings({flatSettings: true})
               ]).then(([shards, settings], reject) => {
 
@@ -4884,7 +4884,6 @@ app.post('/user/list', logAction('users'), function(req, res) {
           for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
             var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
             fields.id = result.hits.hits[i]._id;
-            fields.expression = safeStr(fields.expression || "");
             fields.headerAuthEnabled = fields.headerAuthEnabled || false;
             fields.emailSearch = fields.emailSearch || false;
             fields.removeEnabled = fields.removeEnabled || false;
