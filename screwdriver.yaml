@@ -3,6 +3,15 @@ shared:
         email:
             addresses: [moloch.build@oath.com]
             statuses: [SUCCESS, FAILURE]
+        slack:
+	    channels:
+		- nsm
+	    statuses:
+		- SUCCESS
+		- FAILURE
+		- ABORTED
+		- RUNNING
+
 jobs:
     centos-6:
         requires: [~pr, ~commit]
