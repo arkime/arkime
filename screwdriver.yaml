@@ -2,7 +2,7 @@ shared:
     settings:
         slack:
             channels:
-                - nsm
+                - moloch
             statuses:
                 - SUCCESS
                 - FAILURE
