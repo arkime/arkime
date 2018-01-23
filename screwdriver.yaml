@@ -1,16 +1,13 @@
 shared:
     settings:
-        email:
-            addresses: [moloch.build@oath.com]
-            statuses: [SUCCESS, FAILURE]
         slack:
-	    channels:
-		- nsm
-	    statuses:
-		- SUCCESS
-		- FAILURE
-		- ABORTED
-		- RUNNING
+            channels:
+                - nsm
+            statuses:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+                - RUNNING
 
 jobs:
     centos-6:
