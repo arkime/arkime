@@ -548,13 +548,14 @@ static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condit
     return CURLE_OK;
 }
 /******************************************************************************/
-curl_socket_t moloch_http_curl_open_callback(void *serverV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
+curl_socket_t moloch_http_curl_open_callback(void *snameV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
 {
-    MolochHttpServer_t        *server = serverV;
+    MolochHttpServerName_t    *sname = snameV;
+    MolochHttpServer_t        *server = sname->server;
 
     int fd = socket(addr->family, addr->socktype, addr->protocol);
 
-    long ev = moloch_watch_fd(fd, G_IO_OUT | G_IO_IN, moloch_http_curl_watch_open_callback, serverV);
+    long ev = moloch_watch_fd(fd, G_IO_OUT | G_IO_IN, moloch_http_curl_watch_open_callback, snameV);
     g_hash_table_insert(server->fd2ev, (void *)(long)fd, (void *)(long)ev);
     return fd;
 }
