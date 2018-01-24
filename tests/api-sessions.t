@@ -126,12 +126,12 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
-    my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?fields=fp,lp,a1,g1,a2,g2,pa,no,tcpflags.rst,tcpflags.psh&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?fields=firstPacket,lastPacket,srcIp,srcGEO,dstIp,dstGEO,totPackets,node,tcpflags.rst,tcpflags.psh&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Moloch Node, TCP Flag RST, TCP Flag PSH
-1386004309,1386004309,10.180.156.185,USA,10.180.156.249,USA,14,test,0,4
-1386004312,1386004312,10.180.156.185,USA,10.180.156.249,USA,15,test,0,4
-1386004317,1386004317,10.180.156.185,USA,10.180.156.249,USA,17,test,0,6
+1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4
+1386004312331,1386004312384,10.180.156.185,US,10.180.156.249,US,15,test,0,4
+1386004317979,1386004317989,10.180.156.185,US,10.180.156.249,US,17,test,0,6
 ', "CSV Expression");
 
 

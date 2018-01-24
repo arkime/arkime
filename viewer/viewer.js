@@ -3483,7 +3483,9 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   if (fields) {
     var columnHeaders = [];
     for (let i = 0, ilen = fields.length; i < ilen; ++i) {
-      columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+      if (fieldObjects[fields[i]] !== undefined) {
+        columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+      }
     }
     res.write(columnHeaders.join(', '));
     res.write('\r\n');
