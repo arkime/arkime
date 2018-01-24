@@ -2480,7 +2480,7 @@ app.get('/esshard/list', function(req, res) {
     }
 
     let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); });
-    res.send({nodes: nodes, indices: indices});
+    res.send({nodes: nodes, indices: indices, nodeExcludes: nodeExcludes, ipExcludes: ipExcludes});
   });
 });
 
@@ -2511,7 +2511,7 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
-      return res.send(JSON.stringify({ success: true, text: 'Added'}));
+      return res.send(JSON.stringify({ success: true, text: 'Excluded'}));
     });
   });
 });
@@ -2528,7 +2528,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
     } else if (req.params.type === "node") {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown exclude type");
+      return res.molochError(403, "Unknown include type");
     }
 
     if (settings.persistent[settingName]) {
@@ -2544,7 +2544,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
-      return res.send(JSON.stringify({ success: true, text: 'Added'}));
+      return res.send(JSON.stringify({ success: true, text: 'Included'}));
     });
   });
 });
