@@ -58,7 +58,7 @@ my $test1Token = getTokenCookie("test1");
 # esshards
     my $shards = viewerGet("/esshard/list");
     cmp_ok (@{$shards->{indices}}, ">=", 30, "esshards: indices array size");
-    is($shards->{indices}->[0]->{name}, "dstats_v2", "esshard: index[0] is dstats_v2");
+    cmp_ok ($shards->{indices}->[0]->{name}, "lt", $shards->{indices}->[1]->{name}, "esshard: index[0] before index[1]");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
