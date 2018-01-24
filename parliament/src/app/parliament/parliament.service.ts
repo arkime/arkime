@@ -57,8 +57,8 @@ export class ParliamentService {
     return this.http.put<Response>(`api/parliament`, { reorderedParliament: reorderedParliament });
   }
 
-  getIssues(): Observable<Issues> {
-    return this.http.get<Issues>(`api/issues`);
+  getIssues(query): Observable<Issues> {
+    return this.http.get<Issues>(`api/issues`, { params: query });
   }
 
   dismissIssue(groupId, clusterId, issue): Observable<any> {

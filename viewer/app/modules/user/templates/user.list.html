@@ -65,10 +65,10 @@
         ng-repeat="user in $ctrl.filteredUsers = ($ctrl.users.data) track by user.userId">
         <td class="no-wrap">{{user.userId}}</td>
         <td class="no-wrap">
-          <input class="form-control input-sm" type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:300}">
+          <input class="form-control input-sm" type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:500}">
         </td>
         <td class="no-wrap">
-          <input class="form-control input-sm" type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:300}">
+          <input class="form-control input-sm" type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:500}">
         </td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.enabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.createEnabled" ng-change="$ctrl.userChanged(user);"></td>

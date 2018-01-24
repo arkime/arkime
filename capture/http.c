@@ -94,6 +94,7 @@ typedef struct {
 
 struct molochhttpserver_t {
     uint64_t                 dropped;
+    GHashTable              *fd2ev;
     char                   **names;
     MolochHttpServerName_t  *snames;
     char                   **defaultHeaders;
@@ -486,12 +487,12 @@ static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condit
     socklen_t addressLength = sizeof(localAddressStorage);
     int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
     if (rc != 0)
-        return FALSE;
+        return CURLE_OK;
 
     addressLength = sizeof(remoteAddressStorage);
     rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
     if (rc != 0)
-        return FALSE;
+        return CURLE_OK;
 
     char sessionId[MOLOCH_SESSIONID_LEN];
     int  localPort, remotePort;
@@ -544,14 +545,18 @@ static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condit
 
     moloch_http_curlm_check_multi_info(server);
 
-    return FALSE;
+    return CURLE_OK;
 }
 /******************************************************************************/
-curl_socket_t moloch_http_curl_open_callback(void *serverV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
+curl_socket_t moloch_http_curl_open_callback(void *snameV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
 {
+    MolochHttpServerName_t    *sname = snameV;
+    MolochHttpServer_t        *server = sname->server;
+
     int fd = socket(addr->family, addr->socktype, addr->protocol);
 
-    moloch_watch_fd(fd, G_IO_OUT | G_IO_IN, moloch_http_curl_watch_open_callback, serverV);
+    long ev = moloch_watch_fd(fd, G_IO_OUT | G_IO_IN, moloch_http_curl_watch_open_callback, snameV);
+    g_hash_table_insert(server->fd2ev, (void *)(long)fd, (void *)(long)ev);
     return fd;
 }
 /******************************************************************************/
@@ -561,7 +566,13 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
     MolochHttpServer_t        *server = sname->server;
 
     if (! BIT_ISSET(fd, connectionsSet)) {
-        LOG("Couldn't connect %s", sname->name);
+        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
+        LOG("Couldn't connect %s (%d, %ld) ", sname->name, fd, ev);
+        close(fd);
+        GSource *source = g_main_context_find_source_by_id (NULL, ev);
+        if (source)
+            g_source_destroy (source);
+        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
         return 0;
     }
 
@@ -877,6 +888,8 @@ void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOuts
     curl_multi_setopt(server->multi, CURLMOPT_MAXCONNECTS, server->maxConns);
 
     server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+
+    server->fd2ev = g_hash_table_new(NULL, NULL);
 
     MOLOCH_LOCK_INIT(server->syncRequest);
 

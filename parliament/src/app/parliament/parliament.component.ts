@@ -4,9 +4,9 @@ import { trigger, style, transition, animate, keyframes, query } from '@angular/
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 import { ParliamentService } from './parliament.service';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { Parliament } from './parliament';
-import { Auth, Login } from './auth';
+import { Auth, Login } from '../auth/auth';
 
 @Component({
   templateUrl : './parliament.html',
@@ -221,6 +221,14 @@ export class ParliamentComponent implements OnInit, OnDestroy {
   /* page functions -------------------------------------------------------- */
   getTrackingId(index, item) {
     return item.id;
+  }
+
+  getIssueTrackingId(index, issue) {
+    if (issue.node) {
+      return `${issue.node.replace(/\s/g, '')}-${issue.type}`;
+    } else {
+      return issue.type;
+    }
   }
 
   debounceSearch() {
@@ -512,43 +520,13 @@ export class ParliamentComponent implements OnInit, OnDestroy {
     this.stopAutoRefresh();
   }
 
-  /**
-   * Sends a request to dismiss an issue within a cluster
-   * If succesful, updates the cluster in the view, otherwise displays error
-   * @param {int} groupId - the id of the group
-   * @param {int} clusterId - the id of the cluster
-   * @param {object} issue - the issue to be dismissed
-   */
-  dismissIssue(groupId, clusterId, issue) {
-    this.parliamentService.dismissIssue(groupId, clusterId, issue)
-      .subscribe(
-        (data) => {
-          issue.dismissed = data.dismissed;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to dismiss this issue';
-        }
-      );
-  }
-
-  /**
-   * Sends a request to ignore an issue within a cluster
-   * If succesful, updates the cluster in the view, otherwise displays error
-   * @param {int} groupId - the id of the group
-   * @param {int} clusterId - the id of the cluster
-   * @param {object} issue - the issue to be ignored
-   * @param {number} forMs - the amount of time (in ms) that the issue should be ignored
-   */
-  ignoreIssue(groupId, clusterId, issue, forMs) {
-    this.parliamentService.ignoreIssue(groupId, clusterId, issue, forMs)
-      .subscribe(
-        (data) => {
-          issue.ignoreUntil = data.ignoreUntil;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to ignore this issue';
-        }
-      );
+  // Fired when an issue is changed within the issue.actions.component
+  issueChange($event) {
+    if ($event.success) {
+      this.error = '';
+    } else {
+      this.error = $event.message;
+    }
   }
 
 }

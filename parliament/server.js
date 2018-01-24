@@ -245,7 +245,8 @@ function setIssue(cluster, newIssue) {
         issue.firstNoticed  = Date.now();
       }
 
-      if (Date.now() > issue.ignoreUntil) {
+
+      if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
         issue.alerted     = undefined;
@@ -379,7 +380,7 @@ function getStats(cluster) {
             type    : 'outOfDate',
             title   : 'Out of date',
             node    : stat.nodeName,
-            value   : Math.round(Date.now()/1000 - stat.currentTime),
+            value   : Date.now() - stat.currentTime,
             severity: 'red'
           });
         }
@@ -813,9 +814,9 @@ router.get('/issues', (req, res, next) => {
         for (let issue of cluster.issues) {
           if (issue && !issue.dismissed) {
             let issueClone = JSON.parse(JSON.stringify(issue));
-            issueClone.groupId = group.id;
-            issueClone.clusterId = cluster.id;
-            issueClone.cluster = cluster.title;
+            issueClone.groupId    = group.id;
+            issueClone.clusterId  = cluster.id;
+            issueClone.cluster    = cluster.title;
             issues.push(issueClone);
           }
         }
@@ -823,11 +824,35 @@ router.get('/issues', (req, res, next) => {
     }
   }
 
+  let sortBy = req.query.sort, type = 'string';
+  if (sortBy === 'ignoreUntil') { type = 'number'; }
+
+  if (sortBy) {
+    let order = req.query.order || 'desc';
+    issues.sort((a,b) => {
+      if (type === 'string') {
+        let aVal = '', bVal = '';
+
+        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
+        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
+
+        return order === 'asc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+      } else if (type === 'number') {
+        let aVal = 0, bVal = 0;
+
+        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
+        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
+
+        return order === 'asc' ? bVal - aVal : aVal - bVal;
+      }
+    });
+  }
+
   return res.json({ issues:issues });
 });
 
 // Dismiss an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to dismiss.';
     const error = new Error(message);
@@ -853,7 +878,7 @@ router.put('/groups/:groupId/clusters/:clusterId/dismissIssue', (req, res, next)
 });
 
 // Ignore an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to ignore.';
     const error = new Error(message);
@@ -862,7 +887,9 @@ router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) 
   }
 
   let ms = req.body.ms || 3600000; // Default to 1 hour
+
   let ignoreUntil = Date.now() + ms;
+  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
 
   let issue = findIssue(parseInt(req.params.groupId), parseInt(req.params.clusterId), req.body.type, req.body.node);
 
@@ -880,7 +907,7 @@ router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', (req, res, next) 
 });
 
 // Allow an issue with a cluster to alert by removing ignoreUntil
-router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
     let message = 'Must specify the issue type to remove the ignore.';
     const error = new Error(message);

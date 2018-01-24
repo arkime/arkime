@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
-import { ParliamentService } from './parliament.service';
-import { AuthService } from './auth.service';
-import { Auth, Login } from './auth';
+import { ParliamentService } from './parliament/parliament.service';
+import { AuthService } from './auth/auth.service';
+import { Auth, Login } from './auth/auth';
 
 @Component({
   selector    : 'app-root',

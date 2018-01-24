@@ -10,13 +10,14 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { DndModule } from 'ng2-dnd';
 
 import { AppComponent } from './app.component';
-import { ParliamentComponent } from './parliament.component';
-import { IssuesComponent } from './issues.component';
+import { ParliamentComponent } from './parliament/parliament.component';
+import { ParliamentService } from './parliament/parliament.service';
+import { IssuesComponent } from './issues/issues.component';
+import { IssueActionsComponent } from './issues/issue.actions.component';
 import { CommaStringPipe, IssueValuePipe } from './app.pipes';
-import { TokenInterceptor } from './token.interceptor';
-import { AuthService } from './auth.service';
-import { ParliamentService } from './parliament.service';
-import { AutofocusDirective } from './directives';
+import { TokenInterceptor } from './auth/token.interceptor';
+import { AuthService } from './auth/auth.service';
+import { AutofocusDirective } from './app.directives';
 
 
 const appRoutes: Routes = [
@@ -30,6 +31,7 @@ const appRoutes: Routes = [
     AppComponent,
     ParliamentComponent,
     IssuesComponent,
+    IssueActionsComponent,
     CommaStringPipe,
     IssueValuePipe,
     AutofocusDirective

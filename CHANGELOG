@@ -1,7 +1,7 @@
 NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
 ES Versions:
-  * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (only for new installs), not 7.x
+  * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (no prod tested, only for new installs), not 7.x
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3,1 not 6.x
 
@@ -28,13 +28,19 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
-0.50.0 2017/01/XX
+0.50.0 2017/01/24
   - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
   - viewer - Fixed CSV export of fields within objects (issue #790)
   - capture - Retry http requests on connect failures
   - capture - better SLL pcap support (issue #791)
   - capture - icmp code and type were swapped
   - viewer - shards tab can now exclude/include nodes/ips to move shards around
+  - capture - removed ES check for http.compression since on default in ES 5
+  - capture - clean up sockets better
+  - db.pl - now default to a max of 24 shards
+  - parliament - initial display of detected issues
+  - parliament - move all calls behind /parliament to make easier to reverse proxy
+  - viewer - users forceExpression handles special characters correctly again
 
 0.20.2 2017/01/04
   - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported

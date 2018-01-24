@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
-import { ParliamentService } from './parliament.service';
-import { AuthService } from './auth.service';
+import { ParliamentService } from '../parliament/parliament.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   templateUrl: './issues.html'
@@ -15,15 +16,26 @@ export class IssuesComponent implements OnInit, OnDestroy {
   private timerSubscriber;
   // subscriber for the refresh interval variable
   private refreshIntervalSubscriber;
+  // subscriber for url query parameters
+  private queryParamsSubscriber;
   // data refresh interval default
   private refreshInterval = '15000';
   // whether the issue data has been initialized
   private initialized = false;
 
+  // display error messages
   error = '';
+
+  // page data
   issues = [];
 
+  // query paramters
+  order = 'desc';
+  sort = '';
+
   constructor(
+    private router: Router,
+    private route: ActivatedRoute,
     private parliamentService: ParliamentService,
     public authService: AuthService
   ) {
@@ -32,29 +44,42 @@ export class IssuesComponent implements OnInit, OnDestroy {
         this.refreshInterval = interval;
 
         if (this.refreshInterval) {
-         if (this.initialized) { this.loadData(); }
-         this.startAutoRefresh();
-       } else {
-         this.stopAutoRefresh();
-       }
+          if (this.initialized) { this.loadData(); }
+          this.startAutoRefresh();
+        } else {
+          this.stopAutoRefresh();
+        }
       }
     );
   }
 
   ngOnInit() {
-    this.loadData();
+    // apply route parameters to the initial query
+    this.queryParamsSubscriber = this.route.queryParams.subscribe(
+      (params) => {
+        if (params.sort)  { this.sort   = params.sort; }
+        if (params.order) { this.order  = params.order; }
+
+        this.loadData();
+      }
+    );
   }
 
   ngOnDestroy() {
     this.stopAutoRefresh();
+    this.queryParamsSubscriber.unsubscribe();
     this.refreshIntervalSubscriber.unsubscribe();
   }
 
   /* controller functions -------------------------------------------------- */
   loadData() {
-    this.parliamentService.getIssues()
+    let query = {}; // set up query parameters (order and sort)
+    if (this.sort) { query = { order: this.order, sort: this.sort }; }
+
+    this.parliamentService.getIssues(query)
       .subscribe(
         (response) => {
+          this.error = '';
           this.issues = response.issues;
         },
         (err) => {
@@ -76,6 +101,12 @@ export class IssuesComponent implements OnInit, OnDestroy {
   }
 
   /* page functions -------------------------------------------------------- */
+  getIssueTrackingId(index, issue) {
+    let id = `${issue.groupId}-${issue.clusterId}`;
+    if (issue.node) { id += `-${issue.node.replace(/\s/g, '')}`; }
+    id += `-${issue.type}`;
+  }
+
   getIssueRowClass(issue) {
     if (issue.ignoreUntil) {
       return 'table-secondary text-muted';
@@ -88,56 +119,24 @@ export class IssuesComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  /**
-   * Sends a request to dismiss an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to be dismissed
-   */
-  dismissIssue(issue) {
-    this.parliamentService.dismissIssue(issue.groupId, issue.clusterId, issue)
-      .subscribe(
-        (data) => {
-          issue.dismissed = data.dismissed;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to dismiss this issue';
-        }
-      );
+  // Fired when an issue is changed within the issue.actions.component
+  issueChange($event) {
+    this.error = $event.success ? '' : $event.message;
   }
 
-  /**
-   * Sends a request to ignore an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to be ignored
-   * @param {number} forMs - the amount of time (in ms) that the issue should be ignored
-   */
-  ignoreIssue(issue, forMs) {
-    this.parliamentService.ignoreIssue(issue.groupId, issue.clusterId, issue, forMs)
-      .subscribe(
-        (data) => {
-          issue.ignoreUntil = data.ignoreUntil;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to ignore this issue';
-        }
-      );
-  }
+  // Fired when a sortable column is clicked
+  sortBy(property) {
+    if (this.sort === property) { // same sort field, so toggle order direction
+      this.order  = this.order === 'asc' ? 'desc' : 'asc';
+    } else { // new sort field, so set default order (desc)
+      this.sort   = property;
+      this.order  = 'desc';
+    }
 
-  /**
-   * Sends a request to remove an ignore for an issue
-   * If succesful, updates the issue in the view, otherwise displays error
-   * @param {object} issue - the issue to remove the ignore for
-   */
-  removeIgnore(issue) {
-    this.parliamentService.removeIgnoreIssue(issue.groupId, issue.clusterId, issue)
-      .subscribe(
-        (data) => {
-          issue.ignoreUntil = undefined;
-        },
-        (err) => {
-          this.error = err.error.text || 'Unable to ignore this issue';
-        }
-      );
+    // update url with sort and order parameters
+    // the query params change triggers queryParamsSubscriber and loads data
+    const params = { 'sort': this.sort, 'order': this.order };
+    this.router.navigate(['/issues'], { queryParams: params });
   }
 
 }

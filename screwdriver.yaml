@@ -1,8 +1,13 @@
 shared:
     settings:
-        email:
-            addresses: [moloch.build@oath.com]
-            statuses: [SUCCESS, FAILURE]
+        slack:
+            channels:
+                - moloch
+            statuses:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+                - RUNNING
     environment:
         MOLOCH_COPY_BRANCH: "origin/1.0.0"
         MOLOCH_FILE_NAME: 1
