@@ -237,15 +237,6 @@ function setIssue(cluster, newIssue) {
 
   for (let issue of cluster.issues) {
     if (issue.type === newIssue.type && issue.node === newIssue.node) {
-      if (issue.dismissed && (Date.now() - issue.lastNoticed > 86400000)) {
-        // issue was dismissed, but exceeded the threshold (1 day),
-        // so it's really a new issue
-        issue.alerted       = undefined;
-        issue.dismissed     = undefined;
-        issue.firstNoticed  = Date.now();
-      }
-
-
       if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
@@ -467,6 +458,19 @@ function updateParliament() {
           // don't get stats for multiviewers or offline clusters
           if (!cluster.multiviewer && !cluster.disabled) {
             promises.push(getStats(cluster));
+          }
+        }
+      }
+    }
+
+    // remove dismissed issues that have not been seen again for 1 day
+    for (let group of parliament.groups) {
+      for (let cluster of group.clusters) {
+        if (cluster.issues) {
+          for (const [index, issue] of cluster.issues.entries()) {
+            if (issue.dismissed && (Date.now() - issue.lastNoticed > 86400000)) {
+              cluster.issues.splice(index, 1);
+            }
           }
         }
       }
