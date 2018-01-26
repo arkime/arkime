@@ -931,6 +931,39 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', verifyToken
   writeParliament(req, res, next, successObj, errorText);
 });
 
+// Dismiss all issues with a cluster
+router.put('/groups/:groupId/clusters/:clusterId/dismissAllIssues', verifyToken, (req, res, next) => {
+  let now   = Date.now();
+  let count = 0;
+
+  for(let group of parliament.groups) {
+    if (group.id === parseInt(req.params.groupId)) {
+      for (let cluster of group.clusters) {
+        if (cluster.id === parseInt(req.params.clusterId)) {
+          if (cluster.issues) {
+            for (let issue of cluster.issues) {
+              if (!issue.dismissed) {
+                issue.dismissed = now;
+                count++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (!count) {
+    const error = new Error('There are no issues in this cluster to dimiss.');
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+
+  let successObj  = { success:true, text:`Successfully dismissed ${count} issues.`, dismissed:now };
+  let errorText   = 'Unable to dismiss issues.';
+  writeParliament(req, res, next, successObj, errorText);
+});
+
 
 /* LISTEN! ----------------------------------------------------------------- */
 let server;

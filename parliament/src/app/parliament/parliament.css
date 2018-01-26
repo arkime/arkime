@@ -26,8 +26,10 @@
   padding: 0.2rem 0.5rem;
 }
 
-.cluster-group .alert .btn-xs {
-  margin-top:-2px;
+.cluster-group .card .alert .issue-btns {
+  margin-top: -3px;
+  display: inline-block;
+  float: right;
 }
 
 
