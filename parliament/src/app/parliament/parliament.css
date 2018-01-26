@@ -40,29 +40,3 @@ form.edit-cluster label {
 form.edit-cluster .form-group {
   margin-bottom: .25rem;
 }
-
-
-/* displays large text for important information
- * note: must contain an inner div with the text
- * example:
- * <div class="info-area">
- *   <div>Some important text!</div>
- * </div>
- */
-.info-area {
-  font-size : 1.5rem;
-  color     : #777777;
-}
-
-.info-area span.fa {
-  display         : flex;
-  justify-content : center;
-}
-
-.vertical-center {
-  min-height      : 30vh;
-  display         : flex;
-  align-items     : center;
-  justify-content : center;
-  flex-direction  : column;
-}

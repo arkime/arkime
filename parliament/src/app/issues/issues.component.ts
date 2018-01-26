@@ -122,6 +122,20 @@ export class IssuesComponent implements OnInit, OnDestroy {
   // Fired when an issue is changed within the issue.actions.component
   issueChange($event) {
     this.error = $event.success ? '' : $event.message;
+
+    if (!this.error) {
+      // update the list of issues
+      for (let [index, issue] of this.issues.entries()) {
+        if (issue.type === $event.issue.type && issue.clusterId === $event.issue.clusterId &&
+          issue.groupId === $event.issue.groupId && issue.node === $event.issue.node) {
+          if ($event.issue.dismissed) { // remove dismissed issues
+            this.issues.splice(index, 1);
+          } else { // update ignored issues
+            issue = $event.issue;
+          }
+        }
+      }
+    }
   }
 
   // Fired when a sortable column is clicked

@@ -42,25 +42,36 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let issue of issues; trackBy:getIssueTrackingId;" [ngClass]="getIssueRowClass(issue)">
-      <td>{{ issue.cluster }}</td>
-      <td>{{ issue.title }}</td>
-      <td>{{ issue.value | issueValue: issue.type }}</td>
-      <td>{{ issue.node }}</td>
-      <td>
-        <span *ngIf="issue.ignoreUntil > -1">
-          {{ issue.ignoreUntil | date: 'yyyy/MM/dd HH:mm:ss' }}
-        </span>
-        <span *ngIf="issue.ignoreUntil === -1">
-          Forever
-        </span>
-      </td>
-      <td *ngIf="authService.loggedIn">
-        <app-issue-actions [issue]="issue" (change)="issueChange($event)">
-        </app-issue-actions>
-      </td>
-    </tr>
+    <ng-container *ngFor="let issue of issues; trackBy:getIssueTrackingId;">
+      <tr *ngIf="!issue.dismissed" [ngClass]="getIssueRowClass(issue)">
+        <td>{{ issue.cluster }}</td>
+        <td>{{ issue.title }}</td>
+        <td>{{ issue.value | issueValue: issue.type }}</td>
+        <td>{{ issue.node }}</td>
+        <td>
+          <span *ngIf="issue.ignoreUntil > -1">
+            {{ issue.ignoreUntil | date: 'yyyy/MM/dd HH:mm:ss' }}
+          </span>
+          <span *ngIf="issue.ignoreUntil === -1">
+            Forever
+          </span>
+        </td>
+        <td *ngIf="authService.loggedIn">
+          <app-issue-actions [issue]="issue" (change)="issueChange($event)">
+          </app-issue-actions>
+        </td>
+      </tr>
+    </ng-container>
   </tbody>
 </table>
+
+<!-- no issues -->
+<div *ngIf="!issues || !issues.length"
+  class="info-area vertical-center text-center">
+  <div class="text-muted">
+    <span class="fa fa-3x fa-folder-open text-muted-more"></span>
+    No issues in your Parliament
+  </div>
+</div> <!-- no clusters -->
 
 </div>
