@@ -1739,10 +1739,10 @@ function lookupQueryItems(query, doneCb) {
         } else if (files.length > 1) {
           obj.bool = {should: []};
           files.forEach(function(file) {
-            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fileIds: file.num}}]}});
+            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fileId: file.num}}]}});
           });
         } else {
-          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fileIds: files[0].num}}]};
+          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fileId: files[0].num}}]};
         }
         if (finished && outstanding === 0) {
           doneCb(err);
@@ -2848,11 +2848,11 @@ function fixFields(fields, fixCb) {
   async.parallel([
     function(parallelCb) {
       var files = [];
-      if (!fields.fileIds) {
-        fields.fileIds = [];
+      if (!fields.fileId) {
+        fields.fileId = [];
         return parallelCb(null);
       }
-      async.forEachSeries(fields.fileIds, function (item, cb) {
+      async.forEachSeries(fields.fileId, function (item, cb) {
         Db.fileIdToFile(fields.node, item, function (file) {
           if (file && file.locked === 1) {
             files.push(file.name);
@@ -2861,7 +2861,7 @@ function fixFields(fields, fixCb) {
         });
       },
       function(err) {
-        fields.fileIds = files;
+        fields.fileId = files;
         parallelCb(err);
       });
     }],
@@ -3158,7 +3158,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
-        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fileIds: {terms: {field: "fileIds", size: parts.length>1?parseInt(parts[1],10):10}}}};
+        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fileId: {terms: {field: "fileId", size: parts.length>1?parseInt(parts[1],10):10}}}};
       } else {
         query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 
@@ -3243,8 +3243,8 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
           var nresults = [];
           var sodc = 0;
           async.each(results.spi.fileand.buckets, function(nobucket, cb) {
-            sodc += nobucket.fileIds.sum_other_doc_count;
-            async.each(nobucket.fileIds.buckets, function (fsitem, cb) {
+            sodc += nobucket.fileId.sum_other_doc_count;
+            async.each(nobucket.fileId.buckets, function (fsitem, cb) {
               Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
                 if (file && file.name) {
                   nresults.push({key: file.name, doc_count: fsitem.doc_count});
@@ -3707,7 +3707,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPosArray.length);
+        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
         console.log("ERROR - processSessionIdDisk -", msg);
         endCb(msg, null);
         break;
@@ -3725,7 +3725,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 
   var fileNum;
   var itemPos = 0;
-  async.eachLimit(fields.packetPosArray, limit || 1, function(pos, nextCb) {
+  async.eachLimit(fields.packetPos, limit || 1, function(pos, nextCb) {
     if (pos < 0) {
       fileNum = pos * -1;
       return nextCb(null);
@@ -3778,7 +3778,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {_source: "node,totPackets,packetPosArray,packetLenArray,srcIp,srcPort"};
+    options  = {_source: "node,totPackets,packetPos,packetLen,srcIp,srcPort"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
@@ -3789,18 +3789,18 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
 
     var fields = session._source || session.fields;
 
-    if (maxPackets && fields.packetPosArray.length > maxPackets) {
-      fields.packetPosArray.length = maxPackets;
+    if (maxPackets && fields.packetPos.length > maxPackets) {
+      fields.packetPos.length = maxPackets;
     }
 
     /* Go through the list of prefetch the id to file name if we are running in parallel to
      * reduce the number of elasticsearch queries and problems
      */
     var outstanding = 0;
-    for (var i = 0, ilen = fields.packetPosArray.length; i < ilen; i++) {
-      if (fields.packetPosArray[i] < 0) {
+    for (var i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+      if (fields.packetPos[i] < 0) {
         outstanding++;
-        Db.fileIdToFile(fields.node, -1 * fields.packetPosArray[i], function (info) {
+        Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], function (info) {
           outstanding--;
           if (i === ilen && outstanding === 0) {
             i++; // So not called again below
@@ -4360,7 +4360,7 @@ function writePcapNg(res, id, options, doneCb) {
     res.write(b.slice(0, boffset));
 
     session.version = molochversion.version;
-    delete session.packetPosArray;
+    delete session.packetPos;
     var json = JSON.stringify(session);
 
     var len = ((json.length + 20 + 3) >> 2) << 2;
@@ -5065,12 +5065,12 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "node,ipProtocol,packetPosArray,packetLenArray"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "node,ipProtocol,packetPos,packetLen"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
     var itemPos = 0;
-    async.eachLimit(fields.packetPosArray, 10, function(pos, nextCb) {
+    async.eachLimit(fields.packetPos, 10, function(pos, nextCb) {
       if (pos < 0) {
         fileNum = pos * -1;
         return nextCb(null);
@@ -5262,7 +5262,7 @@ function sendSessionWorker(options, cb) {
       return;
     }
     session.id = options.id;
-    session.packetPosArray = ps;
+    session.packetPos = ps;
     delete session.fs;
 
     if (options.tags) {
@@ -5590,7 +5590,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
         makeFilename(function (filename) {
           req.resume();
-          session.packetPosArray[0] = - saveId.seq;
+          session.packetPos[0] = - saveId.seq;
           session.fs = [saveId.seq];
 
           if (saveId.start === 0) {
@@ -5602,8 +5602,8 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
           // Adjust packet location based on where we start writing
           if (saveId.start > 0) {
-            for (var p = 1, plen = session.packetPosArray.length; p < plen; p++) {
-              session.packetPosArray[p] += (saveId.start - 24);
+            for (var p = 1, plen = session.packetPos.length; p < plen; p++) {
+              session.packetPos[p] += (saveId.start - 24);
             }
           }
 

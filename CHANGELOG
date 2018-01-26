@@ -1,4 +1,4 @@
-NOTICE: If upgrading read https://github.com/aol.moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
+NOTICE: If upgrading read https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
 ES Versions:
   * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (no prod tested, only for new installs), not 7.x
@@ -15,10 +15,10 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.0.0 2018/02/XX
+1.0.0-alpha1 2018/01/26
   - NOTICE: Supported ES Versions: 5.6.x, 6.x (for new installs)
   - NOTICE: hasheader for email/http for old sessions will not be migrated
-  - all - rename field names
+  - all - rename all field names
   - all - no more analyzed ES fields, everything is a keyword field
   - all - full ipv6 support
   - all - tags index removed, tags/hasheader stored as first class fields

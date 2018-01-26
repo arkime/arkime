@@ -8,37 +8,73 @@
             }
          },
          "body" : {
+            "protocolCnt" : 2,
+            "srcPayload8" : "474554202f204854",
+            "lastPacket" : 1489603870937,
+            "tcpflags" : {
+               "srcZero" : 0,
+               "ack" : 4,
+               "dstZero" : 0,
+               "psh" : 2,
+               "fin" : 2,
+               "syn" : 1,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "rst" : 0
+            },
+            "srcBytes" : 764,
+            "srcPort" : 54064,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "srcPackets" : 6,
+            "dstRIR" : "ARIN",
+            "srcIp" : "10.10.10.10",
+            "segmentCnt" : 1,
+            "dstGEO" : "US",
+            "dstPort" : 80,
+            "totPackets" : 10,
+            "fileId" : [],
+            "srcDataBytes" : 172,
+            "firstPacket" : 1489603870937,
+            "dstPackets" : 4,
+            "dstIp" : "52.43.228.156",
+            "dstASN" : "AS16509 Amazon.com, Inc.",
             "http" : {
-               "useragent" : [
-                  "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
                ],
-               "methodCnt" : 1,
-               "hostCnt" : 1,
-               "responseHeaderCnt" : 13,
-               "statuscode" : [
-                  301
-               ],
-               "uri" : [
-                  "www.aol.com/"
-               ],
-               "response-location" : [
-                  "https://www.aol.com/"
-               ],
-               "useragentCnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ],
+               "uricnt" : 1,
+               "md5Cnt" : 1,
                "host" : [
                   "www.aol.com"
                ],
-               "requestHeaderCnt" : 3,
-               "uricnt" : 1,
-               "path" : [
-                  "/"
-               ],
+               "methodCnt" : 1,
                "clientVersion" : [
                   "1.1"
                ],
+               "requestHeaderCnt" : 3,
+               "response-location" : [
+                  "https://www.aol.com/"
+               ],
+               "md5" : [
+                  "cbd66d3fd40db184cf2af858b4184f87"
+               ],
+               "useragentCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "useragent" : [
+                  "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
+               ],
+               "hostCnt" : 1,
+               "uri" : [
+                  "www.aol.com/"
+               ],
+               "serverVersionCnt" : 1,
                "responseHeader" : [
                   "content-type",
                   "x-aol-hn",
@@ -54,75 +90,22 @@
                   "x-content-type-options",
                   "location"
                ],
-               "pathCnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
                "clientVersionCnt" : 1,
-               "method" : [
-                  "GET"
+               "path" : [
+                  "/"
                ],
+               "pathCnt" : 1,
+               "responseHeaderCnt" : 13,
                "statuscodeCnt" : 1,
-               "md5" : [
-                  "cbd66d3fd40db184cf2af858b4184f87"
-               ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
-               ],
-               "serverVersionCnt" : 1,
-               "md5Cnt" : 1
+               "statuscode" : [
+                  301
+               ]
             },
-            "srcBytes" : 764,
-            "dstGEO" : "US",
-            "dstPackets" : 4,
-            "dstBytes" : 1800,
-            "length" : 0,
-            "segments" : 1,
-            "ipProtocol" : 6,
-            "dstDataBytes" : 1167,
-            "dstRIR" : "ARIN",
-            "srcPackets" : 6,
-            "srcPort" : 54064,
-            "tcpflags" : {
-               "rst" : 0,
-               "urg" : 0,
-               "psh" : 2,
-               "dstZero" : 0,
-               "syn" : 1,
-               "srcZero" : 0,
-               "ack" : 4,
-               "fin" : 2,
-               "syn-ack" : 1
-            },
-            "dstIp" : "52.43.228.156",
-            "lastPacket" : 1489603870937,
-            "packetLenArray" : [
-               124,
-               180,
-               116,
-               288,
-               172,
-               1340,
-               116,
-               116,
-               172,
-               100
-            ],
-            "srcIp" : "10.10.10.10",
-            "timestamp" : "SET",
-            "srcDataBytes" : 172,
-            "node" : "test",
-            "firstPacket" : 1489603870937,
-            "fileIds" : [],
-            "dstASN" : "AS16509 Amazon.com, Inc.",
-            "dstPayload8" : "485454502f312e31",
             "totDataBytes" : 1339,
-            "protocolCnt" : 2,
-            "srcPayload8" : "474554202f204854",
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "packetPosArray" : [
+            "packetPos" : [
                216,
                356,
                552,
@@ -134,9 +117,26 @@
                2796,
                2984
             ],
-            "totBytes" : 2564,
-            "totPackets" : 10,
-            "dstPort" : 80
+            "timestamp" : "SET",
+            "dstPayload8" : "485454502f312e31",
+            "packetLen" : [
+               124,
+               180,
+               116,
+               288,
+               172,
+               1340,
+               116,
+               116,
+               172,
+               100
+            ],
+            "dstDataBytes" : 1167,
+            "ipProtocol" : 6,
+            "node" : "test",
+            "length" : 0,
+            "dstBytes" : 1800,
+            "totBytes" : 2564
          }
       }
    ]

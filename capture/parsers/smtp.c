@@ -935,7 +935,7 @@ void moloch_parser_init()
         NULL);
 
     hhField = moloch_field_define("email", "lotermfield",
-        "email.has-header", "Header", "email.headers",
+        "email.has-header", "Header", "email.header",
         "Email has the header set",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",

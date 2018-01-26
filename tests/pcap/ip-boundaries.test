@@ -3,52 +3,52 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131217"
+               "_index" : "tests_sessions2-131217",
+               "_type" : "session"
             }
          },
          "body" : {
-            "dstPort" : 3207,
-            "node" : "test",
-            "packetLenArray" : [
-               161
-            ],
-            "dstBytes" : 0,
-            "length" : 0,
-            "dstMacCnt" : 1,
-            "dstIp" : "0.0.0.0",
-            "srcPackets" : 1,
-            "srcPayload8" : "64313a6164323a69",
-            "srcPort" : 50759,
-            "lastPacket" : 1387253713030,
-            "fileIds" : [],
-            "srcBytes" : 145,
-            "srcMacCnt" : 1,
-            "totPackets" : 1,
-            "firstPacket" : 1387253713030,
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "ipProtocol" : 17,
-            "totDataBytes" : 137,
             "timestamp" : "SET",
-            "segments" : 1,
-            "packetPosArray" : [
+            "srcPort" : 50759,
+            "totPackets" : 1,
+            "srcPackets" : 1,
+            "ipProtocol" : 17,
+            "packetPos" : [
                103
             ],
-            "srcDataBytes" : 137,
-            "dstPackets" : 0,
-            "srcMac" : [
-               "78:fe:3d:11:21:f2"
-            ],
+            "node" : "test",
             "protocolCnt" : 2,
+            "srcIp" : "255.255.255.255",
+            "srcMacCnt" : 1,
+            "totDataBytes" : 137,
+            "dstMacCnt" : 1,
+            "dstBytes" : 0,
+            "dstIp" : "0.0.0.0",
+            "totBytes" : 145,
+            "dstPort" : 3207,
+            "firstPacket" : 1387253713030,
+            "fileId" : [],
+            "lastPacket" : 1387253713030,
+            "srcDataBytes" : 137,
             "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "totBytes" : 145,
-            "dstDataBytes" : 0,
-            "srcIp" : "255.255.255.255"
+            "segmentCnt" : 1,
+            "srcPayload8" : "64313a6164323a69",
+            "srcBytes" : 145,
+            "dstMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "packetLen" : [
+               161
+            ],
+            "dstPackets" : 0,
+            "srcMac" : [
+               "78:fe:3d:11:21:f2"
+            ],
+            "length" : 0,
+            "dstDataBytes" : 0
          }
       }
    ]

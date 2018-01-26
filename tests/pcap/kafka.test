@@ -1,72 +1,49 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-170104",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "protocol" : [
-               "kafka",
-               "tcp"
-            ],
+            "dstMacCnt" : 2,
+            "node" : "test",
             "vlanCnt" : 1,
-            "vlan" : [
-               300
-            ],
+            "dstDataBytes" : 0,
+            "srcMacCnt" : 1,
+            "srcDataBytes" : 79,
             "tcpflags" : {
-               "urg" : 0,
                "rst" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
                "psh" : 1,
                "srcZero" : 0,
                "dstZero" : 0,
+               "syn" : 1,
                "fin" : 1,
-               "ack" : 1
+               "urg" : 0,
+               "ack" : 1,
+               "syn-ack" : 1
             },
-            "packetLenArray" : [
+            "totBytes" : 449,
+            "srcIp" : "10.10.10.10",
+            "srcBytes" : 371,
+            "ipProtocol" : 6,
+            "protocolCnt" : 2,
+            "length" : 283,
+            "firstPacket" : 1483521857249,
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "3c:8a:b0:6e:77:c5"
+            ],
+            "srcPackets" : 4,
+            "totPackets" : 5,
+            "dstBytes" : 78,
+            "segmentCnt" : 1,
+            "srcPort" : 65056,
+            "packetLen" : [
                98,
                94,
                86,
                165,
                86
             ],
-            "firstPacket" : 1483521857249,
-            "node" : "test",
-            "srcDataBytes" : 79,
-            "length" : 283,
-            "srcMacCnt" : 1,
-            "totBytes" : 449,
-            "totPackets" : 5,
-            "ipProtocol" : 6,
-            "dstMacCnt" : 2,
-            "lastPacket" : 1483521857532,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "3c:8a:b0:6e:77:c5"
-            ],
-            "dstBytes" : 78,
-            "fileIds" : [],
-            "srcIp" : "10.10.10.10",
-            "srcBytes" : 371,
-            "totDataBytes" : 79,
-            "dstPackets" : 1,
-            "segments" : 1,
-            "tags" : [
-               "acked-unseen-segment-src"
-            ],
-            "protocolCnt" : 2,
-            "tagsCnt" : 1,
-            "dstDataBytes" : 0,
-            "dstPort" : 9092,
-            "srcPackets" : 4,
-            "srcMac" : [
-               "00:1b:17:00:02:30"
-            ],
-            "packetPosArray" : [
+            "fileId" : [],
+            "packetPos" : [
                24,
                122,
                216,
@@ -74,9 +51,32 @@
                467
             ],
             "timestamp" : "SET",
+            "tags" : [
+               "acked-unseen-segment-src"
+            ],
+            "srcMac" : [
+               "00:1b:17:00:02:30"
+            ],
+            "totDataBytes" : 79,
+            "dstPackets" : 1,
+            "protocol" : [
+               "kafka",
+               "tcp"
+            ],
+            "dstPort" : 9092,
+            "dstIp" : "10.176.192.13",
             "srcPayload8" : "0000004b00020000",
-            "srcPort" : 65056,
-            "dstIp" : "10.176.192.13"
+            "vlan" : [
+               300
+            ],
+            "lastPacket" : 1483521857532,
+            "tagsCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-170104",
+               "_type" : "session"
+            }
          }
       }
    ]

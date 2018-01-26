@@ -617,7 +617,7 @@ LOCAL int cstring_cmp(const void *a, const void *b)
 void moloch_parsers_init()
 {
     moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "segments",
+        "session.segments", "Session Segments", "segmentCnt",
         "Number of segments in session so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);

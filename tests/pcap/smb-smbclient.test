@@ -1,11 +1,25 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131219",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "dstPort" : 445,
             "srcPackets" : 21,
-            "dstPackets" : 13,
-            "packetPosArray" : [
+            "srcIp" : "127.0.0.1",
+            "dstIp" : "127.0.0.1",
+            "srcPayload8" : "000000beff534d42",
+            "dstMacCnt" : 1,
+            "srcDataBytes" : 868,
+            "dstPort" : 445,
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "timestamp" : "SET",
+            "packetPos" : [
                24,
                114,
                204,
@@ -41,14 +55,29 @@
                4333,
                4415
             ],
-            "segments" : 1,
-            "protocol" : [
-               "smb",
-               "tcp"
-            ],
-            "dstIp" : "127.0.0.1",
             "protocolCnt" : 2,
-            "packetLenArray" : [
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "totBytes" : 3929,
+            "node" : "test",
+            "fileId" : [],
+            "dstBytes" : 1667,
+            "tcpflags" : {
+               "dstZero" : 0,
+               "ack" : 10,
+               "fin" : 2,
+               "syn" : 1,
+               "psh" : 20,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "srcZero" : 0
+            },
+            "srcMacCnt" : 1,
+            "segmentCnt" : 1,
+            "dstPayload8" : "00000061ff534d42",
+            "packetLen" : [
                90,
                90,
                82,
@@ -84,74 +113,45 @@
                82,
                82
             ],
-            "lastPacket" : 1387494791811,
             "ipProtocol" : 6,
+            "srcBytes" : 2262,
+            "lastPacket" : 1387494791811,
             "length" : 3669,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "fin" : 2,
-               "syn" : 1,
-               "srcZero" : 0,
-               "psh" : 20,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 10
-            },
             "dstDataBytes" : 801,
             "firstPacket" : 1387494788141,
-            "srcMacCnt" : 1,
-            "dstBytes" : 1667,
-            "srcMac" : [
-               "00:00:00:00:00:00"
+            "dstPackets" : 13,
+            "protocol" : [
+               "smb",
+               "tcp"
             ],
-            "dstPayload8" : "00000061ff534d42",
-            "totBytes" : 3929,
-            "srcPayload8" : "000000beff534d42",
-            "node" : "test",
-            "timestamp" : "SET",
+            "totDataBytes" : 1669,
             "srcPort" : 41823,
-            "fileIds" : [],
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
+            "totPackets" : 34,
             "smb" : {
-               "userCnt" : 1,
-               "share" : [
-                  "\\\\LOCALHOST\\MP3"
-               ],
-               "osCnt" : 1,
-               "os" : [
-                  "Unix"
-               ],
+               "filenameCnt" : 1,
                "domain" : [
                   "WORKGROUP"
+               ],
+               "version" : [
+                  "Samba 3.6.3"
                ],
                "user" : [
                   "user"
                ],
-               "versionCnt" : 1,
-               "domainCnt" : 1,
-               "filenameCnt" : 1,
-               "shareCnt" : 1,
-               "version" : [
-                  "Samba 3.6.3"
+               "os" : [
+                  "Unix"
                ],
+               "userCnt" : 1,
+               "versionCnt" : 1,
+               "shareCnt" : 1,
                "filename" : [
                   "\\tmp\\foo"
-               ]
-            },
-            "srcIp" : "127.0.0.1",
-            "totPackets" : 34,
-            "srcBytes" : 2262,
-            "srcDataBytes" : 868,
-            "totDataBytes" : 1669,
-            "dstMacCnt" : 1
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131219",
-               "_type" : "session"
+               ],
+               "share" : [
+                  "\\\\LOCALHOST\\MP3"
+               ],
+               "domainCnt" : 1,
+               "osCnt" : 1
             }
          }
       }

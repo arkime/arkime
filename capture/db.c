@@ -516,7 +516,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "\"totDataBytes\":%" PRIu64 ","
                       "\"srcDataBytes\":%" PRIu64 ","
                       "\"dstDataBytes\":%" PRIu64 ","
-                      "\"segments\":%u,"
+                      "\"segmentCnt\":%u,"
                       "\"node\":\"%s\",",
                       session->packets[0] + session->packets[1],
                       session->packets[0],
@@ -535,7 +535,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             session->rootId = g_strdup(id);
         BSB_EXPORT_sprintf(jbsb, "\"rootId\":\"%s\",", session->rootId);
     }
-    BSB_EXPORT_cstr(jbsb, "\"packetPosArray\":[");
+    BSB_EXPORT_cstr(jbsb, "\"packetPos\":[");
     for(i = 0; i < session->filePosArray->len; i++) {
         if (i != 0)
             BSB_EXPORT_u08(jbsb, ',');
@@ -543,7 +543,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    BSB_EXPORT_cstr(jbsb, "\"packetLenArray\":[");
+    BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
     for(i = 0; i < session->fileLenArray->len; i++) {
         if (i != 0)
             BSB_EXPORT_u08(jbsb, ',');
@@ -551,7 +551,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    BSB_EXPORT_cstr(jbsb, "\"fileIds\":[");
+    BSB_EXPORT_cstr(jbsb, "\"fileId\":[");
     for(i = 0; i < session->fileNumArray->len; i++) {
         if (i == 0)
             BSB_EXPORT_sprintf(jbsb, "%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));

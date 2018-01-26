@@ -136,9 +136,9 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
 
 # bigendian pcap fs tests
-    my $json = viewerGet("/sessions.json?date=-1&fields=fileIds&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    ok ($json->{data}->[0]->{fileIds}->[0] =~ /bigendian.pcap/, "correct fs");
+    my $json = viewerGet("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");
 
 # bigendian pcap fs tests 2 fields
-    my $json = viewerGet("/sessions.json?date=-1&fields=tls&fields=fileIds&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    ok ($json->{data}->[0]->{fileIds}->[0] =~ /bigendian.pcap/, "correct fs");
+    my $json = viewerGet("/sessions.json?date=-1&fields=tls&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");

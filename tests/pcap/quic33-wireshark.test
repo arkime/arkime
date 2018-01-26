@@ -1,71 +1,71 @@
 {
    "sessions2" : [
       {
-         "body" : {
-            "dstASN" : "AS36040 Google LLC",
-            "dstRIR" : "ARIN",
-            "protocolCnt" : 2,
-            "packetLenArray" : [
-               1408,
-               1408,
-               135
-            ],
-            "quic" : {
-               "host" : [
-                  "www.google.com"
-               ],
-               "hostCnt" : 1,
-               "version-termCnt" : 1,
-               "version-term" : [
-                  "Q033"
-               ]
-            },
-            "srcIp" : "10.0.2.15",
-            "dstMac" : [
-               "52:54:00:12:35:02"
-            ],
-            "srcPort" : 40482,
-            "segments" : 1,
-            "ipProtocol" : 17,
-            "srcDataBytes" : 2768,
-            "node" : "test",
-            "totBytes" : 2903,
-            "length" : 195,
-            "dstDataBytes" : 111,
-            "fileIds" : [],
-            "srcMac" : [
-               "08:00:27:cc:18:37"
-            ],
-            "lastPacket" : 1462966377990,
-            "timestamp" : "SET",
-            "srcBytes" : 2784,
-            "totPackets" : 3,
-            "packetPosArray" : [
-               24,
-               1432,
-               2840
-            ],
-            "dstPayload8" : "0a79f24eb64a9c07",
-            "totDataBytes" : 2879,
-            "dstBytes" : 119,
-            "dstPackets" : 1,
-            "dstMacCnt" : 1,
-            "firstPacket" : 1462966377795,
-            "dstPort" : 443,
-            "srcPackets" : 2,
-            "srcPayload8" : "0979f24eb64a9c07",
-            "dstGEO" : "US",
-            "srcMacCnt" : 1,
-            "protocol" : [
-               "udp",
-               "quic"
-            ],
-            "dstIp" : "64.15.116.182"
-         },
          "header" : {
             "index" : {
                "_index" : "tests_sessions2-160511",
                "_type" : "session"
+            }
+         },
+         "body" : {
+            "dstASN" : "AS36040 Google LLC",
+            "dstDataBytes" : 111,
+            "packetPos" : [
+               24,
+               1432,
+               2840
+            ],
+            "firstPacket" : 1462966377795,
+            "ipProtocol" : 17,
+            "totBytes" : 2903,
+            "srcPort" : 40482,
+            "dstMac" : [
+               "52:54:00:12:35:02"
+            ],
+            "length" : 195,
+            "totDataBytes" : 2879,
+            "srcMacCnt" : 1,
+            "srcPayload8" : "0979f24eb64a9c07",
+            "dstGEO" : "US",
+            "totPackets" : 3,
+            "protocol" : [
+               "udp",
+               "quic"
+            ],
+            "dstBytes" : 119,
+            "srcBytes" : 2784,
+            "fileId" : [],
+            "dstMacCnt" : 1,
+            "dstPackets" : 1,
+            "protocolCnt" : 2,
+            "lastPacket" : 1462966377990,
+            "node" : "test",
+            "dstIp" : "64.15.116.182",
+            "packetLen" : [
+               1408,
+               1408,
+               135
+            ],
+            "timestamp" : "SET",
+            "srcMac" : [
+               "08:00:27:cc:18:37"
+            ],
+            "dstPort" : 443,
+            "srcPackets" : 2,
+            "segmentCnt" : 1,
+            "dstPayload8" : "0a79f24eb64a9c07",
+            "srcIp" : "10.0.2.15",
+            "dstRIR" : "ARIN",
+            "srcDataBytes" : 2768,
+            "quic" : {
+               "version-term" : [
+                  "Q033"
+               ],
+               "hostCnt" : 1,
+               "version-termCnt" : 1,
+               "host" : [
+                  "www.google.com"
+               ]
             }
          }
       }

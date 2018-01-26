@@ -1,65 +1,57 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131126",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "dstMacCnt" : 2,
-            "totDataBytes" : 372,
-            "segments" : 1,
+            "srcDataBytes" : 30,
+            "srcBytes" : 438,
+            "packetPos" : [
+               24,
+               118,
+               208,
+               290,
+               402,
+               484,
+               908,
+               990,
+               1072,
+               1154
+            ],
+            "firstPacket" : 1385482078892,
+            "fileId" : [],
+            "srcPackets" : 6,
+            "dstDataBytes" : 342,
             "srcMac" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "dstIp" : "10.2.95.39",
             "tcpflags" : {
-               "rst" : 0,
-               "fin" : 2,
+               "urg" : 0,
                "syn" : 1,
                "ack" : 4,
-               "syn-ack" : 1,
+               "rst" : 0,
                "psh" : 2,
+               "syn-ack" : 1,
+               "fin" : 2,
                "dstZero" : 0,
-               "srcZero" : 0,
-               "urg" : 0
+               "srcZero" : 0
             },
-            "dstPayload8" : "01545e6381800001",
-            "ipProtocol" : 6,
-            "dstBytes" : 614,
-            "srcMacCnt" : 1,
             "dns" : {
-               "qcCnt" : 1,
-               "host" : [
-                  "google.com"
+               "qt" : [
+                  "A"
                ],
-               "qc" : [
-                  "IN"
-               ],
-               "ipCnt" : 11,
-               "status" : [
-                  "NOERROR"
-               ],
-               "ip" : [
-                  "74.125.228.32",
-                  "74.125.228.33",
-                  "74.125.228.34",
-                  "74.125.228.35",
-                  "74.125.228.36",
-                  "74.125.228.37",
-                  "74.125.228.38",
-                  "74.125.228.39",
-                  "74.125.228.40",
-                  "74.125.228.41",
-                  "74.125.228.46"
-               ],
-               "opcode" : [
-                  "QUERY"
+               "RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
                ],
                "hostCnt" : 1,
-               "opcodeCnt" : 1,
                "ASN" : [
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
@@ -73,11 +65,25 @@
                   "AS15169 Google LLC",
                   "AS15169 Google LLC"
                ],
-               "statusCnt" : 1,
-               "qt" : [
-                  "A"
+               "ipCnt" : 11,
+               "opcode" : [
+                  "QUERY"
                ],
                "qtCnt" : 1,
+               "ip" : [
+                  "74.125.228.32",
+                  "74.125.228.33",
+                  "74.125.228.34",
+                  "74.125.228.35",
+                  "74.125.228.36",
+                  "74.125.228.37",
+                  "74.125.228.38",
+                  "74.125.228.39",
+                  "74.125.228.40",
+                  "74.125.228.41",
+                  "74.125.228.46"
+               ],
+               "opcodeCnt" : 1,
                "GEO" : [
                   "US",
                   "US",
@@ -91,59 +97,19 @@
                   "US",
                   "US"
                ],
-               "RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ]
+               "qcCnt" : 1,
+               "host" : [
+                  "google.com"
+               ],
+               "qc" : [
+                  "IN"
+               ],
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
             },
-            "timestamp" : "SET",
-            "srcIp" : "10.180.156.141",
-            "dstDataBytes" : 342,
-            "firstPacket" : 1385482078892,
-            "lastPacket" : 1385482078899,
-            "srcPackets" : 6,
-            "node" : "test",
-            "srcPayload8" : "001c5e6301000001",
-            "packetPosArray" : [
-               24,
-               118,
-               208,
-               290,
-               402,
-               484,
-               908,
-               990,
-               1072,
-               1154
-            ],
-            "srcDataBytes" : 30,
-            "length" : 7,
-            "totBytes" : 1052,
-            "srcPort" : 49342,
-            "protocol" : [
-               "dns",
-               "tcp"
-            ],
-            "fileIds" : [],
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "protocolCnt" : 2,
-            "dstPackets" : 4,
-            "srcGEO" : "US",
-            "dstPort" : 53,
-            "srcBytes" : 438,
-            "packetLenArray" : [
+            "packetLen" : [
                94,
                90,
                82,
@@ -155,55 +121,58 @@
                82,
                82
             ],
-            "totPackets" : 10
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "srcPort" : 49342,
+            "node" : "test",
+            "ipProtocol" : 6,
+            "dstMacCnt" : 2,
+            "dstBytes" : 614,
+            "segmentCnt" : 1,
+            "timestamp" : "SET",
+            "totDataBytes" : 372,
+            "dstPackets" : 4,
+            "srcGEO" : "US",
+            "length" : 7,
+            "protocol" : [
+               "dns",
+               "tcp"
+            ],
+            "lastPacket" : 1385482078899,
+            "totPackets" : 10,
+            "dstPayload8" : "01545e6381800001",
+            "dstIp" : "10.2.95.39",
+            "srcMacCnt" : 1,
+            "protocolCnt" : 2,
+            "totBytes" : 1052,
+            "srcIp" : "10.180.156.141",
+            "dstPort" : 53,
+            "srcPayload8" : "001c5e6301000001"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131126",
+               "_type" : "session"
+            }
          }
       },
       {
          "body" : {
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "segments" : 1,
-            "totDataBytes" : 285,
-            "dstMacCnt" : 2,
-            "dstPayload8" : "0100e2ec81800001",
-            "tcpflags" : {
-               "syn" : 1,
-               "fin" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "urg" : 0,
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "psh" : 2,
-               "ack" : 4
-            },
-            "dstIp" : "10.2.95.39",
-            "dstBytes" : 530,
-            "ipProtocol" : 6,
-            "firstPacket" : 1385482080084,
-            "dstDataBytes" : 258,
-            "srcIp" : "10.180.156.141",
             "timestamp" : "SET",
+            "segmentCnt" : 1,
+            "dstBytes" : 530,
+            "dstMacCnt" : 2,
+            "ipProtocol" : 6,
+            "node" : "test",
+            "srcPort" : 49343,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
             "dns" : {
-               "status" : [
-                  "NOERROR"
-               ],
-               "ip" : [
-                  "64.12.89.186",
-                  "205.188.101.58",
-                  "205.188.100.58",
-                  "207.200.74.38",
-                  "64.12.79.57"
-               ],
-               "qc" : [
-                  "IN"
-               ],
-               "ipCnt" : 5,
                "qcCnt" : 1,
-               "host" : [
-                  "aol.com"
-               ],
                "GEO" : [
                   "US",
                   "US",
@@ -211,7 +180,20 @@
                   "US",
                   "US"
                ],
-               "qtCnt" : 1,
+               "opcodeCnt" : 1,
+               "host" : [
+                  "aol.com"
+               ],
+               "status" : [
+                  "NOERROR"
+               ],
+               "qc" : [
+                  "IN"
+               ],
+               "statusCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
                "RIR" : [
                   "ARIN",
                   "ARIN",
@@ -219,8 +201,7 @@
                   "ARIN",
                   "ARIN"
                ],
-               "statusCnt" : 1,
-               "opcodeCnt" : 1,
+               "hostCnt" : 1,
                "ASN" : [
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network",
@@ -228,46 +209,20 @@
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network"
                ],
-               "qt" : [
-                  "A"
-               ],
-               "hostCnt" : 1,
+               "ipCnt" : 5,
                "opcode" : [
                   "QUERY"
+               ],
+               "qtCnt" : 1,
+               "ip" : [
+                  "64.12.89.186",
+                  "205.188.101.58",
+                  "205.188.100.58",
+                  "207.200.74.38",
+                  "64.12.79.57"
                ]
             },
-            "srcMacCnt" : 1,
-            "packetPosArray" : [
-               1236,
-               1330,
-               1420,
-               1502,
-               1611,
-               1693,
-               2033,
-               2115,
-               2197,
-               2279
-            ],
-            "node" : "test",
-            "srcPayload8" : "0019e2ec01000001",
-            "srcPackets" : 6,
-            "lastPacket" : 1385482080086,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "protocol" : [
-               "dns",
-               "tcp"
-            ],
-            "fileIds" : [],
-            "totBytes" : 965,
-            "srcPort" : 49343,
-            "length" : 2,
-            "srcDataBytes" : 27,
-            "totPackets" : 10,
-            "packetLenArray" : [
+            "packetLen" : [
                94,
                90,
                82,
@@ -279,11 +234,56 @@
                82,
                82
             ],
+            "tcpflags" : {
+               "srcZero" : 0,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "dstZero" : 0,
+               "rst" : 0,
+               "psh" : 2,
+               "syn" : 1,
+               "ack" : 4,
+               "urg" : 0
+            },
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "dstDataBytes" : 258,
+            "srcPackets" : 6,
+            "firstPacket" : 1385482080084,
+            "fileId" : [],
+            "packetPos" : [
+               1236,
+               1330,
+               1420,
+               1502,
+               1611,
+               1693,
+               2033,
+               2115,
+               2197,
+               2279
+            ],
             "srcBytes" : 435,
-            "srcGEO" : "US",
-            "dstPackets" : 4,
+            "srcDataBytes" : 27,
+            "srcPayload8" : "0019e2ec01000001",
             "dstPort" : 53,
-            "protocolCnt" : 2
+            "srcIp" : "10.180.156.141",
+            "totBytes" : 965,
+            "protocolCnt" : 2,
+            "srcMacCnt" : 1,
+            "dstIp" : "10.2.95.39",
+            "dstPayload8" : "0100e2ec81800001",
+            "totPackets" : 10,
+            "lastPacket" : 1385482080086,
+            "protocol" : [
+               "dns",
+               "tcp"
+            ],
+            "length" : 2,
+            "dstPackets" : 4,
+            "totDataBytes" : 285,
+            "srcGEO" : "US"
          },
          "header" : {
             "index" : {

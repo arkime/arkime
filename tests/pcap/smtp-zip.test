@@ -1,69 +1,46 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131217"
+            }
+         },
          "body" : {
-            "fileIds" : [],
-            "totBytes" : 3833,
-            "tcpflags" : {
-               "fin" : 2,
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "rst" : 0,
-               "ack" : 11,
-               "psh" : 13,
-               "dstZero" : 0,
-               "urg" : 0
-            },
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "srcIp" : "10.180.156.249",
-            "protocolCnt" : 2,
-            "srcGEO" : "US",
+            "srcPort" : 46671,
             "srcMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "totDataBytes" : 1969,
-            "dstPort" : 25,
-            "tagsCnt" : 1,
-            "firstPacket" : 1387291817187,
-            "dstGEO" : "US",
-            "dstRIR" : "ARIN",
-            "dstBytes" : 1402,
-            "totPackets" : 28,
-            "srcPackets" : 14,
             "dstDataBytes" : 470,
-            "dstMacCnt" : 2,
             "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "ipProtocol" : 6,
-            "segments" : 1,
+            "tagsCnt" : 1,
+            "lastPacket" : 1387291817565,
+            "dstPayload8" : "3232302078787878",
             "srcBytes" : 2431,
-            "node" : "test",
-            "length" : 377,
-            "timestamp" : "SET",
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "fileId" : [],
             "srcDataBytes" : 1499,
+            "dstBytes" : 1402,
+            "dstGEO" : "US",
+            "node" : "test",
+            "totDataBytes" : 1969,
+            "totPackets" : 28,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "dstRIR" : "ARIN",
             "email" : {
-               "bodyMagic" : [
-                  "application/zip"
+               "useragentCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
                ],
-               "host" : [
-                  "localhost",
-                  "xxxxxxxxxxxxx.xxx.com"
-               ],
-               "hostCnt" : 2,
-               "dst" : [
-                  "xxxxxxxxx@xxxxxxx.com"
-               ],
-               "useragent" : [
-                  "Mutt/1.5.20 (2009-12-10)"
-               ],
-               "headers" : [
+               "header" : [
                   "content-type",
                   "message-id",
                   "mime-version",
@@ -75,85 +52,75 @@
                   "date",
                   "subject"
                ],
-               "ip" : [
-                  "127.0.0.1"
-               ],
+               "srcCnt" : 1,
                "mimeVersionCnt" : 1,
-               "subjectCnt" : 1,
-               "useragentCnt" : 1,
-               "contentType" : [
-                  "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
-               ],
-               "filenameCnt" : 1,
-               "dstCnt" : 1,
-               "idCnt" : 1,
-               "ASN" : [
-                  "---"
-               ],
                "id" : [
                   "20131217145016.GA29077@xxx.net"
                ],
-               "srcCnt" : 1,
-               "filename" : [
-                  "a.zip"
-               ],
-               "headersCnt" : 10,
-               "GEO" : [
-                  "---"
-               ],
-               "bodyMagicCnt" : 1,
-               "subject" : [
-                  "zip test"
-               ],
-               "md5" : [
-                  "40be8f5100e9beabab293c9d7bacaff0"
-               ],
-               "md5Cnt" : 1,
+               "contentTypeCnt" : 1,
+               "ipCnt" : 1,
                "src" : [
                   "xxxxx@xxx.net"
                ],
-               "ipCnt" : 1,
+               "subjectCnt" : 1,
+               "subject" : [
+                  "zip test"
+               ],
+               "bodyMagic" : [
+                  "application/zip"
+               ],
+               "bodyMagicCnt" : 1,
+               "contentType" : [
+                  "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
+               ],
+               "ASN" : [
+                  "---"
+               ],
+               "md5Cnt" : 1,
+               "host" : [
+                  "localhost",
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "GEO" : [
+                  "---"
+               ],
+               "idCnt" : 1,
+               "hostCnt" : 2,
+               "md5" : [
+                  "40be8f5100e9beabab293c9d7bacaff0"
+               ],
+               "useragent" : [
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "ip" : [
+                  "127.0.0.1"
+               ],
+               "dst" : [
+                  "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "filenameCnt" : 1,
+               "filename" : [
+                  "a.zip"
+               ],
                "RIR" : [
                   ""
                ],
-               "contentTypeCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ]
+               "dstCnt" : 1,
+               "headerCnt" : 10
             },
+            "length" : 377,
+            "srcMacCnt" : 1,
+            "totBytes" : 3833,
+            "segmentCnt" : 1,
+            "srcPackets" : 14,
+            "firstPacket" : 1387291817187,
+            "timestamp" : "SET",
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.249",
             "srcPayload8" : "45484c4f20787878",
-            "dstIp" : "64.236.64.225",
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               439,
-               521,
-               631,
-               713,
-               964,
-               1083,
-               1196,
-               1317,
-               1441,
-               1523,
-               1651,
-               1733,
-               3201,
-               3283,
-               3368,
-               3450,
-               3563,
-               3645,
-               3733,
-               3815,
-               3977,
-               4059,
-               4141,
-               4223
-            ],
-            "packetLenArray" : [
+            "dstMacCnt" : 2,
+            "dstPort" : 25,
+            "packetLen" : [
                90,
                90,
                82,
@@ -183,20 +150,53 @@
                82,
                82
             ],
-            "dstPackets" : 14,
-            "dstPayload8" : "3232302078787878",
-            "srcMacCnt" : 1,
-            "srcPort" : 46671,
-            "lastPacket" : 1387291817565,
+            "dstIp" : "64.236.64.225",
             "tags" : [
                "smtp:statuscode:250"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131217",
-               "_type" : "session"
-            }
+            ],
+            "tcpflags" : {
+               "ack" : 11,
+               "psh" : 13,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "rst" : 0,
+               "fin" : 2,
+               "syn" : 1
+            },
+            "ipProtocol" : 6,
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               521,
+               631,
+               713,
+               964,
+               1083,
+               1196,
+               1317,
+               1441,
+               1523,
+               1651,
+               1733,
+               3201,
+               3283,
+               3368,
+               3450,
+               3563,
+               3645,
+               3733,
+               3815,
+               3977,
+               4059,
+               4141,
+               4223
+            ],
+            "dstPackets" : 14
          }
       }
    ]

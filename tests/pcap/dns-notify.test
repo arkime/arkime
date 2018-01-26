@@ -8,79 +8,79 @@
             }
          },
          "body" : {
-            "srcIp" : "217.70.190.232",
-            "segments" : 1,
-            "firstPacket" : 1379970300840,
+            "protocolCnt" : 2,
+            "dstDataBytes" : 65,
+            "ipProtocol" : 17,
+            "timestamp" : "SET",
+            "srcPayload8" : "9668240000010001",
+            "totPackets" : 2,
+            "srcMac" : [
+               "00:23:33:69:4d:00",
+               "00:00:5e:00:01:01"
+            ],
+            "srcDataBytes" : 157,
+            "dstPayload8" : "9668a40000010000",
+            "lastPacket" : 1379970300840,
+            "srcMacCnt" : 2,
+            "srcASN" : "AS29169 GANDI SAS",
             "dns" : {
-               "statusCnt" : 1,
-               "qt" : [
-                  "SOA"
-               ],
-               "qtCnt" : 1,
                "opcode" : [
                   "NOTIFY"
                ],
-               "qcCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
+               "statusCnt" : 1,
                "opcodeCnt" : 1,
+               "qtCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
                "host" : [
                   "bortzmeyer.42"
                ],
-               "hostCnt" : 1
+               "qcCnt" : 1,
+               "qt" : [
+                  "SOA"
+               ],
+               "hostCnt" : 1,
+               "qc" : [
+                  "IN"
+               ]
             },
-            "srcPackets" : 1,
-            "timestamp" : "SET",
-            "dstIp" : "204.62.14.153",
-            "dstPayload8" : "9668a40000010000",
+            "firstPacket" : 1379970300840,
             "srcRIR" : "RIPE",
-            "protocolCnt" : 2,
-            "ipProtocol" : 17,
-            "packetLenArray" : [
-               181,
-               89
-            ],
-            "srcMacCnt" : 2,
-            "totDataBytes" : 222,
-            "lastPacket" : 1379970300840,
-            "srcPort" : 55612,
-            "fileIds" : [],
-            "srcMac" : [
-               "00:23:33:69:4d:00",
-               "00:00:5e:00:01:01"
-            ],
-            "srcGEO" : "FR",
-            "srcASN" : "AS29169 GANDI SAS",
-            "length" : 0,
-            "dstPort" : 53,
-            "dstRIR" : "ARIN",
-            "totBytes" : 238,
-            "dstPackets" : 1,
-            "dstASN" : "AS46636 NatCoWeb Corp.",
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstGEO" : "US",
-            "srcPayload8" : "9668240000010001",
-            "srcBytes" : 165,
-            "dstDataBytes" : 65,
-            "packetPosArray" : [
-               24,
-               205
-            ],
             "dstMac" : [
                "52:54:00:d9:83:b3"
             ],
+            "srcPort" : 55612,
+            "dstIp" : "204.62.14.153",
+            "totBytes" : 238,
+            "length" : 0,
+            "srcGEO" : "FR",
+            "srcPackets" : 1,
+            "dstRIR" : "ARIN",
             "dstMacCnt" : 1,
+            "dstPackets" : 1,
+            "srcIp" : "217.70.190.232",
+            "segmentCnt" : 1,
+            "packetLen" : [
+               181,
+               89
+            ],
+            "dstPort" : 53,
+            "dstASN" : "AS46636 NatCoWeb Corp.",
+            "dstGEO" : "US",
+            "packetPos" : [
+               24,
+               205
+            ],
+            "srcBytes" : 165,
+            "totDataBytes" : 222,
+            "fileId" : [],
             "node" : "test",
-            "totPackets" : 2,
-            "dstBytes" : 73,
-            "srcDataBytes" : 157
+            "dstBytes" : 73
          }
       }
    ]

@@ -1,52 +1,17 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140306",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "protocolCnt" : 2,
-            "srcPayload8" : "45484c4f20787878",
-            "dstBytes" : 1487,
-            "totPackets" : 23,
-            "srcPort" : 40531,
-            "length" : 128,
-            "dstIp" : "10.0.0.2",
-            "srcIp" : "10.0.0.1",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "srcASN" : "AS0000 This is neat",
-            "dstPackets" : 11,
-            "srcGEO" : "RU",
-            "srcBytes" : 1011,
-            "dstMacCnt" : 2,
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "totBytes" : 2498,
-            "dstRIR" : "TEST",
-            "email" : {
-               "src" : [
-                  "xxxxx@xxx.net"
-               ],
-               "headersCnt" : 3,
-               "srcCnt" : 1,
-               "subject" : [
-                  "Awesome windows: See What’s Next in charset decoding!"
-               ],
-               "headers" : [
-                  "from",
-                  "to",
-                  "subject"
-               ],
-               "dstCnt" : 1,
-               "subjectCnt" : 1,
-               "dst" : [
-                  "xxxxx@xxx.net"
-               ]
-            },
-            "srcMacCnt" : 1,
             "node" : "test",
-            "packetPosArray" : [
+            "tagsCnt" : 2,
+            "dstGEO" : "CA",
+            "packetPos" : [
                24,
                114,
                208,
@@ -71,55 +36,19 @@
                2726,
                2808
             ],
-            "dstDataBytes" : 749,
-            "tcpflags" : {
-               "urg" : 0,
-               "ack" : 11,
-               "fin" : 2,
-               "rst" : 0,
-               "dstZero" : 0,
-               "psh" : 8,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "srcZero" : 0
-            },
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "dstPort" : 25,
-            "segments" : 1,
             "timestamp" : "SET",
-            "totDataBytes" : 960,
-            "test" : {
-               "string.snow" : [
-                  "16777226:40531,33554442:25"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "dstASN" : "AS0001 Cool Beans!",
             "lastPacket" : 1394118475137,
-            "tags" : [
-               "srcip",
-               "dstip"
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstDataBytes" : 749,
+            "dstMacCnt" : 2,
+            "totDataBytes" : 960,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
             ],
-            "firstPacket" : 1394118475009,
-            "dstPayload8" : "3232302d78787878",
-            "packetLenArray" : [
+            "ipProtocol" : 6,
+            "segmentCnt" : 1,
+            "packetLen" : [
                90,
                94,
                82,
@@ -144,18 +73,89 @@
                82,
                82
             ],
-            "ipProtocol" : 6,
-            "srcPackets" : 12,
-            "dstGEO" : "CA",
-            "fileIds" : [],
             "srcDataBytes" : 211,
-            "tagsCnt" : 2
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-140306",
-               "_type" : "session"
-            }
+            "srcGEO" : "RU",
+            "dstPayload8" : "3232302d78787878",
+            "dstPort" : 25,
+            "totPackets" : 23,
+            "srcPackets" : 12,
+            "firstPacket" : 1394118475009,
+            "dstRIR" : "TEST",
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "srcIp" : "10.0.0.1",
+            "srcMacCnt" : 1,
+            "totBytes" : 2498,
+            "tcpflags" : {
+               "dstZero" : 0,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "rst" : 0,
+               "ack" : 11,
+               "fin" : 2,
+               "psh" : 8
+            },
+            "dstIp" : "10.0.0.2",
+            "email" : {
+               "dst" : [
+                  "xxxxx@xxx.net"
+               ],
+               "header" : [
+                  "from",
+                  "to",
+                  "subject"
+               ],
+               "headerCnt" : 3,
+               "srcCnt" : 1,
+               "subject" : [
+                  "Awesome windows: See What’s Next in charset decoding!"
+               ],
+               "dstCnt" : 1,
+               "subjectCnt" : 1,
+               "src" : [
+                  "xxxxx@xxx.net"
+               ]
+            },
+            "srcBytes" : 1011,
+            "srcPort" : 40531,
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "dstPackets" : 11,
+            "test" : {
+               "RIR" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:40531,33554442:25"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ]
+            },
+            "srcASN" : "AS0000 This is neat",
+            "length" : 128,
+            "srcPayload8" : "45484c4f20787878",
+            "fileId" : [],
+            "tags" : [
+               "srcip",
+               "dstip"
+            ],
+            "dstBytes" : 1487,
+            "protocolCnt" : 2
          }
       }
    ]

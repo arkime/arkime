@@ -1,63 +1,63 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-120502",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "srcPort" : 0,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  8
-               ]
-            },
-            "dstMacCnt" : 1,
-            "dstIp" : "10.64.11.49",
-            "srcBytes" : 196,
-            "totPackets" : 2,
-            "segments" : 1,
-            "packetLenArray" : [
-               114,
-               114
-            ],
-            "node" : "test",
             "totBytes" : 196,
-            "srcMac" : [
-               "00:21:28:05:29:ba"
-            ],
-            "srcMacCnt" : 1,
-            "totDataBytes" : 0,
-            "dstDataBytes" : 0,
-            "dstBytes" : 0,
-            "protocol" : [
-               "icmp"
-            ],
-            "srcIp" : "192.168.177.160",
-            "ipProtocol" : 1,
-            "length" : 4376,
-            "srcPackets" : 2,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "fileIds" : [],
-            "dstPort" : 0,
-            "dstMac" : [
-               "00:00:5e:00:01:b1"
-            ],
-            "firstPacket" : 1335958313152,
-            "protocolCnt" : 1,
-            "packetPosArray" : [
+            "packetPos" : [
                24,
                138
             ],
+            "timestamp" : "SET",
+            "dstMac" : [
+               "00:00:5e:00:01:b1"
+            ],
+            "segmentCnt" : 1,
+            "srcIp" : "192.168.177.160",
             "dstPackets" : 0,
+            "node" : "test",
+            "packetLen" : [
+               114,
+               114
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "dstBytes" : 0,
+            "totDataBytes" : 0,
+            "dstMacCnt" : 1,
+            "dstIp" : "10.64.11.49",
+            "dstPort" : 0,
+            "srcMac" : [
+               "00:21:28:05:29:ba"
+            ],
+            "fileId" : [],
+            "length" : 4376,
+            "srcMacCnt" : 1,
+            "icmp" : {
+               "type" : [
+                  8
+               ],
+               "code" : [
+                  0
+               ]
+            },
+            "dstDataBytes" : 0,
+            "srcDataBytes" : 0,
             "lastPacket" : 1335958317529,
-            "srcDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-120502"
-            }
+            "protocolCnt" : 1,
+            "srcPackets" : 2,
+            "srcPort" : 0,
+            "srcBytes" : 196,
+            "totPackets" : 2,
+            "ipProtocol" : 1,
+            "firstPacket" : 1335958313152
          }
       }
    ]

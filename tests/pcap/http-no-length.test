@@ -1,17 +1,20 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-100510",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "dstPayload8" : "485454502f312e30",
-            "protocolCnt" : 2,
-            "dstMac" : [
-               "00:c0:ca:30:eb:0c"
+            "tags" : [
+               "srcip",
+               "dstip"
             ],
+            "srcPort" : 50384,
             "srcBytes" : 734,
-            "srcGEO" : "RU",
-            "dstMacCnt" : 1,
-            "timestamp" : "SET",
-            "packetLenArray" : [
+            "packetLen" : [
                82,
                82,
                70,
@@ -23,33 +26,12 @@
                70,
                70
             ],
-            "dstDataBytes" : 744,
-            "dstPackets" : 5,
-            "fileIds" : [],
-            "segments" : 1,
-            "srcPackets" : 5,
+            "dstGEO" : "CA",
+            "srcMac" : [
+               "00:16:44:a0:a0:7e"
+            ],
+            "dstBytes" : 1026,
             "http" : {
-               "statuscodeCnt" : 1,
-               "cookieKeyCnt" : 1,
-               "bodyMagicCnt" : 1,
-               "serverVersion" : [
-                  "1.0"
-               ],
-               "serverVersionCnt" : 1,
-               "useragentCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-charset",
-                  "user-agent",
-                  "keep-alive",
-                  "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "accept-language"
-               ],
-               "requestHeaderCnt" : 10,
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -62,73 +44,79 @@
                   "server",
                   "set-cookie"
                ],
-               "pathCnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "md5" : [
-                  "9fb54a2726ca3cf54a82804d0e66d08a"
-               ],
-               "responseHeaderCnt" : 10,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "cookieValueCnt" : 1,
-               "cookieKey" : [
-                  "trafic_ranking"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "request-refererCnt" : 1,
-               "uricnt" : 1,
-               "cookieValue" : [
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ],
-               "request-referer" : [
-                  "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html"
-               ],
-               "bodyMagic" : [
-                  "text/javascript"
+               "host" : [
+                  "xxxxxxx.xxxxxx.xx"
                ],
                "path" : [
                   "/js/xxxxxx.js"
                ],
-               "methodCnt" : 1,
-               "md5Cnt" : 1,
-               "host" : [
-                  "xxxxxxx.xxxxxx.xx"
+               "responseHeaderCnt" : 10,
+               "md5" : [
+                  "9fb54a2726ca3cf54a82804d0e66d08a"
                ],
+               "statuscode" : [
+                  200
+               ],
+               "md5Cnt" : 1,
+               "cookieKeyCnt" : 1,
+               "cookieKey" : [
+                  "trafic_ranking"
+               ],
+               "useragentCnt" : 1,
+               "request-referer" : [
+                  "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html"
+               ],
+               "bodyMagicCnt" : 1,
+               "uricnt" : 1,
                "uri" : [
                   "xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
                ],
+               "cookieValue" : [
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "pathCnt" : 1,
+               "serverVersionCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "accept-charset",
+                  "user-agent",
+                  "keep-alive",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
                "clientVersionCnt" : 1,
-               "hostCnt" : 1
+               "useragent" : [
+                  "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
+               ],
+               "cookieValueCnt" : 1,
+               "requestHeaderCnt" : 10,
+               "bodyMagic" : [
+                  "text/javascript"
+               ],
+               "hostCnt" : 1,
+               "request-refererCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "serverVersion" : [
+                  "1.0"
+               ],
+               "statuscodeCnt" : 1
             },
-            "protocol" : [
-               "http",
-               "tcp"
+            "srcGEO" : "RU",
+            "dstMac" : [
+               "00:c0:ca:30:eb:0c"
             ],
-            "dstRIR" : "TEST",
-            "srcIp" : "10.0.0.1",
-            "node" : "test",
-            "dstIp" : "10.0.0.2",
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "syn" : 1,
-               "srcZero" : 0,
-               "fin" : 2,
-               "dstZero" : 0,
-               "rst" : 0,
-               "ack" : 4,
-               "psh" : 3,
-               "urg" : 0
-            },
-            "totPackets" : 10,
-            "packetPosArray" : [
+            "firstPacket" : 1273479692982,
+            "packetPos" : [
                24,
                106,
                188,
@@ -140,18 +128,13 @@
                1804,
                1874
             ],
+            "node" : "test",
+            "dstRIR" : "TEST",
+            "dstIp" : "10.0.0.2",
+            "dstPayload8" : "485454502f312e30",
             "srcMacCnt" : 1,
-            "srcDataBytes" : 452,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "srcPort" : 50384,
-            "srcMac" : [
-               "00:16:44:a0:a0:7e"
-            ],
-            "firstPacket" : 1273479692982,
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstMacCnt" : 1,
+            "totPackets" : 10,
             "test" : {
                "GEO" : [
                   "RU"
@@ -159,36 +142,53 @@
                "number" : [
                   33554442
                ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "RIR" : [
-                  ""
-               ],
                "string.snow" : [
                   "16777226:50384,33554442:80"
                ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
                "ASN" : [
                   "AS0000 This is neat"
+               ],
+               "RIR" : [
+                  ""
                ]
             },
-            "lastPacket" : 1273479693105,
-            "totBytes" : 1760,
-            "length" : 124,
-            "dstPort" : 80,
-            "srcPayload8" : "474554202f6a732f",
-            "ipProtocol" : 6,
+            "fileId" : [],
             "totDataBytes" : 1196,
-            "dstBytes" : 1026,
-            "dstGEO" : "CA",
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "dstPackets" : 5,
             "tagsCnt" : 2,
-            "srcASN" : "AS0000 This is neat"
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-100510"
-            }
+            "segmentCnt" : 1,
+            "srcIp" : "10.0.0.1",
+            "tcpflags" : {
+               "fin" : 2,
+               "dstZero" : 0,
+               "urg" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "ack" : 4,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "psh" : 3
+            },
+            "totBytes" : 1760,
+            "srcPayload8" : "474554202f6a732f",
+            "dstPort" : 80,
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstDataBytes" : 744,
+            "length" : 124,
+            "srcDataBytes" : 452,
+            "ipProtocol" : 6,
+            "srcASN" : "AS0000 This is neat",
+            "srcPackets" : 5,
+            "timestamp" : "SET",
+            "lastPacket" : 1273479693105
          }
       }
    ]

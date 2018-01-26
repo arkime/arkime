@@ -63,16 +63,16 @@ var fieldsMap = {
   "a1":               "ignore", // Becomes srcIp
   "a2":               "ignore", // Becomes dstIp
 
-  "ps":               "packetPosArray",
-  "psl":              "packetLenArray",
-  "fs":               "fileIds",
+  "ps":               "packetPos",
+  "psl":              "packetLen",
+  "fs":               "fileId",
   "timestamp":        "timestamp",
   "firstPacket":      "firstPacket",
   "lastPacket":       "lastPacket",
 
   "ro":               "rootId",
   "no":               "node",
-  "ss":               "segments",
+  "ss":               "segmentCnt",
   "user":             "user",
   "usercnt":          "userCnt",
   "sl":               "length",
@@ -170,10 +170,10 @@ var fieldsMap = {
   "gxff":                           "http.xffGEO",
   "asxff":                          "http.xffASN",
   "rirxff":                         "http.xffRIR",
-  "hh1":                            "ignore",
-  "hh1cnt":                         "ignore",
-  "hh2":                            "ignore",
-  "hh2cnt":                         "ignore",
+  "hh1":                            "ignore", // http.requestHeader
+  "hh1cnt":                         "ignore", // http.requestHeaderCnt
+  "hh2":                            "ignore", // http.responseHeader
+  "hh2cnt":                         "ignore", // http.responseHeaderCnt
   "hmd5":                           "http.md5",
   "hmd5cnt":                        "http.md5Cnt",
   "hsver":                          "http.clientVersion",
@@ -218,8 +218,8 @@ var fieldsMap = {
   "efncnt":                         "email.filenameCnt",
   "efct":                           "email.fileContentType",
   "efctcnt":                        "email.fileContentTypeCnt",
-  "ehh":                            "ignore",
-  "ehhcnt":                         "ignore",
+  "ehh":                            "ignore", // email.header
+  "ehhcnt":                         "ignore", // email.headerCnt
   "email.bodymagic-term":           "email.bodyMagic",
   "email.bodymagic-term-cnt":       "email.bodyMagicCnt",
 
@@ -382,8 +382,8 @@ var fieldsMap = {
   "virustotal.hits-cnt":            "virustotal.hitsCnt",
 
 //THREATQ
-  "threatq.camapign-term":          "ignore",
-  "threatq.camapign-term-cnt":      "ignore",
+  "threatq.camapign-term":          "ignore", // spelled wrong
+  "threatq.camapign-term-cnt":      "ignore", // spelled wrong
   "threatq.campaign-term":          "threatq.campaign",
   "threatq.campaign-term-cnt":      "threatq.campaign",
   "threatq.id":                     "threatq.id",

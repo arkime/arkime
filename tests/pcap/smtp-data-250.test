@@ -1,80 +1,45 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131206"
-            }
-         },
          "body" : {
-            "dstPayload8" : "3232302d6d74616f",
-            "srcDataBytes" : 1063,
-            "fileIds" : [],
-            "srcBytes" : 1867,
-            "srcPayload8" : "45484c4f206c6f63",
-            "dstGEO" : "US",
+            "dstIp" : "64.12.168.40",
+            "tags" : [
+               "smtp:statuscode:250",
+               "smtp:authplain",
+               "srcip"
+            ],
+            "srcMacCnt" : 1,
+            "srcGEO" : "RU",
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
+            ],
             "dstASN" : "AS1668 AOL Transit Data Network",
+            "srcIp" : "10.0.0.1",
+            "protocolCnt" : 2,
             "dstMac" : [
                "00:00:5e:00:01:02",
                "80:71:1f:82:cf:c6"
             ],
-            "dstPort" : 587,
-            "dstRIR" : "ARIN",
-            "srcPackets" : 14,
-            "packetLenArray" : [
-               82,
-               82,
-               76,
-               492,
-               76,
-               86,
-               76,
-               279,
-               115,
-               76,
-               107,
-               101,
-               76,
-               84,
-               104,
-               76,
-               84,
-               76,
-               107,
-               76,
-               384,
-               76,
-               687,
-               76,
-               108,
-               76,
-               134,
-               76,
-               76,
-               76
+            "firstPacket" : 1386338020379,
+            "segmentCnt" : 1,
+            "user" : [
+               "12345678@aol.com"
             ],
-            "timestamp" : "SET",
+            "srcBytes" : 1867,
+            "length" : 32010,
+            "dstRIR" : "ARIN",
+            "tagsCnt" : 3,
+            "lastPacket" : 1386338052390,
+            "srcPort" : 3293,
+            "totDataBytes" : 1898,
             "email" : {
-               "contentTypeCnt" : 1,
-               "headersCnt" : 8,
+               "dstCnt" : 1,
+               "mimeVersionCnt" : 1,
+               "subjectCnt" : 1,
                "contentType" : [
                   "text/plain; charset=utf-8"
                ],
-               "subjectCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
-               ],
-               "idCnt" : 1,
-               "srcCnt" : 1,
-               "subject" : [
-                  "Re: xxx xxx xxxxx xxxxxx..."
-               ],
-               "dstCnt" : 1,
-               "dst" : [
-                  "xxxx.xxxxxx@xxxxx.com"
-               ],
-               "headers" : [
+               "header" : [
                   "content-type",
                   "message-id",
                   "mime-version",
@@ -84,55 +49,52 @@
                   "date",
                   "subject"
                ],
-               "mimeVersionCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "contentTypeCnt" : 1,
+               "idCnt" : 1,
+               "headerCnt" : 8,
                "src" : [
                   "12345678@aol.com"
                ],
+               "dst" : [
+                  "xxxx.xxxxxx@xxxxx.com"
+               ],
+               "srcCnt" : 1,
                "id" : [
                   "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
+               ],
+               "subject" : [
+                  "Re: xxx xxx xxxxx xxxxxx..."
                ]
             },
-            "totBytes" : 3620,
-            "ipProtocol" : 6,
-            "srcASN" : "AS0000 This is neat",
-            "tags" : [
-               "smtp:statuscode:250",
-               "smtp:authplain",
-               "srcip"
-            ],
-            "dstPackets" : 16,
-            "tcpflags" : {
-               "urg" : 0,
-               "syn" : 1,
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "fin" : 1,
-               "srcZero" : 0,
-               "psh" : 15,
-               "ack" : 12
+            "dstBytes" : 1753,
+            "test" : {
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  682101824
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "string.snow" : [
+                  "16777226:3293,682101824:587"
+               ],
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ]
             },
-            "dstDataBytes" : 835,
-            "length" : 32010,
-            "srcMac" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "dstMacCnt" : 2,
-            "segments" : 1,
-            "srcPort" : 3293,
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "dstIp" : "64.12.168.40",
-            "srcGEO" : "RU",
-            "userCnt" : 1,
-            "user" : [
-               "12345678@aol.com"
-            ],
-            "firstPacket" : 1386338020379,
-            "totDataBytes" : 1898,
-            "packetPosArray" : [
+            "dstPayload8" : "3232302d6d74616f",
+            "node" : "test",
+            "srcPayload8" : "45484c4f206c6f63",
+            "ipProtocol" : 6,
+            "packetPos" : [
                24,
                106,
                188,
@@ -164,34 +126,72 @@
                3972,
                4048
             ],
-            "tagsCnt" : 3,
-            "totPackets" : 30,
-            "srcIp" : "10.0.0.1",
-            "protocolCnt" : 2,
-            "node" : "test",
-            "dstBytes" : 1753,
-            "srcMacCnt" : 1,
-            "test" : {
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  682101824
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:3293,682101824:587"
-               ]
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "srcPackets" : 14,
+            "srcASN" : "AS0000 This is neat",
+            "dstDataBytes" : 835,
+            "dstPackets" : 16,
+            "dstPort" : 587,
+            "userCnt" : 1,
+            "packetLen" : [
+               82,
+               82,
+               76,
+               492,
+               76,
+               86,
+               76,
+               279,
+               115,
+               76,
+               107,
+               101,
+               76,
+               84,
+               104,
+               76,
+               84,
+               76,
+               107,
+               76,
+               384,
+               76,
+               687,
+               76,
+               108,
+               76,
+               134,
+               76,
+               76,
+               76
+            ],
+            "tcpflags" : {
+               "urg" : 0,
+               "rst" : 0,
+               "dstZero" : 0,
+               "psh" : 15,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "ack" : 12,
+               "fin" : 1,
+               "srcZero" : 0
             },
-            "lastPacket" : 1386338052390
+            "dstGEO" : "US",
+            "dstMacCnt" : 2,
+            "fileId" : [],
+            "totBytes" : 3620,
+            "totPackets" : 30,
+            "timestamp" : "SET",
+            "srcDataBytes" : 1063
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-131206"
+            }
          }
       }
    ]

@@ -1,98 +1,9 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-161121",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "dstMacCnt" : 1,
-            "srcMac" : [
-               "88:28:b3:b3:7c:41"
-            ],
-            "totDataBytes" : 9220,
-            "node" : "test",
-            "protocolCnt" : 3,
-            "totBytes" : 12140,
-            "dstBytes" : 5678,
-            "protocol" : [
-               "fbzero",
-               "quic",
-               "tcp"
-            ],
-            "firstPacket" : 1479719879541,
-            "dstPort" : 443,
-            "srcPackets" : 25,
-            "dstPayload8" : "3151545630300000",
-            "dstDataBytes" : 4416,
-            "tcpflags" : {
-               "srcZero" : 0,
-               "fin" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "dstZero" : 0,
-               "syn-ack" : 1,
-               "ack" : 18,
-               "urg" : 0,
-               "psh" : 24
-            },
-            "dstASN" : "AS32934 Facebook, Inc.",
-            "srcRIR" : "ARIN",
-            "dstPackets" : 19,
-            "dstGEO" : "IE",
-            "lastPacket" : 1479719902505,
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               575,
-               1930,
-               2012,
-               2232,
-               2391,
-               2473,
-               2555,
-               3791,
-               3933,
-               5363,
-               5643,
-               5725,
-               6901,
-               6983,
-               7103,
-               7185,
-               7503,
-               7585,
-               7709,
-               7833,
-               7915,
-               8559,
-               8679,
-               8761,
-               9144,
-               9226,
-               9684,
-               9804,
-               9886,
-               10234,
-               10316,
-               10776,
-               10896,
-               10978,
-               11270,
-               11352,
-               12246,
-               12366,
-               12448,
-               12786
-            ],
-            "segments" : 1,
-            "length" : 22965,
-            "totPackets" : 44,
-            "packetLenArray" : [
+            "srcBytes" : 6462,
+            "packetLen" : [
                90,
                90,
                82,
@@ -138,26 +49,115 @@
                338,
                82
             ],
-            "fileIds" : [],
-            "timestamp" : "SET",
+            "srcMac" : [
+               "88:28:b3:b3:7c:41"
+            ],
+            "srcRIR" : "ARIN",
+            "srcDataBytes" : 4804,
             "srcPayload8" : "3151545630c60000",
-            "srcBytes" : 6462,
-            "dstIp" : "31.13.74.1",
+            "protocol" : [
+               "fbzero",
+               "quic",
+               "tcp"
+            ],
+            "srcIp" : "192.168.1.111",
+            "dstRIR" : "RIPE",
+            "fileId" : [],
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "psh" : 24,
+               "dstZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "ack" : 18
+            },
+            "totPackets" : 44,
+            "srcPort" : 39584,
+            "dstPayload8" : "3151545630300000",
+            "srcMacCnt" : 1,
+            "srcPackets" : 25,
+            "dstPort" : 443,
+            "dstDataBytes" : 4416,
             "quic" : {
-               "hostCnt" : 1,
                "host" : [
                   "graph.facebook.com"
-               ]
+               ],
+               "hostCnt" : 1
             },
+            "dstMacCnt" : 1,
+            "totBytes" : 12140,
             "dstMac" : [
                "4c:02:89:0a:d2:76"
             ],
-            "srcIp" : "192.168.1.111",
+            "timestamp" : "SET",
+            "firstPacket" : 1479719879541,
+            "dstIp" : "31.13.74.1",
+            "dstBytes" : 5678,
+            "lastPacket" : 1479719902505,
+            "dstGEO" : "IE",
+            "dstASN" : "AS32934 Facebook, Inc.",
+            "protocolCnt" : 3,
+            "node" : "test",
+            "length" : 22965,
             "ipProtocol" : 6,
-            "srcPort" : 39584,
-            "dstRIR" : "RIPE",
-            "srcDataBytes" : 4804,
-            "srcMacCnt" : 1
+            "totDataBytes" : 9220,
+            "segmentCnt" : 1,
+            "dstPackets" : 19,
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               575,
+               1930,
+               2012,
+               2232,
+               2391,
+               2473,
+               2555,
+               3791,
+               3933,
+               5363,
+               5643,
+               5725,
+               6901,
+               6983,
+               7103,
+               7185,
+               7503,
+               7585,
+               7709,
+               7833,
+               7915,
+               8559,
+               8679,
+               8761,
+               9144,
+               9226,
+               9684,
+               9804,
+               9886,
+               10234,
+               10316,
+               10776,
+               10896,
+               10978,
+               11270,
+               11352,
+               12246,
+               12366,
+               12448,
+               12786
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-161121"
+            }
          }
       }
    ]

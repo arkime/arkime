@@ -2,32 +2,77 @@
    "sessions2" : [
       {
          "body" : {
-            "firstPacket" : 1483560476240,
-            "srcPackets" : 3,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "ack" : 3,
-               "psh" : 1,
-               "rst" : 0
-            },
-            "node" : "test",
-            "dstPort" : 443,
             "http" : {
-               "hostCnt" : 1,
                "host" : [
                   "blog.cloudflare.com"
-               ]
+               ],
+               "hostCnt" : 1
             },
+            "segmentCnt" : 1,
+            "dstMac" : [
+               "00:26:55:d1:4d:97"
+            ],
+            "length" : 23,
+            "dstPort" : 443,
+            "node" : "test",
+            "srcPayload8" : "1603010200010001",
+            "totBytes" : 2205,
+            "srcBytes" : 751,
             "dstPayload8" : "1603010052020000",
+            "dstPackets" : 3,
+            "dstIp" : "2400:cb00:2048:0001:0000:0000:6813:c266",
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "totDataBytes" : 1737,
+            "srcGEO" : "SE",
+            "firstPacket" : 1483560476240,
+            "srcASN" : "AS16150 Availo Networks AB",
             "lastPacket" : 1483560476263,
-            "srcIp" : "2001:16d8:ffce:0010:aca8:353c:291d:a9b3",
+            "ipProtocol" : 6,
+            "tcpflags" : {
+               "dstZero" : 0,
+               "psh" : 1,
+               "urg" : 0,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 3,
+               "syn-ack" : 1,
+               "fin" : 0,
+               "srcZero" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipherCnt" : 1,
+               "version" : [
+                  "TLSv1.3-draft-18"
+               ],
+               "ja3" : [
+                  "4826a90ec2daf4f7b4b64cc1c8bd343b"
+               ],
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_AES_128_GCM_SHA256"
+               ],
+               "ja3Cnt" : 1
+            },
+            "dstDataBytes" : 1220,
+            "srcPort" : 62510,
             "totPackets" : 6,
-            "packetLenArray" : [
+            "protocolCnt" : 2,
+            "dstBytes" : 1454,
+            "dstMacCnt" : 1,
+            "srcMacCnt" : 1,
+            "srcIp" : "2001:16d8:ffce:0010:aca8:353c:291d:a9b3",
+            "srcMac" : [
+               "c8:f7:33:1d:84:95"
+            ],
+            "srcDataBytes" : 517,
+            "srcPackets" : 3,
+            "dstGEO" : "US",
+            "dstASN" : "AS13335 Cloudflare Inc",
+            "packetLen" : [
                102,
                102,
                90,
@@ -35,40 +80,7 @@
                90,
                1310
             ],
-            "timestamp" : "SET",
-            "srcASN" : "AS16150 Availo Networks AB",
-            "segments" : 1,
-            "srcBytes" : 751,
-            "srcGEO" : "SE",
-            "dstDataBytes" : 1220,
-            "dstIp" : "2400:cb00:2048:0001:0000:0000:6813:c266",
-            "protocol" : [
-               "tls",
-               "tcp"
-            ],
-            "totBytes" : 2205,
-            "srcPort" : 62510,
-            "dstPackets" : 3,
-            "length" : 23,
-            "srcMacCnt" : 1,
-            "dstBytes" : 1454,
-            "totDataBytes" : 1737,
-            "ipProtocol" : 6,
-            "tls" : {
-               "cipherCnt" : 1,
-               "versionCnt" : 1,
-               "ja3" : [
-                  "4826a90ec2daf4f7b4b64cc1c8bd343b"
-               ],
-               "cipher" : [
-                  "TLS_AES_128_GCM_SHA256"
-               ],
-               "ja3Cnt" : 1,
-               "version" : [
-                  "TLSv1.3-draft-18"
-               ]
-            },
-            "packetPosArray" : [
+            "packetPos" : [
                24,
                126,
                228,
@@ -76,19 +88,7 @@
                925,
                1015
             ],
-            "protocolCnt" : 2,
-            "fileIds" : [],
-            "dstGEO" : "US",
-            "dstASN" : "AS13335 Cloudflare Inc",
-            "srcPayload8" : "1603010200010001",
-            "srcDataBytes" : 517,
-            "dstMacCnt" : 1,
-            "srcMac" : [
-               "c8:f7:33:1d:84:95"
-            ],
-            "dstMac" : [
-               "00:26:55:d1:4d:97"
-            ]
+            "fileId" : []
          },
          "header" : {
             "index" : {

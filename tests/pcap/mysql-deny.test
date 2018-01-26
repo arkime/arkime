@@ -2,46 +2,13 @@
    "sessions2" : [
       {
          "body" : {
-            "dstBytes" : 513,
-            "srcPort" : 42418,
-            "totPackets" : 10,
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               463,
-               545,
-               692,
-               774,
-               936,
-               1018
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 5,
-            "srcIp" : "192.168.1.3",
-            "dstPort" : 3306,
-            "protocol" : [
-               "mysql",
-               "tcp"
-            ],
-            "srcDataBytes" : 65,
+            "dstPackets" : 5,
+            "ipProtocol" : 6,
+            "dstRIR" : "ARIN",
+            "srcRIR" : "ARIN",
             "lastPacket" : 1398195861496,
-            "srcPayload8" : "3d00000105a60f00",
-            "segments" : 1,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "rst" : 0,
-               "urg" : 0,
-               "srcZero" : 0,
-               "ack" : 3,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "psh" : 3,
-               "fin" : 2
-            },
-            "dstMacCnt" : 1,
-            "packetLenArray" : [
+            "length" : 2,
+            "packetLen" : [
                90,
                90,
                82,
@@ -53,32 +20,65 @@
                82,
                82
             ],
-            "ipProtocol" : 6,
-            "fileIds" : [],
-            "protocolCnt" : 2,
-            "srcBytes" : 403,
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
+            "node" : "test",
             "totBytes" : 916,
-            "length" : 2,
-            "totDataBytes" : 240,
-            "dstPackets" : 5,
+            "srcPackets" : 5,
+            "timestamp" : "SET",
             "dstDataBytes" : 175,
-            "dstRIR" : "ARIN",
             "mysql" : {
                "user" : "user0",
                "version" : "5.5.35-0FUNntu0.12.04.2"
             },
+            "tcpflags" : {
+               "syn" : 1,
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "urg" : 0,
+               "psh" : 3,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "ack" : 3,
+               "fin" : 2
+            },
+            "dstIp" : "192.168.1.3",
+            "srcDataBytes" : 65,
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcPort" : 42418,
+            "dstMacCnt" : 1,
+            "protocolCnt" : 2,
+            "fileId" : [],
+            "totDataBytes" : 240,
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               463,
+               545,
+               692,
+               774,
+               936,
+               1018
+            ],
+            "segmentCnt" : 1,
+            "protocol" : [
+               "mysql",
+               "tcp"
+            ],
+            "dstPort" : 3306,
+            "srcPayload8" : "3d00000105a60f00",
+            "dstPayload8" : "5b0000000a352e35",
+            "firstPacket" : 1398195861493,
+            "srcIp" : "192.168.1.3",
+            "srcMacCnt" : 1,
             "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "srcRIR" : "ARIN",
-            "node" : "test",
-            "dstIp" : "192.168.1.3",
-            "timestamp" : "SET",
-            "dstPayload8" : "5b0000000a352e35",
-            "firstPacket" : 1398195861493
+            "dstBytes" : 513,
+            "srcBytes" : 403,
+            "totPackets" : 10
          },
          "header" : {
             "index" : {

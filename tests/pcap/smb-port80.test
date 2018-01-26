@@ -1,60 +1,11 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-130918"
-            }
-         },
          "body" : {
-            "fileIds" : [],
-            "protocolCnt" : 2,
-            "protocol" : [
-               "smb",
-               "tcp"
-            ],
-            "srcGEO" : "CA",
-            "srcPayload8" : "000000a4ff534d42",
-            "tcpflags" : {
-               "urg" : 0,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "dstZero" : 0,
-               "syn" : 1,
-               "ack" : 3,
-               "srcZero" : 0,
-               "psh" : 3
-            },
-            "node" : "test",
-            "dstGEO" : "RU",
-            "totDataBytes" : 237,
-            "segments" : 1,
-            "lastPacket" : 1379519110616,
-            "srcPackets" : 5,
-            "dstPayload8" : "b378fd2aae2d4aee",
-            "srcRIR" : "TEST",
-            "ipProtocol" : 6,
-            "srcPort" : 46735,
-            "packetPosArray" : [
-               24,
-               114,
-               204,
-               286,
-               536,
-               679,
-               769,
-               851,
-               933
-            ],
-            "dstBytes" : 341,
-            "srcDataBytes" : 168,
+            "firstPacket" : 1379519109833,
             "dstASN" : "AS0000 This is neat",
-            "dstMac" : [
-               "00:0b:45:b7:08:80"
-            ],
-            "packetLenArray" : [
+            "srcMacCnt" : 2,
+            "packetLen" : [
                90,
                90,
                82,
@@ -65,29 +16,78 @@
                82,
                82
             ],
-            "dstIp" : "10.0.0.1",
+            "srcASN" : "AS0001 Cool Beans!",
             "srcMac" : [
                "00:26:88:df:17:c6",
                "00:00:5e:00:01:02"
             ],
-            "firstPacket" : 1379519109833,
-            "dstMacCnt" : 1,
-            "dstPackets" : 4,
-            "srcMacCnt" : 2,
-            "timestamp" : "SET",
-            "dstPort" : 80,
-            "totPackets" : 9,
-            "srcIp" : "10.0.0.2",
-            "srcBytes" : 506,
+            "srcPort" : 46735,
+            "ipProtocol" : 6,
+            "srcRIR" : "TEST",
+            "srcPackets" : 5,
+            "srcDataBytes" : 168,
+            "dstGEO" : "RU",
+            "fileId" : [],
+            "totBytes" : 847,
             "tagsCnt" : 2,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "tcpflags" : {
+               "urg" : 0,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "ack" : 3,
+               "rst" : 0,
+               "psh" : 3
+            },
+            "segmentCnt" : 1,
+            "lastPacket" : 1379519110616,
+            "totPackets" : 9,
+            "dstIp" : "10.0.0.1",
+            "dstDataBytes" : 69,
+            "dstPackets" : 4,
+            "dstMacCnt" : 1,
+            "dstBytes" : 341,
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               536,
+               679,
+               769,
+               851,
+               933
+            ],
+            "srcPayload8" : "000000a4ff534d42",
+            "dstPayload8" : "b378fd2aae2d4aee",
+            "srcBytes" : 506,
+            "dstPort" : 80,
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "dstMac" : [
+               "00:0b:45:b7:08:80"
+            ],
+            "length" : 784,
+            "protocolCnt" : 2,
+            "timestamp" : "SET",
+            "node" : "test",
             "tags" : [
                "srcip",
                "dstip"
             ],
-            "dstDataBytes" : 69,
-            "totBytes" : 847,
-            "length" : 784
+            "totDataBytes" : 237
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-130918"
+            }
          }
       }
    ]

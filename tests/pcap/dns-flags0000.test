@@ -3,88 +3,88 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140226",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-140226"
             }
          },
          "body" : {
-            "dstPayload8" : "b2b5800500010000",
-            "totPackets" : 2,
-            "firstPacket" : 1393422583830,
-            "srcPayload8" : "b2b5000000010000",
-            "node" : "test",
-            "lastPacket" : 1393422583932,
-            "timestamp" : "SET",
-            "srcIp" : "10.0.0.2",
-            "srcRIR" : "TEST",
-            "srcPackets" : 1,
-            "dstIp" : "10.0.0.1",
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "packetLenArray" : [
-               98,
-               98
-            ],
+            "totDataBytes" : 148,
+            "tagsCnt" : 2,
             "protocol" : [
                "udp",
                "dns"
             ],
-            "dstDataBytes" : 74,
-            "packetPosArray" : [
-               24,
-               122
-            ],
-            "protocolCnt" : 2,
-            "srcPort" : 61912,
-            "length" : 102,
-            "srcGEO" : "CA",
-            "segments" : 1,
-            "dstMacCnt" : 1,
-            "srcBytes" : 82,
-            "dstPackets" : 1,
-            "dstPort" : 53,
-            "dns" : {
-               "qc" : [
-                  "IN"
-               ],
-               "qt" : [
-                  "A"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "opcodeCnt" : 1,
-               "host" : [
-                  "flashservice.adobe.com"
-               ],
-               "qtCnt" : 1,
-               "statusCnt" : 1,
-               "hostCnt" : 1,
-               "status" : [
-                  "REFUSED"
-               ]
-            },
-            "dstBytes" : 82,
+            "fileId" : [],
+            "srcDataBytes" : 74,
             "dstGEO" : "RU",
+            "dstMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "srcIp" : "10.0.0.2",
+            "firstPacket" : 1393422583830,
+            "srcBytes" : 82,
+            "srcPort" : 61912,
+            "timestamp" : "SET",
+            "srcMac" : [
+               "00:00:5e:00:01:03",
+               "88:e0:f3:f1:91:f2"
+            ],
+            "node" : "test",
+            "ipProtocol" : 17,
+            "totPackets" : 2,
+            "dstPayload8" : "b2b5800500010000",
+            "srcASN" : "AS0001 Cool Beans!",
+            "dstPort" : 53,
+            "totBytes" : 164,
+            "lastPacket" : 1393422583932,
+            "srcPayload8" : "b2b5000000010000",
+            "protocolCnt" : 2,
+            "srcPackets" : 1,
+            "dstMacCnt" : 1,
             "tags" : [
                "srcip",
                "dstip"
             ],
-            "srcDataBytes" : 74,
-            "totBytes" : 164,
-            "srcASN" : "AS0001 Cool Beans!",
-            "ipProtocol" : 17,
-            "tagsCnt" : 2,
-            "srcMacCnt" : 2,
-            "fileIds" : [],
-            "totDataBytes" : 148,
+            "packetLen" : [
+               98,
+               98
+            ],
+            "dstBytes" : 82,
+            "length" : 102,
             "dstASN" : "AS0000 This is neat",
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ]
+            "srcGEO" : "CA",
+            "dns" : {
+               "opcode" : [
+                  "QUERY"
+               ],
+               "status" : [
+                  "REFUSED"
+               ],
+               "statusCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qtCnt" : 1,
+               "opcodeCnt" : 1,
+               "host" : [
+                  "flashservice.adobe.com"
+               ],
+               "hostCnt" : 1,
+               "qt" : [
+                  "A"
+               ]
+            },
+            "dstDataBytes" : 74,
+            "segmentCnt" : 1,
+            "dstIp" : "10.0.0.1",
+            "srcMacCnt" : 2,
+            "dstPackets" : 1,
+            "packetPos" : [
+               24,
+               122
+            ],
+            "srcRIR" : "TEST"
          }
       }
    ]

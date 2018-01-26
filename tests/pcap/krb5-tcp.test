@@ -1,89 +1,89 @@
 {
    "sessions2" : [
       {
-         "body" : {
-            "packetLenArray" : [
-               86,
-               86,
-               76,
-               347
-            ],
-            "dstMacCnt" : 1,
-            "dstMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "protocolCnt" : 2,
-            "srcIp" : "10.10.10.10",
-            "ipProtocol" : 6,
-            "srcMacCnt" : 1,
-            "srcPort" : 57167,
-            "lastPacket" : 1466265698251,
-            "timestamp" : "SET",
-            "segments" : 1,
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "krb5" : {
-               "sname" : [
-                  "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "cname" : [
-                  "xxxxxxxxxxx$"
-               ],
-               "realmCnt" : 1,
-               "realm" : [
-                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "cnameCnt" : 1,
-               "snameCnt" : 1
-            },
-            "srcPayload8" : "0000010d6a820109",
-            "srcBytes" : 461,
-            "firstPacket" : 1466265698248,
-            "dstPort" : 88,
-            "dstDataBytes" : 0,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "syn" : 1,
-               "urg" : 0,
-               "psh" : 1,
-               "syn-ack" : 1,
-               "ack" : 1,
-               "fin" : 0,
-               "srcZero" : 0,
-               "rst" : 0
-            },
-            "packetPosArray" : [
-               24,
-               110,
-               196,
-               272
-            ],
-            "dstPackets" : 1,
-            "dstIp" : "10.11.11.11",
-            "vlanCnt" : 1,
-            "vlan" : [
-               50
-            ],
-            "protocol" : [
-               "tcp",
-               "krb5"
-            ],
-            "node" : "test",
-            "length" : 2,
-            "totPackets" : 4,
-            "dstBytes" : 70,
-            "totDataBytes" : 273,
-            "totBytes" : 531,
-            "srcPackets" : 3,
-            "srcDataBytes" : 273,
-            "fileIds" : []
-         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions2-160618"
             }
+         },
+         "body" : {
+            "lastPacket" : 1466265698251,
+            "packetPos" : [
+               24,
+               110,
+               196,
+               272
+            ],
+            "srcBytes" : 461,
+            "protocol" : [
+               "tcp",
+               "krb5"
+            ],
+            "firstPacket" : 1466265698248,
+            "srcPackets" : 3,
+            "srcPort" : 57167,
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcMacCnt" : 1,
+            "totBytes" : 531,
+            "dstMac" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "srcDataBytes" : 273,
+            "ipProtocol" : 6,
+            "dstIp" : "10.11.11.11",
+            "dstMacCnt" : 1,
+            "vlanCnt" : 1,
+            "node" : "test",
+            "timestamp" : "SET",
+            "protocolCnt" : 2,
+            "tcpflags" : {
+               "fin" : 0,
+               "syn" : 1,
+               "rst" : 0,
+               "dstZero" : 0,
+               "srcZero" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 1,
+               "psh" : 1
+            },
+            "dstDataBytes" : 0,
+            "length" : 2,
+            "dstPackets" : 1,
+            "segmentCnt" : 1,
+            "krb5" : {
+               "realmCnt" : 1,
+               "cname" : [
+                  "xxxxxxxxxxx$"
+               ],
+               "cnameCnt" : 1,
+               "sname" : [
+                  "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ],
+               "snameCnt" : 1,
+               "realm" : [
+                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ]
+            },
+            "totPackets" : 4,
+            "vlan" : [
+               50
+            ],
+            "packetLen" : [
+               86,
+               86,
+               76,
+               347
+            ],
+            "srcIp" : "10.10.10.10",
+            "fileId" : [],
+            "dstPort" : 88,
+            "dstBytes" : 70,
+            "srcPayload8" : "0000010d6a820109",
+            "totDataBytes" : 273
          }
       }
    ]
