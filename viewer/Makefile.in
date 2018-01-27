@@ -11,10 +11,10 @@ install:
 	@mkdir -p "$(VIEWERDIR)"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
-	npm update
+	npm install
 	npm run bundle:min
 	$(CP) -pr views public bundle $(VIEWERDIR)
-	(cd $(VIEWERDIR) ; npm update --production)
+	(cd $(VIEWERDIR) ; npm install --production)
 
 distclean realclean clean:
 	rm -rf node_modules

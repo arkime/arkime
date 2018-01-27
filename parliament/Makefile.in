@@ -10,10 +10,10 @@ all:
 install:
 	@mkdir -p "$(PARLIAMENTDIR)"
 	$(INSTALL) *.js package.json $(PARLIAMENTDIR)
-	npm update
+	npm install
 	npm run build
 	$(CP) -pr public dist $(PARLIAMENTDIR)
-	(cd $(PARLIAMENTDIR) ; npm update --production)
+	(cd $(PARLIAMENTDIR) ; npm install --production)
 
 distclean realclean clean:
 	rm -rf node_modules
