@@ -825,8 +825,7 @@ function reindex (item, index2, cb) {
                       count: count,
                       total: item['docs.count'],
                       diff: (endTime-startTime),
-                      pos: internals.sliceNum,
-                      index: internals.index
+                      pos: internals.sliceNum
                      });
       }
 
