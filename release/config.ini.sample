@@ -127,12 +127,12 @@ viewPort = 8005
 #viewUrl = https://HOSTNAME:8005
 
 # Path of the maxmind geoip country file.  Download free version from:
-#  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
-geoipFile = MOLOCH_INSTALL_DIR/etc/GeoIP.dat
+#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country
+geoLite2Country = MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
 
 # Path of the maxmind geoip ASN file.  Download free version from:
-#  http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
-geoipASNFile = MOLOCH_INSTALL_DIR/etc/GeoIPASNum.dat
+#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN
+geoLite2ASN = MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
 # Path of the rir assignments file
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
