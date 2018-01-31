@@ -15,6 +15,11 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0-alpha2 2018/01/31
+  - Read alpha1 below
+  - release - correct geo files
+  - capture - set default geo file path
+
 1.0.0-alpha1 2018/01/26
   - NOTICE: Supported ES Versions: 5.6.x, 6.x (for new installs)
   - NOTICE: hasheader for email/http for old sessions will not be migrated
