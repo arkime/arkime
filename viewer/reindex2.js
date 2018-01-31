@@ -45,7 +45,9 @@ var internals = {
   sliceNum: 0,
   scrollSize: 2000,
   index: "sessions-*",
-  stats: {}
+  stats: {},
+  deleteExisting: false,
+  deleteOnDone: false,
 };
 
 var fieldsMap = {
@@ -996,7 +998,9 @@ function mainMaster () {
       } else if (sessions2Map[index2]['docs.count'] === item['docs.count']) {
         return;
       } else {
-        Db.deleteIndex(index2);
+        if (internals.deleteExisting) {
+          Db.deleteIndex(index2);
+        }
         newSessions.push(item);
       }
     });
@@ -1038,11 +1042,18 @@ for (let i = 0; i < process.argv.length; i++) {
     i++;
     internals.index = process.argv[i] || "sessions-*";
     break;
+  case "--deleteExisting":
+    internals.deleteExisting = true;
+    break;
+  case "--deleteOnDone":
+    internals.deleteOnDone = true;
   case "--help":
     console.log("--config <file>                = moloch config.ini file");
     console.log("--size <scroll size>           = batch size [2000]");
     console.log("--slices <parallel processes>  = number of parallel processes");
     console.log("--index <index pattern>        = indices to process [sessions-*]");
+    console.log("--deleteExisting               = delete existing sessions2 indices before reindexing");
+    console.log("--deleteOnDone                 = delete sessions index after reindexing");
     process.exit(0);
   }
 }
