@@ -1530,10 +1530,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
 
     # First handle sessions expire
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
     my $endTime = time();
-    my $endTimeIndex = time2index($ARGV[2], "sessions-", $endTime);
+    my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
     delete $indices->{$endTimeIndex};
 
     my @startTime = gmtime;
@@ -1552,7 +1552,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $optimizecnt = 0;
     my $startTime = mktime(@startTime);
     while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], "sessions-", $startTime);
+        my $iname = time2index($ARGV[2], "sessions2-", $startTime);
         if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
             $indices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
@@ -1616,7 +1616,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
     dbESVersion();
     $main::userAgent->timeout(3600);
@@ -1637,9 +1637,9 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     my $sessions = 0;
     my $sessionsBytes = 0;
-    my @sessions = grep /^${PREFIX}sessions-/, keys %{$status->{indices}};
+    my @sessions = grep /^${PREFIX}sessions2-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
-        next if ($index !~ /^${PREFIX}sessions-/);
+        next if ($index !~ /^${PREFIX}sessions2-/);
         $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
         $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
@@ -1664,7 +1664,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printf "DB Version:          %10s\n", $main::versionNumber;
     printf "ES Nodes:            %10s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %10s\n", commify(scalar(@sessions));
-    printf "Sessions:            %10s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printf "Sessions2:            %10s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
         printf "Session Density:     %10s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
                                                        commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
