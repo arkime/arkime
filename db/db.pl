@@ -1584,7 +1584,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esDelete("/$i", 1);
         }
     }
-
     # Now figure out history expire
     my $hindices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
@@ -1614,6 +1613,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esDelete("/$i", 1);
         }
     }
+    esPost("/_flush/synced", "", 1);
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
@@ -1627,6 +1627,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
         esPost("/$i/_forcemerge?max_num_segments=4", "", 1);
         esPost("/$i/_upgrade", "", 1);
     }
+    esPost("/_flush/synced", "", 1);
     print "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
