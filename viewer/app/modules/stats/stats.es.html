@@ -51,7 +51,7 @@
     </tr>
     <tr class="animate-repeat"
       ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.name">
-      <td class="no-wrap">{{stat.name}}
+      <td class="no-wrap hover-menu">{{stat.name}}
         <!-- column dropdown menu -->
         <div class="btn-group" uib-dropdown>
           <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
@@ -80,7 +80,6 @@
             </li>
           </ul>
         </div> <!-- /column dropdown menu -->
-
       </td>
       <td class="no-wrap">{{stat.docs|number:0}}</td>
       <td class="no-wrap">{{stat.storeSize|humanReadable}}</td>
