@@ -94,12 +94,12 @@ void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *U
     moloch_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-void ntp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+void ntp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
-    if (session->port2 != 123 ||  // ntp port
-            len < 48 ||           // min length
-            data[1] > 16          // max stratum
+    if ((session->port1 != 123 && session->port2 != 123) ||  // ntp port
+         len < 48 ||                                         // min length
+         data[1] > 16                                        // max stratum
        ) {
         return;
     }
