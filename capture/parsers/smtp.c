@@ -37,6 +37,7 @@ static int hhField;
 static int subField;
 static int ctField;
 static int md5Field;
+static int sha256Field;
 static int fnField;
 static int uaField;
 static int mvField;
@@ -51,7 +52,7 @@ typedef struct {
     gint               state64[2];
     guint              save64[2];
     guint              bdatRemaining[2];
-    GChecksum         *checksum[2];
+    GChecksum         *checksum[4];
 
     uint16_t           base64Decode:2;
     uint16_t           firstInContent:2;
@@ -648,12 +649,15 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (email->base64Decode & (1 << which)) {
                         const char *md5 = g_checksum_get_string(email->checksum[which]);
                         moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
+                        const char *sha256 = g_checksum_get_string(email->checksum[which+2]);
+                        moloch_field_string_add(sha256Field, session, (char*)sha256, 64, TRUE);
                     }
                     email->firstInContent |= (1 << which);
                     email->base64Decode &= ~(1 << which);
                     email->state64[which] = 0;
                     email->save64[which] = 0;
                     g_checksum_reset(email->checksum[which]);
+                    g_checksum_reset(email->checksum[which+2]);
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
                     if (email->base64Decode & (1 << which)) {
@@ -663,6 +667,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                                                             &(email->state64[which]),
                                                             &(email->save64[which]));
                             g_checksum_update(email->checksum[which], buf, b);
+                            g_checksum_update(email->checksum[which+2], buf, b);
 
                             if (email->firstInContent & (1 << which)) {
                                 email->firstInContent &= ~(1 << which);
@@ -804,6 +809,8 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
 
     g_checksum_free(email->checksum[0]);
     g_checksum_free(email->checksum[1]);
+    g_checksum_free(email->checksum[2]);
+    g_checksum_free(email->checksum[3]);
 
     while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
         g_free(string->str);
@@ -835,6 +842,8 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
 
         email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
         email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+        email->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
+        email->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
 
         DLL_INIT(s_, &(email->boundaries));
 
@@ -917,6 +926,14 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "md5",
+        NULL);
+
+    sha256Field = moloch_field_define("email", "termfield",
+        "email.sha256", "Attach SHA256s", "email.sha256",
+        "Email attachment SHA256s",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "requiredRight", "emailSearch",
+        "category", "sha256",
         NULL);
 
     fctField = moloch_field_define("email", "termfield",

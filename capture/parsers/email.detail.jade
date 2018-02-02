@@ -13,6 +13,7 @@ if (user.emailSearch && session.email)
     +arrayList(session.email, 'contentType', "Content Types", "email.content-type")
     +arrayList(session.email, 'filename', "Filenames", "email.fn")
     +arrayList(session.email, 'md5', "Attachment MD5s", "email.md5")
+    +arrayList(session.email, 'sha256', "Attachment SHA256s", "email.sha256")
     +arrayList(session.email, "bodyMagic", "Attachment libfile", "email.bodymagic")
     if (session.email.headers)
       each value,i in session.email.headers

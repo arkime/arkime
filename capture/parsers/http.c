@@ -33,7 +33,7 @@ typedef struct {
     short            pos[2];
     http_parser      parsers[2];
 
-    GChecksum       *checksum[2];
+    GChecksum       *checksum[4];
     const char      *magicString[2];
 
     uint16_t         wParsers:2;
@@ -61,6 +61,7 @@ static int uaField;
 static int tagsReqField;
 static int tagsResField;
 static int md5Field;
+static int sha256Field;
 static int verReqField;
 static int verResField;
 static int pathField;
@@ -87,6 +88,7 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
     http->inValue  &= ~(1 << http->which);
     http->inBody   &= ~(1 << http->which);
     g_checksum_reset(http->checksum[http->which]);
+    g_checksum_reset(http->checksum[http->which+2]);
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMB)
         moloch_plugins_cb_hp_omb(session, parser);
@@ -144,6 +146,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
     }
 
     g_checksum_update(http->checksum[http->which], (guchar *)at, length);
+    g_checksum_update(http->checksum[http->which+2], (guchar *)at, length);
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OB)
         moloch_plugins_cb_hp_ob(session, parser, at, length);
@@ -222,6 +225,8 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     if (http->inBody & (1 << http->which)) {
         const char *md5 = g_checksum_get_string(http->checksum[http->which]);
         moloch_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http->magicString[http->which], TRUE);
+        const char *sha256 = g_checksum_get_string(http->checksum[http->which+2]);
+        moloch_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
     }
 
     return 0;
@@ -652,6 +657,8 @@ void http_free(MolochSession_t UNUSED(*session), void *uw)
 
     g_checksum_free(http->checksum[0]);
     g_checksum_free(http->checksum[1]);
+    g_checksum_free(http->checksum[2]);
+    g_checksum_free(http->checksum[3]);
 
     MOLOCH_TYPE_FREE(HTTPInfo_t, http);
 }
@@ -667,6 +674,8 @@ void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), 
 
     http->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
     http->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+    http->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
+    http->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
 
     http_parser_init(&http->parsers[0], HTTP_BOTH);
     http_parser_init(&http->parsers[1], HTTP_BOTH);
@@ -741,6 +750,13 @@ static const char *method_strings[] =
         "MD5 of http body response",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "md5",
+        NULL);
+
+    sha256Field = moloch_field_define("http", "lotermfield",
+        "http.sha256", "Body SHA256", "http.sha256",
+        "SHA256 of http body response",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "sha256",
         NULL);
 
     moloch_field_define("http", "termfield",
