@@ -715,6 +715,16 @@ function setField(result, path, value) {
     result[path[ilen]] = value;
   }
 }
+//////////////////////////////////////////////////////////////////////////////////
+function appendField(result, field, value) {
+  if (result[field] === undefined) {
+    result[field] = [];
+    result[field+"Cnt"] = 0;
+  }
+
+  result[field].push(value);
+  result[field+"Cnt"]++;
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 function remap (result, item, prefix) {
@@ -725,6 +735,22 @@ function remap (result, item, prefix) {
     if (fieldsMap[fullkey] !== undefined) {
       if (fieldsMap[fullkey][0] === "ignore") {continue;}
       setField(result, fieldsMap[fullkey], value);
+
+      if (fullkey.startsWith("hdrs.")) {
+        if (fullkey.startsWith("hdrs.hres-")) {
+          if (!fullkey.endsWith("cnt")) {
+            appendField(result.http, "responseHeader", fullkey.substring(10));
+          }
+        } else if (fullkey.startsWith("hdrs.hreq-")) {
+          if (!fullkey.endsWith("cnt")) {
+            appendField(result.http, "requestHeader", fullkey.substring(10));
+          }
+        } else if (fullkey.startsWith("hdrs.ehead-")) {
+          if (!fullkey.endsWith("cnt")) {
+            appendField(result.email, "header", fullkey.substring(11));
+          }
+        }
+      }
     } else if (key === "tls") {
       result.cert = [];
       for (var j = 0; j < value.length; j++) {
@@ -738,14 +764,23 @@ function remap (result, item, prefix) {
       var path = ["http", "response-" + fullkey.substring(10).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
+      if (!fullkey.endsWith("cnt")) {
+        appendField(result.http, "responseHeader", fullkey.substring(10));
+      }
     } else if (fullkey.startsWith("hdrs.hreq-")) {
       var path = ["http", "request-" + fullkey.substring(10).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
+      if (!fullkey.endsWith("cnt")) {
+        appendField(result.http, "requestHeader", fullkey.substring(10));
+      }
     } else if (fullkey.startsWith("hdrs.ehead-")) {
       var path = ["email", "header-" + fullkey.substring(11).replace(/cnt$/, "Cnt")];
       fieldsMap[fullkey] = path;
       setField(result, path, value);
+      if (!fullkey.endsWith("cnt")) {
+        appendField(result.email, "header", fullkey.substring(11));
+      }
     } else {
       console.log("Not sure", key);
       console.log(fullkey, " ", item);
