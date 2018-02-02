@@ -51,7 +51,37 @@
     </tr>
     <tr class="animate-repeat"
       ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.name">
-      <td class="no-wrap">{{stat.name}}</td>
+      <td class="no-wrap">{{stat.name}}
+        <!-- column dropdown menu -->
+        <div class="btn-group" uib-dropdown>
+          <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
+            <span class="fa fa-caret-down"></span>
+          </button>
+          <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
+            <li role="menuitem" ng-if="!stat.nodeExcluded">
+              <a ng-click="$ctrl.exclude('node', stat.name)">
+                Exclude node {{stat.name}}
+              </a>
+            </li>
+            <li role="menuitem" ng-if="stat.nodeExcluded">
+              <a ng-click="$ctrl.include('node', stat.name)">
+                Include node {{stat.name}}
+              </a>
+            </li>
+            <li role="menuitem" ng-if="!stat.ipExcluded">
+              <a ng-click="$ctrl.exclude('ip', stat.ip)">
+                Exclude IP {{stat.ip}}
+              </a>
+            </li>
+            <li role="menuitem" ng-if="stat.ipExcluded">
+              <a ng-click="$ctrl.include('ip', stat.ip)">
+                Include IP {{stat.ip}}
+              </a>
+            </li>
+          </ul>
+        </div> <!-- /column dropdown menu -->
+
+      </td>
       <td class="no-wrap">{{stat.docs|number:0}}</td>
       <td class="no-wrap">{{stat.storeSize|humanReadable}}</td>
       <td class="no-wrap">{{stat.heapSize|humanReadable}}</td>

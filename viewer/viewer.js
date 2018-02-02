@@ -2487,21 +2487,26 @@ app.get('/esstats.json', function(req, res) {
   var stats = [];
   var r;
 
-  async.parallel({
-    nodes: function(nodesCb) {
-      Db.nodesStats({metric: "jvm,process,fs,os,indices"}, nodesCb);
-    },
-    health: Db.healthCache
-  },
-  function(err, results) {
-    if (err || !results.nodes) {
-      console.log ("ERROR", err);
-      r = {draw: req.query.draw,
-           health: results.health,
-           recordsTotal: 0,
-           recordsFiltered: 0,
-           data: []};
-      return res.send(r);
+  Promise.all([Db.nodesStats({metric: "jvm,process,fs,os,indices"}),
+               Db.healthCachePromise(),
+               Db.getClusterSettings({flatSettings: true})
+  ]).catch((err) => {
+    console.log ("ERROR", err);
+    r = {draw: req.query.draw,
+         health: health,
+         recordsTotal: 0,
+         recordsFiltered: 0,
+         data: []};
+    return res.send(r);
+  }).then(([nodes, health, settings], reject) => {
+    let ipExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
+      ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
+    }
+
+    let nodeExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._name']) {
+      nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
     }
 
     var now = new Date().getTime();
@@ -2514,17 +2519,16 @@ app.get('/esstats.json', function(req, res) {
       regex = new RegExp(req.query.filter);
     }
 
-
-    var nodes = Object.keys(results.nodes.nodes);
-    for (var n = 0, nlen = nodes.length; n < nlen; n++) {
-      var node = results.nodes.nodes[nodes[n]];
+    var nodeKeys = Object.keys(nodes.nodes);
+    for (var n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+      var node = nodes.nodes[nodeKeys[n]];
 
       if (regex && !node.name.match(regex)) {continue;}
 
       var read = 0;
       var write = 0;
 
-      var oldnode = internals.previousNodeStats[0][nodes[n]];
+      var oldnode = internals.previousNodeStats[0][nodeKeys[n]];
       if (node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
@@ -2533,6 +2537,9 @@ app.get('/esstats.json', function(req, res) {
 
       stats.push({
         name: node.name,
+        ip: node.host,
+        ipExcluded: ipExcludes.includes(node.host),
+        nodeExcluded: nodeExcludes.includes(node.name),
         storeSize: node.indices.store.size_in_bytes,
         docs: node.indices.docs.count,
         searches: node.indices.search.query_current,
@@ -2563,11 +2570,11 @@ app.get('/esstats.json', function(req, res) {
       }
     }
 
-    results.nodes.nodes.timestamp = new Date().getTime();
-    internals.previousNodeStats.push(results.nodes.nodes);
+    nodes.nodes.timestamp = new Date().getTime();
+    internals.previousNodeStats.push(nodes.nodes);
 
     r = {draw: req.query.draw,
-         health: results.health,
+         health: health,
          recordsTotal: stats.length,
          recordsFiltered: stats.length,
          data: stats};
@@ -3501,7 +3508,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
       let value = sessionData[fields[k]];
       if (fields[k] === 'ipProtocol' && value) {
         value = Pcap.protocol2Name(value);
-      } 
+      }
 
       if (Array.isArray(value)) {
         let singleValue = '"' + value.join(', ') +  '"';

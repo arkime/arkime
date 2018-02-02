@@ -307,7 +307,7 @@ exports.taskCancel = function(taskId, cb) {
 };
 
 exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err, data);});
+  return internals.elasticSearchClient.nodes.stats(options, cb);
 };
 
 exports.update = function (index, type, id, document, options, cb) {
@@ -474,6 +474,17 @@ exports.healthCache = function (cb) {
     });
   });
 };
+
+exports.healthCachePromise = function () {
+  return new Promise(function(resolve, reject) {
+    exports.healthCache((err, data) => {
+      if (err)
+        reject(err);
+      else
+        resolve(data);
+    });
+  });
+}
 
 exports.indicesCache = function (cb) {
   if (!cb) {
