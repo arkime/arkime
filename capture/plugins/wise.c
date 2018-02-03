@@ -37,7 +37,9 @@ LOCAL char                  udpTuple;
 LOCAL int                   httpHostField;
 LOCAL int                   httpXffField;
 LOCAL int                   httpMd5Field;
+LOCAL int                   httpSha256Field;
 LOCAL int                   emailMd5Field;
+LOCAL int                   emailSha256Field;
 LOCAL int                   emailSrcField;
 LOCAL int                   emailDstField;
 LOCAL int                   dnsHostField;
@@ -66,9 +68,10 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_URL     4
 #define INTEL_TYPE_TUPLE   5
 #define INTEL_TYPE_JA3     6
-#define INTEL_TYPE_SIZE    7
+#define INTEL_TYPE_SHA256  7
+#define INTEL_TYPE_SIZE    8
 
-LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple", "ja3"};
+LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple", "ja3", "sha256"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -564,6 +567,27 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
+    //SHA256s
+    if (session->fields[httpSha256Field]) {
+        MolochStringHashStd_t *shash = session->fields[httpSha256Field]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            if (hstring->uw) {
+                char str[1000];
+                snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
+                wise_lookup(session, iRequest, str, INTEL_TYPE_SHA256);
+            } else {
+                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+            }
+        );
+    }
+
+    if (session->fields[emailSha256Field]) {
+        MolochStringHashStd_t *shash = session->fields[emailSha256Field]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+        );
+    }
+
     //Email
     if (session->fields[emailSrcField]) {
         MolochStringHashStd_t *shash = session->fields[emailSrcField]->shash;
@@ -658,17 +682,19 @@ void moloch_plugin_init()
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
-    httpHostField  = moloch_field_by_db("http.host");
-    httpXffField   = moloch_field_by_db("http.xffIp");
-    httpMd5Field   = moloch_field_by_db("http.md5");
-    emailMd5Field  = moloch_field_by_db("email.md5");
-    emailSrcField  = moloch_field_by_db("email.src");
-    emailDstField  = moloch_field_by_db("email.dst");
-    dnsHostField   = moloch_field_by_db("dns.host");
-    tagsField      = moloch_field_by_db("tags");
-    httpUrlField   = moloch_field_by_db("http.uri");
-    protocolField  = moloch_field_by_db("protocol");
-    ja3Field       = moloch_field_by_db("tls.ja3");
+    httpHostField    = moloch_field_by_db("http.host");
+    httpXffField     = moloch_field_by_db("http.xffIp");
+    httpMd5Field     = moloch_field_by_db("http.md5");
+    httpSha256Field  = moloch_field_by_db("http.sha256");
+    emailMd5Field    = moloch_field_by_db("email.md5");
+    emailSha256Field = moloch_field_by_db("email.sha256");
+    emailSrcField    = moloch_field_by_db("email.src");
+    emailDstField    = moloch_field_by_db("email.dst");
+    dnsHostField     = moloch_field_by_db("dns.host");
+    tagsField        = moloch_field_by_db("tags");
+    httpUrlField     = moloch_field_by_db("http.uri");
+    protocolField    = moloch_field_by_db("protocol");
+    ja3Field         = moloch_field_by_db("tls.ja3");
 
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);

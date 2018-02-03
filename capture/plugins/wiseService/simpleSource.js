@@ -105,6 +105,9 @@ SimpleSource.prototype.initSimple = function() {
   case "ja3":
     this.getJa3 = this.sendResult;
     break;
+  case "sha256":
+    this.getSha256 = this.sendResult;
+    break;
   default:
     console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
     return false;
