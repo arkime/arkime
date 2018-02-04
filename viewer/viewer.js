@@ -3738,7 +3738,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   var reqFields = fields;
 
   if (req.query.fields) {
-    fields = reqFields = req.query.fields.split(',');
+    fields = reqFields = queryValueToArray(req.query.fields);
   }
 
   if (req.query.ids) {
