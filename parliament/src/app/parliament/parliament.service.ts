@@ -81,4 +81,10 @@ export class ParliamentService {
       { type: issue.type, node: issue.node }
     );
   }
+
+  dismissAllIssues(groupId, clusterId): Observable<any> {
+    return this.http.put<Response>(
+      `api/groups/${groupId}/clusters/${clusterId}/dismissAllIssues`, {}
+    );
+  }
 }

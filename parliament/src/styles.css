@@ -42,6 +42,32 @@ a.no-href:hover { color: #0056b3 !important; }
   font-weight: normal;
 }
 
+/* info display ------------------------------ */
+/* displays large text for important information
+ * note: must contain an inner div with the text
+ * example:
+ * <div class="info-area">
+ *   <div>Some important text!</div>
+ * </div>
+ */
+.info-area {
+  font-size : 1.5rem;
+  color     : #777777;
+}
+
+.info-area span.fa {
+  display         : flex;
+  justify-content : center;
+}
+
+.vertical-center {
+  min-height      : 30vh;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  flex-direction  : column;
+}
+
 /* media queries ----------------------------- */
 @media (min-width: 1600px) {
   .col-xxl-2 {

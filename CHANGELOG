@@ -33,6 +33,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
+0.50.1 2017/01/XX 
+  - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
+
 0.50.0 2017/01/24
   - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
   - viewer - Fixed CSV export of fields within objects (issue #790)

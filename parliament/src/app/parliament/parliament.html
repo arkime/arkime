@@ -355,7 +355,8 @@
               <span *ngFor="let issue of cluster.issues; trackBy:getIssueTrackingId;">
                 <div *ngIf="!issue.dismissed && !issue.ignoreUntil" class="alert alert-sm"
                   [ngClass]="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
-                  <app-issue-actions [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
+                  <app-issue-actions *ngIf="authService.loggedIn" class="issue-btns"
+                    [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
                     (change)="issueChange($event)"></app-issue-actions>
                   <!-- issue text -->
                   <span class="fa fa-exclamation-triangle"></span>&nbsp;
@@ -412,6 +413,12 @@
           </div>
           <!-- edit cluster buttons -->
           <div class="card-footer small" *ngIf="authService.loggedIn">
+            <a *ngIf="!cluster.showEditClusterForm"
+              class="btn btn-sm btn-outline-danger cursor-pointer"
+              (click)="dismissAll(group.id, cluster)"
+              placement="right" ngbTooltip="Dismiss all isues for this cluster">
+              <span class="fa fa-check"></span>
+            </a>
             <a *ngIf="!cluster.showEditClusterForm"
               class="btn btn-sm btn-outline-warning pull-right cursor-pointer"
               (click)="displayEditClusterForm(cluster)"

@@ -254,7 +254,7 @@
         initialized = false; // reinitialize the graph
         this.loadData();
 
-        if (this.dataInterval !== '0') { // set up the node req interval
+        if (this.dataInterval !== '0' && !reqPromise) { // set up the node req interval
           reqPromise = this.$interval(() => {
             this.loadData();
           }, parseInt(this.dataInterval));

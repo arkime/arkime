@@ -529,4 +529,35 @@ export class ParliamentComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Fired when the dismiss all button is clicked
+   * Sends a request to remove all the issues within a cluster
+   * If succesful, updates the cluster in the view, otherwise displays error
+   * @param {object} groupId - the id of the group that the cluster belongs to
+   * @param {object} cluster - the cluster to remove issues from
+   */
+  dismissAll(groupId, cluster) {
+    this.parliamentService.dismissAllIssues(groupId, cluster.id)
+      .subscribe(
+        (data) => {
+          for (const group of this.parliament.groups) {
+            if (group.id === groupId) {
+              for (const c of group.clusters) {
+                if (c.id === cluster.id) {
+                  if (c.issues) {
+                    for (const issue of c.issues) {
+                      issue.dismissed = data.dismissed;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        (err) => {
+          this.error = err.error.text || 'Unable to dismiss all of the issues in this cluster';
+        }
+      );
+  }
+
 }
