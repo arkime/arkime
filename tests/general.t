@@ -1,4 +1,4 @@
-use Test::More tests => 537;
+use Test::More tests => 557;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -101,6 +101,8 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=10.0.0.1"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0.0/24"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.0/24]"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0/24"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0/24]"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=0"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=0"));
@@ -110,6 +112,18 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1,10.0.0.3]"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1/32,10.0.0.3/32]"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.1/32]"));
+
+# ipv6 tests
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip.dst=2001:6f8:900:7c0::2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip.dst=2001:6f8:900:7c0:0:0:0:2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip.dst=2001:6f8:900:7c0::2.80"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip.src=.59201"));
+
+# ipv6 all tests
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=2001:6f8:900:7c0::2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=2001:6f8:900:7c0:0:0:0:2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=2001:6f8:900:7c0::2.80"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=.59201"));
 
 # ip boundary tests
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/ip-boundaries.pcap&&ip.src=0.0.0.0"));
@@ -149,7 +163,7 @@ my $pwd = "*/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0.2:50758"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=[10.0.0.2:50759]"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.2:50759/32]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.2/32:50759]"));
 # port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&port.src=50759"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&port.src!=50759"));

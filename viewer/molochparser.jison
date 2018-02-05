@@ -32,7 +32,7 @@
 /* operator associations and precedence */
 
 %left '!'
-%left '<' '<=' '>' '>=' '==' '!=' 
+%left '<' '<=' '>' '>=' '==' '!='
 %left '||'
 %left '&&'
 %left UMINUS
@@ -60,7 +60,7 @@ VALUE : STR
       | LIST
       ;
 
- 
+
 e
     : e '&&' e
         {$$ = {bool: {must: [$1, $3]}};}
@@ -113,6 +113,37 @@ function parseIpPort(yy, field, ipPortStr) {
     return obj;
   }
 
+  function allIp(ip, port) {
+    var ors = [];
+    var completed = {};
+    for (field in yy.fieldsMap) {
+      var info = yy.fieldsMap[field];
+
+      // If ip itself or not an ip field stop
+      if (field === "ip" || info.type !== "ip")
+        continue;
+
+      // Already completed
+      if (completed[info.dbField])
+        continue;
+      completed[info.dbField] = 1;
+
+      // If port specified then skip ips without ports
+      if (port !== -1 && !info.portField)
+        continue;
+
+      if (info.requiredRight && yy[info.requiredRight] !== true) {
+        continue;
+      }
+      obj = singleIp(info.dbField, ip, port);
+      if (obj) {
+        ors.push(obj);
+      }
+    }
+
+    return {bool: {should: ors}};
+  }
+
 
   var obj;
 
@@ -131,77 +162,72 @@ function parseIpPort(yy, field, ipPortStr) {
       return obj;
   }
 
-  // Support '10.10.10/16:4321'
+  // Support ':80' and '.80'
+  if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
+      (ipPortStr[0] === '.')) {
+    if (dbField !== "ipall") {
+      return singleIp(dbField, undefined, +ipPortStr.slice(1));
+    } else {
+      return allIp(undefined, +ipPortStr.slice(1));
+    }
+  }
 
+  // Support ip4: '10.10.10.10' '10.10.10/16:80' '10.10.10:80' '10.10.10/16'
+  // Support ip6: '1::2' '1::2/16.80' '1::2.80' '1::2/16'
   var ip;
-  var ipv6 = false;
+  var port = -1;
   var colons = ipPortStr.split(':');
 
-  // This is ip6, unsplit on colon
+  // More then 1 colon is ip 6
   if (colons.length > 2) {
-    ipv6 = true;
-    colons = [ipPortStr];
-  }
-
-  var slash = colons[0].split('/');
-  var dots = slash[0].split('.');
-  var port = -1;
-  if (colons[1]) {
-    port = parseInt(colons[1], 10);
-  }
-
-  if (ipv6) {
+    // Everything after . is port
+    let dots = ipPortStr.split('.');
+    if (dots.length > 1) {
+      port = +dots[1];
+    }
+    // Everything before . is ip and slash
     ip = dots[0];
-  } else if (dots.length === 4) {
-    ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
-  } else if (dots.length === 3) {
-    ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
-    if (slash[1] === undefined) {slash[1] = '24';}
-  } else if (dots.length === 2) {
-    ip = `${dots[0]}.${dots[1]}.0.0`;
-    if (slash[1] === undefined) {slash[1] = '16';}
-  } else if (dots.length === 1 && dots[0].length > 0) {
-    ip = `${dots[0]}.0.0.0`;
-    if (slash[1] === undefined) {slash[1] = '8';}
+  } else {
+    // everything after : is port
+    if (colons.length > 1) {
+      port = +colons[1];
+    }
+
+    // Have to do extra because we allow shorthand for /8, /16, /24
+    let slash = colons[0].split('/');
+    let dots = slash[0].split('.');
+
+    switch(dots.length) {
+    case 4:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
+      break;
+    case 3:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
+      if (slash[1] === undefined) {slash[1] = '24';}
+      break;
+    case 2:
+      ip = `${dots[0]}.${dots[1]}.0.0`;
+      if (slash[1] === undefined) {slash[1] = '16';}
+      break;
+    case 1:
+      if (dots[0].length > 0) {
+        ip = `${dots[0]}.0.0.0`;
+        if (slash[1] === undefined) {slash[1] = '8';}
+      }
+      break;
+    }
+
+    // Add the slash back to the ip
+    if (slash[1] && slash[1] !== '32') {
+      ip = `${ip}/${slash[1]}`;
+    }
   }
 
-
-  if (slash[1] && slash[1] !== '32') {
-    ip = `${ip}/${slash[1]}`;
-  }
-  
   if (dbField !== "ipall") {
     return singleIp(dbField, ip, port);
+  } else {
+    return allIp(ip, port);
   }
-
-  var ors = [];
-  var completed = {};
-  for (field in yy.fieldsMap) {
-    var info = yy.fieldsMap[field];
-
-    // If ip itself or not an ip field stop
-    if (field === "ip" || info.type !== "ip")
-      continue;
-
-    // Already completed
-    if (completed[info.dbField])
-      continue;
-    completed[info.dbField] = 1;
-
-    // If port specified then skip ips without ports
-    if (port !== -1 && !info.portField)
-      continue;
-
-    if (info.requiredRight && yy[info.requiredRight] !== true) {
-      continue;
-    }
-    obj = singleIp(info.dbField, ip, port);
-    if (obj) {
-      ors.push(obj);
-    }
-  }
-
-  return {bool: {should: ors}};
 }
 
 function stripQuotes (str) {
@@ -665,7 +691,7 @@ function parseSeconds(str) {
     }
 
     if (snap) {
-      d.startOf(snap); 
+      d.startOf(snap);
       if (n = m[5].match(/^(w|week|weeks)(\d+)$/)) {
         d.day(n[2]);
       }
