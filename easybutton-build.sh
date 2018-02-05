@@ -9,11 +9,11 @@
 # * build moloch-capture
 
 
-GLIB=2.52.3
-YARA=3.6.3
-MAXMIND=1.3.1
+GLIB=2.54.3
+YARA=3.7.1
+MAXMIND=1.3.2
 PCAP=1.8.1
-CURL=7.55.0
+CURL=7.58.0
 LUA=5.3.4
 DAQ=2.0.6
 NODE=8.9.4
