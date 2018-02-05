@@ -13,6 +13,9 @@ NOTICE: Restart wiseService before capture when upgrading
 
 0.50.1 2017/01/XX 
   - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
+  - release - upgrade curl, yara, glib
+  - viewer - sessions.csv handle multiple fields parameters
+  - parliament - better dismissing
 
 0.50.0 2017/01/24
   - NOTICE: Supported ES Versions: > 5.5.x, 6.x is NOT supported
