@@ -249,20 +249,22 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $cmd = "../capture/moloch-capture -c config.test.ini -n test -R pcap --flush";
+        my $mcmd = "../capture/moloch-capture $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
-            $cmd .= " 2>&1 1>/dev/null";
+            $mcmd .= " 2>&1 1>/dev/null";
         } else {
-            $cmd .= " --debug 2>&1 1>/tmp/moloch.capture";
+            $mcmd .= " --debug 2>&1 1>/tmp/moloch.capture";
         }
 
 
         if ($main::valgrind) {
-            $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=moloch.val " . $cmd;
+            $mcmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=moloch.val " . $mcmd;
         }
 
-        print "$cmd\n" if ($main::debug);
-        system($cmd);
+        print "$mcmd\n" if ($main::debug);
+        system($mcmd);
+
+        die "Loaded" if ($cmd eq "--viewerload");
 
         esCopy("tests_fields", "tests2_fields", "field");
 
@@ -305,6 +307,7 @@ my ($cmd) = @_;
 ################################################################################
 $main::debug = 0;
 $main::valgrind = 0;
+$main::copy = "";
 $main::cmd = "--capture";
 
 while (scalar (@ARGV) > 0) {
@@ -314,7 +317,10 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|help|reip)$/) {
+    } elsif ($ARGV[0] eq "--copy") {
+        $main::copy = "--copy";
+        shift @ARGV;
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^-/) {
