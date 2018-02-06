@@ -8,26 +8,16 @@
             }
          },
          "body" : {
-            "fp" : 1186341079,
-            "ipSrc" : "0.0.0.0",
-            "pa1" : 33,
-            "p1" : 0,
-            "lpd" : 1186341381164,
-            "tipv62-term" : "ff0200000000000000000001ff8295b5",
-            "fpd" : 1186341079159,
-            "mac2-term-cnt" : 1,
-            "fs" : [],
-            "by" : 2838,
-            "ipDst" : "0.0.0.0",
-            "sl" : 302005,
-            "timestamp" : "SET",
-            "portSrc" : 0,
-            "pa" : 33,
-            "firstPacket" : 1186341079159,
-            "db" : 0,
             "a1" : "254.130.149.181",
-            "by1" : 2838,
-            "pr" : 58,
+            "mac1-term-cnt" : 1,
+            "a2" : "255.130.149.181",
+            "db" : 0,
+            "prot-term" : [
+               "icmp"
+            ],
+            "by2" : 0,
+            "ss" : 1,
+            "no" : "test",
             "ps" : [
                24,
                126,
@@ -63,30 +53,22 @@
                5528,
                5630
             ],
-            "tipv61-term" : "fe80000000000000021125fffe8295b5",
-            "no" : "test",
-            "icmpType" : [
-               135
-            ],
-            "p2" : 0,
-            "ss" : 1,
-            "a2" : "255.130.149.181",
             "mac2-term" : [
                "33:33:ff:82:95:b5"
             ],
-            "mac1-term" : [
-               "00:11:25:82:95:b5"
-            ],
+            "sl" : 302005,
             "db1" : 0,
-            "db2" : 0,
-            "by2" : 0,
-            "lastPacket" : 1186341381164,
+            "prot-term-cnt" : 1,
+            "by1" : 2838,
             "portDst" : 0,
-            "mac1-term-cnt" : 1,
-            "lp" : 1186341381,
+            "ipDst" : "0.0.0.0",
+            "fp" : 1186341079,
+            "pr" : 58,
+            "portSrc" : 0,
             "icmpCode" : [
                0
             ],
+            "mac2-term-cnt" : 1,
             "psl" : [
                102,
                102,
@@ -122,125 +104,90 @@
                102,
                102
             ],
-            "pa2" : 0
+            "mac1-term" : [
+               "00:11:25:82:95:b5"
+            ],
+            "pa2" : 0,
+            "db2" : 0,
+            "ipSrc" : "0.0.0.0",
+            "p2" : 0,
+            "lp" : 1186341381,
+            "icmpType" : [
+               135
+            ],
+            "by" : 2838,
+            "pa1" : 33,
+            "pa" : 33,
+            "fpd" : 1186341079159,
+            "tipv61-term" : "fe80000000000000021125fffe8295b5",
+            "lpd" : 1186341381164,
+            "p1" : 0,
+            "lastPacket" : 1186341381164,
+            "tipv62-term" : "ff0200000000000000000001ff8295b5",
+            "fs" : [],
+            "firstPacket" : 1186341079159,
+            "timestamp" : "SET"
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-070805",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "by2" : 0,
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1186341103914,
-            "portDst" : 0,
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
             "pa2" : 0,
-            "psl" : [
-               106,
-               106
-            ],
-            "icmpCode" : [
-               0
-            ],
+            "db2" : 0,
+            "p2" : 0,
+            "ipSrc" : "0.0.0.0",
             "lp" : 1186341103,
+            "icmpType" : [
+               143
+            ],
+            "by" : 180,
+            "pa1" : 2,
             "tipv61-term" : "fe8000000000000002d009fffee3e8de",
+            "pa" : 2,
+            "fpd" : 1186341098054,
+            "lpd" : 1186341103914,
+            "p1" : 0,
+            "lastPacket" : 1186341103914,
+            "tipv62-term" : "ff020000000000000000000000000016",
+            "timestamp" : "SET",
+            "fs" : [],
+            "firstPacket" : 1186341098054,
+            "a1" : "254.227.232.222",
+            "db" : 0,
+            "a2" : "0.0.0.22",
+            "mac1-term-cnt" : 1,
+            "by2" : 0,
+            "ss" : 1,
+            "prot-term" : [
+               "icmp"
+            ],
             "ps" : [
                330,
                2440
             ],
-            "pr" : 58,
             "no" : "test",
-            "a2" : "0.0.0.22",
             "mac2-term" : [
                "33:33:00:00:00:16"
             ],
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "icmpType" : [
-               143
-            ],
-            "p2" : 0,
-            "ss" : 1,
-            "db2" : 0,
-            "db1" : 0,
             "sl" : 5859,
-            "timestamp" : "SET",
-            "portSrc" : 0,
-            "db" : 0,
-            "firstPacket" : 1186341098054,
-            "a1" : "254.227.232.222",
-            "pa" : 2,
-            "by1" : 180,
-            "ipSrc" : "0.0.0.0",
-            "pa1" : 2,
-            "fp" : 1186341098,
-            "tipv62-term" : "ff020000000000000000000000000016",
-            "mac2-term-cnt" : 1,
-            "fpd" : 1186341098054,
-            "p1" : 0,
-            "lpd" : 1186341103914,
-            "fs" : [],
-            "by" : 180,
-            "ipDst" : "0.0.0.0"
-         }
-      },
-      {
-         "body" : {
-            "pr" : 58,
-            "ps" : [
-               436
-            ],
-            "tipv61-term" : "00000000000000000000000000000000",
-            "no" : "test",
-            "p2" : 0,
-            "icmpType" : [
-               135
-            ],
-            "ss" : 1,
-            "a2" : "255.152.6.225",
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "mac2-term" : [
-               "33:33:ff:98:06:e1"
-            ],
-            "db1" : 0,
-            "db2" : 0,
-            "by2" : 0,
-            "lastPacket" : 1186341098474,
+            "prot-term-cnt" : 1,
             "portDst" : 0,
-            "mac1-term-cnt" : 1,
-            "psl" : [
-               94
-            ],
+            "by1" : 180,
+            "fp" : 1186341098,
+            "ipDst" : "0.0.0.0",
+            "db1" : 0,
+            "portSrc" : 0,
             "icmpCode" : [
                0
             ],
-            "lp" : 1186341098,
-            "pa2" : 0,
-            "fp" : 1186341098,
-            "ipSrc" : "0.0.0.0",
-            "pa1" : 1,
-            "p1" : 0,
-            "lpd" : 1186341098474,
-            "tipv62-term" : "ff0200000000000000000001ff9806e1",
-            "fpd" : 1186341098474,
             "mac2-term-cnt" : 1,
-            "fs" : [],
-            "by" : 78,
-            "ipDst" : "0.0.0.0",
-            "sl" : 0,
-            "timestamp" : "SET",
-            "portSrc" : 0,
-            "pa" : 1,
-            "db" : 0,
-            "firstPacket" : 1186341098474,
-            "a1" : "0.0.0.0",
-            "by1" : 78
+            "psl" : [
+               106,
+               106
+            ],
+            "pr" : 58
          },
          "header" : {
             "index" : {
@@ -257,69 +204,107 @@
             }
          },
          "body" : {
-            "sl" : 3851,
-            "timestamp" : "SET",
-            "portSrc" : 5353,
-            "dnshocnt" : 2,
-            "firstPacket" : 1186341099605,
-            "prot-term-cnt" : 2,
-            "db" : 1718,
-            "a1" : "126.87.177.158",
-            "pa" : 8,
-            "by1" : 1782,
+            "p2" : 0,
             "ipSrc" : "0.0.0.0",
-            "pa1" : 8,
-            "fp" : 1186341099,
-            "tipv62-term" : "ff0200000000000000000000000000fb",
+            "db2" : 0,
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "pa2" : 0,
+            "pa1" : 1,
+            "by" : 78,
+            "icmpType" : [
+               135
+            ],
+            "lp" : 1186341098,
+            "tipv62-term" : "ff0200000000000000000001ff9806e1",
+            "lpd" : 1186341098474,
+            "lastPacket" : 1186341098474,
+            "p1" : 0,
+            "tipv61-term" : "00000000000000000000000000000000",
+            "fpd" : 1186341098474,
+            "pa" : 1,
+            "fs" : [],
+            "timestamp" : "SET",
+            "firstPacket" : 1186341098474,
+            "db" : 0,
+            "mac1-term-cnt" : 1,
+            "a2" : "255.152.6.225",
+            "a1" : "0.0.0.0",
+            "ps" : [
+               436
+            ],
+            "no" : "test",
+            "ss" : 1,
+            "by2" : 0,
+            "prot-term" : [
+               "icmp"
+            ],
+            "sl" : 0,
+            "mac2-term" : [
+               "33:33:ff:98:06:e1"
+            ],
+            "psl" : [
+               94
+            ],
+            "portSrc" : 0,
+            "icmpCode" : [
+               0
+            ],
+            "mac2-term-cnt" : 1,
+            "pr" : 58,
+            "ipDst" : "0.0.0.0",
+            "fp" : 1186341098,
+            "portDst" : 0,
+            "prot-term-cnt" : 1,
+            "by1" : 78,
+            "db1" : 0
+         }
+      },
+      {
+         "body" : {
             "dnsho" : [
                "linux.local",
                "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
             ],
+            "pa1" : 8,
+            "by" : 1782,
+            "lp" : 1186341103,
+            "ipSrc" : "0.0.0.0",
+            "p2" : 5353,
+            "db2" : 0,
+            "pa2" : 0,
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "g1" : "GBR",
             "as1" : "AS4589 EASYNET Easynet Global Services",
-            "fpd" : 1186341099605,
-            "mac2-term-cnt" : 1,
-            "p1" : 5353,
-            "lpd" : 1186341103455,
-            "fb1" : "0000000000020000",
+            "firstPacket" : 1186341099605,
             "fs" : [],
+            "timestamp" : "SET",
+            "tipv62-term" : "ff0200000000000000000000000000fb",
             "dns" : {
                "qt-term-cnt" : 1,
-               "qt-term" : [
-                  "ANY"
-               ],
+               "qc-term-cnt" : 1,
                "opcode-term" : [
                   "QUERY"
                ],
-               "qc-term-cnt" : 1,
                "qc-term" : [
                   "IN"
                ],
-               "opcode-term-cnt" : 1
+               "opcode-term-cnt" : 1,
+               "qt-term" : [
+                  "ANY"
+               ]
             },
-            "by" : 1782,
-            "ipDst" : "0.0.0.0",
-            "by2" : 0,
-            "prot-term" : [
-               "udp",
-               "mdns"
-            ],
-            "mac1-term-cnt" : 1,
-            "g1" : "GBR",
+            "lpd" : 1186341103455,
+            "p1" : 5353,
             "lastPacket" : 1186341103455,
-            "portDst" : 5353,
-            "pa2" : 0,
-            "lp" : 1186341103,
-            "psl" : [
-               227,
-               208,
-               227,
-               227,
-               208,
-               215,
-               299,
-               299
-            ],
+            "fpd" : 1186341099605,
+            "pa" : 8,
             "tipv61-term" : "200106f8102d000010330c4c7e57b19e",
+            "no" : "test",
+            "dnshocnt" : 2,
             "ps" : [
                530,
                757,
@@ -330,86 +315,221 @@
                1842,
                2141
             ],
-            "pr" : 17,
-            "no" : "test",
-            "a2" : "0.0.0.251",
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
+            "prot-term" : [
+               "udp",
+               "mdns"
             ],
+            "ss" : 1,
+            "by2" : 0,
+            "mac1-term-cnt" : 1,
+            "a2" : "0.0.0.251",
+            "db" : 1718,
+            "a1" : "126.87.177.158",
+            "fb1" : "0000000000020000",
+            "pr" : 17,
+            "psl" : [
+               227,
+               208,
+               227,
+               227,
+               208,
+               215,
+               299,
+               299
+            ],
+            "portSrc" : 5353,
+            "mac2-term-cnt" : 1,
+            "db1" : 1718,
+            "ipDst" : "0.0.0.0",
+            "fp" : 1186341099,
+            "prot-term-cnt" : 2,
+            "portDst" : 5353,
+            "by1" : 1782,
+            "sl" : 3851,
             "mac2-term" : [
                "33:33:00:00:00:fb"
-            ],
-            "p2" : 5353,
-            "ss" : 1,
-            "db2" : 0,
-            "db1" : 1718
-         }
-      },
-      {
-         "body" : {
-            "by2" : 0,
-            "portDst" : 0,
-            "lastPacket" : 1186341269082,
-            "mac1-term-cnt" : 1,
-            "icmpCode" : [
-               0
-            ],
-            "psl" : [
-               126
-            ],
-            "lp" : 1186341269,
-            "pa2" : 0,
-            "pr" : 58,
-            "tipv61-term" : "fe80000000000000021125fffe8295b5",
-            "ps" : [
-               4382
-            ],
-            "no" : "test",
-            "ss" : 1,
-            "p2" : 0,
-            "icmpType" : [
-               134
-            ],
-            "mac1-term" : [
-               "00:11:25:82:95:b5"
-            ],
-            "mac2-term" : [
-               "33:33:00:00:00:01"
-            ],
-            "a2" : "0.0.0.1",
-            "db1" : 0,
-            "db2" : 0,
-            "sl" : 0,
-            "portSrc" : 0,
-            "timestamp" : "SET",
-            "pa" : 1,
-            "a1" : "254.130.149.181",
-            "firstPacket" : 1186341269082,
-            "db" : 0,
-            "by1" : 110,
-            "fp" : 1186341269,
-            "pa1" : 1,
-            "ipSrc" : "0.0.0.0",
-            "lpd" : 1186341269082,
-            "p1" : 0,
-            "fpd" : 1186341269082,
-            "mac2-term-cnt" : 1,
-            "tipv62-term" : "ff020000000000000000000000000001",
-            "fs" : [],
-            "ipDst" : "0.0.0.0",
-            "by" : 110
+            ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-070805",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-070805"
             }
          }
       },
       {
          "body" : {
+            "mac1-term" : [
+               "00:11:25:82:95:b5"
+            ],
+            "pa2" : 0,
+            "ipSrc" : "0.0.0.0",
+            "p2" : 0,
+            "db2" : 0,
+            "by" : 110,
+            "icmpType" : [
+               134
+            ],
+            "lp" : 1186341269,
+            "pa1" : 1,
+            "tipv61-term" : "fe80000000000000021125fffe8295b5",
+            "fpd" : 1186341269082,
+            "pa" : 1,
+            "tipv62-term" : "ff020000000000000000000000000001",
+            "lpd" : 1186341269082,
+            "p1" : 0,
+            "lastPacket" : 1186341269082,
+            "fs" : [],
+            "timestamp" : "SET",
+            "firstPacket" : 1186341269082,
+            "a1" : "254.130.149.181",
+            "db" : 0,
+            "a2" : "0.0.0.1",
+            "mac1-term-cnt" : 1,
+            "ss" : 1,
+            "by2" : 0,
+            "prot-term" : [
+               "icmp"
+            ],
+            "ps" : [
+               4382
+            ],
+            "no" : "test",
+            "sl" : 0,
+            "mac2-term" : [
+               "33:33:00:00:00:01"
+            ],
+            "fp" : 1186341269,
+            "ipDst" : "0.0.0.0",
+            "prot-term-cnt" : 1,
+            "portDst" : 0,
+            "by1" : 110,
+            "db1" : 0,
+            "psl" : [
+               126
+            ],
+            "portSrc" : 0,
+            "icmpCode" : [
+               0
+            ],
+            "mac2-term-cnt" : 1,
+            "pr" : 58
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-070805"
+            }
+         }
+      },
+      {
+         "body" : {
+            "lpd" : 1186341404219,
+            "p1" : 59201,
+            "tipv62-term" : "200106f8090007c00000000000000002",
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "bodymagic-term-cnt" : 1,
+               "method-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term" : [
+                  "text/html"
+               ]
+            },
+            "pa" : 10,
+            "fpd" : 1186341404189,
+            "uacnt" : 1,
+            "ho" : [
+               "cl-1985.ham-01.de.sixxs.net"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "hsver" : [
+               "1.0"
+            ],
+            "fs" : [],
+            "firstPacket" : 1186341404189,
+            "hdver" : [
+               "1.1"
+            ],
+            "p2" : 80,
             "uscnt" : 1,
+            "pa2" : 4,
+            "as1" : "AS4589 EASYNET Easynet Global Services",
+            "lp" : 1186341404,
+            "hpath" : [
+               "/"
+            ],
+            "mac2-term" : [
+               "00:11:25:82:95:b5"
+            ],
+            "hh2cnt" : 5,
+            "hdvercnt" : 1,
+            "us" : [
+               "//cl-1985.ham-01.de.sixxs.net/"
+            ],
+            "portDst" : 80,
+            "by1" : 704,
+            "prot-term-cnt" : 2,
+            "ipDst" : "0.0.0.0",
+            "fp" : 1186341404,
+            "db" : 2499,
+            "hmd5cnt" : 1,
+            "hh1cnt" : 5,
+            "fb1" : "474554202f204854",
+            "no" : "test",
+            "hh2" : [
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:server"
+            ],
+            "hmd5" : [
+               "27cb95a0c4fff954073bc23328021b96"
+            ],
+            "hsvercnt" : 1,
             "fb2" : "485454502f312e31",
+            "ss" : 1,
+            "lastPacket" : 1186341404219,
+            "tcpflags" : {
+               "psh" : 2,
+               "ack" : 4,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "fin" : 2
+            },
+            "g2" : "GBR",
+            "tipv61-term" : "200106f8102d000002d009fffee3e8de",
+            "timestamp" : "SET",
+            "db2" : 2259,
+            "ipSrc" : "0.0.0.0",
+            "g1" : "GBR",
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "ua" : [
+               "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
+            ],
+            "pa1" : 6,
+            "by" : 3267,
+            "sl" : 29,
+            "hocnt" : 1,
+            "pr" : 6,
+            "portSrc" : 59201,
+            "mac2-term-cnt" : 1,
             "psl" : [
                110,
                98,
@@ -422,22 +542,11 @@
                90,
                90
             ],
+            "db1" : 240,
             "mac1-term-cnt" : 1,
-            "ho" : [
-               "cl-1985.ham-01.de.sixxs.net"
-            ],
-            "ua" : [
-               "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
-            ],
-            "portDst" : 80,
-            "hocnt" : 1,
-            "g1" : "GBR",
-            "lastPacket" : 1186341404219,
-            "no" : "test",
-            "hdver" : [
-               "1.1"
-            ],
-            "hpathcnt" : 1,
+            "a2" : "0.0.0.2",
+            "as2" : "AS4589 EASYNET Easynet Global Services",
+            "a1" : "254.227.232.222",
             "ps" : [
                5732,
                5842,
@@ -450,110 +559,17 @@
                8979,
                9069
             ],
-            "db2" : 2259,
-            "db1" : 240,
-            "mac2-term" : [
-               "00:11:25:82:95:b5"
-            ],
-            "a2" : "0.0.0.2",
-            "by1" : 704,
-            "a1" : "254.227.232.222",
-            "db" : 2499,
-            "prot-term-cnt" : 2,
-            "as1" : "AS4589 EASYNET Easynet Global Services",
-            "tipv62-term" : "200106f8090007c00000000000000002",
-            "pa1" : 6,
-            "by" : 3267,
-            "fb1" : "474554202f204854",
+            "hpathcnt" : 1,
             "prot-term" : [
                "http",
                "tcp"
             ],
-            "by2" : 2563,
-            "pa2" : 4,
-            "as2" : "AS4589 EASYNET Easynet Global Services",
-            "http" : {
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "statuscode-cnt" : 1,
-               "method-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term-cnt" : 1
-            },
-            "lp" : 1186341404,
-            "hh2cnt" : 5,
-            "hpath" : [
-               "/"
-            ],
-            "hmd5cnt" : 1,
-            "g2" : "GBR",
-            "tipv61-term" : "200106f8102d000002d009fffee3e8de",
-            "pr" : 6,
-            "hh2" : [
-               "http:header:connection",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:server"
-            ],
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "ss" : 1,
-            "uacnt" : 1,
-            "p2" : 80,
-            "us" : [
-               "//cl-1985.ham-01.de.sixxs.net/"
-            ],
-            "timestamp" : "SET",
-            "hh1cnt" : 5,
-            "portSrc" : 59201,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "sl" : 29,
-            "firstPacket" : 1186341404189,
-            "pa" : 10,
-            "mac2-term-cnt" : 1,
-            "fpd" : 1186341404189,
-            "hdvercnt" : 1,
-            "tcpflags" : {
-               "syn" : 1,
-               "ack" : 4,
-               "urg" : 0,
-               "psh" : 2,
-               "rst" : 0,
-               "fin" : 2,
-               "syn-ack" : 1
-            },
-            "lpd" : 1186341404219,
-            "p1" : 59201,
-            "hsver" : [
-               "1.0"
-            ],
-            "ipSrc" : "0.0.0.0",
-            "fp" : 1186341404,
-            "hsvercnt" : 1,
-            "ipDst" : "0.0.0.0",
-            "hmd5" : [
-               "27cb95a0c4fff954073bc23328021b96"
-            ],
-            "fs" : []
+            "by2" : 2563
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-070805"
+               "_index" : "tests_sessions-070805",
+               "_type" : "session"
             }
          }
       }
