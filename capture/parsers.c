@@ -472,6 +472,9 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
     case IPPROTO_ICMP:
         moloch_session_add_protocol(session, "icmp");
         break;
+    case IPPROTO_ICMPV6:
+        moloch_session_add_protocol(session, "icmp");
+        break;
     }
 
     moloch_field_ops_run(session, &config.ops);
