@@ -1,30 +1,14 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-070805"
-            }
-         },
          "body" : {
-            "totBytes" : 2838,
-            "totDataBytes" : 0,
-            "totPackets" : 33,
-            "segmentCnt" : 1,
-            "length" : 302005,
-            "ipProtocol" : 58,
-            "dstDataBytes" : 0,
+            "timestamp" : "SET",
             "dstMac" : [
                "33:33:ff:82:95:b5"
             ],
-            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
+            "srcMacCnt" : 1,
             "node" : "test",
-            "fileId" : [],
-            "dstPort" : 0,
-            "srcBytes" : 2838,
-            "dstPackets" : 0,
-            "firstPacket" : 1186341079159,
+            "protocolCnt" : 1,
             "packetLen" : [
                102,
                102,
@@ -60,8 +44,35 @@
                102,
                102
             ],
-            "timestamp" : "SET",
+            "srcPort" : 0,
+            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
+            "dstPort" : 0,
+            "srcMac" : [
+               "00:11:25:82:95:b5"
+            ],
+            "lastPacket" : 1186341381164,
+            "srcBytes" : 2838,
+            "firstPacket" : 1186341079159,
+            "dstPackets" : 0,
+            "protocol" : [
+               "icmp"
+            ],
+            "totDataBytes" : 0,
+            "srcPackets" : 33,
             "dstMacCnt" : 1,
+            "srcDataBytes" : 0,
+            "ipProtocol" : 58,
+            "segmentCnt" : 1,
+            "dstBytes" : 0,
+            "fileId" : [],
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  135
+               ]
+            },
             "packetPos" : [
                24,
                126,
@@ -97,24 +108,76 @@
                5528,
                5630
             ],
-            "lastPacket" : 1186341381164,
-            "srcDataBytes" : 0,
+            "dstDataBytes" : 0,
+            "totBytes" : 2838,
+            "length" : 302005,
             "dstIp" : "ff02:0000:0000:0000:0000:0001:ff82:95b5",
+            "totPackets" : 33
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-070805",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "segmentCnt" : 1,
             "icmp" : {
+               "type" : [
+                  143
+               ],
                "code" : [
                   0
-               ],
-               "type" : [
-                  135
                ]
             },
-            "srcPackets" : 33,
-            "srcMac" : [
-               "00:11:25:82:95:b5"
+            "packetPos" : [
+               330,
+               2440
             ],
+            "dstDataBytes" : 0,
+            "fileId" : [],
+            "dstMacCnt" : 1,
+            "srcPackets" : 2,
+            "protocol" : [
+               "icmp"
+            ],
+            "totDataBytes" : 0,
+            "srcDataBytes" : 0,
+            "ipProtocol" : 58,
+            "totPackets" : 2,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0016",
+            "totBytes" : 180,
+            "length" : 5859,
+            "node" : "test",
+            "protocolCnt" : 1,
+            "packetLen" : [
+               106,
+               106
+            ],
+            "dstMac" : [
+               "33:33:00:00:00:16"
+            ],
+            "timestamp" : "SET",
             "srcMacCnt" : 1,
-            "dstBytes" : 0,
-            "srcPort" : 0
+            "dstPackets" : 0,
+            "firstPacket" : 1186341098054,
+            "srcBytes" : 180,
+            "srcIp" : "fe80:0000:0000:0000:02d0:09ff:fee3:e8de",
+            "srcPort" : 0,
+            "srcMac" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "lastPacket" : 1186341103914,
+            "dstPort" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-070805",
+               "_type" : "session"
+            }
          }
       },
       {
@@ -126,82 +189,33 @@
          },
          "body" : {
             "srcMacCnt" : 1,
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "dstBytes" : 0,
-            "srcPort" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0016",
-            "icmp" : {
-               "type" : [
-                  143
-               ],
-               "code" : [
-                  0
-               ]
-            },
-            "srcPackets" : 2,
-            "lastPacket" : 1186341103914,
-            "srcDataBytes" : 0,
-            "dstMacCnt" : 1,
-            "packetPos" : [
-               330,
-               2440
-            ],
-            "packetLen" : [
-               106,
-               106
-            ],
-            "timestamp" : "SET",
-            "node" : "test",
-            "fileId" : [],
-            "dstPort" : 0,
-            "srcBytes" : 180,
-            "firstPacket" : 1186341098054,
-            "dstPackets" : 0,
-            "dstMac" : [
-               "33:33:00:00:00:16"
-            ],
-            "srcIp" : "fe80:0000:0000:0000:02d0:09ff:fee3:e8de",
-            "totDataBytes" : 0,
-            "totBytes" : 180,
-            "segmentCnt" : 1,
-            "totPackets" : 2,
-            "length" : 5859,
-            "dstDataBytes" : 0,
-            "ipProtocol" : 58
-         }
-      },
-      {
-         "body" : {
-            "segmentCnt" : 1,
-            "totPackets" : 1,
-            "length" : 0,
-            "totDataBytes" : 0,
-            "totBytes" : 78,
-            "dstDataBytes" : 0,
-            "ipProtocol" : 58,
             "dstMac" : [
                "33:33:ff:98:06:e1"
             ],
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
-            "dstPort" : 0,
-            "node" : "test",
-            "fileId" : [],
-            "dstPackets" : 0,
-            "firstPacket" : 1186341098474,
-            "srcBytes" : 78,
             "timestamp" : "SET",
             "packetLen" : [
                94
             ],
-            "dstMacCnt" : 1,
-            "packetPos" : [
-               436
+            "protocolCnt" : 1,
+            "node" : "test",
+            "srcMac" : [
+               "00:d0:09:e3:e8:de"
             ],
-            "srcDataBytes" : 0,
+            "dstPort" : 0,
             "lastPacket" : 1186341098474,
+            "srcPort" : 0,
+            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
+            "firstPacket" : 1186341098474,
+            "dstPackets" : 0,
+            "srcBytes" : 78,
+            "srcDataBytes" : 0,
+            "ipProtocol" : 58,
+            "dstMacCnt" : 1,
             "srcPackets" : 1,
+            "protocol" : [
+               "icmp"
+            ],
+            "totDataBytes" : 0,
             "icmp" : {
                "code" : [
                   0
@@ -210,68 +224,39 @@
                   135
                ]
             },
-            "dstIp" : "ff02:0000:0000:0000:0000:0001:ff98:06e1",
+            "dstDataBytes" : 0,
+            "packetPos" : [
+               436
+            ],
+            "fileId" : [],
+            "segmentCnt" : 1,
             "dstBytes" : 0,
-            "srcPort" : 0,
-            "srcMacCnt" : 1,
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-070805"
-            }
+            "length" : 0,
+            "totBytes" : 78,
+            "totPackets" : 1,
+            "dstIp" : "ff02:0000:0000:0000:0000:0001:ff98:06e1"
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-070805"
-            }
-         },
          "body" : {
             "timestamp" : "SET",
-            "dstPort" : 5353,
-            "node" : "test",
-            "protocol" : [
-               "udp",
-               "mdns"
-            ],
-            "srcBytes" : 1782,
-            "srcPayload8" : "0000000000020000",
-            "srcGEO" : "GB",
-            "length" : 3851,
-            "totPackets" : 8,
-            "totBytes" : 1782,
-            "ipProtocol" : 17,
-            "dstDataBytes" : 0,
-            "dstBytes" : 0,
-            "srcMacCnt" : 1,
-            "dns" : {
-               "opcodeCnt" : 1,
-               "hostCnt" : 2,
-               "qtCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "host" : [
-                  "linux.local",
-                  "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
-               ],
-               "qt" : [
-                  "ANY"
-               ],
-               "qc" : [
-                  "IN"
-               ]
-            },
             "srcASN" : "AS4589 EASYNET Easynet Global Services",
+            "protocolCnt" : 2,
+            "node" : "test",
+            "srcGEO" : "GB",
+            "srcMac" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "lastPacket" : 1186341103455,
+            "srcIp" : "2001:06f8:102d:0000:1033:0c4c:7e57:b19e",
+            "srcBytes" : 1782,
+            "dstPackets" : 0,
+            "firstPacket" : 1186341099605,
             "srcDataBytes" : 1718,
+            "totDataBytes" : 1718,
+            "srcPackets" : 8,
             "dstMacCnt" : 1,
+            "fileId" : [],
             "packetPos" : [
                530,
                757,
@@ -281,6 +266,16 @@
                1627,
                1842,
                2141
+            ],
+            "dstBytes" : 0,
+            "length" : 3851,
+            "totBytes" : 1782,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:00fb",
+            "totPackets" : 8,
+            "srcMacCnt" : 1,
+            "srcPayload8" : "0000000000020000",
+            "dstMac" : [
+               "33:33:00:00:00:fb"
             ],
             "packetLen" : [
                227,
@@ -292,55 +287,53 @@
                299,
                299
             ],
-            "fileId" : [],
-            "dstPackets" : 0,
-            "firstPacket" : 1186341099605,
-            "dstMac" : [
-               "33:33:00:00:00:fb"
-            ],
-            "srcIp" : "2001:06f8:102d:0000:1033:0c4c:7e57:b19e",
-            "segmentCnt" : 1,
-            "totDataBytes" : 1718,
-            "protocolCnt" : 2,
+            "dstPort" : 5353,
             "srcPort" : 5353,
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
+            "ipProtocol" : 17,
+            "protocol" : [
+               "udp",
+               "mdns"
             ],
-            "srcPackets" : 8,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:00fb",
-            "lastPacket" : 1186341103455
+            "dstDataBytes" : 0,
+            "segmentCnt" : 1,
+            "dns" : {
+               "opcodeCnt" : 1,
+               "hostCnt" : 2,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "qtCnt" : 1,
+               "host" : [
+                  "linux.local",
+                  "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
+               ],
+               "qcCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qt" : [
+                  "ANY"
+               ]
+            }
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-070805"
+            }
          }
       },
       {
          "body" : {
-            "timestamp" : "SET",
-            "packetLen" : [
-               126
-            ],
-            "firstPacket" : 1186341269082,
-            "dstPackets" : 0,
-            "srcBytes" : 110,
-            "dstPort" : 0,
-            "fileId" : [],
-            "node" : "test",
-            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
-            "dstMac" : [
-               "33:33:00:00:00:01"
-            ],
             "ipProtocol" : 58,
-            "dstDataBytes" : 0,
-            "segmentCnt" : 1,
-            "length" : 0,
-            "totPackets" : 1,
+            "srcDataBytes" : 0,
             "totDataBytes" : 0,
-            "totBytes" : 110,
-            "dstBytes" : 0,
-            "srcPort" : 0,
-            "srcMacCnt" : 1,
-            "srcMac" : [
-               "00:11:25:82:95:b5"
+            "protocol" : [
+               "icmp"
             ],
             "srcPackets" : 1,
+            "dstMacCnt" : 1,
+            "fileId" : [],
             "icmp" : {
                "type" : [
                   134
@@ -349,13 +342,36 @@
                   0
                ]
             },
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0001",
-            "srcDataBytes" : 0,
-            "lastPacket" : 1186341269082,
+            "dstDataBytes" : 0,
             "packetPos" : [
                4382
             ],
-            "dstMacCnt" : 1
+            "dstBytes" : 0,
+            "segmentCnt" : 1,
+            "length" : 0,
+            "totBytes" : 110,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0001",
+            "totPackets" : 1,
+            "srcMacCnt" : 1,
+            "timestamp" : "SET",
+            "dstMac" : [
+               "33:33:00:00:00:01"
+            ],
+            "protocolCnt" : 1,
+            "packetLen" : [
+               126
+            ],
+            "node" : "test",
+            "srcMac" : [
+               "00:11:25:82:95:b5"
+            ],
+            "lastPacket" : 1186341269082,
+            "dstPort" : 0,
+            "srcPort" : 0,
+            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
+            "srcBytes" : 110,
+            "dstPackets" : 0,
+            "firstPacket" : 1186341269082
          },
          "header" : {
             "index" : {
@@ -367,73 +383,103 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions2-070805"
             }
          },
          "body" : {
-            "packetLen" : [
-               110,
-               98,
-               90,
-               330,
-               1522,
-               917,
-               90,
-               90,
-               90,
-               90
-            ],
-            "dstPayload8" : "485454502f312e31",
-            "tcpflags" : {
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "dstZero" : 0,
-               "rst" : 0,
-               "fin" : 2,
-               "ack" : 4,
-               "psh" : 2,
-               "urg" : 0
-            },
             "dstPackets" : 4,
             "firstPacket" : 1186341404189,
-            "fileId" : [],
+            "srcBytes" : 704,
             "srcIp" : "2001:06f8:102d:0000:02d0:09ff:fee3:e8de",
-            "dstMac" : [
-               "00:11:25:82:95:b5"
-            ],
-            "protocolCnt" : 2,
-            "totDataBytes" : 2499,
-            "segmentCnt" : 1,
             "srcMac" : [
                "00:d0:09:e3:e8:de"
             ],
-            "srcPort" : 59201,
-            "dstIp" : "2001:06f8:0900:07c0:0000:0000:0000:0002",
-            "srcPackets" : 6,
             "lastPacket" : 1186341404219,
-            "timestamp" : "SET",
-            "srcBytes" : 704,
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "node" : "test",
-            "dstPort" : 80,
             "srcGEO" : "GB",
-            "srcPayload8" : "474554202f204854",
-            "dstDataBytes" : 2259,
-            "ipProtocol" : 6,
-            "totBytes" : 3267,
-            "totPackets" : 10,
-            "length" : 29,
-            "dstASN" : "AS4589 EASYNET Easynet Global Services",
-            "srcMacCnt" : 1,
-            "dstBytes" : 2563,
+            "node" : "test",
+            "protocolCnt" : 2,
             "srcASN" : "AS4589 EASYNET Easynet Global Services",
-            "srcDataBytes" : 240,
-            "dstGEO" : "GB",
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "psh" : 2,
+               "syn" : 1,
+               "srcZero" : 0,
+               "urg" : 0,
+               "fin" : 2
+            },
+            "timestamp" : "SET",
+            "totPackets" : 10,
+            "dstIp" : "2001:06f8:0900:07c0:0000:0000:0000:0002",
+            "totBytes" : 3267,
+            "http" : {
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "sha256Cnt" : 1,
+               "md5" : [
+                  "27cb95a0c4fff954073bc23328021b96"
+               ],
+               "statuscodeCnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "sha256" : [
+                  "c1c2b153153e166250d632e461b5a33177678e89d2ab8bc900ecd49e197884cb"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "accept-encoding",
+                  "host",
+                  "accept-language"
+               ],
+               "serverVersionCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "uri" : [
+                  "cl-1985.ham-01.de.sixxs.net/"
+               ],
+               "md5Cnt" : 1,
+               "clientVersionCnt" : 1,
+               "responseHeaderCnt" : 5,
+               "requestHeaderCnt" : 5,
+               "useragent" : [
+                  "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "hostCnt" : 1,
+               "bodyMagicCnt" : 1,
+               "host" : [
+                  "cl-1985.ham-01.de.sixxs.net"
+               ],
+               "method" : [
+                  "GET"
+               ],
+               "responseHeader" : [
+                  "content-type",
+                  "content-length",
+                  "date",
+                  "connection",
+                  "server"
+               ],
+               "methodCnt" : 1,
+               "useragentCnt" : 1,
+               "clientVersion" : [
+                  "1.0"
+               ],
+               "uricnt" : 1
+            },
+            "length" : 29,
+            "dstBytes" : 2563,
+            "dstPayload8" : "485454502f312e31",
             "packetPos" : [
                5732,
                5842,
@@ -446,69 +492,39 @@
                8979,
                9069
             ],
-            "http" : {
-               "md5" : [
-                  "27cb95a0c4fff954073bc23328021b96"
-               ],
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "md5Cnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "accept-encoding",
-                  "host",
-                  "accept-language"
-               ],
-               "responseHeader" : [
-                  "content-type",
-                  "content-length",
-                  "date",
-                  "connection",
-                  "server"
-               ],
-               "useragent" : [
-                  "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
-               ],
-               "requestHeaderCnt" : 5,
-               "responseHeaderCnt" : 5,
-               "statuscode" : [
-                  200
-               ],
-               "path" : [
-                  "/"
-               ],
-               "statuscodeCnt" : 1,
-               "clientVersion" : [
-                  "1.0"
-               ],
-               "methodCnt" : 1,
-               "uri" : [
-                  "cl-1985.ham-01.de.sixxs.net/"
-               ],
-               "pathCnt" : 1,
-               "useragentCnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "hostCnt" : 1,
-               "bodyMagicCnt" : 1,
-               "sha256" : [
-                  "c1c2b153153e166250d632e461b5a33177678e89d2ab8bc900ecd49e197884cb"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "serverVersionCnt" : 1,
-               "uricnt" : 1,
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "cl-1985.ham-01.de.sixxs.net"
-               ],
-               "sha256Cnt" : 1
-            },
-            "dstMacCnt" : 1
+            "fileId" : [],
+            "srcPackets" : 6,
+            "dstMacCnt" : 1,
+            "totDataBytes" : 2499,
+            "srcDataBytes" : 240,
+            "srcPort" : 59201,
+            "dstPort" : 80,
+            "packetLen" : [
+               110,
+               98,
+               90,
+               330,
+               1522,
+               917,
+               90,
+               90,
+               90,
+               90
+            ],
+            "dstMac" : [
+               "00:11:25:82:95:b5"
+            ],
+            "srcMacCnt" : 1,
+            "srcPayload8" : "474554202f204854",
+            "dstASN" : "AS4589 EASYNET Easynet Global Services",
+            "segmentCnt" : 1,
+            "dstDataBytes" : 2259,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "dstGEO" : "GB",
+            "ipProtocol" : 6
          }
       }
    ]

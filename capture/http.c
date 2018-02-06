@@ -447,8 +447,23 @@ static gboolean moloch_http_timer_callback(gpointer serverV)
 /******************************************************************************/
 static int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_ms, void *serverV)
 {
-    if (timeout_ms < 10)
+    MolochHttpServer_t        *server = serverV;
+
+    if (timeout_ms == -1) {
+        if (server->multiTimer) {
+            g_source_remove(server->multiTimer);
+            server->multiTimer = 0;
+        }
+        return CURLE_OK;
+    }
+
+    if (!server->multiTimer) {
+        server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+    }
+
+    if (timeout_ms == 0)
         moloch_http_timer_callback(serverV);
+
     return CURLE_OK;
 }
 
@@ -806,7 +821,9 @@ void moloch_http_free_server(void *serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
-    g_source_remove(server->multiTimer);
+    if (server->multiTimer) {
+        g_source_remove(server->multiTimer);
+    }
 
     // Finish any still running requests
     while (server->multiRunning) {
