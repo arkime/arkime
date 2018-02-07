@@ -372,13 +372,7 @@ exports.getUserCache = function (name, cb) {
 };
 
 exports.numberOfUsers = function(cb) {
-  internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, (err, result) => {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
-
-    return cb(null, result.count);
-  });
+  return internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, cb);
 };
 
 exports.deleteUser = function (name, cb) {

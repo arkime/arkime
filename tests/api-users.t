@@ -1,4 +1,4 @@
-use Test::More tests => 53;
+use Test::More tests => 71;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -54,6 +54,38 @@ my $pwd = "*/pcap";
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second add #2");
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+
+# Filter
+    $users = viewerPost("/user/list", "filter=test");
+    is (@{$users->{data}}, 2, "filter both");
+    is ($users->{recordsTotal}, 2);
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/user/list", "filter=test1");
+    is (@{$users->{data}}, 1, "filter one");
+    is ($users->{recordsTotal}, 2);
+    is ($users->{recordsFiltered}, 1);
+
+# start, length
+    $users = viewerPost("/user/list", "start=0&length=2");
+    is (@{$users->{data}}, 2, "start=0&length=2");
+    is ($users->{recordsTotal}, 2);
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/user/list", "start=1&length=2");
+    is (@{$users->{data}}, 1, "start=1&length=2");
+    is ($users->{recordsTotal}, 2);
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/user/list", "start=0&length=1");
+    is (@{$users->{data}}, 1, "start=1&length=1");
+    is ($users->{recordsTotal}, 2);
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/user/list", "start=0&length=100000");
+    is (@{$users->{data}}, 0, "start=0&length=100000");
+    is ($users->{recordsTotal}, 0);
+    is ($users->{recordsFiltered}, 0);
 
 # Update User Shared Server
     $json = viewerPostToken2("/user/update", '{"userId":"test2","userName":"UserNameUpdated2", "enabled":true, "removeEnabled":false, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "createEnabled":true}', $token2);

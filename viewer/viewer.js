@@ -4591,37 +4591,29 @@ app.post('/user/list', logAction('users'), function(req, res) {
   query.sort[req.body.sortField] = { order: req.body.desc === true ? "desc": "asc"};
   query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
 
-  async.parallel({
-    users: function (cb) {
-      Db.searchUsers(query, function(err, result) {
-        if (err || result.error) {
-          console.log("ERROR - users.json", err || result.error);
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            fields.id = result.hits.hits[i]._id;
-            fields.expression = fields.expression || "";
-            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-            fields.emailSearch = fields.emailSearch || false;
-            fields.removeEnabled = fields.removeEnabled || false;
-            fields.userName = safeStr(fields.userName || "");
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfUsers(cb);
+  Promise.all([Db.searchUsers(query),
+               Db.numberOfUsers()
+              ])
+  .catch((err) => {
+    console.log("ERROR - /user/list", err);
+    return [];
+  }).then(([users, total]) => {
+    if (users === undefined || total === undefined) {return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});};
+    var results = {total: users.hits.total, results: []};
+    for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
+      var fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
+      fields.id = users.hits.hits[i]._id;
+      fields.expression = fields.expression || "";
+      fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+      fields.emailSearch = fields.emailSearch || false;
+      fields.removeEnabled = fields.removeEnabled || false;
+      fields.userName = safeStr(fields.userName || "");
+      results.results.push(fields);
     }
-  },
-  function(err, results) {
-    var r = {draw: req.body.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.users.total,
-             data: results.users.results};
+
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.send(r);
   });
 });
