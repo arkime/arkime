@@ -380,7 +380,7 @@ sub filesUpdate
         "any": {
           "match": "*",
           "mapping": {
-            "index": "no"
+            "index": false
           }
         }
       }
@@ -506,7 +506,7 @@ my $mapping = '
           "match_mapping_type": "long",
           "mapping": {
             "type": "long",
-            "index": "no"
+            "index": false
           }
         }
       },
@@ -514,7 +514,7 @@ my $mapping = '
         "noindex": {
           "match": "*",
           "mapping": {
-            "index": "no"
+            "index": false
           }
         }
       }
