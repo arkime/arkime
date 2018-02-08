@@ -2143,37 +2143,34 @@ app.get('/history/list', function(req, res) {
     }];
   }
 
-  async.parallel({
-     logs: function (cb) {
-       Db.searchHistory(query, function(err, result) {
-         if (err || result.error) {
-           console.log("ERROR - history logs", err || result.error);
-           return res.molochError(500, 'Error retrieving log history - ' + err || result.error);
-         } else {
-           var results = { total:result.hits.total, results:[] };
-           for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-             var hit = result.hits.hits[i];
-             var log = hit._source;
-             log.id = hit._id;
-             log.index = hit._index;
-             results.results.push(log);
-           }
-           cb(null, results);
-         }
-       });
-     },
-     total: function (cb) {
-       Db.numberOfLogs(cb);
-     }
-   },
-   function(err, results) {
-     var r = {
-       recordsTotal: results.total,
-       recordsFiltered: results.logs.total,
-       data: results.logs.results
-     };
-     res.send(r);
-   });
+  var promiseErr;
+  Promise.all([Db.searchHistory(query),
+               Db.numberOfLogs()
+              ])
+  .catch(err => {
+    promiseErr = err;
+    return [];
+  }).then(([logs, total], reject) => {
+    if (logs === undefined || total === undefined) {
+      console.log("ERROR - history logs", promiseErr);
+      return res.molochError(500, 'Error retrieving log history - ' + promiseErr);
+    }
+
+    var results = { total:logs.hits.total, results:[] };
+    for (let i = 0, ilen = logs.hits.hits.length; i < ilen; i++) {
+      var hit = logs.hits.hits[i];
+      var log = hit._source;
+      log.id = hit._id;
+      log.index = hit._index;
+      results.results.push(log);
+    }
+    var r = {
+      recordsTotal: total.count,
+      recordsFiltered: results.total,
+      data: results.results
+    };
+    res.send(r);
+  });
 });
 
 app.delete('/history/list/:id', function(req, res) {

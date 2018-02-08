@@ -402,14 +402,9 @@ exports.searchHistory = function(query, cb) {
   return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query}, cb);
 };
 exports.numberOfLogs = function(cb) {
-  internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, function(err, result) {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
-
-    return cb(null, result.count);
-  });
+  return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
 };
+
 exports.deleteHistoryItem = function (id, index, cb) {
   return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: true}, cb);
 };
