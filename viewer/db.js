@@ -571,13 +571,19 @@ exports.getSequenceNumber = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
+  if (cb === undefined) {
+    // Promise version
+    return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
+  } else {
+    // cb version - remove in future
+    internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
+      if (err || result.error) {
+        return cb(null, 0);
+      }
 
-    return cb(null, result.count);
-  });
+      return cb(null, result.count);
+    });
+  }
 };
 
 exports.updateFileSize = function (item, filesize) {

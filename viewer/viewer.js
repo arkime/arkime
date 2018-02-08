@@ -2208,7 +2208,6 @@ app.get('/file/list', logAction('files'), function(req, res) {
                from: +req.query.start || 0,
                size: +req.query.length || 10,
                sort: {}
-
               };
 
   query.sort[req.query.sortField || "num"] = { order: req.query.desc === "true" ? "desc": "asc"};
@@ -2217,37 +2216,29 @@ app.get('/file/list', logAction('files'), function(req, res) {
     query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
   }
 
-  async.parallel({
-    files: function (cb) {
-      Db.search('files', 'file', query, function(err, result) {
-        var results = {total: result.hits.total, results: []};
-        if (err || result.error) {
-          return cb(err || result.error);
-        }
+  Promise.all([Db.search('files', 'file', query),
+               Db.numberOfDocuments('files')
+              ])
+  .catch((err) => {
+    console.log("ERROR - /file/list", err);
+    res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
+    return [];
+  }).then(([files, total]) => {
+    if (files === undefined || total === undefined) {return;}
 
-        for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-          if (fields.locked === undefined) {
-            fields.locked = 0;
-          }
-          fields.id = result.hits.hits[i]._id;
-          results.results.push(fields);
-        }
-        cb(null, results);
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('files', cb);
-    }
-  },
-  function(err, results) {
-    if (err) {
-      return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
+    var results = {total: files.hits.total, results: []};
+    for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
+      var fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
+      if (fields.locked === undefined) {
+        fields.locked = 0;
+      }
+      fields.id = files.hits.hits[i]._id;
+      results.results.push(fields);
     }
 
-    var r = {recordsTotal: results.total,
-             recordsFiltered: results.files.total,
-             data: results.files.results};
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.logCounts(r.data.length, r.recordsFiltered, r.total);
     res.send(r);
   });
