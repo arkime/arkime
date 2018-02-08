@@ -2143,18 +2143,11 @@ app.get('/history/list', function(req, res) {
     }];
   }
 
-  var promiseErr;
   Promise.all([Db.searchHistory(query),
                Db.numberOfLogs()
               ])
-  .catch(err => {
-    promiseErr = err;
-    return [];
-  }).then(([logs, total], reject) => {
-    if (logs === undefined || total === undefined) {
-      console.log("ERROR - history logs", promiseErr);
-      return res.molochError(500, 'Error retrieving log history - ' + promiseErr);
-    }
+  .then(([logs, total]) => {
+    if (logs.error) { throw logs.error; }
 
     var results = { total:logs.hits.total, results:[] };
     for (let i = 0, ilen = logs.hits.hits.length; i < ilen; i++) {
@@ -2170,6 +2163,9 @@ app.get('/history/list', function(req, res) {
       data: results.results
     };
     res.send(r);
+  }).catch(err => {
+    console.log("ERROR - /history/logs", err);
+    return res.molochError(500, 'Error retrieving log history - ' + promiseErr);
   });
 });
 
@@ -2219,12 +2215,8 @@ app.get('/file/list', logAction('files'), function(req, res) {
   Promise.all([Db.search('files', 'file', query),
                Db.numberOfDocuments('files')
               ])
-  .catch((err) => {
-    console.log("ERROR - /file/list", err);
-    res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
-    return [];
-  }).then(([files, total]) => {
-    if (files === undefined || total === undefined) {return;}
+  .then(([files, total]) => {
+    if (files.error) {throw files.error;}
 
     var results = {total: files.hits.total, results: []};
     for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
@@ -2241,6 +2233,10 @@ app.get('/file/list', logAction('files'), function(req, res) {
              data: results.results};
     res.logCounts(r.data.length, r.recordsFiltered, r.total);
     res.send(r);
+
+  }).catch((err) => {
+    console.log("ERROR - /file/list", err);
+    return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
@@ -2366,12 +2362,7 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 app.get('/esshard/list', function(req, res) {
   Promise.all([Db.shards(),
                Db.getClusterSettings({flatSettings: true})
-              ]).then(([shards, settings], reject) => {
-
-    if (reject) {
-      console.log(reject);
-      return res.send({nodes: [], indices: []});
-    }
+              ]).then(([shards, settings]) => {
 
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
@@ -2478,15 +2469,8 @@ app.get('/esstats.json', function(req, res) {
   Promise.all([Db.nodesStats({metric: "jvm,process,fs,os,indices"}),
                Db.healthCachePromise(),
                Db.getClusterSettings({flatSettings: true})
-  ]).catch((err) => {
-    console.log ("ERROR", err);
-    r = {draw: req.query.draw,
-         health: health,
-         recordsTotal: 0,
-         recordsFiltered: 0,
-         data: []};
-    return res.send(r);
-  }).then(([nodes, health, settings], reject) => {
+             ])
+  .then(([nodes, health, settings]) => {
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -2567,6 +2551,14 @@ app.get('/esstats.json', function(req, res) {
          recordsFiltered: stats.length,
          data: stats};
     res.send(r);
+  }).catch((err) => {
+    console.log ("ERROR -  /esstats.json", err);
+    r = {draw: req.query.draw,
+         health: health,
+         recordsTotal: 0,
+         recordsFiltered: 0,
+         data: []};
+    return res.send(r);
   });
 });
 
@@ -4582,11 +4574,8 @@ app.post('/user/list', logAction('users'), function(req, res) {
   Promise.all([Db.searchUsers(query),
                Db.numberOfUsers()
               ])
-  .catch((err) => {
-    console.log("ERROR - /user/list", err);
-    return [];
-  }).then(([users, total]) => {
-    if (users === undefined || total === undefined) {return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});};
+  .then(([users, total]) => {
+    if (users.error) {throw users.error;}
     var results = {total: users.hits.total, results: []};
     for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
       var fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
@@ -4603,6 +4592,9 @@ app.post('/user/list', logAction('users'), function(req, res) {
              recordsFiltered: results.total,
              data: results.results};
     res.send(r);
+  }).catch((err) => {
+    console.log("ERROR - /user/list", err);
+    return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
