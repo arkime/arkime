@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests => 19;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -18,7 +18,6 @@ eq_or_diff($mjson, $json, "single doesn't match multi", { context => 3 });
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, ">=", 108);
 delete $json->{data}->[0]->{first};
-eq_or_diff($json->{data}->[0], from_json('{"id":"test-1","locked":1,"filesize":2040,"node":"test","num":1,"name":"' . getcwd() . '/pcap/aerospike.pcap"}'));
 cmp_ok ($json->{data}->[0]->{num}, "<", $json->{data}->[1]->{num});
 
 # name sort
