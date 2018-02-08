@@ -305,7 +305,7 @@ void moloch_config_load()
 
     if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
-    if (strcmp(rotateIndex, "hourly6") == 0)
+    else if (strcmp(rotateIndex, "hourly6") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY6;
     else if (strcmp(rotateIndex, "daily") == 0)
         config.rotate = MOLOCH_ROTATE_DAILY;
