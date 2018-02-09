@@ -12,10 +12,13 @@ install:
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
 	npm install
+	(cd vueapp ; npm install)
 	npm run bundle:min
-	$(CP) -pr views public bundle $(VIEWERDIR)
+	npm run bundle:vue:min
+	$(CP) -pr views public bundle vueapp/dist $(VIEWERDIR)
 	(cd $(VIEWERDIR) ; npm install --production)
 
 distclean realclean clean:
 	rm -rf node_modules
 	rm -rf bundle
+	(cd vueapp ; rm -rf node_modules; rm -rf dist)

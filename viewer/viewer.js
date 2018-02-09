@@ -5697,7 +5697,75 @@ app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, 
   });
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+// Vue app
+//////////////////////////////////////////////////////////////////////////////////
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
 
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: `<div id="app"></div>`
+  });
+}
+
+// expose vue bundles (prod)
+app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+
+app.get(['/vueapp', '/vueapp/stats'], (req, res) => {
+  var cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     cookieOptions
+  );
+
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
+  });
+
+  var theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
+
+  const appContext = {
+    title: 'HEY HEY HEY', // TODO
+    theme: theme,
+    themeUrl: theme === 'custom-theme' ? 'user.css' : '',
+    demoMode: Config.get('demoMode', false),
+    devMode: Config.get('devMode', false),
+    version: app.locals.molochversion,
+    path: app.locals.basePath
+  }
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.error(err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.end(html);
+  });
+});
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// Angular app
+//////////////////////////////////////////////////////////////////////////////////
 app.use(express.static(__dirname + '/views'));
 app.use(express.static(__dirname + '/bundle'));
 app.use(function (req, res) {

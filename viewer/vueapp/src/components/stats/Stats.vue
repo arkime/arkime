@@ -1,0 +1,185 @@
+<template>
+
+  <div>
+
+    <!-- stats sub navbar -->
+    <form class="stats-form">
+      <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+
+        <!-- graph type select -->
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="The type of graph data to display">
+            <span class="input-group-text">
+              Graph Type
+            </span>
+          </div>
+          <select class="form-control input-sm">
+            <option value="deltaPacketsPerSec">Packets/Sec</option>
+            <option value="deltaBytesPerSec">Bytes/Sec</option>
+            <option value="deltaBitsPerSec">Bits/Sec</option>
+            <option value="deltaSessionsPerSec">Sessions/Sec</option>
+            <option value="deltaDroppedPerSec">Input Dropped/Sec</option>
+            <option value="monitoring">Active Sessions</option>
+            <option value="tcpSessions">Active TCP Sessions</option>
+            <option value="udpSessions">Active UDP Sessions</option>
+            <option value="icmpSessions">Active ICMP Sessions</option>
+            <option value="freeSpaceM">Free Space MB</option>
+            <option value="freeSpaceP">Free Space %</option>
+            <option value="memory">Memory</option>
+            <option value="memoryP">Memory %</option>
+            <option value="cpu">CPU</option>
+            <option value="diskQueue">Disk Queue</option>
+            <option value="esQueue">ES Queue</option>
+            <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
+            <option value="packetQueue">Packet Queue</option>
+            <option value="closeQueue">Closing Queue</option>
+            <option value="needSave">Waiting Queue</option>
+            <option value="fragsQueue">Fragments Queue</option>
+            <option value="frags">Active Fragments</option>
+            <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
+            <option value="deltaOverloadDroppedPerS>c">Overload Dropped/Sec</option>
+            <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
+          </select>
+        </div> <!-- /graph type select -->
+
+        <!-- graph interval select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Graph data bins and graph data refresh interval">
+            <span class="input-group-text">
+              Graph Interval
+            </span>
+          </div>
+          <select class="form-control input-sm">
+            <option value="5">Seconds</option>
+            <option value="60">Minutes</option>
+            <option value="600">10 Minutes</option>
+          </select>
+        </div> <!-- /graph interval select -->
+
+        <!-- graph hide select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Hide rows">
+           <span class="input-group-text">
+             Hide
+           </span>
+         </div>
+          <select class="form-control input-sm">
+            <option value="none">None</option>
+            <option value="old">Out of date</option>
+            <option value="nosession">No sessions</option>
+            <option value="both">Both</option>
+          </select>
+        </div> <!-- /graph hide select -->
+
+        <!-- table data interval select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Data refresh interval for Node and Elasticsearch stats">
+            <span class="input-group-text">
+              Refresh Node/ES Data Every
+            </span>
+          </div>
+          <select ng-model="$ctrl.dataInterval" ng-change="$ctrl.changeDataInterval()"
+            class="form-control input-sm">
+            <option value="5000">5 seconds</option>
+            <option value="15000">15 seconds</option>
+            <option value="30000">30 seconds</option>
+            <option value="60000">1 minute</option>
+            <option value="600000">10 minutes</option>
+            <option value="0">None</option>
+          </select>
+        </div> <!-- /table data interval select -->
+
+      </div>
+    </form> <!-- /stats sub navbar -->
+
+    <!-- stats content -->
+    <div class="pt-5 ml-1 mr-1">
+      <span class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
+        v-b-tooltip.hover
+        title="HINT: This graph is 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
+      </span>
+      <b-tabs>
+        <b-tab title="Node" active>
+          <node-stats v-if="user"
+            :user="user"></node-stats>
+        </b-tab>
+        <b-tab title="ES Stats">
+          TODO: ES Stats
+        </b-tab>
+        <b-tab title="ES Indices">
+          TODO: ES Indices
+        </b-tab>
+        <b-tab title="ES Tasks">
+          TODO: ES Tasks
+        </b-tab>
+        <b-tab title="ES Shards">
+          TODO: ES Shards
+        </b-tab>
+      </b-tabs>
+    </div> <!-- /stats content -->
+
+  </div>
+
+</template>
+
+<script>
+import NodeStats from './NodeStats';
+import UserService from '../UserService';
+export default {
+  name: 'Stats',
+  data: function () {
+    return {
+      user: null
+    };
+  },
+  components: {
+    NodeStats
+  },
+  created: function () {
+    this.loadUser();
+  },
+  methods: {
+    loadUser: function () {
+      UserService.getCurrent()
+        .then((response) => {
+          this.user = response;
+        }, (error) => {
+          this.user = { timezone: 'local' }; // TODO
+          console.log(error);
+        }); // TODO test error
+    }
+  }
+};
+</script>
+
+<style scoped>
+/* apply theme colors to subnavbar */
+form.stats-form {
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
+}
+
+/* remove browser styles on select box (mostly for border-radius) */
+select {
+  -webkit-appearance: none;
+}
+
+.stats-info {
+  position: absolute;
+  right: 4px;
+}
+</style>
