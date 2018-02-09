@@ -50,6 +50,7 @@
     "bundle:vue:min": "node vueapp/build/build.js",
     "bundle:vue:dev": "webpack --progress --hide-modules --config vueapp/build/webpack.dev.conf.js",
     "start:vue:dev": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack --progress --hide-modules -d --watch --config vueapp/build/webpack.dev.conf.js",
+    "start:vue:dev2": "node viewer.js -c config.dev.ini & webpack --progress --hide-modules -d --watch --config vueapp/build/webpack.dev.conf.js",
     "prestart:vue:dev": "webpack -d --display-error-details"
   },
   "devDependencies": {

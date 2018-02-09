@@ -70,3 +70,11 @@ Vue.filter('timezoneDateString', (seconds, timezone, format) => {
 
   return moment(1000 * seconds).format(format);
 });
+
+Vue.filter('round', function (value, decimals) {
+  if (!value) { value = 0; }
+
+  if (!decimals) { decimals = 0; }
+
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+});

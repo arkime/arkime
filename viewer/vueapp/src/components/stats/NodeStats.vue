@@ -32,7 +32,8 @@
         class="mb-2">
         <b-card-header header-tag="header"
           class="p-2 cursor-pointer"
-          role="tab">
+          role="tab"
+          @click="toggleSection()">
           <div v-b-toggle.graphContent>
             Graphs
             <span class="when-opened pull-right fa fa-minus"></span>
@@ -50,7 +51,8 @@
         class="mb-1">
         <b-card-header header-tag="header"
           class="p-2 cursor-pointer"
-          role="tab">
+          role="tab"
+          @click="toggleSection()">
           <div v-b-toggle.nodeStatsContent>
             Node Stats
             <span class="when-opened pull-right fa fa-minus"></span>
@@ -75,35 +77,35 @@
                 <template v-if="averageValues && totalValues && stats.data.length > 9">
                   <tr class="bold">
                     <td>&nbsp;</td>
-                    <td>Total</td>
-                    <td>&nbsp;</td>
-                    <td>{{ totalValues.monitoring | commaString }}</td>
-                    <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP }}%)</td>
-                    <td>{{ totalValues.cpu/100.0 }}%</td>
-                    <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP }}%)</td>
-                    <td>{{ totalValues.packetQueue | commaString }}</td>
-                    <td>{{ totalValues.deltaPacketsPerSec | commaString }}</td>
-                    <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
-                    <td>{{ totalValues.deltaSessionsPerSec | commaString }}</td>
-                    <td>{{ totalValues.deltaDroppedPerSec | commaString }}</td>
-                    <td>{{ totalValues.deltaOverloadDroppedPerSec | commaString }}</td>
-                    <td>{{ totalValues.deltaESDroppedPerSec | commaString }}</td>
-                  </tr>
-                  <tr class="bold">
-                    <td>&nbsp;</td>
                     <td>Average</td>
                     <td>&nbsp;</td>
-                    <td>{{ averageValues.monitoring | commaString }}</td>
-                    <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP }}%)</td>
-                    <td>{{ averageValues.cpu/100.0 }}%</td>
-                    <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP }}%)</td>
-                    <td>{{ averageValues.packetQueue | commaString }}</td>
-                    <td>{{ averageValues.deltaPacketsPerSec | commaString }}</td>
+                    <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
+                    <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
+                    <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
+                    <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
+                    <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
+                    <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
-                    <td>{{ averageValues.deltaSessionsPerSec | commaString }}</td>
-                    <td>{{ averageValues.deltaDroppedPerSec | commaString }}</td>
-                    <td>{{ averageValues.deltaOverloadDroppedPerSec | commaString }}</td>
-                    <td>{{ averageValues.deltaESDroppedPerSec | commaString }}</td>
+                    <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                    <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
+                  </tr>
+                  <tr class="border-bottom-bold bold">
+                    <td>&nbsp;</td>
+                    <td>Total</td>
+                    <td>&nbsp;</td>
+                    <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
+                    <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
+                    <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
+                    <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
+                    <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
+                    <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
+                    <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
+                    <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                    <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ totalValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                   </tr>
                 </template>
                 <template v-for="stat of stats.data">
@@ -114,19 +116,21 @@
                     </td>
                     <td>{{ stat.id }}</td>
                     <td>{{ stat.currentTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</td>
-                    <td class="nowrap">{{ stat.monitoring | commaString }}</td>
-                    <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP }}%)</td>
-                    <td>{{ stat.cpu/100.0 }}%</td>
-                    <td>{{ stat.memory | humanReadable }} ({{ stat.memoryP }}%)</td>
-                    <td>{{ stat.packetQueue | commaString }}</td>
-                    <td>{{ stat.deltaPacketsPerSec | commaString }}</td>
+                    <td>{{ stat.monitoring | round(0) | commaString }}</td>
+                    <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP | round(1) }}%)</td>
+                    <td>{{ stat.cpu/100.0 | round(1) }}%</td>
+                    <td>{{ stat.memory | humanReadable }} ({{ stat.memoryP | round(1) }}%)</td>
+                    <td>{{ stat.packetQueue | round(0) | commaString }}</td>
+                    <td>{{ stat.deltaPacketsPerSec | round(0) | commaString }}</td>
                     <td>{{ stat.deltaBytesPerSec | humanReadable }}</td>
-                    <td>{{ stat.deltaSessionsPerSec | commaString }}</td>
-                    <td>{{ stat.deltaDroppedPerSec | commaString }}</td>
-                    <td>{{ stat.deltaOverloadDroppedPerSec | commaString }}</td>
-                    <td>{{ stat.deltaESDroppedPerSec | commaString }}</td>
+                    <td>{{ stat.deltaSessionsPerSec | round(0) | commaString }}</td>
+                    <td>{{ stat.deltaDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ stat.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                    <td>{{ stat.deltaESDroppedPerSec | round(0) | commaString }}</td>
                   </tr>
-                  <tr :key="stat.id + 'graph'">
+                  <tr :key="stat.id + 'graph'"
+                    :id="'statsGraphRow-' + stat.id"
+                    style="display:none;">
                     <td :colspan="columns.length">
                       <div :id="'statsGraph-' + stat.id" style="width: 1440px;">
                       </div>
@@ -139,33 +143,33 @@
                   <td>&nbsp;</td>
                   <td>Average</td>
                   <td>&nbsp;</td>
-                  <td>{{ averageValues.monitoring | commaString }}</td>
-                  <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP }}%)</td>
-                  <td>{{ averageValues.cpu/100.0 }}%</td>
-                  <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP }}%)</td>
-                  <td>{{ averageValues.packetQueue | commaString }}</td>
-                  <td>{{ averageValues.deltaPacketsPerSec | commaString }}</td>
+                  <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
+                  <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
+                  <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
+                  <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
+                  <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
+                  <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
                   <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
-                  <td>{{ averageValues.deltaSessionsPerSec | commaString }}</td>
-                  <td>{{ averageValues.deltaDroppedPerSec | commaString }}</td>
-                  <td>{{ averageValues.deltaOverloadDroppedPerSec | commaString }}</td>
-                  <td>{{ averageValues.deltaESDroppedPerSec | commaString }}</td>
+                  <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                  <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                  <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                  <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                 </tr>
                 <tr class="bold">
                   <td>&nbsp;</td>
                   <td>Total</td>
                   <td>&nbsp;</td>
-                  <td>{{ totalValues.monitoring | commaString }}</td>
-                  <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP }}%)</td>
-                  <td>{{ totalValues.cpu/100.0 }}%</td>
-                  <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP }}%)</td>
-                  <td>{{ totalValues.packetQueue | commaString }}</td>
-                  <td>{{ totalValues.deltaPacketsPerSec | commaString }}</td>
+                  <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
+                  <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
+                  <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
+                  <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
+                  <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
+                  <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
                   <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
-                  <td>{{ totalValues.deltaSessionsPerSec | commaString }}</td>
-                  <td>{{ totalValues.deltaDroppedPerSec | commaString }}</td>
-                  <td>{{ totalValues.deltaOverloadDroppedPerSec | commaString }}</td>
-                  <td>{{ totalValues.deltaESDroppedPerSec | commaString }}</td>
+                  <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                  <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                  <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                  <td>{{ totalValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -185,29 +189,33 @@ import cubism from '../../../../public/cubism.v1.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
-
 import ToggleBtn from '../ToggleBtn';
 
 export default {
   // TODO paging, search, sort
   name: 'NodeStats',
-  props: ['user'],
+  props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
   components: {
     ToggleBtn
   },
   data: function () {
     return {
-      test: false, // TODO
+      context: null,
       stats: null,
       totalValues: null,
       averageValues: null,
       currentPage: 1,
-      loading: false,
+      loading: false, // TODO loading overlay
       showGraphs: true,
       showNodeStats: true,
       expandedNodeStats: {},
       query: {
-        filter: ''
+        length: 50, // TODO set based on route param
+        start: 0,
+        filter: null,
+        sortField: 'nodeName',
+        desc: false,
+        hide: this.graphHide || 'none'
       },
       columns: [ // node stats table columns
         { name: '', doStats: false },
@@ -227,14 +235,54 @@ export default {
       ]
     };
   },
+  watch: {
+    graphType: function () {
+      this.loadData();
+    },
+    graphInterval: function () {
+      this.loadData();
+    },
+    graphHide: function () {
+      this.query.hide = this.graphHide;
+      this.loadData();
+    },
+    dataInterval: function () {
+      this.loadData();
+    }
+  },
   created: function () {
     this.loadData();
-    // TODO interval for loading data
+    // TODO set a recurring server req if necessary
+    // if (this.dataInterval !== '0') {
+    //   reqPromise = this.$interval(() => {
+    //     this.loadData();
+    //   }, parseInt(this.dataInterval));
+    // }
+  },
+  computed: {
+    colors: function () {
+      // build colors array from css variables
+      let styles = window.getComputedStyle(document.body);
+      let primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
+      let primaryLight = styles.getPropertyValue('--color-primary').trim();
+      let primary = styles.getPropertyValue('--color-primary-dark').trim();
+      let primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
+      let secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
+      let secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
+      let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
+      let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
+    }
   },
   methods: {
-    toggleTest: function () {
-      this.test = !this.test;
-      console.log('toggle test clicked', this.test);
+    // showGraphs or showNodeStats
+    toggleSection: function () {
+      if (!this.context) { return; }
+
+      if (this.showGraphs) {
+        // TODO test for graph interval !== '0'
+        this.context.start();
+      } else { this.context.stop(); }
     },
     loadData: function () {
       this.loading = true;
@@ -267,18 +315,16 @@ export default {
             this.averageValues[columnName] = this.totalValues[columnName] / this.stats.data.length;
           }
 
-          // TODO make the graph
+          // TODO need initialized flag?
           // if (this.stats.data && !initialized && this.graphsOpen) {
           if (this.stats.data && this.showGraphs) {
             // initialized = true; // only make the graph when page loads or tab switched to 0
-            this.makeStatsGraph('deltaPacketsPerSec', 5);
-            // TODO pass in this.graphType and this.graphInterval
-            // if (this.graphInterval === '0') { // turn it on then off
-            //   this.makeStatsGraph(this.graphType, 5);
-            //   this.context.stop();
-            // } else {
-            //   this.makeStatsGraph(this.graphType, parseInt(this.graphInterval, 10));
-            // }
+            if (this.graphInterval === '0') { // turn it on then off
+              this.makeStatsGraph(this.graphType, 5);
+              this.context.stop();
+            } else {
+              this.makeStatsGraph(this.graphType, parseInt(this.graphInterval, 10));
+            }
           }
         }, (error) => {
           this.loading = false;
@@ -321,7 +367,11 @@ export default {
         }, name);
       }
 
-      document.getElementById('statsGraph').innerHTML = '';
+      let wrap = document.getElementById('statsGraph');
+      while (wrap.firstChild) {
+        wrap.removeChild(wrap.firstChild);
+      }
+
       d3.select('#statsGraph').call(function (div) {
         var metrics = [];
         for (var i = 0, ilen = nodes.length; i < ilen; i++) {
@@ -331,19 +381,9 @@ export default {
         if (div[0][0]) {
           let axis = context.axis();
 
-          let timeStr;
-          if (self.graphInterval >= 600) {
-            timeStr = '%m/%d %H:%M:%S';
-          } else {
-            timeStr = '%H:%M:%S';
-          }
+          let timeStr = self.graphInterval >= 600 ? '%m/%d %H:%M:%S' : '%H:%M:%S';
 
-          let timeFormat;
-          if (self.user.settings.timezone === 'gmt') {
-            timeFormat = d3.time.format(timeStr);
-          } else {
-            timeFormat = d3.time.format.utc(timeStr + 'Z');
-          }
+          let timeFormat = self.user.settings.timezone === 'gmt' ? d3.time.format.utc(timeStr + 'Z') : d3.time.format(timeStr);
 
           div.append('div')
             .attr('class', 'axis')
@@ -358,7 +398,7 @@ export default {
             .data(metrics)
             .enter().append('div')
             .attr('class', 'horizon')
-            .call(context.horizon()); // TODO readd .colors(self.colors)
+            .call(context.horizon().colors(self.colors));
 
           div.append('div')
             .attr('class', 'rule')
@@ -372,7 +412,13 @@ export default {
 
       this.expandedNodeStats[id] = !this.expandedNodeStats[id];
 
-      document.getElementById('statsGraph-' + id).innerHTML = '';
+      document.getElementById('statsGraphRow-' + id).style.display =
+        this.expandedNodeStats[id] ? 'table-row' : 'none';
+
+      let wrap = document.getElementById('statsGraph-' + id);
+      while (wrap.firstChild) {
+        wrap.removeChild(wrap.firstChild);
+      }
 
       if (!this.expandedNodeStats[id]) { return; }
 
@@ -426,7 +472,7 @@ export default {
             .data(metrics)
             .enter().append('div')
             .attr('class', 'horizon')
-            .call(dcontext.horizon()); // TODO .colors(self.colors)
+            .call(dcontext.horizon().colors(self.colors));
 
           div.append('div')
             .attr('class', 'rule')
@@ -434,6 +480,18 @@ export default {
         }
       });
     }
+  },
+  beforeDestroy: function () {
+    if (this.context) {
+      this.context.stop(); // stop cubism context from continuing to issue reqs
+    }
+
+    let wrap = document.getElementById('statsGraph');
+    while (wrap.firstChild) {
+      wrap.removeChild(wrap.firstChild);
+    }
+
+    // TODO stop recurring requests for stats.json
   }
 };
 </script>
@@ -449,6 +507,12 @@ td {
 }
 tr.bold {
   font-weight: bold;
+}
+table.table tr.border-bottom-bold > td {
+  border-bottom: 2px solid var(--color-gray);
+}
+table.table tr.border-top-bold > td {
+  border-top: 2px solid var(--color-gray);
 }
 
 #graphContent, #nodeStatsContent {

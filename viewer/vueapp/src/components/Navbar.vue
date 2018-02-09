@@ -1,6 +1,7 @@
 <template>
 
   <b-navbar
+    fixed="top"
     toggleable="md"
     type="dark">
 
@@ -73,7 +74,7 @@ export default {
 
 <style scoped>
 nav.navbar {
-  z-index: 1;
+  z-index: 5;
   max-height: 36px;
   min-height: 36px;
 }
@@ -81,7 +82,6 @@ nav.navbar {
   position: absolute;
   height: 41px;
   top: 2px;
-  z-index: 1;
 }
 ul.navbar-nav {
   margin-left: 20px;

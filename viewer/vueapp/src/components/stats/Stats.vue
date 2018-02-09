@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div class="stats-content">
 
     <!-- stats sub navbar -->
     <form class="stats-form">
@@ -15,7 +15,9 @@
               Graph Type
             </span>
           </div>
-          <select class="form-control input-sm">
+          <select class="form-control input-sm"
+            v-model="graphType"
+            v-on:change="graphTypeChange()">
             <option value="deltaPacketsPerSec">Packets/Sec</option>
             <option value="deltaBytesPerSec">Bytes/Sec</option>
             <option value="deltaBitsPerSec">Bits/Sec</option>
@@ -53,7 +55,9 @@
               Graph Interval
             </span>
           </div>
-          <select class="form-control input-sm">
+          <select class="form-control input-sm"
+            v-model="graphInterval"
+            v-on:change="graphIntervalChange()">
             <option value="5">Seconds</option>
             <option value="60">Minutes</option>
             <option value="600">10 Minutes</option>
@@ -69,7 +73,9 @@
              Hide
            </span>
          </div>
-          <select class="form-control input-sm">
+          <select class="form-control input-sm"
+            v-model="graphHide"
+            v-on:change="graphHideChange()">
             <option value="none">None</option>
             <option value="old">Out of date</option>
             <option value="nosession">No sessions</option>
@@ -86,8 +92,9 @@
               Refresh Node/ES Data Every
             </span>
           </div>
-          <select ng-model="$ctrl.dataInterval" ng-change="$ctrl.changeDataInterval()"
-            class="form-control input-sm">
+          <select class="form-control input-sm"
+            v-model="dataInterval"
+            v-on:change="dataIntervalChange()" >
             <option value="5000">5 seconds</option>
             <option value="15000">15 seconds</option>
             <option value="30000">30 seconds</option>
@@ -109,6 +116,10 @@
       <b-tabs>
         <b-tab title="Node" active>
           <node-stats v-if="user"
+            :graph-type="graphType"
+            :graph-interval="graphInterval"
+            :graph-hide="graphHide"
+            :data-interval="dataInterval"
             :user="user"></node-stats>
         </b-tab>
         <b-tab title="ES Stats">
@@ -137,7 +148,11 @@ export default {
   name: 'Stats',
   data: function () {
     return {
-      user: null
+      user: null,
+      graphType: this.$route.query.type || 'deltaPacketsPerSec',
+      graphInterval: this.$route.query.gtime || '5',
+      graphHide: this.$route.query.hide || 'none',
+      dataInterval: this.$route.query.refreshInterval || '5000'
     };
   },
   components: {
@@ -155,17 +170,34 @@ export default {
           this.user = { timezone: 'local' }; // TODO
           console.log(error);
         }); // TODO test error
+    },
+    graphTypeChange: function () {
+      this.$router.push({ path: 'stats', query: { type: this.graphType } });
+    },
+    graphIntervalChange: function () {
+      this.$router.push({ path: 'stats', query: { gtime: this.graphInterval } });
+    },
+    graphHideChange: function () {
+      this.$router.push({ path: 'stats', query: { hide: this.graphHide } });
+    },
+    dataIntervalChange: function () {
+      this.$router.push({ path: 'stats', query: { refreshInterval: this.dataInterval } });
     }
   }
 };
 </script>
 
 <style scoped>
+.stats-content {
+  padding-top: 36px;
+}
+
 /* apply theme colors to subnavbar */
 form.stats-form {
   position: fixed;
   left: 0;
   right: 0;
+  z-index : 4;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
