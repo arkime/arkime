@@ -841,14 +841,14 @@ function stats (msg) {
   for (var i in stats) {
     count += stats[i].count;
     diff += stats[i].diff;
-    done |= stats[i].done;
+    done &= stats[i].done;
   }
 
   const remaining = (msg.total - count)*(diff/count)/1000.0/internals.sliceMax;
 
 
   if (done) {
-    console.log (datestr(), msg.index, `Finsihed converting ${count} sessions`);
+    console.log (datestr(), msg.index, `Finished converting ${count} sessions`);
     if (internals.deleteOnDone) {
       // Wait 3 seconds before deleting
       setTimeout(() => { Db.deleteIndex(msg.oldIndex, function () {}); }, 3000);
