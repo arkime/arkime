@@ -882,16 +882,33 @@ function reindex (item, index2, cb) {
 
     doNext();
     var body = [];
+    var len = 0;
     for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
       var obj = {};
       remap(obj, result.hits.hits[i]._source, "");
-      body.push(`{"index": {"_index": "${index2}", "_type": "session", "_id": "${result.hits.hits[i]._id}"}}`);
-      body.push(obj);
+
+      var hdr = `{"index": {"_index": "${index2}", "_type": "session", "_id": "${result.hits.hits[i]._id}"}}`;
+      var str = JSON.stringify(obj);
+
+      // ES has a limit of 100MB for bulk inserts
+      if (len + hdr.length + str.length > 100*1000*1000) {
+        Db.bulk({body: body}, function(err, msg) {
+          if (err) {console.log("ERROR", index2, err, msg);}
+        });
+        len = 0;
+        body = [];
+      }
+
+      len += hdr.length + str.length;
+      body.push(hdr);
+      body.push(str);
     }
 
-    Db.bulk({body: body}, function(err, msg) {
-      if (err) {console.log("ERROR", index2, err, msg);}
-    });
+    if (len > 0) {
+      Db.bulk({body: body}, function(err, msg) {
+        if (err) {console.log("ERROR", index2, err, msg);}
+      });
+    }
   });
 }
 

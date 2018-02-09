@@ -701,7 +701,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
           twoDigitString(Math.floor((d - jan) / 604800000));
         break;
       case "hourly6":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
