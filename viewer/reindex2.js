@@ -47,6 +47,7 @@ var internals = {
   scrollSize: 1000,
   index: "sessions-*",
   stats: {},
+  statsTime: {},
   deleteExisting: false,
   deleteOnDone: false,
 };
@@ -828,6 +829,7 @@ function datestr() {
 function stats (msg) {
   if (internals.stats[msg.index] === undefined) {
     internals.stats[msg.index] = []
+    internals.statsTime[msg.index] = Date.now();
   }
 
   let stats = internals.stats[msg.index];
@@ -835,14 +837,25 @@ function stats (msg) {
 
   var count = 0;
   var diff = 0;
+  var done = true;
   for (var i in stats) {
     count += stats[i].count;
     diff += stats[i].diff;
+    done |= stats[i].done;
   }
 
-  if (count % (internals.scrollSize*10) == 0) {
-    const remaining = (msg.total - count)*(diff/count)/1000.0/internals.sliceMax;
-    console.log (datestr(), msg.index, count, "/", msg.total, "remaining", Math.trunc(remaining/3600), "hours", Math.trunc((remaining%3600)/60), "mins", Math.trunc(remaining%60), "seconds");
+  const remaining = (msg.total - count)*(diff/count)/1000.0/internals.sliceMax;
+
+
+  if (done) {
+    console.log (datestr(), msg.index, `Finsihed converting ${count} sessions`);
+    if (internals.deleteOnDone) {
+      // Wait 3 seconds before deleting
+      setTimeout(() => { Db.deleteIndex(msg.oldIndex, function () {}); }, 3000);
+    }
+  } else if ((Date.now() - internals.statsTime[msg.index]) >= 0) {
+    internals.statsTime[msg.index] = Date.now();
+    console.log (datestr(), msg.index, `${count}/${msg.total} (${Math.floor(count*100/msg.total)}%) remaining:`, Math.trunc(remaining/3600), "hours", Math.trunc((remaining%3600)/60), "mins", Math.trunc(remaining%60), "seconds");
   }
 }
 
@@ -853,18 +866,23 @@ function reindex (item, index2, cb) {
 
   const startTime = Date.now();
   Db.search(item.index, 'session', {size:internals.scrollSize, slice: {id: internals.sliceNum, max: internals.sliceMax}, "sort": ["_doc"]}, {scroll: '1m'}, function getMoreUntilDone(err, result) {
+    function sendStats(done) {
+      const endTime = Date.now();
+      process.send({index: index2,
+                    oldIndex: item.index,
+                    count: count,
+                    total: item['docs.count'],
+                    diff: (endTime-startTime),
+                    pos: internals.sliceNum,
+                    done: done
+                   });
+    }
+
     function doNext() {
       count += result.hits.hits.length;
 
-      const endTime = Date.now();
-
       if ((count % internals.scrollSize) == 0) {
-        process.send({index: index2,
-                      count: count,
-                      total: item['docs.count'],
-                      diff: (endTime-startTime),
-                      pos: internals.sliceNum
-                     });
+        sendStats(false);
       }
 
       Db.scroll({body: {scroll_id: result._scroll_id}, scroll: '1m'}, getMoreUntilDone);
@@ -877,7 +895,7 @@ function reindex (item, index2, cb) {
 
     // No more data, all done
     if (result.hits.hits.length === 0) {
-      console.log(datestr(), internals.sliceNum, "- Finished: ", count);
+      sendStats(true);
       return cb();
     }
 
@@ -1006,7 +1024,7 @@ function mainWorker () {
       Promise.all([Db.flush(),
                    Db.refresh()
                   ]).then(() => {
-        console.log(datestr(), internals.sliceNum, "- DONE");
+        console.log(datestr(), internals.sliceNum, "- worker done");
         setTimeout(() => {process.exit()}, 5000); // Force quit in 5 seconds
       });
     }, 5000);
@@ -1101,6 +1119,7 @@ for (let i = 0; i < process.argv.length; i++) {
     break;
   case "--deleteOnDone":
     internals.deleteOnDone = true;
+    break;
   case "--help":
     console.log("--config <file>                = moloch config.ini file");
     console.log("--size <scroll size>           = batch size [1000]");
