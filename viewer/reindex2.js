@@ -853,7 +853,7 @@ function stats (msg) {
       // Wait 3 seconds before deleting
       setTimeout(() => { Db.deleteIndex(msg.oldIndex, function () {}); }, 3000);
     }
-  } else if ((Date.now() - internals.statsTime[msg.index]) >= 0) {
+  } else if ((Date.now() - internals.statsTime[msg.index]) >= 10000) {
     internals.statsTime[msg.index] = Date.now();
     console.log (datestr(), msg.index, `${count}/${msg.total} (${Math.floor(count*100/msg.total)}%) remaining:`, Math.trunc(remaining/3600), "hours", Math.trunc((remaining%3600)/60), "mins", Math.trunc(remaining%60), "seconds");
   }
