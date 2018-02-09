@@ -3,6 +3,7 @@
  *                 * rename most fields
  *                 * remove duplicate fields
  *                 * remove all tokenized fields
+ *                 * switch to ip and date ES fields
  *
  * Create a mapping of private/unknown fields in a reindex2.local.json file
  *
@@ -43,7 +44,7 @@ var MIN_DB_VERSION = 38;
 var internals = {
   sliceMax: 3,
   sliceNum: 0,
-  scrollSize: 2000,
+  scrollSize: 1000,
   index: "sessions-*",
   stats: {},
   deleteExisting: false,
@@ -1019,8 +1020,9 @@ function mainMaster () {
     let json = JSON.parse(content);
     Db.merge(fieldsMap, json);
   } catch (err) {
-    console.log("reindex2.local.json not loaded", err);
-    process.exit();
+    console.log("reindex2.local.json not loaded!");
+    console.log("If you need to map fields, create a file called 'reindex2.local.json' that is json format");
+    console.log('Sample:\n{\n"ipam.zone-term":                 "ipam.zone",\n"ipam.dc-term":                   "ipam.dc",\n}');
   }
 
   Db.checkVersion(MIN_DB_VERSION, false);
@@ -1101,7 +1103,7 @@ for (let i = 0; i < process.argv.length; i++) {
     internals.deleteOnDone = true;
   case "--help":
     console.log("--config <file>                = moloch config.ini file");
-    console.log("--size <scroll size>           = batch size [2000]");
+    console.log("--size <scroll size>           = batch size [1000]");
     console.log("--slices <parallel processes>  = number of parallel processes");
     console.log("--index <index pattern>        = indices to process [sessions-*]");
     console.log("--deleteExisting               = delete existing sessions2 indices before reindexing");
