@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div class="container-fluid">
 
     <div class="row mt-1">
       <div class="col-md-6">
@@ -180,7 +180,6 @@
 </template>
 
 <script>
-import $ from 'jQuery'; // TODO remove
 import d3 from '../../../../public/d3.min.js';
 import cubism from '../../../../public/cubism.v1.js';
 import '../../../../public/highlight.min.js';
@@ -322,21 +321,7 @@ export default {
         }, name);
       }
 
-      context.on('focus', function (i) {
-        d3.selectAll('#statsGraph .value').style('right', i === null ? null : context.size() - i + 'px');
-        let panel = $('#statsGraphPanel .panel-body');
-        if (panel && panel.length) {
-          let scrollPx = panel[0].scrollLeft;
-          if (scrollPx) {
-            scrollPx = scrollPx - 12;
-            d3.selectAll('#statsGraph .rule').style('left', '-' + scrollPx + 'px');
-          } else {
-            d3.selectAll('#statsGraph .rule').style('left', '12px');
-          }
-        }
-      });
-
-      $('#statsGraph').empty();
+      document.getElementById('statsGraph').innerHTML = '';
       d3.select('#statsGraph').call(function (div) {
         var metrics = [];
         for (var i = 0, ilen = nodes.length; i < ilen; i++) {
@@ -387,7 +372,7 @@ export default {
 
       this.expandedNodeStats[id] = !this.expandedNodeStats[id];
 
-      $(document.getElementById('statsGraph-' + id)).empty();
+      document.getElementById('statsGraph-' + id).innerHTML = '';
 
       if (!this.expandedNodeStats[id]) { return; }
 
@@ -448,20 +433,6 @@ export default {
             .call(dcontext.rule());
         }
       });
-
-      dcontext.on('focus', function (i) {
-        d3.selectAll('#statsGraph-' + id + ' .value').style('right', i === null ? null : dcontext.size() - i + 'px');
-        let panel = $('#nodeStatsPanel .panel-body');
-        if (panel && panel.length) {
-          let scrollPx = panel[0].scrollLeft;
-          if (scrollPx) {
-            scrollPx = scrollPx - 16;
-            d3.selectAll('#statsGraph-' + id + ' .rule').style('left', '-' + scrollPx + 'px');
-          } else {
-            d3.selectAll('#statsGraph-' + id + ' .rule').style('left', '16px');
-          }
-        }
-      });
     }
   }
 };
@@ -478,5 +449,9 @@ td {
 }
 tr.bold {
   font-weight: bold;
+}
+
+#graphContent, #nodeStatsContent {
+  overflow-x: scroll;
 }
 </style>
