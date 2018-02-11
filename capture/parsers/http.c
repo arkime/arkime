@@ -709,7 +709,7 @@ static const char *method_strings[] =
     urlsField = moloch_field_define("http", "termfield",
         "http.uri", "URI", "http.uri",
         "URIs for request",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
         "category", "[\"url\",\"host\"]",
         NULL);
 
