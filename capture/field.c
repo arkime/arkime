@@ -228,6 +228,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             va_end(args);
         }
     } else {
+        flags |= (minfo->flags & MOLOCH_FIELD_FLAG_DISABLED);
+
         char *category = NULL;
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
