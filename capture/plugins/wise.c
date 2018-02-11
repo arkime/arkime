@@ -501,7 +501,6 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 {
     MolochString_t *hstring;
-    uint32_t        i;
 
     MOLOCH_LOCK(iRequest);
     if (!iRequest) {
@@ -605,6 +604,16 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 
     //URLs
     if (session->fields[httpUrlField]) {
+        MolochStringHashStd_t *shash = session->fields[httpUrlField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            if (hstring->str[0] == 'h' && memcmp("http://", hstring->str, 7) == 0) {
+                wise_lookup_url(session, iRequest, hstring->str+7);
+            } else {
+                wise_lookup_url(session, iRequest, hstring->str);
+            }
+        );
+
+        /*
         GPtrArray *sarray =  session->fields[httpUrlField]->sarray;
 
         for(i = 0; i < sarray->len; i++) {
@@ -616,7 +625,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                 wise_lookup_url(session, iRequest, str+7);
             } else
                 wise_lookup_url(session, iRequest, str);
-        }
+        }*/
     }
 
     // Tuples
