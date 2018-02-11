@@ -1,23 +1,32 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-141103"
-            }
-         },
          "body" : {
-            "protocol" : [
-               "tls",
-               "socks",
-               "tcp"
+            "dstASN" : "AS0001 Cool Beans!",
+            "tagsCnt" : 4,
+            "dstRIR" : "TEST",
+            "node" : "test",
+            "tags" : [
+               "srcip",
+               "dstip",
+               "out-of-order-dst",
+               "acked-unseen-segment-dst"
             ],
-            "totBytes" : 7752,
-            "srcBytes" : 404,
-            "dstPort" : 9901,
-            "srcPort" : 50606,
-            "certCnt" : 3,
+            "protocolCnt" : 3,
+            "tls" : {
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
+               ],
+               "dstSessionId" : [
+                  "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
+               ],
+               "version" : [
+                  "TLSv1.2"
+               ]
+            },
+            "ipProtocol" : 6,
             "test" : {
                "ASN" : [
                   "AS0000 This is neat"
@@ -25,25 +34,51 @@
                "RIR" : [
                   ""
                ],
-               "number" : [
-                  33554442
-               ],
-               "GEO" : [
-                  "RU"
+               "string.snow" : [
+                  "16777226:50606,33554442:9901"
                ],
                "ip" : [
                   "10.0.0.1"
                ],
-               "string.snow" : [
-                  "16777226:50606,33554442:9901"
+               "GEO" : [
+                  "RU"
+               ],
+               "number" : [
+                  33554442
                ]
             },
-            "srcDataBytes" : 38,
+            "srcIp" : "10.0.0.1",
+            "dstPackets" : 10,
             "dstMacCnt" : 2,
-            "fileId" : [],
-            "firstPacket" : 1415053640836,
+            "totBytes" : 7752,
+            "srcASN" : "AS0000 This is neat",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c1"
+            ],
+            "srcDataBytes" : 38,
+            "tcpflags" : {
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "srcZero" : 0,
+               "psh" : 4,
+               "ack" : 10,
+               "rst" : 0,
+               "fin" : 0,
+               "dstZero" : 0
+            },
+            "totDataBytes" : 6822,
+            "length" : 1867,
+            "timestamp" : "SET",
             "srcGEO" : "RU",
-            "lastPacket" : 1415053642702,
+            "dstPayload8" : "005a01bb83fd3d50",
+            "protocol" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
+            "fileId" : [],
             "packetPos" : [
                24,
                106,
@@ -62,31 +97,17 @@
                6590,
                6666
             ],
-            "timestamp" : "SET",
-            "length" : 1867,
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:d8:bf:c1"
-            ],
-            "segmentCnt" : 1,
-            "srcPackets" : 6,
-            "totDataBytes" : 6822,
-            "srcIp" : "10.0.0.1",
-            "srcASN" : "AS0000 This is neat",
-            "totPackets" : 16,
-            "dstIp" : "10.0.0.2",
-            "dstPackets" : 10,
-            "node" : "test",
-            "dstGEO" : "CA",
+            "dstDataBytes" : 6784,
             "srcMacCnt" : 1,
             "srcPayload8" : "040101bb00000001",
-            "socks" : {
-               "user" : "fd7bcf7b5c9e1d",
-               "host" : "login.live.com",
-               "port" : 443
-            },
-            "dstPayload8" : "005a01bb83fd3d50",
-            "ipProtocol" : 6,
+            "srcBytes" : 404,
+            "totPackets" : 16,
+            "segmentCnt" : 1,
+            "certCnt" : 3,
+            "srcPort" : 50606,
+            "dstIp" : "10.0.0.2",
+            "srcPackets" : 6,
+            "firstPacket" : 1415053640836,
             "packetLen" : [
                82,
                82,
@@ -105,44 +126,14 @@
                76,
                1366
             ],
-            "dstASN" : "AS0001 Cool Beans!",
-            "tagsCnt" : 4,
-            "tcpflags" : {
-               "psh" : 4,
-               "srcZero" : 0,
-               "syn" : 1,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "rst" : 0,
-               "ack" : 10,
-               "dstZero" : 0
+            "socks" : {
+               "host" : "login.live.com",
+               "user" : "fd7bcf7b5c9e1d",
+               "port" : 443
             },
-            "dstBytes" : 7348,
-            "protocolCnt" : 3,
-            "tags" : [
-               "srcip",
-               "dstip",
-               "out-of-order-dst",
-               "acked-unseen-segment-dst"
-            ],
-            "tls" : {
-               "dstSessionId" : [
-                  "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
-               ],
-               "cipherCnt" : 1,
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
-               ],
-               "version" : [
-                  "TLSv1.2"
-               ],
-               "versionCnt" : 1
-            },
-            "dstRIR" : "TEST",
             "cert" : [
                {
-                  "notAfter" : 1448927999000,
+                  "validDays" : 409,
                   "subjectCN" : [
                      "login.live.com"
                   ],
@@ -158,49 +149,58 @@
                      "login.passport.com",
                      "msnialogin.passport.com"
                   ],
-                  "serial" : "0dc04875701d090d9f3645da26f51fe7",
                   "issuerON" : "VeriSign, Inc.",
+                  "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4",
                   "notBefore" : 1413504000000,
-                  "validDays" : 409,
                   "issuerCN" : [
                      "verisign class 3 extended validation ssl sgc ca"
                   ],
-                  "subjectON" : "Microsoft Corporation",
                   "altCnt" : 10,
-                  "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4"
+                  "serial" : "0dc04875701d090d9f3645da26f51fe7",
+                  "subjectON" : "Microsoft Corporation",
+                  "notAfter" : 1448927999000
                },
                {
+                  "notAfter" : 1636329599000,
+                  "serial" : "35973187f3873a07327ece580c9b7eda",
+                  "subjectON" : "VeriSign, Inc.",
                   "notBefore" : 1162944000000,
                   "issuerON" : "VeriSign, Inc.",
+                  "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
+                  "validDays" : 5478,
                   "subjectCN" : [
                      "verisign class 3 public primary certification authority - g5"
-                  ],
-                  "serial" : "35973187f3873a07327ece580c9b7eda",
-                  "notAfter" : 1636329599000,
-                  "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
-                  "subjectON" : "VeriSign, Inc.",
-                  "validDays" : 5478
+                  ]
                },
                {
-                  "notAfter" : 1478563199000,
-                  "notBefore" : 1162944000000,
                   "issuerON" : "VeriSign, Inc.",
-                  "serial" : "112a006d37e5106fd6ca7cc3efbacc18",
+                  "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
                   "subjectCN" : [
                      "verisign class 3 extended validation ssl sgc ca"
                   ],
                   "validDays" : 3652,
-                  "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
+                  "notBefore" : 1162944000000,
+                  "serial" : "112a006d37e5106fd6ca7cc3efbacc18",
                   "subjectON" : "VeriSign, Inc.",
                   "issuerCN" : [
                      "verisign class 3 public primary certification authority - g5"
-                  ]
+                  ],
+                  "notAfter" : 1478563199000
                }
             ],
-            "dstDataBytes" : 6784,
             "srcMac" : [
                "00:0a:f3:31:84:00"
-            ]
+            ],
+            "dstPort" : 9901,
+            "dstBytes" : 7348,
+            "dstGEO" : "CA",
+            "lastPacket" : 1415053642702
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-141103"
+            }
          }
       }
    ]

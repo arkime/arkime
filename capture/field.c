@@ -46,6 +46,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
     int                i;
     uint32_t           out[4*100]; // Can have up to 100 elements at any level
+    int                disabled = 0;
 
     memset(out, 0, sizeof(out));
     if (js0n(data, data_len, out) != 0) {
@@ -65,10 +66,15 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             info->category = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
-                info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
+                disabled = 1;
             }
         }
     }
+
+    if (disabled)
+        info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
+    else
+        info->flags    &= ~MOLOCH_FIELD_FLAG_DISABLED;
 
     info->pos = -1;
     HASH_ADD(d_, fieldsByDb, info->dbField, info);

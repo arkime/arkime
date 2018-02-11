@@ -9,23 +9,35 @@
          },
          "body" : {
             "srcIp" : "10.0.0.2",
-            "dstPort" : 2082,
-            "totDataBytes" : 945,
-            "srcPackets" : 3,
-            "node" : "test",
-            "totBytes" : 1311,
-            "ipProtocol" : 6,
-            "dstPayload8" : "485454502f312e31",
-            "srcASN" : "AS0001 Cool Beans!",
-            "srcPort" : 1087,
-            "srcMac" : [
-               "00:0f:f7:76:82:80"
+            "dstDataBytes" : 253,
+            "dstASN" : "AS0000 This is neat",
+            "fileId" : [],
+            "packetPos" : [
+               24,
+               118,
+               194,
+               270,
+               1032,
+               1108
             ],
-            "srcDataBytes" : 692,
+            "lastPacket" : 1414604111563,
+            "srcMacCnt" : 1,
             "dstMac" : [
                "00:00:5e:00:01:02",
                "00:1d:b5:ce:ef:c0"
             ],
+            "srcPackets" : 3,
+            "firstPacket" : 1414604109610,
+            "dstPort" : 2082,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "srcRIR" : "TEST",
+            "segmentCnt" : 1,
+            "node" : "test",
+            "dstIp" : "10.0.0.1",
+            "dstBytes" : 427,
             "packetLen" : [
                94,
                76,
@@ -34,30 +46,28 @@
                76,
                323
             ],
-            "timestamp" : "SET",
-            "lastPacket" : 1414604111563,
-            "totPackets" : 6,
-            "srcPayload8" : "474554202f787878",
-            "segmentCnt" : 1,
-            "dstASN" : "AS0000 This is neat",
-            "firstPacket" : 1414604109610,
-            "protocolCnt" : 2,
-            "dstGEO" : "RU",
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "srcGEO" : "CA",
-            "dstMacCnt" : 2,
-            "srcMacCnt" : 1,
+            "length" : 1953,
             "tagsCnt" : 2,
-            "fileId" : [],
-            "dstDataBytes" : 253,
-            "srcBytes" : 884,
+            "srcGEO" : "CA",
             "http" : {
-               "responseHeaderCnt" : 7,
-               "request-referer" : [
-                  "http://10.000.000.001:1234/zzzzzzzzzzzzzzzz/zzzzzzzz/zz/zzzzzzzzz/index.html"
+               "method" : [
+                  "GET"
+               ],
+               "path" : [
+                  "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"
+               ],
+               "cookieKey" : [
+                  "langedit",
+                  "lang",
+                  "cprelogin",
+                  "cpsession",
+                  "zzzzzzzzzzzzzzzzzz"
+               ],
+               "cookieKeyCnt" : 5,
+               "hostCnt" : 2,
+               "cookieValueCnt" : 3,
+               "authType" : [
+                  "basic"
                ],
                "requestHeader" : [
                   "accept",
@@ -71,10 +81,9 @@
                   "accept-language",
                   "authorization"
                ],
-               "path" : [
-                  "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"
-               ],
-               "cookieKeyCnt" : 5,
+               "responseHeaderCnt" : 7,
+               "requestHeaderCnt" : 10,
+               "request-authorizationCnt" : 1,
                "responseHeader" : [
                   "expires",
                   "keep-alive",
@@ -84,91 +93,82 @@
                   "x-keep-alive-count",
                   "server"
                ],
-               "pathCnt" : 1,
                "statuscodeCnt" : 1,
-               "user" : [
-                  "userrrrr"
-               ],
-               "uri" : [
-                  "10.000.000.001:1234/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"
-               ],
-               "methodCnt" : 1,
-               "userCnt" : 1,
                "authTypeCnt" : 1,
-               "request-authorizationCnt" : 1,
-               "clientVersionCnt" : 1,
-               "request-authorization" : [
-                  "Basic dXNlcnJycnI6cGFzc3dvcmRkZGRk"
-               ],
-               "host" : [
-                  "10.000.000.001:1234",
-                  "10.000.000.001"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 5.1; rv:32.0) Gecko/20100101 Firefox/32.0"
-               ],
-               "uricnt" : 1,
-               "hostCnt" : 2,
-               "requestHeaderCnt" : 10,
+               "pathCnt" : 1,
                "statuscode" : [
                   304
                ],
+               "userCnt" : 1,
+               "request-authorization" : [
+                  "Basic dXNlcnJycnI6cGFzc3dvcmRkZGRk"
+               ],
+               "useragentCnt" : 1,
+               "serverVersionCnt" : 1,
+               "methodCnt" : 1,
+               "clientVersionCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "user" : [
+                  "userrrrr"
+               ],
+               "uriCnt" : 1,
                "cookieValue" : [
                   "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
                   "auto",
                   "no"
                ],
-               "cookieValueCnt" : 3,
-               "request-refererCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
+               "uri" : [
+                  "10.000.000.001:1234/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"
                ],
-               "serverVersionCnt" : 1,
                "serverVersion" : [
                   "1.1"
                ],
-               "authType" : [
-                  "basic"
+               "request-referer" : [
+                  "http://10.000.000.001:1234/zzzzzzzzzzzzzzzz/zzzzzzzz/zz/zzzzzzzzz/index.html"
                ],
-               "useragentCnt" : 1,
-               "cookieKey" : [
-                  "langedit",
-                  "lang",
-                  "cprelogin",
-                  "cpsession",
-                  "zzzzzzzzzzzzzzzzzz"
+               "host" : [
+                  "10.000.000.001:1234",
+                  "10.000.000.001"
+               ],
+               "request-refererCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 5.1; rv:32.0) Gecko/20100101 Firefox/32.0"
                ]
             },
-            "dstPackets" : 3,
+            "protocolCnt" : 2,
+            "srcPort" : 1087,
             "tcpflags" : {
-               "ack" : 2,
                "urg" : 0,
+               "syn-ack" : 1,
                "fin" : 0,
-               "rst" : 0,
+               "dstZero" : 0,
+               "ack" : 2,
                "psh" : 2,
                "syn" : 1,
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "dstZero" : 0
+               "rst" : 0,
+               "srcZero" : 0
             },
-            "length" : 1953,
-            "srcRIR" : "TEST",
-            "dstBytes" : 427,
-            "dstIp" : "10.0.0.1",
-            "protocol" : [
-               "http",
-               "tcp"
+            "ipProtocol" : 6,
+            "totBytes" : 1311,
+            "dstMacCnt" : 2,
+            "tags" : [
+               "srcip",
+               "dstip"
             ],
-            "packetPos" : [
-               24,
-               118,
-               194,
-               270,
-               1032,
-               1108
+            "dstPackets" : 3,
+            "srcASN" : "AS0001 Cool Beans!",
+            "dstGEO" : "RU",
+            "totDataBytes" : 945,
+            "timestamp" : "SET",
+            "dstPayload8" : "485454502f312e31",
+            "srcDataBytes" : 692,
+            "srcPayload8" : "474554202f787878",
+            "totPackets" : 6,
+            "srcBytes" : 884,
+            "srcMac" : [
+               "00:0f:f7:76:82:80"
             ]
          }
       }

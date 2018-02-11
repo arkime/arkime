@@ -1,46 +1,80 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-150120"
-            }
-         },
          "body" : {
-            "protocolCnt" : 3,
+            "length" : 188,
+            "srcDataBytes" : 517,
+            "dstMacCnt" : 2,
+            "timestamp" : "SET",
+            "ipProtocol" : 6,
+            "node" : "test",
+            "dstDataBytes" : 5036,
+            "tls" : {
+               "srcSessionId" : [
+                  "51273b31b1b975c9276907197fbf6b855bc4387e341cea1d5cf727c086c0774b"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "ja3" : [
+                  "8ca01c116f7fa9e77c6e1800eac1bec2"
+               ],
+               "cipherCnt" : 1,
+               "versionCnt" : 1,
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+               ]
+            },
+            "srcGEO" : "RU",
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               851,
+               927
+            ],
+            "dstRIR" : "TEST",
+            "dstBytes" : 5216,
+            "dstPort" : 443,
+            "totBytes" : 5913,
+            "protocol" : [
+               "tlsrulestest",
+               "tls",
+               "tcp"
+            ],
             "dstMac" : [
                "00:00:5e:00:01:02",
                "00:1d:b5:ce:ef:c0"
             ],
-            "test" : {
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:3627,33554442:443"
-               ]
-            },
-            "srcPayload8" : "1603010200010001",
-            "srcASN" : "AS0000 This is neat",
-            "tags" : [
-               "srcip",
-               "dstip"
+            "srcMac" : [
+               "00:0f:f7:76:82:80"
             ],
-            "totPackets" : 6,
-            "length" : 188,
+            "fileId" : [],
+            "segmentCnt" : 1,
+            "srcBytes" : 697,
+            "srcASN" : "AS0000 This is neat",
+            "srcMacCnt" : 1,
+            "srcIp" : "10.0.0.1",
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstPackets" : 3,
+            "tcpflags" : {
+               "srcZero" : 0,
+               "dstZero" : 0,
+               "urg" : 0,
+               "fin" : 0,
+               "psh" : 2,
+               "ack" : 2,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "syn" : 1
+            },
+            "tagsCnt" : 2,
+            "certCnt" : 2,
+            "firstPacket" : 1421771550035,
+            "dstGEO" : "CA",
+            "protocolCnt" : 3,
             "packetLen" : [
                82,
                82,
@@ -49,20 +83,25 @@
                76,
                5106
             ],
+            "http" : {
+               "hostCnt" : 1,
+               "host" : [
+                  "mail.yandex.com"
+               ]
+            },
+            "srcPayload8" : "1603010200010001",
+            "lastPacket" : 1421771550224,
+            "dstPayload8" : "160303005b020000",
             "cert" : [
                {
-                  "subjectCN" : [
-                     "mail.yandex.ru"
-                  ],
-                  "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
                   "issuerON" : "Unizeto Technologies S.A.",
-                  "issuerCN" : [
-                     "certum level iv ca"
-                  ],
-                  "validDays" : 415,
-                  "subjectON" : "Yandex LLC",
-                  "hash" : "59:4d:51:83:75:d0:9c:29:82:26:58:5f:ec:83:7b:60:ce:33:ba:d8",
                   "notBefore" : 1415717263000,
+                  "validDays" : 415,
+                  "hash" : "59:4d:51:83:75:d0:9c:29:82:26:58:5f:ec:83:7b:60:ce:33:ba:d8",
+                  "altCnt" : 12,
+                  "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
+                  "notAfter" : 1451573263000,
+                  "subjectON" : "Yandex LLC",
                   "alt" : [
                      "mail.yandex.az",
                      "mail.yandex.com.tr",
@@ -77,103 +116,64 @@
                      "mail.yandex.com",
                      "mail.yandex.ru"
                   ],
-                  "altCnt" : 12,
-                  "notAfter" : 1451573263000
+                  "subjectCN" : [
+                     "mail.yandex.ru"
+                  ],
+                  "issuerCN" : [
+                     "certum level iv ca"
+                  ]
                },
                {
-                  "notBefore" : 1236084865000,
-                  "hash" : "12:e1:89:f7:dc:2f:a2:82:38:0b:48:77:31:9f:5f:1d:fe:af:6d:69",
-                  "subjectON" : "Unizeto Technologies S.A.",
-                  "notAfter" : 1709470465000,
                   "issuerON" : "Unizeto Sp. z o.o.",
-                  "serial" : "4ca5fec6617c48b056382a8280e0508c",
+                  "notBefore" : 1236084865000,
                   "subjectCN" : [
                      "certum level iv ca"
                   ],
                   "issuerCN" : [
                      "certum ca"
                   ],
-                  "validDays" : 5479
+                  "hash" : "12:e1:89:f7:dc:2f:a2:82:38:0b:48:77:31:9f:5f:1d:fe:af:6d:69",
+                  "validDays" : 5479,
+                  "serial" : "4ca5fec6617c48b056382a8280e0508c",
+                  "notAfter" : 1709470465000,
+                  "subjectON" : "Unizeto Technologies S.A."
                }
             ],
-            "node" : "test",
-            "srcDataBytes" : 517,
-            "firstPacket" : 1421771550035,
-            "timestamp" : "SET",
-            "srcIp" : "10.0.0.1",
-            "packetPos" : [
-               24,
-               106,
-               188,
-               264,
-               851,
-               927
-            ],
-            "lastPacket" : 1421771550224,
-            "totBytes" : 5913,
-            "dstPort" : 443,
-            "ipProtocol" : 6,
-            "dstMacCnt" : 2,
-            "srcMacCnt" : 1,
-            "srcBytes" : 697,
-            "dstIp" : "10.0.0.2",
             "totDataBytes" : 5553,
-            "protocol" : [
-               "tlsrulestest",
-               "tls",
-               "tcp"
+            "tags" : [
+               "srcip",
+               "dstip"
             ],
-            "dstGEO" : "CA",
-            "dstRIR" : "TEST",
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcGEO" : "RU",
+            "srcPackets" : 3,
             "srcPort" : 3627,
-            "dstPayload8" : "160303005b020000",
-            "tcpflags" : {
-               "rst" : 0,
-               "urg" : 0,
-               "fin" : 0,
-               "ack" : 2,
-               "syn" : 1,
-               "psh" : 2,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "syn-ack" : 1
-            },
-            "fileId" : [],
-            "tls" : {
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+            "test" : {
+               "string.snow" : [
+                  "16777226:3627,33554442:443"
                ],
-               "versionCnt" : 1,
-               "ja3" : [
-                  "8ca01c116f7fa9e77c6e1800eac1bec2"
+               "ASN" : [
+                  "AS0000 This is neat"
                ],
-               "version" : [
-                  "TLSv1.2"
+               "RIR" : [
+                  ""
                ],
-               "cipherCnt" : 1,
-               "srcSessionId" : [
-                  "51273b31b1b975c9276907197fbf6b855bc4387e341cea1d5cf727c086c0774b"
+               "GEO" : [
+                  "RU"
                ],
-               "ja3Cnt" : 1
-            },
-            "dstDataBytes" : 5036,
-            "dstBytes" : 5216,
-            "tagsCnt" : 2,
-            "segmentCnt" : 1,
-            "http" : {
-               "hostCnt" : 1,
-               "host" : [
-                  "mail.yandex.com"
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  "10.0.0.1"
                ]
             },
-            "certCnt" : 2,
-            "srcPackets" : 3,
-            "dstPackets" : 3,
-            "srcMac" : [
-               "00:0f:f7:76:82:80"
-            ]
+            "totPackets" : 6,
+            "dstIp" : "10.0.0.2"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions2-150120"
+            }
          }
       }
    ]

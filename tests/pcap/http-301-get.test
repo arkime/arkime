@@ -8,57 +8,8 @@
             }
          },
          "body" : {
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "dstRIR" : "ARIN",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "length" : 125,
-            "fileId" : [],
             "dstDataBytes" : 107,
-            "dstGEO" : "US",
-            "segmentCnt" : 1,
-            "srcBytes" : 487,
-            "totBytes" : 800,
-            "ipProtocol" : 6,
-            "srcDataBytes" : 145,
-            "dstIp" : "192.30.252.130",
-            "srcPackets" : 5,
-            "lastPacket" : 1385394928608,
-            "dstPayload8" : "485454502f312e31",
-            "dstBytes" : 313,
-            "packetPos" : [
-               24,
-               118,
-               208,
-               290,
-               517,
-               706,
-               788,
-               870
-            ],
-            "protocolCnt" : 2,
-            "srcGEO" : "US",
-            "node" : "test",
-            "dstMacCnt" : 2,
-            "dstPackets" : 3,
-            "timestamp" : "SET",
-            "firstPacket" : 1385394928482,
-            "tcpflags" : {
-               "fin" : 2,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 3,
-               "urg" : 0,
-               "dstZero" : 0,
-               "psh" : 1,
-               "syn" : 1,
-               "srcZero" : 0
-            },
-            "dstASN" : "AS36459 GitHub, Inc.",
+            "length" : 125,
             "packetLen" : [
                94,
                90,
@@ -69,66 +20,115 @@
                82,
                82
             ],
-            "srcPayload8" : "474554202f204854",
+            "firstPacket" : 1385394928482,
             "dstPort" : 80,
-            "srcPort" : 62341,
-            "totDataBytes" : 252,
+            "fileId" : [],
+            "dstIp" : "192.30.252.130",
+            "dstRIR" : "ARIN",
+            "node" : "test",
+            "dstGEO" : "US",
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "dstMacCnt" : 2,
+            "dstPayload8" : "485454502f312e31",
+            "totPackets" : 8,
+            "srcMacCnt" : 1,
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "dstBytes" : 313,
+            "dstASN" : "AS36459 GitHub, Inc.",
+            "srcGEO" : "US",
+            "lastPacket" : 1385394928608,
+            "packetPos" : [
+               24,
+               118,
+               208,
+               290,
+               517,
+               706,
+               788,
+               870
+            ],
             "http" : {
-               "requestHeaderCnt" : 3,
-               "host" : [
-                  "www.github.com"
+               "serverVersion" : [
+                  "1.1"
                ],
-               "hostCnt" : 1,
-               "response-location" : [
-                  "https://www.github.com/"
-               ],
-               "statuscodeCnt" : 1,
                "method" : [
                   "GET"
                ],
+               "serverVersionCnt" : 1,
+               "response-location" : [
+                  "https://www.github.com/"
+               ],
                "statuscode" : [
                   301
+               ],
+               "hostCnt" : 1,
+               "uriCnt" : 1,
+               "useragentCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+               ],
+               "uri" : [
+                  "www.github.com/"
+               ],
+               "responseHeaderCnt" : 3,
+               "statuscodeCnt" : 1,
+               "requestHeaderCnt" : 3,
+               "clientVersionCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
+               ],
+               "host" : [
+                  "www.github.com"
+               ],
+               "clientVersion" : [
+                  "1.1"
                ],
                "responseHeader" : [
                   "content-length",
                   "connection",
                   "location"
                ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
-               ],
-               "uricnt" : 1,
-               "clientVersionCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "pathCnt" : 1,
-               "serverVersionCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "responseHeaderCnt" : 3,
-               "methodCnt" : 1,
-               "uri" : [
-                  "www.github.com/"
-               ],
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "useragentCnt" : 1
+               "methodCnt" : 1
             },
-            "srcMacCnt" : 1,
+            "srcPort" : 62341,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "srcZero" : 0,
+               "ack" : 3,
+               "syn" : 1,
+               "fin" : 2,
+               "urg" : 0,
+               "dstZero" : 0,
+               "rst" : 0,
+               "psh" : 1
+            },
             "srcIp" : "10.180.156.141",
-            "protocol" : [
-               "http",
-               "tcp"
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "totPackets" : 8
+            "srcPayload8" : "474554202f204854",
+            "ipProtocol" : 6,
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcPackets" : 5,
+            "totBytes" : 800,
+            "srcDataBytes" : 145,
+            "totDataBytes" : 252,
+            "srcBytes" : 487,
+            "timestamp" : "SET",
+            "dstPackets" : 3
          }
       }
    ]

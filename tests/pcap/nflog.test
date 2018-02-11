@@ -8,72 +8,60 @@
             }
          },
          "body" : {
-            "segmentCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstASN" : "AS16509 Amazon.com, Inc.",
-            "srcPort" : 54064,
-            "srcDataBytes" : 172,
-            "packetPos" : [
-               216,
-               356,
-               552,
-               684,
-               988,
-               1176,
-               2532,
-               2664,
-               2796,
-               2984
-            ],
             "dstPackets" : 4,
-            "srcIp" : "10.10.10.10",
-            "tcpflags" : {
-               "srcZero" : 0,
-               "rst" : 0,
-               "ack" : 4,
-               "dstZero" : 0,
-               "fin" : 2,
-               "syn" : 1,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "psh" : 2
-            },
+            "lastPacket" : 1489603870937,
+            "segmentCnt" : 1,
+            "length" : 0,
+            "timestamp" : "SET",
+            "packetLen" : [
+               124,
+               180,
+               116,
+               288,
+               172,
+               1340,
+               116,
+               116,
+               172,
+               100
+            ],
+            "dstASN" : "AS16509 Amazon.com, Inc.",
             "ipProtocol" : 6,
+            "srcIp" : "10.10.10.10",
+            "dstRIR" : "ARIN",
             "http" : {
-               "statuscodeCnt" : 1,
-               "responseHeaderCnt" : 13,
-               "uri" : [
-                  "www.aol.com/"
+               "statuscode" : [
+                  301
                ],
-               "uricnt" : 1,
                "requestHeader" : [
                   "accept",
                   "user-agent",
                   "host"
                ],
-               "pathCnt" : 1,
-               "useragent" : [
-                  "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
-               ],
-               "statuscode" : [
-                  301
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
                "sha256" : [
                   "2ddd74d069d1623fa32ba5dce66e7aaf18e1e8ed09bfab55fd8d96bef61a30f7"
                ],
-               "response-location" : [
-                  "https://www.aol.com/"
-               ],
-               "requestHeaderCnt" : 3,
+               "useragentCnt" : 1,
                "host" : [
                   "www.aol.com"
                ],
+               "clientVersionCnt" : 1,
+               "md5Cnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "methodCnt" : 1,
+               "hostCnt" : 1,
+               "response-location" : [
+                  "https://www.aol.com/"
+               ],
+               "pathCnt" : 1,
                "clientVersion" : [
                   "1.1"
                ],
+               "sha256Cnt" : 1,
+               "uriCnt" : 1,
+               "statuscodeCnt" : 1,
                "method" : [
                   "GET"
                ],
@@ -92,55 +80,67 @@
                   "x-content-type-options",
                   "location"
                ],
-               "sha256Cnt" : 1,
+               "responseHeaderCnt" : 13,
+               "uri" : [
+                  "www.aol.com/"
+               ],
                "serverVersionCnt" : 1,
-               "clientVersionCnt" : 1,
-               "md5Cnt" : 1,
-               "hostCnt" : 1,
+               "useragent" : [
+                  "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
+               ],
                "md5" : [
                   "cbd66d3fd40db184cf2af858b4184f87"
                ],
-               "methodCnt" : 1,
+               "requestHeaderCnt" : 3,
                "path" : [
                   "/"
-               ],
-               "useragentCnt" : 1
+               ]
             },
-            "dstPort" : 80,
+            "tcpflags" : {
+               "dstZero" : 0,
+               "urg" : 0,
+               "ack" : 4,
+               "fin" : 2,
+               "syn" : 1,
+               "srcZero" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "psh" : 2
+            },
+            "packetPos" : [
+               216,
+               356,
+               552,
+               684,
+               988,
+               1176,
+               2532,
+               2664,
+               2796,
+               2984
+            ],
+            "totDataBytes" : 1339,
+            "dstPayload8" : "485454502f312e31",
             "srcPackets" : 6,
+            "dstIp" : "52.43.228.156",
+            "firstPacket" : 1489603870937,
+            "dstGEO" : "US",
+            "dstBytes" : 1800,
+            "totBytes" : 2564,
+            "srcPort" : 54064,
+            "node" : "test",
+            "dstPort" : 80,
             "protocol" : [
                "http",
                "tcp"
             ],
-            "firstPacket" : 1489603870937,
-            "length" : 0,
-            "protocolCnt" : 2,
-            "packetLen" : [
-               124,
-               180,
-               116,
-               288,
-               172,
-               1340,
-               116,
-               116,
-               172,
-               100
-            ],
-            "dstPayload8" : "485454502f312e31",
-            "srcPayload8" : "474554202f204854",
-            "node" : "test",
-            "totBytes" : 2564,
-            "timestamp" : "SET",
-            "lastPacket" : 1489603870937,
-            "dstBytes" : 1800,
-            "dstIp" : "52.43.228.156",
-            "dstDataBytes" : 1167,
-            "totPackets" : 10,
             "fileId" : [],
-            "totDataBytes" : 1339,
-            "dstGEO" : "US",
-            "srcBytes" : 764
+            "totPackets" : 10,
+            "srcBytes" : 764,
+            "protocolCnt" : 2,
+            "srcPayload8" : "474554202f204854",
+            "srcDataBytes" : 172,
+            "dstDataBytes" : 1167
          }
       }
    ]

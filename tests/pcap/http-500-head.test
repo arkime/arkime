@@ -3,68 +3,15 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-130226"
+               "_index" : "tests_sessions2-130226",
+               "_type" : "session"
             }
          },
          "body" : {
-            "fileId" : [],
-            "srcPackets" : 5,
-            "ipProtocol" : 6,
-            "http" : {
-               "pathCnt" : 1,
-               "host" : [
-                  "samples.example.com"
-               ],
-               "uri" : [
-                  "samples.example.com/UpdataConfig.dat"
-               ],
-               "requestHeaderCnt" : 4,
-               "useragentCnt" : 1,
-               "statuscode" : [
-                  500
-               ],
-               "hostCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "connection",
-                  "host"
-               ],
-               "responseHeader" : [
-                  "content-type",
-                  "date",
-                  "connection",
-                  "server"
-               ],
-               "path" : [
-                  "/UpdataConfig.dat"
-               ],
-               "serverVersionCnt" : 1,
-               "statuscodeCnt" : 1,
-               "method" : [
-                  "HEAD"
-               ],
-               "responseHeaderCnt" : 4,
-               "uricnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "useragent" : [
-                  "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
-               ],
-               "methodCnt" : 1
-            },
-            "srcMac" : [
-               "78:fe:3d:11:21:f2",
-               "00:00:5e:00:01:03"
+            "dstMac" : [
+               "00:10:db:ff:26:00"
             ],
-            "totDataBytes" : 312,
-            "protocolCnt" : 2,
+            "ipProtocol" : 6,
             "packetPos" : [
                24,
                106,
@@ -77,24 +24,16 @@
                944,
                1020
             ],
-            "dstMacCnt" : 1,
-            "dstBytes" : 455,
+            "srcIp" : "10.172.10.16",
             "dstPayload8" : "485454502f312e31",
-            "dstPackets" : 5,
-            "srcPort" : 49323,
-            "dstIp" : "10.156.206.202",
-            "node" : "test",
-            "dstDataBytes" : 155,
-            "srcDataBytes" : 157,
-            "srcBytes" : 457,
-            "srcMacCnt" : 2,
-            "dstPort" : 80,
-            "protocol" : [
-               "http",
-               "tcp"
+            "firstPacket" : 1361891420707,
+            "fileId" : [],
+            "totBytes" : 912,
+            "dstMacCnt" : 1,
+            "srcMac" : [
+               "78:fe:3d:11:21:f2",
+               "00:00:5e:00:01:03"
             ],
-            "lastPacket" : 1361891421481,
-            "srcPayload8" : "48454144202f5570",
             "packetLen" : [
                82,
                82,
@@ -107,27 +46,88 @@
                76,
                76
             ],
+            "dstBytes" : 455,
+            "protocolCnt" : 2,
+            "timestamp" : "SET",
+            "dstIp" : "10.156.206.202",
+            "srcPayload8" : "48454144202f5570",
+            "http" : {
+               "useragent" : [
+                  "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
+               ],
+               "useragentCnt" : 1,
+               "uriCnt" : 1,
+               "pathCnt" : 1,
+               "uri" : [
+                  "samples.example.com/UpdataConfig.dat"
+               ],
+               "hostCnt" : 1,
+               "methodCnt" : 1,
+               "clientVersionCnt" : 1,
+               "responseHeader" : [
+                  "content-type",
+                  "date",
+                  "connection",
+                  "server"
+               ],
+               "path" : [
+                  "/UpdataConfig.dat"
+               ],
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "statuscode" : [
+                  500
+               ],
+               "responseHeaderCnt" : 4,
+               "statuscodeCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "connection",
+                  "host"
+               ],
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "requestHeaderCnt" : 4,
+               "host" : [
+                  "samples.example.com"
+               ],
+               "method" : [
+                  "HEAD"
+               ],
+               "serverVersionCnt" : 1
+            },
+            "node" : "test",
+            "srcMacCnt" : 2,
+            "srcDataBytes" : 157,
+            "dstPort" : 80,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "lastPacket" : 1361891421481,
+            "srcBytes" : 457,
+            "segmentCnt" : 1,
+            "dstDataBytes" : 155,
+            "totDataBytes" : 312,
+            "srcPort" : 49323,
             "tcpflags" : {
-               "syn-ack" : 1,
+               "psh" : 2,
+               "rst" : 0,
+               "ack" : 4,
+               "fin" : 2,
+               "syn" : 1,
                "dstZero" : 0,
                "urg" : 0,
-               "fin" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "psh" : 2,
-               "syn" : 1,
-               "ack" : 4
+               "syn-ack" : 1,
+               "srcZero" : 0
             },
-            "srcIp" : "10.172.10.16",
+            "srcPackets" : 5,
+            "dstPackets" : 5,
             "totPackets" : 10,
-            "totBytes" : 912,
-            "segmentCnt" : 1,
-            "length" : 775,
-            "firstPacket" : 1361891420707,
-            "timestamp" : "SET",
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ]
+            "length" : 775
          }
       }
    ]
