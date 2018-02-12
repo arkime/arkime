@@ -23,6 +23,7 @@ const router  = express.Router();
 
 const version = 1;
 
+
 (function() { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
@@ -141,6 +142,26 @@ router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
 
+let internals = {
+  notifiers: {}
+};
+
+// Load notifier plugins for Parliament alerting
+function loadNotifiers() {
+  var api = {
+    register: function (str, info) {
+      internals.notifiers[str] = info;
+    }
+  };
+
+  // TODO look for all provider.*.js (use glob?)
+  var plugin = require('./notifiers/provider.notifme.js');
+  plugin.init(api);
+}
+
+loadNotifiers();
+
+
 /* Middleware -------------------------------------------------------------- */
 // App should always have parliament data
 router.use((req, res, next) => {
@@ -204,10 +225,26 @@ function verifyToken(req, res, next) {
 
 
 /* Helper functions -------------------------------------------------------- */
-// TODO alert stuffs!
 function issueAlert(cluster, issue) {
   issue.alerted = Date.now();
-  console.log(`Alert issued for: ${cluster.title} - ${issue.type}`);
+
+  const message = `Alert! ${cluster.title} - ${issue.type}`;
+
+  for (let n in internals.notifiers) {
+    if (internals.notifiers.hasOwnProperty(n)) {
+      const notifier = internals.notifiers[n];
+
+      let config = {};
+      for (let field of notifier.fields) {
+        if (parliament[field.name]) {
+          // TODO use bcrypt to hash and compare values
+          config[field.name] = parliament[field.name];
+        }
+      }
+
+      notifier.sendAlert(config, message);
+    }
+  }
 }
 
 // Finds an issue in a cluster
