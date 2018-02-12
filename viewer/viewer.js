@@ -2823,30 +2823,24 @@ function graphMerge(req, query, aggregations) {
 }
 
 function fixFields(fields, fixCb) {
-  async.parallel([
-    function(parallelCb) {
-      var files = [];
-      if (!fields.fileId) {
-        fields.fileId = [];
-        return parallelCb(null);
+  if (!fields.fileId) {
+    fields.fileId = [];
+    return fixCb(null, fields);
+  }
+
+  var files = [];
+  async.forEachSeries(fields.fileId, function (item, cb) {
+    Db.fileIdToFile(fields.node, item, function (file) {
+      if (file && file.locked === 1) {
+        files.push(file.name);
       }
-      async.forEachSeries(fields.fileId, function (item, cb) {
-        Db.fileIdToFile(fields.node, item, function (file) {
-          if (file && file.locked === 1) {
-            files.push(file.name);
-          }
-          cb(null);
-        });
-      },
-      function(err) {
-        fields.fileId = files;
-        parallelCb(err);
-      });
-    }],
-    function(err, results) {
-      fixCb(err, fields);
-    }
-  );
+      cb(null);
+    });
+  },
+  function(err) {
+    fields.fileId = files;
+    fixCb(err, fields);
+  });
 }
 
 /**
@@ -3214,53 +3208,51 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
       health: Db.healthCache
     },
     function(err, results) {
-      async.parallel([
-        function(parallelCb) {
-          if (!results.spi.fileand) {
-            return parallelCb();
-          }
-          var nresults = [];
-          var sodc = 0;
-          async.each(results.spi.fileand.buckets, function(nobucket, cb) {
-            sodc += nobucket.fileId.sum_other_doc_count;
-            async.each(nobucket.fileId.buckets, function (fsitem, cb) {
-              Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
-                if (file && file.name) {
-                  nresults.push({key: file.name, doc_count: fsitem.doc_count});
-                }
-                cb();
-              });
-            }, function () {
-              cb();
-            });
-          }, function () {
-            nresults = nresults.sort(function(a, b) {
-              if (a.doc_count === b.doc_count) {
-                return a.key.localeCompare(b.key);
-              }
-              return b.doc_count - a.doc_count;
-            });
-            results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
-            parallelCb();
-          });
-        }],
-        function() {
-          r = {health: results.health,
-               recordsTotal: results.total,
-               spi: results.spi,
-               recordsFiltered: recordsFiltered,
-               graph: graph,
-               map: map,
-               protocols: protocols,
-               bsqErr: bsqErr
-          };
-          res.logCounts(r.spi.count, r.recordsFiltered, r.total);
-          try {
-            res.send(r);
-          } catch (c) {
-          }
+      function sendResult() {
+        r = {health: results.health,
+             recordsTotal: results.total,
+             spi: results.spi,
+             recordsFiltered: recordsFiltered,
+             graph: graph,
+             map: map,
+             protocols: protocols,
+             bsqErr: bsqErr
+        };
+        res.logCounts(r.spi.count, r.recordsFiltered, r.total);
+        try {
+          res.send(r);
+        } catch (c) {
         }
-      );
+      }
+
+      if (!results.spi.fileand) {
+        return sendResult();
+      }
+
+      var nresults = [];
+      var sodc = 0;
+      async.each(results.spi.fileand.buckets, function(nobucket, cb) {
+        sodc += nobucket.fileId.sum_other_doc_count;
+        async.each(nobucket.fileId.buckets, function (fsitem, cb) {
+          Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
+            if (file && file.name) {
+              nresults.push({key: file.name, doc_count: fsitem.doc_count});
+            }
+            cb();
+          });
+        }, function () {
+          cb();
+        });
+      }, function () {
+        nresults = nresults.sort(function(a, b) {
+          if (a.doc_count === b.doc_count) {
+            return a.key.localeCompare(b.key);
+          }
+          return b.doc_count - a.doc_count;
+        });
+        results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
+        return sendResult();
+      });
     });
   });
 });
