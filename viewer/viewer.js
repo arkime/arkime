@@ -2165,7 +2165,7 @@ app.get('/history/list', function(req, res) {
     res.send(r);
   }).catch(err => {
     console.log("ERROR - /history/logs", err);
-    return res.molochError(500, 'Error retrieving log history - ' + promiseErr);
+    return res.molochError(500, 'Error retrieving log history - ' + err);
   });
 });
 
@@ -2545,16 +2545,14 @@ app.get('/esstats.json', function(req, res) {
     nodes.nodes.timestamp = new Date().getTime();
     internals.previousNodeStats.push(nodes.nodes);
 
-    r = {draw: req.query.draw,
-         health: health,
+    r = {health: health,
          recordsTotal: stats.length,
          recordsFiltered: stats.length,
          data: stats};
     res.send(r);
   }).catch((err) => {
     console.log ("ERROR -  /esstats.json", err);
-    r = {draw: req.query.draw,
-         health: health,
+    r = {health: Db.healthCache(),
          recordsTotal: 0,
          recordsFiltered: 0,
          data: []};
@@ -2615,55 +2613,48 @@ app.get('/stats.json', function(req, res) {
     addSortToQuery(query, req.query, "_uid");
   }
 
-  async.parallel({
-    stats: function (cb) {
-      Db.search('stats', 'stat', query, function(err, result) {
-        if (err || result.error) {
-          console.log("ERROR - stats", query, err || result.error);
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            if (result.hits.hits[i]._source) {
-              mergeUnarray(fields, result.hits.hits[i].fields);
-            }
-            fields.id        = result.hits.hits[i]._id;
+  Promise.all([Db.search('stats', 'stat', query),
+               Db.numberOfDocuments('stats')
+  ]).then(([stats, total]) => {
+    if (stats.error) {throw stats.error;}
 
-            for (const key of ["totalPackets", "totalK", "totalSessions",
-             "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
-             "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
-             "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-             "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
-            ]) {
-              fields[key] = fields[key] || 0;
-            }
+    var results = {total: stats.hits.total, results: []};
 
-            fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
-            fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
-            fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
-            fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
-            fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
-            fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
-            fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
-            fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
-            fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('stats', cb);
+    for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
+      var fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+      if (stats.hits.hits[i]._source) {
+        mergeUnarray(fields, stats.hits.hits[i].fields);
+      }
+      fields.id        = stats.hits.hits[i]._id;
+
+      for (const key of ["totalPackets", "totalK", "totalSessions",
+       "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
+       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
+       "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
+       "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
+      ]) {
+        fields[key] = fields[key] || 0;
+      }
+
+      fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+      fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
+      fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+      fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+      fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+      fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
+      fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+      fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
+      fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
+      results.results.push(fields);
     }
-  },
-  function(err, results) {
-    var r = {draw: req.query.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.stats.total,
-             data: results.stats.results};
+
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.send(r);
+  }).catch((err) => {
+    console.log("ERROR - /stats.json", query, err);
+    res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
@@ -2923,11 +2914,10 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      var r = {draw: req.query.draw,
-               recordsTotal: 0,
+      var r = {recordsTotal: 0,
                recordsFiltered: 0,
-               graph: graph,
-               map: map,
+               graph: {},
+               map: {},
                bsqErr: bsqErr.toString(),
                health: Db.healthCache(),
                data:[]};
@@ -2955,71 +2945,68 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
       console.log("sessions.json query", JSON.stringify(query, null, 1));
     }
 
-    async.parallel({
-      sessions: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, function(err, result) {
-          if (Config.debug) {
-            console.log("sessions.json result", util.inspect(result, false, 50));
-          }
-          if (err || result.error) {
-            console.log("sessions.json error", err, (result?result.error:null));
-            sessionsCb(null, {total: 0, results: []});
-            return;
-          }
-
-          graph = graphMerge(req, query, result.aggregations);
-          map = mapMerge(result.aggregations);
-
-          var results = {total: result.hits.total, results: []};
-          async.each(result.hits.hits, function (hit, hitCb) {
-            var fields = hit._source || hit.fields;
-            if (fields === undefined) {
-              return hitCb(null);
-            }
-            fields.index = hit._index;
-            fields.id = hit._id;
-
-            if (req.query.flatten === '1') {
-              fields = flattenFields(fields);
-            }
-
-            if (addMissing) {
-              ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
-                if (fields[item] === undefined) {
-                  fields[item] = -1;
-                }
-              });
-              results.results.push(fields);
-              return hitCb();
-            } else {
-              fixFields(fields, function() {
-                results.results.push(fields);
-                return hitCb();
-              });
-            }
-          }, function () {
-            sessionsCb(null, results);
-          });
-        });
-      },
-      total: function (totalCb) {
-        Db.numberOfDocuments('sessions2-*', totalCb);
-      },
-      health: Db.healthCache
-    },
-    function(err, results) {
-      var r = {draw: req.query.draw,
-               recordsTotal: results.total,
-               recordsFiltered: (results.sessions?results.sessions.total:0),
-               graph: graph,
-               health: results.health,
-               map: map,
-               data: (results.sessions?results.sessions.results:[])};
-      res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-      try {
-        res.send(r);
-      } catch (c) {
+    Promise.all([Db.searchPrimary(indices, 'session', query),
+                 Db.numberOfDocuments('sessions2-*'),
+                 Db.healthCachePromise()
+    ]).then(([sessions, total, health]) => {
+      if (Config.debug) {
+        console.log("sessions.json result", util.inspect(sessions, false, 50));
       }
+
+      if (sessions.error) {throw sessions.err;}
+
+      graph = graphMerge(req, query, sessions.aggregations);
+      map = mapMerge(sessions.aggregations);
+
+      var results = {total: sessions.hits.total, results: []};
+      async.each(sessions.hits.hits, function (hit, hitCb) {
+        var fields = hit._source || hit.fields;
+        if (fields === undefined) {
+          return hitCb(null);
+        }
+        fields.index = hit._index;
+        fields.id = hit._id;
+
+        if (req.query.flatten === '1') {
+          fields = flattenFields(fields);
+        }
+
+        if (addMissing) {
+          ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
+            if (fields[item] === undefined) {
+              fields[item] = -1;
+            }
+          });
+          results.results.push(fields);
+          return hitCb();
+        } else {
+          fixFields(fields, function() {
+            results.results.push(fields);
+            return hitCb();
+          });
+        }
+      }, function () {
+        var r = {recordsTotal: total.count,
+                 recordsFiltered: (results?results.total:0),
+                 graph: graph,
+                 health: health,
+                 map: map,
+                 data: (results?results.results:[])};
+        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
+        try {
+          res.send(r);
+        } catch (c) {
+        }
+      });
+    }).catch ((err) => {
+      console.log("ERROR - /sessions.json error", err);
+      var r = {recordsTotal: 0,
+               recordsFiltered: 0,
+               graph: {},
+               map: {},
+               health: Db.healthCache(),
+               data:[]};
+      res.send(r);
     });
   });
 });
@@ -3389,7 +3376,7 @@ function buildConnections(req, res, cb) {
         for (let vsrc of asrc) {
           for (let vdst of adst) {
             if (dstIsIp && dstipport) {
-              if (vdst.includes(":")) {vdst = '[' + vdst + ']'};
+              if (vdst.includes(":")) {vdst = '[' + vdst + ']';}
               vdst += ":" + f.dstPort;
             }
             process(vsrc, vdst, f);
@@ -3608,8 +3595,8 @@ app.get('/unique.txt', logAction(), function(req, res) {
   /* How should each item be processed. */
   var eachCb = writeCb;
 
-    if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field == "srcIp:srtPort" ||
-        req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field == "dstIp:dstPort") {
+    if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field === "srcIp:srtPort" ||
+        req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field === "dstIp:dstPort") {
     eachCb = function(item, cb) {
       item.field2.buckets.forEach(function (item2) {
         item2.key = item.key + ":" + item2.key;
@@ -3662,9 +3649,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
         });
       });
     } else {
-      if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field == "srcIp:srtPort") {
+      if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field === "srcIp:srtPort") {
         query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
-      } else if (req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field == "dstIp:dstPort") {
+      } else if (req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field === "dstIp:dstPort") {
         query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
       } else  {
         query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
