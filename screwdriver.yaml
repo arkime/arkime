@@ -4,10 +4,12 @@ shared:
             channels:
                 - moloch
             statuses:
-                - SUCCESS
                 - FAILURE
                 - ABORTED
-                - RUNNING
+    annotations:
+        beta.screwdriver.cd/cpu: HIGH
+        beta.screwdriver.cd/ram: HIGH
+
     environment:
         MOLOCH_COPY_BRANCH: "origin/1.0.0"
         MOLOCH_FILE_NAME: 1
