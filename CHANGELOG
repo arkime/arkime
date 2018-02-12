@@ -15,6 +15,11 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0-beta1 2018/02/xx
+  - capture - calculate sha256 too (set supportSha256 tru)
+  - wise - support sha256 lookups
+  - capture - fix disable fields
+
 1.0.0-alpha2 2018/01/31
   - Read alpha1 below
   - release - correct geo files

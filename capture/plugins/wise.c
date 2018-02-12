@@ -567,24 +567,26 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     }
 
     //SHA256s
-    if (session->fields[httpSha256Field]) {
-        MolochStringHashStd_t *shash = session->fields[httpSha256Field]->shash;
-        HASH_FORALL(s_, *shash, hstring,
-            if (hstring->uw) {
-                char str[1000];
-                snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
-                wise_lookup(session, iRequest, str, INTEL_TYPE_SHA256);
-            } else {
-                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
-            }
-        );
-    }
+    if (config.supportSha256) {
+        if (session->fields[httpSha256Field]) {
+            MolochStringHashStd_t *shash = session->fields[httpSha256Field]->shash;
+            HASH_FORALL(s_, *shash, hstring,
+                if (hstring->uw) {
+                    char str[1000];
+                    snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
+                    wise_lookup(session, iRequest, str, INTEL_TYPE_SHA256);
+                } else {
+                    wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+                }
+            );
+        }
 
-    if (session->fields[emailSha256Field]) {
-        MolochStringHashStd_t *shash = session->fields[emailSha256Field]->shash;
-        HASH_FORALL(s_, *shash, hstring,
-            wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
-        );
+        if (session->fields[emailSha256Field]) {
+            MolochStringHashStd_t *shash = session->fields[emailSha256Field]->shash;
+            HASH_FORALL(s_, *shash, hstring,
+                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+            );
+        }
     }
 
     //Email
@@ -694,9 +696,7 @@ void moloch_plugin_init()
     httpHostField    = moloch_field_by_db("http.host");
     httpXffField     = moloch_field_by_db("http.xffIp");
     httpMd5Field     = moloch_field_by_db("http.md5");
-    httpSha256Field  = moloch_field_by_db("http.sha256");
     emailMd5Field    = moloch_field_by_db("email.md5");
-    emailSha256Field = moloch_field_by_db("email.sha256");
     emailSrcField    = moloch_field_by_db("email.src");
     emailDstField    = moloch_field_by_db("email.dst");
     dnsHostField     = moloch_field_by_db("dns.host");
@@ -704,6 +704,11 @@ void moloch_plugin_init()
     httpUrlField     = moloch_field_by_db("http.uri");
     protocolField    = moloch_field_by_db("protocol");
     ja3Field         = moloch_field_by_db("tls.ja3");
+
+    if (config.supportSha256) {
+        httpSha256Field  = moloch_field_by_db("http.sha256");
+        emailSha256Field = moloch_field_by_db("email.sha256");
+    }
 
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);

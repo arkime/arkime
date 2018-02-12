@@ -167,6 +167,9 @@ parseSMB=true
 # Should we parse HTTP QS Values
 parseQSValue=false
 
+# Should we calculate sha256 for bodies
+supportSha256=false
+
 # Only index HTTP request bodies less than this number of bytes */
 maxReqBody=0
 # Only store request bodies that Utf-8?
