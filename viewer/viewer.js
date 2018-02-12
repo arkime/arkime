@@ -3027,7 +3027,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
 app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
-    var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
+    var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
       return res.molochError(403, bsqErr.toString());
     }
@@ -3039,13 +3039,15 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     var field = req.query.field || "node";
     query.aggregations.field = {terms: {field: field, size: size}};
 
-    Db.healthCache(function(err, health) {results.health = health;});
-    Db.numberOfDocuments('sessions2-*', function (err, total) {results.recordsTotal = total;});
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
-      if (err || result.error) {
-        console.log("spigraph.json error", err, (result?result.error:null));
-        return res.molochError(403, errorString(err, result));
-      }
+    Promise.all([Db.healthCachePromise(),
+                 Db.numberOfDocuments('sessions2-*'),
+                 Db.searchPrimary(indices, 'session', query)
+                ])
+    .then(([health, total, result]) => {
+      if (result.error) {throw result.error;}
+
+      results.health = health;
+      results.recordsTotal = total.count;
       results.recordsFiltered = result.hits.total;
 
       results.graph = graphMerge(req, query, result.aggregations);
@@ -3108,6 +3110,9 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
           }
         });
       });
+    }).catch((err) => {
+      console.log("spigraph.json error", err);
+      return res.molochError(403, errorString(err));
     });
   });
 });
