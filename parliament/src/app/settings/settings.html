@@ -1,0 +1,58 @@
+<div class="container-fluid">
+
+  <!-- page error -->
+  <div class="alert alert-danger" *ngIf="error">
+    <span class="fa fa-exclamation-triangle"></span>&nbsp;
+    {{ error }}
+    <button type="button" class="close cursor-pointer"
+      (click)="error = ''">
+      <span>&times;</span>
+    </button>
+  </div> <!-- /page error -->
+
+  <!-- not logged in -->
+  <div *ngIf="!error && !authService.loggedIn" class="mt-5">
+    <div class="info-area vertical-center text-center">
+      <div class="text-danger">
+        <span class="fa fa-2x fa-warning"></span>
+        <span>
+          This page requires admin privileges.<br>
+          Please login.
+        </span>
+      </div>
+    </div>
+  </div> <!-- /not logged in -->
+
+  <div *ngIf="authService.loggedIn">
+    <h3>Notifiers</h3>
+    <div class="row">
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-4"
+        *ngFor="let notifier of settings.notifiers; trackBy:trackByName;">
+        <div class="card bg-light">
+          <div class="card-body">
+            <h5 class="mb-3">
+              {{ notifier.name }}
+              <a *ngIf="notifier.changed"
+                (click)="saveSettings(notifier)"
+                class="pull-right btn btn-sm btn-outline-success cursor-pointer">
+                <span class="fa fa-save"></span>
+              </a>
+            </h5>
+            <div class="input-group"
+              *ngFor="let field of notifier.fields; trackBy:trackByName;">
+              <span class="input-group-addon">
+                {{ field.name }}
+              </span>
+              <input type="text" class="form-control"
+                [(ngModel)]="field.value"
+                (change)="notifier.changed = true">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

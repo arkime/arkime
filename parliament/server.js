@@ -111,7 +111,11 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  parliament = { version:version, groups:[] };
+  parliament = {
+    version: version,
+    groups: [],
+    settings: { notifiers: {} }
+  };
 }
 
 // define ids for groups and clusters
@@ -124,6 +128,7 @@ app.disable('x-powered-by');
 // parliament app pages
 app.use('/parliament', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
 app.use('/parliament/issues', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
+app.use('/parliament/settings', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
 
 // log requests
 app.use(logger('dev'));
@@ -235,10 +240,11 @@ function issueAlert(cluster, issue) {
       const notifier = internals.notifiers[n];
 
       let config = {};
+      // TODO make sure all required fields are present
       for (let field of notifier.fields) {
-        if (parliament[field.name]) {
+        if (parliament.settings.notifiers[n][field.name]) {
           // TODO use bcrypt to hash and compare values
-          config[field.name] = parliament[field.name];
+          config[field.name] = parliament.settings.notifiers[n][field.name];
         }
       }
 
@@ -631,6 +637,62 @@ router.put('/auth/update', (req, res, next) => {
     let errorText   = 'Unable to update your password.';
     writeParliament(req, res, next, successObj, errorText);
   });
+});
+
+// Get the parliament settings object
+router.get('/settings', verifyToken, (req, res, next) => {
+  // restructure settings with arrays for client
+  let settings = { notifiers: [] };
+
+  for (let n in internals.notifiers) {
+    if (internals.notifiers.hasOwnProperty(n)) {
+      const notifier = internals.notifiers[n];
+      let notifierData = {
+        name: n,
+        fields: []
+      };
+
+      // populate notifiers with appropriate data
+      for (let field of notifier.fields) {
+        if (parliament.settings.notifiers[n][field.name]) {
+          // TODO use bcrypt to unhash value
+          notifierData.fields.push({
+            name: field.name,
+            value: parliament.settings.notifiers[n][field.name]
+          });
+        } else {
+          notifierData.fields.push({
+            name: field.name,
+            value: ''
+          });
+        }
+      }
+
+      settings.notifiers.push(notifierData);
+    }
+  }
+
+  return res.json(settings);
+});
+
+// Update the parliament settings object
+router.put('/settings', verifyToken, (req, res, next) => {
+  // TODO what if there is no parliament.settings.notifiers?
+  // save notifiers
+  for (let notifier of req.body.settings.notifiers) {
+    if (parliament.settings.notifiers[notifier.name]) {
+      for (let field of notifier.fields) {
+        if (parliament.settings.notifiers[notifier.name][field.name]) {
+          // TODO use bcrypt to hash value
+          parliament.settings.notifiers[notifier.name][field.name] = field.value;
+        }
+      }
+    }
+  }
+
+  let successObj  = { success: true, text: 'Successfully updated your settings.' };
+  let errorText   = 'Unable to update your settings.';
+  writeParliament(req, res, next, successObj, errorText);
 });
 
 // Get parliament with stats

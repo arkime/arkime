@@ -10,7 +10,7 @@
     "test": "ng test",
     "lint": "npm run jslint && npm run tslint",
     "tslint": "ng lint",
-    "jslint": "jshint server.js provider.*.js"
+    "jslint": "jshint server.js notifiers"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
