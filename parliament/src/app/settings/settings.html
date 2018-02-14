@@ -33,7 +33,6 @@
           <div class="card-body">
             <h5 class="mb-3">
               {{ notifier.name }}
-
               <span *ngIf="!notifier.on" (click)="toggleNotifier(notifier)"
                 class="fa fa-toggle-off fa-lg pull-right cursor-pointer"
                 placement="bottom-right" ngbTooltip="Turn this notifier on">
@@ -42,14 +41,12 @@
                 class="fa fa-toggle-on fa-lg pull-right cursor-pointer text-success"
                 placement="bottom-right" ngbTooltip="Turn this notifier off">
               </span>
-
-              <a *ngIf="notifier.changed"
-                (click)="saveSettings(notifier)"
-                class="pull-right btn btn-sm btn-outline-success cursor-pointer">
-                <span class="fa fa-save"></span>
-              </a>
+              <span class="fa fa-save fa-lg text-success pull-right cursor-pointer mr-2"
+                *ngIf="notifier.changed"
+                (click)="saveSettings(notifier)">
+              </span>
             </h5>
-            <div class="input-group"
+            <div class="input-group mb-2"
               *ngFor="let field of notifier.fields; trackBy:trackByName;">
               <span class="input-group-addon cursor-help"
                 placement="bottom-left" ngbTooltip="{{ field.description }}">

@@ -694,7 +694,7 @@ router.put('/settings', verifyToken, (req, res, next) => {
     let savedNotifiers = parliament.settings.notifiers;
     // notifier exists in settings, so update notifier and the fields
     if (savedNotifiers[notifier.name]) {
-      if (notifier.on) { savedNotifiers[notifier.name].on = true; }
+      savedNotifiers[notifier.name].on = !!notifier.on;
       for (let field of notifier.fields) {
         // notifier has field
         if (savedNotifiers[notifier.name].fields[field.name]) {
