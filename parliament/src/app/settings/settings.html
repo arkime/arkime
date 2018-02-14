@@ -33,6 +33,16 @@
           <div class="card-body">
             <h5 class="mb-3">
               {{ notifier.name }}
+
+              <span *ngIf="!notifier.on" (click)="toggleNotifier(notifier)"
+                class="fa fa-toggle-off fa-lg pull-right cursor-pointer"
+                placement="bottom-right" ngbTooltip="Turn this notifier on">
+              </span>
+              <span *ngIf="notifier.on" (click)="toggleNotifier(notifier)"
+                class="fa fa-toggle-on fa-lg pull-right cursor-pointer text-success"
+                placement="bottom-right" ngbTooltip="Turn this notifier off">
+              </span>
+
               <a *ngIf="notifier.changed"
                 (click)="saveSettings(notifier)"
                 class="pull-right btn btn-sm btn-outline-success cursor-pointer">
@@ -41,12 +51,14 @@
             </h5>
             <div class="input-group"
               *ngFor="let field of notifier.fields; trackBy:trackByName;">
-              <span class="input-group-addon">
+              <span class="input-group-addon cursor-help"
+                placement="bottom-left" ngbTooltip="{{ field.description }}">
                 {{ field.name }}
+                <sup *ngIf="field.required">*</sup>
               </span>
               <input type="text" class="form-control"
                 [(ngModel)]="field.value"
-                (change)="notifier.changed = true">
+                (keydown)="notifier.changed = true">
             </div>
           </div>
         </div>

@@ -236,20 +236,25 @@ function issueAlert(cluster, issue) {
   const message = `Alert! ${cluster.title} - ${issue.type}`;
 
   for (let n in internals.notifiers) {
-    if (internals.notifiers.hasOwnProperty(n)) {
-      const notifier = internals.notifiers[n];
-
-      let config = {};
-      // TODO make sure all required fields are present
-      for (let field of notifier.fields) {
-        if (parliament.settings.notifiers[n][field.name]) {
-          // TODO use bcrypt to hash and compare values
-          config[field.name] = parliament.settings.notifiers[n][field.name];
-        }
-      }
-
-      notifier.sendAlert(config, message);
+    if (!parliament.settings.notifiers[n].on) {
+      return;
     }
+
+    const notifier = internals.notifiers[n];
+
+    let config = {};
+
+    for (let f of notifier.fields) {
+      let field = parliament.settings.notifiers[n].fields[f.name];
+      if (!field || (field.required && !field.value)) {
+        // field doesn't exist, or field is required and doesn't have a value
+        console.error(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
+        return;
+      }
+      config[f.name] = field.value;
+    }
+
+    notifier.sendAlert(config, message);
   }
 }
 
@@ -460,16 +465,37 @@ function getStats(cluster) {
 }
 
 // Initializes the parliament with ids for each group and cluster
+// and sets up the parliament settings
 function initalizeParliament() {
   return new Promise((resolve, reject) => {
     if (!parliament.groups) { parliament.groups = []; }
 
+    // set id for each group/cluster
     for (let group of parliament.groups) {
       group.id = groupId++;
       if (group.clusters) {
         for (let cluster of group.clusters) {
           cluster.id = clusterId++;
         }
+      }
+    }
+
+    // build notifiers
+    for (let n in internals.notifiers) {
+      // if the notifier is not in settings, add it
+      if (!parliament.settings.notifiers[n]) {
+        const notifier = internals.notifiers[n];
+
+        let notifierData = { name: n, fields: {} };
+
+        // add fields to notifier
+        for (let field of notifier.fields) {
+          let fieldData = field;
+          fieldData.value = ''; // has empty value to start
+          notifierData.fields[field.name] = fieldData;
+        }
+
+        parliament.settings.notifiers[n] = notifierData;
       }
     }
 
@@ -644,32 +670,18 @@ router.get('/settings', verifyToken, (req, res, next) => {
   // restructure settings with arrays for client
   let settings = { notifiers: [] };
 
-  for (let n in internals.notifiers) {
-    if (internals.notifiers.hasOwnProperty(n)) {
-      const notifier = internals.notifiers[n];
-      let notifierData = {
-        name: n,
-        fields: []
-      };
+  for (let n in parliament.settings.notifiers) {
+    const notifier = parliament.settings.notifiers[n];
 
-      // populate notifiers with appropriate data
-      for (let field of notifier.fields) {
-        if (parliament.settings.notifiers[n][field.name]) {
-          // TODO use bcrypt to unhash value
-          notifierData.fields.push({
-            name: field.name,
-            value: parliament.settings.notifiers[n][field.name]
-          });
-        } else {
-          notifierData.fields.push({
-            name: field.name,
-            value: ''
-          });
-        }
-      }
+    let notifierData = { name: n, fields: [], on: notifier.on };
 
-      settings.notifiers.push(notifierData);
+    for (let f in notifier.fields) {
+      const field = notifier.fields[f];
+
+      notifierData.fields.push(field);
     }
+
+    settings.notifiers.push(notifierData);
   }
 
   return res.json(settings);
@@ -677,16 +689,26 @@ router.get('/settings', verifyToken, (req, res, next) => {
 
 // Update the parliament settings object
 router.put('/settings', verifyToken, (req, res, next) => {
-  // TODO what if there is no parliament.settings.notifiers?
   // save notifiers
   for (let notifier of req.body.settings.notifiers) {
-    if (parliament.settings.notifiers[notifier.name]) {
+    let savedNotifiers = parliament.settings.notifiers;
+    // notifier exists in settings, so update notifier and the fields
+    if (savedNotifiers[notifier.name]) {
+      if (notifier.on) { savedNotifiers[notifier.name].on = true; }
       for (let field of notifier.fields) {
-        if (parliament.settings.notifiers[notifier.name][field.name]) {
-          // TODO use bcrypt to hash value
-          parliament.settings.notifiers[notifier.name][field.name] = field.value;
+        // notifier has field
+        if (savedNotifiers[notifier.name].fields[field.name]) {
+          savedNotifiers[notifier.name].fields[field.name].value = field.value;
+        } else { // notifier does not have field
+          const error = new Error('Unable to find notifier field to update.');
+          error.httpStatusCode = 500;
+          return next(error);
         }
       }
+    } else { // notifier doesn't exist
+      const error = new Error('Unable to find notifier. Is it loaded?');
+      error.httpStatusCode = 500;
+      return next(error);
     }
   }
 

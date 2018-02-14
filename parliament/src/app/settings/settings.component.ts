@@ -77,4 +77,9 @@ export class SettingsComponent implements OnInit {
       );
   }
 
+  toggleNotifier(notifier) {
+    notifier.on = !notifier.on;
+    this.saveSettings(notifier);
+  }
+
 }
