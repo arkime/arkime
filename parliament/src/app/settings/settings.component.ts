@@ -19,6 +19,9 @@ export class SettingsComponent implements OnInit {
   // page data
   settings = {};
 
+  // whether settings have been updated by the user
+  changed = false;
+
   constructor(
     public authService: AuthService,
     private settingsService: SettingsService
@@ -64,12 +67,12 @@ export class SettingsComponent implements OnInit {
     return item.name;
   }
 
-  saveSettings(notifier) {
+  saveSettings() {
     this.settingsService.saveSettings(this.settings)
       .subscribe(
         (response) => {
           this.error = '';
-          notifier.changed = false;
+          this.changed = false;
         },
         (err) => {
           this.error = err.error.text || 'Error saving settings.';
@@ -79,7 +82,11 @@ export class SettingsComponent implements OnInit {
 
   toggleNotifier(notifier) {
     notifier.on = !notifier.on;
-    this.saveSettings(notifier);
+    this.saveSettings();
+  }
+
+  getFieldInputType(field) {
+    return (field.secret && !field.showValue) ? 'password' : 'text';
   }
 
 }

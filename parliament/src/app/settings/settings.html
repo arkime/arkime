@@ -24,7 +24,21 @@
   </div> <!-- /not logged in -->
 
   <div *ngIf="authService.loggedIn">
-    <h3>Notifiers</h3>
+    <h3>
+      Notifiers
+      <span class="pull-right" [hidden]="!changed">
+        <a (click)="loadData()"
+          class="btn btn-outline-warning cursor-pointer">
+          <span class="fa fa-ban"></span>&nbsp;
+          Cancel
+        </a>
+        <a (click)="saveSettings()"
+          class="btn btn-outline-success cursor-pointer">
+          <span class="fa fa-save"></span>&nbsp;
+          Save Settings
+        </a>
+      </span>
+    </h3>
     <div class="row">
 
       <div class="col-12 col-sm-6 col-md-6 col-lg-4"
@@ -41,10 +55,6 @@
                 class="fa fa-toggle-on fa-lg pull-right cursor-pointer text-success"
                 placement="bottom-right" ngbTooltip="Turn this notifier off">
               </span>
-              <span class="fa fa-save fa-lg text-success pull-right cursor-pointer mr-2"
-                *ngIf="notifier.changed"
-                (click)="saveSettings(notifier)">
-              </span>
             </h5>
             <div class="input-group mb-2"
               *ngFor="let field of notifier.fields; trackBy:trackByName;">
@@ -53,9 +63,16 @@
                 {{ field.name }}
                 <sup *ngIf="field.required">*</sup>
               </span>
-              <input type="text" class="form-control"
+              <input class="form-control"
                 [(ngModel)]="field.value"
-                (keydown)="notifier.changed = true">
+                (keydown)="changed = true"
+                [attr.type]="getFieldInputType(field)">
+                <span *ngIf="field.secret"
+                  class="input-group-addon cursor-pointer"
+                  (click)="field.showValue = !field.showValue">
+                  <span class="fa" [ngClass]="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
+                  </span>
+                </span>
             </div>
           </div>
         </div>

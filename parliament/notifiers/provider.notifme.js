@@ -17,10 +17,12 @@ exports.init = function (api) {
     fields: [{
       name: 'accountSid',
       required: true,
+      secret: true,
       description: 'Twilio account ID'
     }, {
       name: 'authToken',
       required: true,
+      secret: true,
       description: 'Twilio authentication token'
     }, {
       name: 'toNumber',
