@@ -49,7 +49,8 @@ LOCAL uint64_t               droppedFrags;
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 int                          inProgress[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL patricia_tree_t       *ipTree = 0;
+LOCAL patricia_tree_t       *ipTree4 = 0;
+LOCAL patricia_tree_t       *ipTree6 = 0;
 
 /******************************************************************************/
 
@@ -1053,13 +1054,13 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
-    if (ipTree) {
+    if (ipTree4) {
         patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree, (u_char*)&ip4->ip_src, 32, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char*)&ip4->ip_src, 32)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree, (u_char*)&ip4->ip_dst, 32, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char*)&ip4->ip_dst, 32)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
     }
 
@@ -1138,6 +1139,16 @@ int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     int ip_len = ntohs(ip6->ip6_plen);
     if (len < ip_len) {
         return MOLOCH_PACKET_CORRUPT;
+    }
+
+    if (ipTree6) {
+        patricia_node_t *node;
+
+        if ((node = patricia_search_best3 (ipTree6, (u_char*)&ip6->ip6_src, 128)) && node->data == NULL)
+            return MOLOCH_PACKET_IP_DROPPED;
+
+        if ((node = patricia_search_best3 (ipTree6, (u_char*)&ip6->ip6_dst, 128)) && node->data == NULL)
+            return MOLOCH_PACKET_IP_DROPPED;
     }
 
     int ip_hdr_len = sizeof(struct ip6_hdr);
@@ -1616,10 +1627,15 @@ uint64_t moloch_packet_dropped_overload()
 void moloch_packet_add_packet_ip(char *ipstr, int mode)
 {
     patricia_node_t *node;
-    if (!ipTree) {
-        ipTree = New_Patricia(128);
+    if (strchr(ipstr, '.') != 0) {
+        if (!ipTree4)
+            ipTree4 = New_Patricia(32);
+        node = make_and_lookup(ipTree4, ipstr);
+    } else {
+        if (!ipTree6)
+            ipTree6 = New_Patricia(128);
+        node = make_and_lookup(ipTree6, ipstr);
     }
-    node = make_and_lookup(ipTree, ipstr);
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
@@ -1632,9 +1648,14 @@ void moloch_packet_set_linksnap(int linktype, int snaplen)
 /******************************************************************************/
 void moloch_packet_exit()
 {
-    if (ipTree) {
-        Destroy_Patricia(ipTree, NULL);
-        ipTree = 0;
+    if (ipTree4) {
+        Destroy_Patricia(ipTree4, NULL);
+        ipTree4 = 0;
+    }
+
+    if (ipTree6) {
+        Destroy_Patricia(ipTree6, NULL);
+        ipTree6 = 0;
     }
     moloch_packet_log(SESSION_TCP);
 }

@@ -12,20 +12,6 @@
 #include <arpa/inet.h>
 #include "patricia.h"
 
-/*
- * prefix_tochar convert prefix information to bytes 
- */
-/*
-u_char         *
-prefix_tochar(prefix_t * prefix)
-{
-    if (prefix == NULL)
-        return (NULL);
-
-    return ((u_char *) & prefix->add.sin);
-}
-*/
-
 static inline int
 comp_with_mask(void *addr, void *dest, u_int mask)
 {
@@ -508,7 +494,7 @@ patricia_search_best2(patricia_tree_t * patricia, prefix_t * prefix,
 }
 
 patricia_node_t *
-patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive)
+patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen)
 {
     patricia_node_t *node;
     patricia_node_t *stack[PATRICIA_MAXBITS + 1];
@@ -538,7 +524,7 @@ patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen, int 
             break;
     }
 
-    if (inclusive && node && node->prefix)
+    if (node && node->prefix)
         stack[cnt++] = node;
 
     if (cnt <= 0)
@@ -546,7 +532,7 @@ patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen, int 
 
     while (--cnt >= 0) {
         node = stack[cnt];
-        if (comp_with_mask(prefix_tochar(node->prefix), addr, node->prefix->bitlen)) {
+        if (comp_with_mask(prefix_touchar(node->prefix), addr, node->prefix->bitlen)) {
             return (node);
         }
     }
@@ -598,11 +584,8 @@ patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive
     return cnt;
 }
 
-/*
- * if inclusive != 0, "best" may be the given prefix itself 
- */
 int
-patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive, patricia_node_t **results, int resultsize)
+patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, patricia_node_t **results, int resultsize)
 {
     patricia_node_t *node;
     int             cnt = 0;
@@ -630,9 +613,8 @@ patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, int i
             return cnt;
     }
 
-    if (inclusive && node->prefix && node->data &&
-        comp_with_mask(prefix_tochar(node->prefix),
-                       addr, node->prefix->bitlen)) {
+    if (node->prefix && node->data &&
+        comp_with_mask(prefix_touchar(node->prefix), addr, node->prefix->bitlen)) {
         results[cnt++] = node;
     }
 

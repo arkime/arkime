@@ -90,10 +90,10 @@ MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_add
     patricia_node_t *node;
 
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        if ((node = patricia_search_best3 (ipTree4, ((u_char *)ip->s6_addr) + 12, 32, 1)) == NULL)
+        if ((node = patricia_search_best3 (ipTree4, ((u_char *)ip->s6_addr) + 12, 32)) == NULL)
             return 0;
     } else {
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)ip->s6_addr, 128, 1)) == NULL)
+        if ((node = patricia_search_best3 (ipTree6, (u_char *)ip->s6_addr, 128)) == NULL)
             return 0;
     }
 

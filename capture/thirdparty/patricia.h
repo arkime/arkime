@@ -114,11 +114,10 @@ typedef struct _patricia_tree_t {
 
 patricia_node_t *patricia_search_exact (patricia_tree_t *patricia, prefix_t *prefix);
 patricia_node_t *patricia_search_best (patricia_tree_t *patricia, prefix_t *prefix);
-patricia_node_t *patricia_search_best2 (patricia_tree_t *patricia, prefix_t *prefix, 
-				   int inclusive);
-patricia_node_t *patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive);
+patricia_node_t *patricia_search_best2 (patricia_tree_t *patricia, prefix_t *prefix, int inclusive);
+patricia_node_t *patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen);
 int patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive, patricia_node_t **results);
-int patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive, patricia_node_t **results, int resultsize);
+int patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, patricia_node_t **results, int resultsize);
 patricia_node_t *patricia_lookup (patricia_tree_t *patricia, prefix_t *prefix);
 void patricia_remove (patricia_tree_t *patricia, patricia_node_t *node);
 patricia_tree_t *New_Patricia (int maxbits);

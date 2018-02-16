@@ -481,9 +481,9 @@ void moloch_rules_recompile()
 LOCAL gboolean moloch_rules_check_ip(const MolochRule_t *rule, const int p, const struct in6_addr *ip)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        return patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32, 1) != NULL;
+        return patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32) != NULL;
     } else {
-        return patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128, 1) != NULL;
+        return patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128) != NULL;
     }
 }
 /******************************************************************************/
@@ -619,9 +619,9 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
 
         int cnt;
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)value)) {
-            cnt = patricia_search_all2(fieldsTree4[pos], ((u_char *)value) + 12, 32, 1, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(fieldsTree4[pos], ((u_char *)value) + 12, 32, nodes, MOLOCH_RULES_MAX);
         } else {
-            cnt = patricia_search_all2(fieldsTree6[pos], (u_char *)value, 128, 1, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(fieldsTree6[pos], (u_char *)value, 128, nodes, MOLOCH_RULES_MAX);
         }
         if (cnt == 0)
             return;
