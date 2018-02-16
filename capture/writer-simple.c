@@ -66,7 +66,7 @@ enum MolochSimpleMode { MOLOCH_SIMPLE_NORMAL, MOLOCH_SIMPLE_XOR2048, MOLOCH_SIMP
 
 LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
 LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
-LOCAL int                    pageSize;
+LOCAL uint32_t               pageSize;
 LOCAL enum MolochSimpleMode  simpleMode;
 LOCAL char                  *simpleKEKId;
 LOCAL uint8_t                simpleKEK[EVP_MAX_KEY_LENGTH];
@@ -74,6 +74,7 @@ LOCAL int                    simpleKEKLen;
 LOCAL uint8_t                simpleIV[EVP_MAX_IV_LENGTH];
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
+LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 uint32_t writer_simple_queue_length()
@@ -153,13 +154,23 @@ void writer_simple_process_buf(int thread, int closing)
 
     info->closing = closing;
     if (!closing) {
+        // Round down to nearest pagesize
+        int writeSize = (info->bufpos/pageSize) * pageSize;
+
+        // Create next buffer
         currentInfo[thread] = writer_simple_alloc(thread, info);
-        memcpy(currentInfo[thread]->buf, info->buf + config.pcapWriteSize, info->bufpos - config.pcapWriteSize);
-        currentInfo[thread]->bufpos = info->bufpos - config.pcapWriteSize;
+
+        // Copy what we aren't going to write to next buffer
+        memcpy(currentInfo[thread]->buf, info->buf + writeSize, info->bufpos - writeSize);
+        currentInfo[thread]->bufpos = info->bufpos - writeSize;
+
+        // Set what we are going to write
+        info->bufpos = writeSize;
     } else {
         currentInfo[thread] = NULL;
     }
     MOLOCH_LOCK(simpleQ);
+    gettimeofday(&lastSave[thread], NULL);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
     if ((DLL_COUNT(simple_, &simpleQ) % 100) == 0) {
         LOG("WARNING - Disk Q of %d is too large, check the Moloch FAQ about testing disk speed", DLL_COUNT(simple_, &simpleQ));
@@ -288,14 +299,11 @@ void *writer_simple_thread(void *UNUSED(arg))
         MOLOCH_UNLOCK(simpleQ);
 
         uint32_t pos = 0;
-        uint32_t total;
+        uint32_t total = info->bufpos;
         if (info->closing) {
-            total = info->bufpos;
-            if (total % pageSize != 0) {
-                total = (total - (total % pageSize) + pageSize);
-            }
-        } else {
-            total = config.pcapWriteSize;
+            // Round up to next page size
+            if (total % pageSize != 0)
+                total = ((total/pageSize)+1)*pageSize;
         }
 
         switch(simpleMode) {
@@ -352,6 +360,46 @@ void writer_simple_exit()
     }
 }
 /******************************************************************************/
+// Called inside each packet thread
+void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    // No data or not enough bytes, reset the time
+    if (!currentInfo[session->thread] || currentInfo[session->thread]->bufpos < (uint32_t)pageSize) {
+        lastSave[session->thread] = now;
+        return;
+    }
+
+    // Last add must be 10 seconds ago and have more then pageSize bytes
+    if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
+        return;
+
+    writer_simple_process_buf(session->thread, 0);
+}
+/******************************************************************************/
+/* Called in the main thread.  Check all the timestamps, and if out of date
+ * schedule something in each writer thread to do the partial write since there
+ * is no locks around buffering.
+ */
+gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    MOLOCH_LOCK(simpleQ);
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
+            moloch_session_add_cmd_thread(thread, NULL, NULL, writer_simple_check);
+        }
+    }
+    MOLOCH_UNLOCK(simpleQ);
+
+    return TRUE;
+}
+/******************************************************************************/
 void writer_simple_init(char *name)
 {
     moloch_writer_queue_length = writer_simple_queue_length;
@@ -386,6 +434,7 @@ void writer_simple_init(char *name)
     }
 
     pageSize = getpagesize();
+
     if (config.pcapWriteSize % pageSize != 0) {
         config.pcapWriteSize = ((config.pcapWriteSize + pageSize - 1) / pageSize) * pageSize;
         LOG ("INFO: Reseting pcapWriteSize to %u since it must be a multiple of %u", config.pcapWriteSize, pageSize);
@@ -404,11 +453,17 @@ void writer_simple_init(char *name)
 
     DLL_INIT(simple_, &simpleQ);
 
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
+        lastSave[thread] = now;
         DLL_INIT(simple_, &freeList[thread]);
         MOLOCH_LOCK_INIT(freeList[thread].lock);
     }
 
     g_thread_new("moloch-simple", &writer_simple_thread, NULL);
+
+    g_timeout_add_seconds(1, writer_simple_check_gfunc, 0);
 }

@@ -834,6 +834,7 @@ typedef enum {
 typedef void (*MolochCmd_func)(MolochSession_t *session, gpointer uw1, gpointer uw2);
 
 void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd cmd, gpointer uw1, gpointer uw2, MolochCmd_func func);
+void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, MolochCmd_func func);
 
 /******************************************************************************/
 /*

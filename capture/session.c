@@ -174,6 +174,24 @@ void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointe
     MOLOCH_UNLOCK(sessionCmds[session->thread].lock);
 }
 /******************************************************************************/
+void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, MolochCmd_func func)
+{
+    static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
+
+    fakeSessions[thread].thread = thread;
+
+    MolochSesCmd_t *cmd = MOLOCH_TYPE_ALLOC(MolochSesCmd_t);
+    cmd->cmd = MOLOCH_SES_CMD_FUNC;
+    cmd->session = &fakeSessions[thread];
+    cmd->uw1 = uw1;
+    cmd->uw2 = uw2;
+    cmd->func = func;
+    MOLOCH_LOCK(sessionCmds[thread].lock);
+    DLL_PUSH_TAIL(cmd_, &sessionCmds[thread], cmd);
+    moloch_packet_thread_wake(thread);
+    MOLOCH_UNLOCK(sessionCmds[thread].lock);
+}
+/******************************************************************************/
 gboolean moloch_session_has_tag(MolochSession_t *session, const char *tagName)
 {
     if (!session->fields[config.tagsStringField])
@@ -609,12 +627,9 @@ void moloch_session_flush()
 {
     moloch_packet_flush();
 
-    static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
-
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        fakeSessions[thread].thread = thread;
-        moloch_session_add_cmd(&fakeSessions[thread], MOLOCH_SES_CMD_FUNC, NULL, NULL, moloch_session_flush_close);
+        moloch_session_add_cmd_thread(thread, NULL, NULL, moloch_session_flush_close);
     }
 }
 /******************************************************************************/
