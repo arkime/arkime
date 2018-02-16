@@ -57,7 +57,8 @@ typedef struct {
     char                *bpf;
     struct bpf_program   bpfp;
     GHashTable          *hash[MOLOCH_FIELDS_MAX];
-    patricia_tree_t     *tree[MOLOCH_FIELDS_MAX];
+    patricia_tree_t     *tree4[MOLOCH_FIELDS_MAX];
+    patricia_tree_t     *tree6[MOLOCH_FIELDS_MAX];
     MolochFieldOps_t     ops;
     int                  fieldsLen;
     int                  saveFlags;
@@ -67,7 +68,8 @@ typedef struct {
 
 // Has all possible values to array of rules
 LOCAL GHashTable            *fieldsHash[MOLOCH_FIELDS_MAX];
-LOCAL patricia_tree_t       *fieldsTree[MOLOCH_FIELDS_MAX];
+LOCAL patricia_tree_t       *fieldsTree4[MOLOCH_FIELDS_MAX];
+LOCAL patricia_tree_t       *fieldsTree6[MOLOCH_FIELDS_MAX];
 
 LOCAL int                    rulesLen[MOLOCH_RULE_TYPE_NUM];
 LOCAL MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX];
@@ -258,10 +260,18 @@ void moloch_rules_process_add_field(MolochRule_t *rule, int pos, char *key)
 
     case MOLOCH_FIELD_TYPE_IP:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
-        if (!fieldsTree[pos])
-            fieldsTree[pos] = New_Patricia(128);
+        if (!fieldsTree4[pos]) {
+            fieldsTree4[pos] = New_Patricia(32);
+            fieldsTree6[pos] = New_Patricia(128);
+        }
 
-        node = make_and_lookup(fieldsTree[pos], key);
+        if (strchr(key, '.') != 0) {
+            make_and_lookup(rule->tree4[pos], key);
+            node = make_and_lookup(fieldsTree4[pos], key);
+        } else {
+            make_and_lookup(rule->tree6[pos], key);
+            node = make_and_lookup(fieldsTree6[pos], key);
+        }
         if (node->data) {
             rules = node->data;
         } else {
@@ -385,7 +395,8 @@ void moloch_rules_process_rule(char *filename, YamlNode_t *parent)
 
             case MOLOCH_FIELD_TYPE_IP:
             case MOLOCH_FIELD_TYPE_IP_GHASH:
-                rule->tree[pos] = New_Patricia(128);
+                rule->tree4[pos] = New_Patricia(32);
+                rule->tree6[pos] = New_Patricia(128);
                 break;
 
             case MOLOCH_FIELD_TYPE_STR:
@@ -470,9 +481,9 @@ void moloch_rules_recompile()
 LOCAL gboolean moloch_rules_check_ip(const MolochRule_t *rule, const int p, const struct in6_addr *ip)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        return patricia_search_best3 (rule->tree[p], ((u_char *)ip->s6_addr) + 12, 32, 1) != NULL;
+        return patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32, 1) != NULL;
     } else {
-        return patricia_search_best3 (rule->tree[p], (u_char *)ip->s6_addr, 128, 1) != NULL;
+        return patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128, 1) != NULL;
     }
 }
 /******************************************************************************/
@@ -608,9 +619,9 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
 
         int cnt;
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)value)) {
-            cnt = patricia_search_all2(fieldsTree[pos], ((u_char *)value) + 12, 32, 1, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(fieldsTree4[pos], ((u_char *)value) + 12, 32, 1, nodes, MOLOCH_RULES_MAX);
         } else {
-            cnt = patricia_search_all2(fieldsTree[pos], (u_char *)value, 128, 1, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(fieldsTree6[pos], (u_char *)value, 128, 1, nodes, MOLOCH_RULES_MAX);
         }
         if (cnt == 0)
             return;

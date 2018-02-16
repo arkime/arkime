@@ -45,7 +45,8 @@ LOCAL char             *rirs[256];
 
 void *                  esServer = 0;
 
-LOCAL patricia_tree_t  *ipTree = 0;
+LOCAL patricia_tree_t  *ipTree4 = 0;
+LOCAL patricia_tree_t  *ipTree6 = 0;
 
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
@@ -61,10 +62,15 @@ extern MolochConfig_t        config;
 void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
 {
     patricia_node_t *node;
-    if (!ipTree) {
-        ipTree = New_Patricia(128);
+    if (!ipTree4) {
+        ipTree4 = New_Patricia(32);
+        ipTree6 = New_Patricia(128);
     }
-    node = make_and_lookup(ipTree, str);
+    if (strchr(str, '.') != 0) {
+        node = make_and_lookup(ipTree4, str);
+    } else {
+        node = make_and_lookup(ipTree6, str);
+    }
     node->data = ii;
 }
 /******************************************************************************/
@@ -84,10 +90,10 @@ MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_add
     patricia_node_t *node;
 
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        if ((node = patricia_search_best3 (ipTree, ((u_char *)ip->s6_addr) + 12, 32, 1)) == NULL)
+        if ((node = patricia_search_best3 (ipTree4, ((u_char *)ip->s6_addr) + 12, 32, 1)) == NULL)
             return 0;
     } else {
-        if ((node = patricia_search_best3 (ipTree, (u_char *)ip->s6_addr, 128, 1)) == NULL)
+        if ((node = patricia_search_best3 (ipTree6, (u_char *)ip->s6_addr, 128, 1)) == NULL)
             return 0;
     }
 
@@ -177,7 +183,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
     static const char *asoPath[]     = {"autonomous_system_organization", NULL};
     static const char *asnPath[]     = {"autonomous_system_number", NULL};
 
-    if (ipTree) {
+    if (ipTree4) {
         if ((ii = moloch_db_get_local_ip6(session, &addr))) {
             *g = ii->country;
             *as = ii->asn;
@@ -1902,8 +1908,10 @@ void moloch_db_exit()
         fprintf(stderr, "], \"tags\": {}}\n");
     }
 
-    if (ipTree) {
-        Destroy_Patricia(ipTree, moloch_db_free_local_ip);
-        ipTree = 0;
+    if (ipTree4) {
+        Destroy_Patricia(ipTree4, moloch_db_free_local_ip);
+        Destroy_Patricia(ipTree6, moloch_db_free_local_ip);
+        ipTree4 = 0;
+        ipTree6 = 0;
     }
 }
