@@ -616,7 +616,8 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
             return;
 
         // These are all the possible rules that match
-        for (int i = 0; i < cnt; i++) {
+        int i;
+        for (i = 0; i < cnt; i++) {
             GPtrArray *rules = nodes[i]->data;
 
             for (r = 0; r < (int)rules->len; r++) {
