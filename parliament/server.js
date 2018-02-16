@@ -23,6 +23,14 @@ const router  = express.Router();
 
 const version = 1;
 
+const alertTypes = {
+  esRed: { on: true, name: 'ES Red', description: 'ES status is red' },
+  esDown: { on: true, name: 'ES Down', description: 'ES is unreachable' },
+  esDropped: { on: true, name: 'ES Dropped', description: 'the capture node is overloading ES' },
+  outOfDate: { on: true, name: 'Out of Date', description: 'the capture node has not checked in' },
+  noPackets: { on: true, name: 'No Packets', description: 'the capture node is not receiving packets' }
+};
+
 
 (function() { // parse arguments
   let appArgs = process.argv.slice(2);
@@ -236,11 +244,17 @@ function issueAlert(cluster, issue) {
   const message = `Alert! ${cluster.title} - ${issue.type}`;
 
   for (let n in internals.notifiers) {
+    // quit before sending the alert if the notifier is off
     if (!parliament.settings.notifiers[n].on) {
-      return;
+      continue;
     }
 
     const notifier = internals.notifiers[n];
+
+    // quit before sending the alert if the alert is off
+    if (!parliament.settings.notifiers[n].alerts[issue.type]) {
+      continue;
+    }
 
     let config = {};
 
@@ -249,7 +263,7 @@ function issueAlert(cluster, issue) {
       if (!field || (field.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         console.error(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
-        return;
+        continue;
       }
       config[f.name] = field.value;
     }
@@ -495,6 +509,12 @@ function initalizeParliament() {
           notifierData.fields[field.name] = fieldData;
         }
 
+        // build alerts
+        for (let a in alertTypes) {
+          let alert = alertTypes[a];
+          notifierData.alerts[a] = true;
+        }
+
         parliament.settings.notifiers[n] = notifierData;
       }
     }
@@ -673,12 +693,20 @@ router.get('/settings', verifyToken, (req, res, next) => {
   for (let n in parliament.settings.notifiers) {
     const notifier = parliament.settings.notifiers[n];
 
-    let notifierData = { name: n, fields: [], on: notifier.on };
+    let notifierData = { name: n, fields: [], alerts: [], on: notifier.on };
 
     for (let f in notifier.fields) {
       const field = notifier.fields[f];
-
       notifierData.fields.push(field);
+    }
+
+    for (let a in notifier.alerts) {
+      if (alertTypes.hasOwnProperty(a)) {
+        const alert = JSON.parse(JSON.stringify(alertTypes[a]));
+        alert.id = a;
+        alert.on = notifier.alerts[a];
+        notifierData.alerts.push(alert);
+      }
     }
 
     settings.notifiers.push(notifierData);
@@ -692,15 +720,28 @@ router.put('/settings', verifyToken, (req, res, next) => {
   // save notifiers
   for (let notifier of req.body.settings.notifiers) {
     let savedNotifiers = parliament.settings.notifiers;
+
     // notifier exists in settings, so update notifier and the fields
     if (savedNotifiers[notifier.name]) {
       savedNotifiers[notifier.name].on = !!notifier.on;
+
       for (let field of notifier.fields) {
         // notifier has field
         if (savedNotifiers[notifier.name].fields[field.name]) {
           savedNotifiers[notifier.name].fields[field.name].value = field.value;
         } else { // notifier does not have field
           const error = new Error('Unable to find notifier field to update.');
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
+
+      for (let alert of notifier.alerts) {
+        // alert exists in settings, so update value
+        if (savedNotifiers[notifier.name].alerts.hasOwnProperty(alert.id)) {
+          savedNotifiers[notifier.name].alerts[alert.id] = alert.on;
+        } else { // alert doesn't exist on this notifier
+          const error = new Error('Unable to find alert to update.');
           error.httpStatusCode = 500;
           return next(error);
         }

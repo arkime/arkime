@@ -45,7 +45,9 @@
         *ngFor="let notifier of settings.notifiers; trackBy:trackByName;">
         <div class="card bg-light">
           <div class="card-body">
-            <h5 class="mb-3">
+
+            <!-- notifier title -->
+            <h4 class="mb-3">
               {{ notifier.name }}
               <span *ngIf="!notifier.on" (click)="toggleNotifier(notifier)"
                 class="fa fa-toggle-off fa-lg pull-right cursor-pointer"
@@ -55,7 +57,9 @@
                 class="fa fa-toggle-on fa-lg pull-right cursor-pointer text-success"
                 placement="bottom-right" ngbTooltip="Turn this notifier off">
               </span>
-            </h5>
+            </h4> <!-- /notifier title -->
+
+            <!-- notifier fields -->
             <div class="input-group mb-2"
               *ngFor="let field of notifier.fields; trackBy:trackByName;">
               <span class="input-group-addon cursor-help"
@@ -73,7 +77,31 @@
                   <span class="fa" [ngClass]="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
                   </span>
                 </span>
-            </div>
+            </div> <!-- /notifier fields -->
+
+            <hr>
+
+            <!-- notifier alerts -->
+            <h5>Notify on</h5>
+            <div class="row">
+              <div class="col-12">
+                <div *ngFor="let alert of notifier.alerts; trackBy:trackByName;"
+                  class="form-check form-check-inline"
+                  (click)="changed = true;"
+                  placement="top"
+                  ngbTooltip="Notify if {{ alert.description }}">
+                  <label class="form-check-label">
+                    <input class="form-check-input"
+                    type="checkbox"
+                    [id]="alert.id"
+                    [name]="alert.id"
+                    [(ngModel)]="alert.on">
+                    {{ alert.name }}
+                  </label>
+                </div>
+              </div>
+            </div> <!-- /notifier alerts -->
+
           </div>
         </div>
       </div>
