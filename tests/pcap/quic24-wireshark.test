@@ -1,22 +1,23 @@
 {
    "sessions2" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150422",
+               "_type" : "session"
+            }
+         },
          "body" : {
             "dstDataBytes" : 2768,
-            "firstPacket" : 1429686316293,
-            "dstRIR" : "ARIN",
-            "length" : 33,
-            "srcMacCnt" : 1,
-            "dstGEO" : "US",
             "segmentCnt" : 1,
-            "srcIp" : "10.44.100.22",
-            "totDataBytes" : 5610,
-            "srcPayload8" : "0d00db40daa3bbe2",
-            "totBytes" : 5650,
-            "dstPort" : 443,
-            "dstMac" : [
-               "00:12:ef:c0:d7:a3"
+            "protocol" : [
+               "udp",
+               "iprulztest",
+               "quic"
             ],
+            "dstPackets" : 2,
+            "fileId" : [],
+            "lastPacket" : 1429686316327,
             "packetPos" : [
                24,
                1432,
@@ -24,15 +25,28 @@
                4248,
                4346
             ],
-            "dstBytes" : 2784,
+            "totBytes" : 5650,
+            "protocolCnt" : 3,
+            "totDataBytes" : 5610,
+            "dstGEO" : "US",
+            "srcMacCnt" : 1,
+            "firstPacket" : 1429686316293,
             "timestamp" : "SET",
-            "protocolCnt" : 2,
-            "dstIp" : "216.58.208.195",
+            "dstPort" : 443,
+            "srcPackets" : 3,
+            "srcDataBytes" : 2842,
+            "dstMac" : [
+               "00:12:ef:c0:d7:a3"
+            ],
+            "ipProtocol" : 17,
             "totPackets" : 5,
-            "dstMacCnt" : 1,
-            "srcPort" : 50509,
             "node" : "test",
-            "dstPackets" : 2,
+            "dstPayload8" : "0c00db40daa3bbe2",
+            "srcMac" : [
+               "a0:88:b4:1e:16:0c"
+            ],
+            "dstIp" : "216.58.208.195",
+            "length" : 33,
             "packetLen" : [
                1408,
                1408,
@@ -40,41 +54,28 @@
                98,
                1408
             ],
-            "fileId" : [],
-            "srcBytes" : 2866,
-            "protocol" : [
-               "udp",
-               "quic"
-            ],
-            "lastPacket" : 1429686316327,
-            "dstASN" : "AS15169 Google LLC",
-            "srcDataBytes" : 2842,
-            "dstPayload8" : "0c00db40daa3bbe2",
-            "srcMac" : [
-               "a0:88:b4:1e:16:0c"
-            ],
+            "dstBytes" : 2784,
             "quic" : {
-               "hostCnt" : 1,
+               "useragent" : [
+                  "canary Chrome/44.0.2375.0"
+               ],
+               "version-termCnt" : 1,
                "version-term" : [
                   "Q024"
                ],
-               "version-termCnt" : 1,
+               "hostCnt" : 1,
+               "useragentCnt" : 1,
                "host" : [
                   "www.google.fr"
-               ],
-               "useragentCnt" : 1,
-               "useragent" : [
-                  "canary Chrome/44.0.2375.0"
                ]
             },
-            "srcPackets" : 3,
-            "ipProtocol" : 17
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-150422",
-               "_type" : "session"
-            }
+            "dstASN" : "AS15169 Google LLC",
+            "dstRIR" : "ARIN",
+            "srcPort" : 50509,
+            "srcBytes" : 2866,
+            "srcIp" : "10.44.100.22",
+            "srcPayload8" : "0d00db40daa3bbe2",
+            "dstMacCnt" : 1
          }
       }
    ]

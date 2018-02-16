@@ -81,43 +81,16 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
 /******************************************************************************/
 MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_addr *ip)
 {
-    prefix_t prefix;
     patricia_node_t *node;
 
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ((uint32_t *)ip->s6_addr)[3];
+        if ((node = patricia_search_best3 (ipTree, ((u_char *)ip->s6_addr) + 12, 32, 1)) == NULL)
+            return 0;
     } else {
-        prefix.family = AF_INET6;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, ip, 16);
+        if ((node = patricia_search_best3 (ipTree, (u_char *)ip->s6_addr, 128, 1)) == NULL)
+            return 0;
     }
 
-    if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
-        return 0;
-
-    MolochIpInfo_t *ii = node->data;
-    int t;
-
-    for (t = 0; t < ii->numtags; t++) {
-        moloch_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
-    }
-
-    return ii;
-}
-/******************************************************************************/
-MolochIpInfo_t *moloch_db_get_local_ip4(MolochSession_t *session, uint32_t ip)
-{
-    prefix_t prefix;
-    patricia_node_t *node;
-
-    prefix.family = AF_INET;
-    prefix.bitlen = 32;
-    prefix.add.sin.s_addr = ip;
-
-    if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
-        return 0;
 
     MolochIpInfo_t *ii = node->data;
     int t;

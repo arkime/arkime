@@ -30,6 +30,8 @@ HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
 #define MOLOCH_FIELD_SPECIAL_STOP_PCAP  -3
 #define MOLOCH_FIELD_SPECIAL_MIN_SAVE   -4
 
+#define MOLOCH_FIELD_EXSPECIAL_START    (MOLOCH_FIELDS_MAX-4)
+
 LOCAL va_list empty_va_list;
 
 /******************************************************************************/
@@ -412,6 +414,16 @@ void moloch_field_by_exp_add_special(char *exp, int pos)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
+void moloch_field_by_exp_add_exspecial(char *exp, int pos, int type)
+{
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
+    info->expression   = exp;
+    info->pos          = pos;
+    info->type         = type;
+    config.fields[pos] = info;
+    HASH_ADD(e_, fieldsByExp, info->expression, info);
+}
+/******************************************************************************/
 void moloch_field_init()
 {
     config.maxField = 0;
@@ -422,6 +434,11 @@ void moloch_field_init()
     moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
     moloch_field_by_exp_add_special("_maxPacketsToSave", MOLOCH_FIELD_SPECIAL_STOP_PCAP);
     moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
+
+    moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_exspecial("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_exspecial("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
 }
 /******************************************************************************/
 void moloch_field_exit()
@@ -1124,6 +1141,17 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             }
             continue;
         }
+        // Exspecial Fields
+        if (op->fieldPos >= MOLOCH_FIELD_EXSPECIAL_START) {
+            switch (op->fieldPos) {
+            case MOLOCH_FIELD_EXSPECIAL_SRC_IP:
+            case MOLOCH_FIELD_EXSPECIAL_SRC_PORT:
+            case MOLOCH_FIELD_EXSPECIAL_DST_IP:
+            case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
+                break;
+            }
+            continue;
+        }
 
         switch (config.fields[op->fieldPos]->type) {
         case  MOLOCH_FIELD_TYPE_INT_HASH:
@@ -1196,6 +1224,15 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
             break;
         default:
             LOG("WARNING - Unknown special field pos %d", fieldPos);
+            break;
+        }
+    } else if (fieldPos >= MOLOCH_FIELD_EXSPECIAL_START) {
+        switch (op->fieldPos) {
+        case MOLOCH_FIELD_EXSPECIAL_SRC_IP:
+        case MOLOCH_FIELD_EXSPECIAL_SRC_PORT:
+        case MOLOCH_FIELD_EXSPECIAL_DST_IP:
+        case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
+            LOG("Warning - not allow to set src/dst ip/port: %s", op->str);
             break;
         }
     } else {

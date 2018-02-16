@@ -19,6 +19,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - calculate sha256 too (set supportSha256 tru)
   - wise - support sha256 lookups
   - capture - fix disable fields
+  - capture - src/dst ip/port can be used to trigger rules now
+  - capture - ip fields in rules can now be CIDR
 
 1.0.0-alpha2 2018/01/31
   - Read alpha1 below

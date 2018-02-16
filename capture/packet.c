@@ -617,6 +617,10 @@ LOCAL void *moloch_packet_thread(void *threadp)
             break;
         }
 
+        if (isNew) {
+            moloch_rules_session_create(session);
+        }
+
         /* Check if the stop saving bpf filters match */
         if (session->packets[packet->direction] == 0 && session->stopSaving == 0) {
             moloch_rules_run_session_setup(session, packet);
@@ -1050,18 +1054,12 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
         return MOLOCH_PACKET_CORRUPT;
     }
     if (ipTree) {
-        prefix_t prefix;
         patricia_node_t *node;
 
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-
-        prefix.add.sin= ip4->ip_src;
-        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree, (u_char*)&ip4->ip_src, 32, 1)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
 
-        prefix.add.sin= ip4->ip_dst;
-        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree, (u_char*)&ip4->ip_dst, 32, 1)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
     }
 

@@ -52,3 +52,15 @@ rules:
         - 74.125.131.103
     ops:
       "protocols": "socksipset"
+
+  - name: "ip4 test"
+    when: "fieldSet"
+    fields:
+      ip.src:
+        - 10.44.100.0/24
+        - 2001:06f8::/32
+      port.dst:
+        - 443
+        - 5353
+    ops:
+      "protocols": "iprulztest"

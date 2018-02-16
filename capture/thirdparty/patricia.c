@@ -15,6 +15,7 @@
 /*
  * prefix_tochar convert prefix information to bytes 
  */
+/*
 u_char         *
 prefix_tochar(prefix_t * prefix)
 {
@@ -23,6 +24,7 @@ prefix_tochar(prefix_t * prefix)
 
     return ((u_char *) & prefix->add.sin);
 }
+*/
 
 static inline int
 comp_with_mask(void *addr, void *dest, u_int mask)
@@ -505,6 +507,52 @@ patricia_search_best2(patricia_tree_t * patricia, prefix_t * prefix,
     return (NULL);
 }
 
+patricia_node_t *
+patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive)
+{
+    patricia_node_t *node;
+    patricia_node_t *stack[PATRICIA_MAXBITS + 1];
+    int             cnt = 0;
+
+    if (!patricia || !addr)
+	return NULL;
+
+    if (patricia->head == NULL)
+        return (NULL);
+
+    node = patricia->head;
+
+    while (node->bit < bitlen) {
+
+        if (node->prefix) {
+            stack[cnt++] = node;
+        }
+
+        if (BIT_TEST(addr[node->bit >> 3], 0x80 >> (node->bit & 0x07))) {
+            node = node->r;
+        } else {
+            node = node->l;
+        }
+
+        if (node == NULL)
+            break;
+    }
+
+    if (inclusive && node && node->prefix)
+        stack[cnt++] = node;
+
+    if (cnt <= 0)
+        return (NULL);
+
+    while (--cnt >= 0) {
+        node = stack[cnt];
+        if (comp_with_mask(prefix_tochar(node->prefix), addr, node->prefix->bitlen)) {
+            return (node);
+        }
+    }
+    return (NULL);
+}
+
 /*
  * if inclusive != 0, "best" may be the given prefix itself 
  */
@@ -544,6 +592,47 @@ patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive
     if (inclusive && node->prefix && node->data &&
         comp_with_mask(prefix_tochar(node->prefix),
                        prefix_tochar(prefix), node->prefix->bitlen)) {
+        results[cnt++] = node;
+    }
+
+    return cnt;
+}
+
+/*
+ * if inclusive != 0, "best" may be the given prefix itself 
+ */
+int
+patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, int inclusive, patricia_node_t **results, int resultsize)
+{
+    patricia_node_t *node;
+    int             cnt = 0;
+
+    node = patricia->head;
+
+    if (node == NULL)
+        return 0;
+
+    while (node->bit < bitlen && cnt < resultsize) {
+
+        if (node->prefix && node->data &&
+            comp_with_mask(prefix_tochar(node->prefix),
+                           addr, node->prefix->bitlen)) {
+            results[cnt++] = node;
+        }
+
+        if (BIT_TEST(addr[node->bit >> 3], 0x80 >> (node->bit & 0x07))) {
+            node = node->r;
+        } else {
+            node = node->l;
+        }
+
+        if (!node)
+            return cnt;
+    }
+
+    if (inclusive && node->prefix && node->data &&
+        comp_with_mask(prefix_tochar(node->prefix),
+                       addr, node->prefix->bitlen)) {
         results[cnt++] = node;
     }
 

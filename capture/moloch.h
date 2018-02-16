@@ -258,6 +258,11 @@ typedef struct {
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_HOURLY6, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 
 #define MOLOCH_FIELDS_MAX 256
+#define MOLOCH_FIELD_EXSPECIAL_SRC_IP   (MOLOCH_FIELDS_MAX-1)
+#define MOLOCH_FIELD_EXSPECIAL_SRC_PORT (MOLOCH_FIELDS_MAX-2)
+#define MOLOCH_FIELD_EXSPECIAL_DST_IP   (MOLOCH_FIELDS_MAX-3)
+#define MOLOCH_FIELD_EXSPECIAL_DST_PORT (MOLOCH_FIELDS_MAX-4)
+#define MOLOCH_FIELD_EXSPECIAL_START    (MOLOCH_FIELDS_MAX-4)
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -1057,6 +1062,7 @@ void moloch_rules_init();
 void moloch_rules_recompile();
 void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value);
 int moloch_rules_run_every_packet(MolochPacket_t *packet);
+void moloch_rules_session_create(MolochSession_t *session);
 void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet);
 void moloch_rules_run_after_classify(MolochSession_t *session);
 void moloch_rules_run_before_save(MolochSession_t *session, int final);
