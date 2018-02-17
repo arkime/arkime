@@ -103,28 +103,28 @@ typedef struct moloch_trie {
  */
 
 typedef struct {
-    MolochStringHead_t  commonName; //2.5.4.3
-    char               *orgName; // 2.5.4.10
+    MolochStringHead_t  commonName; // 2.5.4.3
+    char               *orgName;    // 2.5.4.10
     char                orgUtf8;
 } MolochCertInfo_t;
 
-typedef struct moloch_tlsinfo {
-    struct moloch_tlsinfo *t_next, *t_prev;
-    uint32_t               t_hash;
-    uint64_t               notBefore;
-    uint64_t               notAfter;
-    MolochCertInfo_t       issuer;
-    MolochCertInfo_t       subject;
-    MolochStringHead_t     alt;
-    unsigned char         *serialNumber;
-    short                  serialNumberLen;
-    short                  t_bucket;
-    unsigned char          hash[60];
+typedef struct moloch_certsinfo {
+    struct moloch_certsinfo *t_next, *t_prev;
+    uint32_t                 t_hash;
+    uint64_t                 notBefore;
+    uint64_t                 notAfter;
+    MolochCertInfo_t         issuer;
+    MolochCertInfo_t         subject;
+    MolochStringHead_t       alt;
+    unsigned char           *serialNumber;
+    short                    serialNumberLen;
+    short                    t_bucket;
+    unsigned char            hash[60];
 } MolochCertsInfo_t;
 
 typedef struct {
-    struct moloch_tlsinfo *t_next, *t_prev;
-    int                    t_count;
+    struct moloch_certsinfo *t_next, *t_prev;
+    int                      t_count;
 } MolochCertsInfoHead_t;
 
 typedef HASH_VAR(s_, MolochCertsInfoHash_t, MolochCertsInfoHead_t, 1);
@@ -139,13 +139,14 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_TYPE_INT        0
 #define MOLOCH_FIELD_TYPE_INT_ARRAY  1
 #define MOLOCH_FIELD_TYPE_INT_HASH   2
-#define MOLOCH_FIELD_TYPE_STR        3
-#define MOLOCH_FIELD_TYPE_STR_ARRAY  4
-#define MOLOCH_FIELD_TYPE_STR_HASH   5
-#define MOLOCH_FIELD_TYPE_IP         6
-#define MOLOCH_FIELD_TYPE_IP_GHASH   7
-#define MOLOCH_FIELD_TYPE_CERTSINFO  8
-#define MOLOCH_FIELD_TYPE_INT_GHASH  9
+#define MOLOCH_FIELD_TYPE_INT_GHASH  3
+#define MOLOCH_FIELD_TYPE_STR        4
+#define MOLOCH_FIELD_TYPE_STR_ARRAY  5
+#define MOLOCH_FIELD_TYPE_STR_HASH   6
+#define MOLOCH_FIELD_TYPE_STR_GHASH  7
+#define MOLOCH_FIELD_TYPE_IP         8
+#define MOLOCH_FIELD_TYPE_IP_GHASH   9
+#define MOLOCH_FIELD_TYPE_CERTSINFO 10
 
 /* These are ones you should set */
 /* Field should be set on all linked sessions */

@@ -43,7 +43,7 @@ sub sortJson {
 
     foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
-        foreach my $i ("tags") {
+        foreach my $i ("tags", "srcMac", "dstMac") {
             if (exists $body->{$i}) {
                 my @tmp = sort (@{$body->{$i}});
                 $body->{$i} = \@tmp;

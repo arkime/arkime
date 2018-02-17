@@ -262,6 +262,7 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     case MOLOCH_FIELD_TYPE_STR:
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
     case MOLOCH_FIELD_TYPE_STR_HASH:
+    case MOLOCH_FIELD_TYPE_STR_GHASH:
         moloch_field_string_add(pos, session, s, l, TRUE);
         break;
     case MOLOCH_FIELD_TYPE_IP_GHASH:

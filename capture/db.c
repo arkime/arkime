@@ -617,6 +617,24 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
             break;
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
+            ghash = session->fields[pos]->ghash;
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %d,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                moloch_db_js0n_str(&jbsb, ikey, flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+
+            if (freeField) {
+                g_hash_table_destroy(ghash);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
         case MOLOCH_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {

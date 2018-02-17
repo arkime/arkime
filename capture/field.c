@@ -495,6 +495,10 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->utf8 = 0;
             HASH_ADD(s_, *hash, hstring->str, hstring);
             goto added;
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
+            field->ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+            g_hash_table_add(field->ghash, (gpointer)string);
+            goto added;
         default:
             LOGEXIT("Not a string %s", config.fields[pos]->dbField);
         }
@@ -539,6 +543,15 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->utf8 = 0;
         }
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        goto added;
+    case MOLOCH_FIELD_TYPE_STR_GHASH:
+        if (g_hash_table_lookup(field->ghash, string)) {
+            field->jsonSize -= (6 + 2*len);
+            return FALSE;
+        }
+        if (copy)
+            string = g_strndup(string, len);
+        g_hash_table_add(field->ghash, (gpointer)string);
         goto added;
     default:
         LOGEXIT("Not a string %s", config.fields[pos]->dbField);
@@ -1042,6 +1055,7 @@ void moloch_field_free(MolochSession_t *session)
             break;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
             g_hash_table_destroy(session->fields[pos]->ghash);
             break;
         case MOLOCH_FIELD_TYPE_CERTSINFO:
@@ -1109,8 +1123,9 @@ int moloch_field_count(int pos, MolochSession_t *session)
         return HASH_COUNT(s_, *(field->shash));
     case MOLOCH_FIELD_TYPE_INT_HASH:
         return HASH_COUNT(s_, *(field->ihash));
-    case MOLOCH_FIELD_TYPE_INT_GHASH:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
+    case MOLOCH_FIELD_TYPE_STR_GHASH:
         return g_hash_table_size(field->ghash);
     case MOLOCH_FIELD_TYPE_CERTSINFO:
         return HASH_COUNT(s_, *(field->cihash));
@@ -1167,6 +1182,7 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         case  MOLOCH_FIELD_TYPE_STR:
         case  MOLOCH_FIELD_TYPE_STR_ARRAY:
         case  MOLOCH_FIELD_TYPE_STR_HASH:
+        case  MOLOCH_FIELD_TYPE_STR_GHASH:
             moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
             break;
         }
@@ -1247,6 +1263,7 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case  MOLOCH_FIELD_TYPE_STR:
         case  MOLOCH_FIELD_TYPE_STR_ARRAY:
         case  MOLOCH_FIELD_TYPE_STR_HASH:
+        case  MOLOCH_FIELD_TYPE_STR_GHASH:
         case  MOLOCH_FIELD_TYPE_IP:
         case  MOLOCH_FIELD_TYPE_IP_GHASH:
             if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)

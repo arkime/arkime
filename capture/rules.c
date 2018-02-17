@@ -284,6 +284,7 @@ void moloch_rules_process_add_field(MolochRule_t *rule, int pos, char *key)
     case MOLOCH_FIELD_TYPE_STR:
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
     case MOLOCH_FIELD_TYPE_STR_HASH:
+    case MOLOCH_FIELD_TYPE_STR_GHASH:
         if (!fieldsHash[pos])
             fieldsHash[pos] = g_hash_table_new(g_str_hash, g_str_equal);
 
@@ -402,6 +403,7 @@ void moloch_rules_process_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_STR:
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
             case MOLOCH_FIELD_TYPE_STR_HASH:
+            case MOLOCH_FIELD_TYPE_STR_GHASH:
                 rule->hash[pos] = g_hash_table_new(g_str_hash, g_str_equal);
                 break;
 
@@ -568,6 +570,7 @@ void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule
                 }
             }
             break;
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
