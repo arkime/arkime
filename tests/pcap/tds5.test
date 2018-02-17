@@ -3,9 +3,29 @@
       {
          "body" : {
             "dstASN" : "AS0001 Cool Beans!",
-            "lastPacket" : 1465335293242,
+            "dstBytes" : 585,
             "dstDataBytes" : 283,
-            "srcPackets" : 5,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "040100a300000000",
+            "dstPort" : 3106,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1465335293231,
+            "ipProtocol" : 6,
+            "lastPacket" : 1465335293242,
+            "length" : 10,
+            "node" : "test",
             "packetLen" : [
                82,
                82,
@@ -18,15 +38,6 @@
                101,
                194
             ],
-            "totPackets" : 10,
-            "protocol" : [
-               "tds",
-               "tcp"
-            ],
-            "userCnt" : 1,
-            "protocolCnt" : 2,
-            "srcPayload8" : "0200020000000100",
-            "srcIp" : "10.0.0.1",
             "packetPos" : [
                24,
                106,
@@ -39,80 +50,77 @@
                1403,
                1504
             ],
-            "dstMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
+            "protocol" : [
+               "tds",
+               "tcp"
             ],
-            "timestamp" : "SET",
-            "srcBytes" : 929,
-            "vlanCnt" : 1,
-            "fileId" : [],
-            "totDataBytes" : 908,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "srcPort" : 3933,
-            "srcASN" : "AS0000 This is neat",
-            "srcGEO" : "RU",
-            "node" : "test",
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 929,
             "srcDataBytes" : 625,
-            "dstMacCnt" : 2,
-            "firstPacket" : 1465335293231,
-            "dstPackets" : 5,
-            "test" : {
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "string.snow" : [
-                  "16777226:3933,33554442:3106"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "RIR" : [
-                  ""
-               ]
-            },
-            "vlan" : [
-               50
-            ],
-            "user" : [
-               "USER___USER"
-            ],
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
             "srcMac" : [
                "00:22:83:3f:17:cc",
                "2c:6b:f5:d6:17:cc"
             ],
-            "dstGEO" : "CA",
-            "dstPayload8" : "040100a300000000",
-            "dstBytes" : 585,
-            "dstPort" : 3106,
-            "dstRIR" : "TEST",
-            "dstIp" : "10.0.0.2",
             "srcMacCnt" : 2,
-            "tcpflags" : {
-               "psh" : 5,
-               "dstZero" : 0,
-               "syn" : 1,
-               "fin" : 0,
-               "srcZero" : 0,
-               "rst" : 0,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "ack" : 3
-            },
-            "totBytes" : 1514,
-            "length" : 10,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "0200020000000100",
+            "srcPort" : 3933,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
             "tagsCnt" : 2,
-            "ipProtocol" : 6
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 5,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:3933,33554442:3106"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1514,
+            "totDataBytes" : 908,
+            "totPackets" : 10,
+            "user" : [
+               "USER___USER"
+            ],
+            "userCnt" : 1,
+            "vlan" : [
+               50
+            ],
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {

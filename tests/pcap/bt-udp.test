@@ -1,110 +1,66 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131217",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "srcMac" : [
-               "78:fe:3d:11:21:f2"
-            ],
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "firstPacket" : 1387253713030,
-            "totDataBytes" : 137,
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 0,
             "dstDataBytes" : 0,
+            "dstGEO" : "RU",
+            "dstIp" : "10.0.0.1",
             "dstMac" : [
                "00:10:db:ff:26:00"
             ],
-            "lastPacket" : 1387253713030,
-            "srcIp" : "10.0.0.2",
-            "srcMacCnt" : 1,
-            "dstPackets" : 0,
             "dstMacCnt" : 1,
-            "protocol" : [
-               "udp",
-               "bittorrent"
+            "dstOui" : [
+               "Juniper Networks"
             ],
-            "totBytes" : 145,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
             "dstPort" : 3207,
-            "tagsCnt" : 2,
             "fileId" : [],
-            "timestamp" : "SET",
-            "length" : 0,
-            "srcBytes" : 145,
-            "dstASN" : "AS0000 This is neat",
-            "srcDataBytes" : 137,
-            "dstGEO" : "RU",
+            "firstPacket" : 1387253713030,
             "ipProtocol" : 17,
+            "lastPacket" : 1387253713030,
+            "length" : 0,
+            "node" : "test",
             "packetLen" : [
                161
             ],
-            "srcPayload8" : "64313a6164323a69",
-            "srcPort" : 50759,
-            "srcRIR" : "TEST",
-            "segmentCnt" : 1,
-            "protocolCnt" : 2,
-            "dstBytes" : 0,
-            "srcPackets" : 1,
-            "node" : "test",
             "packetPos" : [
                24
             ],
-            "totPackets" : 1,
-            "dstIp" : "10.0.0.1",
-            "srcASN" : "AS0001 Cool Beans!",
-            "srcGEO" : "CA"
-         }
-      },
-      {
-         "body" : {
-            "srcMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "srcDataBytes" : 321,
-            "ipProtocol" : 17,
-            "srcPort" : 44102,
-            "srcPayload8" : "64313a7264323a69",
-            "firstPacket" : 1387253793904,
-            "packetLen" : [
-               345
-            ],
-            "totDataBytes" : 321,
-            "dstPackets" : 0,
-            "srcMacCnt" : 1,
-            "srcIp" : "10.0.0.4",
-            "dstMac" : [
-               "00:00:5e:00:01:03"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "lastPacket" : 1387253793904,
-            "dstDataBytes" : 0,
             "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "dstBytes" : 0,
-            "dstMacCnt" : 1,
-            "packetPos" : [
-               185
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 145,
+            "srcDataBytes" : 137,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "78:fe:3d:11:21:f2"
             ],
-            "dstPort" : 12074,
-            "node" : "test",
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 1,
-            "totBytes" : 329,
-            "fileId" : [],
+            "srcPayload8" : "64313a6164323a69",
+            "srcPort" : 50759,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
             "timestamp" : "SET",
-            "dstIp" : "10.0.0.3",
-            "totPackets" : 1,
-            "length" : 0,
-            "srcBytes" : 329,
-            "dstASN" : "AS0002 Hmm!@#$%^&*()"
+            "totBytes" : 145,
+            "totDataBytes" : 137,
+            "totPackets" : 1
          },
          "header" : {
             "index" : {
@@ -114,54 +70,122 @@
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131217"
-            }
-         },
          "body" : {
-            "totPackets" : 1,
-            "dstIp" : "10.0.0.5",
-            "timestamp" : "SET",
-            "fileId" : [],
-            "totBytes" : 336,
-            "srcPackets" : 1,
-            "packetPos" : [
-               530
-            ],
-            "dstPort" : 20551,
-            "node" : "test",
-            "srcBytes" : 336,
-            "length" : 0,
-            "firstPacket" : 1387257610963,
-            "packetLen" : [
-               352
-            ],
-            "srcPayload8" : "64313a71393a6669",
-            "srcPort" : 47061,
-            "ipProtocol" : 17,
-            "srcDataBytes" : 328,
-            "srcMac" : [
-               "00:10:db:ff:26:00"
+            "dstASN" : "AS0002 Hmm!@#$%^&*()",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.0.0.3",
+            "dstMac" : [
+               "00:00:5e:00:01:03"
             ],
             "dstMacCnt" : 1,
-            "dstBytes" : 0,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 12074,
+            "fileId" : [],
+            "firstPacket" : 1387253793904,
+            "ipProtocol" : 17,
+            "lastPacket" : 1387253793904,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               345
+            ],
+            "packetPos" : [
+               185
+            ],
             "protocol" : [
                "udp",
                "bittorrent"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "srcBytes" : 329,
+            "srcDataBytes" : 321,
+            "srcIp" : "10.0.0.4",
+            "srcMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "ICANN, IANA Department"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a7264323a69",
+            "srcPort" : 44102,
+            "timestamp" : "SET",
+            "totBytes" : 329,
+            "totDataBytes" : 321,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131217",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.0.0.5",
             "dstMac" : [
                "00:00:5e:00:01:03"
             ],
-            "dstDataBytes" : 0,
-            "lastPacket" : 1387257610963,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 0,
-            "srcMacCnt" : 1,
+            "dstPort" : 20551,
+            "fileId" : [],
+            "firstPacket" : 1387257610963,
+            "ipProtocol" : 17,
+            "lastPacket" : 1387257610963,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               352
+            ],
+            "packetPos" : [
+               530
+            ],
+            "protocol" : [
+               "udp",
+               "bittorrent"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 336,
+            "srcDataBytes" : 328,
             "srcIp" : "10.0.0.6",
-            "totDataBytes" : 328
+            "srcMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "ICANN, IANA Department"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a71393a6669",
+            "srcPort" : 47061,
+            "timestamp" : "SET",
+            "totBytes" : 336,
+            "totDataBytes" : 328,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131217",
+               "_type" : "session"
+            }
          }
       }
    ]

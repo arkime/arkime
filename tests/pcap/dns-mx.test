@@ -1,61 +1,53 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131203"
-            }
-         },
          "body" : {
-            "dstPayload8" : "4c17818000010002",
-            "dstDataBytes" : 208,
-            "dstBytes" : 216,
-            "node" : "test",
-            "dstPackets" : 1,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstPort" : 53,
-            "totDataBytes" : 266,
-            "fileId" : [],
-            "dstIp" : "10.2.95.39",
-            "srcGEO" : "US",
-            "segmentCnt" : 1,
-            "length" : 83,
-            "srcIp" : "10.180.156.185",
-            "srcPayload8" : "4c17010000010000",
-            "totBytes" : 282,
-            "firstPacket" : 1386104996973,
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
             "dns" : {
-               "hostCnt" : 3,
-               "qt" : [
-                  "MX"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "statusCnt" : 1,
-               "qcCnt" : 1,
-               "opcodeCnt" : 1,
-               "qtCnt" : 1,
                "host" : [
                   "cluster5.us.messagelabs.com",
                   "mx.com",
                   "cluster5a.us.messagelabs.com"
                ],
+               "hostCnt" : 3,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "MX"
+               ],
+               "qtCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
-               "qc" : [
-                  "IN"
-               ]
+               "statusCnt" : 1
             },
+            "dstBytes" : 216,
+            "dstDataBytes" : 208,
+            "dstIp" : "10.2.95.39",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "dstMacCnt" : 2,
+            "dstOui" : [
+               "Apple, Inc.",
+               "Jetcell, Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPayload8" : "4c17818000010002",
+            "dstPort" : 53,
+            "fileId" : [],
+            "firstPacket" : 1386104996973,
+            "ipProtocol" : 17,
+            "lastPacket" : 1386104997055,
+            "length" : 83,
+            "node" : "test",
             "packetLen" : [
                82,
                232
@@ -68,16 +60,33 @@
                "udp",
                "dns"
             ],
-            "srcPackets" : 1,
-            "ipProtocol" : 17,
-            "srcDataBytes" : 58,
-            "srcBytes" : 66,
-            "srcPort" : 51427,
             "protocolCnt" : 2,
-            "timestamp" : "SET",
+            "segmentCnt" : 1,
+            "srcBytes" : 66,
+            "srcDataBytes" : 58,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.185",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
             "srcMacCnt" : 1,
-            "lastPacket" : 1386104997055,
+            "srcOui" : [
+               "Cisco"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "4c17010000010000",
+            "srcPort" : 51427,
+            "timestamp" : "SET",
+            "totBytes" : 282,
+            "totDataBytes" : 266,
             "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131203",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -10,3 +10,5 @@ zcat GeoLite2-Country.mmdb.gz > GeoLite2-Country.mmdb
 wget -N -nv -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'
 /bin/rm -f GeoLite2-ASN.mmdb
 zcat GeoLite2-ASN.mmdb.gz > GeoLite2-ASN.mmdb
+
+wget -O -nv oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf

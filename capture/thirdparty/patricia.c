@@ -13,7 +13,7 @@
 #include "patricia.h"
 
 static inline int
-comp_with_mask(void *addr, void *dest, u_int mask)
+comp_with_mask(void *addr, const void *dest, u_int mask)
 {
 
     if ( /* mask/8 == 0 || */ memcmp(addr, dest, mask / 8) == 0) {
@@ -494,7 +494,7 @@ patricia_search_best2(patricia_tree_t * patricia, prefix_t * prefix,
 }
 
 patricia_node_t *
-patricia_search_best3(patricia_tree_t * patricia, u_char *addr, int bitlen)
+patricia_search_best3(patricia_tree_t * patricia, const u_char *addr, int bitlen)
 {
     patricia_node_t *node;
     patricia_node_t *stack[PATRICIA_MAXBITS + 1];

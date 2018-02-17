@@ -2,12 +2,63 @@
    "sessions2" : [
       {
          "body" : {
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 1002,
+            "dstDataBytes" : 706,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
             "dstMac" : [
                "88:43:e1:94:fc:2d"
             ],
-            "dstIp" : "10.0.0.2",
-            "segmentCnt" : 1,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1404135320459,
             "http" : {
+               "bodyMagic" : [
+                  "image/gif"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "cookieKey" : [
+                  "xxxx",
+                  "autocomplete",
+                  "xxxxxxxxxxxxxxxxxxx",
+                  "lp",
+                  "xxxxx",
+                  "xxxxxx",
+                  "rememberUn",
+                  "xxxxxxxxxxxxxxxxxxxxxx",
+                  "xxx.xxxxxxxxxx.xxxxxxxxxx"
+               ],
+               "cookieKeyCnt" : 9,
+               "cookieValue" : [
+                  "xxxx",
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "ie",
+                  "false",
+                  "xxxxxx",
+                  "true",
+                  "xx",
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "1"
+               ],
+               "cookieValueCnt" : 10,
+               "host" : [
+                  "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
+               ],
+               "hostCnt" : 1,
                "key" : [
                   "v17",
                   "events",
@@ -26,38 +77,33 @@
                   "g"
                ],
                "keyCnt" : 15,
-               "serverVersionCnt" : 1,
-               "bodyMagic" : [
-                  "image/gif"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "path" : [
-                  "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
-               ],
-               "uriCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
-               ],
                "md5" : [
                   "ad480fd0732d0f6f1a8b06359e3a42bb"
                ],
-               "bodyMagicCnt" : 1,
-               "cookieKey" : [
-                  "xxxx",
-                  "autocomplete",
-                  "xxxxxxxxxxxxxxxxxxx",
-                  "lp",
-                  "xxxxx",
-                  "xxxxxx",
-                  "rememberUn",
-                  "xxxxxxxxxxxxxxxxxxxxxx",
-                  "xxx.xxxxxxxxxx.xxxxxxxxxx"
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
                ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
+               ],
+               "pathCnt" : 1,
+               "request-referer" : [
+                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 8,
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -77,16 +123,27 @@
                   "set-cookie",
                   "x-c"
                ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "accept-language"
+               "responseHeaderCnt" : 17,
+               "serverVersion" : [
+                  "1.1"
                ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "a1ecbaed793a1f564c49c671f2dd0ce36f858534ef6d26b55783a06b884cc506"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+               ],
+               "useragentCnt" : 1,
                "value" : [
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
                   "xxxxxxxxxxxxxxx",
@@ -103,64 +160,12 @@
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp"
                ],
-               "cookieKeyCnt" : 9,
-               "clientVersionCnt" : 1,
-               "valueCnt" : 14,
-               "sha256Cnt" : 1,
-               "useragentCnt" : 1,
-               "cookieValue" : [
-                  "xxxx",
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                  "ie",
-                  "false",
-                  "xxxxxx",
-                  "true",
-                  "xx",
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                  "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                  "1"
-               ],
-               "request-refererCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "uri" : [
-                  "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
-               ],
-               "responseHeaderCnt" : 17,
-               "statuscodeCnt" : 1,
-               "host" : [
-                  "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
-               ],
-               "md5Cnt" : 1,
-               "cookieValueCnt" : 10,
-               "methodCnt" : 1,
-               "request-referer" : [
-                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "requestHeaderCnt" : 8,
-               "hostCnt" : 1,
-               "pathCnt" : 1,
-               "sha256" : [
-                  "a1ecbaed793a1f564c49c671f2dd0ce36f858534ef6d26b55783a06b884cc506"
-               ]
+               "valueCnt" : 14
             },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "dstPackets" : 5,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "srcPackets" : 7,
-            "dstPayload8" : "485454502f312e31",
+            "ipProtocol" : 6,
             "lastPacket" : 1404135330336,
-            "srcGEO" : "RU",
+            "length" : 9877,
+            "node" : "test",
             "packetLen" : [
                78,
                78,
@@ -175,31 +180,6 @@
                76,
                76
             ],
-            "totDataBytes" : 4119,
-            "timestamp" : "SET",
-            "test" : {
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "string.snow" : [
-                  "16777226:61462,33554442:80"
-               ]
-            },
-            "srcBytes" : 3811,
-            "tagsCnt" : 2,
-            "dstPort" : 80,
             "packetPos" : [
                24,
                102,
@@ -214,40 +194,68 @@
                4877,
                4953
             ],
-            "totPackets" : 12,
-            "length" : 9877,
-            "dstASN" : "AS0001 Cool Beans!",
-            "firstPacket" : 1404135320459,
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 3811,
+            "srcDataBytes" : 3413,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
             "srcMac" : [
                "a4:93:4c:43:13:9b"
             ],
-            "srcDataBytes" : 3413,
-            "dstMacCnt" : 1,
-            "dstDataBytes" : 706,
-            "protocolCnt" : 2,
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "474554202f782f78",
+            "srcPort" : 61462,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
             "tcpflags" : {
                "ack" : 6,
-               "syn" : 1,
-               "rst" : 1,
-               "fin" : 0,
                "dstZero" : 0,
-               "urg" : 0,
+               "fin" : 0,
                "psh" : 3,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
                "syn-ack" : 1,
-               "srcZero" : 0
+               "urg" : 0
             },
-            "ipProtocol" : 6,
-            "fileId" : [],
-            "dstBytes" : 1002,
-            "node" : "test",
-            "dstRIR" : "TEST",
-            "srcPayload8" : "474554202f782f78",
-            "srcASN" : "AS0000 This is neat",
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:61462,33554442:80"
+               ]
+            },
+            "timestamp" : "SET",
             "totBytes" : 4813,
-            "srcMacCnt" : 1,
-            "srcPort" : 61462,
-            "dstGEO" : "CA",
-            "srcIp" : "10.0.0.1"
+            "totDataBytes" : 4119,
+            "totPackets" : 12
          },
          "header" : {
             "index" : {

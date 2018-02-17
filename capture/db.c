@@ -48,6 +48,8 @@ void *                  esServer = 0;
 LOCAL patricia_tree_t  *ipTree4 = 0;
 LOCAL patricia_tree_t  *ipTree6 = 0;
 
+LOCAL patricia_tree_t  *ouiTree = 0;
+
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
@@ -1619,49 +1621,125 @@ void moloch_db_check()
 void moloch_db_load_rir()
 {
     memset(rirs, 0, sizeof(rirs));
-    if (config.rirFile) {
-        FILE *fp;
-        char line[1000];
-        if (!(fp = fopen(config.rirFile, "r"))) {
-            printf("Couldn't open RIR from %s", config.rirFile);
-            exit(1);
-        }
+    if (!config.rirFile)
+        return;
 
-        while(fgets(line, sizeof(line), fp)) {
-            int   cnt = 0, quote = 0, num = 0;
-            char *ptr, *start;
-
-            for (start = ptr = line; *ptr != 0; ptr++) {
-                if (*ptr == '"') {
-                    quote = !quote;
-                    continue;
-                }
-
-                if (quote || *ptr != ',')
-                    continue;
-
-                // We have comma outside of quotes
-                *ptr = 0;
-                if (cnt == 0) {
-                    num = atoi(start);
-                    if (num >= 255)
-                        break;
-                } else if (*start && cnt == 3) {
-                    gchar **parts = g_strsplit(start, ".", 0);
-                    if (parts[1] && *parts[1]) {
-                        rirs[num] = g_ascii_strup(parts[1], -1);
-                    }
-                    g_strfreev(parts);
-
-                    break;
-                }
-
-                cnt++;
-                start = ptr+1;
-            }
-        }
-        fclose(fp);
+    FILE *fp;
+    char line[1000];
+    if (!(fp = fopen(config.rirFile, "r"))) {
+        printf("Couldn't open RIR from %s", config.rirFile);
+        exit(1);
     }
+
+    while(fgets(line, sizeof(line), fp)) {
+        int   cnt = 0, quote = 0, num = 0;
+        char *ptr, *start;
+
+        for (start = ptr = line; *ptr != 0; ptr++) {
+            if (*ptr == '"') {
+                quote = !quote;
+                continue;
+            }
+
+            if (quote || *ptr != ',')
+                continue;
+
+            // We have comma outside of quotes
+            *ptr = 0;
+            if (cnt == 0) {
+                num = atoi(start);
+                if (num >= 255)
+                    break;
+            } else if (*start && cnt == 3) {
+                gchar **parts = g_strsplit(start, ".", 0);
+                if (parts[1] && *parts[1]) {
+                    rirs[num] = g_ascii_strup(parts[1], -1);
+                }
+                g_strfreev(parts);
+
+                break;
+            }
+
+            cnt++;
+            start = ptr+1;
+        }
+    }
+    fclose(fp);
+}
+/******************************************************************************/
+void moloch_db_load_oui()
+{
+    if (!config.ouiFile)
+        return;
+
+    ouiTree = New_Patricia(48); // 48 - Ethernet Size
+
+    FILE *fp;
+    char line[2000];
+    if (!(fp = fopen(config.ouiFile, "r"))) {
+        printf("Couldn't open OUI from %s", config.ouiFile);
+        exit(1);
+    }
+
+    while(fgets(line, sizeof(line), fp)) {
+        if (*line == '#')
+            continue;
+
+        int len = strlen(line);
+        if (len < 4)
+            continue;
+        line[len-1] = 0;
+
+        char *hash = strchr(line, '#');
+        if (hash)
+            *hash = 0;
+
+        gchar **parts = g_strsplit(line, "\t", 0);
+        char *str = parts[2]?parts[2]:parts[1];
+
+        int i = 0, j = 0, bitlen = 24;
+        for (i = 0; parts[0][i]; i++) {
+            if (parts[0][i] == ':' || parts[0][i] == '-' || parts[0][i] == '.')
+                continue;
+            if (parts[0][i] == '/') {
+                bitlen = atoi(parts[0] + i + 1);
+                break;
+            }
+
+            parts[0][j] = parts[0][i];
+            j++;
+        }
+        parts[0][j] = 0;
+
+        unsigned char buf[16];
+        for (i=0, j=0; i < len && j < 8; i += 2, j++) {
+            buf[j] = moloch_hex_to_char[(int)parts[0][i]][(int)parts[0][i+1]];
+        }
+
+        prefix_t       *prefix;
+        patricia_node_t *node;
+
+        prefix = New_Prefix2(AF_INET6, buf, bitlen, NULL);
+        node = patricia_lookup(ouiTree, prefix);
+        Deref_Prefix(prefix);
+        node->data = g_strdup(str);
+
+        g_strfreev(parts);
+    }
+    fclose(fp);
+}
+/******************************************************************************/
+void moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac)
+{
+    patricia_node_t *node;
+
+    if (!ouiTree)
+        return;
+
+    if ((node = patricia_search_best3 (ouiTree, mac, 48)) == NULL)
+        return;
+
+    moloch_field_string_add(field, session, node->data, -1, TRUE);
 }
 /******************************************************************************/
 void moloch_db_load_fields()
@@ -1894,6 +1972,7 @@ void moloch_db_init()
     }
 
     moloch_db_load_rir();
+    moloch_db_load_oui();
 
     if (!config.dryRun) {
         timers[0] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);

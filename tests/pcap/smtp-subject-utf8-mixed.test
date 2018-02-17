@@ -2,51 +2,43 @@
    "sessions2" : [
       {
          "body" : {
-            "srcIp" : "10.180.156.249",
-            "totBytes" : 3458,
             "dstASN" : "AS1668 AOL Transit Data Network",
-            "srcDataBytes" : 1101,
+            "dstBytes" : 1425,
+            "dstDataBytes" : 493,
             "dstGEO" : "US",
-            "srcGEO" : "US",
-            "protocolCnt" : 2,
-            "srcMacCnt" : 1,
-            "dstRIR" : "ARIN",
-            "tagsCnt" : 1,
-            "timestamp" : "SET",
+            "dstIp" : "64.236.55.17",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
             "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco Systems, Inc",
+               "Dell Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 14,
+            "dstPayload8" : "3232302078787878",
+            "dstPort" : 25,
+            "dstRIR" : "ARIN",
             "email" : {
-               "headerCnt" : 10,
-               "mimeVersion" : [
-                  "1.0"
+               "ASN" : [
+                  "---"
                ],
-               "subject" : [
-                  "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
-               ],
-               "src" : [
-                  "xxxxx@xxx.net"
-               ],
-               "srcCnt" : 1,
-               "id" : [
-                  "20131212031238.GA1705@xxx.net"
-               ],
-               "subjectCnt" : 1,
-               "host" : [
-                  "localhost",
-                  "xxxxxxxxxxxxx.xxx.com"
-               ],
-               "dstCnt" : 1,
-               "useragentCnt" : 1,
                "GEO" : [
                   "---"
                ],
-               "hostCnt" : 2,
-               "ipCnt" : 1,
-               "useragent" : [
-                  "Mutt/1.5.20 (2009-12-10)"
+               "RIR" : [
+                  ""
                ],
+               "contentType" : [
+                  "text/plain; charset=us-ascii"
+               ],
+               "contentTypeCnt" : 1,
                "dst" : [
                   "xxxxxxxxx@xxxxxxx.com"
                ],
+               "dstCnt" : 1,
                "header" : [
                   "content-type",
                   "message-id",
@@ -59,62 +51,43 @@
                   "date",
                   "subject"
                ],
-               "contentType" : [
-                  "text/plain; charset=us-ascii"
+               "headerCnt" : 10,
+               "host" : [
+                  "localhost",
+                  "xxxxxxxxxxxxx.xxx.com"
                ],
-               "contentTypeCnt" : 1,
-               "ASN" : [
-                  "---"
+               "hostCnt" : 2,
+               "id" : [
+                  "20131212031238.GA1705@xxx.net"
                ],
-               "RIR" : [
-                  ""
-               ],
-               "mimeVersionCnt" : 1,
+               "idCnt" : 1,
                "ip" : [
                   "127.0.0.1"
                ],
-               "idCnt" : 1
+               "ipCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "src" : [
+                  "xxxxx@xxx.net"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
+               ],
+               "subjectCnt" : 1,
+               "useragent" : [
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "useragentCnt" : 1
             },
-            "dstIp" : "64.236.55.17",
-            "dstBytes" : 1425,
-            "srcPayload8" : "45484c4f20787878",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstDataBytes" : 493,
-            "totDataBytes" : 1594,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
+            "fileId" : [],
             "firstPacket" : 1386817958900,
-            "srcPort" : 35803,
-            "length" : 302,
-            "dstPort" : 25,
-            "segmentCnt" : 1,
-            "srcBytes" : 2033,
-            "srcPackets" : 14,
+            "ipProtocol" : 6,
             "lastPacket" : 1386817959201,
-            "totPackets" : 28,
-            "tags" : [
-               "smtp:statuscode:250"
-            ],
-            "dstPayload8" : "3232302078787878",
-            "tcpflags" : {
-               "rst" : 0,
-               "syn" : 1,
-               "psh" : 13,
-               "dstZero" : 0,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "ack" : 11,
-               "fin" : 2
-            },
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
+            "length" : 302,
+            "node" : "test",
             "packetLen" : [
                90,
                90,
@@ -145,9 +118,6 @@
                82,
                82
             ],
-            "fileId" : [],
-            "node" : "test",
-            "dstPackets" : 14,
             "packetPos" : [
                24,
                114,
@@ -178,7 +148,46 @@
                3766,
                3848
             ],
-            "ipProtocol" : 6
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 2033,
+            "srcDataBytes" : 1101,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.249",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "45484c4f20787878",
+            "srcPort" : 35803,
+            "tags" : [
+               "smtp:statuscode:250"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 11,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 13,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3458,
+            "totDataBytes" : 1594,
+            "totPackets" : 28
          },
          "header" : {
             "index" : {

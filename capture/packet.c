@@ -39,6 +39,8 @@ extern uint32_t              pluginsCbs;
 
 LOCAL int                    mac1Field;
 LOCAL int                    mac2Field;
+LOCAL int                    oui1Field;
+LOCAL int                    oui2Field;
 LOCAL int                    vlanField;
 LOCAL int                    greIpField;
 LOCAL int                    icmpTypeField;
@@ -676,11 +678,15 @@ LOCAL void *moloch_packet_thread(void *threadp)
                     pcapData[11]);
 
             if (packet->direction == 1) {
-                moloch_field_string_add(mac1Field, session, str1, 17, TRUE);
-                moloch_field_string_add(mac2Field, session, str2, 17, TRUE);
+                if (moloch_field_string_add(mac1Field, session, str1, 17, TRUE))
+                    moloch_db_oui_lookup(oui1Field, session, pcapData);
+                if (moloch_field_string_add(mac2Field, session, str2, 17, TRUE))
+                    moloch_db_oui_lookup(oui2Field, session, pcapData+6);
             } else {
-                moloch_field_string_add(mac1Field, session, str2, 17, TRUE);
-                moloch_field_string_add(mac2Field, session, str1, 17, TRUE);
+                if (moloch_field_string_add(mac1Field, session, str2, 17, TRUE))
+                    moloch_db_oui_lookup(oui2Field, session, pcapData+6);
+                if (moloch_field_string_add(mac2Field, session, str1, 17, TRUE))
+                    moloch_db_oui_lookup(oui1Field, session, pcapData);
             }
 
             int n = 12;
@@ -1513,6 +1519,19 @@ void moloch_packet_init()
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
+
+    oui1Field = moloch_field_define("general", "lotermfield",
+        "oui.src", "Src OUI", "srcOui",
+        "Source ethernet oui set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    oui2Field = moloch_field_define("general", "lotermfield",
+        "oui.dst", "Dst OUI", "dstOui",
+        "Destination ethernet oui set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
 
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "vlan",

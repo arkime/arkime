@@ -2,40 +2,47 @@
    "sessions2" : [
       {
          "body" : {
-            "totDataBytes" : 2151,
-            "totBytes" : 3465,
-            "firstPacket" : 1386358271061,
-            "timestamp" : "SET",
+            "dstASN" : "AS1668 AOL Transit Data Network",
             "dstBytes" : 1169,
+            "dstDataBytes" : 485,
+            "dstGEO" : "US",
+            "dstIp" : "64.236.55.18",
+            "dstMac" : [
+               "00:25:90:a2:c2:52"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 12,
+            "dstPayload8" : "3232302078787878",
+            "dstPort" : 25,
+            "dstRIR" : "ARIN",
             "email" : {
-               "idCnt" : 1,
-               "ipCnt" : 3,
-               "dstCnt" : 1,
-               "mimeVersion" : [
-                  "1.0"
+               "ASN" : [
+                  "---",
+                  "---",
+                  "---"
                ],
                "GEO" : [
                   "---",
                   "US",
                   "---"
                ],
-               "dst" : [
-                  "xxxxxxxx@gmail.com"
+               "RIR" : [
+                  "ARIN",
+                  "",
+                  ""
                ],
-               "mimeVersionCnt" : 1,
-               "ASN" : [
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "srcCnt" : 1,
-               "subjectCnt" : 1,
                "contentType" : [
                   "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
                ],
-               "id" : [
-                  "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "xxxxxxxx@gmail.com"
                ],
+               "dstCnt" : 1,
                "header" : [
                   "content-type",
                   "message-id",
@@ -54,55 +61,45 @@
                   "accept-language",
                   "thread-topic"
                ],
-               "RIR" : [
-                  "ARIN",
-                  "",
-                  ""
-               ],
-               "contentTypeCnt" : 1,
-               "hostCnt" : 2,
                "headerCnt" : 16,
-               "src" : [
-                  "xxxxxxxxx@xxxxxxx.com"
-               ],
-               "subject" : [
-                  "test å é î ø ü"
-               ],
-               "useragent" : [
-                  "Microsoft-MacOutlook/14.3.9.131030"
-               ],
-               "useragentCnt" : 1,
                "host" : [
                   "xxxxxxxxxxxxxxxxx2.xxxxx.net",
                   "xxxxxxxxxxxxxxxxx1.xxxxx.net"
                ],
+               "hostCnt" : 2,
+               "id" : [
+                  "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+               ],
+               "idCnt" : 1,
                "ip" : [
                   "169.254.4.195",
                   "10.180.121.108",
                   "10.0.0.4"
-               ]
+               ],
+               "ipCnt" : 3,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "src" : [
+                  "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "test å é î ø ü"
+               ],
+               "subjectCnt" : 1,
+               "useragent" : [
+                  "Microsoft-MacOutlook/14.3.9.131030"
+               ],
+               "useragentCnt" : 1
             },
+            "fileId" : [],
+            "firstPacket" : 1386358271061,
+            "ipProtocol" : 6,
             "lastPacket" : 1386358271580,
-            "srcBytes" : 2296,
-            "dstPort" : 25,
-            "srcPayload8" : "45484c4f20787878",
-            "segmentCnt" : 1,
             "length" : 518,
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "tcpflags" : {
-               "urg" : 0,
-               "psh" : 12,
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "syn" : 1,
-               "ack" : 7,
-               "dstZero" : 0,
-               "rst" : 0,
-               "fin" : 2
-            },
+            "node" : "test",
             "packetLen" : [
                82,
                82,
@@ -128,11 +125,6 @@
                76,
                76
             ],
-            "dstMac" : [
-               "00:25:90:a2:c2:52"
-            ],
-            "dstASN" : "AS1668 AOL Transit Data Network",
-            "srcPackets" : 11,
             "packetPos" : [
                24,
                106,
@@ -158,31 +150,48 @@
                3705,
                3781
             ],
-            "dstGEO" : "US",
-            "totPackets" : 23,
-            "ipProtocol" : 6,
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
             "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 2296,
+            "srcDataBytes" : 1666,
+            "srcGEO" : "US",
             "srcIp" : "10.180.121.109",
-            "node" : "test",
-            "fileId" : [],
-            "dstRIR" : "ARIN",
-            "dstIp" : "64.236.55.18",
-            "dstMacCnt" : 1,
-            "srcMacCnt" : 2,
             "srcMac" : [
                "00:00:0c:07:ac:02",
                "00:0b:5f:6b:5c:00"
             ],
-            "tagsCnt" : 1,
-            "srcGEO" : "US",
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Cisco",
+               "Super Micro Computer, Inc."
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 11,
+            "srcPayload8" : "45484c4f20787878",
+            "srcPort" : 11084,
             "tags" : [
                "smtp:statuscode:250"
             ],
-            "srcPort" : 11084,
-            "dstDataBytes" : 485,
-            "srcDataBytes" : 1666,
-            "dstPackets" : 12,
-            "dstPayload8" : "3232302078787878"
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 7,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 12,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3465,
+            "totDataBytes" : 2151,
+            "totPackets" : 23
          },
          "header" : {
             "index" : {

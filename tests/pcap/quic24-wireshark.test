@@ -1,52 +1,30 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-150422",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "dstASN" : "AS15169 Google LLC",
+            "dstBytes" : 2784,
             "dstDataBytes" : 2768,
-            "segmentCnt" : 1,
-            "protocol" : [
-               "udp",
-               "iprulztest",
-               "quic"
-            ],
-            "dstPackets" : 2,
-            "fileId" : [],
-            "lastPacket" : 1429686316327,
-            "packetPos" : [
-               24,
-               1432,
-               2840,
-               4248,
-               4346
-            ],
-            "totBytes" : 5650,
-            "protocolCnt" : 3,
-            "totDataBytes" : 5610,
             "dstGEO" : "US",
-            "srcMacCnt" : 1,
-            "firstPacket" : 1429686316293,
-            "timestamp" : "SET",
-            "dstPort" : 443,
-            "srcPackets" : 3,
-            "srcDataBytes" : 2842,
+            "dstIp" : "216.58.208.195",
             "dstMac" : [
                "00:12:ef:c0:d7:a3"
             ],
-            "ipProtocol" : 17,
-            "totPackets" : 5,
-            "node" : "test",
-            "dstPayload8" : "0c00db40daa3bbe2",
-            "srcMac" : [
-               "a0:88:b4:1e:16:0c"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Intel Corporate"
             ],
-            "dstIp" : "216.58.208.195",
+            "dstOuiCnt" : 1,
+            "dstPackets" : 2,
+            "dstPayload8" : "0c00db40daa3bbe2",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1429686316293,
+            "ipProtocol" : 17,
+            "lastPacket" : 1429686316327,
             "length" : 33,
+            "node" : "test",
             "packetLen" : [
                1408,
                1408,
@@ -54,28 +32,58 @@
                98,
                1408
             ],
-            "dstBytes" : 2784,
+            "packetPos" : [
+               24,
+               1432,
+               2840,
+               4248,
+               4346
+            ],
+            "protocol" : [
+               "udp",
+               "iprulztest",
+               "quic"
+            ],
+            "protocolCnt" : 3,
             "quic" : {
+               "host" : [
+                  "www.google.fr"
+               ],
+               "hostCnt" : 1,
                "useragent" : [
                   "canary Chrome/44.0.2375.0"
                ],
-               "version-termCnt" : 1,
+               "useragentCnt" : 1,
                "version-term" : [
                   "Q024"
                ],
-               "hostCnt" : 1,
-               "useragentCnt" : 1,
-               "host" : [
-                  "www.google.fr"
-               ]
+               "version-termCnt" : 1
             },
-            "dstASN" : "AS15169 Google LLC",
-            "dstRIR" : "ARIN",
-            "srcPort" : 50509,
+            "segmentCnt" : 1,
             "srcBytes" : 2866,
+            "srcDataBytes" : 2842,
             "srcIp" : "10.44.100.22",
+            "srcMac" : [
+               "a0:88:b4:1e:16:0c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "OneAccess SA"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
             "srcPayload8" : "0d00db40daa3bbe2",
-            "dstMacCnt" : 1
+            "srcPort" : 50509,
+            "timestamp" : "SET",
+            "totBytes" : 5650,
+            "totDataBytes" : 5610,
+            "totPackets" : 5
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150422",
+               "_type" : "session"
+            }
          }
       }
    ]

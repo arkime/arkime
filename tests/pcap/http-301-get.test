@@ -1,15 +1,81 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131125"
-            }
-         },
          "body" : {
+            "dstASN" : "AS36459 GitHub, Inc.",
+            "dstBytes" : 313,
             "dstDataBytes" : 107,
+            "dstGEO" : "US",
+            "dstIp" : "192.30.252.130",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Apple, Inc.",
+               "Jetcell, Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 3,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1385394928482,
+            "http" : {
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "www.github.com"
+               ],
+               "hostCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
+               ],
+               "requestHeaderCnt" : 3,
+               "response-location" : [
+                  "https://www.github.com/"
+               ],
+               "responseHeader" : [
+                  "content-length",
+                  "connection",
+                  "location"
+               ],
+               "responseHeaderCnt" : 3,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "statuscode" : [
+                  301
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "www.github.com/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1385394928608,
             "length" : 125,
+            "node" : "test",
             "packetLen" : [
                94,
                90,
@@ -20,29 +86,6 @@
                82,
                82
             ],
-            "firstPacket" : 1385394928482,
-            "dstPort" : 80,
-            "fileId" : [],
-            "dstIp" : "192.30.252.130",
-            "dstRIR" : "ARIN",
-            "node" : "test",
-            "dstGEO" : "US",
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "dstMacCnt" : 2,
-            "dstPayload8" : "485454502f312e31",
-            "totPackets" : 8,
-            "srcMacCnt" : 1,
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstBytes" : 313,
-            "dstASN" : "AS36459 GitHub, Inc.",
-            "srcGEO" : "US",
-            "lastPacket" : 1385394928608,
             "packetPos" : [
                24,
                118,
@@ -53,82 +96,48 @@
                788,
                870
             ],
-            "http" : {
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "serverVersionCnt" : 1,
-               "response-location" : [
-                  "https://www.github.com/"
-               ],
-               "statuscode" : [
-                  301
-               ],
-               "hostCnt" : 1,
-               "uriCnt" : 1,
-               "useragentCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "pathCnt" : 1,
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "uri" : [
-                  "www.github.com/"
-               ],
-               "responseHeaderCnt" : 3,
-               "statuscodeCnt" : 1,
-               "requestHeaderCnt" : 3,
-               "clientVersionCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "host"
-               ],
-               "host" : [
-                  "www.github.com"
-               ],
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "responseHeader" : [
-                  "content-length",
-                  "connection",
-                  "location"
-               ],
-               "methodCnt" : 1
-            },
-            "srcPort" : 62341,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "srcZero" : 0,
-               "ack" : 3,
-               "syn" : 1,
-               "fin" : 2,
-               "urg" : 0,
-               "dstZero" : 0,
-               "rst" : 0,
-               "psh" : 1
-            },
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 487,
+            "srcDataBytes" : 145,
+            "srcGEO" : "US",
             "srcIp" : "10.180.156.141",
             "srcMac" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "srcPayload8" : "474554202f204854",
-            "ipProtocol" : 6,
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 5,
-            "totBytes" : 800,
-            "srcDataBytes" : 145,
-            "totDataBytes" : 252,
-            "srcBytes" : 487,
+            "srcPayload8" : "474554202f204854",
+            "srcPort" : 62341,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "timestamp" : "SET",
-            "dstPackets" : 3
+            "totBytes" : 800,
+            "totDataBytes" : 252,
+            "totPackets" : 8
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131125",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -1,89 +1,97 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160618"
-            }
-         },
          "body" : {
-            "lastPacket" : 1466265698251,
-            "packetPos" : [
-               24,
-               110,
-               196,
-               272
-            ],
-            "srcBytes" : 461,
-            "protocol" : [
-               "tcp",
-               "krb5"
-            ],
-            "firstPacket" : 1466265698248,
-            "srcPackets" : 3,
-            "srcPort" : 57167,
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcMacCnt" : 1,
-            "totBytes" : 531,
+            "dstBytes" : 70,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.11.11.11",
             "dstMac" : [
                "00:22:83:3f:17:cc"
             ],
-            "srcDataBytes" : 273,
-            "ipProtocol" : 6,
-            "dstIp" : "10.11.11.11",
             "dstMacCnt" : 1,
-            "vlanCnt" : 1,
-            "node" : "test",
-            "timestamp" : "SET",
-            "protocolCnt" : 2,
-            "tcpflags" : {
-               "fin" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "dstZero" : 0,
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "ack" : 1,
-               "psh" : 1
-            },
-            "dstDataBytes" : 0,
-            "length" : 2,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
-            "segmentCnt" : 1,
+            "dstPort" : 88,
+            "fileId" : [],
+            "firstPacket" : 1466265698248,
+            "ipProtocol" : 6,
             "krb5" : {
-               "realmCnt" : 1,
                "cname" : [
                   "xxxxxxxxxxx$"
                ],
                "cnameCnt" : 1,
+               "realm" : [
+                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ],
+               "realmCnt" : 1,
                "sname" : [
                   "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
                ],
-               "snameCnt" : 1,
-               "realm" : [
-                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ]
+               "snameCnt" : 1
             },
-            "totPackets" : 4,
-            "vlan" : [
-               50
-            ],
+            "lastPacket" : 1466265698251,
+            "length" : 2,
+            "node" : "test",
             "packetLen" : [
                86,
                86,
                76,
                347
             ],
+            "packetPos" : [
+               24,
+               110,
+               196,
+               272
+            ],
+            "protocol" : [
+               "tcp",
+               "krb5"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 461,
+            "srcDataBytes" : 273,
             "srcIp" : "10.10.10.10",
-            "fileId" : [],
-            "dstPort" : 88,
-            "dstBytes" : 70,
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
             "srcPayload8" : "0000010d6a820109",
-            "totDataBytes" : 273
+            "srcPort" : 57167,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 531,
+            "totDataBytes" : 273,
+            "totPackets" : 4,
+            "vlan" : [
+               50
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160618",
+               "_type" : "session"
+            }
          }
       }
    ]

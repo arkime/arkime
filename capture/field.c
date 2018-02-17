@@ -530,7 +530,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
 
         if (hstring) {
             field->jsonSize -= (6 + 2*len);
-            return FALSE;
+            return NULL;
         }
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
         if (copy) {
@@ -547,7 +547,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
     case MOLOCH_FIELD_TYPE_STR_GHASH:
         if (g_hash_table_lookup(field->ghash, string)) {
             field->jsonSize -= (6 + 2*len);
-            return FALSE;
+            return NULL;
         }
         if (copy)
             string = g_strndup(string, len);

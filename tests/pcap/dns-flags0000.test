@@ -1,90 +1,99 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-140226"
-            }
-         },
          "body" : {
-            "totDataBytes" : 148,
-            "tagsCnt" : 2,
-            "protocol" : [
-               "udp",
-               "dns"
-            ],
-            "fileId" : [],
-            "srcDataBytes" : 74,
-            "dstGEO" : "RU",
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "srcIp" : "10.0.0.2",
-            "firstPacket" : 1393422583830,
-            "srcBytes" : 82,
-            "srcPort" : 61912,
-            "timestamp" : "SET",
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ],
-            "node" : "test",
-            "ipProtocol" : 17,
-            "totPackets" : 2,
-            "dstPayload8" : "b2b5800500010000",
-            "srcASN" : "AS0001 Cool Beans!",
-            "dstPort" : 53,
-            "totBytes" : 164,
-            "lastPacket" : 1393422583932,
-            "srcPayload8" : "b2b5000000010000",
-            "protocolCnt" : 2,
-            "srcPackets" : 1,
-            "dstMacCnt" : 1,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "packetLen" : [
-               98,
-               98
-            ],
-            "dstBytes" : 82,
-            "length" : 102,
-            "dstASN" : "AS0000 This is neat",
-            "srcGEO" : "CA",
             "dns" : {
-               "opcode" : [
-                  "QUERY"
-               ],
-               "status" : [
-                  "REFUSED"
-               ],
-               "statusCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qtCnt" : 1,
-               "opcodeCnt" : 1,
                "host" : [
                   "flashservice.adobe.com"
                ],
                "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
                "qt" : [
                   "A"
-               ]
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "REFUSED"
+               ],
+               "statusCnt" : 1
             },
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 82,
             "dstDataBytes" : 74,
-            "segmentCnt" : 1,
+            "dstGEO" : "RU",
             "dstIp" : "10.0.0.1",
-            "srcMacCnt" : 2,
+            "dstMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
+            "dstPayload8" : "b2b5800500010000",
+            "dstPort" : 53,
+            "fileId" : [],
+            "firstPacket" : 1393422583830,
+            "ipProtocol" : 17,
+            "lastPacket" : 1393422583932,
+            "length" : 102,
+            "node" : "test",
+            "packetLen" : [
+               98,
+               98
+            ],
             "packetPos" : [
                24,
                122
             ],
-            "srcRIR" : "TEST"
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 82,
+            "srcDataBytes" : 74,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "00:00:5e:00:01:03",
+               "88:e0:f3:f1:91:f2"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 1,
+            "srcPayload8" : "b2b5000000010000",
+            "srcPort" : 61912,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "timestamp" : "SET",
+            "totBytes" : 164,
+            "totDataBytes" : 148,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140226",
+               "_type" : "session"
+            }
          }
       }
    ]

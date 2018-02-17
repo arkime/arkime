@@ -315,6 +315,7 @@ typedef struct moloch_config {
     char     *geoLite2ASN;
     char     *geoLite2Country;
     char     *rirFile;
+    char     *ouiFile;
     char     *dropUser;
     char     *dropGroup;
     char    **pluginsDir;
@@ -699,6 +700,8 @@ void     moloch_db_update_field(char *expression, char *name, char *value);
 void     moloch_db_update_filesize(uint32_t fileid, uint64_t size);
 gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();
+void     moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac);
+
 
 // Replace how SPI data is sent to ES.
 // The implementation must either call a moloch_http_free_buffer or another moloch_http routine that frees the buffer

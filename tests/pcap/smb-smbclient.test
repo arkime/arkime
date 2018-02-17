@@ -1,82 +1,27 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-131219",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "srcPackets" : 21,
-            "srcIp" : "127.0.0.1",
+            "dstBytes" : 1667,
+            "dstDataBytes" : 801,
             "dstIp" : "127.0.0.1",
-            "srcPayload8" : "000000beff534d42",
-            "dstMacCnt" : 1,
-            "srcDataBytes" : 868,
-            "dstPort" : 445,
             "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "timestamp" : "SET",
-            "packetPos" : [
-               24,
-               114,
-               204,
-               286,
-               562,
-               644,
-               827,
-               909,
-               1123,
-               1305,
-               1473,
-               1621,
-               1703,
-               1842,
-               1981,
-               2063,
-               2237,
-               2419,
-               2501,
-               2671,
-               2822,
-               2904,
-               3062,
-               3296,
-               3437,
-               3597,
-               3724,
-               3845,
-               3927,
-               4048,
-               4169,
-               4251,
-               4333,
-               4415
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
-            "protocolCnt" : 2,
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "totBytes" : 3929,
-            "node" : "test",
-            "fileId" : [],
-            "dstBytes" : 1667,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "ack" : 10,
-               "fin" : 2,
-               "syn" : 1,
-               "psh" : 20,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "srcZero" : 0
-            },
-            "srcMacCnt" : 1,
-            "segmentCnt" : 1,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 13,
             "dstPayload8" : "00000061ff534d42",
+            "dstPort" : 445,
+            "fileId" : [],
+            "firstPacket" : 1387494788141,
+            "ipProtocol" : 6,
+            "lastPacket" : 1387494791811,
+            "length" : 3669,
+            "node" : "test",
             "packetLen" : [
                90,
                90,
@@ -113,45 +58,108 @@
                82,
                82
             ],
-            "ipProtocol" : 6,
-            "srcBytes" : 2262,
-            "lastPacket" : 1387494791811,
-            "length" : 3669,
-            "dstDataBytes" : 801,
-            "firstPacket" : 1387494788141,
-            "dstPackets" : 13,
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               562,
+               644,
+               827,
+               909,
+               1123,
+               1305,
+               1473,
+               1621,
+               1703,
+               1842,
+               1981,
+               2063,
+               2237,
+               2419,
+               2501,
+               2671,
+               2822,
+               2904,
+               3062,
+               3296,
+               3437,
+               3597,
+               3724,
+               3845,
+               3927,
+               4048,
+               4169,
+               4251,
+               4333,
+               4415
+            ],
             "protocol" : [
                "smb",
                "tcp"
             ],
-            "totDataBytes" : 1669,
-            "srcPort" : 41823,
-            "totPackets" : 34,
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
             "smb" : {
-               "filenameCnt" : 1,
                "domain" : [
                   "WORKGROUP"
                ],
-               "version" : [
-                  "Samba 3.6.3"
-               ],
-               "user" : [
-                  "user"
-               ],
-               "os" : [
-                  "Unix"
-               ],
-               "userCnt" : 1,
-               "versionCnt" : 1,
-               "shareCnt" : 1,
+               "domainCnt" : 1,
                "filename" : [
                   "\\tmp\\foo"
                ],
+               "filenameCnt" : 1,
+               "os" : [
+                  "Unix"
+               ],
+               "osCnt" : 1,
                "share" : [
                   "\\\\LOCALHOST\\MP3"
                ],
-               "domainCnt" : 1,
-               "osCnt" : 1
+               "shareCnt" : 1,
+               "user" : [
+                  "user"
+               ],
+               "userCnt" : 1,
+               "version" : [
+                  "Samba 3.6.3"
+               ],
+               "versionCnt" : 1
+            },
+            "srcBytes" : 2262,
+            "srcDataBytes" : 868,
+            "srcIp" : "127.0.0.1",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 21,
+            "srcPayload8" : "000000beff534d42",
+            "srcPort" : 41823,
+            "tcpflags" : {
+               "ack" : 10,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 20,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3929,
+            "totDataBytes" : 1669,
+            "totPackets" : 34
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131219",
+               "_type" : "session"
             }
          }
       }

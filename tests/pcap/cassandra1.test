@@ -1,78 +1,86 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-160616",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "protocol" : [
-               "cassandra",
-               "tcp",
-               "thrift"
-            ],
             "dstBytes" : 78,
-            "srcPackets" : 3,
-            "dstIp" : "10.176.171.11",
-            "totDataBytes" : 41,
-            "node" : "test",
-            "timestamp" : "SET",
-            "totBytes" : 341,
-            "lastPacket" : 1466085103897,
-            "vlan" : [
-               50,
-               300
-            ],
-            "fileId" : [],
-            "length" : 10,
-            "totPackets" : 4,
-            "srcDataBytes" : 41,
-            "srcBytes" : 263,
-            "srcPort" : 56391,
             "dstDataBytes" : 0,
-            "tcpflags" : {
-               "fin" : 0,
-               "ack" : 1,
-               "dstZero" : 0,
-               "srcZero" : 0,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "rst" : 0,
-               "psh" : 1
-            },
-            "segmentCnt" : 1,
-            "firstPacket" : 1466085103886,
-            "srcIp" : "10.10.10.10",
-            "dstPort" : 9160,
-            "srcMacCnt" : 2,
-            "ipProtocol" : 6,
+            "dstIp" : "10.176.171.11",
             "dstMac" : [
                "2c:6b:f5:d6:17:c5"
             ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Palo Alto Networks"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
+            "dstPort" : 9160,
+            "fileId" : [],
+            "firstPacket" : 1466085103886,
+            "ipProtocol" : 6,
+            "lastPacket" : 1466085103897,
+            "length" : 10,
+            "node" : "test",
             "packetLen" : [
                98,
                94,
                86,
                127
             ],
-            "srcMac" : [
-               "00:1b:17:00:02:30",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "vlanCnt" : 2,
             "packetPos" : [
                24,
                122,
                216,
                302
             ],
+            "protocol" : [
+               "cassandra",
+               "tcp",
+               "thrift"
+            ],
             "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 263,
+            "srcDataBytes" : 41,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:1b:17:00:02:30",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
             "srcPayload8" : "0000002580010001",
-            "dstMacCnt" : 1
+            "srcPort" : 56391,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 341,
+            "totDataBytes" : 41,
+            "totPackets" : 4,
+            "vlan" : [
+               50,
+               300
+            ],
+            "vlanCnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160616",
+               "_type" : "session"
+            }
          }
       }
    ]

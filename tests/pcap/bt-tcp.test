@@ -3,75 +3,88 @@
       {
          "body" : {
             "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 66,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:00:5e:00:01:02",
+               "00:1d:b5:ce:ef:c0"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco Systems, Inc",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 26001,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1387744084182,
+            "ipProtocol" : 6,
+            "lastPacket" : 1387744084305,
+            "length" : 123,
+            "node" : "test",
             "packetLen" : [
                82,
                82,
                76,
                138
             ],
-            "protocol" : [
-               "tcp",
-               "bittorrent"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 3,
-            "srcMac" : [
-               "00:0f:f7:76:82:80"
-            ],
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "totDataBytes" : 68,
-            "totBytes" : 314,
-            "protocolCnt" : 2,
-            "srcDataBytes" : 68,
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:00:5e:00:01:02",
-               "00:1d:b5:ce:ef:c0"
-            ],
-            "tcpflags" : {
-               "dstZero" : 0,
-               "rst" : 0,
-               "urg" : 0,
-               "syn" : 1,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "psh" : 1,
-               "ack" : 1,
-               "srcZero" : 0
-            },
-            "srcPort" : 1203,
-            "srcPayload8" : "13426974546f7272",
-            "srcIp" : "10.0.0.1",
-            "dstPackets" : 1,
-            "dstDataBytes" : 0,
-            "dstRIR" : "TEST",
-            "tagsCnt" : 2,
-            "dstGEO" : "CA",
-            "totPackets" : 4,
-            "length" : 123,
-            "dstPort" : 26001,
-            "srcBytes" : 248,
-            "timestamp" : "SET",
-            "fileId" : [],
-            "srcGEO" : "RU",
-            "node" : "test",
-            "dstMacCnt" : 2,
-            "srcASN" : "AS0000 This is neat",
             "packetPos" : [
                24,
                106,
                188,
                264
             ],
-            "dstBytes" : 66,
-            "ipProtocol" : 6,
+            "protocol" : [
+               "tcp",
+               "bittorrent"
+            ],
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 248,
+            "srcDataBytes" : 68,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:0f:f7:76:82:80"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "ICANN, IANA Department"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "13426974546f7272",
+            "srcPort" : 1203,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
                "GEO" : [
                   "RU"
+               ],
+               "RIR" : [
+                  ""
                ],
                "ip" : [
                   "10.0.0.1"
@@ -79,96 +92,100 @@
                "number" : [
                   33554442
                ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
                "string.snow" : [
                   "16777226:1203,33554442:26001"
-               ],
-               "RIR" : [
-                  ""
                ]
             },
-            "lastPacket" : 1387744084305,
-            "firstPacket" : 1387744084182
+            "timestamp" : "SET",
+            "totBytes" : 314,
+            "totDataBytes" : 68,
+            "totPackets" : 4
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131222"
+               "_index" : "tests_sessions2-131222",
+               "_type" : "session"
             }
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-161224",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "packetPos" : [
-               402,
-               496,
-               594,
-               680
-            ],
-            "ipProtocol" : 6,
             "dstBytes" : 82,
-            "firstPacket" : 1482553479723,
-            "segmentCnt" : 1,
-            "lastPacket" : 1482553479744,
-            "fileId" : [],
-            "vlanCnt" : 1,
-            "srcBytes" : 286,
-            "dstPort" : 15365,
-            "timestamp" : "SET",
-            "dstMacCnt" : 1,
-            "node" : "test",
-            "srcIp" : "10.10.10.10",
+            "dstDataBytes" : 0,
+            "dstIp" : "10.11.11.11",
             "dstMac" : [
                "00:1b:17:00:02:30"
             ],
-            "vlan" : [
-               300
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
             ],
-            "tcpflags" : {
-               "ack" : 1,
-               "srcZero" : 0,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "psh" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "dstZero" : 0
-            },
-            "srcPort" : 43890,
-            "srcPayload8" : "4253594e43000000",
-            "totPackets" : 4,
-            "length" : 21,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
-            "dstDataBytes" : 0,
-            "srcMac" : [
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "srcPackets" : 3,
-            "srcMacCnt" : 1,
-            "protocol" : [
-               "tcp",
-               "bittorrent"
-            ],
+            "dstPort" : 15365,
+            "fileId" : [],
+            "firstPacket" : 1482553479723,
+            "ipProtocol" : 6,
+            "lastPacket" : 1482553479744,
+            "length" : 21,
+            "node" : "test",
             "packetLen" : [
                94,
                98,
                86,
                154
             ],
-            "totDataBytes" : 68,
-            "totBytes" : 368,
-            "srcDataBytes" : 68,
+            "packetPos" : [
+               402,
+               496,
+               594,
+               680
+            ],
+            "protocol" : [
+               "tcp",
+               "bittorrent"
+            ],
             "protocolCnt" : 2,
-            "dstIp" : "10.11.11.11"
+            "segmentCnt" : 1,
+            "srcBytes" : 286,
+            "srcDataBytes" : 68,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Palo Alto Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "4253594e43000000",
+            "srcPort" : 43890,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 368,
+            "totDataBytes" : 68,
+            "totPackets" : 4,
+            "vlan" : [
+               300
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-161224",
+               "_type" : "session"
+            }
          }
       }
    ]
