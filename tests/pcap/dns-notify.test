@@ -34,7 +34,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Cisco Systems, Inc"
+               "Realtek (UpTech? also reported)"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -72,8 +72,8 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "ICANN, IANA Department",
-               "Realtek (UpTech? also reported)"
+               "Cisco Systems, Inc",
+               "ICANN, IANA Department"
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 1,

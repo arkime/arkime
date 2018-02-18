@@ -11,7 +11,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Apple, Inc."
+               "Dell Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 6,
@@ -144,7 +144,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Dell Inc."
+               "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 8,
@@ -184,7 +184,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Apple, Inc."
+               "Dell Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 7,
@@ -316,7 +316,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Dell Inc."
+               "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 8,
@@ -356,7 +356,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Apple, Inc."
+               "Dell Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 7,
@@ -495,7 +495,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Dell Inc."
+               "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 10,

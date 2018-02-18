@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -49,9 +49,10 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuiCnt" : 2,
             "srcPackets" : 3,
             "srcPayload8" : "0000002580010001",
             "srcPort" : 56391,

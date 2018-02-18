@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Oracle Corporation"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -50,7 +50,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Oracle Corporation"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 2,

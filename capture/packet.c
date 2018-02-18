@@ -684,9 +684,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
                     moloch_db_oui_lookup(oui2Field, session, pcapData+6);
             } else {
                 if (moloch_field_string_add(mac1Field, session, str2, 17, TRUE))
-                    moloch_db_oui_lookup(oui2Field, session, pcapData+6);
+                    moloch_db_oui_lookup(oui1Field, session, pcapData+6);
                 if (moloch_field_string_add(mac2Field, session, str1, 17, TRUE))
-                    moloch_db_oui_lookup(oui1Field, session, pcapData);
+                    moloch_db_oui_lookup(oui2Field, session, pcapData);
             }
 
             int n = 12;
@@ -1520,13 +1520,13 @@ void moloch_packet_init()
         "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
-    oui1Field = moloch_field_define("general", "lotermfield",
+    oui1Field = moloch_field_define("general", "termfield",
         "oui.src", "Src OUI", "srcOui",
         "Source ethernet oui set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
-    oui2Field = moloch_field_define("general", "lotermfield",
+    oui2Field = moloch_field_define("general", "termfield",
         "oui.dst", "Dst OUI", "dstOui",
         "Destination ethernet oui set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,

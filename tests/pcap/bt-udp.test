@@ -80,7 +80,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -111,7 +111,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -139,7 +139,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -170,7 +170,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,

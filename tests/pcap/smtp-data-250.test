@@ -13,7 +13,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco Systems, Inc",
+               "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
@@ -144,7 +144,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 14,

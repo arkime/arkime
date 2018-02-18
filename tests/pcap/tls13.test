@@ -12,7 +12,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Intel Corporate"
+               "Hewlett Packard"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 3,
@@ -62,7 +62,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Hewlett Packard"
+               "Intel Corporate"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,

@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Intel Corporate"
+               "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 5,
@@ -71,7 +71,7 @@
             "srcMacCnt" : 2,
             "srcOui" : [
                "ICANN, IANA Department",
-               "VMware, Inc."
+               "Intel Corporate"
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 6,

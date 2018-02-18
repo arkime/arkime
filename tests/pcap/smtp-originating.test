@@ -9,6 +9,10 @@
                "00:25:90:a2:c2:6c"
             ],
             "dstMacCnt" : 1,
+            "dstOui" : [
+               "Super Micro Computer, Inc."
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 11,
             "dstPayload8" : "3232302078787878",
             "dstPort" : 25,
@@ -159,10 +163,9 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "ICANN, IANA Department",
-               "Super Micro Computer, Inc."
+               "ICANN, IANA Department"
             ],
-            "srcOuiCnt" : 2,
+            "srcOuiCnt" : 1,
             "srcPackets" : 13,
             "srcPayload8" : "45484c4f20787878",
             "srcPort" : 55713,

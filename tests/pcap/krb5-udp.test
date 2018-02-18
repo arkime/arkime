@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Palo Alto Networks"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -55,7 +55,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Palo Alto Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,

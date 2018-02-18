@@ -1,4 +1,4 @@
-use Test::More tests => 557;
+use Test::More tests => 573;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -323,6 +323,18 @@ if (0) {
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=*:e*"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=/00:.*/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=[00:23:04:17:9b:00,00:1a:e3:dc:2e:c0]"));
+
+# oui.src tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.src=\"Cisco Systems, Inc\""));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.src=Cisco*"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.src=\"cisco Systems, Inc\""));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.src=cisco*"));
+
+# oui.dst tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.dst=\"Juniper Networks\""));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.dst=Juniper*"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.dst=\"juniper Networks\""));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&oui.dst=juniper*"));
 
 #starttime
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&starttime==\"2014/02/26 10:27:57\""));

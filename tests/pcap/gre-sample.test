@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 6,
@@ -90,7 +90,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 4,
@@ -120,7 +120,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -175,7 +175,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -204,7 +204,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 10,
@@ -299,7 +299,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 12,
@@ -368,7 +368,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -422,7 +422,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 2,
@@ -453,7 +453,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -508,7 +508,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -539,7 +539,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Agere Systems"
+               "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -594,7 +594,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               ""
+               "Agere Systems"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,

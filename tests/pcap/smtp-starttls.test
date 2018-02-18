@@ -81,7 +81,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Dell Inc.",
+               "Cisco",
                "Jetcell, Inc."
             ],
             "dstOuiCnt" : 2,
@@ -188,7 +188,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Cisco"
+               "Dell Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 17,

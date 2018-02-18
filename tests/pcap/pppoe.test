@@ -60,7 +60,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Askey Computer Corp"
+               "Unisphere Solutions"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 5,
@@ -114,7 +114,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Unisphere Solutions"
+               "Askey Computer Corp"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 5,

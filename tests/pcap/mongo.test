@@ -11,10 +11,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Juniper Networks",
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
             "dstPort" : 27017,
             "fileId" : [],
@@ -54,9 +53,10 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuiCnt" : 2,
             "srcPackets" : 5,
             "srcPayload8" : "f700000098366e4d",
             "srcPort" : 51822,
@@ -100,8 +100,8 @@
             ],
             "dstMacCnt" : 3,
             "dstOui" : [
-               "Juniper Networks",
-               "Palo Alto Networks"
+               "ICANN, IANA Department",
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
             "dstPackets" : 1,
@@ -143,8 +143,8 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 5,
@@ -188,7 +188,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks"
+               "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -225,7 +225,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,
@@ -268,7 +268,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks"
+               "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -306,10 +306,9 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Juniper Networks",
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
-            "srcOuiCnt" : 2,
+            "srcOuiCnt" : 1,
             "srcPackets" : 3,
             "srcPayload8" : "0d01000000000000",
             "srcPort" : 51358,
@@ -350,10 +349,9 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks",
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 2,
             "dstPort" : 30000,
             "fileId" : [],
@@ -395,9 +393,10 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuiCnt" : 2,
             "srcPackets" : 5,
             "srcPayload8" : "4900000087910000",
             "srcPort" : 64566,

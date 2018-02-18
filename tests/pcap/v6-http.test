@@ -9,10 +9,6 @@
                "33:33:ff:82:95:b5"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "IBM Corp"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 0,
             "fileId" : [],
@@ -111,6 +107,10 @@
                "00:11:25:82:95:b5"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "IBM Corp"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 33,
             "srcPort" : 0,
             "timestamp" : "SET",
@@ -134,10 +134,6 @@
                "33:33:00:00:00:16"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 0,
             "fileId" : [],
@@ -174,6 +170,10 @@
                "00:d0:09:e3:e8:de"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "Hsing Tech. Enterprise Co. Ltd"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 2,
             "srcPort" : 0,
             "timestamp" : "SET",
@@ -197,10 +197,6 @@
                "33:33:ff:98:06:e1"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 0,
             "fileId" : [],
@@ -235,6 +231,10 @@
                "00:d0:09:e3:e8:de"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "Hsing Tech. Enterprise Co. Ltd"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 1,
             "srcPort" : 0,
             "timestamp" : "SET",
@@ -277,10 +277,6 @@
                "33:33:00:00:00:fb"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 5353,
             "fileId" : [],
@@ -325,6 +321,10 @@
                "00:d0:09:e3:e8:de"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "Hsing Tech. Enterprise Co. Ltd"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 8,
             "srcPayload8" : "0000000000020000",
             "srcPort" : 5353,
@@ -349,10 +349,6 @@
                "33:33:00:00:00:01"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "IBM Corp"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 0,
             "fileId" : [],
@@ -387,6 +383,10 @@
                "00:11:25:82:95:b5"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "IBM Corp"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 1,
             "srcPort" : 0,
             "timestamp" : "SET",
@@ -413,7 +413,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
+               "IBM Corp"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 4,
@@ -527,7 +527,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "IBM Corp"
+               "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 6,

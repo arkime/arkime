@@ -12,7 +12,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Huawei Technologies Co.,Ltd"
+               "Lex Computech Co., Ltd"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 19,
@@ -138,7 +138,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Lex Computech Co., Ltd"
+               "Huawei Technologies Co.,Ltd"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 25,

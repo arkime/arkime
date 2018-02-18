@@ -12,7 +12,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Intel Corporate"
+               "OneAccess SA"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 2,
@@ -68,7 +68,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "OneAccess SA"
+               "Intel Corporate"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,

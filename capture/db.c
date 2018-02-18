@@ -1682,21 +1682,30 @@ void moloch_db_load_oui()
     }
 
     while(fgets(line, sizeof(line), fp)) {
-        if (*line == '#')
-            continue;
-
-        int len = strlen(line);
-        if (len < 4)
-            continue;
-        line[len-1] = 0;
-
         char *hash = strchr(line, '#');
         if (hash)
             *hash = 0;
 
-        gchar **parts = g_strsplit(line, "\t", 0);
-        char *str = parts[2]?parts[2]:parts[1];
+        // Trim
+        int len = strlen(line);
+        if (len < 4) continue;
+        while (len > 0 && isspace(line[len-1]) )
+            len--;
+        line[len] = 0;
 
+        // Break into pieces
+        gchar **parts = g_strsplit(line, "\t", 0);
+        char *str;
+        if (parts[2]) {
+            if (parts[2][0])
+                str = parts[2];
+            else if (parts[3]) // The file sometimes has 2 tabs in a row :(
+                str = parts[3];
+        } else {
+            str = parts[1];
+        }
+
+        // Remove separators and get bitlen
         int i = 0, j = 0, bitlen = 24;
         for (i = 0; parts[0][i]; i++) {
             if (parts[0][i] == ':' || parts[0][i] == '-' || parts[0][i] == '.')
@@ -1711,11 +1720,13 @@ void moloch_db_load_oui()
         }
         parts[0][j] = 0;
 
+        // Convert to binary
         unsigned char buf[16];
         for (i=0, j=0; i < len && j < 8; i += 2, j++) {
             buf[j] = moloch_hex_to_char[(int)parts[0][i]][(int)parts[0][i+1]];
         }
 
+        // Create node
         prefix_t       *prefix;
         patricia_node_t *node;
 

@@ -10,7 +10,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Juniper Networks"
+               "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 12,
@@ -102,7 +102,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 14,

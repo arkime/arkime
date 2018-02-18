@@ -30,7 +30,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Cisco Systems, Inc"
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -64,7 +64,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Juniper Networks"
+               "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,

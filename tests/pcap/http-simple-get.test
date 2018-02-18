@@ -11,7 +11,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Apple, Inc."
+               "Dell Inc."
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 8,
@@ -135,7 +135,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Dell Inc."
+               "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 8,

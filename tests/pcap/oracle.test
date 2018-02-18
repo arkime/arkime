@@ -11,8 +11,8 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Juniper Networks",
-               "Palo Alto Networks"
+               "ICANN, IANA Department",
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
             "dstPackets" : 1,
@@ -59,8 +59,8 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 5,

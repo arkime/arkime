@@ -56,10 +56,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco Systems, Inc",
-               "Juniper Networks"
+               "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
             "dstPayload8" : "5aae011000010000",
             "dstPort" : 62928,
@@ -94,10 +93,9 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Cisco Systems, Inc",
                "Juniper Networks"
             ],
-            "srcOuiCnt" : 2,
+            "srcOuiCnt" : 1,
             "srcPackets" : 1,
             "srcPayload8" : "5aae819000010003",
             "srcPort" : 53,

@@ -12,7 +12,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -46,7 +46,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Juniper Networks"
+               "Palo Alto Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -103,7 +103,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Palo Alto Networks"
+               "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -135,7 +135,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Juniper Networks"
+               "Palo Alto Networks"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -168,9 +168,10 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
+               "Juniper Networks",
                "Palo Alto Networks"
             ],
-            "dstOuiCnt" : 1,
+            "dstOuiCnt" : 2,
             "dstPackets" : 1,
             "dstPort" : 3478,
             "fileId" : [],
@@ -204,9 +205,10 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Juniper Networks"
+               "Juniper Networks",
+               "Palo Alto Networks"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuiCnt" : 2,
             "srcPackets" : 2,
             "srcPayload8" : "5253502f312e3020",
             "srcPort" : 64379,
@@ -307,7 +309,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Cisco Systems, Inc"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -338,7 +340,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -366,7 +368,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "Cisco Systems, Inc"
+               "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -397,7 +399,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "ICANN, IANA Department"
+               "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,

@@ -9,10 +9,6 @@
                "ff:ff:ff:ff:ff:ff"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 711,
             "fileId" : [],
@@ -49,6 +45,10 @@
                "00:30:96:05:28:38"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 6,
             "srcPayload8" : "000100100a010001",
             "srcPort" : 711,
@@ -73,10 +73,6 @@
                "ff:ff:ff:ff:ff:ff"
             ],
             "dstMacCnt" : 1,
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
             "dstPackets" : 0,
             "dstPort" : 711,
             "fileId" : [],
@@ -113,6 +109,10 @@
                "00:30:96:e6:fc:39"
             ],
             "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
             "srcPackets" : 6,
             "srcPayload8" : "000100100a200001",
             "srcPort" : 711,

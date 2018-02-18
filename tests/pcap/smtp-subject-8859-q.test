@@ -13,8 +13,8 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco Systems, Inc",
-               "Dell Inc."
+               "Cisco",
+               "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 2,
             "dstPackets" : 14,
@@ -165,7 +165,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "Cisco"
+               "Dell Inc."
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 15,
