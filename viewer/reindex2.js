@@ -1,3 +1,4 @@
+#!/usr/bin/env node --max_old_space_size=2000
 /******************************************************************************/
 /* reindex2.js  -- Reindex all the sessions indices to sessions2, which will
  *                 * rename most fields
@@ -44,7 +45,7 @@ var MIN_DB_VERSION = 38;
 var internals = {
   sliceMax: 3,
   sliceNum: 0,
-  scrollSize: 1000,
+  scrollSize: 500,
   index: "sessions-*",
   stats: {},
   statsTime: {},
@@ -1108,7 +1109,7 @@ for (let i = 0; i < process.argv.length; i++) {
     break;
   case "--size":
     i++;
-    internals.scrollSize = +process.argv[i] || 1000;
+    internals.scrollSize = +process.argv[i] || 500;
     break;
   case "--index":
     i++;
@@ -1132,7 +1133,7 @@ for (let i = 0; i < process.argv.length; i++) {
 }
 
 if (internals.sliceMax <= 1) {internals.sliceMax = 2;}
-if (internals.scrollSize <= 100) {internals.scrollSize = 100;}
+if (internals.scrollSize <= 50) {internals.scrollSize = 50;}
 
 if (cluster.isMaster) {
 // If master connect to DB and call mainMaster
