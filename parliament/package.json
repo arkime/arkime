@@ -17,6 +17,7 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "font-awesome": "^4.7.0",
+    "glob": "^7.1.2",
     "jsonwebtoken": "^8.1.0",
     "morgan": "^1.9.0",
     "request-promise": "^4.2.2",

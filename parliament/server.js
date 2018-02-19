@@ -15,6 +15,7 @@ const bp      = require('body-parser');
 const logger  = require('morgan');
 const jwt     = require('jsonwebtoken');
 const bcrypt  = require('bcrypt');
+const glob    = require('glob');
 
 
 /* app setup --------------------------------------------------------------- */
@@ -167,9 +168,12 @@ function loadNotifiers() {
     }
   };
 
-  // TODO look for all provider.*.js (use glob?)
-  var plugin = require('./notifiers/provider.notifme.js');
-  plugin.init(api);
+  // look for all notifier providers and initialize them
+  let files = glob.sync(path.join(__dirname, '/notifiers/provider.*.js'));
+  files.forEach((file) => {
+    let plugin = require(file);
+    plugin.init(api);
+  });
 }
 
 loadNotifiers();
@@ -500,7 +504,7 @@ function initalizeParliament() {
       if (!parliament.settings.notifiers[n]) {
         const notifier = internals.notifiers[n];
 
-        let notifierData = { name: n, fields: {} };
+        let notifierData = { name: n, fields: {}, alerts: {} };
 
         // add fields to notifier
         for (let field of notifier.fields) {
