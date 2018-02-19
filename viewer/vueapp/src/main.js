@@ -40,6 +40,7 @@ new Vue({
     // define app constants
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
+      MOLOCH_TITLE_CONFIG: MOLOCH_TITLE_CONFIG,
       MOLOCH_DEMO_MODE: MOLOCH_DEMO_MODE,
       MOLOCH_DEV_MODE: MOLOCH_DEV_MODE,
       MOLOCH_VERSION: MOLOCH_VERSION

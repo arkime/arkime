@@ -5716,7 +5716,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
 app.get(['/vueapp', '/vueapp/stats'], (req, res) => {
-  var cookieOptions = { path: app.locals.basePath };
+  let cookieOptions = { path: app.locals.basePath };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   // send cookie for basic, non admin functions
@@ -5730,17 +5730,22 @@ app.get(['/vueapp', '/vueapp/stats'], (req, res) => {
     template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
   });
 
-  var theme = req.user.settings.theme || 'default-theme';
+  let theme = req.user.settings.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
 
+  let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
+    .replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:'-')
+    .replace(/_userName_/g, req.user?req.user.userName:'-')
+
   const appContext = {
-    title: 'HEY HEY HEY', // TODO
     theme: theme,
-    themeUrl: theme === 'custom-theme' ? 'user.css' : '',
-    demoMode: Config.get('demoMode', false),
-    devMode: Config.get('devMode', false),
+    titleConfig: titleConfig,
+    path: app.locals.basePath,
     version: app.locals.molochversion,
-    path: app.locals.basePath
+    devMode: Config.get('devMode', false),
+    demoMode: Config.get('demoMode', false),
+    themeUrl: theme === 'custom-theme' ? 'user.css' : ''
   }
 
   // Create a fresh Vue app instance
