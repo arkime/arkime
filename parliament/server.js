@@ -498,6 +498,13 @@ function initalizeParliament() {
       }
     }
 
+    if (!parliament.settings) {
+      parliament.settings = {};
+    }
+    if (!parliament.settings.notifiers) {
+      parliament.settings.notifiers = {};
+    }
+
     // build notifiers
     for (let n in internals.notifiers) {
       // if the notifier is not in settings, add it
