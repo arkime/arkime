@@ -240,6 +240,7 @@ export default {
   },
   watch: {
     graphType: function () {
+      initialized = false;
       this.loadData();
     },
     graphInterval: function () {
@@ -247,6 +248,7 @@ export default {
       this.loadData();
     },
     graphHide: function () {
+      initialized = false;
       this.query.hide = this.graphHide;
       this.loadData();
     },
@@ -486,6 +488,8 @@ export default {
     }
   },
   beforeDestroy: function () {
+    initialized = false;
+
     if (this.context) {
       this.context.stop(); // stop cubism context from continuing to issue reqs
     }
