@@ -465,6 +465,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             struct timespec ts;
             gettimeofday(&tv, NULL);
             ts.tv_sec = tv.tv_sec + 1;
+            ts.tv_nsec = 0;
             MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
         }
         inProgress[thread] = 1;
