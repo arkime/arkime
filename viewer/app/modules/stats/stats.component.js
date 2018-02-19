@@ -375,9 +375,9 @@
 
           let timeFormat;
           if (self.settings.timezone === 'gmt') {
-            timeFormat = d3.time.format(timeStr);
-          } else {
             timeFormat = d3.time.format.utc(timeStr + 'Z');
+          } else {
+            timeFormat = d3.time.format(timeStr);
           }
 
           div.append('div')

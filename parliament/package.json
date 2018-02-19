@@ -10,7 +10,7 @@
     "test": "ng test",
     "lint": "npm run jslint && npm run tslint",
     "tslint": "ng lint",
-    "jslint": "jshint server.js"
+    "jslint": "jshint server.js notifiers"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
@@ -52,6 +52,7 @@
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
     "ng2-dnd": "^5.0.2",
+    "notifme-sdk": "^1.6.0",
     "protractor": "~5.1.2",
     "rxjs": "^5.5.2",
     "ts-node": "~3.2.0",

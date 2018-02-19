@@ -62,12 +62,10 @@ export class AppComponent implements OnInit {
           (data) => {
             this.error    = '';
             this.password = '';
-            this.authService.saveToken(data.token);
           },
           (err) => {
             this.password = '';
             this.error    = err.error.text || 'Unable to login';
-            this.authService.saveToken('');
           }
         );
     }
