@@ -191,6 +191,9 @@ import '../../../../public/highlight.min.js';
 import '../../cubismoverrides.css';
 import ToggleBtn from '../ToggleBtn';
 
+let reqPromise; // promise returned from setInterval for recurring requests
+let initialized; // whether the graph has been initialized
+
 export default {
   // TODO paging, search, sort
   name: 'NodeStats',
@@ -240,6 +243,7 @@ export default {
       this.loadData();
     },
     graphInterval: function () {
+      initialized = false;
       this.loadData();
     },
     graphHide: function () {
@@ -247,17 +251,25 @@ export default {
       this.loadData();
     },
     dataInterval: function () {
-      this.loadData();
+      if (reqPromise) { // cancel the interval and reset it if necessary
+        clearInterval(reqPromise);
+
+        if (this.dataInterval === '0') { return; }
+
+        reqPromise = setInterval(() => {
+          this.loadData();
+        }, parseInt(this.dataInterval, 10));
+      }
     }
   },
   created: function () {
     this.loadData();
-    // TODO set a recurring server req if necessary
-    // if (this.dataInterval !== '0') {
-    //   reqPromise = this.$interval(() => {
-    //     this.loadData();
-    //   }, parseInt(this.dataInterval));
-    // }
+    // set a recurring server req if necessary
+    if (this.dataInterval !== '0') {
+      reqPromise = setInterval(() => {
+        this.loadData();
+      }, parseInt(this.dataInterval, 10));
+    }
   },
   computed: {
     colors: function () {
@@ -280,7 +292,6 @@ export default {
       if (!this.context) { return; }
 
       if (this.showGraphs) {
-        // TODO test for graph interval !== '0'
         this.context.start();
       } else { this.context.stop(); }
     },
@@ -315,16 +326,9 @@ export default {
             this.averageValues[columnName] = this.totalValues[columnName] / this.stats.data.length;
           }
 
-          // TODO need initialized flag?
-          // if (this.stats.data && !initialized && this.graphsOpen) {
-          if (this.stats.data && this.showGraphs) {
-            // initialized = true; // only make the graph when page loads or tab switched to 0
-            if (this.graphInterval === '0') { // turn it on then off
-              this.makeStatsGraph(this.graphType, 5);
-              this.context.stop();
-            } else {
-              this.makeStatsGraph(this.graphType, parseInt(this.graphInterval, 10));
-            }
+          if (this.stats.data && this.showGraphs && !initialized) {
+            initialized = true; // only make the graph when page loads or tab switched to 0
+            this.makeStatsGraph(this.graphType, parseInt(this.graphInterval, 10));
           }
         }, (error) => {
           this.loading = false;
@@ -491,7 +495,10 @@ export default {
       wrap.removeChild(wrap.firstChild);
     }
 
-    // TODO stop recurring requests for stats.json
+    if (reqPromise) {
+      clearInterval(reqPromise);
+      reqPromise = null;
+    }
   }
 };
 </script>
