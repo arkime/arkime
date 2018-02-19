@@ -23,6 +23,15 @@ const router  = express.Router();
 
 const version = 1;
 
+const alertTypes = {
+  esRed: { on: true, name: 'ES Red', description: 'ES status is red' },
+  esDown: { on: true, name: 'ES Down', description: 'ES is unreachable' },
+  esDropped: { on: true, name: 'ES Dropped', description: 'the capture node is overloading ES' },
+  outOfDate: { on: true, name: 'Out of Date', description: 'the capture node has not checked in' },
+  noPackets: { on: true, name: 'No Packets', description: 'the capture node is not receiving packets' }
+};
+
+
 (function() { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
@@ -110,7 +119,11 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  parliament = { version:version, groups:[] };
+  parliament = {
+    version: version,
+    groups: [],
+    settings: { notifiers: {} }
+  };
 }
 
 // define ids for groups and clusters
@@ -123,6 +136,7 @@ app.disable('x-powered-by');
 // parliament app pages
 app.use('/parliament', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
 app.use('/parliament/issues', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
+app.use('/parliament/settings', express.static(`${__dirname}/dist/index.html`, { maxAge:600*1000 }));
 
 // log requests
 app.use(logger('dev'));
@@ -139,6 +153,26 @@ app.use('/parliament', express.static(path.join(__dirname, 'dist')));
 app.use('/parliament/api', router);
 router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
+
+
+let internals = {
+  notifiers: {}
+};
+
+// Load notifier plugins for Parliament alerting
+function loadNotifiers() {
+  var api = {
+    register: function (str, info) {
+      internals.notifiers[str] = info;
+    }
+  };
+
+  // TODO look for all provider.*.js (use glob?)
+  var plugin = require('./notifiers/provider.notifme.js');
+  plugin.init(api);
+}
+
+loadNotifiers();
 
 
 /* Middleware -------------------------------------------------------------- */
@@ -204,10 +238,38 @@ function verifyToken(req, res, next) {
 
 
 /* Helper functions -------------------------------------------------------- */
-// TODO alert stuffs!
 function issueAlert(cluster, issue) {
   issue.alerted = Date.now();
-  console.log(`Alert issued for: ${cluster.title} - ${issue.type}`);
+
+  const message = `Alert! ${cluster.title} - ${issue.type}`;
+
+  for (let n in internals.notifiers) {
+    // quit before sending the alert if the notifier is off
+    if (!parliament.settings.notifiers[n].on) {
+      continue;
+    }
+
+    const notifier = internals.notifiers[n];
+
+    // quit before sending the alert if the alert is off
+    if (!parliament.settings.notifiers[n].alerts[issue.type]) {
+      continue;
+    }
+
+    let config = {};
+
+    for (let f of notifier.fields) {
+      let field = parliament.settings.notifiers[n].fields[f.name];
+      if (!field || (field.required && !field.value)) {
+        // field doesn't exist, or field is required and doesn't have a value
+        console.error(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
+        continue;
+      }
+      config[f.name] = field.value;
+    }
+
+    notifier.sendAlert(config, message);
+  }
 }
 
 // Finds an issue in a cluster
@@ -417,16 +479,43 @@ function getStats(cluster) {
 }
 
 // Initializes the parliament with ids for each group and cluster
+// and sets up the parliament settings
 function initalizeParliament() {
   return new Promise((resolve, reject) => {
     if (!parliament.groups) { parliament.groups = []; }
 
+    // set id for each group/cluster
     for (let group of parliament.groups) {
       group.id = groupId++;
       if (group.clusters) {
         for (let cluster of group.clusters) {
           cluster.id = clusterId++;
         }
+      }
+    }
+
+    // build notifiers
+    for (let n in internals.notifiers) {
+      // if the notifier is not in settings, add it
+      if (!parliament.settings.notifiers[n]) {
+        const notifier = internals.notifiers[n];
+
+        let notifierData = { name: n, fields: {} };
+
+        // add fields to notifier
+        for (let field of notifier.fields) {
+          let fieldData = field;
+          fieldData.value = ''; // has empty value to start
+          notifierData.fields[field.name] = fieldData;
+        }
+
+        // build alerts
+        for (let a in alertTypes) {
+          let alert = alertTypes[a];
+          notifierData.alerts[a] = true;
+        }
+
+        parliament.settings.notifiers[n] = notifierData;
       }
     }
 
@@ -594,6 +683,79 @@ router.put('/auth/update', (req, res, next) => {
     let errorText   = 'Unable to update your password.';
     writeParliament(req, res, next, successObj, errorText);
   });
+});
+
+// Get the parliament settings object
+router.get('/settings', verifyToken, (req, res, next) => {
+  // restructure settings with arrays for client
+  let settings = { notifiers: [] };
+
+  for (let n in parliament.settings.notifiers) {
+    const notifier = parliament.settings.notifiers[n];
+
+    let notifierData = { name: n, fields: [], alerts: [], on: notifier.on };
+
+    for (let f in notifier.fields) {
+      const field = notifier.fields[f];
+      notifierData.fields.push(field);
+    }
+
+    for (let a in notifier.alerts) {
+      if (alertTypes.hasOwnProperty(a)) {
+        const alert = JSON.parse(JSON.stringify(alertTypes[a]));
+        alert.id = a;
+        alert.on = notifier.alerts[a];
+        notifierData.alerts.push(alert);
+      }
+    }
+
+    settings.notifiers.push(notifierData);
+  }
+
+  return res.json(settings);
+});
+
+// Update the parliament settings object
+router.put('/settings', verifyToken, (req, res, next) => {
+  // save notifiers
+  for (let notifier of req.body.settings.notifiers) {
+    let savedNotifiers = parliament.settings.notifiers;
+
+    // notifier exists in settings, so update notifier and the fields
+    if (savedNotifiers[notifier.name]) {
+      savedNotifiers[notifier.name].on = !!notifier.on;
+
+      for (let field of notifier.fields) {
+        // notifier has field
+        if (savedNotifiers[notifier.name].fields[field.name]) {
+          savedNotifiers[notifier.name].fields[field.name].value = field.value;
+        } else { // notifier does not have field
+          const error = new Error('Unable to find notifier field to update.');
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
+
+      for (let alert of notifier.alerts) {
+        // alert exists in settings, so update value
+        if (savedNotifiers[notifier.name].alerts.hasOwnProperty(alert.id)) {
+          savedNotifiers[notifier.name].alerts[alert.id] = alert.on;
+        } else { // alert doesn't exist on this notifier
+          const error = new Error('Unable to find alert to update.');
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
+    } else { // notifier doesn't exist
+      const error = new Error('Unable to find notifier. Is it loaded?');
+      error.httpStatusCode = 500;
+      return next(error);
+    }
+  }
+
+  let successObj  = { success: true, text: 'Successfully updated your settings.' };
+  let errorText   = 'Unable to update your settings.';
+  writeParliament(req, res, next, successObj, errorText);
 });
 
 // Get parliament with stats

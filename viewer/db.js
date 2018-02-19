@@ -170,13 +170,17 @@ exports.searchScroll = function (index, type, query, options, cb) {
     delete query.size;
     exports.search(index, type, query, params,
       function getMoreUntilDone(error, response) {
+        if (error) {
+            return cb(error, totalResults);
+        }
+
         if (totalResults === undefined) {
           totalResults = response;
         } else {
           Array.prototype.push.apply(totalResults.hits.hits, response.hits.hits);
         }
 
-        if (!error && totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
+        if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
             scroll: '2m',
             body: {
