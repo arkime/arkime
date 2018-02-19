@@ -14,6 +14,7 @@ import { ParliamentComponent } from './parliament/parliament.component';
 import { ParliamentService } from './parliament/parliament.service';
 import { IssuesComponent } from './issues/issues.component';
 import { IssueActionsComponent } from './issues/issue.actions.component';
+import { SettingsComponent } from './settings/settings.component';
 import { CommaStringPipe, IssueValuePipe } from './app.pipes';
 import { TokenInterceptor } from './auth/token.interceptor';
 import { AuthService } from './auth/auth.service';
@@ -21,6 +22,7 @@ import { AutofocusDirective } from './app.directives';
 
 
 const appRoutes: Routes = [
+  { path: 'settings', component: SettingsComponent },
   { path: 'issues', component: IssuesComponent },
   { path: '', component: ParliamentComponent }
 ];
@@ -32,6 +34,7 @@ const appRoutes: Routes = [
     ParliamentComponent,
     IssuesComponent,
     IssueActionsComponent,
+    SettingsComponent,
     CommaStringPipe,
     IssueValuePipe,
     AutofocusDirective

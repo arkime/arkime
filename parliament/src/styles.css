@@ -55,6 +55,12 @@ a.no-href:hover { color: #0056b3 !important; }
   color     : #777777;
 }
 
+.info-area div {
+  padding         : 2rem;
+  border-radius   : .25rem;
+  background-color: #FFFFFF;
+}
+
 .info-area span.fa {
   display         : flex;
   justify-content : center;

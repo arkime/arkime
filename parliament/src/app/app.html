@@ -15,6 +15,12 @@
         Issues
       </a>
     </li>
+    <li class="nav-item" *ngIf="authService.loggedIn">
+      <a class="nav-link"  routerLink="/settings" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Settings
+      </a>
+    </li>
   </ul>
   <form class="form-inline">
     <!-- refresh interval select -->

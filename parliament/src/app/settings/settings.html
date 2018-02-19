@@ -1,0 +1,112 @@
+<div class="container-fluid">
+
+  <!-- page error -->
+  <div class="alert alert-danger" *ngIf="error">
+    <span class="fa fa-exclamation-triangle"></span>&nbsp;
+    {{ error }}
+    <button type="button" class="close cursor-pointer"
+      (click)="error = ''">
+      <span>&times;</span>
+    </button>
+  </div> <!-- /page error -->
+
+  <!-- not logged in -->
+  <div *ngIf="!error && !authService.loggedIn" class="mt-5">
+    <div class="info-area vertical-center text-center">
+      <div class="text-danger">
+        <span class="fa fa-2x fa-warning"></span>
+        <span>
+          This page requires admin privileges.<br>
+          Please login.
+        </span>
+      </div>
+    </div>
+  </div> <!-- /not logged in -->
+
+  <div *ngIf="authService.loggedIn">
+    <h3>
+      Notifiers
+      <span class="pull-right" [hidden]="!changed">
+        <a (click)="loadData()"
+          class="btn btn-outline-warning cursor-pointer">
+          <span class="fa fa-ban"></span>&nbsp;
+          Cancel
+        </a>
+        <a (click)="saveSettings()"
+          class="btn btn-outline-success cursor-pointer">
+          <span class="fa fa-save"></span>&nbsp;
+          Save Settings
+        </a>
+      </span>
+    </h3>
+    <div class="row">
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-4"
+        *ngFor="let notifier of settings.notifiers; trackBy:trackByName;">
+        <div class="card bg-light">
+          <div class="card-body">
+
+            <!-- notifier title -->
+            <h4 class="mb-3">
+              {{ notifier.name }}
+              <span *ngIf="!notifier.on" (click)="toggleNotifier(notifier)"
+                class="fa fa-toggle-off fa-lg pull-right cursor-pointer"
+                placement="bottom-right" ngbTooltip="Turn this notifier on">
+              </span>
+              <span *ngIf="notifier.on" (click)="toggleNotifier(notifier)"
+                class="fa fa-toggle-on fa-lg pull-right cursor-pointer text-success"
+                placement="bottom-right" ngbTooltip="Turn this notifier off">
+              </span>
+            </h4> <!-- /notifier title -->
+
+            <!-- notifier fields -->
+            <div class="input-group mb-2"
+              *ngFor="let field of notifier.fields; trackBy:trackByName;">
+              <span class="input-group-addon cursor-help"
+                placement="bottom-left" ngbTooltip="{{ field.description }}">
+                {{ field.name }}
+                <sup *ngIf="field.required">*</sup>
+              </span>
+              <input class="form-control"
+                [(ngModel)]="field.value"
+                (keydown)="changed = true"
+                [attr.type]="getFieldInputType(field)">
+                <span *ngIf="field.secret"
+                  class="input-group-addon cursor-pointer"
+                  (click)="field.showValue = !field.showValue">
+                  <span class="fa" [ngClass]="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
+                  </span>
+                </span>
+            </div> <!-- /notifier fields -->
+
+            <hr>
+
+            <!-- notifier alerts -->
+            <h5>Notify on</h5>
+            <div class="row">
+              <div class="col-12">
+                <div *ngFor="let alert of notifier.alerts; trackBy:trackByName;"
+                  class="form-check form-check-inline"
+                  (click)="changed = true;"
+                  placement="top"
+                  ngbTooltip="Notify if {{ alert.description }}">
+                  <label class="form-check-label">
+                    <input class="form-check-input"
+                    type="checkbox"
+                    [id]="alert.id"
+                    [name]="alert.id"
+                    [(ngModel)]="alert.on">
+                    {{ alert.name }}
+                  </label>
+                </div>
+              </div>
+            </div> <!-- /notifier alerts -->
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
