@@ -4,13 +4,13 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng build --prod && node server.js",
-    "dev": "node server.js --pass admin --port 8008 -c ./parliament.dev.json & ng build --watch",
+    "start": "ng build --prod && node parliament.js",
+    "dev": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json & ng build --watch",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "npm run jslint && npm run tslint",
     "tslint": "ng lint",
-    "jslint": "jshint server.js notifiers"
+    "jslint": "jshint parliament.js notifiers"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
