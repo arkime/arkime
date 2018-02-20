@@ -7,7 +7,8 @@
       <div class="form-inline mr-1 ml-1 mt-1 mb-1">
 
         <!-- graph type select -->
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm"
+          v-if="tabIndex === 0">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="The type of graph data to display">
@@ -47,7 +48,8 @@
         </div> <!-- /graph type select -->
 
         <!-- graph interval select -->
-        <div class="input-group input-group-sm ml-1">
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex === 0">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Graph data bins and graph data refresh interval">
@@ -65,7 +67,8 @@
         </div> <!-- /graph interval select -->
 
         <!-- graph hide select -->
-        <div class="input-group input-group-sm ml-1">
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex === 0">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Hide rows">
@@ -113,25 +116,30 @@
         v-b-tooltip.hover
         title="HINT: This graph is 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
-      <b-tabs>
-        <b-tab title="Node" active>
-          <node-stats v-if="user"
+      <b-tabs small v-model="tabIndex">
+        <b-tab title="Node"
+          @click="tabIndexChange()">
+          <node-stats v-if="user && tabIndex === 0"
             :graph-type="graphType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
             :data-interval="dataInterval"
             :user="user"></node-stats>
         </b-tab>
-        <b-tab title="ES Stats">
+        <b-tab title="ES Stats"
+          @click="tabIndexChange()">
           TODO: ES Stats
         </b-tab>
-        <b-tab title="ES Indices">
+        <b-tab title="ES Indices"
+          @click="tabIndexChange()">
           TODO: ES Indices
         </b-tab>
-        <b-tab title="ES Tasks">
+        <b-tab title="ES Tasks"
+          @click="tabIndexChange()">
           TODO: ES Tasks
         </b-tab>
-        <b-tab title="ES Shards">
+        <b-tab title="ES Shards"
+          @click="tabIndexChange()">
           TODO: ES Shards
         </b-tab>
       </b-tabs>
@@ -149,6 +157,7 @@ export default {
   data: function () {
     return {
       user: null,
+      tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
       graphType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
@@ -161,27 +170,56 @@ export default {
   created: function () {
     this.loadUser();
   },
+  watch: {
+    // watch for the route to change, then update the view
+    '$route': 'updateParams'
+  },
   methods: {
     loadUser: function () {
       UserService.getCurrent()
         .then((response) => {
-          this.user = response;
+          this.user = { settings: { timezone: 'local' } };
         }, (error) => {
-          this.user = { timezone: 'local' }; // TODO
-          console.log(error);
-        }); // TODO test error
+          this.user = { settings: { timezone: 'local' } };
+        });
     },
     graphTypeChange: function () {
-      this.$router.push({ path: 'stats', query: { type: this.graphType } });
+      // this.$router.push({ query: { type: this.graphType } });
+      this.$router.push({ query: { ...this.$route.query, type: this.graphType } });
     },
     graphIntervalChange: function () {
-      this.$router.push({ path: 'stats', query: { gtime: this.graphInterval } });
+      // this.$router.push({ query: { gtime: this.graphInterval } });
+      this.$router.push({ query: { ...this.$route.query, gtime: this.graphInterval } });
     },
     graphHideChange: function () {
-      this.$router.push({ path: 'stats', query: { hide: this.graphHide } });
+      // this.$router.push({ query: { hide: this.graphHide } });
+      this.$router.push({ query: { ...this.$route.query, hide: this.graphHide } });
     },
     dataIntervalChange: function () {
-      this.$router.push({ path: 'stats', query: { refreshInterval: this.dataInterval } });
+      // this.$router.push({ query: { refreshInterval: this.dataInterval } });
+      this.$router.push({ query: { ...this.$route.query, refreshInterval: this.dataInterval } });
+    },
+    tabIndexChange: function () {
+      this.$router.push({ query: { ...this.$route.query, statsTab: this.tabIndex } });
+    },
+    updateParams: function () {
+      let queryParams = this.$route.query;
+
+      if (queryParams.statsTab) {
+        this.tabIndex = parseInt(queryParams.statsTab, 10);
+      }
+      if (queryParams.graphType) {
+        this.graphType = queryParams.graphType;
+      }
+      if (queryParams.graphInterval) {
+        this.graphInterval = queryParams.gtime;
+      }
+      if (queryParams.graphHide) {
+        this.graphHide = queryParams.graphHide;
+      }
+      if (queryParams.refreshInterval) {
+        this.dataInterval = queryParams.refreshInterval;
+      }
     }
   }
 };

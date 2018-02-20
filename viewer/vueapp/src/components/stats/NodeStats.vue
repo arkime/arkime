@@ -495,8 +495,10 @@ export default {
     }
 
     let wrap = document.getElementById('statsGraph');
-    while (wrap.firstChild) {
-      wrap.removeChild(wrap.firstChild);
+    if (wrap) {
+      while (wrap.firstChild) {
+        wrap.removeChild(wrap.firstChild);
+      }
     }
 
     if (reqPromise) {
