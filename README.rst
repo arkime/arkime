@@ -289,7 +289,7 @@ Upgrading
 Upgrading is easy if using the RPM/DEB files.
 
 * Download and install the latest version, pay attention to any special instructions
-* Many times you'll need to upgrade the database with ``/data/moloch/db/db.pl http://localhost:9200 upgrade``
+* You might need to upgrade the database with ``/data/moloch/db/db.pl http://localhost:9200 upgrade``
 * Restart the moloch capture and viewer processes
 
 If upgrading from source it is a manual process.
