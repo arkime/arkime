@@ -414,19 +414,19 @@
           <!-- edit cluster buttons -->
           <div class="card-footer small" *ngIf="authService.loggedIn">
             <a *ngIf="!cluster.showEditClusterForm"
-              class="btn btn-sm btn-outline-danger cursor-pointer"
+              class="btn btn-sm btn-outline-danger pull-right cursor-pointer"
               (click)="dismissAll(group.id, cluster)"
-              placement="right" ngbTooltip="Dismiss all isues for this cluster">
+              placement="left" ngbTooltip="Dismiss all isues for this cluster">
               <span class="fa fa-check"></span>
             </a>
             <a *ngIf="!cluster.showEditClusterForm"
-              class="btn btn-sm btn-outline-warning pull-right cursor-pointer"
+              class="btn btn-sm btn-outline-warning cursor-pointer"
               (click)="displayEditClusterForm(cluster)"
-              placement="top" ngbTooltip="Edit cluster">
+              placement="right" ngbTooltip="Edit cluster">
               <span class="fa fa-pencil"></span>
             </a>
             <a *ngIf="cluster.showEditClusterForm"
-              class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1"
+              class="btn btn-sm btn-outline-success pull-right cursor-pointer"
               (click)="editCluster(group, cluster)"
               placement="top" ngbTooltip="Save cluster">
               <span class="fa fa-save"></span>&nbsp;

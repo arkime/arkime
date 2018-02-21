@@ -12,7 +12,7 @@ install:
 	$(INSTALL) *.js package.json $(PARLIAMENTDIR)
 	npm install
 	npm run build
-	$(CP) -pr public dist $(PARLIAMENTDIR)
+	$(CP) -pr public dist notifiers $(PARLIAMENTDIR)
 	(cd $(PARLIAMENTDIR) ; npm install --production)
 
 distclean realclean clean:
