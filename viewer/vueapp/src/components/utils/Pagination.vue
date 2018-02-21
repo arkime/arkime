@@ -43,7 +43,6 @@ export default {
   data: function () {
     return {
       start: 0,
-      oldLength: 50,
       currentPage: 1
     };
   },
@@ -53,7 +52,6 @@ export default {
         let lengthUrlParam = this.$route.query.length;
         // only allow a maximum of 1000
         lengthUrlParam = (lengthUrlParam && lengthUrlParam <= 1000) ? parseInt(lengthUrlParam) : 50;
-
         return lengthUrlParam;
       },
       set: function (newValue) {
@@ -103,8 +101,7 @@ export default {
 
       let pagingParams = {
         start: this.start,
-        length: this.length,
-        currentPage: this.currentPage
+        length: this.length
       };
 
       this.$emit('changePaging', pagingParams);

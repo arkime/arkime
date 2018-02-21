@@ -9,12 +9,13 @@ import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
-// import VueResource from 'vue-resource'
+// internal deps
 import App from './App';
 import HasPermission from './components/utils/HasPermission';
+import interceptorSetup from './interceptors';
 import router from './router';
 import './filters.js';
-
+// themed css deps
 import './themes/default.css';
 import './themes/blue.css';
 import './themes/green.css';
@@ -29,6 +30,8 @@ Vue.use(BootstrapVue);
 Vue.use(VueMoment, { moment });
 
 Vue.directive('has-permission', HasPermission);
+
+interceptorSetup();
 
 /* eslint-disable no-new */
 new Vue({
