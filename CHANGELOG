@@ -17,6 +17,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - sessions.csv handle multiple fields parameters
   - parliament - better dismissing
   - all - new hourly6 rotateIndex, for every 6 hours
+  - parliament - first version of alerts
+  - parliament - rename server.js to parliament.js
+
 
 0.50.0 2017/01/24
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
