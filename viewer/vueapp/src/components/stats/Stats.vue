@@ -112,11 +112,12 @@
 
     <!-- stats content -->
     <div class="pt-5 ml-1 mr-1">
-      <span class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
+      <span v-if="tabIndex === 0"
         v-b-tooltip.hover
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
         title="HINT: This graph is 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
-      <b-tabs small v-model="tabIndex">
+      <b-tabs v-model="tabIndex">
         <b-tab title="Node"
           @click="tabIndexChange()">
           <node-stats v-if="user && tabIndex === 0"
@@ -178,25 +179,21 @@ export default {
     loadUser: function () {
       UserService.getCurrent()
         .then((response) => {
-          this.user = { settings: { timezone: 'local' } };
+          this.user = response;
         }, (error) => {
           this.user = { settings: { timezone: 'local' } };
         });
     },
     graphTypeChange: function () {
-      // this.$router.push({ query: { type: this.graphType } });
       this.$router.push({ query: { ...this.$route.query, type: this.graphType } });
     },
     graphIntervalChange: function () {
-      // this.$router.push({ query: { gtime: this.graphInterval } });
       this.$router.push({ query: { ...this.$route.query, gtime: this.graphInterval } });
     },
     graphHideChange: function () {
-      // this.$router.push({ query: { hide: this.graphHide } });
       this.$router.push({ query: { ...this.$route.query, hide: this.graphHide } });
     },
     dataIntervalChange: function () {
-      // this.$router.push({ query: { refreshInterval: this.dataInterval } });
       this.$router.push({ query: { ...this.$route.query, refreshInterval: this.dataInterval } });
     },
     tabIndexChange: function () {

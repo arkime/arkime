@@ -11,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 // import VueResource from 'vue-resource'
 import App from './App';
-import HasPermission from './components/HasPermission';
+import HasPermission from './components/utils/HasPermission';
 import router from './router';
 import './filters.js';
 

@@ -4,12 +4,11 @@
 
     <div class="row mt-1">
       <div class="col-md-6">
-        <!-- TODO hook up paging -->
-        <b-pagination size="sm"
-          :total-rows="100"
-          v-model="currentPage"
-          :per-page="10">
-        </b-pagination>
+        <moloch-paging v-if="stats"
+          :records-total="stats.recordsTotal"
+          :records-filtered="stats.recordsFiltered"
+          v-on:changePaging="changePaging">
+        </moloch-paging>
       </div>
       <div class="col-md-6">
         <div class="input-group input-group-sm">
@@ -189,31 +188,29 @@ import cubism from '../../../../public/cubism.v1.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
-import ToggleBtn from '../ToggleBtn';
+import ToggleBtn from '../utils/ToggleBtn';
+import MolochPaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
 
 export default {
-  // TODO paging, search, sort
+  // TODO search, sort
   name: 'NodeStats',
   props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
-  components: {
-    ToggleBtn
-  },
+  components: { ToggleBtn, MolochPaging },
   data: function () {
     return {
       context: null,
       stats: null,
       totalValues: null,
       averageValues: null,
-      currentPage: 1,
       loading: false, // TODO loading overlay
       showGraphs: true,
       showNodeStats: true,
       expandedNodeStats: {},
       query: {
-        length: 50, // TODO set based on route param
+        length: parseInt(this.$route.query.length) || 50,
         start: 0,
         filter: null,
         sortField: 'nodeName',
@@ -289,7 +286,6 @@ export default {
     }
   },
   methods: {
-    // showGraphs or showNodeStats
     toggleSection: function () {
       if (!this.context) { return; }
 
@@ -301,8 +297,7 @@ export default {
       this.loading = true;
       this.error = null;
 
-      // TODO pass in params
-      this.$http.get('stats.json')
+      this.$http.get('stats.json', { params: this.query })
         .then((response) => {
           this.loading = false;
           this.stats = response.data;
@@ -485,6 +480,13 @@ export default {
             .call(dcontext.rule());
         }
       });
+    },
+    changePaging (pagingValues) {
+      this.query.length = pagingValues.length;
+      this.query.start = pagingValues.start;
+
+      initialized = false;
+      this.loadData();
     }
   },
   beforeDestroy: function () {

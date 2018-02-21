@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import MolochNavbar from './components/Navbar';
+import MolochNavbar from './components/utils/Navbar';
 export default {
   name: 'App',
   components: {

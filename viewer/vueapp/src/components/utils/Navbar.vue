@@ -8,7 +8,7 @@
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
     <b-navbar-brand>
-      <img src="../assets/logo.png" class="moloch-logo" alt="hoot">
+      <img src="../../assets/logo.png" class="moloch-logo" alt="hoot">
     </b-navbar-brand>
 
     <b-collapse is-nav
