@@ -2,79 +2,149 @@
 
   <div class="container-fluid">
 
-    <div class="row mt-1">
-      <div class="col-md-6">
-        <moloch-paging v-if="stats"
-          :records-total="stats.recordsTotal"
-          :records-filtered="stats.recordsFiltered"
-          v-on:changePaging="changePaging">
-        </moloch-paging>
-      </div>
-      <div class="col-md-6">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search"></span>
-            </span>
+    <moloch-error v-if="error"
+      :message="error">
+    </moloch-error>
+
+    <div v-show="!error">
+
+      <div class="row mt-1">
+        <div class="col-md-6">
+          <moloch-paging v-if="stats"
+            :records-total="stats.recordsTotal"
+            :records-filtered="stats.recordsFiltered"
+            v-on:changePaging="changePaging">
+          </moloch-paging>
+        </div>
+        <div class="col-md-6">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                <span class="fa fa-search"></span>
+              </span>
+            </div>
+            <input type="text"
+              class="form-control pull-right"
+              v-model="query.filter"
+              placeholder="Begin typing to search for nodes by name">
           </div>
-          <input type="text"
-            class="form-control pull-right"
-            v-model="query.filter"
-            placeholder="Begin typing to search for nodes by name">
         </div>
       </div>
-    </div>
 
-    <div role="tablist">
+      <div role="tablist">
 
-      <b-card no-body
-        class="mb-2">
-        <b-card-header header-tag="header"
-          class="p-2 cursor-pointer"
-          role="tab"
-          @click="toggleSection()">
-          <div v-b-toggle.graphContent>
-            Graphs
-            <span class="when-opened pull-right fa fa-minus"></span>
-            <span class="when-closed pull-right fa fa-plus"></span>
-          </div>
-        </b-card-header>
-        <b-collapse id="graphContent"
-          v-model="showGraphs"
-          role="tabpanel">
-          <div id="statsGraph" style="width:1440px;"></div>
-        </b-collapse>
-      </b-card>
+        <b-card no-body
+          class="mb-2">
+          <b-card-header header-tag="header"
+            class="p-2 cursor-pointer"
+            role="tab"
+            @click="toggleSection()">
+            <div v-b-toggle.graphContent>
+              Graphs
+              <span class="when-opened pull-right fa fa-minus"></span>
+              <span class="when-closed pull-right fa fa-plus"></span>
+            </div>
+          </b-card-header>
+          <b-collapse id="graphContent"
+            v-model="showGraphs"
+            role="tabpanel">
+            <div id="statsGraph" style="width:1440px;"></div>
+          </b-collapse>
+        </b-card>
 
-      <b-card no-body
-        class="mb-1">
-        <b-card-header header-tag="header"
-          class="p-2 cursor-pointer"
-          role="tab"
-          @click="toggleSection()">
-          <div v-b-toggle.nodeStatsContent>
-            Node Stats
-            <span class="when-opened pull-right fa fa-minus"></span>
-            <span class="when-closed pull-right fa fa-plus"></span>
-          </div>
-        </b-card-header>
-        <b-collapse id="nodeStatsContent"
-          v-model="showNodeStats"
-          role="tabpanel">
-          <b-card-body>
-            <table class="table table-sm text-right small">
-              <thead>
-                <tr>
-                  <th v-for="column of columns"
-                    :key="column.name"
-                    class="cursor-pointer">
-                    {{ column.name }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody v-if="stats">
-                <template v-if="averageValues && totalValues && stats.data.length > 9">
-                  <tr class="bold">
+        <b-card no-body
+          class="mb-1">
+          <b-card-header header-tag="header"
+            class="p-2 cursor-pointer"
+            role="tab"
+            @click="toggleSection()">
+            <div v-b-toggle.nodeStatsContent>
+              Node Stats
+              <span class="when-opened pull-right fa fa-minus"></span>
+              <span class="when-closed pull-right fa fa-plus"></span>
+            </div>
+          </b-card-header>
+          <b-collapse id="nodeStatsContent"
+            v-model="showNodeStats"
+            role="tabpanel">
+            <b-card-body>
+              <table class="table table-sm text-right small">
+                <thead>
+                  <tr>
+                    <th v-for="column of columns"
+                      :key="column.name"
+                      class="cursor-pointer">
+                      {{ column.name }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody v-if="stats">
+                  <template v-if="averageValues && totalValues && stats.data.length > 9">
+                    <tr class="bold">
+                      <td>&nbsp;</td>
+                      <td>Average</td>
+                      <td>&nbsp;</td>
+                      <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
+                      <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
+                      <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
+                      <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
+                      <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
+                      <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                      <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
+                    </tr>
+                    <tr class="border-bottom-bold bold">
+                      <td>&nbsp;</td>
+                      <td>Total</td>
+                      <td>&nbsp;</td>
+                      <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
+                      <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
+                      <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
+                      <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
+                      <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
+                      <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
+                      <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ totalValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
+                    </tr>
+                  </template>
+                  <template v-for="stat of stats.data">
+                    <tr :key="stat.id + 'data'">
+                      <td>
+                        <toggle-btn v-on:toggle="toggleStatDetail(stat)">
+                        </toggle-btn>
+                      </td>
+                      <td>{{ stat.id }}</td>
+                      <td>{{ stat.currentTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</td>
+                      <td>{{ stat.monitoring | round(0) | commaString }}</td>
+                      <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ stat.cpu/100.0 | round(1) }}%</td>
+                      <td>{{ stat.memory | humanReadable }} ({{ stat.memoryP | round(1) }}%)</td>
+                      <td>{{ stat.packetQueue | round(0) | commaString }}</td>
+                      <td>{{ stat.deltaPacketsPerSec | round(0) | commaString }}</td>
+                      <td>{{ stat.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ stat.deltaSessionsPerSec | round(0) | commaString }}</td>
+                      <td>{{ stat.deltaDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ stat.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
+                      <td>{{ stat.deltaESDroppedPerSec | round(0) | commaString }}</td>
+                    </tr>
+                    <tr :key="stat.id + 'graph'"
+                      :id="'statsGraphRow-' + stat.id"
+                      style="display:none;">
+                      <td :colspan="columns.length">
+                        <div :id="'statsGraph-' + stat.id" style="width: 1440px;">
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+                <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
+                  <tr class="border-top-bold bold">
                     <td>&nbsp;</td>
                     <td>Average</td>
                     <td>&nbsp;</td>
@@ -90,7 +160,7 @@
                     <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                   </tr>
-                  <tr class="border-bottom-bold bold">
+                  <tr class="bold">
                     <td>&nbsp;</td>
                     <td>Total</td>
                     <td>&nbsp;</td>
@@ -106,75 +176,13 @@
                     <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
                     <td>{{ totalValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                   </tr>
-                </template>
-                <template v-for="stat of stats.data">
-                  <tr :key="stat.id + 'data'">
-                    <td>
-                      <toggle-btn v-on:toggle="toggleStatDetail(stat)">
-                      </toggle-btn>
-                    </td>
-                    <td>{{ stat.id }}</td>
-                    <td>{{ stat.currentTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</td>
-                    <td>{{ stat.monitoring | round(0) | commaString }}</td>
-                    <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP | round(1) }}%)</td>
-                    <td>{{ stat.cpu/100.0 | round(1) }}%</td>
-                    <td>{{ stat.memory | humanReadable }} ({{ stat.memoryP | round(1) }}%)</td>
-                    <td>{{ stat.packetQueue | round(0) | commaString }}</td>
-                    <td>{{ stat.deltaPacketsPerSec | round(0) | commaString }}</td>
-                    <td>{{ stat.deltaBytesPerSec | humanReadable }}</td>
-                    <td>{{ stat.deltaSessionsPerSec | round(0) | commaString }}</td>
-                    <td>{{ stat.deltaDroppedPerSec | round(0) | commaString }}</td>
-                    <td>{{ stat.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
-                    <td>{{ stat.deltaESDroppedPerSec | round(0) | commaString }}</td>
-                  </tr>
-                  <tr :key="stat.id + 'graph'"
-                    :id="'statsGraphRow-' + stat.id"
-                    style="display:none;">
-                    <td :colspan="columns.length">
-                      <div :id="'statsGraph-' + stat.id" style="width: 1440px;">
-                      </div>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-              <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
-                <tr class="border-top-bold bold">
-                  <td>&nbsp;</td>
-                  <td>Average</td>
-                  <td>&nbsp;</td>
-                  <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
-                  <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
-                  <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
-                  <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
-                  <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
-                  <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                  <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
-                  <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
-                  <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
-                  <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
-                  <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
-                </tr>
-                <tr class="bold">
-                  <td>&nbsp;</td>
-                  <td>Total</td>
-                  <td>&nbsp;</td>
-                  <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
-                  <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
-                  <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
-                  <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
-                  <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
-                  <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                  <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
-                  <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
-                  <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
-                  <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
-                  <td>{{ totalValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </b-card-body>
-        </b-collapse>
-      </b-card>
+                </tfoot>
+              </table>
+            </b-card-body>
+          </b-collapse>
+        </b-card>
+
+      </div>
 
     </div>
 
@@ -190,6 +198,7 @@ import '../../../../public/highlight.min.js';
 import '../../cubismoverrides.css';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochPaging from '../utils/Pagination';
+import MolochError from '../utils/Error';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
@@ -198,9 +207,10 @@ export default {
   // TODO search, sort
   name: 'NodeStats',
   props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
-  components: { ToggleBtn, MolochPaging },
+  components: { ToggleBtn, MolochPaging, MolochError },
   data: function () {
     return {
+      error: '',
       context: null,
       stats: null,
       totalValues: null,
@@ -295,10 +305,10 @@ export default {
     },
     loadData: function () {
       this.loading = true;
-      this.error = null;
 
       this.$http.get('stats.json', { params: this.query })
         .then((response) => {
+          this.error = '';
           this.loading = false;
           this.stats = response.data;
 
@@ -369,8 +379,10 @@ export default {
       }
 
       let wrap = document.getElementById('statsGraph');
-      while (wrap.firstChild) {
-        wrap.removeChild(wrap.firstChild);
+      if (wrap) {
+        while (wrap.firstChild) {
+          wrap.removeChild(wrap.firstChild);
+        }
       }
 
       d3.select('#statsGraph').call(function (div) {
