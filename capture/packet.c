@@ -659,35 +659,13 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
         if (pcapFileHeader.linktype == 1 && session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
             const uint8_t *pcapData = packet->pkt;
-            char str1[20];
-            char str2[20];
-            snprintf(str1, sizeof(str1), "%02x:%02x:%02x:%02x:%02x:%02x",
-                    pcapData[0],
-                    pcapData[1],
-                    pcapData[2],
-                    pcapData[3],
-                    pcapData[4],
-                    pcapData[5]);
-
-
-            snprintf(str2, sizeof(str2), "%02x:%02x:%02x:%02x:%02x:%02x",
-                    pcapData[6],
-                    pcapData[7],
-                    pcapData[8],
-                    pcapData[9],
-                    pcapData[10],
-                    pcapData[11]);
 
             if (packet->direction == 1) {
-                if (moloch_field_string_add(mac1Field, session, str1, 17, TRUE))
-                    moloch_db_oui_lookup(oui1Field, session, pcapData);
-                if (moloch_field_string_add(mac2Field, session, str2, 17, TRUE))
-                    moloch_db_oui_lookup(oui2Field, session, pcapData+6);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
             } else {
-                if (moloch_field_string_add(mac1Field, session, str2, 17, TRUE))
-                    moloch_db_oui_lookup(oui1Field, session, pcapData+6);
-                if (moloch_field_string_add(mac2Field, session, str1, 17, TRUE))
-                    moloch_db_oui_lookup(oui2Field, session, pcapData);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
             }
 
             int n = 12;

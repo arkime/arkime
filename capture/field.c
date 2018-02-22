@@ -1008,6 +1008,22 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
     }
 }
 /******************************************************************************/
+void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiField, const uint8_t *mac)
+{
+    char str[20];
+
+    snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
+            mac[0],
+            mac[1],
+            mac[2],
+            mac[3],
+            mac[4],
+            mac[5]);
+
+    if (moloch_field_string_add(macField, session, str, 17, TRUE))
+        moloch_db_oui_lookup(ouiField, session, mac);
+}
+/******************************************************************************/
 void moloch_field_free(MolochSession_t *session)
 {
     int                       pos;

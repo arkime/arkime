@@ -989,6 +989,8 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val);
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
+void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiField, const uint8_t *mac);
+
 int  moloch_field_count(int pos, MolochSession_t *session);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
 void moloch_field_free(MolochSession_t *session);
