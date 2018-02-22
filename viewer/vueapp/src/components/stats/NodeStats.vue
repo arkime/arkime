@@ -2,7 +2,7 @@
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="loading">
+    <moloch-loading v-if="loading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -308,8 +308,6 @@ export default {
       } else { this.context.stop(); }
     },
     loadData: function () {
-      this.loading = true;
-
       this.$http.get('stats.json', { params: this.query })
         .then((response) => {
           this.error = '';
