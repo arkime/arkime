@@ -2,6 +2,9 @@
 
   <div class="container-fluid">
 
+    <moloch-loading v-if="loading">
+    </moloch-loading>
+
     <moloch-error v-if="error"
       :message="error">
     </moloch-error>
@@ -199,6 +202,7 @@ import '../../cubismoverrides.css';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
@@ -207,15 +211,15 @@ export default {
   // TODO search, sort
   name: 'NodeStats',
   props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
-  components: { ToggleBtn, MolochPaging, MolochError },
+  components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
   data: function () {
     return {
       error: '',
+      loading: true,
       context: null,
       stats: null,
       totalValues: null,
       averageValues: null,
-      loading: false, // TODO loading overlay
       showGraphs: true,
       showNodeStats: true,
       expandedNodeStats: {},
