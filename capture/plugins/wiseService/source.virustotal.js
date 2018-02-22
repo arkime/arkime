@@ -38,12 +38,12 @@ function VirusTotalSource (api, section) {
 
   this.contentTypes = {};
   var contentTypes = this.api.getConfig("virustotal", "contentTypes",
-          "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",");
+          "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",").map(item => item.trim());
   contentTypes.forEach((type) => { this.contentTypes[type] = 1;});
 
   this.queriesPerMinute = +this.api.getConfig("virustotal", "queriesPerMinute", 3); // Keeps us under default limit, however most wise queries will time out :(
   this.maxOutstanding = +this.api.getConfig("virustotal", "maxOutstanding", 25);
-  this.dataSources = this.api.getConfig("virustotal", "dataSources", "McAfee,Symantec,Microsoft,Kaspersky").split(",");
+  this.dataSources = this.api.getConfig("virustotal", "dataSources", "McAfee,Symantec,Microsoft,Kaspersky").split(",").map(item => item.trim());
   this.dataSourcesLC = this.dataSources.map((x) => {return x.toLowerCase();});
   this.dataFields = [];
   this.fullQuery = true;

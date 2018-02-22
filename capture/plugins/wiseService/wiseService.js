@@ -650,14 +650,14 @@ function loadExcludes() {
     var items = getConfig("wiseService", type);
     internals[type] = [];
     if (!items) {return;}
-    items.split(";").forEach((item) => {
+    items.split(";").map(item => item.trim()).forEach((item) => {
       internals[type].push(RegExp.fromWildExp(item, "ailop"));
     });
   });
 
   internals.excludeIPs = new iptrie.IPTrie();
   var items = getConfig("wiseService", "excludeIPs", "");
-  items.split(";").forEach((item) => {
+  items.split(";").map(item => item.trim()).forEach((item) => {
     if (item === "") {
       return;
     }

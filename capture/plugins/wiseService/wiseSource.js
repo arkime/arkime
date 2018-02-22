@@ -40,7 +40,7 @@ function WISESource (api, section) {
     var items = api.getConfig(section, type);
     this[type] = [];
     if (!items) {return;}
-    items.split(";").forEach((item) => {
+    items.split(";").map(item => item.trim()).forEach((item) => {
       if (item === "") {
         return;
       }
@@ -51,7 +51,7 @@ function WISESource (api, section) {
   // IP CIDRs to exclude from source
   this.excludeIPs = new iptrie.IPTrie();
   var items = api.getConfig(section, "excludeIPs", "");
-  items.split(";").forEach((item) => {
+  items.split(";").map(item => item.trim()).forEach((item) => {
     if (item === "") {
       return;
     }
@@ -62,7 +62,7 @@ function WISESource (api, section) {
   items = api.getConfig(section, "onlyIPs", undefined);
   if (items) {
     this.onlyIPs = new iptrie.IPTrie();
-    items.split(";").forEach((item) => {
+    items.split(";").map(item => item.trim()).forEach((item) => {
       if (item === "") {
         return;
       }
@@ -317,7 +317,7 @@ WISESource.prototype.tagsSetting = function () {
   var tags = this.api.getConfig(this.section, "tags");
   if (tags) {
     var args = [];
-    tags.split(",").forEach((part) => {
+    tags.split(",").map(item => item.trim()).forEach((part) => {
       args.push(tagsField, part);
     });
     this.tagsResult = {num: args.length/2, buffer: WISESource.encode.apply(null, args)};

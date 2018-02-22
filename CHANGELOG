@@ -19,6 +19,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - new hourly6 rotateIndex, for every 6 hours
   - parliament - first version of alerts
   - parliament - rename server.js to parliament.js
+  - wise - trim spaces after spliting config values
 
 
 0.50.0 2017/01/24

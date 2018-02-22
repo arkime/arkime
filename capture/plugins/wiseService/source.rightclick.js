@@ -91,11 +91,11 @@ RightClickSource.prototype.load = function() {
       obj[parts[0]] = parts[1];
     });
     if (obj.fields) {
-      obj.fields = obj.fields.split(",");
+      obj.fields = obj.fields.split(",").map(item => item.trim());
     }
     if (obj.users) {
       var users = {};
-      obj.users.split(",").forEach((item) => {
+      obj.users.split(",").map(item => item.trim()).forEach((item) => {
         users[item] = 1;
       });
       obj.users = users;

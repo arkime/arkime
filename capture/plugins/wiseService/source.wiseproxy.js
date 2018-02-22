@@ -44,7 +44,7 @@ function WiseProxySource (api, section) {
     return;
   }
 
-  var types = this.types.split(",");
+  var types = this.types.split(",").map(item => item.trim());
 
   for (var i = 0; i < types.length; i++) {
     switch(types[i]) {
