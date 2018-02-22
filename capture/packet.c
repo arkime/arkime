@@ -1031,7 +1031,7 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
-int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;

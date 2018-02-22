@@ -23,6 +23,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - ip fields in rules can now be CIDR
   - capture - simple writer now flushes after 10 seconds of no writting
               there still can be pagesize bytes unwritten (issue #777)
+  - capture - decode some dhcp
 
 1.0.0-alpha2 2018/01/31
   - Read alpha1 below
