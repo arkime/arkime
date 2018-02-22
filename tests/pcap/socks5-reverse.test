@@ -3,6 +3,49 @@
       {
          "body" : {
             "a1" : "10.0.0.1",
+            "a2" : "10.0.0.2",
+            "as1" : "AS0000 This is neat",
+            "as2" : "AS0001 Cool Beans!",
+            "assocksip" : "AS15169 Google LLC",
+            "by" : 27311,
+            "by1" : 25112,
+            "by2" : 2199,
+            "db" : 24346,
+            "db1" : 23392,
+            "db2" : 954,
+            "fb1" : "4e5a8d08874e0500",
+            "fb2" : "050100050100014a",
+            "firstPacket" : 1386790367120,
+            "fp" : 1386790367,
+            "fpd" : 1386790367120,
+            "fs" : [],
+            "g1" : "RUS",
+            "g2" : "CAN",
+            "gsocksip" : "USA",
+            "hckey-term" : [
+               "NID",
+               "PREF"
+            ],
+            "hckey-term-cnt" : 2,
+            "hcval-term" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "hcval-term-cnt" : 2,
+            "hdrs" : {
+               "hreq-referer" : [
+                  "",
+                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
+               ],
+               "hreq-referercnt" : 2,
+               "hres-location" : [
+                  "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ]
+            },
+            "hdver" : [
+               "1.1"
+            ],
+            "hdvercnt" : 1,
             "hh1" : [
                "http:header:accept",
                "http:header:accept-encoding",
@@ -11,73 +54,108 @@
                "http:header:referer",
                "http:header:user-agent"
             ],
-            "db1" : 23392,
-            "pr" : 6,
-            "gsocksip" : "USA",
-            "tcpflags" : {
-               "urg" : 0,
-               "psh" : 29,
-               "syn" : 1,
-               "ack" : 20,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "fin" : 1
-            },
-            "by" : 27311,
-            "sl" : 37537,
-            "hcval-term-cnt" : 2,
-            "db2" : 954,
-            "fp" : 1386790367,
-            "hckey-term" : [
-               "NID",
-               "PREF"
+            "hh1cnt" : 6,
+            "hh2" : [
+               "http:header:alternate-protocol",
+               "http:header:cache-control",
+               "http:header:content-encoding",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:expires",
+               "http:header:location",
+               "http:header:p3p",
+               "http:header:pragma",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:transfer-encoding",
+               "http:header:x-frame-options",
+               "http:header:x-xss-protection"
             ],
-            "fb1" : "4e5a8d08874e0500",
-            "lp" : 1386790404,
-            "rirsocksip" : "ARIN",
-            "p1" : 54263,
-            "no" : "test",
-            "lpd" : 1386790404657,
-            "hckey-term-cnt" : 2,
-            "test" : {
-               "string" : [
-                  "16777226:54263,33554442:8855"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
-            "firstPacket" : 1386790367120,
             "hh2cnt" : 15,
+            "hkey" : [
+               "uule",
+               "hl",
+               "client",
+               "start",
+               "rls",
+               "q",
+               "num",
+               "gl"
+            ],
+            "hkeycnt" : 8,
+            "hmd5" : [
+               "2069181ae704855f29caf964ca52ec49",
+               "b0cecae354b9eab1f04f70e46a612cb1"
+            ],
+            "hmd5cnt" : 2,
+            "ho" : [
+               "www.google.com"
+            ],
+            "hocnt" : 1,
+            "hpath" : [
+               "/search"
+            ],
+            "hpathcnt" : 1,
+            "hsver" : [
+               "1.1"
+            ],
+            "hsvercnt" : 1,
             "http" : {
-               "statuscode" : [
-                  302,
-                  200
-               ],
-               "statuscode-cnt" : 2,
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
                "bodymagic-term" : [
                   "application/x-gzip",
                   "text/html"
                ],
-               "bodymagic-term-cnt" : 2
+               "bodymagic-term-cnt" : 2,
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  302,
+                  200
+               ],
+               "statuscode-cnt" : 2
             },
+            "hval" : [
+               "firefox",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "en",
+               "sheepskin boots",
+               "10",
+               "0",
+               "us"
+            ],
+            "hvalcnt" : 7,
+            "ipDst" : "10.0.0.2",
             "ipSrc" : "10.0.0.1",
+            "lastPacket" : 1386790404657,
+            "lp" : 1386790404,
+            "lpd" : 1386790404657,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "mac1-term-cnt" : 1,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:83:9f:c6"
+            ],
+            "mac2-term-cnt" : 2,
+            "no" : "test",
+            "p1" : 54263,
+            "p2" : 8855,
+            "pa" : 52,
+            "pa1" : 31,
+            "pa2" : 21,
+            "portDst" : 8855,
+            "portSrc" : 54263,
+            "pr" : 6,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "prot-term-cnt" : 3,
             "ps" : [
                24,
                106,
@@ -132,58 +210,6 @@
                28015,
                28091
             ],
-            "db" : 24346,
-            "by2" : 2199,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "hmd5cnt" : 2,
-            "hpath" : [
-               "/search"
-            ],
-            "assocksip" : "AS15169 Google LLC",
-            "portDst" : 8855,
-            "hsver" : [
-               "1.1"
-            ],
-            "hpathcnt" : 1,
-            "hkey" : [
-               "uule",
-               "hl",
-               "client",
-               "start",
-               "rls",
-               "q",
-               "num",
-               "gl"
-            ],
-            "as1" : "AS0000 This is neat",
-            "fb2" : "050100050100014a",
-            "a2" : "10.0.0.2",
-            "ipDst" : "10.0.0.2",
-            "hmd5" : [
-               "2069181ae704855f29caf964ca52ec49",
-               "b0cecae354b9eab1f04f70e46a612cb1"
-            ],
-            "ss" : 1,
-            "hval" : [
-               "firefox",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "en",
-               "sheepskin boots",
-               "10",
-               "0",
-               "us"
-            ],
-            "by1" : 25112,
-            "hdver" : [
-               "1.1"
-            ],
-            "sockspo" : 80,
-            "ho" : [
-               "www.google.com"
-            ],
-            "uacnt" : 1,
             "psl" : [
                82,
                82,
@@ -238,86 +264,60 @@
                76,
                76
             ],
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "socksip" : "74.125.131.103",
-            "g2" : "CAN",
-            "as2" : "AS0001 Cool Beans!",
-            "mac1-term-cnt" : 1,
-            "g1" : "RUS",
-            "mac2-term-cnt" : 2,
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:83:9f:c6"
-            ],
-            "hdvercnt" : 1,
-            "prot-term-cnt" : 3,
-            "hdrs" : {
-               "hreq-referer" : [
-                  "",
-                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
-               ],
-               "hreq-referercnt" : 2,
-               "hres-location" : [
-                  "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ]
-            },
-            "portSrc" : 54263,
-            "p2" : 8855,
-            "timestamp" : "SET",
-            "us" : [
-               "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "tacnt" : 2,
-            "hocnt" : 1,
-            "ua" : [
-               "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
-            ],
-            "hcval-term" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "pa" : 52,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "hh1cnt" : 6,
-            "pa1" : 31,
             "rir2" : "TEST",
-            "uscnt" : 2,
-            "lastPacket" : 1386790404657,
+            "rirsocksip" : "ARIN",
+            "sl" : 37537,
+            "socksip" : "74.125.131.103",
+            "sockspo" : 80,
+            "ss" : 1,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "fpd" : 1386790367120,
-            "hkeycnt" : 8,
-            "hvalcnt" : 7,
-            "hh2" : [
-               "http:header:alternate-protocol",
-               "http:header:cache-control",
-               "http:header:content-encoding",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:expires",
-               "http:header:location",
-               "http:header:p3p",
-               "http:header:pragma",
-               "http:header:server",
-               "http:header:set-cookie",
-               "http:header:transfer-encoding",
-               "http:header:x-frame-options",
-               "http:header:x-xss-protection"
+            "tacnt" : 2,
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
-            "pa2" : 21,
-            "hsvercnt" : 1,
-            "fs" : []
+            "tcpflags" : {
+               "ack" : 20,
+               "fin" : 1,
+               "psh" : 29,
+               "rst" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string" : [
+                  "16777226:54263,33554442:8855"
+               ]
+            },
+            "timestamp" : "SET",
+            "ua" : [
+               "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
+            ],
+            "uacnt" : 1,
+            "us" : [
+               "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "uscnt" : 2
          },
          "header" : {
             "index" : {

@@ -95,7 +95,7 @@ sub doFix {
     my $data = do { local $/; <> };
     my $json = from_json($data, {relaxed => 1});
     fix($json);
-    $json = to_json($json, {pretty => 1});
+    $json = to_json($json, {pretty => 1, canonical => 1});
     print $json, "\n";
 }
 
