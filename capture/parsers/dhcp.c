@@ -118,7 +118,7 @@ void moloch_parser_init()
         NULL); 
 
     hostField = moloch_field_define("dhcp", "lotermfield",
-        "dhcp.mac", "Host", "dhcp.host",
+        "dhcp.host", "Host", "dhcp.host",
         "DHCP Host",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL); 

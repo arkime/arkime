@@ -1,5 +1,5 @@
 if (session.dhcp)
   div.sessionDetailMeta.bold dhcp
   dl.sessionDetailMeta
-    +arrayList(session.radius, "type", "Type", "dhcp.typ")
-    +arrayList(session.radius, "host", "Host", "dhcp.host")
+    +arrayList(session.dhcp, "type", "Type", "dhcp.type")
+    +arrayList(session.dhcp, "host", "Host", "dhcp.host")
