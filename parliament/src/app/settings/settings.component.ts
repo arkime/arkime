@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { AuthService } from '../auth/auth.service';
 import { SettingsService } from './settings.service';
+import { Auth } from '../auth/auth';
 
 @Component({
   templateUrl: './settings.html',
@@ -13,11 +14,18 @@ export class SettingsComponent implements OnInit {
   // subscriber for the logged in variable
   private loggedInSubscriber;
 
+  // user auth flag
+  auth: Auth = { hasAuth: false };
+
   // display error messages
   error = '';
 
   // page data
   settings = {};
+  currentPassword = '';
+  newPassword = '';
+  newPasswordConfirm = '';
+  passwordChanged = false;
 
   // whether settings have been updated by the user
   changed = false;
@@ -34,18 +42,18 @@ export class SettingsComponent implements OnInit {
           if (!Object.keys(this.settings).length) {
             this.loadData();
           }
-        } else { // otherwise clear the settings and show an error
+        } else { // otherwise clear the settings
           this.settings = {};
-          if (!this.error) {
-            this.error = 'This page requires admin privileges. Please login.';
-          }
         }
       }
     );
   }
 
   ngOnInit() {
-    this.loadData();
+    this.authService.hasAuth()
+      .subscribe((response) => {
+        this.auth.hasAuth = response.hasAuth;
+      });
   }
 
   /* controller functions -------------------------------------------------- */
@@ -87,6 +95,47 @@ export class SettingsComponent implements OnInit {
 
   getFieldInputType(field) {
     return (field.secret && !field.showValue) ? 'password' : 'text';
+  }
+
+  cancelChangePassword() {
+    this.currentPassword = '';
+    this.newPassword = '';
+    this.newPasswordConfirm = '';
+    this.passwordChanged = false;
+  }
+
+  updatePassword() {
+    if (!this.currentPassword && this.auth.hasAuth) {
+      this.error = 'You must provide your current password.';
+    }
+
+    if (!this.newPassword) {
+      this.error = 'You must provide a new password.';
+      return;
+    }
+
+    if (!this.newPasswordConfirm) {
+      this.error = 'You must confirm your new password.';
+      return;
+    }
+
+    if (this.newPassword !== this.newPasswordConfirm) {
+      this.error = 'Passwords must match.';
+      this.newPassword = '';
+      this.newPasswordConfirm = '';
+      return;
+    }
+
+    this.authService.updatePassword(this.currentPassword, this.newPassword)
+      .then((response) => {
+        this.error = '';
+        this.cancelChangePassword();
+        this.auth.hasAuth = true;
+      })
+      .catch((err) => {
+        this.error = err.error.text || 'Error saving password.';
+        this.cancelChangePassword();
+      });
   }
 
 }

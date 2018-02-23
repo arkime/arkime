@@ -1,29 +1,89 @@
+<!-- page error -->
+<div class="alert alert-danger" *ngIf="error">
+  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+  {{ error }}
+  <button type="button" class="close cursor-pointer"
+    (click)="error = ''">
+    <span>&times;</span>
+  </button>
+</div> <!-- /page error -->
+
+<!-- password set but user is not logged in -->
+<div class="alert alert-danger"
+  *ngIf="!error && auth.hasAuth && !authService.loggedIn">
+  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+  This page requires admin privileges. Please login.
+</div> <!-- /password set but user is not logged in -->
+
 <div class="container-fluid">
 
-  <!-- page error -->
-  <div class="alert alert-danger" *ngIf="error">
-    <span class="fa fa-exclamation-triangle"></span>&nbsp;
-    {{ error }}
-    <button type="button" class="close cursor-pointer"
-      (click)="error = ''">
-      <span>&times;</span>
-    </button>
-  </div> <!-- /page error -->
-
-  <!-- not logged in -->
-  <div *ngIf="!error && !authService.loggedIn" class="mt-5">
-    <div class="info-area vertical-center text-center">
-      <div class="text-danger">
-        <span class="fa fa-2x fa-warning"></span>
-        <span>
-          This page requires admin privileges.<br>
-          Please login.
-        </span>
+  <!-- change password -->
+  <div *ngIf="(auth.hasAuth && authService.loggedIn) || !auth.hasAuth">
+    <h3 class="mb-3">
+      Password
+      <span class="pull-right" [hidden]="!passwordChanged">
+        <!-- cancel password update button -->
+        <a (click)="cancelChangePassword()"
+          class="btn btn-outline-warning cursor-pointer">
+          <span class="fa fa-ban"></span>&nbsp;
+          Cancel
+        </a> <!-- /cancel password update button -->
+        <!-- update/create password button -->
+        <a class="btn btn-outline-success cursor-pointer mr-1 ml-1"
+          (click)="updatePassword()"
+          *ngIf="(auth.hasAuth && authService.loggedIn) || !auth.hasAuth">
+          <span class="fa fa-key"></span>
+          <span *ngIf="auth.hasAuth && authService.loggedIn">Update</span>
+          <span *ngIf="!auth.hasAuth">Create</span>
+          Password
+        </a> <!-- /update/create password button -->
+      </span>
+    </h3>
+    <div class="row">
+      <div class="col-md-12">
+        <form>
+          <div class="input-group mb-2"
+            *ngIf="auth.hasAuth && authService.loggedIn">
+            <span class="input-group-addon">
+              Current Password
+            </span>
+            <input class="form-control"
+              (keyup.enter)="updatePassword()"
+              name="currentPassword"
+              (change)="passwordChanged = true"
+              [(ngModel)]="currentPassword"
+              type="password">
+          </div>
+          <div class="input-group mb-2">
+            <span class="input-group-addon">
+              New Password
+            </span>
+            <input class="form-control"
+              name="newPassword"
+              (keyup.enter)="updatePassword()"
+              (change)="passwordChanged = true"
+              [(ngModel)]="newPassword"
+              type="password">
+          </div>
+          <div class="input-group mb-2">
+            <span class="input-group-addon">
+              Confirm New Password
+            </span>
+            <input class="form-control"
+              name="newPasswordConfirm"
+              (keyup.enter)="updatePassword()"
+              (change)="passwordChanged = true"
+              [(ngModel)]="newPasswordConfirm"
+              type="password">
+          </div>
+        </form>
       </div>
     </div>
-  </div> <!-- /not logged in -->
+  </div> <!-- /change password -->
 
+  <!-- notifiers -->
   <div *ngIf="authService.loggedIn">
+    <hr>
     <h3>
       Notifiers
       <span class="pull-right" [hidden]="!changed">
@@ -35,7 +95,7 @@
         <a (click)="saveSettings()"
           class="btn btn-outline-success cursor-pointer">
           <span class="fa fa-save"></span>&nbsp;
-          Save Settings
+          Save Notifiers
         </a>
       </span>
     </h3>
@@ -107,6 +167,6 @@
       </div>
 
     </div>
-  </div>
+  </div> <!-- /notifiers -->
 
 </div>

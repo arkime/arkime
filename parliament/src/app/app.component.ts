@@ -17,8 +17,6 @@ export class AppComponent implements OnInit {
 
   // password input variables
   password = '';
-  passwordConfirm = '';
-  updatingPassword = false;
   showLoginInput = false;
   focusOnPasswordInput = false;
 
@@ -58,79 +56,25 @@ export class AppComponent implements OnInit {
       }
 
       this.authService.login(this.password)
-        .subscribe(
-          (data) => {
-            this.error    = '';
-            this.password = '';
-          },
-          (err) => {
-            this.password = '';
-            this.error    = err.error.text || 'Unable to login';
-          }
-        );
+        .then((response) => {
+          this.error    = '';
+          this.password = '';
+        })
+        .catch((err) => {
+          this.password = '';
+          this.error    = err.error.text || 'Unable to login';
+        });
     }
   }
 
   cancelLogin() {
     this.showLoginInput       = false;
     this.focusOnPasswordInput = false;
-    this.updatingPassword     = false;
-    this.passwordConfirm      = '';
-    this.password             = '';
     this.error                = '';
   }
 
   logout() {
     this.authService.logout();
-    localStorage.setItem('token', ''); // clear token
-  }
-
-  updatePassword() {
-    this.updatingPassword     = !this.updatingPassword;
-    this.showLoginInput       = !this.showLoginInput;
-    this.focusOnPasswordInput = this.showLoginInput;
-
-    if (!this.showLoginInput) {
-      if (!this.password) {
-        this.error = 'Must provide a password.';
-        return;
-      }
-
-      if (!this.passwordConfirm) {
-        this.error = 'Must confirm your password.';
-        return;
-      }
-
-      if (this.password !== this.passwordConfirm) {
-        this.error = 'Passwords must match.';
-        this.password = '';
-        this.passwordConfirm = '';
-        return;
-      }
-
-      this.authService.updatePassword(this.password)
-        .subscribe(
-          (data) => {
-            this.error    = '';
-            this.password = '';
-            this.auth.hasAuth = true;
-            this.authService.saveToken(data.token);
-          },
-          (err) => {
-            console.error('update password error:', err);
-            this.password = '';
-            this.error    = err.error.text || 'Unable to update your password.';
-            this.authService.saveToken('');
-          }
-        );
-    }
-  }
-
-  // Fired when the user clicks enter on the password input
-  passwordInputSubmit() {
-    if (this.updatingPassword) {
-      this.updatePassword();
-    } else { this.login(); }
   }
 
   // Fired when interval refresh select input is changed

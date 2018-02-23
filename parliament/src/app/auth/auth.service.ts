@@ -18,23 +18,28 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   // login the user using the supplied password
-  login(password): Observable<Login> {
-    const loginReq = this.http.post<Login>('api/auth', { password: password });
-
-    loginReq.subscribe( // save the returned token
-      (data)  => { this.saveToken(data.token); },
-      (err)   => { this.saveToken(''); }
-    );
-
-    return loginReq;
+  login(password): Promise<Login> {
+    return new Promise<Login>((resolve, reject) => {
+      this.http.post<Login>('api/auth', { password: password })
+        .subscribe(
+          (response) => {
+            this.saveToken(response.token);
+            resolve(response);
+          },
+          (error) => {
+            this.saveToken('');
+            reject(error);
+          }
+        );
+    });
   }
 
+  // logout the user by saving a blank token
   logout(): void {
-    this.loggedIn = false;
-    this._loggedIn.next(false);
+    this.saveToken('');
   }
 
-  // save the token in local storage and indicate the user is logged in
+  // save the token in local storage and indicate if the user is logged in
   saveToken(token): boolean {
     localStorage.setItem('token', token);
 
@@ -75,8 +80,22 @@ export class AuthService {
   }
 
   // update (or create) a password
-  updatePassword(password): Observable<Login> {
-    return this.http.put<Login>('api/auth/update', { password: password });
+  updatePassword(currentPassword, newPassword): Promise<Login> {
+    return new Promise<Login>((resolve, reject) => {
+      this.http.put<Login>('api/auth/update', {
+        newPassword: newPassword,
+        currentPassword: currentPassword
+      }).subscribe(
+        (response) => {
+          this.saveToken(response.token);
+          resolve(response);
+        },
+        (error) => {
+          this.saveToken('');
+          reject(error);
+        }
+      );
+    });
   }
 
 }

@@ -674,13 +674,29 @@ router.get('/auth/loggedin', verifyToken, (req, res, next) => {
 
 // Update (or create) a password for the parliament
 router.put('/auth/update', (req, res, next) => {
-  if (!req.body.password) {
-    const error = new Error('You must provide a password');
+  if (!req.body.newPassword) {
+    const error = new Error('You must provide a new password');
     error.httpStatusCode = 422;
     return next(error);
   }
 
-  bcrypt.hash(req.body.password, 10, (err, hash) => {
+  let hasAuth = !!app.get('password');
+  if (hasAuth) { // if the user has a password already set
+    // check if the user has supplied their current password
+    if (!req.body.currentPassword) {
+      const error = new Error('You must provide your current password');
+      error.httpStatusCode = 401;
+      return next(error);
+    }
+    // check if password matches
+    if (!bcrypt.compareSync(req.body.currentPassword, app.get('password'))) {
+      const error = new Error('Authentication failed.');
+      error.httpStatusCode = 401;
+      return next(error);
+    }
+  }
+
+  bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
     if (err) {
       console.error(`Error hashing password: ${err}`);
       const error = new Error('Hashing password failed.');

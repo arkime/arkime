@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng build --prod && node parliament.js",
     "dev": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json & ng build --watch",
+    "dev:nopass": "node parliament.js --port 8008 -c ./parliament.dev.json & ng build --watch",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "npm run jslint && npm run tslint",
