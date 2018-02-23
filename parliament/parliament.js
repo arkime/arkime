@@ -1168,6 +1168,45 @@ router.put('/groups/:groupId/clusters/:clusterId/dismissAllIssues', verifyToken,
   writeParliament(req, res, next, successObj, errorText);
 });
 
+// issue a test alert to a specified notifier
+router.post('/testAlert', (req, res, next) => {
+  if (!req.body.notifier) {
+    const error = new Error('Must specify the notifier.');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  for (let n in internals.notifiers) {
+    if (n !== req.body.notifier) { continue; }
+
+    const notifier = internals.notifiers[n];
+
+    let config = {};
+
+    for (let f of notifier.fields) {
+      let field = parliament.settings.notifiers[n].fields[f.name];
+      if (!field || (field.required && !field.value)) {
+        // field doesn't exist, or field is required and doesn't have a value
+        let message = `Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`;
+        console.error(message);
+
+        const error = new Error(message);
+        error.httpStatusCode = 422;
+        return next(error);
+      }
+      config[f.name] = field.value;
+    }
+
+    notifier.sendAlert(config, 'Test alert');
+
+    return;
+  }
+
+  let successObj  = { success:true, text:`Successfully issued alert using the ${req.body.notifier} notifier.` };
+  let errorText   = `Unable to issue alert using the ${req.body.notifier} notifier.`;
+  writeParliament(req, res, next, successObj, errorText);
+});
+
 
 /* LISTEN! ----------------------------------------------------------------- */
 let server;

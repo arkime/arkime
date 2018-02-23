@@ -93,6 +93,26 @@ export class SettingsComponent implements OnInit {
     this.saveSettings();
   }
 
+  testNotifier(notifier) {
+    this.settingsService.testNotifier(notifier.name)
+      .subscribe(
+        (response) => {
+          this.error = '';
+        },
+        (err) => {
+          this.error = err.error.text || 'Error issuing alert.';
+        }
+      );
+  }
+
+  clearNotifierFields(notifier) {
+    for (const field of notifier.fields) {
+      field.value = '';
+    }
+
+    this.changed = true;
+  }
+
   getFieldInputType(field) {
     return (field.secret && !field.showValue) ? 'password' : 'text';
   }

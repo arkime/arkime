@@ -103,7 +103,7 @@
 
       <div class="col-12 col-sm-6 col-md-6 col-lg-4"
         *ngFor="let notifier of settings.notifiers; trackBy:trackByName;">
-        <div class="card bg-light">
+        <div class="card bg-light mb-3">
           <div class="card-body">
 
             <!-- notifier title -->
@@ -131,13 +131,29 @@
                 [(ngModel)]="field.value"
                 (keydown)="changed = true"
                 [attr.type]="getFieldInputType(field)">
-                <span *ngIf="field.secret"
-                  class="input-group-addon cursor-pointer"
-                  (click)="field.showValue = !field.showValue">
-                  <span class="fa" [ngClass]="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
-                  </span>
+              <span *ngIf="field.secret"
+                class="input-group-addon cursor-pointer"
+                (click)="field.showValue = !field.showValue">
+                <span class="fa" [ngClass]="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
                 </span>
+              </span>
             </div> <!-- /notifier fields -->
+
+            <!-- notifier actions -->
+            <div class="row mt-3">
+              <div class="col-12">
+                <a class="btn btn-sm btn-outline-warning cursor-pointer"
+                  (click)="clearNotifierFields(notifier)">
+                  <span class="fa fa-ban"></span>&nbsp;
+                  Clear fields
+                </a>
+                <a class="btn btn-sm btn-outline-success cursor-pointer pull-right"
+                  (click)="testNotifier(notifier)">
+                  <span class="fa fa-bell"></span>&nbsp;
+                  Test Notifier
+                </a>
+              </div>
+            </div> <!-- /notifier actions -->
 
             <hr>
 
