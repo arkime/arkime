@@ -17,6 +17,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.0.0-beta2 2018/02/xx
   - capture - decode some dhcp
+  - capture - tag a tls session with cert:self-signed
 
 1.0.0-beta1 2018/02/20
   - capture - calculate sha256 too (set supportSha256 tru)

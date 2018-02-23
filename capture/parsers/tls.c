@@ -79,6 +79,19 @@ tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 }
 /******************************************************************************/
 void
+tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
+{
+    uint32_t apc, atag, alen;
+
+    while (BSB_REMAINING(*bsb) >= 2) {
+        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+
+        if (value && atag == 4 && alen == 4)
+            certs->isCA = (value[3] & 0x02);
+    }
+}
+/******************************************************************************/
+void
 tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
@@ -98,6 +111,9 @@ tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
             }
         } else if (atag == 6)  {
             moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
+            if (strcmp(lastOid, "2.5.29.15") == 0) {
+                tls_key_usage(certs, bsb);
+            }
             if (strcmp(lastOid, "2.5.29.17") != 0)
                 lastOid[0] = 0;
         } else if (lastOid[0] && atag == 4) {
@@ -382,6 +398,18 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
             lastOid[0] = 0;
             tls_alt_names(certs, &tbsb, lastOid);
         }
+
+        // not a CA AND either no orgName or the same orgName AND the same 1 commonName
+        if (!certs->isCA &&
+            ((certs->subject.orgName && certs->issuer.orgName && strcmp(certs->subject.orgName, certs->issuer.orgName) == 0) ||
+             (certs->subject.orgName == NULL && certs->issuer.orgName == NULL)) &&
+            certs->subject.commonName.s_count == 1 &&
+            certs->issuer.commonName.s_count == 1 &&
+            strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {
+
+            moloch_session_add_tag(session, "cert:self-signed");
+        }
+
 
         if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
             moloch_field_certsinfo_free(certs);

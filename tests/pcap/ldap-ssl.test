@@ -135,6 +135,10 @@
             "srcPackets" : 20,
             "srcPayload8" : "301d020101771880",
             "srcPort" : 37386,
+            "tags" : [
+               "cert:self-signed"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 11,
                "dstZero" : 0,

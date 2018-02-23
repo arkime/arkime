@@ -120,6 +120,7 @@ typedef struct moloch_certsinfo {
     short                    serialNumberLen;
     short                    t_bucket;
     unsigned char            hash[60];
+    char                     isCA;
 } MolochCertsInfo_t;
 
 typedef struct {
