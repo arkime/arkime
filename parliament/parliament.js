@@ -1198,8 +1198,6 @@ router.post('/testAlert', (req, res, next) => {
     }
 
     notifier.sendAlert(config, 'Test alert');
-
-    return;
   }
 
   let successObj  = { success:true, text:`Successfully issued alert using the ${req.body.notifier} notifier.` };
