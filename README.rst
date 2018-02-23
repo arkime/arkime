@@ -33,7 +33,7 @@ RPM & DEB Downloads
 
 Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in
 `/data/moloch/README.txt <https://raw.githubusercontent.com/aol/moloch/master/release/README.txt>`_
-after installing.
+after installing.  This is the recommended method to install and maintain Moloch.
 
 
 http://molo.ch/#downloads
@@ -43,7 +43,7 @@ http://molo.ch/#downloads
 Building
 ========
 
-If you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.
+For advanced users, if you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.  The RPM & DEB files are much easier to deal with then building yourself
 
 .. _components:
 
@@ -74,7 +74,7 @@ Recommended version **5.6.x** for Moloch 0.18 and later.  `Download elasticsearc
    **Important:** At this time all development is done with `elasticsearch
    5.6.7 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-6-7>`_.
 
-Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
+Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
 
 .. _building-capture:
@@ -97,11 +97,11 @@ Building Viewer
 Configuration
 -------------
 
-1. Make sure you download the latest freely available GeoIP and RIR files. 
+1. Make sure you download the latest freely available GeoIP and RIR files.
 
    - `GeoLiteCountry <http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz>`_ - Geographic IP data
    - `GeoIPASNum <http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz>`_ - Geographic Autonomous System (AS) number data
-   - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments   
+   - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments 
 
 2. Edit the ``config.ini`` file.
    
@@ -157,9 +157,9 @@ Example Configuration
 Here is an example system setup for monitoring 8x GigE highly-utilized networks, with an average of ~5 Gigabit/sec, with ~7 days of pcap storage.
 
 * ``capture``/``viewer`` machines
- 
+
   - 5x HP Apollo 4200
-  - 64GB of memory 
+  - 64GB of memory
   - 80TB of disk
   - Running Moloch and `Suricata <http://suricata-ids.org/>`_
 
@@ -200,7 +200,7 @@ Important Considerations
     iptables -A INPUT -i eth0 -p tcp --dport 9200 -j DROP
     iptables -A INPUT -i eth0 -p tcp --dport 9301 -j DROP
     iptables -A INPUT -i eth0 -p tcp --dport 9201 -j DROP
-  
+
 * Moloch machines should be locked down, however they need to talk to each other (port 8005), to the elasticsearch machines (ports 9200-920x), and the web interface needs to be open (port 8005).
 * Moloch ``viewer`` should be configured to use SSL.
 
@@ -212,7 +212,7 @@ Important Considerations
   - It is also possible to place apache in front of moloch, so it can handle the authentication and pass the username on to moloch
   - This is how we deploy it
 
-* A shared password stored in the Moloch configuration file is used to encrypt password hashes AND for inter-Moloch communication. 
+* A shared password stored in the Moloch configuration file is used to encrypt password hashes AND for inter-Moloch communication.
 
   - Make sure you protect the config file on the filesystem with proper file permissions.
   - Encrypted password hashes are used so a new password hash can not be inserted into ``elasticsearch`` directly in case it hasn't been secured.
@@ -222,8 +222,7 @@ Important Considerations
 Documentation
 =============
 
-For now this README is the bulk of the documentation. This will improve over
-time. 
+For now this README and FAQ are the bulk of the documentation. This will improve over time.
 
 .. _faq:
 
@@ -244,7 +243,13 @@ We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <
 Upgrading
 =========
 
-Currently upgrading from previous versions of Moloch is a manual process, however recorded sessions and pcap files should be retained
+Upgrading is easy if using the RPM/DEB files.
+
+* Download and install the latest version, pay attention to any special instructions
+* You might need to upgrade the database with ``/data/moloch/db/db.pl http://localhost:9200 upgrade``
+* Restart the moloch capture and viewer processes
+
+If upgrading from source it is a manual process.
 
 * Update the moloch repository from github
 * Build the moloch system using "easybutton-build.sh"

@@ -358,11 +358,7 @@
                   <app-issue-actions *ngIf="authService.loggedIn" class="issue-btns"
                     [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
                     (change)="issueChange($event)"></app-issue-actions>
-                  <!-- issue text -->
-                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
-                  <span *ngIf="issue.node">{{ issue.node }}</span>
-                  {{ issue.title }}<span *ngIf="issue.value !== undefined">: {{ issue.value | issueValue: issue.type }}</span>
-                  <!-- /issue text -->
+                  {{ issue.message }}
                 </div>
               </span>
             </small> <!-- /cluster issues -->

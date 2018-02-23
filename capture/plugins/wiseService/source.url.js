@@ -38,9 +38,9 @@ function URLSource (api, section) {
 
   if (headers) {
     headers.split(";").forEach((header) => {
-      var parts = header.split(":");
+      var parts = header.split(":").map(item => item.trim());
       if (parts.length === 2) {
-        this.headers[parts[0].trim()] = parts[1].trim();
+        this.headers[parts[0]] = parts[1];
       }
     });
   }

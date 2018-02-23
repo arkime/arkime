@@ -24,14 +24,13 @@ const router  = express.Router();
 
 const version = 1;
 
-const alertTypes = {
-  esRed: { on: true, name: 'ES Red', description: 'ES status is red' },
-  esDown: { on: true, name: 'ES Down', description: 'ES is unreachable' },
-  esDropped: { on: true, name: 'ES Dropped', description: 'the capture node is overloading ES' },
-  outOfDate: { on: true, name: 'Out of Date', description: 'the capture node has not checked in' },
-  noPackets: { on: true, name: 'No Packets', description: 'the capture node is not receiving packets' }
+const issueTypes = {
+  esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
+  esDown: { on: true, name: 'ES Down', text:' ES is down', severity: 'red', description: 'ES is unreachable' },
+  esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping packets', severity: 'yellow', description: 'the capture node is overloading ES' },
+  outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
+  noPackets: { on: true, name: 'No Packets', text: 'is not receiving packets', severity: 'red', description: 'the capture node is not receiving packets' }
 };
-
 
 (function() { // parse arguments
   let appArgs = process.argv.slice(2);
@@ -242,10 +241,34 @@ function verifyToken(req, res, next) {
 
 
 /* Helper functions -------------------------------------------------------- */
+function formatIssueMessage(cluster, issue) {
+  let message = '';
+
+  if (issue.node) { message += `${issue.node} `; }
+
+  message += `${issue.text}`;
+
+  if (issue.value) {
+    let value = ': ';
+
+    if (issue.type === 'esDropped') {
+      value += issue.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    } else if (issue.type === 'outOfDate') {
+      value += new Date(issue.value);
+    } else {
+      value += issue.value;
+    }
+
+    message += `${value}`;
+  }
+
+  return message;
+}
+
 function issueAlert(cluster, issue) {
   issue.alerted = Date.now();
 
-  const message = `Alert! ${cluster.title} - ${issue.type}`;
+  const message = `${cluster.title} - ${issue.message}`;
 
   for (let n in internals.notifiers) {
     // quit before sending the alert if the notifier is off
@@ -301,6 +324,13 @@ function findIssue(groupId, clusterId, issueType, node) {
 function setIssue(cluster, newIssue) {
   if (!cluster.issues) { cluster.issues = []; }
 
+  // build issue
+  let issueType     = issueTypes[newIssue.type];
+  newIssue.text     = issueType.text;
+  newIssue.title    = issueType.name;
+  newIssue.severity = issueType.severity;
+  newIssue.message  = formatIssueMessage(cluster, newIssue);
+
   for (let issue of cluster.issues) {
     if (issue.type === newIssue.type && issue.node === newIssue.node) {
       if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
@@ -355,11 +385,7 @@ function getHealth(cluster) {
         cluster.dataNodes   = health.number_of_data_nodes;
 
         if (cluster.status === 'red') { // alert on red es status
-          setIssue(cluster, {
-            type    : 'esRed',
-            title   : 'ES is red',
-            severity: 'red'
-          });
+          setIssue(cluster, { type: 'esRed' });
         }
       }
 
@@ -368,12 +394,7 @@ function getHealth(cluster) {
     .catch((error) => {
       let message = error.message || error;
 
-      setIssue(cluster, {
-        type    : 'esDown',
-        title   : 'ES is unreachable',
-        value   : message,
-        severity: 'red'
-      });
+      setIssue(cluster, { type: 'esDown', value: message });
 
       cluster.healthError = message;
 
@@ -434,31 +455,24 @@ function getStats(cluster) {
       for (let stat of stats.data) {
         if ((Date.now()/1000 - stat.currentTime) > 30) {
           setIssue(cluster, {
-            type    : 'outOfDate',
-            title   : 'Out of date',
-            node    : stat.nodeName,
-            value   : Date.now() - stat.currentTime,
-            severity: 'red'
+            type  : 'outOfDate',
+            node  : stat.nodeName,
+            value : Date.now() - stat.currentTime
           });
         }
 
         if (stat.deltaPacketsPerSec === 0) {
           setIssue(cluster, {
-            type    : 'noPackets',
-            title   : 'No packets',
-            node    : stat.nodeName,
-            value   : 0,
-            severity: 'yellow'
+            type: 'noPackets',
+            node: stat.nodeName,
           });
         }
 
         if (stat.deltaESDroppedPerSec > 0) {
           setIssue(cluster, {
-            type    : 'esDropped',
-            title   : 'ES dropped',
-            node    : stat.nodeName,
-            value   : stat.deltaESDroppedPerSec,
-            severity: 'yellow'
+            type  : 'esDropped',
+            node  : stat.nodeName,
+            value : stat.deltaESDroppedPerSec
           });
         }
       }
@@ -469,12 +483,7 @@ function getStats(cluster) {
       let message = error.message || error;
       console.error('STATS ERROR:', message);
 
-      setIssue(cluster, {
-        type    : 'esDown',
-        title   : 'ES is unreachable',
-        value   : message,
-        severity: 'red'
-      });
+      setIssue(cluster, { type: 'esDown', value: message });
 
       cluster.statsError = message;
       return resolve();
@@ -521,8 +530,8 @@ function initalizeParliament() {
         }
 
         // build alerts
-        for (let a in alertTypes) {
-          let alert = alertTypes[a];
+        for (let a in issueTypes) {
+          let alert = issueTypes[a];
           notifierData.alerts[a] = true;
         }
 
@@ -712,8 +721,8 @@ router.get('/settings', verifyToken, (req, res, next) => {
     }
 
     for (let a in notifier.alerts) {
-      if (alertTypes.hasOwnProperty(a)) {
-        const alert = JSON.parse(JSON.stringify(alertTypes[a]));
+      if (issueTypes.hasOwnProperty(a)) {
+        const alert = JSON.parse(JSON.stringify(issueTypes[a]));
         alert.id = a;
         alert.on = notifier.alerts[a];
         notifierData.alerts.push(alert);
