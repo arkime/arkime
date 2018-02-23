@@ -359,6 +359,12 @@
                     [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
                     (change)="issueChange($event)"></app-issue-actions>
                   {{ issue.message }}
+                  <br>
+                  <small class="cursor-help issue-date"
+                    placement="right"
+                    ngbTooltip="First noticed at {{ issue.firstNoticed | date: 'yyyy/MM/dd HH:mm:ss' }}">
+                    {{ issue.firstNoticed | date: 'MM/dd HH:mm:ss' }}
+                  </small>
                 </div>
               </span>
             </small> <!-- /cluster issues -->

@@ -1011,7 +1011,9 @@ router.get('/issues', (req, res, next) => {
   }
 
   let sortBy = req.query.sort, type = 'string';
-  if (sortBy === 'ignoreUntil') { type = 'number'; }
+  if (sortBy === 'ignoreUntil' || sortBy === 'firstNoticed') {
+    type = 'number';
+  }
 
   if (sortBy) {
     let order = req.query.order || 'desc';
