@@ -26,10 +26,16 @@
         <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'title' && order === 'desc'"></span>
       </th>
       <th scope="col" class="cursor-pointer" (click)="sortBy('firstNoticed');">
-        Date
+        First Noticed
         <span class="fa fa-sort fa-fw" *ngIf="sort !== 'firstNoticed'"></span>
         <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'firstNoticed' && order === 'asc'"></span>
         <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'firstNoticed' && order === 'desc'"></span>
+      </th>
+      <th scope="col" class="cursor-pointer" (click)="sortBy('lastNoticed');">
+        Last Noticed
+        <span class="fa fa-sort fa-fw" *ngIf="sort !== 'lastNoticed'"></span>
+        <span class="fa fa-sort-asc fa-fw" *ngIf="sort === 'lastNoticed' && order === 'asc'"></span>
+        <span class="fa fa-sort-desc fa-fw" *ngIf="sort === 'lastNoticed' && order === 'desc'"></span>
       </th>
       <th scope="col">Value</th>
       <th scope="col" class="cursor-pointer" (click)="sortBy('node');">
@@ -54,6 +60,9 @@
         <td>{{ issue.title }}</td>
         <td>
           {{ issue.firstNoticed | date: 'yyyy/MM/dd HH:mm:ss' }}
+        </td>
+        <td>
+          {{ issue.lastNoticed | date: 'yyyy/MM/dd HH:mm:ss' }}
         </td>
         <td>{{ issue.value | issueValue: issue.type }}</td>
         <td>{{ issue.node }}</td>

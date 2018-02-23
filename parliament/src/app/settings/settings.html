@@ -17,7 +17,7 @@
 
 <div class="container-fluid">
 
-  <!-- change password -->
+  <!-- create/update password -->
   <div *ngIf="(auth.hasAuth && authService.loggedIn) || !auth.hasAuth">
     <h3 class="mb-3">
       Password
@@ -79,7 +79,7 @@
         </form>
       </div>
     </div>
-  </div> <!-- /change password -->
+  </div> <!-- /create/update password -->
 
   <!-- notifiers -->
   <div *ngIf="authService.loggedIn">
