@@ -674,13 +674,29 @@ router.get('/auth/loggedin', verifyToken, (req, res, next) => {
 
 // Update (or create) a password for the parliament
 router.put('/auth/update', (req, res, next) => {
-  if (!req.body.password) {
-    const error = new Error('You must provide a password');
+  if (!req.body.newPassword) {
+    const error = new Error('You must provide a new password');
     error.httpStatusCode = 422;
     return next(error);
   }
 
-  bcrypt.hash(req.body.password, 10, (err, hash) => {
+  let hasAuth = !!app.get('password');
+  if (hasAuth) { // if the user has a password already set
+    // check if the user has supplied their current password
+    if (!req.body.currentPassword) {
+      const error = new Error('You must provide your current password');
+      error.httpStatusCode = 401;
+      return next(error);
+    }
+    // check if password matches
+    if (!bcrypt.compareSync(req.body.currentPassword, app.get('password'))) {
+      const error = new Error('Authentication failed.');
+      error.httpStatusCode = 401;
+      return next(error);
+    }
+  }
+
+  bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
     if (err) {
       console.error(`Error hashing password: ${err}`);
       const error = new Error('Hashing password failed.');
@@ -1011,7 +1027,9 @@ router.get('/issues', (req, res, next) => {
   }
 
   let sortBy = req.query.sort, type = 'string';
-  if (sortBy === 'ignoreUntil') { type = 'number'; }
+  if (sortBy === 'ignoreUntil' || sortBy === 'firstNoticed' || sortBy === 'lastNoticed') {
+    type = 'number';
+  }
 
   if (sortBy) {
     let order = req.query.order || 'desc';
@@ -1147,6 +1165,43 @@ router.put('/groups/:groupId/clusters/:clusterId/dismissAllIssues', verifyToken,
 
   let successObj  = { success:true, text:`Successfully dismissed ${count} issues.`, dismissed:now };
   let errorText   = 'Unable to dismiss issues.';
+  writeParliament(req, res, next, successObj, errorText);
+});
+
+// issue a test alert to a specified notifier
+router.post('/testAlert', (req, res, next) => {
+  if (!req.body.notifier) {
+    const error = new Error('Must specify the notifier.');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  for (let n in internals.notifiers) {
+    if (n !== req.body.notifier) { continue; }
+
+    const notifier = internals.notifiers[n];
+
+    let config = {};
+
+    for (let f of notifier.fields) {
+      let field = parliament.settings.notifiers[n].fields[f.name];
+      if (!field || (field.required && !field.value)) {
+        // field doesn't exist, or field is required and doesn't have a value
+        let message = `Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`;
+        console.error(message);
+
+        const error = new Error(message);
+        error.httpStatusCode = 422;
+        return next(error);
+      }
+      config[f.name] = field.value;
+    }
+
+    notifier.sendAlert(config, 'Test alert');
+  }
+
+  let successObj  = { success:true, text:`Successfully issued alert using the ${req.body.notifier} notifier.` };
+  let errorText   = `Unable to issue alert using the ${req.body.notifier} notifier.`;
   writeParliament(req, res, next, successObj, errorText);
 });
 

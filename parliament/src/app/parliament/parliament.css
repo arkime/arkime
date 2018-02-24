@@ -32,6 +32,11 @@
   float: right;
 }
 
+.cluster-group .card .alert .issue-date {
+  color: #676767;
+  font-style: italic;
+}
+
 
 /* compact form for editing clusters */
 form.edit-cluster label {

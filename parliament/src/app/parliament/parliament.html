@@ -359,6 +359,22 @@
                     [issue]="issue" [groupId]="group.id" [clusterId]="cluster.id"
                     (change)="issueChange($event)"></app-issue-actions>
                   {{ issue.message }}
+                  <br>
+                  <ng-template #dateTooltip>
+                    <div>
+                      <strong>Last</strong> noticed at
+                      <strong>{{ issue.lastNoticed | date: 'yyyy/MM/dd HH:mm:ss' }}</strong>
+                    </div>
+                    <div>
+                      <strong>First</strong> noticed at
+                      <strong>{{ issue.firstNoticed | date: 'yyyy/MM/dd HH:mm:ss' }}</strong>
+                    </div>
+                  </ng-template>
+                  <small class="cursor-help issue-date"
+                    [ngbTooltip]="dateTooltip"
+                    placement="top-left">
+                    {{ issue.lastNoticed | date: 'MM/dd HH:mm:ss' }}
+                  </small>
                 </div>
               </span>
             </small> <!-- /cluster issues -->

@@ -324,7 +324,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
     return cb("dropped");
   }
 
-  this.db.all(`SELECT * FROM ts WHERE ${field} = ? AND itype IN (${this.typesWithQuotes[type]})`, value, (err, data) => {
+  this.db.all(`SELECT * FROM ts WHERE ${field} = ? AND state != "falsepos" AND itype IN (${this.typesWithQuotes[type]})`, value, (err, data) => {
     if (err) {
       console.log(this.section, "ERROR", err, data);
       return cb("dropped");
