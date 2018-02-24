@@ -399,8 +399,9 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
             tls_alt_names(certs, &tbsb, lastOid);
         }
 
-        // not a CA AND either no orgName or the same orgName AND the same 1 commonName
-        if (!certs->isCA &&
+        // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
+        if (!session->fields[certsField] &&
+            !certs->isCA &&
             ((certs->subject.orgName && certs->issuer.orgName && strcmp(certs->subject.orgName, certs->issuer.orgName) == 0) ||
              (certs->subject.orgName == NULL && certs->issuer.orgName == NULL)) &&
             certs->subject.commonName.s_count == 1 &&

@@ -52,6 +52,7 @@ int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
             "ACTIVELEASEQUERY",
             "LEASEQUERYSTATUS",
             "TLS"};
+    char *lower;
 
     if (len < 256)
         return 0;
@@ -88,7 +89,10 @@ int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         switch(t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            moloch_field_string_add(hostField, session, (char *)valueStr, l, TRUE);
+            lower = g_ascii_strdown((char *)valueStr, l);
+            if (!moloch_field_string_add(hostField, session, lower, l, FALSE)) {
+                g_free(lower);
+            }
             break;
         case 53: // Message Type
             if (l == 1) {
@@ -114,7 +118,10 @@ int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
                 BSB_IMPORT_skip(bsb, l - 1);
             else {
                 BSB_IMPORT_ptr(bsb, valueStr, l-3);
-                moloch_field_string_add(hostField, session, (char *)valueStr, l-3, TRUE);
+                lower = g_ascii_strdown((char *)valueStr, l-3);
+                if (!moloch_field_string_add(hostField, session, lower, l-3, FALSE)) {
+                    g_free(lower);
+                }
             }
             break;
 
