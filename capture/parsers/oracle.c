@@ -55,7 +55,8 @@ void oracle_classify(MolochSession_t *session, const unsigned char *data, int le
     }
 
     buf = oracle_get_item((const char *)data, "USER=", 5, &blen);
-    if (buf && !moloch_field_string_add(userField, session, buf, blen, FALSE)) {
+    if (buf) {
+        moloch_field_string_add_lower(userField, session, buf, blen);
         g_free(buf);
     }
 

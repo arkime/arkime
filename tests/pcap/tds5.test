@@ -2,90 +2,53 @@
    "sessions" : [
       {
          "body" : {
-            "pr" : 6,
+            "a1" : "10.0.0.1",
+            "a2" : "10.0.0.2",
+            "as1" : "AS0000 This is neat",
+            "as2" : "AS0001 Cool Beans!",
+            "by" : 1514,
+            "by1" : 929,
+            "by2" : 585,
+            "db" : 908,
+            "db1" : 625,
+            "db2" : 283,
+            "fb1" : "0200020000000100",
+            "fb2" : "040100a300000000",
+            "firstPacket" : 1465335293231,
+            "fp" : 1465335293,
+            "fpd" : 1465335293231,
+            "fs" : [],
+            "g1" : "RUS",
+            "g2" : "CAN",
+            "ipDst" : "10.0.0.2",
+            "ipSrc" : "10.0.0.1",
+            "lastPacket" : 1465335293242,
+            "lp" : 1465335293,
+            "lpd" : 1465335293242,
+            "mac1-term" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "mac1-term-cnt" : 2,
             "mac2-term" : [
                "00:22:83:3f:17:c5",
                "2c:6b:f5:d6:17:c5"
             ],
-            "by1" : 929,
-            "db1" : 625,
-            "user" : [
-               "USER___USER"
-            ],
-            "lp" : 1465335293,
-            "by2" : 585,
+            "mac2-term-cnt" : 2,
+            "no" : "test",
+            "p1" : 3933,
             "p2" : 3106,
-            "ss" : 1,
-            "ipDst" : "10.0.0.2",
+            "pa" : 10,
             "pa1" : 5,
-            "g1" : "RUS",
-            "ipSrc" : "10.0.0.1",
-            "fb2" : "040100a300000000",
-            "as2" : "AS0001 Cool Beans!",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
+            "pa2" : 5,
+            "portDst" : 3106,
+            "portSrc" : 3933,
+            "pr" : 6,
             "prot-term" : [
                "tds",
                "tcp"
             ],
-            "usercnt" : 1,
-            "tcpflags" : {
-               "syn" : 1,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 3,
-               "psh" : 5,
-               "fin" : 0,
-               "urg" : 0
-            },
-            "fp" : 1465335293,
-            "mac2-term-cnt" : 2,
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:3933,33554442:3106"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "lastPacket" : 1465335293242,
-            "psl" : [
-               82,
-               82,
-               80,
-               586,
-               160,
-               76,
-               76,
-               237,
-               101,
-               194
-            ],
-            "fb1" : "0200020000000100",
-            "fpd" : 1465335293231,
-            "fs" : [],
-            "tacnt" : 2,
-            "p1" : 3933,
-            "portSrc" : 3933,
-            "portDst" : 3106,
-            "firstPacket" : 1465335293231,
-            "vlan-cnt" : 1,
-            "pa2" : 5,
-            "db2" : 283,
+            "prot-term-cnt" : 2,
             "ps" : [
                24,
                106,
@@ -98,31 +61,68 @@
                1403,
                1504
             ],
-            "lpd" : 1465335293242,
-            "rir2" : "TEST",
-            "g2" : "CAN",
-            "by" : 1514,
-            "db" : 908,
-            "a1" : "10.0.0.1",
-            "as1" : "AS0000 This is neat",
-            "no" : "test",
-            "vlan" : [
-               50
+            "psl" : [
+               82,
+               82,
+               80,
+               586,
+               160,
+               76,
+               76,
+               237,
+               101,
+               194
             ],
-            "prot-term-cnt" : 2,
-            "mac1-term-cnt" : 2,
+            "rir2" : "TEST",
+            "sl" : 10,
+            "ss" : 1,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "pa" : 10,
-            "mac1-term" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
+            "tacnt" : 2,
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
+            "tcpflags" : {
+               "ack" : 3,
+               "fin" : 0,
+               "psh" : 5,
+               "rst" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string" : [
+                  "16777226:3933,33554442:3106"
+               ]
+            },
             "timestamp" : "SET",
-            "a2" : "10.0.0.2",
-            "sl" : 10
+            "user" : [
+               "user___user"
+            ],
+            "usercnt" : 1,
+            "vlan" : [
+               50
+            ],
+            "vlan-cnt" : 1
          },
          "header" : {
             "index" : {

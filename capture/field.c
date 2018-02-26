@@ -555,6 +555,19 @@ added:
     return string;
 }
 /******************************************************************************/
+gboolean moloch_field_string_add_lower(int pos, MolochSession_t *session, const char *string, int len)
+{
+    if (len == -1)
+        len = strlen(string);
+
+    char *lower = g_ascii_strdown(string, len);
+    if (!moloch_field_string_add(pos, session, lower, len, FALSE)) {
+        g_free(lower);
+        return FALSE;
+    }
+    return TRUE;
+}
+/******************************************************************************/
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy)
 {
     MolochField_t         *field;

@@ -461,7 +461,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     gsize out_len = 0;
                     g_base64_decode_inplace(line->str+11, &out_len);
                     if (out_len > 0) {
-                        moloch_field_string_add(userField, session, line->str+11, out_len, TRUE);
+                        moloch_field_string_add_lower(userField, session, line->str+11, out_len);
                     }
                     *state = EMAIL_CMD;
                 } else {
@@ -478,7 +478,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (zation < out_len) {
                         cation = strlen(line->str+11+zation+1);
                         if (cation+zation+1 < out_len) {
-                            moloch_field_string_add(userField, session, line->str+11+zation+1, cation, TRUE);
+                            moloch_field_string_add_lower(userField, session, line->str+11+zation+1, cation);
                         }
                     }
                     *state = EMAIL_CMD;
@@ -503,7 +503,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             gsize out_len = 0;
             g_base64_decode_inplace(line->str, &out_len);
             if (out_len > 0) {
-                moloch_field_string_add(userField, session, line->str, out_len, TRUE);
+                moloch_field_string_add_lower(userField, session, line->str, out_len);
             }
             *state = EMAIL_CMD;
             break;
@@ -517,7 +517,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             if (zation < out_len) {
                 cation = strlen(line->str+zation+1);
                 if (cation+zation+1 < out_len) {
-                    moloch_field_string_add(userField, session, line->str+zation+1, cation, TRUE);
+                    moloch_field_string_add_lower(userField, session, line->str+zation+1, cation);
                 }
             }
             *state = EMAIL_CMD;

@@ -62,8 +62,7 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
     info->version = 0;
 
     if (ptr > data + 36) {
-        char *lower = g_ascii_strdown((char *)data+36, ptr - (data + 36));
-        moloch_field_string_add(userField, session, lower, ptr - (data + 36), FALSE);
+        moloch_field_string_add_lower(userField, session, (char*)data+36, ptr - (data + 36));
     }
 
     if (data[5] & 0x08) { //CLIENT_SSL

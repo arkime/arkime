@@ -99,7 +99,7 @@
             },
             "timestamp" : "SET",
             "user" : [
-               "XXX"
+               "xxx"
             ],
             "usercnt" : 1
          },
