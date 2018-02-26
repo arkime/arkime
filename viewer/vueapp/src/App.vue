@@ -2,15 +2,18 @@
   <div>
     <moloch-navbar></moloch-navbar>
     <router-view/>
+    <moloch-footer></moloch-footer>
   </div>
 </template>
 
 <script>
 import MolochNavbar from './components/utils/Navbar';
+import MolochFooter from './components/utils/Footer';
 export default {
   name: 'App',
   components: {
-    MolochNavbar
+    MolochNavbar,
+    MolochFooter
   }
 };
 </script>
