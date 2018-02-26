@@ -60,3 +60,6 @@ url=https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
 tags=zeustracker,botnet
 type=domain
 reload=60
+
+[right-click]
+file=/data/moloch/wiseService/right_click.ini.sample
