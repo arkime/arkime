@@ -297,6 +297,19 @@ export default {
         this.loadData();
       }, parseInt(this.dataInterval, 10));
     }
+
+    // watch for the user to leave or return to the page
+    // Don't load graph data if the user is not focused on the page!
+    // if data is loaded in an inactive (background) tab,
+    // the user will experience gaps in their cubism graph data
+    // cubism uses setTimeout to delay requests
+    // inactive tabs' timeouts are clamped and can fire late;
+    // cubism requires little error in the timing of requests
+    // for more info, view the "reasons for delays longer than specified" section of:
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout#Inactive_tabs
+    if (document.addEventListener) {
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    }
   },
   computed: {
     colors: function () {
@@ -531,6 +544,16 @@ export default {
             .call(dcontext.rule());
         }
       });
+    },
+    // stop the requests if the user is not looking at the stats page,
+    // otherwise start the requests
+    handleVisibilityChange () {
+      if (!this.context) { return; }
+      if (document.hidden) {
+        this.context.stop();
+      } else if (this.showGraphs) {
+        this.context.start();
+      }
     }
   },
   beforeDestroy: function () {
@@ -550,6 +573,10 @@ export default {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;
+    }
+
+    if (document.removeEventListener) {
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     }
   }
 };
