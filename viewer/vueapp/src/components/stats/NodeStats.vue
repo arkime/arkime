@@ -29,6 +29,7 @@
             <input type="text"
               class="form-control pull-right"
               v-model="query.filter"
+              @keyup="searchForNodes()"
               placeholder="Begin typing to search for nodes by name">
           </div>
         </div>
@@ -76,8 +77,14 @@
                   <tr>
                     <th v-for="column of columns"
                       :key="column.name"
-                      class="cursor-pointer">
+                      class="cursor-pointer"
+                      @click="columnClick(column.sort)">
                       {{ column.name }}
+                      <span v-if="column.sort !== undefined">
+                        <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                        <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                        <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                      </span>
                     </th>
                   </tr>
                 </thead>
@@ -145,6 +152,13 @@
                       </td>
                     </tr>
                   </template>
+                  <tr v-if="stats.data && !stats.data.length">
+                    <td :colspan="columns.length"
+                      class="text-danger text-center">
+                      <span class="fa fa-warning"></span>&nbsp;
+                      No results match your search
+                    </td>
+                  </tr>
                 </tbody>
                 <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
                   <tr class="border-top-bold bold">
@@ -206,9 +220,9 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
+let searchInputTimeout; // timeout to debounce the search input
 
 export default {
-  // TODO search, sort
   name: 'NodeStats',
   props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
@@ -228,7 +242,7 @@ export default {
         start: 0,
         filter: null,
         sortField: 'nodeName',
-        desc: false,
+        desc: true,
         hide: this.graphHide || 'none'
       },
       columns: [ // node stats table columns
@@ -300,6 +314,7 @@ export default {
     }
   },
   methods: {
+    /* exposed page functions ------------------------------------ */
     toggleSection: function () {
       if (!this.context) { return; }
 
@@ -307,6 +322,28 @@ export default {
         this.context.start();
       } else { this.context.stop(); }
     },
+    changePaging (pagingValues) {
+      this.query.length = pagingValues.length;
+      this.query.start = pagingValues.start;
+
+      initialized = false;
+      this.loadData();
+    },
+    searchForNodes () {
+      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      searchInputTimeout = setTimeout(() => {
+        searchInputTimeout = null;
+        initialized = false;
+        this.loadData();
+      }, 400);
+    },
+    columnClick (name) {
+      this.query.sortField = name;
+      this.query.desc = !this.query.desc;
+      this.loadData();
+    },
+    /* helper functions ------------------------------------------ */
     loadData: function () {
       this.$http.get('stats.json', { params: this.query })
         .then((response) => {
@@ -494,13 +531,6 @@ export default {
             .call(dcontext.rule());
         }
       });
-    },
-    changePaging (pagingValues) {
-      this.query.length = pagingValues.length;
-      this.query.start = pagingValues.start;
-
-      initialized = false;
-      this.loadData();
     }
   },
   beforeDestroy: function () {
