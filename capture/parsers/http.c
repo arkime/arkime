@@ -171,10 +171,7 @@ moloch_http_parse_authorization(MolochSession_t *session, char *str)
     if (!space)
         return;
 
-    char *lower = g_ascii_strdown(str, space-str);
-    if (!moloch_field_string_add(atField, session, lower, space-str, FALSE)) {
-        g_free(lower);
-    }
+    moloch_field_string_add_lower(atField, session, str, space-str);
 
     if (strncasecmp("basic", str, 5) == 0) {
         str += 5;

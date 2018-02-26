@@ -167,8 +167,6 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
         if (opcode == 5)
             continue;
 
-        char *lower = g_ascii_strdown((char*)name, namelen);
-
         if (qclass <= 255 && qclasses[qclass]) {
             moloch_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
         }
@@ -177,9 +175,8 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             moloch_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
         }
 
-        if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-            g_free(lower);
-        }
+        if (namelen > 0)
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     switch(kind) {
@@ -238,10 +235,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             moloch_field_ip4_add(ipField, session, in.s_addr);
 
             if (opcode == 5) {
-                char *lower = g_ascii_strdown((char*)name, namelen);
-                if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             }
             break;
         }
@@ -255,11 +249,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            char *lower = g_ascii_strdown((char*)name, namelen);
-
-            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                g_free(lower);
-            }
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             break;
         }
         case 15: {
@@ -273,11 +263,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            char *lower = g_ascii_strdown((char*)name, namelen);
-
-            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                g_free(lower);
-            }
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
         }
         case 28: {
             if (rdlength != 16)
@@ -287,10 +273,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             moloch_field_ip6_add(ipField, session, ptr);
 
             if (opcode == 5) {
-                char *lower = g_ascii_strdown((char*)name, namelen);
-                if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             }
             break;
         }

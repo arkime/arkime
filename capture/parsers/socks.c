@@ -155,10 +155,8 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
-            char *lower = g_ascii_strdown((char*)data+5, data[4]);
-            if (!moloch_field_string_add(hostField, session, lower, data[4], FALSE)) {
-                g_free(lower);
-            }
+
+            moloch_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6

@@ -114,7 +114,7 @@
             "totDataBytes" : 908,
             "totPackets" : 10,
             "user" : [
-               "USER___USER"
+               "user___user"
             ],
             "userCnt" : 1,
             "vlan" : [
