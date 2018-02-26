@@ -64,11 +64,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
         if (n) {
             int len = (n - data);
 
-            char *str = g_ascii_strdown((char *)data, len);
-
-            if (!moloch_field_string_add(verField, session, str, len, FALSE)) {
-                g_free(str);
-            }
+            moloch_field_string_add_lower(verField, session, (char *)data, len);
         }
         return 0;
     }

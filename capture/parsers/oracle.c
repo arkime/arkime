@@ -49,17 +49,17 @@ void oracle_classify(MolochSession_t *session, const unsigned char *data, int le
     char *buf;  // can't be more then 1 byte big
     int  blen;
 
-    buf = oracle_get_item((const char *)data, "HOST=", 5, &blen);
+    buf = oracle_get_item((const char *)data, "HOST=", 5, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(hostField, session, buf, blen, FALSE)) {
         g_free(buf);
     }
 
-    buf = oracle_get_item((const char *)data, "USER=", 5, &blen);
+    buf = oracle_get_item((const char *)data, "USER=", 5, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(userField, session, buf, blen, FALSE)) {
         g_free(buf);
     }
 
-    buf = oracle_get_item((const char *)data, "SERVICE_NAME=", 13, &blen);
+    buf = oracle_get_item((const char *)data, "SERVICE_NAME=", 13, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(serviceField, session, buf, blen, FALSE)) {
         g_free(buf);
     }

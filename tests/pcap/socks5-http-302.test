@@ -2,60 +2,112 @@
    "sessions2" : [
       {
          "body" : {
-            "totDataBytes" : 1361,
-            "test" : {
-               "RIR" : [
-                  ""
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ],
-               "string.snow" : [
-                  "16777226:1637,33554442:21477"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "dstPackets" : 6,
-            "srcDataBytes" : 419,
-            "srcPort" : 1637,
-            "socks" : {
-               "host" : "www.google.com",
-               "port" : 80
-            },
-            "firstPacket" : 1385474294492,
+            "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 1290,
-            "fileId" : [],
-            "srcPackets" : 8,
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "totBytes" : 2176,
-            "protocol" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "srcMacCnt" : 1,
-            "segmentCnt" : 1,
-            "dstMac" : [
-               "00:26:88:df:17:c7",
-               "00:00:5e:00:01:01"
-            ],
-            "ipProtocol" : 6,
-            "dstPayload8" : "0500050000010a00",
-            "srcPayload8" : "050100050100030e",
-            "totPackets" : 14,
-            "dstPort" : 21477,
+            "dstDataBytes" : 942,
+            "dstGEO" : "CA",
             "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:df:17:c7"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 6,
+            "dstPayload8" : "0500050000010a00",
+            "dstPort" : 21477,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1385474294492,
+            "http" : {
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "cookieKey" : [
+                  "PREF"
+               ],
+               "cookieKeyCnt" : 1,
+               "cookieValue" : [
+                  "ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz"
+               ],
+               "cookieValueCnt" : 1,
+               "host" : [
+                  "www.google.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "222315d36e1313774cb1c2f0eb06864f"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "accept-encoding",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 7,
+               "response-location" : [
+                  "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "responseHeader" : [
+                  "content-type",
+                  "alternate-protocol",
+                  "x-frame-options",
+                  "cache-control",
+                  "x-xss-protection",
+                  "content-length",
+                  "date",
+                  "p3p",
+                  "server",
+                  "set-cookie",
+                  "location"
+               ],
+               "responseHeaderCnt" : 11,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "892eea9b9c2f9ba779fe5c6deb3a5acf65ca3162aac8ad8d980608c669a47ad3"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  302
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "www.google.com/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0"
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1385474412431,
+            "length" : 117939,
+            "node" : "test",
             "packetLen" : [
                78,
                78,
@@ -72,17 +124,6 @@
                76,
                76
             ],
-            "tcpflags" : {
-               "syn" : 1,
-               "dstZero" : 0,
-               "urg" : 0,
-               "srcZero" : 0,
-               "psh" : 6,
-               "ack" : 4,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "rst" : 0
-            },
             "packetPos" : [
                24,
                102,
@@ -99,105 +140,73 @@
                2272,
                2348
             ],
-            "http" : {
-               "md5Cnt" : 1,
-               "requestHeaderCnt" : 7,
-               "statuscodeCnt" : 1,
-               "responseHeader" : [
-                  "content-type",
-                  "alternate-protocol",
-                  "x-frame-options",
-                  "cache-control",
-                  "x-xss-protection",
-                  "content-length",
-                  "date",
-                  "p3p",
-                  "server",
-                  "set-cookie",
-                  "location"
-               ],
-               "methodCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "md5" : [
-                  "222315d36e1313774cb1c2f0eb06864f"
-               ],
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "path" : [
-                  "/"
-               ],
-               "uricnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "accept-language"
-               ],
-               "cookieKey" : [
-                  "PREF"
-               ],
-               "sha256" : [
-                  "892eea9b9c2f9ba779fe5c6deb3a5acf65ca3162aac8ad8d980608c669a47ad3"
-               ],
-               "hostCnt" : 1,
-               "uri" : [
-                  "www.google.com/"
-               ],
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "pathCnt" : 1,
-               "statuscode" : [
-                  302
-               ],
-               "host" : [
-                  "www.google.com"
-               ],
-               "method" : [
-                  "GET"
-               ],
-               "cookieValueCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0"
-               ],
-               "sha256Cnt" : 1,
-               "useragentCnt" : 1,
-               "clientVersionCnt" : 1,
-               "response-location" : [
-                  "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
-               ],
-               "cookieKeyCnt" : 1,
-               "serverVersionCnt" : 1,
-               "cookieValue" : [
-                  "ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz"
-               ],
-               "responseHeaderCnt" : 11,
-               "bodyMagicCnt" : 1
+            "protocol" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "socks" : {
+               "host" : "www.google.com",
+               "port" : 80
             },
-            "srcGEO" : "RU",
             "srcASN" : "AS0000 This is neat",
-            "tagsCnt" : 2,
+            "srcBytes" : 886,
+            "srcDataBytes" : 419,
+            "srcGEO" : "RU",
             "srcIp" : "10.0.0.1",
             "srcMac" : [
                "00:0b:45:b7:16:c0"
             ],
-            "dstMacCnt" : 2,
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "050100050100030e",
+            "srcPort" : 1637,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 6,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:1637,33554442:21477"
+               ]
+            },
             "timestamp" : "SET",
-            "dstRIR" : "TEST",
-            "dstGEO" : "CA",
-            "dstDataBytes" : 942,
-            "dstASN" : "AS0001 Cool Beans!",
-            "srcBytes" : 886,
-            "lastPacket" : 1385474412431,
-            "protocolCnt" : 3,
-            "node" : "test",
-            "length" : 117939
+            "totBytes" : 2176,
+            "totDataBytes" : 1361,
+            "totPackets" : 14
          },
          "header" : {
             "index" : {

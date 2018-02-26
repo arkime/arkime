@@ -15,6 +15,19 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0-beta2 2018/02/xx
+  - capture - decode some dhcp
+  - capture - tag a tls session with cert:self-signed
+
+1.0.0-beta1 2018/02/20
+  - capture - calculate sha256 too (set supportSha256 tru)
+  - wise - support sha256 lookups
+  - capture - fix disable fields
+  - capture - src/dst ip/port can be used to trigger rules now
+  - capture - ip fields in rules can now be CIDR
+  - capture - simple writer now flushes after 10 seconds of no writting
+              there still can be pagesize bytes unwritten (issue #777)
+
 1.0.0-alpha2 2018/01/31
   - Read alpha1 below
   - release - correct geo files
@@ -33,12 +46,18 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
-0.50.1 2017/01/XX 
+0.50.1 2017/03/XX
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
   - viewer - sessions.csv handle multiple fields parameters
   - parliament - better dismissing
   - all - new hourly6 rotateIndex, for every 6 hours
+  - parliament - first version of alerts
+  - parliament - rename server.js to parliament.js
+  - wise - trim spaces after spliting config values
+  - capture - better pop3 detection
+  - capture - correctly lowercase user
+
 
 0.50.0 2017/01/24
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported

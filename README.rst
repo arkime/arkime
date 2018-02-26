@@ -33,7 +33,7 @@ RPM & DEB Downloads
 
 Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in
 `/data/moloch/README.txt <https://raw.githubusercontent.com/aol/moloch/master/release/README.txt>`_
-after installing.
+after installing.  This is the recommended method to install and maintain Moloch.
 
 
 http://molo.ch/#downloads
@@ -43,7 +43,7 @@ http://molo.ch/#downloads
 Building
 ========
 
-If you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.
+For advanced users, if you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.  The RPM & DEB files are much easier to deal with then building yourself
 
 .. _components:
 
@@ -70,11 +70,11 @@ Moloch is a complex system to build and install manually. The following are roug
 Installing Elasticsearch
 ------------------------
 
-Recommended version **5.5.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
+Recommended version **5.6.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   5.5.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-5-1>`_.
+   5.6.7 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-6-7>`_.
 
-Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
+Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
 
 .. _building-capture:
@@ -82,50 +82,7 @@ Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
 Building Capture
 ----------------
 
-1. Install prerequisite standard packages.
-
-   - CentOS::
-
-        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
-
-   - Ubuntu::
-    
-        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev
-
-   - OS X::
-
-        port install yara libpcap openssl pcre flex bison zlib file gettext p5-JSON p5-libwww-perl libffi xz ossp-uuid libgeoip glib2
-        ./configure --with-libpcap=/opt/local --with-yara=/opt/local --with-GeoIP=/opt/local LDFLAGS=-L/opt/local/lib --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
-
-2. Building ``capture`` can be a pain because of OS versions.
-
-   - Try ``./easybutton-build.sh`` which will download all the following, compile them statically, and run the local configure script.
-   - Or if you want build yourself, or use some already installed packages then here are the pieces you need:
-
-     + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.40 or
-       higher (2.50.2 is recommended)::
-
-            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.50/glib-2.50.2.tar.xz
-            ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal
-
-     + `yara <https://github.com/VirusTotal/yara>`_ version 1.6 or higher::
-
-            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz
-            ./configure --enable-static
-
-     + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be recent enough::
-            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.6.9.tar.gz
-            libtoolize -f # Only some platforms need this
-            ./configure --enable-static
-
-     + `libpcap <http://www.tcpdump.org/#latest-release>`_ - version 1.3 or higher (most OS versions are older)::
-       
-             wget http://www.tcpdump.org/release/libpcap-1.7.4.tar.gz
-             ./configure --disable-dbus
-
-3. Run ``configure``. Optionally use the ``--with-<foo>`` directives to use static libraries from build directories.
-
-4. Run ``make``.
+Use the ``./easybutton-build.sh`` script to download all thirdparty libraries and build moloch.
 
 .. _building-viewer:
 
@@ -133,18 +90,18 @@ Building Viewer
 ---------------
 1. Install `Node.js <http://nodejs.org/>`_ version 6.x, currently 8.x is not supported.  (Moloch versions before 0.18 required 4)
 
-2. In the ``viewer`` directory run ``npm update``.
+2. In the ``viewer`` directory run ``npm install``.
 
 .. _configuration:
 
 Configuration
 -------------
 
-1. Make sure you download the latest freely available GeoIP and RIR files. 
+1. Make sure you download the latest freely available GeoIP and RIR files.
 
    - `GeoLiteCountry <http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz>`_ - Geographic IP data
    - `GeoIPASNum <http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz>`_ - Geographic Autonomous System (AS) number data
-   - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments   
+   - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments 
 
 2. Edit the ``config.ini`` file.
    
@@ -200,9 +157,9 @@ Example Configuration
 Here is an example system setup for monitoring 8x GigE highly-utilized networks, with an average of ~5 Gigabit/sec, with ~7 days of pcap storage.
 
 * ``capture``/``viewer`` machines
- 
+
   - 5x HP Apollo 4200
-  - 64GB of memory 
+  - 64GB of memory
   - 80TB of disk
   - Running Moloch and `Suricata <http://suricata-ids.org/>`_
 
@@ -243,7 +200,7 @@ Important Considerations
     iptables -A INPUT -i eth0 -p tcp --dport 9200 -j DROP
     iptables -A INPUT -i eth0 -p tcp --dport 9301 -j DROP
     iptables -A INPUT -i eth0 -p tcp --dport 9201 -j DROP
-  
+
 * Moloch machines should be locked down, however they need to talk to each other (port 8005), to the elasticsearch machines (ports 9200-920x), and the web interface needs to be open (port 8005).
 * Moloch ``viewer`` should be configured to use SSL.
 
@@ -255,7 +212,7 @@ Important Considerations
   - It is also possible to place apache in front of moloch, so it can handle the authentication and pass the username on to moloch
   - This is how we deploy it
 
-* A shared password stored in the Moloch configuration file is used to encrypt password hashes AND for inter-Moloch communication. 
+* A shared password stored in the Moloch configuration file is used to encrypt password hashes AND for inter-Moloch communication.
 
   - Make sure you protect the config file on the filesystem with proper file permissions.
   - Encrypted password hashes are used so a new password hash can not be inserted into ``elasticsearch`` directly in case it hasn't been secured.
@@ -265,8 +222,7 @@ Important Considerations
 Documentation
 =============
 
-For now this README is the bulk of the documentation. This will improve over
-time. 
+For now this README and FAQ are the bulk of the documentation. This will improve over time.
 
 .. _faq:
 
@@ -287,7 +243,13 @@ We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <
 Upgrading
 =========
 
-Currently upgrading from previous versions of Moloch is a manual process, however recorded sessions and pcap files should be retained
+Upgrading is easy if using the RPM/DEB files.
+
+* Download and install the latest version, pay attention to any special instructions
+* You might need to upgrade the database with ``/data/moloch/db/db.pl http://localhost:9200 upgrade``
+* Restart the moloch capture and viewer processes
+
+If upgrading from source it is a manual process.
 
 * Update the moloch repository from github
 * Build the moloch system using "easybutton-build.sh"

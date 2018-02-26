@@ -162,6 +162,16 @@ dl
               | Open Src Mac SPI Graph
           li.divider
           li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('oui.src', 0)")
+              | Export Unique Src OUI
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('oui.src', 1)")
+              | Export Unique Src OUI with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('oui.src')")
+              | Open Src OUI SPI Graph
+          li.divider
+          li
             a.cursor-pointer(ng-click="$ctrl.exportUnique('mac.dst', 0)")
               | Export Unique Dst Mac
           li
@@ -170,6 +180,16 @@ dl
           li
             a.cursor-pointer(ng-click="$ctrl.openSpiGraph('mac.dst')")
               | Open Dst Mac SPI Graph
+          li.divider
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('oui.src', 0)")
+              | Export Unique Dst OUI
+          li
+            a.cursor-pointer(ng-click="$ctrl.exportUnique('oui.src', 1)")
+              | Export Unique Dst OUI with counts
+          li
+            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('oui.src')")
+              | Open Dst OUI SPI Graph
           li.divider
           li
             a.cursor-pointer(ng-click="$ctrl.exportUnique('vlan', 0)")
@@ -184,8 +204,16 @@ dl
       strong.medium Src Mac
       +arrayPrint(session, "srcMac", "mac.src", true)
 
+      if (session.srcOui)
+          strong.medium OUI
+          +arrayPrint(session, "srcOui", "oui.src", true)
+
       strong.medium.margined-left-xxlg Dst Mac
       +arrayPrint(session, "dstMac", "mac.dst", true)
+
+      if (session.dstOui)
+          strong.medium OUI
+          +arrayPrint(session, "dstOui", "oui.dst", true)
 
       if (session.vlan)
         strong.medium.margined-left-xxlg VLan

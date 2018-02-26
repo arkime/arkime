@@ -7,10 +7,9 @@
   </button> <!-- /dismiss issue button -->
   <!-- (un)ignore until dropdown -->
   <div ngbDropdown placement="bottom-right" class="dropdown-sm pull-right">
-    <button class="btn btn-outline-dark btn-xs cursor-pointer" ngbDropdownToggle
-      [ngClass]="{'btn-outline-dark':!issue.ignoreUntil,'btn-outline-success':issue.ignoreUntil}">
-      <span class="fa fa-eye-slash fa-fw" *ngIf="!issue.ignoreUntil"></span>
-      <span class="fa fa-eye fa-fw" *ngIf="issue.ignoreUntil"></span>
+    <button class="btn btn-outline-dark btn-xs cursor-pointer" ngbDropdownToggle>
+      <span class="fa fa-eye fa-fw" *ngIf="!issue.ignoreUntil"></span>
+      <span class="fa fa-eye-slash fa-fw" *ngIf="issue.ignoreUntil"></span>
     </button>
     <div ngbDropdownMenu>
       <span *ngIf="issue.ignoreUntil">

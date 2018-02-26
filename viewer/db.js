@@ -471,13 +471,14 @@ exports.healthCache = function (cb) {
 exports.healthCachePromise = function () {
   return new Promise(function(resolve, reject) {
     exports.healthCache((err, data) => {
-      if (err)
+      if (err) {
         reject(err);
-      else
+      } else {
         resolve(data);
+      }
     });
   });
-}
+};
 
 exports.indicesCache = function (cb) {
   if (!cb) {

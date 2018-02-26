@@ -1,0 +1,8 @@
+if (session.dhcp)
+  div.sessionDetailMeta.bold dhcp
+  dl.sessionDetailMeta
+    +arrayList(session.dhcp, "type", "Type", "dhcp.type")
+    +arrayList(session.dhcp, "host", "Host", "dhcp.host")
+    +arrayList(session.dhcp, "id", "Id", "dhcp.id")
+    +arrayList(session.dhcp, "mac", "Client MAC", "dhcp.mac")
+    +arrayList(session.dhcp, "oui", "Client OUI", "dhcp.oui")

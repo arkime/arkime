@@ -1,83 +1,30 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-131210"
-            }
-         },
          "body" : {
-            "totDataBytes" : 85,
-            "segmentCnt" : 1,
-            "tagsCnt" : 2,
-            "totBytes" : 668,
-            "srcBytes" : 405,
-            "userCnt" : 1,
-            "srcMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "srcPackets" : 6,
-            "dstMacCnt" : 1,
-            "srcDataBytes" : 54,
-            "user" : [
-               "XXX"
-            ],
-            "srcMacCnt" : 2,
-            "dstPayload8" : "0500050000010000",
-            "srcPayload8" : "050100050100010a",
-            "dstDataBytes" : 31,
-            "timestamp" : "SET",
-            "srcPort" : 2276,
             "dstASN" : "AS0001 Cool Beans!",
-            "srcIp" : "10.0.0.3",
-            "protocol" : [
-               "rdp",
-               "socks",
-               "tcp"
-            ],
-            "dstPort" : 42356,
-            "protocolCnt" : 3,
-            "dstGEO" : "CA",
-            "tags" : [
-               "srcip",
-               "dstip"
-            ],
-            "lastPacket" : 1386644257101,
-            "packetPos" : [
-               24,
-               106,
-               188,
-               264,
-               340,
-               416,
-               496,
-               576,
-               687,
-               776
-            ],
-            "socks" : {
-               "ASN" : "AS0000 This is neat",
-               "port" : 3389,
-               "ip" : "10.0.0.1",
-               "GEO" : "RU"
-            },
-            "srcASN" : "AS0002 Hmm!@#$%^&*()",
             "dstBytes" : 263,
+            "dstDataBytes" : 31,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 4,
-            "tcpflags" : {
-               "syn" : 1,
-               "psh" : 6,
-               "urg" : 0,
-               "srcZero" : 0,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "dstZero" : 0,
-               "ack" : 2
-            },
+            "dstPayload8" : "0500050000010000",
+            "dstPort" : 42356,
+            "dstRIR" : "TEST",
+            "fileId" : [],
             "firstPacket" : 1386644255859,
+            "ipProtocol" : 6,
+            "lastPacket" : 1386644257101,
+            "length" : 1242,
+            "node" : "test",
             "packetLen" : [
                82,
                82,
@@ -90,16 +37,78 @@
                89,
                76
             ],
-            "node" : "test",
-            "length" : 1242,
-            "totPackets" : 10,
-            "dstRIR" : "TEST",
-            "dstIp" : "10.0.0.2",
-            "fileId" : [],
-            "dstMac" : [
-               "00:0a:f3:31:94:00"
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               496,
+               576,
+               687,
+               776
             ],
-            "ipProtocol" : 6
+            "protocol" : [
+               "rdp",
+               "socks",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "socks" : {
+               "ASN" : "AS0000 This is neat",
+               "GEO" : "RU",
+               "ip" : "10.0.0.1",
+               "port" : 3389
+            },
+            "srcASN" : "AS0002 Hmm!@#$%^&*()",
+            "srcBytes" : 405,
+            "srcDataBytes" : 54,
+            "srcIp" : "10.0.0.3",
+            "srcMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 6,
+            "srcPayload8" : "050100050100010a",
+            "srcPort" : 2276,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 668,
+            "totDataBytes" : 85,
+            "totPackets" : 10,
+            "user" : [
+               "xxx"
+            ],
+            "userCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131210",
+               "_type" : "session"
+            }
          }
       }
    ]

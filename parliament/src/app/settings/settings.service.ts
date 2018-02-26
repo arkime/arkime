@@ -18,4 +18,8 @@ export class SettingsService {
     return this.http.put<any>(`api/settings`, { settings: settings });
   }
 
+  testNotifier(notifierName): Observable<any> {
+    return this.http.post<any>(`api/testAlert`, { notifier: notifierName });
+  }
+
 }

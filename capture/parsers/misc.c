@@ -27,7 +27,7 @@ void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, 
         if (len > 30 && memcmp(data+11, "Cookie: mstshash=", 17) == 0) {
             char *end = g_strstr_len((char *)data+28, len-28, "\r\n");
             if (end)
-                moloch_field_string_add(userField, session, (char*)data+28, end - (char *)data - 28, TRUE);
+                moloch_field_string_add_lower(userField, session, (char*)data+28, end - (char *)data - 28);
         }
     }
 }
@@ -86,7 +86,7 @@ void user_classify(MolochSession_t *session, const unsigned char *data, int len,
             break;
     }
 
-    moloch_field_string_add(userField, session, (char*)data+5, i-5, TRUE);
+    moloch_field_string_add_lower(userField, session, (char*)data+5, i-5);
 }
 /******************************************************************************/
 void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
@@ -218,20 +218,6 @@ void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     moloch_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
-void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    if ((data[0] != 1 && data[0] != 11) || !MOLOCH_SESSION_v6(session))
-        return;
-    moloch_session_add_protocol(session, "dhcpv6");
-}
-/******************************************************************************/
-void dhcp_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    if (data[0] != 1 || MOLOCH_SESSION_v6(session))
-        return;
-    moloch_session_add_protocol(session, "dhcp");
-}
-/******************************************************************************/
 void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 18 ||
@@ -264,7 +250,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("bitcoin", "bitcoin", 0, (unsigned char*)"\xf9\xbe\xb4\xfe", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("rdp", NULL, 0, (unsigned char*)"\x03\x00", 2, rdp_classify);
     moloch_parsers_classifier_register_tcp("imap", NULL, 0, (unsigned char*)"* OK ", 5, imap_classify);
-    moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK POP3 ", 9, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK ", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("gh0st", NULL, 14, 0, 0, gh0st_classify);
     moloch_parsers_classifier_register_tcp("other220", NULL, 0, (unsigned char*)"220 ", 4, other220_classify);
     moloch_parsers_classifier_register_tcp("vnc", NULL, 0, (unsigned char*)"RFB 0", 5, vnc_classify);
@@ -374,9 +360,6 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("rip", NULL, 0, (unsigned char*)"\x02\x02\x00\x00", 4, rip_classify);
 
     moloch_parsers_classifier_register_tcp("nzsql", "nzsql", 0, (unsigned char*)"\x00\x00\x00\x08\x00\x01\x00\x03", 8, misc_add_protocol_classify);
-
-    moloch_parsers_classifier_register_port("dhcpv6",  NULL, 547, MOLOCH_PARSERS_PORT_UDP, dhcpv6_udp_classify);
-    moloch_parsers_classifier_register_port("dhcp",  NULL, 67, MOLOCH_PARSERS_PORT_UDP, dhcp_udp_classify);
 
     moloch_parsers_classifier_register_tcp("splunk", "splunk", 0, (unsigned char*)"--splunk-cooked-mode-v3--", 25, misc_add_protocol_classify);
 

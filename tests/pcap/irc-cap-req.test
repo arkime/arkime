@@ -1,29 +1,37 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-170104"
-            }
-         },
          "body" : {
-            "lastPacket" : 1483561951602,
-            "srcMacCnt" : 1,
-            "segmentCnt" : 1,
-            "srcPort" : 59604,
-            "totPackets" : 26,
-            "vlanCnt" : 1,
-            "protocolCnt" : 2,
-            "totDataBytes" : 1337,
-            "totBytes" : 3177,
-            "dstPackets" : 12,
-            "fileId" : [],
-            "dstMacCnt" : 1,
-            "dstPort" : 80,
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
+            "dstBytes" : 2067,
+            "dstDataBytes" : 1219,
+            "dstIp" : "10.11.11.11",
+            "dstMac" : [
+               "00:1b:17:00:01:24"
             ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Palo Alto Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 12,
+            "dstPayload8" : "3a746d692e747769",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1483561576585,
+            "ipProtocol" : 6,
+            "irc" : {
+               "channel" : [
+                  "#THE-USER"
+               ],
+               "channelCnt" : 1,
+               "nick" : [
+                  "THE-USER"
+               ],
+               "nickCnt" : 1
+            },
+            "lastPacket" : 1483561951602,
+            "length" : 375017,
+            "node" : "test",
             "packetLen" : [
                98,
                94,
@@ -52,28 +60,6 @@
                86,
                86
             ],
-            "dstBytes" : 2067,
-            "ipProtocol" : 6,
-            "protocol" : [
-               "irc",
-               "tcp"
-            ],
-            "length" : 375017,
-            "dstDataBytes" : 1219,
-            "firstPacket" : 1483561576585,
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "node" : "test",
-            "srcIp" : "10.10.10.10",
-            "srcPackets" : 14,
-            "timestamp" : "SET",
-            "vlan" : [
-               100
-            ],
-            "srcPayload8" : "4341502052455120",
-            "srcBytes" : 1110,
-            "srcDataBytes" : 118,
             "packetPos" : [
                24,
                122,
@@ -102,28 +88,50 @@
                3445,
                3531
             ],
-            "dstPayload8" : "3a746d692e747769",
-            "dstIp" : "10.11.11.11",
-            "irc" : {
-               "nick" : [
-                  "THE-USER"
-               ],
-               "nickCnt" : 1,
-               "channel" : [
-                  "#THE-USER"
-               ],
-               "channelCnt" : 1
-            },
+            "protocol" : [
+               "irc",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1110,
+            "srcDataBytes" : 118,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "4341502052455120",
+            "srcPort" : 59604,
             "tcpflags" : {
-               "syn" : 1,
-               "srcZero" : 0,
-               "urg" : 0,
-               "rst" : 0,
+               "ack" : 12,
                "dstZero" : 0,
                "fin" : 2,
                "psh" : 10,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
                "syn-ack" : 1,
-               "ack" : 12
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3177,
+            "totDataBytes" : 1337,
+            "totPackets" : 26,
+            "vlan" : [
+               100
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-170104",
+               "_type" : "session"
             }
          }
       }

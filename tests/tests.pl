@@ -25,6 +25,10 @@ sub doGeo {
         system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
     }
 
+    if (! -f "oui.txt") {
+        system("wget -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
+    }
+
     if (! -f "GeoLite2-Country.mmdb") {
         system("wget -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'; gunzip GeoLite2-Country.mmdb.gz");
     }
@@ -43,7 +47,7 @@ sub sortJson {
 
     foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
-        foreach my $i ("tags") {
+        foreach my $i ("tags", "srcMac", "dstMac", "srcOui", "dstOui") {
             if (exists $body->{$i}) {
                 my @tmp = sort (@{$body->{$i}});
                 $body->{$i} = \@tmp;
@@ -88,13 +92,14 @@ sub doFix {
     my $data = do { local $/; <> };
     my $json = from_json($data, {relaxed => 1});
     fix($json);
-    $json = to_json($json, {pretty => 1});
+    $json = to_json($json, {pretty => 1, canonical => 1});
     print $json, "\n";
 }
 
 ################################################################################
 sub fix {
 my ($json) = @_;
+    my $json = sortJson($json);
     foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
 

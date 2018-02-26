@@ -2,98 +2,106 @@
    "sessions2" : [
       {
          "body" : {
-            "length" : 0,
-            "srcPayload8" : "f376011000010000",
-            "dstBytes" : 0,
-            "dstRIR" : "ARIN",
-            "srcMac" : [
-               "00:1a:e3:dc:2e:c0"
-            ],
-            "srcGEO" : "RU",
             "dns" : {
-               "opcode" : [
-                  "QUERY"
-               ],
-               "qcCnt" : 1,
-               "hostCnt" : 1,
                "host" : [
                   "<root>"
                ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
                "opcodeCnt" : 1,
-               "qtCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
                "qt" : [
                   "DNSKEY"
                ],
-               "qc" : [
-                  "IN"
-               ]
+               "qtCnt" : 1
             },
-            "node" : "test",
+            "dstASN" : "AS15169 Google LLC",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
             "dstGEO" : "US",
-            "tags" : [
-               "srcip"
-            ],
-            "vlanCnt" : 1,
-            "srcPort" : 53869,
-            "dstPort" : 53,
-            "timestamp" : "SET",
-            "test" : {
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "string.snow" : [
-                  "16777226:53869,134744072:53"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "number" : [
-                  134744072
-               ],
-               "ASN" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "fileId" : [],
             "dstIp" : "8.8.8.8",
             "dstMac" : [
                "00:19:e2:ba:2f:c1"
             ],
             "dstMacCnt" : 1,
-            "tagsCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1393428477365,
+            "ipProtocol" : 17,
+            "lastPacket" : 1393428477365,
+            "length" : 0,
+            "node" : "test",
             "packetLen" : [
                90
             ],
-            "dstASN" : "AS15169 Google LLC",
-            "srcPackets" : 1,
-            "firstPacket" : 1393428477365,
-            "protocolCnt" : 2,
-            "totPackets" : 1,
-            "dstPackets" : 0,
-            "ipProtocol" : 17,
+            "packetPos" : [
+               24
+            ],
             "protocol" : [
                "udp",
                "dns"
             ],
-            "srcDataBytes" : 66,
-            "dstDataBytes" : 0,
-            "packetPos" : [
-               24
-            ],
-            "srcIp" : "10.0.0.1",
-            "srcBytes" : 74,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "totBytes" : 74,
             "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 74,
+            "srcDataBytes" : 66,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:1a:e3:dc:2e:c0"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "f376011000010000",
+            "srcPort" : 53869,
+            "tags" : [
+               "srcip"
+            ],
+            "tagsCnt" : 1,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  134744072
+               ],
+               "string.snow" : [
+                  "16777226:53869,134744072:53"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 74,
+            "totDataBytes" : 66,
+            "totPackets" : 1,
             "vlan" : [
                500
             ],
-            "lastPacket" : 1393428477365,
-            "totDataBytes" : 66,
-            "srcMacCnt" : 1
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {

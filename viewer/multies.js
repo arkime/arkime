@@ -129,7 +129,7 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', () => {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
+          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions2|sessions|stats|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
           result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v1)\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
@@ -244,7 +244,7 @@ app.get("/:index/_stats", (req, res) => {
 
 app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    console.log("DEBUG -", util.inspect(results, false, 50));
+    //console.log("DEBUG -", util.inspect(results, false, 50));
 
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -273,17 +273,6 @@ app.get("/:index/:type/_search", (req, res) => {
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
     res.send(obj);
-  });
-});
-
-app.get("/MULTIPREFIX_sessions-*/:type/:id", (req, res) => {
-  simpleGather(req, res, null, (err, results) => {
-    for (var i = 0; i < results.length; i++) {
-      if (results[i].found) {
-        return res.send(results[i]);
-      }
-    }
-    res.send(results[0]);
   });
 });
 

@@ -35,7 +35,7 @@ function ReverseDNSSource (api, section) {
   ReverseDNSSource.super_.call(this, api, section);
   this.field        = api.getConfig("reversedns", "field");
   this.ips          = api.getConfig("reversedns", "ips");
-  this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";"), "");
+  this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";").map(item => item.trim()), "");
 
   if (this.field === undefined) {
     console.log(this.section, "- No field defined");

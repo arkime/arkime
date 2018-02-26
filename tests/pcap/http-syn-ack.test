@@ -1,38 +1,58 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-160701"
-            }
-         },
          "body" : {
-            "dstPayload8" : "485454502f312e31",
-            "srcBytes" : 544,
-            "protocolCnt" : 2,
-            "srcMacCnt" : 1,
-            "packetPos" : [
-               24,
-               108,
-               184,
-               684,
-               756,
-               2288,
-               3820,
-               5352,
-               6884,
-               8416,
-               9500,
-               11032,
-               12564
-            ],
+            "dstBytes" : 12880,
             "dstDataBytes" : 12252,
-            "srcIp" : "10.0.0.32",
+            "dstIp" : "10.0.0.33",
+            "dstMac" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 11,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1467366160266,
             "http" : {
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "js.navigator.io"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "38bf34783fc26180631a614a88301cab"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/1"
+               ],
                "pathCnt" : 1,
-               "sha256Cnt" : 1,
-               "statuscodeCnt" : 1,
+               "request-referer" : [
+                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 7,
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -46,86 +66,32 @@
                   "connection",
                   "server"
                ],
-               "requestHeader" : [
-                  "accept",
-                  "user-agent",
-                  "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "accept-language"
-               ],
-               "serverVersionCnt" : 1,
-               "request-referer" : [
-                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ],
                "responseHeaderCnt" : 11,
-               "requestHeaderCnt" : 7,
-               "uricnt" : 1,
-               "host" : [
-                  "js.navigator.io"
-               ],
-               "bodyMagicCnt" : 1,
-               "statuscode" : [
-                  200
-               ],
                "serverVersion" : [
                   "1.1"
                ],
-               "clientVersionCnt" : 1,
-               "hostCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
-               ],
-               "path" : [
-                  "/1"
-               ],
-               "uri" : [
-                  "js.navigator.io/1"
-               ],
-               "request-refererCnt" : 1,
-               "md5Cnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "bodyMagic" : [
-                  "application/x-gzip"
-               ],
-               "useragentCnt" : 1,
+               "serverVersionCnt" : 1,
                "sha256" : [
                   "ac518a69ca82f4efbd3ea94d4d423d843582771127ef6d214c3d7a45acf7be04"
                ],
-               "methodCnt" : 1,
-               "md5" : [
-                  "38bf34783fc26180631a614a88301cab"
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
                ],
-               "method" : [
-                  "GET"
-               ]
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "js.navigator.io/1"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+               ],
+               "useragentCnt" : 1
             },
-            "fileId" : [],
-            "dstBytes" : 12880,
-            "dstMacCnt" : 1,
-            "totDataBytes" : 12679,
-            "lastPacket" : 1467366160339,
-            "srcMac" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "dstPackets" : 11,
             "ipProtocol" : 6,
-            "srcPackets" : 2,
-            "dstIp" : "10.0.0.33",
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "rst" : 0,
-               "fin" : 0,
-               "urg" : 0,
-               "syn" : 0,
-               "ack" : 9,
-               "dstZero" : 0,
-               "psh" : 3,
-               "srcZero" : 0
-            },
+            "lastPacket" : 1467366160339,
+            "length" : 73,
+            "node" : "test",
             "packetLen" : [
                84,
                76,
@@ -141,24 +107,58 @@
                1532,
                1092
             ],
-            "segmentCnt" : 1,
-            "totPackets" : 13,
-            "node" : "test",
-            "srcDataBytes" : 427,
-            "srcPayload8" : "474554202f312048",
-            "totBytes" : 13424,
-            "length" : 73,
-            "timestamp" : "SET",
-            "srcPort" : 10882,
-            "firstPacket" : 1467366160266,
+            "packetPos" : [
+               24,
+               108,
+               184,
+               684,
+               756,
+               2288,
+               3820,
+               5352,
+               6884,
+               8416,
+               9500,
+               11032,
+               12564
+            ],
             "protocol" : [
                "http",
                "tcp"
             ],
-            "dstMac" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 544,
+            "srcDataBytes" : 427,
+            "srcIp" : "10.0.0.32",
+            "srcMac" : [
                "aa:aa:aa:aa:aa:aa"
             ],
-            "dstPort" : 80
+            "srcMacCnt" : 1,
+            "srcPackets" : 2,
+            "srcPayload8" : "474554202f312048",
+            "srcPort" : 10882,
+            "tcpflags" : {
+               "ack" : 9,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 13424,
+            "totDataBytes" : 12679,
+            "totPackets" : 13
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160701",
+               "_type" : "session"
+            }
          }
       }
    ]

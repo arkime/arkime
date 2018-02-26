@@ -1,39 +1,32 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-161010",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "fileId" : [],
-            "srcPackets" : 5,
             "dstBytes" : 78,
-            "srcPayload8" : "00e0000001000000",
-            "protocol" : [
-               "tcp",
-               "oracle"
-            ],
+            "dstDataBytes" : 0,
             "dstIp" : "10.0.0.17",
-            "srcPort" : 64084,
-            "firstPacket" : 1476102172344,
-            "vlanCnt" : 2,
-            "dstPackets" : 1,
-            "packetPos" : [
-               24,
-               122,
-               220,
-               314,
-               400,
-               486
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:84:ef:c5"
             ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 1522,
+            "fileId" : [],
+            "firstPacket" : 1476102172344,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476102172528,
             "length" : 183,
+            "node" : "test",
             "oracle" : {
-               "user" : "user",
                "host" : "10.000.000.11",
-               "service" : "xxxxx.xxx"
+               "service" : "xxxxx.xxx",
+               "user" : "user"
             },
             "packetLen" : [
                98,
@@ -43,45 +36,62 @@
                86,
                310
             ],
-            "vlan" : [
-               50,
-               300
+            "packetPos" : [
+               24,
+               122,
+               220,
+               314,
+               400,
+               486
             ],
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:84:ef:c5"
+            "protocol" : [
+               "tcp",
+               "oracle"
             ],
-            "srcIp" : "10.0.0.16",
-            "dstDataBytes" : 0,
-            "srcBytes" : 598,
-            "srcMacCnt" : 2,
-            "timestamp" : "SET",
-            "ipProtocol" : 6,
-            "srcDataBytes" : 224,
-            "totDataBytes" : 224,
-            "node" : "test",
-            "lastPacket" : 1476102172528,
-            "dstPort" : 1522,
             "protocolCnt" : 2,
-            "totBytes" : 676,
-            "totPackets" : 6,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "srcZero" : 0,
-               "fin" : 0,
-               "syn" : 2,
-               "ack" : 2
-            },
             "segmentCnt" : 1,
+            "srcBytes" : 598,
+            "srcDataBytes" : 224,
+            "srcIp" : "10.0.0.16",
             "srcMac" : [
                "00:1b:17:00:14:30",
                "80:71:1f:84:ef:cc"
             ],
-            "dstMacCnt" : 2
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks",
+               "Palo Alto Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 5,
+            "srcPayload8" : "00e0000001000000",
+            "srcPort" : 64084,
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 676,
+            "totDataBytes" : 224,
+            "totPackets" : 6,
+            "vlan" : [
+               50,
+               300
+            ],
+            "vlanCnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-161010",
+               "_type" : "session"
+            }
          }
       }
    ]

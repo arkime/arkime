@@ -2,76 +2,34 @@
    "sessions2" : [
       {
          "body" : {
+            "dstASN" : "AS13335 Cloudflare Inc",
+            "dstBytes" : 1454,
+            "dstDataBytes" : 1220,
+            "dstGEO" : "US",
+            "dstIp" : "2400:cb00:2048:0001:0000:0000:6813:c266",
+            "dstMac" : [
+               "00:26:55:d1:4d:97"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Hewlett Packard"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 3,
+            "dstPayload8" : "1603010052020000",
+            "dstPort" : 443,
+            "fileId" : [],
+            "firstPacket" : 1483560476240,
             "http" : {
                "host" : [
                   "blog.cloudflare.com"
                ],
                "hostCnt" : 1
             },
-            "segmentCnt" : 1,
-            "dstMac" : [
-               "00:26:55:d1:4d:97"
-            ],
-            "length" : 23,
-            "dstPort" : 443,
-            "node" : "test",
-            "srcPayload8" : "1603010200010001",
-            "totBytes" : 2205,
-            "srcBytes" : 751,
-            "dstPayload8" : "1603010052020000",
-            "dstPackets" : 3,
-            "dstIp" : "2400:cb00:2048:0001:0000:0000:6813:c266",
-            "protocol" : [
-               "tls",
-               "tcp"
-            ],
-            "totDataBytes" : 1737,
-            "srcGEO" : "SE",
-            "firstPacket" : 1483560476240,
-            "srcASN" : "AS16150 Availo Networks AB",
-            "lastPacket" : 1483560476263,
             "ipProtocol" : 6,
-            "tcpflags" : {
-               "dstZero" : 0,
-               "psh" : 1,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 3,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "srcZero" : 0
-            },
-            "timestamp" : "SET",
-            "tls" : {
-               "cipherCnt" : 1,
-               "version" : [
-                  "TLSv1.3-draft-18"
-               ],
-               "ja3" : [
-                  "4826a90ec2daf4f7b4b64cc1c8bd343b"
-               ],
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_AES_128_GCM_SHA256"
-               ],
-               "ja3Cnt" : 1
-            },
-            "dstDataBytes" : 1220,
-            "srcPort" : 62510,
-            "totPackets" : 6,
-            "protocolCnt" : 2,
-            "dstBytes" : 1454,
-            "dstMacCnt" : 1,
-            "srcMacCnt" : 1,
-            "srcIp" : "2001:16d8:ffce:0010:aca8:353c:291d:a9b3",
-            "srcMac" : [
-               "c8:f7:33:1d:84:95"
-            ],
-            "srcDataBytes" : 517,
-            "srcPackets" : 3,
-            "dstGEO" : "US",
-            "dstASN" : "AS13335 Cloudflare Inc",
+            "lastPacket" : 1483560476263,
+            "length" : 23,
+            "node" : "test",
             "packetLen" : [
                102,
                102,
@@ -88,7 +46,57 @@
                925,
                1015
             ],
-            "fileId" : []
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS16150 Availo Networks AB",
+            "srcBytes" : 751,
+            "srcDataBytes" : 517,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:16d8:ffce:0010:aca8:353c:291d:a9b3",
+            "srcMac" : [
+               "c8:f7:33:1d:84:95"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Intel Corporate"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "1603010200010001",
+            "srcPort" : 62510,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_AES_128_GCM_SHA256"
+               ],
+               "cipherCnt" : 1,
+               "ja3" : [
+                  "4826a90ec2daf4f7b4b64cc1c8bd343b"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1.3-draft-18"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 2205,
+            "totDataBytes" : 1737,
+            "totPackets" : 6
          },
          "header" : {
             "index" : {

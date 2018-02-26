@@ -4,13 +4,14 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng build --prod && node server.js",
-    "dev": "node server.js --pass admin --port 8008 -c ./parliament.dev.json & ng build --watch",
+    "start": "ng build --prod && node parliament.js",
+    "dev": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json & ng build --watch",
+    "dev:nopass": "node parliament.js --port 8008 -c ./parliament.dev.json & ng build --watch",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "npm run jslint && npm run tslint",
     "tslint": "ng lint",
-    "jslint": "jshint server.js notifiers"
+    "jslint": "jshint parliament.js notifiers"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
@@ -20,6 +21,7 @@
     "glob": "^7.1.2",
     "jsonwebtoken": "^8.1.0",
     "morgan": "^1.9.0",
+    "notifme-sdk": "^1.6.0",
     "request-promise": "^4.2.2",
     "serve-favicon": "^2.4.5"
   },
@@ -53,7 +55,6 @@
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
     "ng2-dnd": "^5.0.2",
-    "notifme-sdk": "^1.6.0",
     "protractor": "~5.1.2",
     "rxjs": "^5.5.2",
     "ts-node": "~3.2.0",

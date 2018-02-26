@@ -39,6 +39,8 @@ extern uint32_t              pluginsCbs;
 
 LOCAL int                    mac1Field;
 LOCAL int                    mac2Field;
+LOCAL int                    oui1Field;
+LOCAL int                    oui2Field;
 LOCAL int                    vlanField;
 LOCAL int                    greIpField;
 LOCAL int                    icmpTypeField;
@@ -49,7 +51,8 @@ LOCAL uint64_t               droppedFrags;
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 int                          inProgress[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL patricia_tree_t       *ipTree = 0;
+LOCAL patricia_tree_t       *ipTree4 = 0;
+LOCAL patricia_tree_t       *ipTree6 = 0;
 
 /******************************************************************************/
 
@@ -617,6 +620,10 @@ LOCAL void *moloch_packet_thread(void *threadp)
             break;
         }
 
+        if (isNew) {
+            moloch_rules_session_create(session);
+        }
+
         /* Check if the stop saving bpf filters match */
         if (session->packets[packet->direction] == 0 && session->stopSaving == 0) {
             moloch_rules_run_session_setup(session, packet);
@@ -652,31 +659,13 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
         if (pcapFileHeader.linktype == 1 && session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
             const uint8_t *pcapData = packet->pkt;
-            char str1[20];
-            char str2[20];
-            snprintf(str1, sizeof(str1), "%02x:%02x:%02x:%02x:%02x:%02x",
-                    pcapData[0],
-                    pcapData[1],
-                    pcapData[2],
-                    pcapData[3],
-                    pcapData[4],
-                    pcapData[5]);
-
-
-            snprintf(str2, sizeof(str2), "%02x:%02x:%02x:%02x:%02x:%02x",
-                    pcapData[6],
-                    pcapData[7],
-                    pcapData[8],
-                    pcapData[9],
-                    pcapData[10],
-                    pcapData[11]);
 
             if (packet->direction == 1) {
-                moloch_field_string_add(mac1Field, session, str1, 17, TRUE);
-                moloch_field_string_add(mac2Field, session, str2, 17, TRUE);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
             } else {
-                moloch_field_string_add(mac1Field, session, str2, 17, TRUE);
-                moloch_field_string_add(mac2Field, session, str1, 17, TRUE);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
             }
 
             int n = 12;
@@ -1020,7 +1009,7 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
-int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;
@@ -1049,19 +1038,13 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
-    if (ipTree) {
-        prefix_t prefix;
+    if (ipTree4) {
         patricia_node_t *node;
 
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-
-        prefix.add.sin= ip4->ip_src;
-        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char*)&ip4->ip_src, 32)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
 
-        prefix.add.sin= ip4->ip_dst;
-        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char*)&ip4->ip_dst, 32)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
     }
 
@@ -1140,6 +1123,16 @@ int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     int ip_len = ntohs(ip6->ip6_plen);
     if (len < ip_len) {
         return MOLOCH_PACKET_CORRUPT;
+    }
+
+    if (ipTree6) {
+        patricia_node_t *node;
+
+        if ((node = patricia_search_best3 (ipTree6, (u_char*)&ip6->ip6_src, 128)) && node->data == NULL)
+            return MOLOCH_PACKET_IP_DROPPED;
+
+        if ((node = patricia_search_best3 (ipTree6, (u_char*)&ip6->ip6_dst, 128)) && node->data == NULL)
+            return MOLOCH_PACKET_IP_DROPPED;
     }
 
     int ip_hdr_len = sizeof(struct ip6_hdr);
@@ -1506,6 +1499,19 @@ void moloch_packet_init()
         "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
+    oui1Field = moloch_field_define("general", "termfield",
+        "oui.src", "Src OUI", "srcOui",
+        "Source ethernet oui set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    oui2Field = moloch_field_define("general", "termfield",
+        "oui.dst", "Dst OUI", "dstOui",
+        "Destination ethernet oui set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "vlan",
         "vlan value",
@@ -1618,10 +1624,15 @@ uint64_t moloch_packet_dropped_overload()
 void moloch_packet_add_packet_ip(char *ipstr, int mode)
 {
     patricia_node_t *node;
-    if (!ipTree) {
-        ipTree = New_Patricia(128);
+    if (strchr(ipstr, '.') != 0) {
+        if (!ipTree4)
+            ipTree4 = New_Patricia(32);
+        node = make_and_lookup(ipTree4, ipstr);
+    } else {
+        if (!ipTree6)
+            ipTree6 = New_Patricia(128);
+        node = make_and_lookup(ipTree6, ipstr);
     }
-    node = make_and_lookup(ipTree, ipstr);
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
@@ -1634,9 +1645,14 @@ void moloch_packet_set_linksnap(int linktype, int snaplen)
 /******************************************************************************/
 void moloch_packet_exit()
 {
-    if (ipTree) {
-        Destroy_Patricia(ipTree, NULL);
-        ipTree = 0;
+    if (ipTree4) {
+        Destroy_Patricia(ipTree4, NULL);
+        ipTree4 = 0;
+    }
+
+    if (ipTree6) {
+        Destroy_Patricia(ipTree6, NULL);
+        ipTree6 = 0;
     }
     moloch_packet_log(SESSION_TCP);
 }

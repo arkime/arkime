@@ -314,10 +314,7 @@ void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data,
             while (data < end && *data != '>') data++;
         }
 
-        char *lower = g_ascii_strdown(start, data - start);
-        if (!moloch_field_string_add(field, session, lower, data - start, FALSE)) {
-            g_free(lower);
-        }
+        moloch_field_string_add_lower(field, session, start, data - start);
 
         while (data < end && *data != ',') data++;
         if (data < end && *data == ',') data++;
@@ -351,10 +348,8 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                         fromstart = data+1;
                     data++;
                 }
-                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
-                if (!moloch_field_string_add(hostField, session, lower, data - fromstart, FALSE)) {
-                    g_free(lower);
-                }
+
+                moloch_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
                 while(data < end && isspace(*data)) data++;
@@ -364,10 +359,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                         fromstart = data+1;
                     data++;
                 }
-                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
-                if (!moloch_field_string_add(hostField, session, lower, data - fromstart, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
             }
         }
 
@@ -416,16 +408,10 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 moloch_session_add_tag(session, tag);
             } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+10, '<', '>'), -1);
-                if (!moloch_field_string_add(srcField, session, lower, -1, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(srcField, session, smtp_remove_matching(line->str+10, '<', '>'), -1);
             } else if (strncasecmp(line->str, "RCPT TO:", 8) == 0) {
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+8, '<', '>'), -1);
-                if (!moloch_field_string_add(dstField, session, lower, -1, FALSE)) {
-                    g_free(lower);
-                }
                 *state = EMAIL_CMD;
+                moloch_field_string_add_lower(dstField, session, smtp_remove_matching(line->str+8, '<', '>'), -1);
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
                 email->seenHeaders |= (1 << which);
@@ -445,7 +431,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     gsize out_len = 0;
                     g_base64_decode_inplace(line->str+11, &out_len);
                     if (out_len > 0) {
-                        moloch_field_string_add(userField, session, line->str+11, out_len, TRUE);
+                        moloch_field_string_add_lower(userField, session, line->str+11, out_len);
                     }
                     *state = EMAIL_CMD;
                 } else {
@@ -462,7 +448,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (zation < out_len) {
                         cation = strlen(line->str+11+zation+1);
                         if (cation+zation+1 < out_len) {
-                            moloch_field_string_add(userField, session, line->str+11+zation+1, cation, TRUE);
+                            moloch_field_string_add_lower(userField, session, line->str+11+zation+1, cation);
                         }
                     }
                     *state = EMAIL_CMD;
@@ -487,7 +473,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             gsize out_len = 0;
             g_base64_decode_inplace(line->str, &out_len);
             if (out_len > 0) {
-                moloch_field_string_add(userField, session, line->str, out_len, TRUE);
+                moloch_field_string_add_lower(userField, session, line->str, out_len);
             }
             *state = EMAIL_CMD;
             break;
@@ -501,7 +487,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             if (zation < out_len) {
                 cation = strlen(line->str+zation+1);
                 if (cation+zation+1 < out_len) {
-                    moloch_field_string_add(userField, session, line->str+zation+1, cation, TRUE);
+                    moloch_field_string_add_lower(userField, session, line->str+zation+1, cation);
                 }
             }
             *state = EMAIL_CMD;
@@ -649,15 +635,19 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (email->base64Decode & (1 << which)) {
                         const char *md5 = g_checksum_get_string(email->checksum[which]);
                         moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
-                        const char *sha256 = g_checksum_get_string(email->checksum[which+2]);
-                        moloch_field_string_add(sha256Field, session, (char*)sha256, 64, TRUE);
+                        if (config.supportSha256) {
+                            const char *sha256 = g_checksum_get_string(email->checksum[which+2]);
+                            moloch_field_string_add(sha256Field, session, (char*)sha256, 64, TRUE);
+                        }
                     }
                     email->firstInContent |= (1 << which);
                     email->base64Decode &= ~(1 << which);
                     email->state64[which] = 0;
                     email->save64[which] = 0;
                     g_checksum_reset(email->checksum[which]);
-                    g_checksum_reset(email->checksum[which+2]);
+                    if (config.supportSha256) {
+                        g_checksum_reset(email->checksum[which+2]);
+                    }
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
                     if (email->base64Decode & (1 << which)) {
@@ -667,7 +657,9 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                                                             &(email->state64[which]),
                                                             &(email->save64[which]));
                             g_checksum_update(email->checksum[which], buf, b);
-                            g_checksum_update(email->checksum[which+2], buf, b);
+                            if (config.supportSha256) {
+                                g_checksum_update(email->checksum[which+2], buf, b);
+                            }
 
                             if (email->firstInContent & (1 << which)) {
                                 email->firstInContent &= ~(1 << which);
@@ -809,8 +801,10 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
 
     g_checksum_free(email->checksum[0]);
     g_checksum_free(email->checksum[1]);
-    g_checksum_free(email->checksum[2]);
-    g_checksum_free(email->checksum[3]);
+    if (config.supportSha256) {
+        g_checksum_free(email->checksum[2]);
+        g_checksum_free(email->checksum[3]);
+    }
 
     while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
         g_free(string->str);
@@ -842,8 +836,10 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
 
         email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
         email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
-        email->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
-        email->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
+        if (config.supportSha256) {
+            email->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
+            email->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
+        }
 
         DLL_INIT(s_, &(email->boundaries));
 
@@ -928,13 +924,16 @@ void moloch_parser_init()
         "category", "md5",
         NULL);
 
-    sha256Field = moloch_field_define("email", "termfield",
-        "email.sha256", "Attach SHA256s", "email.sha256",
-        "Email attachment SHA256s",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        "category", "sha256",
-        NULL);
+    if (config.supportSha256) {
+        sha256Field = moloch_field_define("email", "termfield",
+            "email.sha256", "Attach SHA256s", "email.sha256",
+            "Email attachment SHA256s",
+            MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+            "requiredRight", "emailSearch",
+            "category", "sha256",
+            "disabled", "true",
+            NULL);
+    }
 
     fctField = moloch_field_define("email", "termfield",
         "email.file-content-type", "Attach Content-Type", "email.fileContentType",

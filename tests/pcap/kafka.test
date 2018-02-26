@@ -2,39 +2,27 @@
    "sessions2" : [
       {
          "body" : {
-            "dstMacCnt" : 2,
-            "node" : "test",
-            "vlanCnt" : 1,
+            "dstBytes" : 78,
             "dstDataBytes" : 0,
-            "srcMacCnt" : 1,
-            "srcDataBytes" : 79,
-            "tcpflags" : {
-               "rst" : 0,
-               "psh" : 1,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "syn" : 1,
-               "fin" : 1,
-               "urg" : 0,
-               "ack" : 1,
-               "syn-ack" : 1
-            },
-            "totBytes" : 449,
-            "srcIp" : "10.10.10.10",
-            "srcBytes" : 371,
-            "ipProtocol" : 6,
-            "protocolCnt" : 2,
-            "length" : 283,
-            "firstPacket" : 1483521857249,
+            "dstIp" : "10.176.192.13",
             "dstMac" : [
                "00:00:5e:00:01:01",
                "3c:8a:b0:6e:77:c5"
             ],
-            "srcPackets" : 4,
-            "totPackets" : 5,
-            "dstBytes" : 78,
-            "segmentCnt" : 1,
-            "srcPort" : 65056,
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 9092,
+            "fileId" : [],
+            "firstPacket" : 1483521857249,
+            "ipProtocol" : 6,
+            "lastPacket" : 1483521857532,
+            "length" : 283,
+            "node" : "test",
             "packetLen" : [
                98,
                94,
@@ -42,7 +30,6 @@
                165,
                86
             ],
-            "fileId" : [],
             "packetPos" : [
                24,
                122,
@@ -50,27 +37,49 @@
                302,
                467
             ],
-            "timestamp" : "SET",
-            "tags" : [
-               "acked-unseen-segment-src"
-            ],
-            "srcMac" : [
-               "00:1b:17:00:02:30"
-            ],
-            "totDataBytes" : 79,
-            "dstPackets" : 1,
             "protocol" : [
                "kafka",
                "tcp"
             ],
-            "dstPort" : 9092,
-            "dstIp" : "10.176.192.13",
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 371,
+            "srcDataBytes" : 79,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:1b:17:00:02:30"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Palo Alto Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 4,
             "srcPayload8" : "0000004b00020000",
+            "srcPort" : 65056,
+            "tags" : [
+               "acked-unseen-segment-src"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 449,
+            "totDataBytes" : 79,
+            "totPackets" : 5,
             "vlan" : [
                300
             ],
-            "lastPacket" : 1483521857532,
-            "tagsCnt" : 1
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {

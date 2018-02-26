@@ -2,12 +2,31 @@
    "sessions2" : [
       {
          "body" : {
+            "dstBytes" : 513,
+            "dstDataBytes" : 175,
+            "dstIp" : "192.168.1.3",
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
             "dstPackets" : 5,
-            "ipProtocol" : 6,
+            "dstPayload8" : "5b0000000a352e35",
+            "dstPort" : 3306,
             "dstRIR" : "ARIN",
-            "srcRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1398195861493,
+            "ipProtocol" : 6,
             "lastPacket" : 1398195861496,
             "length" : 2,
+            "mysql" : {
+               "user" : "user0",
+               "version" : "5.5.35-0FUNntu0.12.04.2"
+            },
+            "node" : "test",
             "packetLen" : [
                90,
                90,
@@ -20,36 +39,6 @@
                82,
                82
             ],
-            "node" : "test",
-            "totBytes" : 916,
-            "srcPackets" : 5,
-            "timestamp" : "SET",
-            "dstDataBytes" : 175,
-            "mysql" : {
-               "user" : "user0",
-               "version" : "5.5.35-0FUNntu0.12.04.2"
-            },
-            "tcpflags" : {
-               "syn" : 1,
-               "srcZero" : 0,
-               "dstZero" : 0,
-               "urg" : 0,
-               "psh" : 3,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "ack" : 3,
-               "fin" : 2
-            },
-            "dstIp" : "192.168.1.3",
-            "srcDataBytes" : 65,
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcPort" : 42418,
-            "dstMacCnt" : 1,
-            "protocolCnt" : 2,
-            "fileId" : [],
-            "totDataBytes" : 240,
             "packetPos" : [
                24,
                114,
@@ -62,28 +51,47 @@
                936,
                1018
             ],
-            "segmentCnt" : 1,
             "protocol" : [
                "mysql",
                "tcp"
             ],
-            "dstPort" : 3306,
-            "srcPayload8" : "3d00000105a60f00",
-            "dstPayload8" : "5b0000000a352e35",
-            "firstPacket" : 1398195861493,
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 403,
+            "srcDataBytes" : 65,
             "srcIp" : "192.168.1.3",
-            "srcMacCnt" : 1,
-            "dstMac" : [
+            "srcMac" : [
                "00:00:00:00:00:00"
             ],
-            "dstBytes" : 513,
-            "srcBytes" : 403,
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "3d00000105a60f00",
+            "srcPort" : 42418,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 916,
+            "totDataBytes" : 240,
             "totPackets" : 10
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-140422"
+               "_index" : "tests_sessions2-140422",
+               "_type" : "session"
             }
          }
       }

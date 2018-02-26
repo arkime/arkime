@@ -1,26 +1,43 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions2-150131"
-            }
-         },
          "body" : {
-            "srcPayload8" : "301d020101771880",
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "srcPackets" : 20,
-            "certCnt" : 1,
-            "srcPort" : 37386,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "protocol" : [
-               "tls",
-               "ldap",
-               "tcp"
+            "cert" : [
+               {
+                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
+                  "issuerCN" : [
+                     "ldap ssl test"
+                  ],
+                  "notAfter" : 1738030709000,
+                  "notBefore" : 1422670709000,
+                  "serial" : "008a07e08d4ab50a7b",
+                  "subjectCN" : [
+                     "ldap ssl test"
+                  ],
+                  "validDays" : 3650
+               }
             ],
+            "certCnt" : 1,
             "dstBytes" : 3422,
+            "dstDataBytes" : 2050,
+            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "dstMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 16,
+            "dstPayload8" : "300c02010178070a",
             "dstPort" : 389,
+            "fileId" : [],
+            "firstPacket" : 1422673532664,
+            "ipProtocol" : 6,
+            "lastPacket" : 1422673558484,
+            "length" : 25820,
+            "node" : "test",
             "packetLen" : [
                110,
                110,
@@ -58,73 +75,6 @@
                102,
                331,
                90
-            ],
-            "srcDataBytes" : 1651,
-            "totBytes" : 6801,
-            "srcBytes" : 3379,
-            "fileId" : [],
-            "dstPayload8" : "300c02010178070a",
-            "ipProtocol" : 6,
-            "totDataBytes" : 3701,
-            "tls" : {
-               "versionCnt" : 1,
-               "cipher" : [
-                  "TLS_RSA_WITH_AES_128_CBC_SHA"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
-               ],
-               "version" : [
-                  "TLSv1.2"
-               ],
-               "ja3Cnt" : 1,
-               "ja3" : [
-                  "3f8b7a5c41878630f67e660533be80fc"
-               ]
-            },
-            "node" : "test",
-            "lastPacket" : 1422673558484,
-            "totPackets" : 36,
-            "dstDataBytes" : 2050,
-            "dstMacCnt" : 1,
-            "tcpflags" : {
-               "urg" : 0,
-               "rst" : 1,
-               "syn-ack" : 1,
-               "psh" : 21,
-               "ack" : 11,
-               "fin" : 1,
-               "syn" : 1,
-               "dstZero" : 0,
-               "srcZero" : 0
-            },
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
-            "length" : 25820,
-            "firstPacket" : 1422673532664,
-            "dstPackets" : 16,
-            "segmentCnt" : 1,
-            "cert" : [
-               {
-                  "validDays" : 3650,
-                  "subjectCN" : [
-                     "ldap ssl test"
-                  ],
-                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
-                  "issuerCN" : [
-                     "ldap ssl test"
-                  ],
-                  "notAfter" : 1738030709000,
-                  "serial" : "008a07e08d4ab50a7b",
-                  "notBefore" : 1422670709000
-               }
-            ],
-            "timestamp" : "SET",
-            "srcMac" : [
-               "00:00:00:00:00:00"
             ],
             "packetPos" : [
                24,
@@ -164,7 +114,69 @@
                6980,
                7311
             ],
-            "protocolCnt" : 3
+            "protocol" : [
+               "tls",
+               "ldap",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 3379,
+            "srcDataBytes" : 1651,
+            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 20,
+            "srcPayload8" : "301d020101771880",
+            "srcPort" : 37386,
+            "tags" : [
+               "cert:self-signed"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 11,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 21,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_128_CBC_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
+               ],
+               "ja3" : [
+                  "3f8b7a5c41878630f67e660533be80fc"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 6801,
+            "totDataBytes" : 3701,
+            "totPackets" : 36
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150131",
+               "_type" : "session"
+            }
          }
       }
    ]

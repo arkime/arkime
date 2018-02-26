@@ -1,43 +1,30 @@
 {
    "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-160201",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "dstPayload8" : "3232302057656c63",
-            "dstRIR" : "ARIN",
-            "dstIp" : "129.21.171.72",
-            "userCnt" : 1,
-            "dstDataBytes" : 90,
-            "segmentCnt" : 1,
-            "dstPackets" : 5,
-            "ipProtocol" : 6,
-            "srcIp" : "10.10.30.26",
-            "timestamp" : "SET",
-            "length" : 78,
+            "dstASN" : "AS4385 Rochester Institute of Technology",
             "dstBytes" : 428,
-            "fileId" : [],
-            "protocol" : [
-               "ftp",
-               "tcp"
+            "dstDataBytes" : 90,
+            "dstGEO" : "US",
+            "dstIp" : "129.21.171.72",
+            "dstMac" : [
+               "58:f3:9c:f7:2f:9f"
             ],
-            "tcpflags" : {
-               "urg" : 0,
-               "srcZero" : 0,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "fin" : 0,
-               "syn" : 1,
-               "psh" : 5,
-               "ack" : 3,
-               "dstZero" : 0
-            },
-            "totBytes" : 804,
-            "srcMacCnt" : 1,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "3232302057656c63",
+            "dstPort" : 21,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1454301530932,
+            "ipProtocol" : 6,
+            "lastPacket" : 1454301531009,
+            "length" : 78,
+            "node" : "test",
             "packetLen" : [
                90,
                90,
@@ -50,18 +37,6 @@
                104,
                105
             ],
-            "dstMac" : [
-               "58:f3:9c:f7:2f:9f"
-            ],
-            "dstGEO" : "US",
-            "user" : [
-               "anonymous"
-            ],
-            "dstPort" : 21,
-            "firstPacket" : 1454301530932,
-            "srcDataBytes" : 38,
-            "dstASN" : "AS4385 Rochester Institute of Technology",
-            "lastPacket" : 1454301531009,
             "packetPos" : [
                24,
                114,
@@ -74,18 +49,51 @@
                779,
                883
             ],
-            "srcPayload8" : "5553455220616e6f",
-            "node" : "test",
-            "totPackets" : 10,
+            "protocol" : [
+               "ftp",
+               "tcp"
+            ],
             "protocolCnt" : 2,
+            "segmentCnt" : 1,
             "srcBytes" : 376,
-            "srcPackets" : 5,
-            "srcPort" : 43958,
-            "totDataBytes" : 128,
+            "srcDataBytes" : 38,
+            "srcIp" : "10.10.30.26",
             "srcMac" : [
                "00:08:e3:ff:fc:28"
             ],
-            "dstMacCnt" : 1
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "5553455220616e6f",
+            "srcPort" : 43958,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 5,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 804,
+            "totDataBytes" : 128,
+            "totPackets" : 10,
+            "user" : [
+               "anonymous"
+            ],
+            "userCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160201",
+               "_type" : "session"
+            }
          }
       }
    ]

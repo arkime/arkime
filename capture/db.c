@@ -45,7 +45,10 @@ LOCAL char             *rirs[256];
 
 void *                  esServer = 0;
 
-LOCAL patricia_tree_t  *ipTree = 0;
+LOCAL patricia_tree_t  *ipTree4 = 0;
+LOCAL patricia_tree_t  *ipTree6 = 0;
+
+LOCAL patricia_tree_t  *ouiTree = 0;
 
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
@@ -61,10 +64,15 @@ extern MolochConfig_t        config;
 void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
 {
     patricia_node_t *node;
-    if (!ipTree) {
-        ipTree = New_Patricia(128);
+    if (!ipTree4) {
+        ipTree4 = New_Patricia(32);
+        ipTree6 = New_Patricia(128);
     }
-    node = make_and_lookup(ipTree, str);
+    if (strchr(str, '.') != 0) {
+        node = make_and_lookup(ipTree4, str);
+    } else {
+        node = make_and_lookup(ipTree6, str);
+    }
     node->data = ii;
 }
 /******************************************************************************/
@@ -81,43 +89,16 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
 /******************************************************************************/
 MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_addr *ip)
 {
-    prefix_t prefix;
     patricia_node_t *node;
 
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ((uint32_t *)ip->s6_addr)[3];
+        if ((node = patricia_search_best3 (ipTree4, ((u_char *)ip->s6_addr) + 12, 32)) == NULL)
+            return 0;
     } else {
-        prefix.family = AF_INET6;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, ip, 16);
+        if ((node = patricia_search_best3 (ipTree6, (u_char *)ip->s6_addr, 128)) == NULL)
+            return 0;
     }
 
-    if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
-        return 0;
-
-    MolochIpInfo_t *ii = node->data;
-    int t;
-
-    for (t = 0; t < ii->numtags; t++) {
-        moloch_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
-    }
-
-    return ii;
-}
-/******************************************************************************/
-MolochIpInfo_t *moloch_db_get_local_ip4(MolochSession_t *session, uint32_t ip)
-{
-    prefix_t prefix;
-    patricia_node_t *node;
-
-    prefix.family = AF_INET;
-    prefix.bitlen = 32;
-    prefix.add.sin.s_addr = ip;
-
-    if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
-        return 0;
 
     MolochIpInfo_t *ii = node->data;
     int t;
@@ -204,7 +185,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
     static const char *asoPath[]     = {"autonomous_system_organization", NULL};
     static const char *asnPath[]     = {"autonomous_system_number", NULL};
 
-    if (ipTree) {
+    if (ipTree4) {
         if ((ii = moloch_db_get_local_ip6(session, &addr))) {
             *g = ii->country;
             *as = ii->asn;
@@ -603,7 +584,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             for(i = 0; i < session->fields[pos]->sarray->len; i++) {
@@ -634,6 +615,24 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     MOLOCH_TYPE_FREE(MolochString_t, hstring);
                 );
                 MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
+            ghash = session->fields[pos]->ghash;
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %d,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                moloch_db_js0n_str(&jbsb, ikey, flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+
+            if (freeField) {
+                g_hash_table_destroy(ghash);
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
@@ -1622,49 +1621,136 @@ void moloch_db_check()
 void moloch_db_load_rir()
 {
     memset(rirs, 0, sizeof(rirs));
-    if (config.rirFile) {
-        FILE *fp;
-        char line[1000];
-        if (!(fp = fopen(config.rirFile, "r"))) {
-            printf("Couldn't open RIR from %s", config.rirFile);
-            exit(1);
-        }
+    if (!config.rirFile)
+        return;
 
-        while(fgets(line, sizeof(line), fp)) {
-            int   cnt = 0, quote = 0, num = 0;
-            char *ptr, *start;
-
-            for (start = ptr = line; *ptr != 0; ptr++) {
-                if (*ptr == '"') {
-                    quote = !quote;
-                    continue;
-                }
-
-                if (quote || *ptr != ',')
-                    continue;
-
-                // We have comma outside of quotes
-                *ptr = 0;
-                if (cnt == 0) {
-                    num = atoi(start);
-                    if (num >= 255)
-                        break;
-                } else if (*start && cnt == 3) {
-                    gchar **parts = g_strsplit(start, ".", 0);
-                    if (parts[1] && *parts[1]) {
-                        rirs[num] = g_ascii_strup(parts[1], -1);
-                    }
-                    g_strfreev(parts);
-
-                    break;
-                }
-
-                cnt++;
-                start = ptr+1;
-            }
-        }
-        fclose(fp);
+    FILE *fp;
+    char line[1000];
+    if (!(fp = fopen(config.rirFile, "r"))) {
+        printf("Couldn't open RIR from %s", config.rirFile);
+        exit(1);
     }
+
+    while(fgets(line, sizeof(line), fp)) {
+        int   cnt = 0, quote = 0, num = 0;
+        char *ptr, *start;
+
+        for (start = ptr = line; *ptr != 0; ptr++) {
+            if (*ptr == '"') {
+                quote = !quote;
+                continue;
+            }
+
+            if (quote || *ptr != ',')
+                continue;
+
+            // We have comma outside of quotes
+            *ptr = 0;
+            if (cnt == 0) {
+                num = atoi(start);
+                if (num >= 255)
+                    break;
+            } else if (*start && cnt == 3) {
+                gchar **parts = g_strsplit(start, ".", 0);
+                if (parts[1] && *parts[1]) {
+                    rirs[num] = g_ascii_strup(parts[1], -1);
+                }
+                g_strfreev(parts);
+
+                break;
+            }
+
+            cnt++;
+            start = ptr+1;
+        }
+    }
+    fclose(fp);
+}
+/******************************************************************************/
+void moloch_db_load_oui()
+{
+    if (!config.ouiFile)
+        return;
+
+    ouiTree = New_Patricia(48); // 48 - Ethernet Size
+
+    FILE *fp;
+    char line[2000];
+    if (!(fp = fopen(config.ouiFile, "r"))) {
+        printf("Couldn't open OUI from %s", config.ouiFile);
+        exit(1);
+    }
+
+    while(fgets(line, sizeof(line), fp)) {
+        char *hash = strchr(line, '#');
+        if (hash)
+            *hash = 0;
+
+        // Trim
+        int len = strlen(line);
+        if (len < 4) continue;
+        while (len > 0 && isspace(line[len-1]) )
+            len--;
+        line[len] = 0;
+
+        // Break into pieces
+        gchar **parts = g_strsplit(line, "\t", 0);
+        char *str;
+        if (parts[2]) {
+            if (parts[2][0])
+                str = parts[2];
+            else if (parts[3]) // The file sometimes has 2 tabs in a row :(
+                str = parts[3];
+        } else {
+            str = parts[1];
+        }
+
+        // Remove separators and get bitlen
+        int i = 0, j = 0, bitlen = 24;
+        for (i = 0; parts[0][i]; i++) {
+            if (parts[0][i] == ':' || parts[0][i] == '-' || parts[0][i] == '.')
+                continue;
+            if (parts[0][i] == '/') {
+                bitlen = atoi(parts[0] + i + 1);
+                break;
+            }
+
+            parts[0][j] = parts[0][i];
+            j++;
+        }
+        parts[0][j] = 0;
+
+        // Convert to binary
+        unsigned char buf[16];
+        for (i=0, j=0; i < len && j < 8; i += 2, j++) {
+            buf[j] = moloch_hex_to_char[(int)parts[0][i]][(int)parts[0][i+1]];
+        }
+
+        // Create node
+        prefix_t       *prefix;
+        patricia_node_t *node;
+
+        prefix = New_Prefix2(AF_INET6, buf, bitlen, NULL);
+        node = patricia_lookup(ouiTree, prefix);
+        Deref_Prefix(prefix);
+        node->data = g_strdup(str);
+
+        g_strfreev(parts);
+    }
+    fclose(fp);
+}
+/******************************************************************************/
+void moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac)
+{
+    patricia_node_t *node;
+
+    if (!ouiTree)
+        return;
+
+    if ((node = patricia_search_best3 (ouiTree, mac, 48)) == NULL)
+        return;
+
+    moloch_field_string_add(field, session, node->data, -1, TRUE);
 }
 /******************************************************************************/
 void moloch_db_load_fields()
@@ -1897,6 +1983,7 @@ void moloch_db_init()
     }
 
     moloch_db_load_rir();
+    moloch_db_load_oui();
 
     if (!config.dryRun) {
         timers[0] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);
@@ -1929,8 +2016,10 @@ void moloch_db_exit()
         fprintf(stderr, "], \"tags\": {}}\n");
     }
 
-    if (ipTree) {
-        Destroy_Patricia(ipTree, moloch_db_free_local_ip);
-        ipTree = 0;
+    if (ipTree4) {
+        Destroy_Patricia(ipTree4, moloch_db_free_local_ip);
+        Destroy_Patricia(ipTree6, moloch_db_free_local_ip);
+        ipTree4 = 0;
+        ipTree6 = 0;
     }
 }
