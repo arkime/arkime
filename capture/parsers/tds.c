@@ -46,7 +46,7 @@ int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 tds->data[0][480], tds->data[0] + 470
                 );
 #endif
-        moloch_field_string_add(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69], TRUE);
+        moloch_field_string_add_lower(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69]);
         moloch_parsers_unregister(session, uw);
     }
 
