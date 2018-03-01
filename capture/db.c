@@ -1639,7 +1639,7 @@ void moloch_db_load_geo()
     if (stat(config.geoLite2Country, &sb) != 0) {
         LOGEXIT("Couldn't stat Country file %s error %s", config.geoLite2Country, strerror(errno));
     }
-    if (sb.st_mtimespec.tv_sec > countryModify) {
+    if (sb.st_mtime > countryModify) {
         MMDB_s  *country = malloc(sizeof(MMDB_s));
         status = MMDB_open(config.geoLite2Country, MMDB_MODE_MMAP, country);
         if (MMDB_SUCCESS != status) {
@@ -1648,7 +1648,7 @@ void moloch_db_load_geo()
         }
         if (geoCountry)
             LOG("Loading new version of country file");
-        countryModify = sb.st_mtimespec.tv_sec;
+        countryModify = sb.st_mtime;
         countryOld = geoCountry;
         geoCountry = country;
     }
@@ -1663,7 +1663,7 @@ void moloch_db_load_geo()
     if (stat(config.geoLite2ASN, &sb) != 0) {
         LOGEXIT("Couldn't stat ASN file %s error %s", config.geoLite2ASN, strerror(errno));
     }
-    if (sb.st_mtimespec.tv_sec > asnModify) {
+    if (sb.st_mtime > asnModify) {
         MMDB_s  *asn = malloc(sizeof(MMDB_s));
         status = MMDB_open(config.geoLite2ASN, MMDB_MODE_MMAP, asn);
         if (MMDB_SUCCESS != status) {
@@ -1672,7 +1672,7 @@ void moloch_db_load_geo()
         }
         if (geoASN)
             LOG("Loading new version of asn file");
-        asnModify = sb.st_mtimespec.tv_sec;
+        asnModify = sb.st_mtime;
         asnOld = geoASN;
         geoASN = asn;
     }
@@ -1749,10 +1749,10 @@ void moloch_db_load_oui()
         LOGEXIT("Couldn't stat ouiFile file %s error %s", config.ouiFile, strerror(errno));
     }
 
-    if (sb.st_mtimespec.tv_sec <= ouiModify)
+    if (sb.st_mtime <= ouiModify)
         return;
 
-    ouiModify = sb.st_mtimespec.tv_sec;
+    ouiModify = sb.st_mtime;
 
     if (ouiTree)
         LOG("Loading new version of oui file");
