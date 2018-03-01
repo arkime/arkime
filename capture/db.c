@@ -1623,10 +1623,12 @@ void moloch_db_check()
  */
 void moloch_db_load_geo()
 {
-    static MMDB_s   *countryOld;
+    static MMDB_s  *countryOld;
     static int64_t  countryModify;
-    static MMDB_s   *asnOld;
+    static off_t    countrySize;
+    static MMDB_s  *asnOld;
     static int64_t  asnModify;
+    static off_t    asnSize;
     int             status;
     struct stat     sb;
 
@@ -1640,6 +1642,11 @@ void moloch_db_load_geo()
         LOGEXIT("Couldn't stat Country file %s error %s", config.geoLite2Country, strerror(errno));
     }
     if (sb.st_mtime > countryModify) {
+        // siez changed and not first load, wait for next to pass to see if filesize stays the same
+        if (countrySize != sb.st_size && geoCountry) {
+            countrySize = sb.st_size;
+            return;
+        }
         MMDB_s  *country = malloc(sizeof(MMDB_s));
         status = MMDB_open(config.geoLite2Country, MMDB_MODE_MMAP, country);
         if (MMDB_SUCCESS != status) {
@@ -1649,6 +1656,7 @@ void moloch_db_load_geo()
         if (geoCountry)
             LOG("Loading new version of country file");
         countryModify = sb.st_mtime;
+        countrySize = 0;
         countryOld = geoCountry;
         geoCountry = country;
     }
@@ -1664,6 +1672,12 @@ void moloch_db_load_geo()
         LOGEXIT("Couldn't stat ASN file %s error %s", config.geoLite2ASN, strerror(errno));
     }
     if (sb.st_mtime > asnModify) {
+        // size changed and not first load, wait for next to pass to see if filesize stays the same
+        if (asnSize != sb.st_size && geoASN) {
+            asnSize = sb.st_size;
+            return;
+        }
+
         MMDB_s  *asn = malloc(sizeof(MMDB_s));
         status = MMDB_open(config.geoLite2ASN, MMDB_MODE_MMAP, asn);
         if (MMDB_SUCCESS != status) {
@@ -1673,6 +1687,7 @@ void moloch_db_load_geo()
         if (geoASN)
             LOG("Loading new version of asn file");
         asnModify = sb.st_mtime;
+        asnSize = 0;
         asnOld = geoASN;
         geoASN = asn;
     }
@@ -1737,6 +1752,7 @@ void moloch_db_load_oui()
 
     static patricia_tree_t   *ouiOld;
     static int64_t            ouiModify;
+    static off_t              ouiSize;
     struct stat               sb;
 
     // Clean up old elements
@@ -1751,6 +1767,11 @@ void moloch_db_load_oui()
 
     if (sb.st_mtime <= ouiModify)
         return;
+
+    if (ouiSize != sb.st_size && ouiTree) {
+        ouiSize = sb.st_size;
+        return;
+    }
 
     ouiModify = sb.st_mtime;
 
@@ -1827,6 +1848,7 @@ void moloch_db_load_oui()
     // Save old tree to free later and flip to new tree
     ouiOld  = ouiTree;
     ouiTree = oui;
+    ouiSize = 0;
 }
 /******************************************************************************/
 void moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac)
