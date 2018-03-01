@@ -48,17 +48,21 @@ int reader_libpcap_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    if (unlikely(h->caplen != h->len)) {
-        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-            "See https://github.com/aol/moloch/wiki/FAQ#Moloch_requires_full_packet_captures_error",
-            h->caplen, h->len);
-    }
-
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+
+    if (unlikely(h->caplen != h->len)) {
+        if (!config.readTruncatedPackets) {
+            LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
+                "See https://github.com/aol/moloch/wiki/FAQ#Moloch_requires_full_packet_captures_error",
+                h->caplen, h->len);
+        }
+        packet->pktlen = h->caplen;
+    } else {
+        packet->pktlen = h->len;
+    }
 
     packet->pkt           = (u_char *)bytes;
     packet->ts            = h->ts;
-    packet->pktlen        = h->len;
 
     moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
 }
