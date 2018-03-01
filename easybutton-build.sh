@@ -184,7 +184,7 @@ fi
 
 if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
   tar zxf curl-$CURL.tar.gz
-  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp; $MAKE)
+  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
