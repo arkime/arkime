@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container-fluid">
+  <div>
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -11,29 +11,24 @@
 
     <div v-show="!error">
 
-      <div class="row mt-1">
-        <div class="col-md-6">
-          <moloch-paging v-if="stats"
-            :records-total="stats.recordsTotal"
-            :records-filtered="stats.recordsFiltered"
-            v-on:changePaging="changePaging">
-          </moloch-paging>
+      <div class="input-group input-group-sm node-search pull-right mt-1">
+        <div class="input-group-prepend">
+          <span class="input-group-text">
+            <span class="fa fa-search"></span>
+          </span>
         </div>
-        <div class="col-md-6">
-          <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
-              <span class="input-group-text">
-                <span class="fa fa-search"></span>
-              </span>
-            </div>
-            <input type="text"
-              class="form-control pull-right"
-              v-model="query.filter"
-              @keyup="searchForNodes()"
-              placeholder="Begin typing to search for nodes by name">
-          </div>
-        </div>
+        <input type="text"
+          class="form-control"
+          v-model="query.filter"
+          @keyup="searchForNodes()"
+          placeholder="Begin typing to search for nodes by name">
       </div>
+      <moloch-paging v-if="stats"
+        class="mt-1"
+        :records-total="stats.recordsTotal"
+        :records-filtered="stats.recordsFiltered"
+        v-on:changePaging="changePaging">
+      </moloch-paging>
 
       <div role="tablist">
 
@@ -588,6 +583,10 @@ export default {
   display: none;
 }
 
+.node-search {
+  max-width: 50%;
+}
+
 td {
   white-space: nowrap;
 }
@@ -602,6 +601,6 @@ table.table tr.border-top-bold > td {
 }
 
 #graphContent, #nodeStatsContent {
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 </style>

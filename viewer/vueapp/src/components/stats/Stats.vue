@@ -111,7 +111,7 @@
     </form> <!-- /stats sub navbar -->
 
     <!-- stats content -->
-    <div class="pt-5 ml-1 mr-1">
+    <div class="pt-5">
       <span v-if="tabIndex === 0"
         v-b-tooltip.hover
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
@@ -141,7 +141,10 @@
         </b-tab>
         <b-tab title="ES Shards"
           @click="tabIndexChange()">
-          TODO: ES Shards
+          <shards v-if="user && tabIndex === 4"
+            :data-interval="dataInterval"
+            :user="user">
+          </shards>
         </b-tab>
       </b-tabs>
     </div> <!-- /stats content -->
@@ -151,6 +154,7 @@
 </template>
 
 <script>
+import Shards from './Shards';
 import NodeStats from './NodeStats';
 import UserService from '../UserService';
 export default {
@@ -166,7 +170,7 @@ export default {
     };
   },
   components: {
-    NodeStats
+    NodeStats, Shards
   },
   created: function () {
     this.loadUser();
@@ -221,7 +225,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .stats-content {
   padding-top: 36px;

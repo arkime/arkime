@@ -15,6 +15,8 @@ import HasPermission from './components/utils/HasPermission';
 import interceptorSetup from './interceptors';
 import router from './router';
 import './filters.js';
+// bootstrap overrides
+import './overrides.css';
 // themed css deps
 import './themes/default.css';
 import './themes/blue.css';

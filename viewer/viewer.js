@@ -2388,6 +2388,12 @@ app.get('/esshard/list', function(req, res) {
       }
       result[shard.index].nodes[shard.node].push(shard);
       nodes[shard.node] = {ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node)};
+
+      result[shard.index].nodes[shard.node]
+        .sort((a, b) => {
+          return a.shard - b.shard;
+        });
+
       delete shard.node;
       delete shard.index;
     }
