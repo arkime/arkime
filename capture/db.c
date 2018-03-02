@@ -37,6 +37,7 @@ MMDB_s                  *geoASN;
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
 extern uint64_t         totalSessions;
+LOCAL  uint64_t         totalSessionBytes;
 static uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 
@@ -900,6 +901,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         goto cleanup;
     }
 
+    totalSessionBytes += (int)(BSB_WORK_PTR(jbsb)-dataPtr);
+
     if (config.dryRun) {
         if (config.tests) {
             static int outputed;
@@ -1032,6 +1035,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     static uint64_t       lastPackets[NUMBER_OF_STATS];
     static uint64_t       lastBytes[NUMBER_OF_STATS];
     static uint64_t       lastSessions[NUMBER_OF_STATS];
+    static uint64_t       lastSessionBytes[NUMBER_OF_STATS];
     static uint64_t       lastDropped[NUMBER_OF_STATS];
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
@@ -1125,6 +1129,7 @@ void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
+        "\"deltaSessionBytes\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
         "\"deltaFragsDropped\": %" PRIu64 ", "
         "\"deltaOverloadDropped\": %" PRIu64 ", "
@@ -1159,6 +1164,7 @@ void moloch_db_update_stats(int n, gboolean sync)
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),
+        (totalSessionBytes - lastSessionBytes[n]),
         (totalDropped - lastDropped[n]),
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
@@ -1169,6 +1175,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     lastBytes[n]           = totalBytes;
     lastPackets[n]         = totalPackets;
     lastSessions[n]        = totalSessions;
+    lastSessionBytes[n]    = totalSessionBytes;
     lastDropped[n]         = totalDropped;
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
