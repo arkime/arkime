@@ -29,14 +29,15 @@
 #include "patricia.h"
 
 #include "maxminddb.h"
-MMDB_s                  geoCountry;
-MMDB_s                  geoASN;
+MMDB_s                  *geoCountry;
+MMDB_s                  *geoASN;
 
 #define MOLOCH_MIN_DB_VERSION 50
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
 extern uint64_t         totalSessions;
+LOCAL  uint64_t         totalSessionBytes;
 static uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 
@@ -214,7 +215,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
 
     int error = 0;
     if (!*g) {
-        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(&geoCountry, sa, &error);
+        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s entry_data;
             int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
@@ -225,7 +226,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
     }
 
     if (!*as) {
-        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(&geoASN, sa, &error);
+        MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoASN, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s org;
             MMDB_entry_data_s num;
@@ -900,6 +901,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         goto cleanup;
     }
 
+    totalSessionBytes += (int)(BSB_WORK_PTR(jbsb)-dataPtr);
+
     if (config.dryRun) {
         if (config.tests) {
             static int outputed;
@@ -1032,6 +1035,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     static uint64_t       lastPackets[NUMBER_OF_STATS];
     static uint64_t       lastBytes[NUMBER_OF_STATS];
     static uint64_t       lastSessions[NUMBER_OF_STATS];
+    static uint64_t       lastSessionBytes[NUMBER_OF_STATS];
     static uint64_t       lastDropped[NUMBER_OF_STATS];
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
@@ -1125,6 +1129,7 @@ void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
+        "\"deltaSessionBytes\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
         "\"deltaFragsDropped\": %" PRIu64 ", "
         "\"deltaOverloadDropped\": %" PRIu64 ", "
@@ -1159,6 +1164,7 @@ void moloch_db_update_stats(int n, gboolean sync)
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),
+        (totalSessionBytes - lastSessionBytes[n]),
         (totalDropped - lastDropped[n]),
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
@@ -1169,6 +1175,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     lastBytes[n]           = totalBytes;
     lastPackets[n]         = totalPackets;
     lastSessions[n]        = totalSessions;
+    lastSessionBytes[n]    = totalSessionBytes;
     lastDropped[n]         = totalDropped;
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
@@ -1618,6 +1625,81 @@ void moloch_db_check()
 }
 
 /******************************************************************************/
+/* Only called in main thread.  Check if the file changed, if so reload.
+ * Don't free old version until called again incase other threads are using.
+ */
+void moloch_db_load_geo()
+{
+    static MMDB_s  *countryOld;
+    static int64_t  countryModify;
+    static off_t    countrySize;
+    static MMDB_s  *asnOld;
+    static int64_t  asnModify;
+    static off_t    asnSize;
+    int             status;
+    struct stat     sb;
+
+    // Reload country
+    if (countryOld) {
+        MMDB_close(countryOld);
+        g_free(countryOld);
+        countryOld = NULL;
+    }
+    if (stat(config.geoLite2Country, &sb) != 0) {
+        LOGEXIT("Couldn't stat Country file %s error %s", config.geoLite2Country, strerror(errno));
+    }
+    if (sb.st_mtime > countryModify) {
+        // siez changed and not first load, wait for next to pass to see if filesize stays the same
+        if (countrySize != sb.st_size && geoCountry) {
+            countrySize = sb.st_size;
+            return;
+        }
+        MMDB_s  *country = malloc(sizeof(MMDB_s));
+        status = MMDB_open(config.geoLite2Country, MMDB_MODE_MMAP, country);
+        if (MMDB_SUCCESS != status) {
+            LOGEXIT("Couldn't initialize Country file %s error %s", config.geoLite2Country, MMDB_strerror(status));
+
+        }
+        if (geoCountry)
+            LOG("Loading new version of country file");
+        countryModify = sb.st_mtime;
+        countrySize = 0;
+        countryOld = geoCountry;
+        geoCountry = country;
+    }
+
+
+    // Reload asn
+    if (asnOld) {
+        MMDB_close(asnOld);
+        g_free(asnOld);
+        asnOld = NULL;
+    }
+    if (stat(config.geoLite2ASN, &sb) != 0) {
+        LOGEXIT("Couldn't stat ASN file %s error %s", config.geoLite2ASN, strerror(errno));
+    }
+    if (sb.st_mtime > asnModify) {
+        // size changed and not first load, wait for next to pass to see if filesize stays the same
+        if (asnSize != sb.st_size && geoASN) {
+            asnSize = sb.st_size;
+            return;
+        }
+
+        MMDB_s  *asn = malloc(sizeof(MMDB_s));
+        status = MMDB_open(config.geoLite2ASN, MMDB_MODE_MMAP, asn);
+        if (MMDB_SUCCESS != status) {
+            LOGEXIT("Couldn't initialize ASN file %s error %s", config.geoLite2ASN, MMDB_strerror(status));
+
+        }
+        if (geoASN)
+            LOG("Loading new version of asn file");
+        asnModify = sb.st_mtime;
+        asnSize = 0;
+        asnOld = geoASN;
+        geoASN = asn;
+    }
+}
+/******************************************************************************/
 void moloch_db_load_rir()
 {
     memset(rirs, 0, sizeof(rirs));
@@ -1667,13 +1749,44 @@ void moloch_db_load_rir()
     fclose(fp);
 }
 /******************************************************************************/
+/* Only called in main thread.  Check if the file changed, if so reload.
+ * Don't free old version until called again incase other threads are using.
+ */
 void moloch_db_load_oui()
 {
     if (!config.ouiFile)
         return;
 
-    ouiTree = New_Patricia(48); // 48 - Ethernet Size
+    static patricia_tree_t   *ouiOld;
+    static int64_t            ouiModify;
+    static off_t              ouiSize;
+    struct stat               sb;
 
+    // Clean up old elements
+    if (ouiOld) {
+        Destroy_Patricia(ouiOld, g_free);
+        ouiOld = NULL;
+    }
+
+    if (stat(config.ouiFile, &sb) != 0) {
+        LOGEXIT("Couldn't stat ouiFile file %s error %s", config.ouiFile, strerror(errno));
+    }
+
+    if (sb.st_mtime <= ouiModify)
+        return;
+
+    if (ouiSize != sb.st_size && ouiTree) {
+        ouiSize = sb.st_size;
+        return;
+    }
+
+    ouiModify = sb.st_mtime;
+
+    if (ouiTree)
+        LOG("Loading new version of oui file");
+
+    // Load the data
+    patricia_tree_t *oui = New_Patricia(48); // 48 - Ethernet Size
     FILE *fp;
     char line[2000];
     if (!(fp = fopen(config.ouiFile, "r"))) {
@@ -1731,13 +1844,18 @@ void moloch_db_load_oui()
         patricia_node_t *node;
 
         prefix = New_Prefix2(AF_INET6, buf, bitlen, NULL);
-        node = patricia_lookup(ouiTree, prefix);
+        node = patricia_lookup(oui, prefix);
         Deref_Prefix(prefix);
         node->data = g_strdup(str);
 
         g_strfreev(parts);
     }
     fclose(fp);
+
+    // Save old tree to free later and flip to new tree
+    ouiOld  = ouiTree;
+    ouiTree = oui;
+    ouiSize = 0;
 }
 /******************************************************************************/
 void moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac)
@@ -1948,6 +2066,15 @@ int moloch_db_can_quit()
     return 0;
 }
 /******************************************************************************/
+gboolean moloch_db_reload_files_gfunc (gpointer UNUSED(user_data))
+{
+
+    moloch_db_load_geo();
+    //moloch_db_load_rir();
+    moloch_db_load_oui();
+    return TRUE;
+}
+/******************************************************************************/
 static guint timers[10];
 void moloch_db_init()
 {
@@ -1972,16 +2099,7 @@ void moloch_db_init()
 
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
-    int status;
-    status = MMDB_open(config.geoLite2Country, MMDB_MODE_MMAP, &geoCountry);
-    if (MMDB_SUCCESS != status) {
-        LOGEXIT("Couldn't initialize Country file %s error %s", config.geoLite2Country, MMDB_strerror(status));
-    }
-    status = MMDB_open(config.geoLite2ASN, MMDB_MODE_MMAP, &geoASN);
-    if (MMDB_SUCCESS != status) {
-        LOGEXIT("Couldn't initialize ASN file %s error %s", config.geoLite2ASN, MMDB_strerror(status));
-    }
-
+    moloch_db_load_geo();
     moloch_db_load_rir();
     moloch_db_load_oui();
 
@@ -1991,6 +2109,7 @@ void moloch_db_init()
         timers[2] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
         timers[3] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
         timers[4] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
+        timers[5] = g_timeout_add_seconds( 10, moloch_db_reload_files_gfunc, 0);
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {

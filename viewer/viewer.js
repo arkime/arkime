@@ -2646,6 +2646,8 @@ app.get('/stats.json', function(req, res) {
       fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
       fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
       fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+      fields.deltaSessionBytesPerSec    = Math.floor(fields.deltaSessionBytes * 1000.0/fields.deltaMS);
+      fields.sessionSizePerSec          = Math.floor(fields.deltaSessionBytes/fields.deltaSessions);
       fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
       fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
       fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
@@ -2699,6 +2701,8 @@ app.get('/dstats.json', function(req, res) {
     deltaBitsPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS * 8);}},
     deltaPacketsPerSec: {_source: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets * 1000.0/item.deltaMS);}},
     deltaSessionsPerSec: {_source: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions * 1000.0/item.deltaMS);}},
+    deltaSessionBytesPerSec: {_source: ["deltaSessionBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessionBytes * 1000.0/item.deltaMS);}},
+    sessionSizePerSec: {_source: ["deltaSessionBytes", "deltaSessions"], func: function(item) {return Math.floor(item.deltaSessionBytes/item.deltaSessions);}},
     deltaDroppedPerSec: {_source: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped * 1000.0/item.deltaMS);}},
     deltaFragsDroppedPerSec: {_source: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped * 1000.0/item.deltaMS);}},
     deltaOverloadDroppedPerSec: {_source: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped * 1000.0/item.deltaMS);}},

@@ -400,7 +400,6 @@ gboolean reader_libpcapfile_read()
     }
 
     int r;
-    moloch_packet_batch_init(&batch);
     if (pktsToRead > 0) {
         r = pcap_dispatch(pcap, MIN(pktsToRead, 5000), reader_libpcapfile_pcap_cb, NULL);
 
@@ -492,4 +491,5 @@ void reader_libpcapfile_init(char *UNUSED(name))
         reader_libpcapfile_init_monitor();
 
     DLL_INIT(s_, &monitorQ);
+    moloch_packet_batch_init(&batch);
 }
