@@ -26,8 +26,11 @@
         - name: ntop repo
           get_url: url=http://packages.ntop.org/centos-stable/ntop.repo dest=/etc/yum.repos.d/ntop.repo
 
+        - name: yum clean
+          shell: yum -y clean all && yum -y update
+
         - name: epel repo
-          yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ansible_distribution_major_version}}.noarch.rpm state=installed
+          yum: name=epel-release state=installed
 
         # On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel, but should
         - block:
@@ -102,7 +105,7 @@
       when: localsnf.stat.exists == True and remotesnf.stat.exists == False
 
     - name: rename snf
-      command: mv /opt/myri_snf-3.0.9.50782_d4d3de8ea-3342.x86_64 /opt/snf
+      command: mv /opt/myri_snf-3.0.13.50838_682bbf021-3398.x86_64 /opt/snf
       when: localsnf.stat.exists == True and remotesnf.stat.exists == False
 
 # Prepare build
