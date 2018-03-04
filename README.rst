@@ -31,19 +31,19 @@ SPI View Tab
 RPM & DEB Downloads
 ===================
 
-Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in
+http://molo.ch/#downloads
+
+Follow the directions in
 `/data/moloch/README.txt <https://raw.githubusercontent.com/aol/moloch/master/release/README.txt>`_
 after installing.  This is the recommended method to install and maintain Moloch.
 
-
-http://molo.ch/#downloads
 
 .. _quick-start:
 
 Building
 ========
 
-For advanced users, if you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ``make config`` can be used to install and configure moloch.  The RPM & DEB files are much easier to deal with then building yourself
+For advanced users, if you wish to build Moloch yourself run ``./easybutton-build.sh --install`` which will download all the prerequisites, build, and install.  ``make config`` can be used to perform a initial moloch configuration.  The RPM & DEB files are much easier to deal with then building yourself and are recommended.
 
 .. _components:
 
