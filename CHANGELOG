@@ -58,6 +58,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - trim spaces after spliting config values
   - capture - better pop3 detection
   - capture - correctly lowercase user
+  - release - added --install to easybutton (issue #812)
 
 
 0.50.0 2017/01/24

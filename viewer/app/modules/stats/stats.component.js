@@ -277,17 +277,18 @@
           this.loading  = false;
           this.stats    = response;
 
-          this.averageValues = {};
-          this.totalValues = {};
-          var stats = this.stats.data;
-
-          var columnNames = this.columns.map(function(item) {return item.field || item.sort;});
-          columnNames.push('memoryP');
-          columnNames.push('freeSpaceP');
+          let stats = this.stats.data;
 
           if (!stats) { return; }
 
-          for (var i = 3; i < columnNames.length; i++) {
+          this.averageValues = {};
+          this.totalValues = {};
+
+          let columnNames = this.columns.map(function(item) { return item.field || item.sort; });
+          columnNames.push('memoryP');
+          columnNames.push('freeSpaceP');
+
+          for (let i = 3; i < columnNames.length; i++) {
             var columnName = columnNames[i];
 
             this.totalValues[columnName] = 0;

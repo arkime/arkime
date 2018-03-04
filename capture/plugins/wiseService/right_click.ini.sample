@@ -1,10 +1,12 @@
-[right-click]
+# VT
 VT_IP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
 VT_Host=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host,fields:cert.alt
 VT_URL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url
 
-# Example of restricting a context lookup to specific users
-Secret_Query=url:https://secret.site.com/secret_query.php?ip=%TEXT%;name:SecretCaller;category:ip;users:admin,special_person_username
+# Passive Total
+PTHOST=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal Host;category:host
+PTIP=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal IP;category:ip
+PTEMAIL=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal User;category:user
 
 # Example of using custom fields as the value to perform context query
 VT_CERT_Host=url:https://www.virustotal.com/en/domain/%TEXT%/information/;fields:cert.alt,cert.issuer.cn,cert.subject.cn
@@ -12,17 +14,6 @@ VT_CERT_Host=url:https://www.virustotal.com/en/domain/%TEXT%/information/;fields
 # Examples of using REGEX to extract value from field
 PeeringDB_ASN=url:http://www.peeringdb.com/view.php?asn=%REGEX%;name:PeeringDB;category:asn;regex:^[Aa][Ss](\d+)
 RobTex_ASN=url:https://www.robtex.com/as/as%REGEX%.html;category:asn;regex:^[Aa][Ss](\d+)
-Int_IP=url:https://bl.a.h/handler_to_query_your_internal_ips_only.php?ip=%TEXT%;name:INTIP;category:ip;regex:(10\.\d+\.\d+\.\d+)
-
-# Query MD5: add your own target URLs
-MD5_example=url:https://bl.a.h/md5.php=%TEXT%;name:MD5;category:md5
-
-# Query MAC Addresses for manufacturer
-MAC_Lookup=url:http://www.coffer.com/mac_find/?string=%TEXT%;name:MAC;fields:mac.src,mac.dst
-
-# More examples, not functional target URLs. example configs only to demonstrate custom field specification
-SSL_Cert_SerialNum=url:https://bl.a.h/cert.php?sn=%TEXT%;name:CSN;fields:cert.serial
-Decode_HEX=url:https://bl.a.h/hexdecode.php?sn=%TEXT%;name:HEXD;fields:payload8.src.hex,payload8.dst.hex
 
 
 # Bunch of operational boilerplate config
@@ -44,3 +35,20 @@ TotalHash_Host=url:http://totalhash.com/search/dnsrr:%HOST%;category:host
 TotalHash_CERT_Host=url:http://totalhash.com/search/dnsrr:%HOST%;fields:cert.alt,cert.issuer.cn,cert.subject.cn
 URLQuery_Host=url:https://urlquery.net/search.php?type=string&q=%HOST%&start=2015-01-01;category:host
 URLQuery_URL=url:https://urlquery.net/search.php?type=string&q=%URL%&start=2015-01-01;category:url
+
+
+# These are just examples, don't use in prod
+#Int_IP=url:https://bl.a.h/handler_to_query_your_internal_ips_only.php?ip=%TEXT%;name:INTIP;category:ip;regex:(10\.\d+\.\d+\.\d+)
+
+# Query MD5: add your own target URLs
+#MD5_example=url:https://bl.a.h/md5.php=%TEXT%;name:MD5;category:md5
+
+# Query MAC Addresses for manufacturer
+#MAC_Lookup=url:http://www.coffer.com/mac_find/?string=%TEXT%;name:MAC;fields:mac.src,mac.dst
+
+# More examples, not functional target URLs. example configs only to demonstrate custom field specification
+#SSL_Cert_SerialNum=url:https://bl.a.h/cert.php?sn=%TEXT%;name:CSN;fields:cert.serial
+#Decode_HEX=url:https://bl.a.h/hexdecode.php?sn=%TEXT%;name:HEXD;fields:payload8.src.hex,payload8.dst.hex
+
+# Example of restricting a context lookup to specific users
+#Secret_Query=url:https://secret.site.com/secret_query.php?ip=%TEXT%;name:SecretCaller;category:ip;users:admin,special_person_username
