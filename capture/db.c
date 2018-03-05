@@ -1731,7 +1731,7 @@ void moloch_db_check()
     int                key_len;
     unsigned char     *data;
 
-    key_len = snprintf(key, sizeof(key), "/%sdstats/version/version/_source", config.prefix);
+    key_len = snprintf(key, sizeof(key), "/%sversions/version/version/_source", config.prefix);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
