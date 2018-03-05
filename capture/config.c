@@ -17,8 +17,11 @@
  */
 
 #include "moloch.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <errno.h>
 
 extern MolochConfig_t        config;
 
@@ -631,6 +634,73 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
     }
     g_strfreev(keys);
 }
+
+/******************************************************************************/
+typedef struct {
+    char                 *desc;
+    char                 *name;
+    MolochFileChange_cb   cb;
+    off_t                 size;
+    int64_t               modify;
+    char                  freeOld;
+} MolochFileChange_t;
+
+LOCAL int                numFiles;
+LOCAL MolochFileChange_t files[100];
+/******************************************************************************/
+void moloch_config_monitor_file(char *desc, char *name, MolochFileChange_cb cb)
+{
+    struct stat     sb;
+
+    if (numFiles >= 100)
+        LOGEXIT("Couldn't monitor anymore files %s %s", desc, name);
+
+    if (stat(name, &sb) != 0) {
+        LOGEXIT("Couldn't stat %s file %s error %s", desc, name, strerror(errno));
+    }
+
+    files[numFiles].desc = g_strdup(desc);
+    files[numFiles].name = g_strdup(name);
+    files[numFiles].cb = cb;
+    files[numFiles].modify = sb.st_mtime;
+    numFiles++;
+    cb(name);
+}
+/******************************************************************************/
+gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
+{
+    int             i;
+    struct stat     sb;
+
+    for (i = 0; i < numFiles; i++) {
+        if (files[i].freeOld) {
+            if (config.debug)
+                LOG("Free old %s %s", files[i].desc, files[i].name);
+            files[i].cb(NULL);
+            files[i].freeOld = 0;
+        }
+
+        if (stat(files[i].name, &sb) != 0) {
+            LOG("Couldn't stat %s file %s error %s", files[i].desc, files[i].name, strerror(errno));
+            continue;
+        }
+
+        if (sb.st_mtime > files[i].modify) {
+            if (files[i].size != sb.st_size) {
+                files[i].size = sb.st_size;
+                continue;
+            }
+            if (config.debug)
+                LOG("Load new %s %s", files[i].desc, files[i].name);
+            files[i].cb(files[i].name);
+            files[i].freeOld = 1;
+            files[i].size = 0;
+            files[i].modify = sb.st_mtime;
+        }
+    }
+
+    return TRUE;
+}
 /******************************************************************************/
 void moloch_config_init()
 {
@@ -655,6 +725,10 @@ void moloch_config_init()
     if (!config.pcapDir) {
         printf("Must set a pcapDir to save files to\n");
         exit(1);
+    }
+
+    if (!config.dryRun) {
+        g_timeout_add_seconds( 10, moloch_config_reload_files, 0);
     }
 }
 /******************************************************************************/

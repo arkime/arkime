@@ -684,6 +684,9 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
+typedef void (*MolochFileChange_cb)(char *name);
+void moloch_config_monitor_file(char *desc, char *name, MolochFileChange_cb cb);
+
 
 
 /******************************************************************************/
