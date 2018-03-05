@@ -77,7 +77,7 @@ exports.initialize = function (info, cb) {
       throw new Error("Exiting");
     }
     exports.isES5 = data.version.number.match(/^5/);
-
+    exports.isES6 = data.version.number.match(/^6/);
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
         host: internals.info.usersHost,
@@ -477,7 +477,7 @@ exports.healthCache = function (cb) {
         return cb(err, null);
       }
 
-      exports.get("dstats", "version", "version", (err, doc) => {
+      exports.get("versions", "version", "version", (err, doc) => {
         if (doc !== undefined && doc._source !== undefined) {
           health.molochDbVersion = doc._source.version;
         }
@@ -687,7 +687,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     });
   });
 
-  exports.get("dstats", "version", "version", (err, doc) => {
+  exports.get("version", "version",  "version", (err, doc) => {
     var version;
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);

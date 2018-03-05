@@ -3548,7 +3548,7 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
     query._source = ["by", "db", "pa", "no"];
-    if (Db.isES5) {
+    if (Db.isES5 || Db.isES6) {
       query.docvalue_fields = [fsrc, fdst];
     } else {
       query.fields = [fsrc, fdst];
