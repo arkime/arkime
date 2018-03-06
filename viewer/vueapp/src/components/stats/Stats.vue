@@ -115,7 +115,7 @@
       <span v-if="tabIndex === 0"
         v-b-tooltip.hover
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
-        title="HINT: This graph is 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
+        title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
       <b-tabs v-model="tabIndex">
         <b-tab title="Node"

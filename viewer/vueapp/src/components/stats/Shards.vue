@@ -1,44 +1,49 @@
 <template>
 
   <div>
+
     <table v-if="!error && stats"
+
       class="table table-sm table-striped">
-      <thead class="small">
+      <thead>
         <tr>
-          <!-- TODO no min width -->
           <th v-for="column in columns"
             :key="column.name"
-            style="min-width:90px"
             class="hover-menu">
-            {{ column.name }}
-            <!-- column dropdown menu -->
-            <b-dropdown size="sm"
-              class="ml-2 column-actions-btn"
-              v-has-permission="'createEnabled'">
-              <b-dropdown-item v-if="!column.nodeExcluded"
-                @click="exclude('node', column.name)">
-                Exclude node {{ column.name }}
-              </b-dropdown-item>
-              <b-dropdown-item v-if="column.nodeExcluded"
-                @click="include('node', column.name)">
-                Include node {{ column.name }}
-              </b-dropdown-item>
-              <b-dropdown-item v-if="!column.ipExcluded"
-                @click="exclude('ip', column.ip)">
-                Exclude IP {{ column.ip }}
-              </b-dropdown-item>
-              <b-dropdown-item v-if="column.ipExcluded"
-                @click="include('ip', column.ip)">
-                Include IP {{ column.ip }}
-              </b-dropdown-item>
-            </b-dropdown> <!-- /column dropdown menu -->
+            <div>
+              <!-- column dropdown menu -->
+              <b-dropdown size="sm"
+                v-if="column.hasDropdown"
+                class="column-actions-btn pull-right"
+                v-has-permission="'createEnabled'">
+                <b-dropdown-item v-if="!column.nodeExcluded"
+                  @click="exclude('name', column)">
+                  Exclude node {{ column.name }}
+                </b-dropdown-item>
+                <b-dropdown-item v-if="column.nodeExcluded"
+                  @click="include('name', column)">
+                  Include node {{ column.name }}
+                </b-dropdown-item>
+                <b-dropdown-item v-if="!column.ipExcluded"
+                  @click="exclude('ip', column)">
+                  Exclude IP {{ column.ip }}
+                </b-dropdown-item>
+                <b-dropdown-item v-if="column.ipExcluded"
+                  @click="include('ip', column)">
+                  Include IP {{ column.ip }}
+                </b-dropdown-item>
+              </b-dropdown> <!-- /column dropdown menu -->
+              <div class="header-text">
+                {{ column.name }}
+              </div>
+            </div>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="stat in stats.indices"
           :key="stat.name">
-          <td class="no-wrap">
+          <td>
             {{ stat.name }}
           </td>
           <td v-for="node in nodes"
@@ -88,9 +93,9 @@
       </tbody>
     </table>
 
-    <error v-if="error"
-      message="error">
-    </error>
+    <moloch-error v-if="error"
+      :message="error">
+    </moloch-error>
 
   </div>
 
@@ -112,7 +117,7 @@ export default {
       stats: {},
       nodes: {},
       columns: [
-        { name: 'Index', sort: 'action', doClick: false }
+        { name: 'Index', sort: 'action', doClick: false, hasDropdown: false }
       ]
     };
   },
@@ -128,6 +133,7 @@ export default {
     loadData: function () {
       this.$http.get('esshard/list')
         .then((response) => {
+          this.error = '';
           this.loading = false;
           this.stats = response.data;
 
@@ -139,14 +145,15 @@ export default {
 
           for (var node of this.nodes) {
             if (node === 'Unassigned') {
-              this.columns.push({ name: node, doClick: false });
+              this.columns.push({ name: node, doClick: false, hasDropdown: false });
             } else {
               this.columns.push({
                 name: node,
                 doClick: (node.indexOf('->') === -1),
                 ip: response.data.nodes[node].ip,
                 ipExcluded: response.data.nodes[node].ipExcluded,
-                nodeExcluded: response.data.nodes[node].nodeExcluded
+                nodeExcluded: response.data.nodes[node].nodeExcluded,
+                hasDropdown: true
               });
             }
           }
@@ -155,13 +162,29 @@ export default {
           this.loading = false;
         });
     },
-    exclude: function (type, value) {
-      // TODO
-      console.log('TODO: exclude');
+    exclude: function (type, column) {
+      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = true;
+          } else {
+            column.ipExcluded = true;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
     },
-    include: function (type, value) {
-      // TODO
-      console.log('TODO: include');
+    include: function (type, column) {
+      this.$http.post(`esshard/include/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = false;
+          } else {
+            column.ipExcluded = false;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
     }
   },
   beforeDestroy: function () {
@@ -173,17 +196,44 @@ export default {
 };
 </script>
 <style>
-table .hover-menu > .btn-group.column-actions-btn > .btn-sm {
-  padding: 0 .35rem;
+table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
+  padding: 1px 4px;
+  font-size: 13px;
+  line-height: 1.2;
 }
 </style>
 
 <style scoped>
-table .hover-menu:hover .btn-group {
+table > thead > tr > th {
+  border-top: none;
+}
+
+.table .hover-menu {
+  vertical-align: top;
+  min-width: 100px;
+}
+.table .hover-menu:hover .btn-group {
   visibility: visible;
 }
-table .hover-menu .btn-group {
+
+.table .hover-menu .btn-group {
   visibility: hidden;
+  margin-left: -20px !important;
+  position: relative;
+  top: 2px;
+  right: 2px;
+}
+
+.table .hover-menu .header-text {
+  display: inline-block;
+  width: 100%;
+  word-break: break-word;
+}
+
+.table tbody > tr > td:first-child {
+  width:1px;
+  white-space:nowrap;
+  padding-right: .5rem;
 }
 
 .badge {

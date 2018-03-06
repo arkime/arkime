@@ -88,12 +88,13 @@
   background-color: var(--color-primary);
 }
 
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:hover,
-.nav-tabs > li.active > a:focus {
+.nav-tabs > li.nav-item > a.nav-link.active,
+.nav-tabs > li.nav-item > a.nav-link.active:hover,
+.nav-tabs > li.nav-item > a.nav-link.active:focus {
   color               : var(--color-foreground);
   background-color    : var(--color-background);
   border-bottom-color : var(--color-background, #fff);
+  font-weight: bold;
 }
 
 
@@ -139,37 +140,34 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   overflow-x: hidden;
 }
 
-/* give dropdowns theme color */
+/* give dropdowns theme color and make them more condensed */
 .dropdown-menu {
   background-color: var(--color-background, #FFF);
-  border-color    : var(--color-gray-light);
+  border-color: var(--color-gray-light);
+  padding: 2px 0;
+  font-size: .85rem;
 }
-.dropdown-menu > li > a {
+.dropdown-menu > .dropdown-item {
   color: var(--color-foreground);
+  padding: 2px 8px;
 }
 
-ul.dropdown-menu li:hover,
-ul.dropdown-menu div li:hover,
-ul.dropdown-menu > li > div:hover,
-ul.dropdown-menu > li > div:focus {
+.dropdown-menu > a.dropdown-item:hover,
+.dropdown-menu > a.dropdown-item:focus {
   background-color: var(--color-gray-light);
 }
-ul.dropdown-menu li.active a,
-ul.dropdown-menu > li.active > a,
-ul.dropdown-menu div li.active,
-ul.dropdown-menu > .active > div,
-ul.dropdown-menu > .active > div:hover,
-ul.dropdown-menu > .active > div:focus {
+.dropdown-menu > a.dropdown-item.active,
+.dropdown-menu > a.dropdown-item.active:hover,
+.dropdown-menu > a.dropdown-item.active:focus {
   background-color: var(--color-primary);
 }
-ul.dropdown-menu li.active a,
-ul.dropdown-menu > li.active > a,
-ul.dropdown-menu div li.active a,
-ul.dropdown-menu > .active > div a,
-ul.dropdown-menu > .active > div:focus a {
+.dropdown-menu li.active a,
+.dropdown-menu > li.active > a,
+.dropdown-menu div li.active a,
+.dropdown-menu > .active > div a,
+.dropdown-menu > .active > div:focus a {
   color: #FFF !important;
 }
-
 
 /* give cards theme color */
 .card {

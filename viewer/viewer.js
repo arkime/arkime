@@ -2412,10 +2412,10 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown exclude type");
+      return res.molochError(403, 'Unknown exclude type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2426,7 +2426,7 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
       exclude.push(req.params.value);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
@@ -2444,10 +2444,10 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown include type");
+      return res.molochError(403, 'Unknown include type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2459,7 +2459,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
       exclude.splice(pos, 1);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
