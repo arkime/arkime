@@ -15,10 +15,11 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.0.0-beta2 2018/02/xx
+1.0.0-beta2 2018/03/xx
   - capture - decode some dhcp
   - capture - tag a tls session with cert:self-signed
-  - capture - reload geo and oui files without restarting (issue #692)
+  - capture - reload geo, rir, yara and oui files without restarting (issue #692)
+  - capture - remove yara 1.x support
 
 1.0.0-beta1 2018/02/20
   - capture - calculate sha256 too (set supportSha256 tru)
@@ -58,6 +59,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - trim spaces after spliting config values
   - capture - better pop3 detection
   - capture - correctly lowercase user
+  - release - added --install to easybutton (issue #812)
 
 
 0.50.0 2017/01/24

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Use this script to install OS dependencies, downloading and compile moloch dependencies, and compile moloch capture.
+# Use this script to install OS dependencies, downloading and compile moloch dependencies, compile moloch capture, optionally install
 
 # This script will
 # * use apt-get/yum to install OS dependancies
@@ -7,6 +7,8 @@
 # * build them statically
 # * configure moloch-capture to use them
 # * build moloch-capture
+# * install node unless --nonode
+# * install moloch if --install
 
 
 GLIB=2.54.3
@@ -23,6 +25,7 @@ DOPFRING=0
 DODAQ=0
 DOCLEAN=0
 DONODE=1
+DOINSTALL=0
 
 while :
 do
@@ -41,6 +44,10 @@ do
     ;;
   --clean)
     DOCLEAN=1
+    shift
+    ;;
+  --install)
+    DOINSTALL=1
     shift
     ;;
   --nonode)
@@ -178,7 +185,7 @@ fi
 
 if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
   tar zxf curl-$CURL.tar.gz
-  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp; $MAKE)
+  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
@@ -263,6 +270,13 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     (cd $TDIR/bin ; sudo ln -s ../node-v$NODE-linux-x64/bin/* .)
 fi
 
-echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"
+if [ $DOINSTALL -eq 1 ]; then
+    export PATH=$TDIR/bin:$PATH
+    sudo make install
+    echo "MOLOCH: Installed, now type sudo make config'"
+else
+    echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"
+fi
+
 
 exit 0

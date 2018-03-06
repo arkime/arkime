@@ -3597,11 +3597,14 @@ app.get('/unique.txt', logAction(), function(req, res) {
   /* How should each item be processed. */
   var eachCb = writeCb;
 
-    if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field === "srcIp:srtPort" ||
-        req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field === "dstIp:dstPort") {
+  if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
     eachCb = function(item, cb) {
       item.field2.buckets.forEach(function (item2) {
-        item2.key = item.key + ":" + item2.key;
+        if (item.key.indexOf(":") === -1) {
+          item2.key = item.key + ":" + item2.key;
+        } else {
+          item2.key = item.key + "." + item2.key;
+        }
         writeCb(item2, function() {});
       });
       cb();
@@ -3651,9 +3654,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
         });
       });
     } else {
-      if (req.query.field === "ip.src:port.src" || req.query.field === "a1:p1" || req.query.field === "srcIp:srtPort") {
+      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort)/)) {
         query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
-      } else if (req.query.field === "ip.dst:port.dst" || req.query.field === "a2:p2" || req.query.field === "dstIp:dstPort") {
+      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
         query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
       } else  {
         query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
