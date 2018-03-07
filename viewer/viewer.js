@@ -3576,12 +3576,9 @@ app.get('/unique.txt', logAction(), function(req, res) {
 
   if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
     eachCb = function(item) {
-      item.field2.buckets.forEach(function (item2) {
-        if (item.key.indexOf(":") === -1) {
-          item2.key = item.key + ":" + item2.key;
-        } else {
-          item2.key = item.key + "." + item2.key;
-        }
+      var sep = (item.key.indexOf(":") === -1)? ':' : '.';
+      item.field2.buckets.forEach((item2) => {
+        item2.key = item.key + sep + item2.key;
         writeCb(item2);
       });
     };
