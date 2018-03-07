@@ -65,10 +65,10 @@
               <td>{{ totalValues.searches | round(0) | commaString }}</td>
             </tr>
           </template>
-
           <tr v-for="stat of stats.data"
             :key="stat.name">
             <td class="hover-menu">
+              <!-- column dropdown menu -->
               <b-dropdown size="sm"
                 class="row-actions-btn pull-left"
                 v-has-permission="'createEnabled'">
@@ -161,10 +161,10 @@ export default {
       query: {
         filter: null,
         sortField: 'nodeName',
-        desc: true
+        desc: false
       },
-      columns: [ // node stats table columns
-        { name: 'Name', sort: 'name', doStats: false },
+      columns: [ // es stats table columns
+        { name: 'Name', sort: 'nodeName', doStats: false },
         { name: 'Documents', sort: 'docs', doStats: true },
         { name: 'Disk Storage', sort: 'storeSize', doStats: true },
         { name: 'Heap Size', sort: 'heapSize', doStats: true },

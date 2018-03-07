@@ -136,7 +136,10 @@
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
-          TODO: ES Indices
+          <es-indices v-if="user && tabIndex === 2"
+            :data-interval="dataInterval"
+            :user="user">
+          </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
           @click="tabIndexChange()">
@@ -159,6 +162,7 @@
 <script>
 import Shards from './Shards';
 import EsStats from './EsStats';
+import EsIndices from './EsIndices';
 import NodeStats from './NodeStats';
 import UserService from '../UserService';
 export default {
@@ -174,7 +178,7 @@ export default {
     };
   },
   components: {
-    NodeStats, Shards, EsStats
+    NodeStats, Shards, EsStats, EsIndices
   },
   created: function () {
     this.loadUser();
