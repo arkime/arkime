@@ -21,7 +21,7 @@
           class="form-control"
           v-model="query.filter"
           @keyup="searchForES()"
-          placeholder="Begin typing to search for ES indices (hint: this input accepts regex)">
+          placeholder="Begin typing to search for ES tasks (hint: this input accepts regex)">
       </div>
 
       <table class="table table-sm text-right small mt-3">
@@ -38,18 +38,26 @@
                 <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
               </span>
             </th>
+            <th>&nbsp;</th>
           </tr>
         </thead>
         <tbody v-if="stats">
           <tr v-for="stat of stats.data"
             :key="stat.name">
-            <td>{{ stat.index }}</td>
-            <td>{{ stat['docs.count'] | round(0) | commaString }}</td>
-            <td>{{ stat['store.size'] | humanReadable }}%</td>
-            <td>{{ stat.pir | round(0) | commaString }}</td>
-            <td>{{ stat.rep| round(0) | commaString }}</td>
-            <td>{{ stat.health }}</td>
-            <td>{{ stat.status }}</td>
+            <td>{{ stat.action }}</td>
+            <td>{{ stat.description }}</td>
+            <td>{{ stat.start_time_in_millis/1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z')  }}%</td>
+            <td>{{ stat.running_time_in_nanos/1000000 | round(1) | commaString }}</td>
+            <td>{{ stat.childrenCount | round(0) | commaString }}</td>
+            <td>
+              <a v-if="stat.cancellable"
+                class="btn btn-sm btn-danger"
+                @click="cancelTask(stat.taskId)"
+                v-b-tooltip.hover
+                title="Cancel task">
+                <span class="fa fa-trash-o"></span>
+              </a>
+            </td>
           </tr>
           <tr v-if="stats.data && !stats.data.length">
             <td :colspan="columns.length"
@@ -75,7 +83,7 @@ let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
-  name: 'EsIndices',
+  name: 'EsTasks',
   props: [ 'user', 'dataInterval' ],
   components: { MolochError, MolochLoading },
   data: function () {
@@ -87,17 +95,15 @@ export default {
       averageValues: null,
       query: {
         filter: null,
-        sortField: 'index',
+        sortField: 'action',
         desc: false
       },
       columns: [ // es indices table columns
-        { name: 'Name', sort: 'index', doStats: false },
-        { name: 'Documents', sort: 'docs.count', doStats: true },
-        { name: 'Disk Size', sort: 'store.size', doStats: true },
-        { name: 'Shards', sort: 'pri', doStats: true },
-        { name: 'Replicas', sort: 'rep', doStats: true },
-        { name: 'Health', sort: 'health', doStats: false },
-        { name: 'Status', sort: 'status', doStats: false }
+        { name: 'Action', sort: 'action', doStats: false },
+        { name: 'Description', sort: 'description', doStats: true },
+        { name: 'Start Time', sort: 'start_time_in_millis', doStats: true },
+        { name: 'Running Time', sort: 'running_time_in_nanos', doStats: true },
+        { name: 'Children', sort: 'childrenCount', doStats: false }
       ]
     };
   },
@@ -138,9 +144,12 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
+    cancelTask (taskId) {
+      this.$http.post('estask/cancel', { taskId: taskId });
+    },
     /* helper functions ------------------------------------------ */
     loadData: function () {
-      this.$http.get('esindices/list', { params: this.query })
+      this.$http.get('estask/list', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
