@@ -2,8 +2,14 @@
 
   <div>
 
-    <table v-if="!error && stats"
+    <moloch-loading v-if="loading && !error">
+    </moloch-loading>
 
+    <moloch-error v-if="error"
+      :message="error">
+    </moloch-error>
+
+    <table v-if="!error && stats"
       class="table table-sm table-striped">
       <thead>
         <tr>
@@ -94,22 +100,19 @@
       </tbody>
     </table>
 
-    <moloch-error v-if="error"
-      :message="error">
-    </moloch-error>
-
   </div>
 
 </template>
 
 <script>
 import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 
 export default {
   name: 'Shards',
-  components: { MolochError },
+  components: { MolochError, MolochLoading },
   props: [ 'user', 'dataInterval' ],
   data: function () {
     return {
