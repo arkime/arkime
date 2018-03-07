@@ -379,14 +379,14 @@ function parseIpPort(yy, field, ipPortStr) {
   if (colons.length > 2) {
     // Everything after . is port
     let dots = ipPortStr.split('.');
-    if (dots.length > 1) {
+    if (dots.length > 1 && dots[1] !== '') {
       port = +dots[1];
     }
     // Everything before . is ip and slash
     ip = dots[0];
   } else {
     // everything after : is port
-    if (colons.length > 1) {
+    if (colons.length > 1 && colons[1] !== '') {
       port = +colons[1];
     }
 
