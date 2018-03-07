@@ -1937,7 +1937,7 @@ function buildSessionQuery(req, buildCb) {
       return buildCb(err || lerr, query, "sessions2-*");
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), req.query.bounding || "last", function(indices) {
       return buildCb(err || lerr, query, indices);
     });
   });
@@ -3544,6 +3544,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
   var writes = 0;
   var items = [];
   var aggSize = 1000000;
+
   if (req.query.autocomplete !== undefined) {
     if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
       res.send([]);
@@ -3559,38 +3560,20 @@ app.get('/unique.txt', logAction(), function(req, res) {
       }
     }
 
-    aggSize = 1000;
+    aggSize = 1000; // lower agg size for autocomplete
     doneCb = function() {
       res.send(items);
     };
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       items.push(item.key);
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   } else if (parseInt(req.query.counts, 10) || 0) {
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       res.write("" + item.key + ", " + item.doc_count + "\n");
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   } else {
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       res.write("" + item.key + "\n");
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   }
 
@@ -3598,16 +3581,12 @@ app.get('/unique.txt', logAction(), function(req, res) {
   var eachCb = writeCb;
 
   if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
-    eachCb = function(item, cb) {
-      item.field2.buckets.forEach(function (item2) {
-        if (item.key.indexOf(":") === -1) {
-          item2.key = item.key + ":" + item2.key;
-        } else {
-          item2.key = item.key + "." + item2.key;
-        }
-        writeCb(item2, function() {});
+    eachCb = function(item) {
+      var sep = (item.key.indexOf(":") === -1)? ':' : '.';
+      item.field2.buckets.forEach((item2) => {
+        item2.key = item.key + sep + item2.key;
+        writeCb(item2);
       });
-      cb();
     };
   }
 
@@ -3615,71 +3594,32 @@ app.get('/unique.txt', logAction(), function(req, res) {
     delete query.sort;
     delete query.aggregations;
 
-    if (req.query.field.match(/^(rawus|rawua)$/)) {
-      var field = req.query.field.substring(3);
-      query.size   = 200000;
-
-      query._source = [field];
-
-      query.query.bool.filter.push({exists: {field: field}});
-
-      console.log("unique query", indices, JSON.stringify(query));
-      Db.searchPrimary(indices, 'session', query, function(err, result) {
-        console.log(err);
-        var counts = {};
-
-        // Count up hits
-        var hits = result.hits.hits;
-        for (let i = 0, ilen = hits.length; i < ilen; i++) {
-          var fields = hits[i]._source || hits[i].fields;
-          var avalue = fields[field];
-          if (Array.isArray(avalue)) {
-            for (var j = 0, jlen = avalue.length; j < jlen; j++) {
-              var value = avalue[j];
-              counts[value] = (counts[value] || 0) + 1;
-            }
-          } else {
-            counts[avalue] = (counts[avalue] || 0) + 1;
-          }
-        }
-
-        // Change to aggregations looking array
-        var aggregations = [];
-        for (var key in counts) {
-          aggregations.push({key: key, doc_count: counts[key]});
-        }
-
-        async.forEachSeries(aggregations, eachCb, function () {
-          return doneCb?doneCb():res.end();
-        });
-      });
-    } else {
-      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort)/)) {
-        query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
-      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
-        query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
-      } else  {
-        query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
-      }
-      query.size = 0;
-      console.log("unique aggregations", indices, JSON.stringify(query));
-      Db.searchPrimary(indices, 'session', query, function(err, result) {
-        if (err) {
-          console.log("Error", query, err);
-          return doneCb?doneCb():res.end();
-        }
-        if (Config.debug) {
-          console.log("unique.txt result", util.inspect(result, false, 50));
-        }
-        if (!result.aggregations || !result.aggregations.field) {
-          return doneCb?doneCb():res.end();
-        }
-
-        async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
-          return doneCb?doneCb():res.end();
-        });
-      });
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort)/)) {
+      query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
+    } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+      query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
+    } else  {
+      query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
     }
+    query.size = 0;
+    console.log("unique aggregations", indices, JSON.stringify(query));
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err) {
+        console.log("Error", query, err);
+        return doneCb?doneCb():res.end();
+      }
+      if (Config.debug) {
+        console.log("unique.txt result", util.inspect(result, false, 50));
+      }
+      if (!result.aggregations || !result.aggregations.field) {
+        return doneCb?doneCb():res.end();
+      }
+
+      for (var i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
+        eachCb(result.aggregations.field.buckets[i]);
+      }
+      return doneCb?doneCb():res.end();
+    });
   });
 });
 
@@ -5825,7 +5765,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), "last", function(indices) {
 
       // There are no matching indices, continue while loop
       if (indices === "sessions2-*") {
