@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div class="ml-1 mr-1">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
