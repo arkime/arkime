@@ -12,7 +12,8 @@
             class="hover-menu">
             <div>
               <!-- column dropdown menu -->
-              <b-dropdown size="sm"
+              <b-dropdown right
+                size="sm"
                 v-if="column.hasDropdown"
                 class="column-actions-btn pull-right"
                 v-has-permission="'createEnabled'">
@@ -120,6 +121,19 @@ export default {
         { name: 'Index', sort: 'action', doClick: false, hasDropdown: false }
       ]
     };
+  },
+  watch: {
+    dataInterval: function () {
+      if (reqPromise) { // cancel the interval and reset it if necessary
+        clearInterval(reqPromise);
+
+        if (this.dataInterval === '0') { return; }
+
+        reqPromise = setInterval(() => {
+          this.loadData();
+        }, parseInt(this.dataInterval, 10));
+      }
+    }
   },
   created: function () {
     this.loadData();
