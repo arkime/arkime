@@ -1937,7 +1937,7 @@ function buildSessionQuery(req, buildCb) {
       return buildCb(err || lerr, query, "sessions2-*");
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), req.query.bounding || "last", function(indices) {
       return buildCb(err || lerr, query, indices);
     });
   });
@@ -5686,7 +5686,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), "last", function(indices) {
 
       // There are no matching indices, continue while loop
       if (indices === "sessions2-*") {
