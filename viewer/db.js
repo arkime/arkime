@@ -743,3 +743,11 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, bounding, cb) {
     return cb(indices.join());
   });
 };
+
+exports.getMinValue = function(index, field, cb) {
+  var params = {index: fixIndex(index), body: {size: 0, aggs: {min: {min: {field: field}}}}};
+  return internals.elasticSearchClient.search(params, (err, data) => {
+    if (err) {return cb(err, 0)};
+    return cb(null, data.aggregations.min.value);
+  });
+};

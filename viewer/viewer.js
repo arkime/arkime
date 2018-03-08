@@ -77,8 +77,9 @@ var internals = {
   pluginEmitter: new EventEmitter(),
   writers: {},
 
-  cronTimeout: Math.max(+Config.get("tcpTimeout", 8*60), +Config.get("udpTimeout", 60), +Config.get("icmpTimeout", 10)) +
-               parseInt(Config.get("dbFlushTimeout", 5), 10) + 60 + 5,
+  cronTimeout: +Config.get("dbFlushTimeout", 5) + // How long capture holds items
+               60 +                               // How long before ES reindexs
+               20,                                // Transmit and extra time
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -1215,28 +1216,36 @@ app.post('/user/cron/create', [checkCookieToken, logAction(), postSettingUser], 
 
   var userId = req.settingUser.userId;
 
-  if (req.body.since === '-1') {
-    document.doc.lpValue =  document.doc.lastRun = 0;
-  } else {
-    document.doc.lpValue =  document.doc.lastRun =
-       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10);
-  }
-  document.doc.count = 0;
-  document.doc.creator = userId || 'anonymous';
+  Db.getMinValue("sessions2-*", "timestamp", (err, minTimestamp) => {
+    if (err || minTimestamp === 0 || minTimestamp === null) {
+      minTimestamp = Math.floor(Date.now()/1000);
+    } else {
+      minTimestamp = Math.floor(minTimestamp/1000);
+    }
 
-  Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
-    if (err) {
-      console.log('/user/cron/create error', err, info);
-      return res.molochUser(500, 'Create cron query failed');
+    if (+req.body.since === -1) {
+      document.doc.lpValue =  document.doc.lastRun = minTimestamp;
+    } else {
+      document.doc.lpValue =  document.doc.lastRun =
+         Math.max(minTimestamp, Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10));
     }
-    if (Config.get('cronQueries', false)) {
-      processCronQueries();
-    }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Created cron query successfully',
-      key     : info._id
-    }));
+    document.doc.count = 0;
+    document.doc.creator = userId || 'anonymous';
+
+    Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+      if (err) {
+        console.log('/user/cron/create error', err, info);
+        return res.molochError(500, 'Create cron query failed');
+      }
+      if (Config.get('cronQueries', false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created cron query successfully',
+        key     : info._id
+      }));
+    });
   });
 });
 
@@ -5762,8 +5771,8 @@ app.use(function (req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 
 /* Process a single cron query.  At max it will process 24 hours worth of data
- * to give other queries a chance to run.  It searches for the first time range
- * where there is an available index.
+ * to give other queries a chance to run.  Because its timestamp based and not
+ * lastPacket based since 1.0 it now search all indices each time.
  */
 function processCronQuery(cq, options, query, endTime, cb) {
   if (Config.debug > 2) {
@@ -5775,75 +5784,65 @@ function processCronQuery(cq, options, query, endTime, cb) {
   async.doWhilst(function(whilstCb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
-    query.query.bool.filter[0] = {range: {lastPacket: {gt: cq.lpValue, lte: singleEndTime}}};
+    query.query.bool.filter[0] = {range: {timestamp: {gte: cq.lpValue*1000, lt: singleEndTime*1000}}};
 
     if (Config.debug > 2) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), "last", function(indices) {
+    Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
+      function doNext() {
+        count += result.hits.hits.length;
 
-      // There are no matching indices, continue while loop
-      if (indices === "sessions2-*") {
-        cq.lpValue += 24*60*60;
-        return setImmediate(whilstCb, null);
+        // No more data, all done
+        if (result.hits.hits.length === 0) {
+          return setImmediate(whilstCb, "DONE");
+        } else {
+          var document = { doc: { count: (query.count || 0) + count} };
+          Db.update("queries", "query", options.qid, document, {refresh: true}, function () {});
+        }
+
+        query = {
+          body: {
+            scroll_id: result._scroll_id,
+          },
+          scroll: '600s'
+        };
+
+        Db.scroll(query, getMoreUntilDone);
       }
 
-      // We have found some indices, now scroll thru ES
-      Db.search(indices, 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
-        function doNext() {
-          count += result.hits.hits.length;
+      if (err || result.error) {
+        console.log("cronQuery error", err, (result?result.error:null), "for", cq);
+        return setImmediate(whilstCb, "ERR");
+      }
 
-          // No more data, all done
-          if (result.hits.hits.length === 0) {
-            return setImmediate(whilstCb, "DONE");
-          } else {
-            var document = { doc: { count: (query.count || 0) + count} };
-            Db.update("queries", "query", options.qid, document, {refresh: true}, function () {});
-          }
-
-          query = {
-            body: {
-              scroll_id: result._scroll_id,
-            },
-            scroll: '600s'
-          };
-
-          Db.scroll(query, getMoreUntilDone);
+      var ids = [];
+      var hits = result.hits.hits;
+      var i, ilen;
+      if (cq.action.indexOf("forward:") === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push({id: hits[i]._id, node: hits[i]._source.node});
         }
 
-        if (err || result.error) {
-          console.log("cronQuery error", err, (result?result.error:null), "for", cq);
-          return setImmediate(whilstCb, "ERR");
+        sendSessionsListQL(options, ids, doNext);
+      } else if (cq.action.indexOf("tag") === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push(hits[i]._id);
         }
 
-        var ids = [];
-        var hits = result.hits.hits;
-        var i, ilen;
-        if (cq.action.indexOf("forward:") === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push({id: hits[i]._id, node: hits[i]._source.node});
-          }
-
-          sendSessionsListQL(options, ids, doNext);
-        } else if (cq.action.indexOf("tag") === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push(hits[i]._id);
-          }
-
-          if (Config.debug > 1) {
-            console.log("CRON", cq.name, cq.creator, "- Updating tags:", ids.length);
-          }
-
-          var tags = options.tags.split(",");
-          sessionsListFromIds(null, ids, ["tags", "node"], function(err, list) {
-            addTagsList(tags, list, doNext);
-          });
-        } else {
-          console.log("Unknown action", cq);
-          doNext();
+        if (Config.debug > 1) {
+          console.log("CRON", cq.name, cq.creator, "- Updating tags:", ids.length);
         }
-      });
+
+        var tags = options.tags.split(",");
+        sessionsListFromIds(null, ids, ["tags", "node"], function(err, list) {
+          addTagsList(tags, list, doNext);
+        });
+      } else {
+        console.log("Unknown action", cq);
+        doNext();
+      }
     });
   }, function () {
     if (Config.debug > 1) {
