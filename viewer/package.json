@@ -18,7 +18,7 @@
     "font-awesome": "^4.6.3",
     "fs-ext": "^0.5.0",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
-    "pug": "2.0.0",
+    "pug": "^2.0.0",
     "method-override": "^2.3.6",
     "moment": "^2.19.1",
     "morgan": "^1.9.0",
