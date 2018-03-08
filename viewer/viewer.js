@@ -2301,6 +2301,22 @@ app.get('/esindices/list', function(req, res) {
   });
 });
 
+app.delete('/esindices/:index', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to delete');
+  }
+
+  Db.deleteIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      res.status(404);
+      return res.send(JSON.stringify({ success:false, text:'Error deleting index' }));
+    }
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
 app.get('/estask/list', function(req, res) {
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
