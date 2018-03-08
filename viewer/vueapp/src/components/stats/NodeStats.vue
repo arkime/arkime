@@ -599,10 +599,10 @@ tr.bold {
   font-weight: bold;
 }
 table.table tr.border-bottom-bold > td {
-  border-bottom: 2px solid var(--color-gray);
+  border-bottom: 2px solid #dee2e6;
 }
 table.table tr.border-top-bold > td {
-  border-top: 2px solid var(--color-gray);
+  border-top: 2px solid #dee2e6;
 }
 
 #graphContent, #nodeStatsContent {

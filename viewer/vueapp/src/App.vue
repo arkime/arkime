@@ -217,8 +217,12 @@ label.btn-radio.active, button.btn-checkbox.active {
 
 /* small alert areas */
 .alert.alert-sm {
-  padding       : 4px 35px 5px 8px;
-  margin-top    : var(--px-md);
+  padding       : 4px 35px 3px 8px;
+  margin-top    : var(--px-none);
   margin-bottom : var(--px-none);
+  font-size     : .85rem;
+}
+.alert.alert-sm button.close {
+  padding: 0 .5rem;
 }
 </style>

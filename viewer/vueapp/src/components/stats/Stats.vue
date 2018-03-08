@@ -107,6 +107,18 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <!-- error (from child component) -->
+        <div v-if="childError"
+          role="alert"
+          class="alert alert-sm alert-danger alert-dismissible fade show ml-2">
+          {{ childError }}
+          <button type="button"
+            class="close"
+            @click="childError = ''">
+            <span>&times;</span>
+          </button>
+        </div> <!-- /error (from child component) -->
+
       </div>
     </form> <!-- /stats sub navbar -->
 
@@ -136,7 +148,8 @@
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
           <es-indices v-if="user && tabIndex === 2"
-            :data-interval="dataInterval">
+            :data-interval="dataInterval"
+            @errored="onError">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
@@ -175,7 +188,8 @@ export default {
       graphType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
-      dataInterval: this.$route.query.refreshInterval || '5000'
+      dataInterval: this.$route.query.refreshInterval || '5000',
+      childError: ''
     };
   },
   components: {
@@ -230,6 +244,9 @@ export default {
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
       }
+    },
+    onError: function (message) {
+      this.childError = message;
     }
   }
 };

@@ -41,9 +41,35 @@
           </tr>
         </thead>
         <tbody v-if="stats">
-          <tr v-for="stat of stats.data"
+          <template v-if="stats && averageValues && totalValues && stats.data.length > 9">
+            <tr class="bold">
+              <td>Average</td>
+              <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
+              <td>{{ averageValues['store.size'] | humanReadable }}%</td>
+              <td>{{ averageValues.pir | round(0) | commaString }}</td>
+              <td>{{ averageValues.rep| round(0) | commaString }}</td>
+              <td>-</td>
+              <td>-</td>
+            </tr>
+            <tr class="border-bottom-bold bold">
+              <td>Total</td>
+              <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
+              <td>{{ totalValues['store.size'] | humanReadable }}%</td>
+              <td>{{ totalValues.pir | round(0) | commaString }}</td>
+              <td>{{ totalValues.rep| round(0) | commaString }}</td>
+              <td>-</td>
+              <td>-</td>
+            </tr>
+          </template>
+          <tr v-for="(stat, i) of stats.data"
             :key="stat.name">
-            <td>{{ stat.index }}</td>
+            <td>
+              <a class="btn btn-xs btn-danger pull-left"
+                @click="deleteIndex(i, stat.index)">
+                <span class="fa fa-trash-o"></span>
+              </a>
+              {{ stat.index }}
+            </td>
             <td>{{ stat['docs.count'] | round(0) | commaString }}</td>
             <td>{{ stat['store.size'] | humanReadable }}%</td>
             <td>{{ stat.pir | round(0) | commaString }}</td>
@@ -59,6 +85,26 @@
             </td>
           </tr>
         </tbody>
+        <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
+          <tr class="bold border-top-bold">
+            <td>Average</td>
+            <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
+            <td>{{ averageValues['store.size'] | humanReadable }}%</td>
+            <td>{{ averageValues.pir | round(0) | commaString }}</td>
+            <td>{{ averageValues.rep| round(0) | commaString }}</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr class="border-bottom-bold bold">
+            <td>Total</td>
+            <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
+            <td>{{ totalValues['store.size'] | humanReadable }}%</td>
+            <td>{{ totalValues.pir | round(0) | commaString }}</td>
+            <td>{{ totalValues.rep| round(0) | commaString }}</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+        </tfoot>
       </table>
 
     </div>
@@ -138,6 +184,14 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
+    deleteIndex (i, indexName) {
+      this.$http.delete(`esindices/${indexName}`)
+        .then((response) => {
+          this.stats.data.splice(i, 1);
+        }, (error) => {
+          this.$emit('errored', error.text || error);
+        });
+    },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
@@ -153,19 +207,22 @@ export default {
 
           this.averageValues = {};
           this.totalValues = {};
-          let stats = this.stats;
+          let stats = this.stats.data;
 
           let columnNames = this.columns.map(function (item) {
+            if (!item.doStats) { return; }
             return item.field || item.sort;
           });
 
           for (let i = 1; i < columnNames.length; i++) {
             const columnName = columnNames[i];
-            this.totalValues[columnName] = 0;
-            for (let s = 0; s < stats.length; s++) {
-              this.totalValues[columnName] += stats[s][columnName];
+            if (columnName) {
+              this.totalValues[columnName] = 0;
+              for (let s = 0; s < stats.length; s++) {
+                this.totalValues[columnName] += parseInt(stats[s][columnName], 10);
+              }
+              this.averageValues[columnName] = this.totalValues[columnName] / stats.length;
             }
-            this.averageValues[columnName] = this.totalValues[columnName] / stats.length;
           }
         }, (error) => {
           this.loading = false;
@@ -181,3 +238,22 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+tr.bold {
+  font-weight: bold;
+}
+table.table tr.border-bottom-bold > td {
+  border-bottom: 2px solid #dee2e6;
+}
+table.table tr.border-top-bold > td {
+  border-top: 2px solid #dee2e6;
+}
+
+table.table td .btn {
+  visibility: hidden;
+}
+table.table td:hover .btn {
+  visibility: visible;
+}
+</style>
