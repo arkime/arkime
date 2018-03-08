@@ -113,7 +113,7 @@ let reqPromise; // promise returned from setInterval for recurring requests
 export default {
   name: 'Shards',
   components: { MolochError, MolochLoading },
-  props: [ 'user', 'dataInterval' ],
+  props: [ 'dataInterval' ],
   data: function () {
     return {
       loading: true,
@@ -129,24 +129,55 @@ export default {
     dataInterval: function () {
       if (reqPromise) { // cancel the interval and reset it if necessary
         clearInterval(reqPromise);
+        reqPromise = null;
 
         if (this.dataInterval === '0') { return; }
 
-        reqPromise = setInterval(() => {
-          this.loadData();
-        }, parseInt(this.dataInterval, 10));
+        this.setRequestInterval();
+      } else if (this.dataInterval !== '0') {
+        this.loadData();
+        this.setRequestInterval();
       }
     }
   },
   created: function () {
     this.loadData();
     if (this.dataInterval !== '0') {
-      reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+      this.setRequestInterval();
     }
   },
   methods: {
+    /* exposed page functions ------------------------------------ */
+    exclude: function (type, column) {
+      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = true;
+          } else {
+            column.ipExcluded = true;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
+    },
+    include: function (type, column) {
+      this.$http.post(`esshard/include/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = false;
+          } else {
+            column.ipExcluded = false;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
+    },
+    /* helper functions ------------------------------------------ */
+    setRequestInterval: function () {
+      reqPromise = setInterval(() => {
+        this.loadData();
+      }, parseInt(this.dataInterval, 10));
+    },
     loadData: function () {
       this.$http.get('esshard/list')
         .then((response) => {
@@ -177,30 +208,6 @@ export default {
         }, (error) => {
           this.error = error;
           this.loading = false;
-        });
-    },
-    exclude: function (type, column) {
-      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
-    },
-    include: function (type, column) {
-      this.$http.post(`esshard/include/${type}/${column[type]}`)
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
         });
     }
   },
@@ -239,6 +246,7 @@ table > thead > tr > th {
   position: relative;
   top: 2px;
   right: 2px;
+  margin-top: -2px;
 }
 
 .table .hover-menu .header-text {

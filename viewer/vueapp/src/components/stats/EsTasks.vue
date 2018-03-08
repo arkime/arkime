@@ -111,12 +111,14 @@ export default {
     dataInterval: function () {
       if (reqPromise) { // cancel the interval and reset it if necessary
         clearInterval(reqPromise);
+        reqPromise = null;
 
         if (this.dataInterval === '0') { return; }
 
-        reqPromise = setInterval(() => {
-          this.loadData();
-        }, parseInt(this.dataInterval, 10));
+        this.setRequestInterval();
+      } else if (this.dataInterval !== '0') {
+        this.loadData();
+        this.setRequestInterval();
       }
     }
   },
@@ -124,9 +126,7 @@ export default {
     this.loadData();
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
-      reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+      this.setRequestInterval();
     }
   },
   methods: {
@@ -148,6 +148,11 @@ export default {
       this.$http.post('estask/cancel', { taskId: taskId });
     },
     /* helper functions ------------------------------------------ */
+    setRequestInterval: function () {
+      reqPromise = setInterval(() => {
+        this.loadData();
+      }, parseInt(this.dataInterval, 10));
+    },
     loadData: function () {
       this.$http.get('estask/list', { params: this.query })
         .then((response) => {

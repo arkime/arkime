@@ -130,15 +130,13 @@
         <b-tab title="ES Stats"
           @click="tabIndexChange()">
           <es-stats v-if="user && tabIndex === 1"
-            :data-interval="dataInterval"
-            :user="user">
+            :data-interval="dataInterval">
           </es-stats>
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
           <es-indices v-if="user && tabIndex === 2"
-            :data-interval="dataInterval"
-            :user="user">
+            :data-interval="dataInterval">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
@@ -151,8 +149,7 @@
         <b-tab title="ES Shards"
           @click="tabIndexChange()">
           <shards v-if="user && tabIndex === 4"
-            :data-interval="dataInterval"
-            :user="user">
+            :data-interval="dataInterval">
           </shards>
         </b-tab>
       </b-tabs>

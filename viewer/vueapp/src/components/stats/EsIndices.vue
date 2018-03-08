@@ -76,7 +76,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'EsIndices',
-  props: [ 'user', 'dataInterval' ],
+  props: [ 'dataInterval' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -105,12 +105,14 @@ export default {
     dataInterval: function () {
       if (reqPromise) { // cancel the interval and reset it if necessary
         clearInterval(reqPromise);
+        reqPromise = null;
 
         if (this.dataInterval === '0') { return; }
 
-        reqPromise = setInterval(() => {
-          this.loadData();
-        }, parseInt(this.dataInterval, 10));
+        this.setRequestInterval();
+      } else if (this.dataInterval !== '0') {
+        this.loadData();
+        this.setRequestInterval();
       }
     }
   },
@@ -118,9 +120,7 @@ export default {
     this.loadData();
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
-      reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+      this.setRequestInterval();
     }
   },
   methods: {
@@ -139,6 +139,11 @@ export default {
       this.loadData();
     },
     /* helper functions ------------------------------------------ */
+    setRequestInterval: function () {
+      reqPromise = setInterval(() => {
+        this.loadData();
+      }, parseInt(this.dataInterval, 10));
+    },
     loadData: function () {
       this.$http.get('esindices/list', { params: this.query })
         .then((response) => {
