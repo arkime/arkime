@@ -88,11 +88,6 @@
           template      : '<moloch-users></moloch-users>',
           reloadOnSearch: false
         })
-        .when('/stats', {
-          title         : 'Stats',
-          template      : '<moloch-stats></moloch-stats>',
-          reloadOnSearch: false
-        })
         .when('/spiview', {
           title         : 'SPI View',
           template      : '<moloch-spiview></moloch-spiview>',
@@ -117,10 +112,6 @@
           title         : 'History',
           template      : '<moloch-history></moloch-history>',
           reloadOnSearch: false
-        })
-        .otherwise({
-          title    : 'Not Found',
-          template : '<moloch-404></moloch-404>'
         });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode

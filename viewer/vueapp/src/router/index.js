@@ -18,6 +18,12 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
+  // TODO update/remove as angular pages go away
+  // loads the angular app pages (for now, anything but the stats page)
+  if (!to.path.includes('stats') && to.path !== '/') {
+    location.reload();
+  }
+
   let page = to.name || 'Moloch Vue App'; // TODO different fallback?
   let expression = ''; // TODO set expression
   let view = ''; // TODO set view

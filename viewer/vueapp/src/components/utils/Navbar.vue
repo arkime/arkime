@@ -5,10 +5,18 @@
     toggleable="md"
     type="dark">
 
-    <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
+    <b-navbar-toggle
+      target="nav_collapse">
+    </b-navbar-toggle>
 
     <b-navbar-brand>
-      <img src="../../assets/logo.png" class="moloch-logo" alt="hoot">
+      <!-- TODO this won't always be the stats page -->
+      <a href="help#stats"
+        class="cursor-pointer">
+        <img src="../../assets/logo.png"
+          class="moloch-logo"
+          alt="hoot">
+      </a>
     </b-navbar-brand>
 
     <b-collapse is-nav
@@ -92,5 +100,4 @@ ul.navbar-nav {
   background-color: var(--color-primary-dark);
   border-color: var(--color-primary-darker);
 }
-
 </style>
