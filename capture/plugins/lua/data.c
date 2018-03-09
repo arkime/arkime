@@ -17,7 +17,7 @@
 #include "molua.h"
 
 /******************************************************************************/
-static MD_t *checkMolochData (lua_State *L, int index)
+LOCAL MD_t *checkMolochData (lua_State *L, int index)
 {
     MD_t *md;
     luaL_checktype(L, index, LUA_TUSERDATA);

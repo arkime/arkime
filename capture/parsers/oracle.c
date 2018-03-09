@@ -14,9 +14,9 @@
  */
 #include "moloch.h"
 
-static int userField;
-static int hostField;
-static int serviceField;
+LOCAL  int userField;
+LOCAL  int hostField;
+LOCAL  int serviceField;
 extern MolochConfig_t        config;
 
 // Lots of info from https://www.pythian.com/blog/repost-oracle-protocol/

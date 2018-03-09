@@ -90,7 +90,7 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-static void *reader_tpacketv3_thread(gpointer infov)
+LOCAL void *reader_tpacketv3_thread(gpointer infov)
 {
     long info = (long)infov;
     struct pollfd pfd;

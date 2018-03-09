@@ -14,17 +14,17 @@
  */
 #include "moloch.h"
 
-static char                 *qclasses[256];
-static char                 *qtypes[256];
-static char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
-static char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
+LOCAL  char                 *qclasses[256];
+LOCAL  char                 *qtypes[256];
+LOCAL  char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
+LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
 
-static int                   ipField;
-static int                   hostField;
-static int                   queryTypeField;
-static int                   queryClassField;
-static int                   statusField;
-static int                   opCodeField;
+LOCAL  int                   ipField;
+LOCAL  int                   hostField;
+LOCAL  int                   queryTypeField;
+LOCAL  int                   queryClassField;
+LOCAL  int                   statusField;
+LOCAL  int                   opCodeField;
 
 typedef struct {
     unsigned char      *data[2];

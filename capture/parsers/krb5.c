@@ -18,9 +18,9 @@
 
 extern MolochConfig_t        config;
 
-static int realmField;
-static int cnameField;
-static int snameField;
+LOCAL  int realmField;
+LOCAL  int cnameField;
+LOCAL  int snameField;
 
 #define KRB5_MAX_SIZE 4096
 typedef struct {

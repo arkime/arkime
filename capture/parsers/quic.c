@@ -20,9 +20,9 @@
 #include <arpa/inet.h>
 
 extern MolochConfig_t        config;
-static int hostField;
-static int uaField;
-static int versionField;
+LOCAL  int hostField;
+LOCAL  int uaField;
+LOCAL  int versionField;
 
 #define FBZERO_MAX_SIZE 4096
 typedef struct {

@@ -238,6 +238,11 @@ typedef struct {
 #define MOLOCH_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
 #define MOLOCH_COND_SIGNAL(var)         pthread_cond_signal(&var##_cond)
 
+#define MOLOCH_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1);
+#define MOLOCH_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1);
+#define MOLOCH_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
+#define MOLOCH_THREAD_INCR_NUM(var, num) __sync_fetch_and_add(&var, num);
+
 #define MOLOCH_MAX_PACKET_THREADS 24
 
 #define MAX_INTERFACES 32
@@ -858,6 +863,7 @@ int      moloch_packet_frags_outstanding();
 int      moloch_packet_frags_size();
 uint64_t moloch_packet_dropped_frags();
 uint64_t moloch_packet_dropped_overload();
+uint64_t moloch_packet_total_bytes();
 void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);

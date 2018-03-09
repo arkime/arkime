@@ -25,9 +25,9 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-static gchar                 classTag[100];
+LOCAL  gchar                 classTag[100];
 
-static magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
+LOCAL  magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
 
 extern unsigned char         moloch_char_to_hexstr[256][3];
 

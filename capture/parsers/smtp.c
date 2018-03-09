@@ -24,25 +24,25 @@ extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
 extern uint32_t         pluginsCbs;
 
-static MolochStringHashStd_t emailHeaders;
+LOCAL  MolochStringHashStd_t emailHeaders;
 
-static int receivedField;
-static int idField;
-static int ipField;
-static int hostField;
-static int srcField;
-static int dstField;
+LOCAL  int receivedField;
+LOCAL  int idField;
+LOCAL  int ipField;
+LOCAL  int hostField;
+LOCAL  int srcField;
+LOCAL  int dstField;
 extern int userField;
-static int hhField;
-static int subField;
-static int ctField;
-static int md5Field;
-static int sha256Field;
-static int fnField;
-static int uaField;
-static int mvField;
-static int fctField;
-static int magicField;
+LOCAL  int hhField;
+LOCAL  int subField;
+LOCAL  int ctField;
+LOCAL  int md5Field;
+LOCAL  int sha256Field;
+LOCAL  int fnField;
+LOCAL  int uaField;
+LOCAL  int mvField;
+LOCAL  int fctField;
+LOCAL  int magicField;
 
 typedef struct {
     MolochStringHead_t boundaries;

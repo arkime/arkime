@@ -27,12 +27,11 @@ extern MolochConfig_t        config;
 
 MolochPcapFileHdr_t          pcapFileHeader;
 
-uint64_t                     totalPackets = 0;
-uint64_t                     totalBytes = 0;
-uint64_t                     totalSessions = 0;
+uint64_t                     totalPackets;
+LOCAL uint64_t               totalBytes[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL uint32_t               initialDropped = 0;
-struct timeval               initialPacket;
+LOCAL struct timeval         initialPacket;
 
 extern void                 *esServer;
 extern uint32_t              pluginsCbs;
@@ -49,7 +48,7 @@ LOCAL int                    icmpCodeField;
 LOCAL uint64_t               droppedFrags;
 
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
-int                          inProgress[MOLOCH_MAX_PACKET_THREADS];
+LOCAL int                    inProgress[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
@@ -71,7 +70,7 @@ extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
-MOLOCH_LOCK_DEFINE(frags);
+LOCAL  MOLOCH_LOCK_DEFINE(frags);
 
 int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
@@ -965,8 +964,6 @@ void moloch_packet_log(int ses)
 /******************************************************************************/
 int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
 {
-    totalBytes += packet->pktlen;
-
     if (totalPackets == 0) {
         MolochReaderStats_t stats;
         if (!moloch_reader_stats(&stats)) {
@@ -977,13 +974,15 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
         LOG("%" PRIu64 " Initial Dropped = %d", totalPackets, initialDropped);
     }
 
-    __sync_add_and_fetch(&totalPackets, 1);
+    MOLOCH_THREAD_INCR(totalPackets);
     if (totalPackets % config.logEveryXPackets == 0) {
         moloch_packet_log(packet->ses);
     }
 
     packet->hash = moloch_session_hash(sessionId);
     uint32_t thread = packet->hash % config.packetThreads;
+
+    totalBytes[thread] += packet->pktlen;
 
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
         MOLOCH_LOCK(packetQ[thread].lock);
@@ -1435,7 +1434,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     default:
         LOGEXIT("ERROR - Unsupported pcap link type %d", pcapFileHeader.linktype);
     }
-    __sync_add_and_fetch(&packetStats[rc], 1);
+    MOLOCH_THREAD_INCR(packetStats[rc]);
 
     if (rc) {
         moloch_packet_free(packet);
@@ -1617,6 +1616,18 @@ uint64_t moloch_packet_dropped_overload()
 
     for (t = 0; t < config.packetThreads; t++) {
         count += overloadDrops[t];
+    }
+    return count;
+}
+/******************************************************************************/
+uint64_t moloch_packet_total_bytes()
+{
+    uint64_t count = 0;
+
+    int t;
+
+    for (t = 0; t < config.packetThreads; t++) {
+        count += totalBytes[t];
     }
     return count;
 }

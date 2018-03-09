@@ -45,32 +45,32 @@ typedef struct {
 } HTTPInfo_t;
 
 extern MolochConfig_t        config;
-static http_parser_settings  parserSettings;
+LOCAL  http_parser_settings  parserSettings;
 extern uint32_t              pluginsCbs;
-static MolochStringHashStd_t httpReqHeaders;
-static MolochStringHashStd_t httpResHeaders;
+LOCAL  MolochStringHashStd_t httpReqHeaders;
+LOCAL  MolochStringHashStd_t httpResHeaders;
 
-static int cookieKeyField;
-static int cookieValueField;
-static int hostField;
-static int userField;
-static int atField;
-static int urlsField;
-static int xffField;
-static int uaField;
-static int tagsReqField;
-static int tagsResField;
-static int md5Field;
-static int sha256Field;
-static int verReqField;
-static int verResField;
-static int pathField;
-static int keyField;
-static int valueField;
-static int magicField;
-static int statuscodeField;
-static int methodField;
-static int reqBodyField;
+LOCAL  int cookieKeyField;
+LOCAL  int cookieValueField;
+LOCAL  int hostField;
+LOCAL  int userField;
+LOCAL  int atField;
+LOCAL  int urlsField;
+LOCAL  int xffField;
+LOCAL  int uaField;
+LOCAL  int tagsReqField;
+LOCAL  int tagsResField;
+LOCAL  int md5Field;
+LOCAL  int sha256Field;
+LOCAL  int verReqField;
+LOCAL  int verResField;
+LOCAL  int pathField;
+LOCAL  int keyField;
+LOCAL  int valueField;
+LOCAL  int magicField;
+LOCAL  int statuscodeField;
+LOCAL  int methodField;
+LOCAL  int reqBodyField;
 
 /******************************************************************************/
 int

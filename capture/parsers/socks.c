@@ -27,10 +27,10 @@ typedef struct socksinfo {
     uint8_t   state5[2];
 } SocksInfo_t;
 
-static int ipField;
-static int portField;
-static int userField;
-static int hostField;
+LOCAL  int ipField;
+LOCAL  int portField;
+LOCAL  int userField;
+LOCAL  int hostField;
 
 //#define SOCKSDEBUG
 

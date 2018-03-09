@@ -47,7 +47,7 @@ extern MolochPcapFileHdr_t     pcapFileHeader;
 MOLOCH_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
-static gboolean showVersion    = FALSE;
+LOCAL  gboolean showVersion    = FALSE;
 
 /******************************************************************************/
 gboolean moloch_debug_flag()
@@ -57,7 +57,7 @@ gboolean moloch_debug_flag()
     return TRUE;
 }
 
-static GOptionEntry entries[] =
+LOCAL  GOptionEntry entries[] =
 {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
@@ -382,12 +382,12 @@ typedef struct {
 } MolochWatchFd_t;
 
 /******************************************************************************/
-static void moloch_gio_destroy(gpointer data)
+LOCAL void moloch_gio_destroy(gpointer data)
 {
     g_free(data);
 }
 /******************************************************************************/
-static gboolean moloch_gio_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+LOCAL gboolean moloch_gio_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
 {
     MolochWatchFd_t *watch = data;
 
@@ -443,9 +443,9 @@ void moloch_drop_privileges()
 
 }
 /******************************************************************************/
-static MolochCanQuitFunc  canQuitFuncs[20];
-static const char        *canQuitNames[20];
-int                       canQuitFuncsNum;
+LOCAL  MolochCanQuitFunc  canQuitFuncs[20];
+LOCAL  const char        *canQuitNames[20];
+LOCAL  int                canQuitFuncsNum;
 
 void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 {
@@ -465,8 +465,8 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
-static gboolean readerExit   = TRUE;
-static gboolean writerExit   = TRUE;
+LOCAL gboolean readerExit   = TRUE;
+LOCAL gboolean writerExit   = TRUE;
 
 // On the first run shutdown reader and sessions
     if (readerExit) {

@@ -70,7 +70,7 @@ void lua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), con
     }
 }
 /******************************************************************************/
-static int M_expression_to_fieldId(lua_State *L)
+LOCAL int M_expression_to_fieldId(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isstring(L, 1)) {
         return luaL_error(L, "usage: <field expression>");

@@ -20,8 +20,8 @@ typedef struct {
     char      ssl;
 } Info_t;
 
-static int userField;
-static int versionField;
+LOCAL  int userField;
+LOCAL  int versionField;
 
 extern MolochConfig_t        config;
 

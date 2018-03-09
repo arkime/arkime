@@ -20,9 +20,9 @@ typedef struct {
     int            pos[2];
 } TDSInfo_t;
 
-static int userField;
-
 extern MolochConfig_t        config;
+LOCAL  int userField;
+
 /******************************************************************************/
 int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {

@@ -43,10 +43,10 @@ char *moloch_yara_version() {
 
 #if YR_MAJOR_VERSION == 3 && YR_MINOR_VERSION >= 4
 // Yara 3
-static YR_COMPILER *yCompiler = 0;
-static YR_COMPILER *yEmailCompiler = 0;
-static YR_RULES *yRules = 0;
-static YR_RULES *yEmailRules = 0;
+LOCAL  YR_COMPILER *yCompiler = 0;
+LOCAL  YR_COMPILER *yEmailCompiler = 0;
+LOCAL  YR_RULES *yRules = 0;
+LOCAL  YR_RULES *yEmailRules = 0;
 
 
 
@@ -186,10 +186,10 @@ void moloch_yara_exit()
 }
 #elif defined(YR_COMPILER_H)
 // Yara 3
-static YR_COMPILER *yCompiler = 0;
-static YR_COMPILER *yEmailCompiler = 0;
-static YR_RULES *yRules = 0;
-static YR_RULES *yEmailRules = 0;
+LOCAL  YR_COMPILER *yCompiler = 0;
+LOCAL  YR_COMPILER *yEmailCompiler = 0;
+LOCAL  YR_RULES *yRules = 0;
+LOCAL  YR_RULES *yEmailRules = 0;
 
 
 /******************************************************************************/
@@ -279,10 +279,10 @@ void moloch_yara_exit()
 }
 #elif defined(STRING_IS_HEX)
 // Yara 2.x
-static YR_COMPILER *yCompiler = 0;
-static YR_COMPILER *yEmailCompiler = 0;
-static YR_RULES *yRules = 0;
-static YR_RULES *yEmailRules = 0;
+LOCAL  YR_COMPILER *yCompiler = 0;
+LOCAL  YR_COMPILER *yEmailCompiler = 0;
+LOCAL  YR_RULES *yRules = 0;
+LOCAL  YR_RULES *yEmailRules = 0;
 
 
 /******************************************************************************/
