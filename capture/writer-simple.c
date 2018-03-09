@@ -35,6 +35,7 @@
 
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
+
 typedef struct {
     EVP_CIPHER_CTX      *cipher_ctx;
     uint64_t             pos;
@@ -58,9 +59,9 @@ typedef struct {
     MOLOCH_LOCK_EXTERN(lock);
 } MolochSimpleHead_t;
 
-static MolochSimpleHead_t simpleQ;
-static MOLOCH_LOCK_DEFINE(simpleQ);
-static MOLOCH_COND_DEFINE(simpleQ);
+LOCAL  MolochSimpleHead_t simpleQ;
+LOCAL  MOLOCH_LOCK_DEFINE(simpleQ);
+LOCAL  MOLOCH_COND_DEFINE(simpleQ);
 
 enum MolochSimpleMode { MOLOCH_SIMPLE_NORMAL, MOLOCH_SIMPLE_XOR2048, MOLOCH_SIMPLE_AES256CTR};
 

@@ -37,15 +37,15 @@ extern MolochConfig_t        config;
 
 extern void                 *esServer;
 
-static int                   tagsField;
-static int                   httpHostField;
-static int                   httpXffField;
-static int                   httpMd5Field;
-static int                   httpPathField;
-static int                   emailMd5Field;
-static int                   emailSrcField;
-static int                   emailDstField;
-static int                   dnsHostField;
+LOCAL  int                   tagsField;
+LOCAL  int                   httpHostField;
+LOCAL  int                   httpXffField;
+LOCAL  int                   httpMd5Field;
+LOCAL  int                   httpPathField;
+LOCAL  int                   emailMd5Field;
+LOCAL  int                   emailSrcField;
+LOCAL  int                   emailDstField;
+LOCAL  int                   dnsHostField;
 
 /******************************************************************************/
 
@@ -103,7 +103,7 @@ TaggerStringHash_t allURIs;
 
 HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 
-static patricia_tree_t *allIps;
+LOCAL  patricia_tree_t *allIps;
 
 /******************************************************************************/
 void tagger_process_match(MolochSession_t *session, GPtrArray *infos)

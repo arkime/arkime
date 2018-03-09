@@ -63,7 +63,7 @@ DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8
     return DAQ_VERDICT_PASS;
 }
 /******************************************************************************/
-static void *reader_daq_thread(gpointer handle)
+LOCAL void *reader_daq_thread(gpointer handle)
 {
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);

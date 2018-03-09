@@ -16,11 +16,11 @@
 #include <arpa/inet.h>
 
 extern MolochConfig_t        config;
-static int typeField;
-static int hostField;
-static int macField;
-static int ouiField;
-static int idField;
+LOCAL  int typeField;
+LOCAL  int hostField;
+LOCAL  int macField;
+LOCAL  int ouiField;
+LOCAL  int idField;
 
 /******************************************************************************/
 void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))

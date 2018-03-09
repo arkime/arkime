@@ -30,6 +30,7 @@
 #endif
 
 extern MolochConfig_t        config;
+extern MolochPcapFileHdr_t   pcapFileHeader;
 
 
 typedef struct moloch_output {
@@ -45,28 +46,28 @@ typedef struct moloch_output {
 } MolochDiskOutput_t;
 
 
-static MolochDiskOutput_t   *output;
-static MOLOCH_LOCK_DEFINE(output);
+LOCAL  MolochDiskOutput_t   *output;
+LOCAL  MOLOCH_LOCK_DEFINE(output);
 
-static MolochDiskOutput_t    outputQ;
-static MOLOCH_LOCK_DEFINE(outputQ);
-static MOLOCH_COND_DEFINE(outputQ);
+LOCAL  MolochDiskOutput_t    outputQ;
+LOCAL  MOLOCH_LOCK_DEFINE(outputQ);
+LOCAL  MOLOCH_COND_DEFINE(outputQ);
 
-static MolochIntHead_t       freeOutputBufs;
-static MOLOCH_LOCK_DEFINE(freeOutputBufs);
+LOCAL  MolochIntHead_t       freeOutputBufs;
+LOCAL  MOLOCH_LOCK_DEFINE(freeOutputBufs);
 
-static uint32_t              outputId;
-static char                 *outputFileName;
-static uint64_t              outputFilePos = 0;
-static struct timeval        outputFileTime;
+LOCAL  uint32_t              outputId;
+LOCAL  char                 *outputFileName;
+LOCAL  uint64_t              outputFilePos = 0;
+LOCAL  struct timeval        outputFileTime;
 
 #define MOLOCH_WRITE_NORMAL 0x00
 #define MOLOCH_WRITE_DIRECT 0x01
 #define MOLOCH_WRITE_MMAP   0x02
 #define MOLOCH_WRITE_THREAD 0x04
 
-static int                   writeMethod;
-static int                   pageSize;
+LOCAL  int                   writeMethod;
+LOCAL  int                   pageSize;
 
 /******************************************************************************/
 uint32_t writer_disk_queue_length_thread()
@@ -324,7 +325,6 @@ void writer_disk_exit()
     }
 }
 /******************************************************************************/
-extern MolochPcapFileHdr_t pcapFileHeader;
 void writer_disk_create(MolochPacket_t * const packet)
 {
     outputFileName = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &outputId);

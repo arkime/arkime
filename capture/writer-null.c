@@ -26,7 +26,7 @@
 
 extern MolochConfig_t        config;
 
-static uint32_t              outputFilePos = 24;
+LOCAL  uint32_t              outputFilePos = 24;
 
 /******************************************************************************/
 uint32_t writer_null_queue_length()

@@ -20,8 +20,8 @@
 #include <arpa/inet.h>
 #include "patricia.h"
 
-extern patricia_tree_t *ipTree;
 extern MolochConfig_t        config;
+
 HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 13);
 HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
 
@@ -258,7 +258,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     if ((flags & MOLOCH_FIELD_FLAG_FAKE) == 0) {
         if (minfo->pos == -1) {
-            minfo->pos = config.maxField++;
+            minfo->pos = MOLOCH_THREAD_INCROLD(config.maxField);
             if (config.maxField > 255) {
                 LOGEXIT("ERROR - Max Fields is too large %d", config.maxField);
             }
@@ -274,8 +274,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField)+1) == 0) {
                 minfo->dbGroupNum = groupNum;
             } else {
-                groupNum++;
-                minfo->dbGroupNum = groupNum;
+                minfo->dbGroupNum = MOLOCH_THREAD_INCRNEW(groupNum);
                 memcpy(lastGroup, minfo->dbField, (firstdot-minfo->dbField)+1);
             }
             minfo->dbGroup = minfo->dbField;
@@ -398,7 +397,7 @@ int moloch_field_by_exp(const char *exp)
         } else {
             info->type = MOLOCH_FIELD_TYPE_STR_HASH;
         }
-        info->pos = config.maxField++;
+        info->pos = MOLOCH_THREAD_INCROLD(config.maxField);
         config.fields[info->pos] = info;
         return info->pos;
     }

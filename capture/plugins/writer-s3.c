@@ -48,30 +48,30 @@ typedef struct writer_s3_file {
     char                      *partNumbers[2001];
 } SavepcapS3File_t;
 
-static char                 *outputBuffer;
-static uint32_t              outputPos;
-static uint32_t              outputId;
-static uint64_t              outputFilePos = 0;
+LOCAL  char                 *outputBuffer;
+LOCAL  uint32_t              outputPos;
+LOCAL  uint32_t              outputId;
+LOCAL  uint64_t              outputFilePos = 0;
 
 SavepcapS3File_t            *currentFile;
-static SavepcapS3File_t      fileQ;
+LOCAL  SavepcapS3File_t      fileQ;
 
 
-static void *                s3Server = 0;
-static char                  *s3Region;
-static char                   s3Host[100];
-static char                  *s3Bucket;
-static char                  *s3AccessKeyId;
-static char                  *s3SecretAccessKey;
-static char                   s3Compress;
-static uint32_t               s3MaxConns;
-static uint32_t               s3MaxRequests;
+LOCAL  void *                s3Server = 0;
+LOCAL  char                  *s3Region;
+LOCAL  char                   s3Host[100];
+LOCAL  char                  *s3Bucket;
+LOCAL  char                  *s3AccessKeyId;
+LOCAL  char                  *s3SecretAccessKey;
+LOCAL  char                   s3Compress;
+LOCAL  uint32_t               s3MaxConns;
+LOCAL  uint32_t               s3MaxRequests;
 
-static int                    inprogress;
+LOCAL  int                    inprogress;
 
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw);
 
-static MOLOCH_LOCK_DEFINE(output);
+LOCAL  MOLOCH_LOCK_DEFINE(output);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {

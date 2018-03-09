@@ -35,10 +35,9 @@ MMDB_s                  *geoASN;
 #define MOLOCH_MIN_DB_VERSION 50
 
 extern uint64_t         totalPackets;
-extern uint64_t         totalBytes;
-extern uint64_t         totalSessions;
+LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
-static uint16_t         myPid;
+LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 
 LOCAL struct timeval    startTime;
@@ -308,7 +307,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         }
     }
 
-    totalSessions++;
+    MOLOCH_THREAD_INCR(totalSessions);
     session->segments++;
 
     const int thread = session->thread;
@@ -901,7 +900,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         goto cleanup;
     }
 
-    totalSessionBytes += (int)(BSB_WORK_PTR(jbsb)-dataPtr);
+    MOLOCH_THREAD_INCR_NUM(totalSessionBytes, (int)(BSB_WORK_PTR(jbsb)-dataPtr));
 
     if (config.dryRun) {
         if (config.tests) {
@@ -943,13 +942,13 @@ long long zero_atoll(char *v) {
 
 /******************************************************************************/
 #define NUMBER_OF_STATS 4
-static uint64_t dbTotalPackets[NUMBER_OF_STATS];
-static uint64_t dbTotalK[NUMBER_OF_STATS];
-static uint64_t dbTotalSessions[NUMBER_OF_STATS];
-static uint64_t dbTotalDropped[NUMBER_OF_STATS];
+LOCAL  uint64_t dbTotalPackets[NUMBER_OF_STATS];
+LOCAL  uint64_t dbTotalK[NUMBER_OF_STATS];
+LOCAL  uint64_t dbTotalSessions[NUMBER_OF_STATS];
+LOCAL  uint64_t dbTotalDropped[NUMBER_OF_STATS];
 
-static char     stats_key[200];
-static int      stats_key_len = 0;
+LOCAL  char     stats_key[200];
+LOCAL  int      stats_key_len = 0;
 
 void moloch_db_load_stats()
 {
@@ -1062,6 +1061,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     uint64_t totalDropped    = moloch_packet_dropped_packets();
     uint64_t fragsDropped    = moloch_packet_dropped_frags();
     uint64_t esDropped       = moloch_http_dropped_count(esServer);
+    uint64_t totalBytes      = moloch_packet_total_bytes();
 
     for (i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
@@ -2031,7 +2031,7 @@ int moloch_db_can_quit()
     return 0;
 }
 /******************************************************************************/
-static guint timers[10];
+LOCAL  guint timers[10];
 void moloch_db_init()
 {
     if (config.tests) {

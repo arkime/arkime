@@ -16,7 +16,7 @@
 
 extern MolochConfig_t        config;
 
-static int userField;
+LOCAL  int userField;
 
 /******************************************************************************/
 void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))

@@ -16,8 +16,8 @@
 
 extern MolochConfig_t        config;
 
-static int bindNameField;
-static int authTypeField;
+LOCAL  int bindNameField;
+LOCAL  int authTypeField;
 
 typedef struct {
     unsigned char       buf[2][8192];

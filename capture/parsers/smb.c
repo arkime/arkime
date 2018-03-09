@@ -18,13 +18,13 @@
 
 extern MolochConfig_t   config;
 
-static int domainField;
-static int userField;
-static int hostField;
-static int osField;
-static int verField;
-static int fnField;
-static int shareField;
+LOCAL  int domainField;
+LOCAL  int userField;
+LOCAL  int hostField;
+LOCAL  int osField;
+LOCAL  int verField;
+LOCAL  int fnField;
+LOCAL  int shareField;
 
 #define MAX_SMB_BUFFER 4096
 typedef struct {

@@ -608,7 +608,7 @@ void moloch_session_init()
     moloch_add_can_quit(moloch_session_need_save_outstanding, "session save outstanding");
 }
 /******************************************************************************/
-static void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
+LOCAL void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
 {
     int thread = session->thread;
     int i;

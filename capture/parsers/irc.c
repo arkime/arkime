@@ -18,8 +18,8 @@ typedef struct {
     int ircState;
 } IRCInfo_t;
 
-static int channelsField;
-static int nickField;
+LOCAL  int channelsField;
+LOCAL  int nickField;
 
 /******************************************************************************/
 int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)

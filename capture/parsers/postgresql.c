@@ -18,9 +18,9 @@ typedef struct {
     int       which;
 } Info_t;
 
-static int userField;
-static int dbField;
-static int appField;
+LOCAL  int userField;
+LOCAL  int dbField;
+LOCAL  int appField;
 
 /******************************************************************************/
 int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 

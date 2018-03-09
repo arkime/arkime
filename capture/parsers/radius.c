@@ -16,10 +16,10 @@
 #include <arpa/inet.h>
 
 extern MolochConfig_t        config;
-static int userField;
-static int macField;
-static int endpointIpField;
-static int framedIpField;
+LOCAL  int userField;
+LOCAL  int macField;
+LOCAL  int endpointIpField;
+LOCAL  int framedIpField;
 
 /******************************************************************************/
 int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))

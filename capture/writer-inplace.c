@@ -29,7 +29,7 @@ extern MolochConfig_t        config;
 
 
 LOCAL GHashTable           *filePtr2Id;
-MOLOCH_LOCK_DEFINE(filePtr2Id);
+LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
 
 /******************************************************************************/
 uint32_t writer_inplace_queue_length()

@@ -21,9 +21,9 @@ typedef struct {
     uint16_t   done;
 } SSHInfo_t;
 
-static int verField;
-static int keyField;
 extern MolochConfig_t        config;
+LOCAL  int verField;
+LOCAL  int keyField;
 
 /******************************************************************************/
 // SSH Parsing currently assumes the parts we want from a SSH Packet will be
