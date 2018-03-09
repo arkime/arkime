@@ -68,7 +68,7 @@ my $test1Token = getTokenCookie("test1");
     $result = viewerPostToken("/esshard/exclude/ip/1.2.3.4", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Excluded"}'), "esshard: exclude ip");
 
-    $result = viewerPostToken("/esshard/exclude/node/thenode", "", $token);
+    $result = viewerPostToken("/esshard/exclude/name/thenode", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Excluded"}'), "esshard: exclude node");
 
     $result = viewerPostToken("/esshard/exclude/foobar/1.2.3.4", "", $token);
@@ -87,7 +87,7 @@ my $test1Token = getTokenCookie("test1");
     $result = viewerPostToken("/esshard/include/ip/1.2.3.4", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Included"}'), "esshard: include ip");
 
-    $result = viewerPostToken("/esshard/include/node/thenode", "", $token);
+    $result = viewerPostToken("/esshard/include/name/thenode", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Included"}'), "esshard: include node");
 
     $result = viewerPostToken("/esshard/include/foobar/1.2.3.4", "", $token);
@@ -99,4 +99,3 @@ my $test1Token = getTokenCookie("test1");
     $shards = viewerGet("/esshard/list");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
-
