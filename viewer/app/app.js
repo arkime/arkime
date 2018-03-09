@@ -112,6 +112,10 @@
           title         : 'History',
           template      : '<moloch-history></moloch-history>',
           reloadOnSearch: false
+        })
+        .otherwise({
+          title    : 'Not Found',
+          template : '<moloch-404></moloch-404>'
         });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
