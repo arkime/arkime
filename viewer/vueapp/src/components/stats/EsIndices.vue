@@ -65,6 +65,7 @@
             :key="stat.name">
             <td>
               <a class="btn btn-xs btn-danger pull-left"
+                v-has-permission="'createEnabled'"
                 @click="deleteIndex(i, stat.index)">
                 <span class="fa fa-trash-o"></span>
               </a>

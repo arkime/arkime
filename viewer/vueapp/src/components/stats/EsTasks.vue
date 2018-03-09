@@ -38,7 +38,11 @@
                 <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
               </span>
             </th>
-            <th>&nbsp;</th>
+            <th>
+              <input type="checkbox"
+                v-model="query.cancellable"
+                v-has-permission="'createEnabled'">
+            </th>
           </tr>
         </thead>
         <tbody v-if="stats">
@@ -51,10 +55,11 @@
             <td>{{ stat.childrenCount | round(0) | commaString }}</td>
             <td>
               <a v-if="stat.cancellable"
-                class="btn btn-sm btn-danger"
+                class="btn btn-xs btn-danger"
                 @click="cancelTask(stat.taskId)"
                 v-b-tooltip.hover
-                title="Cancel task">
+                title="Cancel task"
+                v-has-permission="'createEnabled'">
                 <span class="fa fa-trash-o"></span>
               </a>
             </td>
@@ -96,7 +101,8 @@ export default {
       query: {
         filter: null,
         sortField: 'action',
-        desc: false
+        desc: false,
+        cancellable: false
       },
       columns: [ // es indices table columns
         { name: 'Action', sort: 'action', doStats: false },
@@ -120,6 +126,9 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    'query.cancellable': function () {
+      this.loadData();
     }
   },
   created: function () {

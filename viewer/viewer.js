@@ -2348,6 +2348,11 @@ app.get('/estask/list', function(req, res) {
         task.childrenCount = 0;
       }
       delete task.children;
+
+      if (req.query.cancellable && req.query.cancellable === 'true') {
+        if (!task.cancellable) { continue; }
+      }
+
       rtasks.push(task);
     }
 
