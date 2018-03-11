@@ -199,7 +199,7 @@ if (Config.get("passwordSecret")) {
       obj.path = obj.path.replace(Config.basePath(), "/");
       if (obj.path !== req.url) {
         console.log("ERROR - mismatch url", obj.path, req.url);
-        return res.send("Unauthorized based on bad url, check logs on ", os.hostname());
+        return res.send("Unauthorized based on bad url, check logs on ", Config.hostName());
       }
       if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
         console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?", Date.now(), obj.date);
@@ -619,7 +619,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(err);
       }
       console.log("ERROR - getViewUrl - node:", req.params.nodeName, "err:", err);
-      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
+      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + Config.hostName());
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -644,7 +644,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(e);
       }
       console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
-      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + os.hostname());
+      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + Config.hostName());
     });
     preq.end();
   });
@@ -1593,7 +1593,12 @@ function expireCheckDevice (nodes, stat, nextCb) {
 function expireCheckAll () {
   var devToStat = {};
   // Find all the nodes running on this host
-  Db.hostnameToNodeids(os.hostname(), function(nodes) {
+  Db.hostnameToNodeids(Config.hostName(), function(nodes) {
+    // Current node name should always be checked too
+    if (!nodes.includes(Config.nodeName())) {
+      nodes.push(Config.nodeName());
+    }
+
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
       var pcapDirs = Config.getFull(node, "pcapDir");

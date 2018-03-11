@@ -32,7 +32,7 @@ var ini    = require('iniparser'),
 exports.debug = 0;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
-    nodeName: os.hostname().split(".")[0],
+    hostName: os.hostname(),
     fields: [],
     fieldsMap: {},
     categories: {}
@@ -44,6 +44,9 @@ function processArgs() {
     if (process.argv[i] === "-c") {
       i++;
       internals.configFile = process.argv[i];
+    } else if (process.argv[i] === "--host") {
+      i++;
+      internals.hostName = process.argv[i];
     } else if (process.argv[i] === "-n") {
       i++;
       internals.nodeName = process.argv[i];
@@ -54,6 +57,10 @@ function processArgs() {
     }
   }
   process.argv = args;
+
+  if (!internals.nodeName) {
+    internals.nodeName = internals.hostName.split(".")[0];
+  }
 }
 processArgs();
 
@@ -232,6 +239,10 @@ exports.basePath = function(node) {
 
 exports.nodeName = function() {
   return internals.nodeName;
+};
+
+exports.hostName = function() {
+  return internals.hostName;
 };
 
 exports.keys = function(section) {
