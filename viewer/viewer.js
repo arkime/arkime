@@ -2358,13 +2358,12 @@ app.get('/estask/list', function(req, res) {
 
     tasks = rtasks;
 
-    // Implement sorting
     var sortField = req.query.sortField || "action";
     if (sortField === "action") {
       if (req.query.desc === "true") {
-        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); });
+        tasks = tasks.sort(function(a,b){ return b.action.localeCompare(a.index); });
       } else {
-        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); });
+        tasks = tasks.sort(function(a,b){ return a.action.localeCompare(b.index); });
       }
     } else {
       if (req.query.desc === "true") {
@@ -2373,6 +2372,7 @@ app.get('/estask/list', function(req, res) {
         tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; });
       }
     }
+
     res.send(tasks);
   });
 });
@@ -5730,7 +5730,7 @@ app.get('/stats', (req, res) => {
       return;
     }
 
-    res.end(html);
+    res.send(html);
   });
 });
 

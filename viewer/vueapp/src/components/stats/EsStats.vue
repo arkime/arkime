@@ -46,7 +46,7 @@
               <td>Average</td>
               <td>{{ averageValues.docs | round(0) | commaString }}</td>
               <td>{{ averageValues.storeSize | humanReadable }}</td>
-              <td>{{ averageValuesheapSize | humanReadable }}%</td>
+              <td>{{ averageValues.heapSize | humanReadable }}%</td>
               <td>{{ averageValues.load | round(2) | commaString }}</td>
               <td>{{ averageValues.cpu | round(1) | commaString }}</td>
               <td>{{ averageValues.read | humanReadable }}</td>
@@ -57,7 +57,7 @@
               <td>Total</td>
               <td>{{ totalValues.docs | round(0) | commaString }}</td>
               <td>{{ totalValues.storeSize | humanReadable }}</td>
-              <td>{{ totalValues | humanReadable }}%</td>
+              <td>{{ totalValues.heapSize | humanReadable }}%</td>
               <td>{{ totalValues.load | round(2) | commaString }}</td>
               <td>{{ totalValues.cpu | round(1) | commaString }}</td>
               <td>{{ totalValues.read | humanReadable }}</td>
@@ -113,7 +113,7 @@
             <td>Average</td>
             <td>{{ averageValues.docs | round(0) | commaString }}</td>
             <td>{{ averageValues.storeSize | humanReadable }}</td>
-            <td>{{ averageValuesheapSize | humanReadable }}%</td>
+            <td>{{ averageValues.heapSize | humanReadable }}%</td>
             <td>{{ averageValues.load | round(2) | commaString }}</td>
             <td>{{ averageValues.cpu | round(1) | commaString }}</td>
             <td>{{ averageValues.read | humanReadable }}</td>
@@ -124,7 +124,7 @@
             <td>Total</td>
             <td>{{ totalValues.docs | round(0) | commaString }}</td>
             <td>{{ totalValues.storeSize | humanReadable }}</td>
-            <td>{{ totalValues | humanReadable }}%</td>
+            <td>{{ totalValues.heapSize | humanReadable }}%</td>
             <td>{{ totalValues.load | round(2) | commaString }}</td>
             <td>{{ totalValues.cpu | round(1) | commaString }}</td>
             <td>{{ totalValues.read | humanReadable }}</td>

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="ml-1 mr-1">
+  <div class="ml-1 mr-1 mt-1">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -11,7 +11,7 @@
 
     <div v-show="!error">
 
-      <div class="input-group input-group-sm mt-1">
+      <div class="input-group input-group-sm">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>

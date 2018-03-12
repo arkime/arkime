@@ -9,7 +9,7 @@
       :message="error">
     </moloch-error>
 
-    <table v-if="!error && stats"
+    <table v-if="!error && !loading"
       class="table table-sm table-striped">
       <thead>
         <tr>
@@ -90,7 +90,7 @@
             </template>
           </td>
         </tr>
-        <tr v-if="!stats.indices">
+        <tr v-if="!stats.indices.length">
           <td colspan="6"
             class="text-danger">
             <span class="fa fa-warning"></span>&nbsp;
