@@ -22,6 +22,7 @@ export default {
 body {
   color: var(--color-foreground);
   background-color: var(--color-background);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 
   --px-none   : 0;          /* 0px */
   --px-xs     : 0.125rem;   /* 2px */

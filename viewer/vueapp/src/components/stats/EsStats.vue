@@ -46,9 +46,9 @@
               <td>Average</td>
               <td>{{ averageValues.docs | round(0) | commaString }}</td>
               <td>{{ averageValues.storeSize | humanReadable }}</td>
-              <td>{{ averageValues.heapSize | humanReadable }}%</td>
+              <td>{{ averageValues.heapSize | humanReadable }}</td>
               <td>{{ averageValues.load | round(2) | commaString }}</td>
-              <td>{{ averageValues.cpu | round(1) | commaString }}</td>
+              <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
               <td>{{ averageValues.read | humanReadable }}</td>
               <td>{{ averageValues.write | humanReadable }}</td>
               <td>{{ averageValues.searches | round(0) | commaString }}</td>
@@ -57,9 +57,9 @@
               <td>Total</td>
               <td>{{ totalValues.docs | round(0) | commaString }}</td>
               <td>{{ totalValues.storeSize | humanReadable }}</td>
-              <td>{{ totalValues.heapSize | humanReadable }}%</td>
+              <td>{{ totalValues.heapSize | humanReadable }}</td>
               <td>{{ totalValues.load | round(2) | commaString }}</td>
-              <td>{{ totalValues.cpu | round(1) | commaString }}</td>
+              <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
               <td>{{ totalValues.read | humanReadable }}</td>
               <td>{{ totalValues.write | humanReadable }}</td>
               <td>{{ totalValues.searches | round(0) | commaString }}</td>
@@ -93,9 +93,9 @@
             </td>
             <td>{{ stat.docs | round(0) | commaString }}</td>
             <td>{{ stat.storeSize | humanReadable }}</td>
-            <td>{{ stat.heapSize | humanReadable }}%</td>
+            <td>{{ stat.heapSize | humanReadable }}</td>
             <td>{{ stat.load | round(2) | commaString }}</td>
-            <td>{{ stat.cpu | round(1) | commaString }}</td>
+            <td>{{ stat.cpu | round(1) | commaString }}%</td>
             <td>{{ stat.read | humanReadable }}</td>
             <td>{{ stat.write | humanReadable }}</td>
             <td>{{ stat.searches | round(0) | commaString }}</td>
@@ -113,9 +113,9 @@
             <td>Average</td>
             <td>{{ averageValues.docs | round(0) | commaString }}</td>
             <td>{{ averageValues.storeSize | humanReadable }}</td>
-            <td>{{ averageValues.heapSize | humanReadable }}%</td>
+            <td>{{ averageValues.heapSize | humanReadable }}</td>
             <td>{{ averageValues.load | round(2) | commaString }}</td>
-            <td>{{ averageValues.cpu | round(1) | commaString }}</td>
+            <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
             <td>{{ averageValues.read | humanReadable }}</td>
             <td>{{ averageValues.write | humanReadable }}</td>
             <td>{{ averageValues.searches | round(0) | commaString }}</td>
@@ -124,9 +124,9 @@
             <td>Total</td>
             <td>{{ totalValues.docs | round(0) | commaString }}</td>
             <td>{{ totalValues.storeSize | humanReadable }}</td>
-            <td>{{ totalValues.heapSize | humanReadable }}%</td>
+            <td>{{ totalValues.heapSize | humanReadable }}</td>
             <td>{{ totalValues.load | round(2) | commaString }}</td>
-            <td>{{ totalValues.cpu | round(1) | commaString }}</td>
+            <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
             <td>{{ totalValues.read | humanReadable }}</td>
             <td>{{ totalValues.write | humanReadable }}</td>
             <td>{{ totalValues.searches | round(0) | commaString }}</td>

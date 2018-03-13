@@ -50,8 +50,8 @@
             :key="stat.name">
             <td>{{ stat.action }}</td>
             <td>{{ stat.description }}</td>
-            <td>{{ stat.start_time_in_millis/1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z')  }}%</td>
-            <td>{{ stat.running_time_in_nanos/1000000 | round(1) | commaString }}</td>
+            <td>{{ stat.start_time_in_millis/1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z')  }}</td>
+            <td>{{ stat.running_time_in_nanos/1000000 | round(1) | commaString }}ms</td>
             <td>{{ stat.childrenCount | round(0) | commaString }}</td>
             <td>
               <a v-if="stat.cancellable"
