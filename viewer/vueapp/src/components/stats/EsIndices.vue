@@ -24,7 +24,7 @@
           placeholder="Begin typing to search for ES indices (hint: this input accepts regex)">
       </div>
 
-      <table class="table table-sm text-right small mt-3">
+      <table class="table table-sm table-striped text-right small mt-3">
         <thead>
           <tr>
             <th v-for="column of columns"

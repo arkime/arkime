@@ -10,12 +10,14 @@
     </moloch-error>
 
     <table v-if="!error && !loading"
-      class="table table-sm table-striped">
+      class="table table-sm table-hover small">
       <thead>
         <tr>
           <th v-for="column in columns"
             :key="column.name"
-            class="hover-menu">
+            class="hover-menu"
+            v-b-tooltip.hover
+            :title="column.name">
             <div>
               <!-- column dropdown menu -->
               <b-dropdown right
@@ -253,12 +255,34 @@ table > thead > tr > th {
   display: inline-block;
   width: 100%;
   word-break: break-word;
+  max-height: 36px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .table tbody > tr > td:first-child {
   width:1px;
   white-space:nowrap;
   padding-right: .5rem;
+}
+
+/* hoverable columns */
+table.table.table-hover {
+  overflow:hidden;
+}
+table.table.table-hover td, th {
+  position: relative;
+}
+table.table.table-hover td:hover::after,
+table.table.table-hover th:hover::after {
+  content: "";
+  position: absolute;
+  background-color: var(--color-gray-light) !important;
+  left: 0;
+  top: -5000px;
+  height: 10000px;
+  width: 100%;
+  z-index: -1;
 }
 
 .badge {

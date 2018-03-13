@@ -54,6 +54,11 @@
   background-color: var(--color-gray-lighter);
 }
 
+/* give hoverable rows theme color */
+.table-hover tbody tr:hover {
+  background-color: var(--color-gray-light);
+}
+
 /* make active table items darker */
 .table > thead > tr > td.active,
 .table > tbody > tr > td.active,

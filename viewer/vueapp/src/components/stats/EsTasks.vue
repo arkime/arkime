@@ -24,7 +24,7 @@
           placeholder="Begin typing to search for ES tasks (hint: this input accepts regex)">
       </div>
 
-      <table class="table table-sm text-right small mt-3">
+      <table class="table table-sm table-striped text-right small mt-3">
         <thead>
           <tr>
             <th v-for="column of columns"
@@ -40,6 +40,8 @@
             </th>
             <th>
               <input type="checkbox"
+                v-b-tooltip.hover
+                title="Show only cancellable tasks"
                 v-model="query.cancellable"
                 v-has-permission="'createEnabled'">
             </th>
