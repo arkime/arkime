@@ -237,7 +237,7 @@ void moloch_parser_init()
         NULL);
 
     versionField = moloch_field_define("quic", "termfield",
-        "quic.version", "Version", "quic.version-term",
+        "quic.version", "Version", "quic.version",
         "QUIC Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
