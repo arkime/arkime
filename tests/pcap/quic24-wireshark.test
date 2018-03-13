@@ -54,10 +54,10 @@
                   "canary Chrome/44.0.2375.0"
                ],
                "useragentCnt" : 1,
-               "version-term" : [
+               "version" : [
                   "Q024"
                ],
-               "version-termCnt" : 1
+               "versionCnt" : 1
             },
             "segmentCnt" : 1,
             "srcBytes" : 2866,
