@@ -30,6 +30,7 @@
             <th v-for="column of columns"
               :key="column.name"
               class="cursor-pointer"
+              :class="{'text-left':!column.doStats}"
               @click="columnClick(column.sort)">
               {{ column.name }}
               <span v-if="column.sort !== undefined">
@@ -50,8 +51,8 @@
         <tbody v-if="stats">
           <tr v-for="stat of stats.data"
             :key="stat.name">
-            <td>{{ stat.action }}</td>
-            <td>{{ stat.description }}</td>
+            <td class="text-left">{{ stat.action }}</td>
+            <td class="text-left">{{ stat.description }}</td>
             <td>{{ stat.start_time_in_millis/1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z')  }}</td>
             <td>{{ stat.running_time_in_nanos/1000000 | round(1) | commaString }}ms</td>
             <td>{{ stat.childrenCount | round(0) | commaString }}</td>
@@ -108,10 +109,10 @@ export default {
       },
       columns: [ // es indices table columns
         { name: 'Action', sort: 'action', doStats: false },
-        { name: 'Description', sort: 'description', doStats: true },
+        { name: 'Description', sort: 'description', doStats: false },
         { name: 'Start Time', sort: 'start_time_in_millis', doStats: true },
         { name: 'Running Time', sort: 'running_time_in_nanos', doStats: true },
-        { name: 'Children', sort: 'childrenCount', doStats: false }
+        { name: 'Children', sort: 'childrenCount', doStats: true }
       ]
     };
   },

@@ -46,12 +46,17 @@
 .table-sm > thead > tr > td,
 .table-sm > tbody > tr > td,
 .table-sm > tfoot > tr > td {
-  padding: 0.1rem;
+  padding: 0.1rem 0.5rem;
 }
 
 /* make stripes darker */
 .table-striped > tbody > tr:nth-of-type(odd) {
   background-color: var(--color-gray-lighter);
+}
+
+/* don't stripe average and total rows */
+.table-striped > tbody > tr.average-row, tr.total-row {
+  background-color: var(--color-background);
 }
 
 /* give hoverable rows theme color */

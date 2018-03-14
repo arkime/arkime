@@ -73,6 +73,7 @@
                     <th v-for="column of columns"
                       :key="column.name"
                       class="cursor-pointer"
+                      :class="{'text-left':!column.doStats}"
                       @click="columnClick(column.sort)">
                       {{ column.name }}
                       <span v-if="column.sort !== undefined">
@@ -85,9 +86,9 @@
                 </thead>
                 <tbody v-if="stats">
                   <template v-if="averageValues && totalValues && stats.data.length > 9">
-                    <tr class="bold">
+                    <tr class="bold average-row">
                       <td>&nbsp;</td>
-                      <td>Average</td>
+                      <td class="text-left">Average</td>
                       <td>&nbsp;</td>
                       <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
                       <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
@@ -101,9 +102,9 @@
                       <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
                       <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                     </tr>
-                    <tr class="border-bottom-bold bold">
+                    <tr class="border-bottom-bold bold total-row">
                       <td>&nbsp;</td>
-                      <td>Total</td>
+                      <td class="text-left">Total</td>
                       <td>&nbsp;</td>
                       <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
                       <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
@@ -121,10 +122,11 @@
                   <template v-for="stat of stats.data">
                     <tr :key="stat.id + 'data'">
                       <td>
-                        <toggle-btn v-on:toggle="toggleStatDetail(stat)">
+                        <toggle-btn v-on:toggle="toggleStatDetail(stat)"
+                          class="mr-2">
                         </toggle-btn>
                       </td>
-                      <td>{{ stat.id }}</td>
+                      <td class="text-left">{{ stat.id }}</td>
                       <td>{{ stat.currentTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</td>
                       <td>{{ stat.monitoring | round(0) | commaString }}</td>
                       <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP | round(1) }}%)</td>
@@ -156,9 +158,9 @@
                   </tr>
                 </tbody>
                 <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
-                  <tr class="border-top-bold bold">
+                  <tr class="border-top-bold bold average-row">
                     <td>&nbsp;</td>
-                    <td>Average</td>
+                    <td class="text-left">Average</td>
                     <td>&nbsp;</td>
                     <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
                     <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
@@ -172,9 +174,9 @@
                     <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaESDroppedPerSec | round(0) | commaString }}</td>
                   </tr>
-                  <tr class="bold">
+                  <tr class="bold total-row">
                     <td>&nbsp;</td>
-                    <td>Total</td>
+                    <td class="text-left">Total</td>
                     <td>&nbsp;</td>
                     <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
                     <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>

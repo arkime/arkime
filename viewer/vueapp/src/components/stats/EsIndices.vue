@@ -30,6 +30,7 @@
             <th v-for="column of columns"
               :key="column.name"
               class="cursor-pointer"
+              :class="{'text-left':!column.doStats}"
               @click="columnClick(column.sort)">
               {{ column.name }}
               <span v-if="column.sort !== undefined">
@@ -42,41 +43,41 @@
         </thead>
         <tbody v-if="stats">
           <template v-if="stats && averageValues && totalValues && stats.data.length > 9">
-            <tr class="bold">
-              <td>Average</td>
+            <tr class="bold average-row">
+              <td class="text-left">Average</td>
               <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
               <td>{{ averageValues['store.size'] | humanReadable }}</td>
               <td>{{ averageValues.pir | round(0) | commaString }}</td>
               <td>{{ averageValues.rep| round(0) | commaString }}</td>
-              <td>-</td>
-              <td>-</td>
+              <td class="text-left">-</td>
+              <td class="text-left">-</td>
             </tr>
-            <tr class="border-bottom-bold bold">
-              <td>Total</td>
+            <tr class="border-bottom-bold bold total-row">
+              <td class="text-left">Total</td>
               <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
               <td>{{ totalValues['store.size'] | humanReadable }}</td>
               <td>{{ totalValues.pir | round(0) | commaString }}</td>
               <td>{{ totalValues.rep| round(0) | commaString }}</td>
-              <td>-</td>
-              <td>-</td>
+              <td class="text-left">-</td>
+              <td class="text-left">-</td>
             </tr>
           </template>
           <tr v-for="(stat, i) of stats.data"
             :key="stat.name">
-            <td>
-              <a class="btn btn-xs btn-danger pull-left"
+            <td class="text-left">
+              {{ stat.index }}
+              <a class="btn btn-xs btn-danger ml-2"
                 v-has-permission="'createEnabled'"
                 @click="deleteIndex(i, stat.index)">
                 <span class="fa fa-trash-o"></span>
               </a>
-              {{ stat.index }}
             </td>
             <td>{{ stat['docs.count'] | round(0) | commaString }}</td>
             <td>{{ stat['store.size'] | humanReadable }}</td>
             <td>{{ stat.pir | round(0) | commaString }}</td>
             <td>{{ stat.rep| round(0) | commaString }}</td>
-            <td>{{ stat.health }}</td>
-            <td>{{ stat.status }}</td>
+            <td class="text-left">{{ stat.health }}</td>
+            <td class="text-left">{{ stat.status }}</td>
           </tr>
           <tr v-if="stats.data && !stats.data.length">
             <td :colspan="columns.length"
@@ -87,23 +88,23 @@
           </tr>
         </tbody>
         <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
-          <tr class="bold border-top-bold">
-            <td>Average</td>
+          <tr class="bold border-top-bold average-row">
+            <td class="text-left">Average</td>
             <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
             <td>{{ averageValues['store.size'] | humanReadable }}</td>
             <td>{{ averageValues.pir | round(0) | commaString }}</td>
             <td>{{ averageValues.rep| round(0) | commaString }}</td>
-            <td>-</td>
-            <td>-</td>
+            <td class="text-left">-</td>
+            <td class="text-left">-</td>
           </tr>
-          <tr class="border-bottom-bold bold">
-            <td>Total</td>
+          <tr class="border-bottom-bold bold total-row">
+            <td class="text-left">Total</td>
             <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
             <td>{{ totalValues['store.size'] | humanReadable }}</td>
             <td>{{ totalValues.pir | round(0) | commaString }}</td>
             <td>{{ totalValues.rep| round(0) | commaString }}</td>
-            <td>-</td>
-            <td>-</td>
+            <td class="text-left">-</td>
+            <td class="text-left">-</td>
           </tr>
         </tfoot>
       </table>

@@ -30,6 +30,7 @@
             <th v-for="column of columns"
               :key="column.name"
               class="cursor-pointer"
+              :class="{'text-left':!column.doStats}"
               @click="columnClick(column.sort)">
               {{ column.name }}
               <span v-if="column.sort !== undefined">
@@ -42,8 +43,8 @@
         </thead>
         <tbody v-if="stats">
           <template v-if="averageValues && totalValues && stats.data.length > 9">
-            <tr class="bold">
-              <td>Average</td>
+            <tr class="bold average-row">
+              <td class="text-left">Average</td>
               <td>{{ averageValues.docs | round(0) | commaString }}</td>
               <td>{{ averageValues.storeSize | humanReadable }}</td>
               <td>{{ averageValues.heapSize | humanReadable }}</td>
@@ -53,8 +54,8 @@
               <td>{{ averageValues.write | humanReadable }}</td>
               <td>{{ averageValues.searches | round(0) | commaString }}</td>
             </tr>
-            <tr class="border-bottom-bold bold">
-              <td>Total</td>
+            <tr class="border-bottom-bold bold total-row">
+              <td class="text-left">Total</td>
               <td>{{ totalValues.docs | round(0) | commaString }}</td>
               <td>{{ totalValues.storeSize | humanReadable }}</td>
               <td>{{ totalValues.heapSize | humanReadable }}</td>
@@ -67,10 +68,11 @@
           </template>
           <tr v-for="stat of stats.data"
             :key="stat.name">
-            <td class="hover-menu">
+            <td class="hover-menu text-left">
+              {{ stat.name }}
               <!-- column dropdown menu -->
               <b-dropdown size="sm"
-                class="row-actions-btn pull-left"
+                class="row-actions-btn ml-1"
                 v-has-permission="'createEnabled'">
                 <b-dropdown-item v-if="!stat.nodeExcluded"
                   @click="exclude('name', stat)">
@@ -89,7 +91,6 @@
                   Include IP {{ stat.ip }}
                 </b-dropdown-item>
               </b-dropdown> <!-- /column dropdown menu -->
-              {{ stat.name }}
             </td>
             <td>{{ stat.docs | round(0) | commaString }}</td>
             <td>{{ stat.storeSize | humanReadable }}</td>
@@ -109,8 +110,8 @@
           </tr>
         </tbody>
         <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
-          <tr class="bold">
-            <td>Average</td>
+          <tr class="bold average-row">
+            <td class="text-left">Average</td>
             <td>{{ averageValues.docs | round(0) | commaString }}</td>
             <td>{{ averageValues.storeSize | humanReadable }}</td>
             <td>{{ averageValues.heapSize | humanReadable }}</td>
@@ -120,8 +121,8 @@
             <td>{{ averageValues.write | humanReadable }}</td>
             <td>{{ averageValues.searches | round(0) | commaString }}</td>
           </tr>
-          <tr class="border-bottom-bold bold">
-            <td>Total</td>
+          <tr class="border-bottom-bold bold total-row">
+            <td class="text-left">Total</td>
             <td>{{ totalValues.docs | round(0) | commaString }}</td>
             <td>{{ totalValues.storeSize | humanReadable }}</td>
             <td>{{ totalValues.heapSize | humanReadable }}</td>

@@ -56,7 +56,8 @@
             {{ stat.name }}
           </td>
           <td v-for="node in nodes"
-            :key="node">
+            :key="node"
+            class="text-center">
             <template v-if="stat.nodes[node]"
               v-for="item in stat.nodes[node]">
               <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
