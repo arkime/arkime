@@ -2521,10 +2521,12 @@ app.get('/esstats.json', function(req, res) {
         write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
       }
 
+      var ip = (node.ip?node.ip.split(":")[0]:node.host);
+
       stats.push({
         name: node.name,
-        ip: node.host,
-        ipExcluded: ipExcludes.includes(node.host),
+        ip: ip,
+        ipExcluded: ipExcludes.includes(ip),
         nodeExcluded: nodeExcludes.includes(node.name),
         storeSize: node.indices.store.size_in_bytes,
         docs: node.indices.docs.count,
