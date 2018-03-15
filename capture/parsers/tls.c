@@ -35,8 +35,7 @@ extern unsigned char    moloch_char_to_hexstr[256][3];
 LOCAL GChecksum *checksums[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
-void
-tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
+LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
@@ -78,8 +77,7 @@ tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
     }
 }
 /******************************************************************************/
-void
-tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
+LOCAL void tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
 {
     uint32_t apc, atag, alen;
 
@@ -91,8 +89,7 @@ tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
     }
 }
 /******************************************************************************/
-void
-tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
 
@@ -132,7 +129,7 @@ tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
     return;
 }
 /******************************************************************************/
-void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB bsb;
     BSB_INIT(bsb, data, len);
@@ -208,7 +205,7 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
 
 /******************************************************************************/
-uint64_t tls_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
+LOCAL uint64_t tls_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
 {
     int        offset = 0;
     int        pos = 0;
@@ -288,7 +285,7 @@ uint64_t tls_parse_time(MolochSession_t *session, int tag, unsigned char* value,
     return 0;
 }
 /******************************************************************************/
-void tls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
 {
 
     BSB cbsb;
@@ -431,8 +428,7 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
 /* @data the data inside the record layer
  * @len  the length of data inside record layer
  */
-int
-tls_process_server_handshake_record(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL int tls_process_server_handshake_record(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB rbsb;
 
@@ -459,8 +455,7 @@ tls_process_server_handshake_record(MolochSession_t *session, const unsigned cha
 }
 /******************************************************************************/
 // https://tools.ietf.org/html/draft-davidben-tls-grease-00
-int
-tls_is_grease_value(uint32_t val)
+LOCAL int tls_is_grease_value(uint32_t val)
 {
     if ((val & 0x0f) != 0x0a)
         return 0;
@@ -471,8 +466,7 @@ tls_is_grease_value(uint32_t val)
     return 1;
 }
 /******************************************************************************/
-void
-tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB sslbsb;
     char ja3[30000];
@@ -627,7 +621,7 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 }
 
 /******************************************************************************/
-int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TLSInfo_t            *tls          = uw;
 
@@ -671,7 +665,7 @@ int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
+LOCAL void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
 {
     TLSInfo_t            *tls          = uw;
 
@@ -681,14 +675,14 @@ void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
     }
 }
 /******************************************************************************/
-void tls_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void tls_free(MolochSession_t *UNUSED(session), void *uw)
 {
     TLSInfo_t            *tls          = uw;
 
     MOLOCH_TYPE_FREE(TLSInfo_t, tls);
 }
 /******************************************************************************/
-void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 6 || data[2] > 0x03)
         return;

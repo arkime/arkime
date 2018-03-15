@@ -24,7 +24,7 @@ extern MolochConfig_t        config;
 LOCAL  int userField;
 
 /******************************************************************************/
-int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TDSInfo_t *tds = uw;
 
@@ -53,14 +53,14 @@ int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void tds_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void tds_free(MolochSession_t UNUSED(*session), void *uw)
 {
     TDSInfo_t            *tds          = uw;
 
     MOLOCH_TYPE_FREE(TDSInfo_t, tds);
 }
 /******************************************************************************/
-void tds_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
+LOCAL void tds_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
 {
     if (which != 0 || len < 512 || moloch_session_has_protocol(session, "tds"))
         return;

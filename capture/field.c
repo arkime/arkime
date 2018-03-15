@@ -35,7 +35,7 @@ HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
 LOCAL va_list empty_va_list;
 
 /******************************************************************************/
-int moloch_field_exp_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_field_exp_cmp(const void *keyv, const void *elementv)
 {
     char *key = (char*)keyv;
     MolochFieldInfo_t *element = (MolochFieldInfo_t *)elementv;
@@ -421,42 +421,6 @@ void moloch_field_by_exp_add_exspecial(char *exp, int pos, int type)
     info->type         = type;
     config.fields[pos] = info;
     HASH_ADD(e_, fieldsByExp, info->expression, info);
-}
-/******************************************************************************/
-void moloch_field_init()
-{
-    config.maxField = 0;
-    HASH_INIT(d_, fieldsByDb, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
-
-    moloch_field_by_exp_add_special("dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
-    moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
-    moloch_field_by_exp_add_special("_maxPacketsToSave", MOLOCH_FIELD_SPECIAL_STOP_PCAP);
-    moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
-
-    moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
-    moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
-    moloch_field_by_exp_add_exspecial("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
-}
-/******************************************************************************/
-void moloch_field_exit()
-{
-    MolochFieldInfo_t *info = 0;
-
-    HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
-        if (info->dbFieldFull)
-            g_free(info->dbFieldFull);
-        if (info->expression)
-            g_free(info->expression);
-        if (info->group)
-            g_free(info->group);
-        if (info->kind)
-            g_free(info->kind);
-        if (info->category)
-            g_free(info->category);
-        MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
-    );
 }
 /******************************************************************************/
 const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy)
@@ -1306,5 +1270,41 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         }
     }
     ops->num++;
+}
+/******************************************************************************/
+void moloch_field_init()
+{
+    config.maxField = 0;
+    HASH_INIT(d_, fieldsByDb, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
+
+    moloch_field_by_exp_add_special("dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
+    moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
+    moloch_field_by_exp_add_special("_maxPacketsToSave", MOLOCH_FIELD_SPECIAL_STOP_PCAP);
+    moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
+
+    moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_exspecial("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_exspecial("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
+}
+/******************************************************************************/
+void moloch_field_exit()
+{
+    MolochFieldInfo_t *info = 0;
+
+    HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
+        if (info->dbFieldFull)
+            g_free(info->dbFieldFull);
+        if (info->expression)
+            g_free(info->expression);
+        if (info->group)
+            g_free(info->group);
+        if (info->kind)
+            g_free(info->kind);
+        if (info->category)
+            g_free(info->category);
+        MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
+    );
 }
 /******************************************************************************/

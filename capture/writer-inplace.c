@@ -32,20 +32,16 @@ LOCAL GHashTable           *filePtr2Id;
 LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
 
 /******************************************************************************/
-uint32_t writer_inplace_queue_length()
+LOCAL uint32_t writer_inplace_queue_length()
 {
     return 0;
 }
 /******************************************************************************/
-void writer_inplace_flush(gboolean UNUSED(all))
+LOCAL void writer_inplace_exit()
 {
 }
 /******************************************************************************/
-void writer_inplace_exit()
-{
-}
-/******************************************************************************/
-long writer_inplace_create(MolochPacket_t * const packet)
+LOCAL long writer_inplace_create(MolochPacket_t * const packet)
 {
     struct stat st;
 
@@ -59,7 +55,7 @@ long writer_inplace_create(MolochPacket_t * const packet)
 }
 
 /******************************************************************************/
-void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+LOCAL void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     MOLOCH_LOCK(filePtr2Id);
     long outputId = (long)g_hash_table_lookup(filePtr2Id, packet->readerName);
@@ -71,7 +67,7 @@ void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochP
     packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
-void writer_inplace_write_dryrun(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+LOCAL void writer_inplace_write_dryrun(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     packet->writerFilePos = packet->readerFilePos;
 }

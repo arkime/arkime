@@ -72,7 +72,7 @@ LOCAL patricia_tree_t       *fieldsTree4[MOLOCH_FIELDS_MAX];
 LOCAL patricia_tree_t       *fieldsTree6[MOLOCH_FIELDS_MAX];
 
 LOCAL int                    rulesLen[MOLOCH_RULE_TYPE_NUM];
-LOCAL MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX];
+LOCAL MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX+1];
 
 LOCAL pcap_t                *deadPcap;
 extern MolochPcapFileHdr_t   pcapFileHeader;
@@ -455,26 +455,28 @@ void moloch_rules_process(char *filename, YamlNode_t *parent)
     }
 }
 /******************************************************************************/
+/* Called at the start on main thread or each time a new file is open on single thread */
 void moloch_rules_recompile()
 {
-    int t, i;
+    int t, r;
 
     if (deadPcap)
         pcap_close(deadPcap);
 
     deadPcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    MolochRule_t *rule;
     for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
-        for (i = 0; i < rulesLen[t]; i++) {
-            if (!rules[t][i]->bpf)
+        for (r = 0; (rule = rules[t][r]); r++) {
+            if (!rule->bpf)
                 continue;
 
-            pcap_freecode(&rules[t][i]->bpfp);
+            pcap_freecode(&rule->bpfp);
             if (pcapFileHeader.linktype != 239) {
-                if (pcap_compile(deadPcap, &rules[t][i]->bpfp, rules[t][i]->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                    LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rules[t][i]->filename, rules[t][i]->bpf, pcap_geterr(deadPcap));
+                if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                    LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
             } else {
-                rules[t][i]->bpfp.bf_len = 0;
+                rule->bpfp.bf_len = 0;
             }
         }
     }
@@ -489,7 +491,7 @@ LOCAL gboolean moloch_rules_check_ip(const MolochRule_t *rule, const int p, cons
     }
 }
 /******************************************************************************/
-void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule, int skipPos)
+LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule, int skipPos)
 {
     MolochString_t        *hstring;
     MolochInt_t           *hint;
@@ -671,8 +673,8 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
 void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet)
 {
     int r;
-    for (r = 0; r < rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]; r++) {
-        MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r];
+    MolochRule_t *rule;
+    for (r = 0; (rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r]); r++) {
         if (rule->fieldsLen) {
             moloch_rules_check_rule_fields(session, rule, -1);
         } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
@@ -683,9 +685,9 @@ void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *pa
 /******************************************************************************/
 void moloch_rules_run_after_classify(MolochSession_t *session)
 {
-   int r;
-   for (r = 0; r < rulesLen[MOLOCH_RULE_TYPE_AFTER_CLASSIFY]; r++) {
-        MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_AFTER_CLASSIFY][r];
+    int r;
+    MolochRule_t *rule;
+    for (r = 0; (rule = rules[MOLOCH_RULE_TYPE_AFTER_CLASSIFY][r]); r++) {
         if (rule->fieldsLen) {
             moloch_rules_check_rule_fields(session, rule, -1);
         }
@@ -694,10 +696,10 @@ void moloch_rules_run_after_classify(MolochSession_t *session)
 /******************************************************************************/
 void moloch_rules_run_before_save(MolochSession_t *session, int final)
 {
-   int r;
-   final = 1 >> final;
-   for (r = 0; r < rulesLen[MOLOCH_RULE_TYPE_BEFORE_SAVE]; r++) {
-        MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r];
+    int r;
+    final = 1 >> final;
+    MolochRule_t *rule;
+    for (r = 0; (rule = rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r]); r++) {
         if ((rule->saveFlags & final) == 0) {
             continue;
         }
@@ -759,14 +761,13 @@ void moloch_rules_init()
     char      **bpfs;
     GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
 
-    int type = MOLOCH_RULE_TYPE_SESSION_SETUP;
     bpfs = moloch_config_str_list(NULL, "dontSaveBPFs", NULL);
     int pos = moloch_field_by_exp("_maxPacketsToSave");
     gint start_pos;
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = rulesLen[type]++;
-            MolochRule_t *rule = rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+            int n = rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]++;
+            MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
             rule->filename = "dontSaveBPFs";
             moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
@@ -788,8 +789,8 @@ void moloch_rules_init()
     pos = moloch_field_by_exp("_minPacketsBeforeSavingSPI");
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = rulesLen[type]++;
-            MolochRule_t *rule = rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+            int n = rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]++;
+            MolochRule_t *rule = rules[MOLOCH_RULE_TYPE_SESSION_SETUP][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
             rule->filename = "minPacketsSaveBPFs";
             moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
 

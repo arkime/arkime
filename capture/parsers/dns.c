@@ -36,7 +36,7 @@ typedef struct {
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-void dns_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void dns_free(MolochSession_t *UNUSED(session), void *uw)
 {
     DNSInfo_t            *info          = uw;
 
@@ -47,7 +47,7 @@ void dns_free(MolochSession_t *UNUSED(session), void *uw)
     MOLOCH_TYPE_FREE(DNSInfo_t, info);
 }
 /******************************************************************************/
-int dns_name_element(BSB *nbsb, BSB *bsb)
+LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
 {
     int nlen = 0;
     BSB_IMPORT_u08(*bsb, nlen);
@@ -77,7 +77,7 @@ int dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
+LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
 {
     BSB  nbsb;
     int  didPointer = 0;
@@ -122,7 +122,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
     return name;
 }
 /******************************************************************************/
-void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
+LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
 {
 
     if (len < 17)
@@ -282,7 +282,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
     }
 }
 /******************************************************************************/
-int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     DNSInfo_t *info = uw;
     while (len >= 2) {
@@ -334,7 +334,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (/*which == 0 &&*/ session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
@@ -343,7 +343,7 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
     }
 }
 /******************************************************************************/
-int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
     if (uw == 0 || (session->port1 != 53 && session->port2 != 53)) {
         dns_parser(session, (long)uw, data, len);
@@ -351,7 +351,7 @@ int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     moloch_parsers_register(session, dns_udp_parser, uw, 0);
 }

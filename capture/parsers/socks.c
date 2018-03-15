@@ -37,7 +37,7 @@ LOCAL  int hostField;
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
 #define SOCKS4_STATE_DATA         1
-int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -86,7 +86,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 #define SOCKS5_STATE_CONN_REQUEST   5
 #define SOCKS5_STATE_CONN_REPLY     6
 #define SOCKS5_STATE_CONN_DATA      7
-int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
     int                     consumed;
@@ -198,7 +198,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 }
 
 /******************************************************************************/
-void socks_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void socks_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -209,7 +209,7 @@ void socks_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -249,7 +249,7 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
 }
 
 /******************************************************************************/
-void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);

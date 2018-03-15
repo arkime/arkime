@@ -31,7 +31,7 @@ LOCAL SS_t               ss[MAX_SS];
 
 
 /******************************************************************************/
-void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
     int                    s;
     guint                  i;
@@ -80,7 +80,7 @@ void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
     }
 }
 /******************************************************************************/
-void scrubspi_add_entry(char *key, char *value)
+LOCAL void scrubspi_add_entry(char *key, char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];

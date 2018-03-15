@@ -87,7 +87,7 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
     MOLOCH_TYPE_FREE(MolochIpInfo_t, ii);
 }
 /******************************************************************************/
-MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_addr *ip)
+LOCAL MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_addr *ip)
 {
     patricia_node_t *node;
 
@@ -111,7 +111,7 @@ MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_add
 }
 
 /******************************************************************************/
-void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
+LOCAL void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
@@ -934,7 +934,7 @@ cleanup:
     MOLOCH_UNLOCK(dbInfo[thread].lock);
 }
 /******************************************************************************/
-long long zero_atoll(char *v) {
+LOCAL uint64_t zero_atoll(char *v) {
     if (v)
         return atoll(v);
     return 0;
@@ -950,7 +950,7 @@ LOCAL  uint64_t dbTotalDropped[NUMBER_OF_STATS];
 LOCAL  char     stats_key[200];
 LOCAL  int      stats_key_len = 0;
 
-void moloch_db_load_stats()
+LOCAL void moloch_db_load_stats()
 {
     size_t             data_len;
     uint32_t           len;
@@ -980,14 +980,14 @@ void moloch_db_load_stats()
 }
 /******************************************************************************/
 #if defined(__APPLE__) && defined(__MACH__)
-uint64_t moloch_db_memory_size()
+LOCAL uint64_t moloch_db_memory_size()
 {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
     return usage.ru_maxrss;
 }
 #elif  defined(__linux__)
-uint64_t moloch_db_memory_size()
+LOCAL uint64_t moloch_db_memory_size()
 {
     int fd = open("/proc/self/statm", O_RDONLY, 0);
     if (fd == -1)
@@ -1015,7 +1015,7 @@ uint64_t moloch_db_memory_size()
     return getpagesize() * size;
 }
 #else
-uint64_t moloch_db_memory_size()
+LOCAL uint64_t moloch_db_memory_size()
 {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
@@ -1023,13 +1023,13 @@ uint64_t moloch_db_memory_size()
 }
 #endif
 /******************************************************************************/
-uint64_t moloch_db_memory_max()
+LOCAL uint64_t moloch_db_memory_max()
 {
     return (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
 }
 
 /******************************************************************************/
-void moloch_db_update_stats(int n, gboolean sync)
+LOCAL void moloch_db_update_stats(int n, gboolean sync)
 {
     static uint64_t       lastPackets[NUMBER_OF_STATS];
     static uint64_t       lastBytes[NUMBER_OF_STATS];
@@ -1193,7 +1193,7 @@ void moloch_db_update_stats(int n, gboolean sync)
     }
 }
 /******************************************************************************/
-gboolean moloch_db_update_stats_gfunc (gpointer user_data)
+LOCAL gboolean moloch_db_update_stats_gfunc (gpointer user_data)
 {
     moloch_db_update_stats((long)user_data, 0);
 
@@ -1201,7 +1201,7 @@ gboolean moloch_db_update_stats_gfunc (gpointer user_data)
 }
 /******************************************************************************/
 // Runs on main thread
-gboolean moloch_db_flush_gfunc (gpointer user_data )
+LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
     int             thread;
     struct timeval  currentTime;
@@ -1236,7 +1236,7 @@ typedef struct moloch_seq_request {
 } MolochSeqRequest_t;
 
 void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw);
-void moloch_db_get_sequence_number_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void moloch_db_get_sequence_number_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     MolochSeqRequest_t *r = uw;
     uint32_t            version_len;
@@ -1296,14 +1296,14 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
     }
 }
 /******************************************************************************/
-void moloch_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
+LOCAL void moloch_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
 {
     MOLOCH_LOCK(nextFileNum);
     nextFileNum = newSeq;
     MOLOCH_UNLOCK(nextFileNum);
 }
 /******************************************************************************/
-void moloch_db_load_file_num()
+LOCAL void moloch_db_load_file_num()
 {
     char               key[200];
     int                key_len;
@@ -1375,7 +1375,7 @@ fetch_file_num:
 /******************************************************************************/
 // Modified From https://github.com/phaag/nfdump/blob/master/bin/flist.c
 // Copyright (c) 2014, Peter Haag
-void moloch_db_mkpath(char *path)
+LOCAL void moloch_db_mkpath(char *path)
 {
     struct stat sb;
     char *slash = path;
@@ -1564,7 +1564,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
     return moloch_db_create_file_full(firstPacket, name, size, locked, id, NULL);
 }
 /******************************************************************************/
-void moloch_db_check()
+LOCAL void moloch_db_check()
 {
     size_t             data_len;
     char               key[1000];
@@ -1625,7 +1625,7 @@ void moloch_db_check()
 }
 
 /******************************************************************************/
-void moloch_db_load_geo_country(char *name)
+LOCAL void moloch_db_load_geo_country(char *name)
 {
     static MMDB_s  *countryOld;
 
@@ -1650,7 +1650,7 @@ void moloch_db_load_geo_country(char *name)
     geoCountry = country;
 }
 /******************************************************************************/
-void moloch_db_load_geo_asn(char *name)
+LOCAL void moloch_db_load_geo_asn(char *name)
 {
     static MMDB_s  *asnOld;
 
@@ -1675,7 +1675,7 @@ void moloch_db_load_geo_asn(char *name)
     geoASN = asn;
 }
 /******************************************************************************/
-void moloch_db_load_rir(char *name)
+LOCAL void moloch_db_load_rir(char *name)
 {
     static char *oldRirs[256];
 
@@ -1737,7 +1737,7 @@ void moloch_db_load_rir(char *name)
 /* Only called in main thread.  Check if the file changed, if so reload.
  * Don't free old version until called again incase other threads are using.
  */
-void moloch_db_load_oui(char *name)
+LOCAL void moloch_db_load_oui(char *name)
 {
     static patricia_tree_t   *ouiOld;
 
@@ -1836,7 +1836,7 @@ void moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *ma
     moloch_field_string_add(field, session, node->data, -1, TRUE);
 }
 /******************************************************************************/
-void moloch_db_load_fields()
+LOCAL void moloch_db_load_fields()
 {
     size_t                 data_len;
     char                   key[100];

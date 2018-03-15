@@ -73,8 +73,7 @@ LOCAL  int methodField;
 LOCAL  int reqBodyField;
 
 /******************************************************************************/
-int
-moloch_hp_cb_on_message_begin (http_parser *parser)
+LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -98,8 +97,7 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
     return 0;
 }
 /******************************************************************************/
-int
-moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
+LOCAL int moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
 
@@ -117,8 +115,7 @@ moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
 }
 
 /******************************************************************************/
-int
-moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
+LOCAL int moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -159,8 +156,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 }
 
 /******************************************************************************/
-void
-moloch_http_parse_authorization(MolochSession_t *session, char *str)
+LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
 {
     gsize olen;
 
@@ -210,8 +206,7 @@ moloch_http_parse_authorization(MolochSession_t *session, char *str)
     }
 }
 /******************************************************************************/
-int
-moloch_hp_cb_on_message_complete (http_parser *parser)
+LOCAL int moloch_hp_cb_on_message_complete (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -236,8 +231,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 }
 
 /******************************************************************************/
-void
-http_add_value(MolochSession_t *session, HTTPInfo_t *http)
+LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
 {
     int                    pos  = http->pos[http->which];
     char                  *s    = http->valueString[http->which]->str;
@@ -290,8 +284,7 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     http->pos[http->which] = 0;
 }
 /******************************************************************************/
-int
-moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
+LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -329,8 +322,7 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 }
 
 /******************************************************************************/
-int
-moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
+LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -392,8 +384,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
     return 0;
 }
 /******************************************************************************/
-int
-moloch_hp_cb_on_headers_complete (http_parser *parser)
+LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
@@ -591,7 +582,7 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
 /*############################## SHARED ##############################*/
 /******************************************************************************/
-int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     HTTPInfo_t            *http          = uw;
 
@@ -642,7 +633,7 @@ void http_save(MolochSession_t UNUSED(*session), void *uw, int final)
 
 }
 /******************************************************************************/
-void http_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
 {
     HTTPInfo_t            *http          = uw;
 
@@ -669,7 +660,7 @@ void http_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(HTTPInfo_t, http);
 }
 /******************************************************************************/
-void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "http"))
         return;

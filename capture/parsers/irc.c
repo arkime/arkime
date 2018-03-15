@@ -22,7 +22,7 @@ LOCAL  int channelsField;
 LOCAL  int nickField;
 
 /******************************************************************************/
-int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     IRCInfo_t *irc = uw;
 
@@ -75,14 +75,14 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void irc_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void irc_free(MolochSession_t UNUSED(*session), void *uw)
 {
     IRCInfo_t            *irc          = uw;
 
     MOLOCH_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 8)
         return;

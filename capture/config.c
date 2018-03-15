@@ -685,6 +685,10 @@ gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
             continue;
         }
 
+        if (sb.st_size <= 1) { // Ignore tiny files for reloads
+            continue;
+        }
+
         if (sb.st_mtime > files[i].modify) {
             if (files[i].size != sb.st_size) {
                 files[i].size = sb.st_size;

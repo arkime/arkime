@@ -26,7 +26,7 @@ LOCAL  int versionField;
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != 0) {
@@ -73,7 +73,7 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
     return 0;
 }
 /******************************************************************************/
-void mysql_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void mysql_free(MolochSession_t UNUSED(*session), void *uw)
 {
     Info_t *info = uw;
 
@@ -82,7 +82,7 @@ void mysql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (which != 1)
         return;

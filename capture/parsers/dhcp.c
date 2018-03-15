@@ -23,14 +23,14 @@ LOCAL  int ouiField;
 LOCAL  int idField;
 
 /******************************************************************************/
-void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if ((data[0] != 1 && data[0] != 11) || !MOLOCH_SESSION_v6(session))
         return;
     moloch_session_add_protocol(session, "dhcpv6");
 }
 /******************************************************************************/
-int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     static char *names[] = {
             "",
@@ -125,7 +125,7 @@ int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
     return 0;
 }
 /******************************************************************************/
-void dhcp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
     if (len < 256 || (data[0] != 1 && data[0] != 2) || MOLOCH_SESSION_v6(session) || memcmp(data+236, "\x63\x82\x53\x63", 4) != 0)

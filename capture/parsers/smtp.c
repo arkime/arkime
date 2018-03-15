@@ -87,7 +87,7 @@ EMAIL_MIME_DATA,
 EMAIL_MIME_DATA_RETURN
 };
 /******************************************************************************/
-char *smtp_remove_matching(char *str, char start, char stop)
+LOCAL char *smtp_remove_matching(char *str, char start, char stop)
 {
     while (isspace(*str))
         str++;
@@ -104,8 +104,7 @@ char *smtp_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-void
-smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
+LOCAL void smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
 {
     while (isspace(*s)) {
         s++;
@@ -138,8 +137,7 @@ smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
     } /* SWITCH */
 }
 /******************************************************************************/
-char *
-smtp_quoteable_decode_inplace(char *str, gsize *olen)
+LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
 {
     char *start = str;
     int   ipos = 0;
@@ -180,8 +178,7 @@ smtp_quoteable_decode_inplace(char *str, gsize *olen)
 }
 
 /******************************************************************************/
-void
-smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
+LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 {
     /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
     /* =?charset?encoding?encoded-text?= */
@@ -289,7 +286,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
     }
 }
 /******************************************************************************/
-void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
+LOCAL void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
 {
     char *end = data+len;
 
@@ -321,7 +318,7 @@ void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data,
     }
 }
 /******************************************************************************/
-void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
+LOCAL void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
 {
     char *start = data;
     char *end = data+len;
@@ -374,7 +371,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
     }
 }
 /******************************************************************************/
-int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMTPInfo_t           *email        = uw;
     GString              *line         = email->line[which];
@@ -790,7 +787,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
     return 0;
 }
 /******************************************************************************/
-void smtp_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void smtp_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SMTPInfo_t            *email          = uw;
 
@@ -814,7 +811,7 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMTPInfo_t, email);
 }
 /******************************************************************************/
-void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 5)
         return;
