@@ -1,7 +1,7 @@
 SUBDIRS = . capture db viewer parliament release
 install-exec-local:
 	npm install
-	/bin/cp -f package.json @prefix@
+	@INSTALL@ package.json @prefix@
 	(cd @prefix@ ; npm install --production)
 
 config:
