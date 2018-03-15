@@ -606,8 +606,6 @@ void moloch_mlockall_init()
 /******************************************************************************/
 int main(int argc, char **argv)
 {
-    LOG("THREAD %p", (gpointer)pthread_self());
-
     signal(SIGHUP, reload);
     signal(SIGINT, controlc);
     signal(SIGUSR1, exit);
@@ -616,6 +614,9 @@ int main(int argc, char **argv)
     mainLoop = g_main_loop_new(NULL, FALSE);
 
     parse_args(argc, argv);
+    if (config.debug)
+        LOG("THREAD %p", (gpointer)pthread_self());
+
     moloch_hex_init();
     moloch_config_init();
     moloch_writers_init();

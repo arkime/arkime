@@ -76,6 +76,7 @@ var internals = {
   rightClicks: {},
   pluginEmitter: new EventEmitter(),
   writers: {},
+  oldDBFields: {},
 
   cronTimeout: +Config.get("dbFlushTimeout", 5) + // How long capture holds items
                60 +                               // How long before ES reindexs
@@ -314,6 +315,7 @@ function loadFields() {
 
     // Everything will use dbField2 as dbField
     for (let i = 0, ilen = data.length; i < ilen; i++) {
+      internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
       data[i]._source.dbField = data[i]._source.dbField2;
       if (data[i]._source.portField2) {
         data[i]._source.portField = data[i]._source.portField2;
@@ -1338,9 +1340,25 @@ app.post('/user/password/change', [checkCookieToken, logAction(), postSettingUse
   });
 });
 
+function oldDB2newDB(x) {
+  if (!internals.oldDBFields[x]) {return x;}
+  return internals.oldDBFields[x].dbField2;
+}
+
 // gets custom column configurations for a user
 app.get('/user/columns', getSettingUser, function(req, res) {
   if (!req.settingUser) {return res.send([]);}
+
+  // Fix for new names
+  if (req.settingUser.columnConfigs) {
+    for (var key in req.settingUser.columnConfigs) {
+      let item = req.settingUser.columnConfigs[key];
+      item.columns = item.columns.map(oldDB2newDB);
+      if (item.order && item.order.length > 0) {
+        item.order[0][0] = oldDB2newDB(item.order[0][0]);
+      }
+    };
+  }
 
   return res.send(req.settingUser.columnConfigs || []);
 });
@@ -4681,6 +4699,16 @@ app.get('/state/:name', function(req, res) {
   if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
     return res.send("{}");
   }
+
+  // Fix for new names
+  if (req.params.name === "sessionsNew" && req.user.tableStates && req.user.tableStates.sessionsNew) {
+    let item = req.user.tableStates.sessionsNew;
+    item.visibleHeaders = item.visibleHeaders.map(oldDB2newDB);
+    if (item.order && item.order.length > 0) {
+      item.order[0][0] = oldDB2newDB(item.order[0][0]);
+    }
+  }
+
   return res.send(req.user.tableStates[req.params.name]);
 });
 

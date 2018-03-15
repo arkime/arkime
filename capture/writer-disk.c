@@ -203,7 +203,8 @@ LOCAL gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointe
 /******************************************************************************/
 LOCAL void *writer_disk_output_thread(void *UNUSED(arg))
 {
-    LOG("THREAD %p", (gpointer)pthread_self());
+    if (config.debug)
+        LOG("THREAD %p", (gpointer)pthread_self());
 
     MolochDiskOutput_t *out;
     int outputFd = 0;

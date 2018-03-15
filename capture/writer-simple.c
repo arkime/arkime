@@ -291,6 +291,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
 
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
+
     while (1) {
         MOLOCH_LOCK(simpleQ);
         while (DLL_COUNT(simple_, &simpleQ) == 0) {

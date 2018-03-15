@@ -66,7 +66,8 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
 LOCAL void *reader_libpcap_thread(gpointer pcapv)
 {
     pcap_t *pcap = pcapv;
-    LOG("THREAD %p", (gpointer)pthread_self());
+    if (config.debug)
+        LOG("THREAD %p", (gpointer)pthread_self());
 
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
