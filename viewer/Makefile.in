@@ -14,7 +14,6 @@ install:
 	npm install
 	(cd vueapp ; npm install)
 	npm run bundle:min
-	npm run bundle:vue:min
 	$(CP) -pr views public bundle $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
 	(cd $(VIEWERDIR) ; npm install --production)
@@ -22,4 +21,4 @@ install:
 distclean realclean clean:
 	rm -rf node_modules
 	rm -rf bundle
-	(cd vueapp ; rm -rf node_modules; rm -rf dist)
+	(cd vueapp ; rm -rf node_modules ; rm -rf dist)
