@@ -45,7 +45,7 @@ LOCAL MolochPacketBatch_t   batch;
 LOCAL int         monitorFd;
 LOCAL GHashTable *wdHashTable;
 
-void reader_libpcapfile_monitor_dir(char *dirname);
+LOCAL void reader_libpcapfile_monitor_dir(char *dirname);
 
 LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 {
