@@ -68,7 +68,7 @@
             </td>
           </tr>
           <tr v-if="stats.data && !stats.data.length">
-            <td :colspan="columns.length"
+            <td :colspan="columns.length + 1"
               class="text-danger text-center">
               <span class="fa fa-warning"></span>&nbsp;
               No results match your search
