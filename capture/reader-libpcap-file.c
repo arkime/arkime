@@ -36,7 +36,7 @@ LOCAL  char                  offlinePcapFilename[PATH_MAX+1];
 LOCAL  char                 *offlinePcapName;
 LOCAL  int                   pktsToRead;
 
-void reader_libpcapfile_opened();
+LOCAL void reader_libpcapfile_opened();
 
 LOCAL MolochPacketBatch_t   batch;
 
@@ -45,9 +45,9 @@ LOCAL MolochPacketBatch_t   batch;
 LOCAL int         monitorFd;
 LOCAL GHashTable *wdHashTable;
 
-void reader_libpcapfile_monitor_dir(char *dirname);
+LOCAL void reader_libpcapfile_monitor_dir(char *dirname);
 
-void reader_libpcapfile_monitor_do(struct inotify_event *event)
+LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 {
     gchar *dirname = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
     gchar *fullfilename = g_build_filename (dirname, event->name, NULL);
@@ -80,7 +80,7 @@ void reader_libpcapfile_monitor_do(struct inotify_event *event)
     return;
 }
 /******************************************************************************/
-gboolean reader_libpcapfile_monitor_read()
+LOCAL gboolean reader_libpcapfile_monitor_read()
 {
     char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__ ((aligned(8)));
     struct inotify_event *event;
@@ -101,7 +101,7 @@ gboolean reader_libpcapfile_monitor_read()
     return TRUE;
 }
 /******************************************************************************/
-void reader_libpcapfile_monitor_dir(char *dirname)
+LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
 {
     if (config.debug)
         LOG("Monitoring %s", dirname);
@@ -145,7 +145,7 @@ void reader_libpcapfile_monitor_dir(char *dirname)
     g_dir_close(dir);
 }
 /******************************************************************************/
-void reader_libpcapfile_init_monitor()
+LOCAL void reader_libpcapfile_init_monitor()
 {
     int          dir;
     monitorFd = inotify_init1(IN_NONBLOCK);
@@ -161,13 +161,13 @@ void reader_libpcapfile_init_monitor()
     }
 }
 #else
-void reader_libpcapfile_init_monitor()
+LOCAL void reader_libpcapfile_init_monitor()
 {
     LOGEXIT("Monitoring not supporting on this OS");
 }
 #endif
 /******************************************************************************/
-int reader_libpcapfile_next()
+LOCAL int reader_libpcapfile_next()
 {
     char         errbuf[1024];
     gchar       *fullfilename;
@@ -331,7 +331,7 @@ dirsDone:
     return 0;
 }
 /******************************************************************************/
-gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
 {
     if (DLL_COUNT(s_, &monitorQ) == 0)
         return TRUE;
@@ -343,7 +343,7 @@ gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
-int reader_libpcapfile_stats(MolochReaderStats_t *stats)
+LOCAL int reader_libpcapfile_stats(MolochReaderStats_t *stats)
 {
     struct pcap_stat ps;
     if (!pcap) {
@@ -360,7 +360,7 @@ int reader_libpcapfile_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
+LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
 {
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
 
@@ -382,7 +382,7 @@ void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *
     moloch_packet_batch(&batch, packet);
 }
 /******************************************************************************/
-gboolean reader_libpcapfile_read()
+LOCAL gboolean reader_libpcapfile_read()
 {
     // pause reading if too many waiting disk operations
     if (moloch_writer_queue_length() > 10) {
@@ -437,7 +437,7 @@ gboolean reader_libpcapfile_read()
     return TRUE;
 }
 /******************************************************************************/
-void reader_libpcapfile_opened()
+LOCAL void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
 
@@ -471,7 +471,7 @@ void reader_libpcapfile_opened()
 }
 
 /******************************************************************************/
-void reader_libpcapfile_start() {
+LOCAL void reader_libpcapfile_start() {
     reader_libpcapfile_next();
     if (!pcap) {
         if (config.pcapMonitor) {

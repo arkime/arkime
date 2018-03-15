@@ -819,7 +819,6 @@ void     moloch_session_exit();
 void     moloch_session_add_protocol(MolochSession_t *session, const char *protocol);
 gboolean moloch_session_has_protocol(MolochSession_t *session, const char *protocol);
 void     moloch_session_add_tag(MolochSession_t *session, const char *tag);
-gboolean moloch_session_has_tag(MolochSession_t *session, const char *tag);
 
 #define  moloch_session_incr_outstanding(session) (session)->outstandingQueries++
 gboolean moloch_session_decr_outstanding(MolochSession_t *session);

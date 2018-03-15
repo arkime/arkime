@@ -113,21 +113,21 @@ my $pwd = "*/pcap";
     my $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
-    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["srcIp","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["a1","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
     $info = viewerGet("/user/columns?molochRegressionUser=anonymous&userId=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(! $info->{success}, "column: delete not found");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lp","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");

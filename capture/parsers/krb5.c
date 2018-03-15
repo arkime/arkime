@@ -35,7 +35,7 @@ typedef struct {
 --      name-string[1]          SEQUENCE OF GeneralString
 --}
  */
-void krb5_parse_principal_name(MolochSession_t *session, int field, const unsigned char *data, int len)
+LOCAL void krb5_parse_principal_name(MolochSession_t *session, int field, const unsigned char *data, int len)
 {
     MolochASNSeq_t seq[10];
 
@@ -79,7 +79,7 @@ void krb5_parse_principal_name(MolochSession_t *session, int field, const unsign
 --      additional-tickets[11]  SEQUENCE OF Ticket OPTIONAL
 --}
 */
-void krb5_parse_req_body(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req_body(MolochSession_t *session, const unsigned char *data, int len)
 {
     MolochASNSeq_t seq[12];
 
@@ -114,7 +114,7 @@ void krb5_parse_req_body(MolochSession_t *session, const unsigned char *data, in
 --      req-body[4]             KDC-REQ-BODY
 --}
 */
-void krb5_parse_req(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req(MolochSession_t *session, const unsigned char *data, int len)
 {
     MolochASNSeq_t seq[5];
 
@@ -151,7 +151,7 @@ void krb5_parse_req(MolochSession_t *session, const unsigned char *data, int len
 --      enc-part[6]             EncryptedData
 --}
 */
-void krb5_parse_rep(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
@@ -172,11 +172,11 @@ void krb5_parse_rep(MolochSession_t *UNUSED(session), const unsigned char *UNUSE
 --      e-data[12]              OCTET STRING OPTIONAL
 --}
 */
-void krb5_parse_error(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_error(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
-void krb5_parse(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB obsb;
     uint32_t opc, msgType, olen;
@@ -205,13 +205,13 @@ void krb5_parse(MolochSession_t *session, const unsigned char *data, int len)
     }
 }
 /******************************************************************************/
-int krb5_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int krb5_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     krb5_parse(session, data, len);
     return 0;
 }
 /******************************************************************************/
-void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "krb5"))
         return;
@@ -229,14 +229,14 @@ void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int 
     }
 }
 /******************************************************************************/
-void krb5_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void krb5_free(MolochSession_t UNUSED(*session), void *uw)
 {
     KRB5Info_t            *krb5          = uw;
 
     MOLOCH_TYPE_FREE(KRB5Info_t, krb5);
 }
 /******************************************************************************/
-int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     KRB5Info_t *krb5 = uw;
 
@@ -256,7 +256,7 @@ int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *dat
     return 0;
 }
 /******************************************************************************/
-void krb5_tcp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_tcp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (which !=0 || data[0] != 0 || data[1] != 0)
         return;

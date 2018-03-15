@@ -23,7 +23,7 @@ LOCAL  int dbField;
 LOCAL  int appField;
 
 /******************************************************************************/
-int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
+LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
 {
     Info_t *info = uw;
     if (which != info->which)
@@ -79,14 +79,14 @@ cleanup:
     return 0;
 }
 /******************************************************************************/
-void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
 {
     Info_t *info = uw;
 
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "postgresql"))
         return;

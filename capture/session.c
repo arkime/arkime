@@ -192,16 +192,6 @@ void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Moloc
     MOLOCH_UNLOCK(sessionCmds[thread].lock);
 }
 /******************************************************************************/
-gboolean moloch_session_has_tag(MolochSession_t *session, const char *tagName)
-{
-    if (!session->fields[config.tagsStringField])
-        return FALSE;
-
-    MolochString_t          *hstring;
-    HASH_FIND(s_, *(session->fields[config.tagsStringField]->shash), tagName, hstring);
-    return hstring != 0;
-}
-/******************************************************************************/
 void moloch_session_add_protocol(MolochSession_t *session, const char *protocol)
 {
     moloch_field_string_add(protocolField, session, protocol, -1, TRUE);
@@ -318,13 +308,6 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
         moloch_plugins_cb_pre_save(session, FALSE);
 
     moloch_rules_run_before_save(session, 0);
-
-#ifdef FIXLATER
-    /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
-    while (session->outstandingQueries > 0 && config.pcapReadOffline) {
-        g_main_context_iteration (g_main_context_default(), TRUE);
-    }
-#endif
 
     if (!session->rootId) {
         session->rootId = "ROOT";

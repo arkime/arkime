@@ -70,18 +70,18 @@ LOCAL  int                   writeMethod;
 LOCAL  int                   pageSize;
 
 /******************************************************************************/
-uint32_t writer_disk_queue_length_thread()
+LOCAL uint32_t writer_disk_queue_length_thread()
 {
     int count = DLL_COUNT(mo_, &outputQ);
     return count;
 }
 /******************************************************************************/
-uint32_t writer_disk_queue_length_nothread()
+LOCAL uint32_t writer_disk_queue_length_nothread()
 {
     return DLL_COUNT(mo_, &outputQ);
 }
 /******************************************************************************/
-void writer_disk_alloc_buf(MolochDiskOutput_t *out)
+LOCAL void writer_disk_alloc_buf(MolochDiskOutput_t *out)
 {
     if (writeMethod & MOLOCH_WRITE_THREAD)
         MOLOCH_LOCK(freeOutputBufs);
@@ -101,7 +101,7 @@ void writer_disk_alloc_buf(MolochDiskOutput_t *out)
         MOLOCH_UNLOCK(freeOutputBufs);
 }
 /******************************************************************************/
-void writer_disk_free_buf(MolochDiskOutput_t *out)
+LOCAL void writer_disk_free_buf(MolochDiskOutput_t *out)
 {
     if (writeMethod & MOLOCH_WRITE_THREAD)
         MOLOCH_LOCK(freeOutputBufs);
@@ -120,7 +120,7 @@ void writer_disk_free_buf(MolochDiskOutput_t *out)
 /******************************************************************************/
 /* Only used in non thread mode to write out data
  */
-gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUSED(data))
+LOCAL gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUSED(data))
 {
     if (fd && config.quitting)
         return FALSE;
@@ -201,9 +201,10 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
     return DLL_COUNT(mo_, &outputQ) > 0;
 }
 /******************************************************************************/
-void *writer_disk_output_thread(void *UNUSED(arg))
+LOCAL void *writer_disk_output_thread(void *UNUSED(arg))
 {
-    LOG("THREAD %p", (gpointer)pthread_self());
+    if (config.debug)
+        LOG("THREAD %p", (gpointer)pthread_self());
 
     MolochDiskOutput_t *out;
     int outputFd = 0;
@@ -261,7 +262,7 @@ void *writer_disk_output_thread(void *UNUSED(arg))
     }
 }
 /******************************************************************************/
-void writer_disk_flush(gboolean all)
+LOCAL void writer_disk_flush(gboolean all)
 {
     if (unlikely(config.dryRun || !output)) {
         return;
@@ -309,7 +310,7 @@ void writer_disk_flush(gboolean all)
     output = noutput;
 }
 /******************************************************************************/
-void writer_disk_exit()
+LOCAL void writer_disk_exit()
 {
     writer_disk_flush(TRUE);
     outputFileName = 0;
@@ -325,7 +326,7 @@ void writer_disk_exit()
     }
 }
 /******************************************************************************/
-void writer_disk_create(MolochPacket_t * const packet)
+LOCAL void writer_disk_create(MolochPacket_t * const packet)
 {
     outputFileName = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &outputId);
     outputFilePos = 24;
@@ -349,8 +350,7 @@ struct pcap_sf_pkthdr {
     uint32_t caplen;		/* length of portion present */
     uint32_t pktlen;		/* length this packet (off wire) */
 };
-void
-writer_disk_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+LOCAL void writer_disk_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
@@ -384,7 +384,7 @@ writer_disk_write(const MolochSession_t * const UNUSED(session), MolochPacket_t 
     MOLOCH_UNLOCK(output);
 }
 /******************************************************************************/
-gboolean writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
 {
     static struct timeval tv;
     gettimeofday(&tv, 0);

@@ -19,7 +19,7 @@ extern MolochConfig_t        config;
 LOCAL  int userField;
 
 /******************************************************************************/
-void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
@@ -32,14 +32,14 @@ void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, 
     }
 }
 /******************************************************************************/
-void imap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void imap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_memstr((const char *)data+5, len-5, "IMAP", 4)) {
         moloch_session_add_protocol(session, "imap");
     }
 }
 /******************************************************************************/
-void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (data[13] == 0x78 &&
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
@@ -52,7 +52,7 @@ void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len
     }
 }
 /******************************************************************************/
-void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         moloch_session_add_protocol(session, "lmtp");
@@ -62,19 +62,19 @@ void other220_classify(MolochSession_t *session, const unsigned char *data, int 
     }
 }
 /******************************************************************************/
-void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len >= 12 && data[7] == '.' && data[11] == 0xa)
         moloch_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
-void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
         moloch_session_add_protocol(session, "jabber");
 }
 /******************************************************************************/
-void user_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void user_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     //If a USER packet must have not NICK or +iw with it so we don't pickup IRC
     if (len <= 5 || moloch_memstr((char *)data, len, "\nNICK ", 6) || moloch_memstr((char *)data, len, " +iw ", 5)) {
@@ -89,12 +89,12 @@ void user_classify(MolochSession_t *session, const unsigned char *data, int len,
     moloch_field_string_add_lower(userField, session, (char*)data+5, i-5);
 }
 /******************************************************************************/
-void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
+LOCAL void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
     moloch_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-void ntp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void ntp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
     if ((session->port1 != 123 && session->port2 != 123) ||  // ntp port
@@ -106,7 +106,7 @@ void ntp_classify(MolochSession_t *session, const unsigned char *data, int len, 
     moloch_session_add_protocol(session, "ntp");
 }
 /******************************************************************************/
-void snmp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void snmp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     uint32_t apc, atag, alen;
     BSB bsb;
@@ -127,7 +127,7 @@ void snmp_classify(MolochSession_t *session, const unsigned char *data, int len,
     moloch_session_add_protocol(session, "snmp");
 }
 /******************************************************************************/
-void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     int i;
     for (i = 2; i < len; i++) {
@@ -141,7 +141,7 @@ void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data)
     }
 }
 /******************************************************************************/
-void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (20 + data[3] != len)
         return;
@@ -158,13 +158,13 @@ void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), 
 
 }
 /******************************************************************************/
-void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_memstr((const char *)data+7, len-7, "STUN", 4))
         moloch_session_add_protocol(session, "stun");
 }
 /******************************************************************************/
-void flap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void flap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 6)
         return;
@@ -179,20 +179,20 @@ void flap_classify(MolochSession_t *session, const unsigned char *data, int len,
         moloch_session_add_protocol(session, "flap");
 }
 /******************************************************************************/
-void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port1 == 49 || session->port2 == 49)
         moloch_session_add_protocol(session, "tacacs");
 }
 /******************************************************************************/
-void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_memstr((const char *)data+1, len-1, "host_int", 8)) {
         moloch_session_add_protocol(session, "dropbox-lan-sync");
     }
 }
 /******************************************************************************/
-void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 50 || data[4] != 0 || data[5] > 6|| data[7] != 0 || data[8] != 0)
         return;
@@ -205,20 +205,20 @@ void kafka_classify(MolochSession_t *session, const unsigned char *data, int len
     moloch_session_add_protocol(session, "kafka");
 }
 /******************************************************************************/
-void thrift_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void thrift_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 20 && data[4] == 0x80 && data[5] == 0x01 && data[6] == 0)
     moloch_session_add_protocol(session, "thrift");
 }
 /******************************************************************************/
-void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port2 != 520 &&  session->port1 != 520)
         return;
     moloch_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
-void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 18 ||
             (data[16] != 8 && data[16] != 33 && data[16] != 46) ||
@@ -228,7 +228,7 @@ void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, in
     moloch_session_add_protocol(session, "isakmp");
  }
 /******************************************************************************/
-void aruba_papi_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void aruba_papi_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 20 || data[0] != 0x49 || data[1] != 0x72) {
         return;

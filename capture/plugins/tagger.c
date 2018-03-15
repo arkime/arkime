@@ -106,7 +106,7 @@ HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 LOCAL  patricia_tree_t *allIps;
 
 /******************************************************************************/
-void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
+LOCAL void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
 {
     uint32_t f, t;
     for (f = 0; f < infos->len; f++) {
@@ -122,7 +122,7 @@ void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
 /*
  * Called by moloch when a session is about to be saved
  */
-void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
     TaggerString_t *tstring;
 
@@ -265,7 +265,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 }
 
 /******************************************************************************/
-void tagger_free_ip (TaggerIP_t *tip) 
+LOCAL void tagger_free_ip (TaggerIP_t *tip) 
 {
     g_ptr_array_free(tip->infos, TRUE);
     MOLOCH_TYPE_FREE(TaggerIP_t, tip);
@@ -274,7 +274,7 @@ void tagger_free_ip (TaggerIP_t *tip)
 /*
  * Called by moloch when moloch is quiting
  */
-void tagger_plugin_exit()
+LOCAL void tagger_plugin_exit()
 {
     TaggerString_t *tstring;
     HASH_FORALL_POP_HEAD(s_, allDomains, tstring,
@@ -314,7 +314,8 @@ void tagger_plugin_exit()
     Destroy_Patricia(allIps, tagger_free_ip);
 }
 
-void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
+/******************************************************************************/
+LOCAL void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
 {
     int f;
     for (f = 0; f < (int)infos->len; f++) {
@@ -328,7 +329,7 @@ void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
 /*
  * Free most of the memory used by a file
  */
-void tagger_unload_file(TaggerFile_t *file) {
+LOCAL void tagger_unload_file(TaggerFile_t *file) {
     int i;
     if (file->type[0] == 'i') {
         prefix_t prefix;
@@ -387,7 +388,7 @@ void tagger_unload_file(TaggerFile_t *file) {
     file->md5 = NULL;
 }
 /******************************************************************************/
-void tagger_info_free(gpointer data)
+LOCAL void tagger_info_free(gpointer data)
 {
     TaggerInfo_t *info = data;
 
@@ -398,7 +399,7 @@ void tagger_info_free(gpointer data)
 /*
  * File data from ES
  */
-void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     TaggerFile_t *file = uw;
     uint32_t out[4*100];
@@ -546,7 +547,7 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
 /*
  * Start loading a file from database
  */
-void tagger_load_file(TaggerFile_t *file)
+LOCAL void tagger_load_file(TaggerFile_t *file)
 {
     char                key[500];
     int                 key_len;
@@ -559,7 +560,7 @@ void tagger_load_file(TaggerFile_t *file)
 /*
  * Process the list of files from ES
  */
-void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer UNUSED(uw))
+LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
     unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
@@ -616,7 +617,7 @@ void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, 
 /*
  * Get the list of files from ES, when called at start up it will be a sync call
  */
-gboolean tagger_fetch_files (gpointer sync)
+LOCAL gboolean tagger_fetch_files (gpointer sync)
 {
     char                key[500];
     int                 key_len;

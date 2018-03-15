@@ -78,12 +78,12 @@ LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
-uint32_t writer_simple_queue_length()
+LOCAL uint32_t writer_simple_queue_length()
 {
     return DLL_COUNT(simple_, &simpleQ);
 }
 /******************************************************************************/
-MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
+LOCAL MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
 {
     MolochSimple_t *info;
 
@@ -120,7 +120,7 @@ MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
     return info;
 }
 /******************************************************************************/
-void writer_simple_free(MolochSimple_t *info)
+LOCAL void writer_simple_free(MolochSimple_t *info)
 {
     int thread = info->thread;
 
@@ -149,7 +149,7 @@ void writer_simple_free(MolochSimple_t *info)
 }
 
 /******************************************************************************/
-void writer_simple_process_buf(int thread, int closing)
+LOCAL void writer_simple_process_buf(int thread, int closing)
 {
     MolochSimple_t *info = currentInfo[thread];
 
@@ -180,7 +180,7 @@ void writer_simple_process_buf(int thread, int closing)
     MOLOCH_UNLOCK(simpleQ);
 }
 /******************************************************************************/
-void writer_simple_encrypt_key(uint8_t *inkey, int inkeylen, char *outkeyhex)
+LOCAL void writer_simple_encrypt_key(uint8_t *inkey, int inkeylen, char *outkeyhex)
 {
 
     uint8_t ciphertext[1024];
@@ -208,7 +208,7 @@ struct pcap_sf_pkthdr {
     uint32_t pktlen;		/* length this packet (off wire) */
 };
 /******************************************************************************/
-void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
+LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
     char    dekhex[1024];
     int thread = session->thread;
@@ -285,12 +285,13 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
     }
 }
 /******************************************************************************/
-void *writer_simple_thread(void *UNUSED(arg))
+LOCAL void *writer_simple_thread(void *UNUSED(arg))
 {
     MolochSimple_t *info;
 
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
+
     while (1) {
         MOLOCH_LOCK(simpleQ);
         while (DLL_COUNT(simple_, &simpleQ) == 0) {
@@ -345,7 +346,7 @@ void *writer_simple_thread(void *UNUSED(arg))
     return NULL;
 }
 /******************************************************************************/
-void writer_simple_exit()
+LOCAL void writer_simple_exit()
 {
     int thread;
 
@@ -362,7 +363,7 @@ void writer_simple_exit()
 }
 /******************************************************************************/
 // Called inside each packet thread
-void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -384,7 +385,7 @@ void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUS
  * schedule something in each writer thread to do the partial write since there
  * is no locks around buffering.
  */
-gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
 {
     struct timeval now;
     gettimeofday(&now, NULL);

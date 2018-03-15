@@ -28,7 +28,7 @@ LOCAL  int keyField;
 /******************************************************************************/
 // SSH Parsing currently assumes the parts we want from a SSH Packet will be
 // in a single TCP packet.  Kind of sucks.
-int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
@@ -123,14 +123,14 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void ssh_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void ssh_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SSHInfo_t            *ssh          = uw;
 
     MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "ssh"))
         return;

@@ -45,10 +45,10 @@
                   "www.google.com"
                ],
                "hostCnt" : 1,
-               "version-term" : [
+               "version" : [
                   "Q033"
                ],
-               "version-termCnt" : 1
+               "versionCnt" : 1
             },
             "segmentCnt" : 1,
             "srcBytes" : 2784,

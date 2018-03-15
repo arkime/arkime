@@ -125,7 +125,7 @@ LOCAL MOLOCH_LOCK_DEFINE(iRequest);
 LOCAL char          *iBuf = 0;
 
 /******************************************************************************/
-int wise_item_cmp(const void *keyv, const void *elementv)
+LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 {
     char *key = (char*)keyv;
     WiseItem_t *element = (WiseItem_t *)elementv;
@@ -133,7 +133,7 @@ int wise_item_cmp(const void *keyv, const void *elementv)
     return strcmp(key, element->key) == 0;
 }
 /******************************************************************************/
-void wise_print_stats()
+LOCAL void wise_print_stats()
 {
     int i;
     for (i = 0; i < INTEL_TYPE_SIZE; i++) {
@@ -149,7 +149,7 @@ void wise_print_stats()
     }
 }
 /******************************************************************************/
-void wise_load_fields()
+LOCAL void wise_load_fields()
 {
     char                key[500];
     int                 key_len;
@@ -186,7 +186,7 @@ void wise_load_fields()
     free(data);
 }
 /******************************************************************************/
-void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
+LOCAL void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
 {
     WiseItem_t    *wi = uw1;
 
@@ -196,7 +196,7 @@ void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED
     moloch_session_decr_outstanding(session);
 }
 /******************************************************************************/
-void wise_free_item_unlocked(WiseItem_t *wi)
+LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
 {
     int i;
     HASH_REMOVE(wih_, itemHash[(int)wi->type], wi);
@@ -212,7 +212,7 @@ void wise_free_item_unlocked(WiseItem_t *wi)
     MOLOCH_TYPE_FREE(WiseItem_t, wi);
 }
 /******************************************************************************/
-void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
 
     BSB             bsb;
@@ -293,7 +293,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
     MOLOCH_TYPE_FREE(WiseRequest_t, request);
 }
 /******************************************************************************/
-void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, int type)
+LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, int type)
 {
 
     if (*value == 0)
@@ -371,7 +371,7 @@ cleanup:
     MOLOCH_UNLOCK(item);
 }
 /******************************************************************************/
-void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
+LOCAL void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
 {
     unsigned char *end = (unsigned char*)domain;
     unsigned char *colon = 0;
@@ -650,7 +650,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     MOLOCH_UNLOCK(iRequest);
 }
 /******************************************************************************/
-void wise_plugin_exit()
+LOCAL void wise_plugin_exit()
 {
     MOLOCH_LOCK(item);
     int h;
@@ -665,7 +665,7 @@ void wise_plugin_exit()
     MOLOCH_UNLOCK(item);
 }
 /******************************************************************************/
-uint32_t wise_plugin_outstanding()
+LOCAL uint32_t wise_plugin_outstanding()
 {
     int count;
     MOLOCH_LOCK(iRequest);

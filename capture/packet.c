@@ -72,7 +72,7 @@ LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL  MOLOCH_LOCK_DEFINE(frags);
 
-int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -99,7 +99,7 @@ MolochFragsHash_t          fragsHash;
 MolochFragsHead_t          fragsList;
 
 /******************************************************************************/
-void moloch_packet_free(MolochPacket_t *packet)
+LOCAL void moloch_packet_free(MolochPacket_t *packet)
 {
     if (packet->copied) {
         free(packet->pkt);
@@ -149,7 +149,7 @@ void moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, i
     }
 }
 /******************************************************************************/
-void moloch_packet_tcp_finish(MolochSession_t *session)
+LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
 {
     MolochTcpData_t            *ftd;
     MolochTcpData_t            *next;
@@ -201,7 +201,7 @@ void moloch_packet_tcp_finish(MolochSession_t *session)
 }
 
 /******************************************************************************/
-void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -211,7 +211,7 @@ void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochP
     }
 }
 /******************************************************************************/
-void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t * const packet)
+LOCAL void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset + 8;
     int            len = packet->payloadLen - 8;
@@ -238,7 +238,7 @@ void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t *
     }
 }
 /******************************************************************************/
-int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
+LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
     if (session->stopTCP)
         return 1;
@@ -715,7 +715,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 }
 
 /******************************************************************************/
-int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
 
@@ -778,7 +778,7 @@ void moloch_packet_frags_free(MolochFrags_t * const frags)
     MOLOCH_TYPE_FREE(MolochFrags_t, frags);
 }
 /******************************************************************************/
-gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
+LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 {
     MolochPacket_t * fpacket;
     MolochFrags_t   *frags;
@@ -897,7 +897,7 @@ gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
     return TRUE;
 }
 /******************************************************************************/
-void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
+LOCAL void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
 {
     MolochFrags_t *frags;
 
@@ -931,7 +931,7 @@ int moloch_packet_frags_outstanding()
     return 0;
 }
 /******************************************************************************/
-void moloch_packet_log(int ses)
+LOCAL void moloch_packet_log(int ses)
 {
     MolochReaderStats_t stats;
     if (moloch_reader_stats(&stats)) {
@@ -962,7 +962,7 @@ void moloch_packet_log(int ses)
       );
 }
 /******************************************************************************/
-int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
+LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
 {
     if (totalPackets == 0) {
         MolochReaderStats_t stats;
@@ -1008,7 +1008,7 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
-int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;
@@ -1108,7 +1108,7 @@ int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet,
     return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
-int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
     struct tcphdr       *tcphdr = 0;
@@ -1207,7 +1207,7 @@ int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
-int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
 #ifdef DEBUG_PACKET
@@ -1235,7 +1235,7 @@ int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     }
 }
 /******************************************************************************/
-int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     while (1) {
         if (len < 4 + (int)sizeof(struct ip)) {
@@ -1268,7 +1268,7 @@ int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const packe
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
 #ifdef DEBUG_PACKET
@@ -1305,7 +1305,7 @@ int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const pack
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 16) {
 #ifdef DEBUG_PACKET
@@ -1333,7 +1333,7 @@ int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14 ||
         (data[0] != AF_INET && data[0] != AF_INET6) ||
@@ -1453,7 +1453,7 @@ int moloch_packet_outstanding()
     return count;
 }
 /******************************************************************************/
-uint32_t moloch_packet_frag_hash(const void *key)
+LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;
     uint32_t n = 0;
@@ -1463,7 +1463,7 @@ uint32_t moloch_packet_frag_hash(const void *key)
     return n;
 }
 /******************************************************************************/
-int moloch_packet_frag_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_packet_frag_cmp(const void *keyv, const void *elementv)
 {
     MolochFrags_t *element = (MolochFrags_t *)elementv;
 
