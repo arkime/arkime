@@ -2333,6 +2333,22 @@ app.get('/esindices/list', function(req, res) {
   });
 });
 
+app.delete('/esindices/:index', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to delete');
+  }
+
+  Db.deleteIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      res.status(404);
+      return res.send(JSON.stringify({ success:false, text:'Error deleting index' }));
+    }
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
 app.get('/estask/list', function(req, res) {
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
@@ -2355,18 +2371,22 @@ app.get('/estask/list', function(req, res) {
         task.childrenCount = 0;
       }
       delete task.children;
+
+      if (req.query.cancellable && req.query.cancellable === 'true') {
+        if (!task.cancellable) { continue; }
+      }
+
       rtasks.push(task);
     }
 
     tasks = rtasks;
 
-    // Implement sorting
     var sortField = req.query.sortField || "action";
     if (sortField === "action") {
       if (req.query.desc === "true") {
-        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); });
+        tasks = tasks.sort(function(a,b){ return b.action.localeCompare(a.index); });
       } else {
-        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); });
+        tasks = tasks.sort(function(a,b){ return a.action.localeCompare(b.index); });
       }
     } else {
       if (req.query.desc === "true") {
@@ -2375,6 +2395,7 @@ app.get('/estask/list', function(req, res) {
         tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; });
       }
     }
+
     res.send(tasks);
   });
 });
@@ -2420,6 +2441,12 @@ app.get('/esshard/list', function(req, res) {
       }
       result[shard.index].nodes[shard.node].push(shard);
       nodes[shard.node] = {ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node)};
+
+      result[shard.index].nodes[shard.node]
+        .sort((a, b) => {
+          return a.shard - b.shard;
+        });
+
       delete shard.node;
       delete shard.index;
     }
@@ -2438,10 +2465,10 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown exclude type");
+      return res.molochError(403, 'Unknown exclude type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2452,7 +2479,7 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
       exclude.push(req.params.value);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
@@ -2470,10 +2497,10 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown include type");
+      return res.molochError(403, 'Unknown include type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2485,7 +2512,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
       exclude.splice(pos, 1);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
@@ -5672,7 +5699,80 @@ app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, 
   });
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+// Vue app
+//////////////////////////////////////////////////////////////////////////////////
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
 
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: `<div id="app"></div>`
+  });
+}
+
+// expose vue bundles (prod)
+app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+
+app.get('/stats', (req, res) => {
+  let cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     cookieOptions
+  );
+
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
+  });
+
+  let theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
+
+  let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
+    .replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:'-')
+    .replace(/_userName_/g, req.user?req.user.userName:'-')
+
+  const appContext = {
+    theme: theme,
+    titleConfig: titleConfig,
+    path: app.locals.basePath,
+    version: app.locals.molochversion,
+    devMode: Config.get('devMode', false),
+    demoMode: Config.get('demoMode', false),
+    themeUrl: theme === 'custom-theme' ? 'user.css' : ''
+  }
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.error(err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
+});
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// Angular app
+//////////////////////////////////////////////////////////////////////////////////
 app.use(express.static(__dirname + '/views'));
 app.use(express.static(__dirname + '/bundle'));
 app.use(function (req, res) {

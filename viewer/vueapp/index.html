@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="{{ path }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+    <title>Moloch</title>
+    <link rel="stylesheet" href="{{ themeUrl }}">
+    <script>
+      const MOLOCH_TITLE_CONFIG = '{{ titleConfig }}'
+      const MOLOCH_DEMO_MODE = {{ demoMode }}
+      const MOLOCH_DEV_MODE = {{ devMode }}
+      const MOLOCH_VERSION = '{{ version }}'
+    </script>
+  </head>
+  <body class="{{ theme }}">
+    <!--vue-ssr-outlet-->
+  </body>
+</html>

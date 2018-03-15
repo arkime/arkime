@@ -41,7 +41,7 @@
         spigraph    : { title: 'SPI Graph',   link: 'spigraph' },
         connections : { title: 'Connections', link: 'connections' },
         files       : { title: 'Files',       link: 'files' },
-        stats       : { title: 'Stats',       link: 'stats' },
+        stats       : { title: 'Stats',       link: 'stats', newUI: true },
         upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' }
       };
 
@@ -84,6 +84,12 @@
         // must set the section of the help page to navigate to
         this.$location.hash(this.$location.path().split('/')[1]);
         this.$location.path(link);
+      } else if (link === 'stats') {
+        // TODO update/remove as angular pages get replaced with vue pages
+        // redirects to the new vue app stats page
+        this.$location.path(link);
+        // must be reloaded to fetch vue app from the server
+        location.reload();
       } else {
         if (this.$rootScope.expression !== this.$routeParams.expression) {
           // if the expression input doesn't match the expression url parameter,

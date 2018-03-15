@@ -1,0 +1,46 @@
+body.blue-theme {
+  /* basic colors */
+  --color-foreground-accent : #9A4E93;
+
+  --color-white       : #FFFFFF;
+  --color-gray        : #CCCCCC;
+  --color-gray-dark   : #777777;
+  --color-gray-darker : #555555;
+  --color-gray-light  : #EEEEEE;
+  --color-gray-lighter: #F6F6F6;
+  --color-black       : #000000;
+
+
+  /* theme colors */
+  --color-primary         : #214B78;
+  --color-primary-dark    : #163254;
+  --color-primary-darker  : #000000;
+  --color-primary-light   : #205B87;
+  --color-primary-lighter : #2C79B4;
+  --color-primary-lightest: #DCD9F3;
+
+  --color-secondary         : #3D7B7E;
+  --color-secondary-dark    : #306264;
+  --color-secondary-darker  : #1B4F50;
+  --color-secondary-light   : #4d9599;
+  --color-secondary-lighter : #63BED3;
+  --color-secondary-lightest: #DBECE7;
+
+  --color-tertiary          : #42B7C5;
+  --color-tertiary-dark     : #33919b;
+  --color-tertiary-darker   : #29757d;
+  --color-tertiary-light    : #7ACCD7;
+  --color-tertiary-lighter  : #87E6F3;
+  --color-tertiary-lightest : #D3EEF1;
+
+  --color-quaternary          : #ECB30A;
+  --color-quaternary-dark     : #CD9A09;
+  --color-quaternary-darker   : #B98609;
+  --color-quaternary-light    : #FFC30A;
+  --color-quaternary-lighter  : #FFE480;
+  --color-quaternary-lightest : #FFF7E5;
+
+
+  /* visualization colors */
+  --color-water: #E1EBEB;
+}

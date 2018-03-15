@@ -15,7 +15,7 @@
     "compression": "^1.6.2",
     "elasticsearch": "^13.3.0",
     "express": "^4.16.1",
-    "font-awesome": "^4.6.3",
+    "font-awesome": "^4.7.0",
     "fs-ext": "^0.5.0",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "pug": "^2.0.0",
@@ -28,7 +28,9 @@
     "peek-stream": "^1.1.1",
     "serve-favicon": "^2.3.0",
     "stylus": "^0.54.5",
-    "through2": "^2.0.1"
+    "through2": "^2.0.1",
+    "vue": "^2.5.13",
+    "vue-server-renderer": "^2.5.13"
   },
   "scripts": {
     "start": "node viewer.js -c ../config.ini",
@@ -46,7 +48,12 @@
     "test": "karma start --single-run --debug",
     "test:watch": "karma start --auto-watch",
     "pretest": "npm run lint",
-    "pretest:watch": "npm run lint"
+    "pretest:watch": "npm run lint",
+    "bundle:vue:min": "node vueapp/build/build.js",
+    "bundle:vue:dev": "webpack --progress --hide-modules --config vueapp/build/webpack.dev.conf.js",
+    "start:vue:dev": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack --progress --hide-modules -d --watch --config vueapp/build/webpack.dev.conf.js",
+    "start:vue:dev2": "node viewer.js -c config.dev.ini & webpack --progress --hide-modules -d --watch --config vueapp/build/webpack.dev.conf.js",
+    "prestart:vue:dev": "webpack -d --display-error-details"
   },
   "devDependencies": {
     "angular": "^1.6.7",
@@ -60,7 +67,10 @@
     "angular-route": "^1.5.8",
     "angular-sanitize": "^1.6.1",
     "angular-ui-bootstrap": "^2.5.6",
+    "axios": "^0.17.1",
     "css-loader": "^0.28.7",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "font-awesome": "^4.7.0",
     "html-loader": "^0.5.1",
     "jasmine-core": "^2.4.1",
     "jquery": "^3.1.0",
@@ -71,11 +81,14 @@
     "karma-jasmine": "^1.1.0",
     "karma-spec-reporter": "0.0.31",
     "karma-webpack": "^2.0.5",
+    "moment-timezone": "^0.5.14",
     "ngclipboard": "^1.1.1",
     "ngdraggable": "^0.1.10",
     "puppeteer": "^0.12.0",
     "style-loader": "^0.19.0",
     "uglifyjs-webpack-plugin": "^1.1.4",
+    "vue-axios": "^2.0.2",
+    "vue-moment": "^3.2.0",
     "webpack": "^3.10.0"
   },
   "optionalDependencies": {
