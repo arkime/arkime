@@ -4,12 +4,9 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "connect-timeout": "^1.7.0",
-    "console-stamp": "^0.2.2",
     "hashtable": "^2.0.2",
     "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
     "lru-cache": "^4.0.1",
-    "native-dns": "^0.7.0",
-    "request": "^2.75.0"
+    "native-dns": "^0.7.0"
   }
 }

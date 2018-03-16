@@ -15,10 +15,8 @@
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
-    "body-parser": "^1.18.2",
     "jsonwebtoken": "^8.1.0",
     "notifme-sdk": "^1.6.0",
-    "request-promise": "^4.2.2",
     "serve-favicon": "^2.4.5"
   },
   "devDependencies": {
