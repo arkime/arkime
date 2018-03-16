@@ -241,7 +241,11 @@ my ($cmd) = @_;
         system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
 
         # Start Wise
-        system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+        if ($main::debug) {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+        } else {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
+        }
 
         sleep 1;
         $main::userAgent->get("$ELASTICSEARCH/_flush");
