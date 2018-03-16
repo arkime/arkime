@@ -6,18 +6,18 @@
 
 ### Just have a question :question:
 
-Visit our [FAQs](https://github.com/aol/moloch/wiki/FAQ)
-Or talk to us directly via our [Slack](https://slackinvite.molo.ch/)
+* Visit our [FAQs](https://github.com/aol/moloch/wiki/FAQ)
+* Or talk to us directly in the [Moloch-FPC Slack](https://slackinvite.molo.ch/)
 
 ---
 
-### Where do I start?
+### Where do I start? :traffic_light:
 
 First, checkout the main [Moloch README](README.rst) for information on how to build and run Moloch.
 
 **Then, get some test data!**
 
-* Start ElasticSearch
+* Start Elasticsearch
 * Move to the Moloch tests directory
 * Run `./tests.pl --viewer`
 
@@ -41,14 +41,14 @@ For more information about running the Moloch Viewer web application, visit the 
 
 ### How do I contribute?
 
-##### Documentation! :page_with_curl:
+#### Documentation! :page_with_curl:
 
 Documentation, READMEs, examples, and FAQs are important. Please help improve and add to them.
 
-##### Bugs :bug: :beetle: :ant:
+#### Bugs :bug: :beetle: :ant:
 
 **Before submitting a bug report:**
-* Ensure the bug was not already reported by searching for existing issues in Moloch
+* Ensure the bug was not already reported by searching for [existing issues in Moloch](https://github.com/aol/moloch/issues)
   * If an issues is already open, make a comment that you are experiencing the same thing and provide any additional details
 * Check the [FAQs](https://github.com/aol/moloch/wiki/FAQ) for a list of common questions and problems
 
@@ -57,9 +57,9 @@ Bugs are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 * Provide a clear and descriptive title
 * Describe the exact steps to reproduce the problem
 * Explain the expected behavior
-* Fill out the issue template completely
+* Fill out the [issue template](https://github.com/aol/moloch/issues/new) completely
 
-##### Feature Requests :sparkles:
+#### Feature Requests :sparkles:
 
 Feature requests include new features and minor improvements to existing functionality.
 
@@ -70,8 +70,9 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Use examples to help us understand the use case of the feature
 * If you are requesting a minor improvement, describe the current behavior and why it is not sufficient
 * If possible, provide examples of where this feature exists elsewhere in other tools
+* Follow the directions in the [issue template](https://github.com/aol/moloch/issues/new)
 
-##### Pull Requests :muscle:
+#### Pull Requests :muscle:
 
 **We welcome all collaboration!** If you can fix it or implement it, please do! :hammer:
 
@@ -84,4 +85,4 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 
 ---
 
-## THANKS! :heart:
+### THANKS! :heart:
