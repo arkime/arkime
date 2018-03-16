@@ -452,6 +452,8 @@ function fixQuery(node, body, doneCb) {
   var finished = 0;
   var err = null;
 
+  var convert;
+
   function process(parent, obj, item) {
     var query;
 
@@ -485,11 +487,11 @@ function fixQuery(node, body, doneCb) {
     }
   }
 
-  function convert(parent, obj) {
+  convert = function (parent, obj) {
     for (var item in obj) {
       process(parent, obj, item);
     }
-  }
+  };
 
   convert(null, body);
   if (outstanding === 0) {

@@ -1357,7 +1357,7 @@ app.get('/user/columns', getSettingUser, function(req, res) {
       if (item.order && item.order.length > 0) {
         item.order[0][0] = oldDB2newDB(item.order[0][0]);
       }
-    };
+    }
   }
 
   return res.send(req.settingUser.columnConfigs || []);
@@ -3775,22 +3775,20 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     /* Go through the list of prefetch the id to file name if we are running in parallel to
      * reduce the number of elasticsearch queries and problems
      */
-    var outstanding = 0;
-    for (var i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-      if (fields.packetPos[i] < 0) {
-        outstanding++;
-        Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], function (info) {
-          outstanding--;
-          if (i === ilen && outstanding === 0) {
-            i++; // So not called again below
-            readyToProcess();
-          }
-        });
+    let outstanding = 0, i, ilen;
+
+    function fileReadyCb (fileInfo) {
+      outstanding--;
+      if (i === ilen && outstanding === 0) {
+        readyToProcess();
       }
     }
 
-    if (i === ilen && outstanding === 0) {
-      readyToProcess();
+    for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+      if (fields.packetPos[i] < 0) {
+        outstanding++;
+        Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+      }
     }
 
     function readyToProcess() {
@@ -5738,7 +5736,7 @@ app.get('/stats', (req, res) => {
   let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
     .replace(/_cluster_/g, internals.clusterName)
     .replace(/_userId_/g, req.user?req.user.userId:'-')
-    .replace(/_userName_/g, req.user?req.user.userName:'-')
+    .replace(/_userName_/g, req.user?req.user.userName:'-');
 
   const appContext = {
     theme: theme,
@@ -5748,7 +5746,7 @@ app.get('/stats', (req, res) => {
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     themeUrl: theme === 'custom-theme' ? 'user.css' : ''
-  }
+  };
 
   // Create a fresh Vue app instance
   const vueApp = createApp();

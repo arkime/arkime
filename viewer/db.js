@@ -518,9 +518,12 @@ exports.hostnameToNodeids = function (hostname, cb) {
 };
 
 exports.fileIdToFile = function (node, num, cb) {
-  var key = node + "!" + num;
-  if (internals.fileId2File[key] !== undefined) {
-    return cb(internals.fileId2File[key]);
+  var key = node + '!' + num;
+  let info = internals.fileId2File[key];
+  if (info !== undefined) {
+    return setImmediate(() => {
+      cb(info);
+    });
   }
 
   exports.get('files', 'file', node + '-' + num, (err, fresult) => {
@@ -747,7 +750,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, bounding, cb) {
 exports.getMinValue = function(index, field, cb) {
   var params = {index: fixIndex(index), body: {size: 0, aggs: {min: {min: {field: field}}}}};
   return internals.elasticSearchClient.search(params, (err, data) => {
-    if (err) {return cb(err, 0)};
+    if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
   });
 };
