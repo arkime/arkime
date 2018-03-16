@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.50.1-GIT])
+AC_INIT([moloch], [1.0.0-beta3])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -42,7 +42,7 @@ darwin*)
   ;;
 *)
   SHARED_FLAGS="--shared"
-  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update"
+  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update -u g_uri_unescape_segment"
 esac
 AC_SUBST(SHARED_FLAGS)
 AC_SUBST(UNDEFINED_FLAGS)
@@ -277,57 +277,57 @@ AC_SUBST(YARA_CFLAGS)
 AC_SUBST(YARA_LIBS)
 
 
-dnl Checks for GeoIP
-AC_MSG_CHECKING(for GeoIP)
-AC_ARG_WITH(GeoIP,
-[  --with-GeoIP=DIR use GeoIP build directory],
+dnl Checks for maxminddb
+AC_MSG_CHECKING(for maxminddb)
+AC_ARG_WITH(maxminddb,
+[  --with-maxminddb=DIR use maxminddb build directory],
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
      ;;
   *)
   AC_MSG_RESULT($withval)
-    if test -f $withval/libGeoIP/GeoIP.h -a -f $withval/libGeoIP/.libs/libGeoIP.a; then
+    if test -f $withval/include/maxminddb.h -a -f $withval/src/.libs/libmaxminddb.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
         cd $owd;
       fi
-      GEOIP_CFLAGS="-I$withval/libGeoIP"
-      GEOIP_LIBS="$withval/libGeoIP/.libs/libGeoIP.a"
-    elif test -f $withval/include/GeoIP.h -a -f $withval/lib/libGeoIP.a; then
+      MAXMINDDB_CFLAGS="-I$withval/include"
+      MAXMINDDB_LIBS="$withval/src/.libs/libmaxminddb.a"
+    elif test -f $withval/include/maxminddb.h -a -f $withval/lib/libmaxminddb.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
         cd $owd;
       fi
-      GEOIP_CFLAGS="-I$withval/include"
-      GEOIP_LIBS="$withval/lib/libGeoIP.a"
+      MAXMINDDB_CFLAGS="-I$withval/include"
+      MAXMINDDB_LIBS="$withval/lib/libmaxminddb.a"
     else
-      AC_ERROR(GeoIP.h or GeoIP.a not found in $withval)
+      AC_ERROR(maxminddb.h or libmaxminddb.a not found in $withval)
     fi
     ;;
 esac ], [
-  if test -f ${prefix}/include/GeoIP/GeoIP.h; then
-     GEOIP_CFLAGS="-I${prefix}/include/GeoIP"
-     GEOIP_LIBS="-L${exec_prefix}/lib -lGeoIP"
-  elif test -f /usr/include/GeoIP/GeoIP.h; then
-     GEOIP_CFLAGS=""
-     GEOIP_LIBS="-lGeoIP"
+  if test -f ${prefix}/include/maxminddb.h; then
+     MAXMINDDB_CFLAGS="-I${prefix}/include"
+     MAXMINDDB_LIBS="-L${exec_prefix}/lib -lmaxminddb"
+  elif test -f /usr/include/maxminddb.h; then
+     MAXMINDDB_CFLAGS=""
+     MAXMINDDB_LIBS="-lmaxminddb"
   else
     TMP=$LIBS
-    LIBS="-lGeoIP $LIBS"
-    AC_TRY_LINK([#include <GeoIP.h>], GeoIP_open(NULL, GEOIP_MEMORY_CACHE), LIBGEOIP_FOUND=1,LIBGEOIP_FOUND=0)
+    LIBS="-lmaxminddb $LIBS"
+    AC_TRY_LINK([#include <maxminddb.h>], MMDB_open(NULL, MMDB_MODE_MMAP, NULL), LIBMAXMINDDB_FOUND=1,LIBMAXMINDDB_FOUND=0)
     LIBS=$TMP
-    if test $LIBGEOIP_FOUND = 1 ; then
-      GEOIP_LIBS="-lGeoIP"
+    if test $LIBMAXMINDDB_FOUND = 1 ; then
+      MAXMINDDB_LIBS="-lmaxminddb"
     else
-      AC_ERROR(GeoIP not found)
+      AC_ERROR(maxminddb not found)
     fi
   fi
 AC_MSG_RESULT(yes) ])
-AC_SUBST(GEOIP_CFLAGS)
-AC_SUBST(GEOIP_LIBS)
+AC_SUBST(MAXMINDDB_CFLAGS)
+AC_SUBST(MAXMINDDB_LIBS)
 
 
 dnl Checks for glib2, these are wrong

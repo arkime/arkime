@@ -1,70 +1,38 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-051115"
-            }
-         },
          "body" : {
-            "mac1-term" : [
+            "dstBytes" : 366,
+            "dstDataBytes" : 28,
+            "dstIp" : "127.0.0.1",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "by1" : 610,
-            "db" : 102,
-            "ss" : 1,
-            "ipSrc" : "127.0.0.1",
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               382,
-               464,
-               560,
-               642,
-               777,
-               873,
-               962,
-               1044,
-               1126
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
-            "lastPacket" : 1132019262678,
-            "p2" : 389,
-            "pa2" : 5,
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "mac1-term-cnt" : 1,
-            "pa" : 13,
-            "a1" : "127.0.0.1",
-            "mac2-term-cnt" : 1,
-            "fp" : 1132019262,
-            "fs" : [],
-            "db1" : 74,
-            "by2" : 366,
-            "tcpflags" : {
-               "psh" : 5,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 4,
-               "fin" : 2,
-               "syn" : 1,
-               "urg" : 0
-            },
-            "no" : "test",
-            "pr" : 6,
-            "sl" : 0,
-            "fb2" : "300c02010161070a",
-            "p1" : 40848,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "300c02010161070a",
+            "dstPort" : 389,
+            "fileId" : [],
             "firstPacket" : 1132019262677,
-            "by" : 976,
-            "timestamp" : "SET",
-            "fpd" : 1132019262677,
-            "fb1" : "300c020101600702",
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1132019262678,
+            "ldap" : {
+               "authtype" : [
+                  "none"
+               ],
+               "authtypeCnt" : 1,
+               "bindname" : [
+                  "<ROOT>"
+               ],
+               "bindnameCnt" : 1
+            },
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -79,27 +47,61 @@
                82,
                82
             ],
-            "lp" : 1132019262,
-            "lpd" : 1132019262678,
-            "ipDst" : "127.0.0.1",
-            "mac2-term" : [
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               382,
+               464,
+               560,
+               642,
+               777,
+               873,
+               962,
+               1044,
+               1126
+            ],
+            "protocol" : [
+               "ldap",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 610,
+            "srcDataBytes" : 74,
+            "srcIp" : "127.0.0.1",
+            "srcMac" : [
                "00:00:00:00:00:00"
             ],
-            "a2" : "127.0.0.1",
-            "portDst" : 389,
-            "pa1" : 8,
-            "portSrc" : 40848,
-            "db2" : 28,
-            "prot-term-cnt" : 2,
-            "ldap" : {
-               "authtype-term-cnt" : 1,
-               "bindname-term-cnt" : 1,
-               "bindname-term" : [
-                  "<ROOT>"
-               ],
-               "authtype-term" : [
-                  "none"
-               ]
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "300c020101600702",
+            "srcPort" : 40848,
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 5,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 976,
+            "totDataBytes" : 102,
+            "totPackets" : 13
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-051115",
+               "_type" : "session"
             }
          }
       }

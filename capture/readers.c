@@ -20,7 +20,7 @@
 
 extern MolochConfig_t        config;
 
-static MolochStringHashStd_t readersHash;
+LOCAL  MolochStringHashStd_t readersHash;
 
 void reader_libpcapfile_init(char*);
 void reader_libpcap_init(char*);

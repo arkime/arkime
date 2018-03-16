@@ -1,90 +1,90 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
+            "dstBytes" : 78,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.176.192.13",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "3c:8a:b0:6e:77:c5"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 9092,
+            "fileId" : [],
             "firstPacket" : 1483521857249,
-            "db2" : 0,
-            "timestamp" : "SET",
-            "p1" : 65056,
-            "a1" : "10.10.10.10",
-            "pr" : 6,
-            "ps" : [
-               24,
-               122,
-               216,
-               302,
-               467
-            ],
-            "fpd" : 1483521857249,
-            "ss" : 1,
-            "db1" : 79,
-            "lp" : 1483521857,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1483521857532,
-            "portDst" : 9092,
-            "vlan" : [
-               300
-            ],
-            "no" : "test",
-            "sl" : 283,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1483521857532,
+            "length" : 283,
+            "node" : "test",
+            "packetLen" : [
                98,
                94,
                86,
                165,
                86
             ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "3c:8a:b0:6e:77:c5"
+            "packetPos" : [
+               24,
+               122,
+               216,
+               302,
+               467
             ],
-            "prot-term" : [
+            "protocol" : [
                "kafka",
                "tcp"
             ],
-            "tags-term" : [
-               "acked-unseen-segment-src"
-            ],
-            "lastPacket" : 1483521857532,
-            "vlan-cnt" : 1,
-            "a2" : "10.176.192.13",
-            "fs" : [],
-            "portSrc" : 65056,
-            "mac2-term-cnt" : 2,
-            "prot-term-cnt" : 2,
-            "p2" : 9092,
-            "tacnt" : 1,
-            "pa2" : 1,
-            "fb1" : "0000004b00020000",
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 371,
+            "srcDataBytes" : 79,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
                "00:1b:17:00:02:30"
             ],
-            "by2" : 78,
-            "ipSrc" : "10.10.10.10",
-            "tcpflags" : {
-               "psh" : 1,
-               "rst" : 0,
-               "syn" : 1,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "fin" : 1,
-               "ack" : 1
-            },
-            "pa" : 5,
-            "ta" : [
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Palo Alto Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 4,
+            "srcPayload8" : "0000004b00020000",
+            "srcPort" : 65056,
+            "tags" : [
                "acked-unseen-segment-src"
             ],
-            "by1" : 371,
-            "ipDst" : "10.176.192.13",
-            "fp" : 1483521857,
-            "pa1" : 4,
-            "db" : 79,
-            "by" : 449
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 449,
+            "totDataBytes" : 79,
+            "totPackets" : 5,
+            "vlan" : [
+               300
+            ],
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-170104"
+               "_index" : "tests_sessions2-170104",
+               "_type" : "session"
             }
          }
       }

@@ -1,115 +1,44 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "portSrc" : 37386,
-            "tls" : [
+            "cert" : [
                {
-                  "sn" : "008a07e08d4ab50a7b",
-                  "notBefore" : 1422670709,
-                  "notAfter" : 1738030709,
-                  "iCn" : [
+                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
+                  "issuerCN" : [
                      "ldap ssl test"
                   ],
-                  "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
-                  "diffDays" : 3650,
-                  "sCn" : [
+                  "notAfter" : 1738030709000,
+                  "notBefore" : 1422670709000,
+                  "serial" : "008a07e08d4ab50a7b",
+                  "subjectCN" : [
                      "ldap ssl test"
-                  ]
+                  ],
+                  "validDays" : 3650
                }
             ],
-            "fp" : 1422673532,
-            "lpd" : 1422673558484,
-            "fb2" : "300c02010178070a",
-            "portDst" : 389,
-            "p2" : 389,
-            "tlsdstid-term" : [
-               "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
-            ],
-            "ipSrc" : "0.0.0.0",
-            "a2" : "0.0.0.1",
-            "no" : "test",
-            "tlsver-termcnt" : 1,
-            "tcpflags" : {
-               "psh" : 21,
-               "fin" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 1,
-               "ack" : 11,
-               "syn-ack" : 1
-            },
-            "pa1" : 20,
-            "fb1" : "301d020101771880",
-            "db2" : 2050,
-            "tlscipher-termcnt" : 1,
-            "firstPacket" : 1422673532664,
-            "by" : 6801,
-            "tlscnt" : 1,
-            "lp" : 1422673558,
-            "timestamp" : "SET",
-            "db" : 3701,
-            "p1" : 37386,
-            "pr" : 6,
-            "mac1-term-cnt" : 1,
-            "tlsja3-term" : [
-               "3f8b7a5c41878630f67e660533be80fc"
-            ],
-            "lastPacket" : 1422673558484,
-            "prot-term-cnt" : 3,
-            "pa" : 36,
-            "tlsja3-termcnt" : 1,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_AES_128_CBC_SHA"
-            ],
-            "tipv62-term" : "00000000000000000000000000000001",
-            "ss" : 1,
-            "sl" : 25820,
-            "ps" : [
-               24,
-               134,
-               244,
-               346,
-               479,
-               581,
-               697,
-               799,
-               1018,
-               1206,
-               1308,
-               1939,
-               2041,
-               2152,
-               2254,
-               2495,
-               2603,
-               2838,
-               2940,
-               3048,
-               3331,
-               3433,
-               3876,
-               4207,
-               4458,
-               4560,
-               4731,
-               5318,
-               5420,
-               6039,
-               6306,
-               6408,
-               6579,
-               6878,
-               6980,
-               7311
-            ],
-            "pa2" : 16,
-            "mac2-term" : [
+            "certCnt" : 1,
+            "dstBytes" : 3422,
+            "dstDataBytes" : 2050,
+            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "by2" : 3422,
-            "by1" : 3379,
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 16,
+            "dstPayload8" : "300c02010178070a",
+            "dstPort" : 389,
+            "fileId" : [],
+            "firstPacket" : 1422673532664,
+            "ipProtocol" : 6,
+            "lastPacket" : 1422673558484,
+            "length" : 25820,
+            "node" : "test",
+            "packetLen" : [
                110,
                110,
                102,
@@ -147,28 +76,105 @@
                331,
                90
             ],
-            "fs" : [],
-            "mac1-term" : [
-               "00:00:00:00:00:00"
+            "packetPos" : [
+               24,
+               134,
+               244,
+               346,
+               479,
+               581,
+               697,
+               799,
+               1018,
+               1206,
+               1308,
+               1939,
+               2041,
+               2152,
+               2254,
+               2495,
+               2603,
+               2838,
+               2940,
+               3048,
+               3331,
+               3433,
+               3876,
+               4207,
+               4458,
+               4560,
+               4731,
+               5318,
+               5420,
+               6039,
+               6306,
+               6408,
+               6579,
+               6878,
+               6980,
+               7311
             ],
-            "a1" : "0.0.0.1",
-            "tlsver-term" : [
-               "TLSv1.2"
-            ],
-            "db1" : 1651,
-            "fpd" : 1422673532664,
-            "tipv61-term" : "00000000000000000000000000000001",
-            "ipDst" : "0.0.0.0",
-            "mac2-term-cnt" : 1,
-            "prot-term" : [
+            "protocol" : [
                "tls",
                "ldap",
                "tcp"
-            ]
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 3379,
+            "srcDataBytes" : 1651,
+            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 20,
+            "srcPayload8" : "301d020101771880",
+            "srcPort" : 37386,
+            "tags" : [
+               "cert:self-signed"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 11,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 21,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_128_CBC_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "3bacce112097291bccb0e59d56f92396277a9ae4a1b59a9610db211f878bd0fd"
+               ],
+               "ja3" : [
+                  "3f8b7a5c41878630f67e660533be80fc"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 6801,
+            "totDataBytes" : 3701,
+            "totPackets" : 36
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-150131",
+               "_index" : "tests_sessions2-150131",
                "_type" : "session"
             }
          }

@@ -8,14 +8,14 @@
     "help": "Information",
     "unsortable": true,
     "children": [
-      "us",
-      "esrc",
-      "edst",
-      "esub",
-      "efn",
-      "dnsho",
-      "tls.alt",
-      "ircch"
+      "http.uri",
+      "email.src",
+      "email.dst",
+      "email.subject",
+      "email.filename",
+      "dns.host",
+      "cert.alt",
+      "irc.channel"
     ]
   },
   "src": {
@@ -25,10 +25,10 @@
     "group": "general",
     "friendlyName": "Src IP / Country",
     "help": "Src IP & Country",
-    "sortBy": "a1",
+    "sortBy": "srcIp",
     "children": [
-      "a1",
-      "g1"
+      "srcIp",
+      "srcGEO"
     ]
   },
   "dst": {
@@ -38,10 +38,10 @@
     "group": "general",
     "friendlyName": "Dst IP / Country",
     "help": "Dst IP & Country",
-    "sortBy": "a2",
+    "sortBy": "dstIp",
     "children": [
-      "a2",
-      "g2"
+      "dstIp",
+      "dstGEO"
     ]
   },
   "dbby": {
@@ -51,10 +51,10 @@
     "group": "general",
     "friendlyName": "Databytes / Bytes",
     "help": "Data Bytes & Bytes",
-    "sortBy": "by",
+    "sortBy": "totBytes",
     "children": [
-      "db",
-      "by"
+      "totDataBytes",
+      "totBytes"
     ]
   },
   "pa1pa2": {
@@ -64,10 +64,10 @@
     "group": "general",
     "friendlyName": "Src Packets / Dst Packets",
     "help": "Src Packets & Dst Packets",
-    "sortBy": "by",
+    "sortBy": "totPackets",
     "children": [
-      "pa1",
-      "pa2"
+      "srcPackets",
+      "dstPackets"
     ]
   },
   "db1db2": {
@@ -77,10 +77,10 @@
     "group": "general",
     "friendlyName": "Src Databytes / Dst Databytes",
     "help": "Src Databytes & Dst Databytes",
-    "sortBy": "db1",
+    "sortBy": "totDataBytes",
     "children": [
-      "db1",
-      "db2"
+      "srcDataBytes",
+      "dstDataBytes"
     ]
   },
   "by1by2": {
@@ -90,10 +90,10 @@
     "group": "general",
     "friendlyName": "Src Bytes / Dst Bytes",
     "help": "Src Bytes & Dst Bytes",
-    "sortBy": "by1",
+    "sortBy": "totBytes",
     "children": [
-      "by1",
-      "by2"
+      "srcBytes",
+      "dstBytes"
     ]
   },
   "db1by1": {
@@ -103,10 +103,10 @@
     "group": "general",
     "friendlyName": "Src Databytes / Src Bytes",
     "help": "Src Databytes & Src Bytes",
-    "sortBy": "db1",
+    "sortBy": "srcDataBytes",
     "children": [
-      "db1",
-      "by1"
+      "srcDataBytes",
+      "srcBytes"
     ]
   },
   "db2by2": {
@@ -116,10 +116,10 @@
     "group": "general",
     "friendlyName": "Dst Databytes / Dst Bytes",
     "help": "Dst Databytes & Dst Bytes",
-    "sortBy": "db2",
+    "sortBy": "dstDataBytes",
     "children": [
-      "db2",
-      "by2"
+      "dstDataBytes",
+      "dstBytes"
     ]
   }
 }

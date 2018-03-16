@@ -1,0 +1,165 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dhcp" : {
+               "id" : [
+                  "3d1d",
+                  "3d1e"
+               ],
+               "idCnt" : 2,
+               "mac" : [
+                  "00:0b:82:01:fc:42"
+               ],
+               "macCnt" : 1,
+               "oui" : [
+                  "Grandstream Networks, Inc."
+               ],
+               "ouiCnt" : 1,
+               "type" : [
+                  "REQUEST",
+                  "DISCOVER"
+               ],
+               "typeCnt" : 2
+            },
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "255.255.255.255",
+            "dstMac" : [
+               "ff:ff:ff:ff:ff:ff"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 67,
+            "fileId" : [],
+            "firstPacket" : 1102274184317,
+            "ipProtocol" : 17,
+            "lastPacket" : 1102274184387,
+            "length" : 70,
+            "node" : "test",
+            "packetLen" : [
+               330,
+               330
+            ],
+            "packetPos" : [
+               24,
+               712
+            ],
+            "protocol" : [
+               "udp",
+               "dhcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 628,
+            "srcDataBytes" : 612,
+            "srcIp" : "0.0.0.0",
+            "srcMac" : [
+               "00:0b:82:01:fc:42"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Grandstream Networks, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 2,
+            "srcPayload8" : "0101060000003d1d",
+            "srcPort" : 68,
+            "timestamp" : "SET",
+            "totBytes" : 628,
+            "totDataBytes" : 612,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-041205",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dhcp" : {
+               "id" : [
+                  "3d1d",
+                  "3d1e"
+               ],
+               "idCnt" : 2,
+               "mac" : [
+                  "00:0b:82:01:fc:42"
+               ],
+               "macCnt" : 1,
+               "oui" : [
+                  "Grandstream Networks, Inc."
+               ],
+               "ouiCnt" : 1,
+               "type" : [
+                  "ACK",
+                  "OFFER"
+               ],
+               "typeCnt" : 2
+            },
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "192.168.0.10",
+            "dstMac" : [
+               "00:0b:82:01:fc:42"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Grandstream Networks, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 68,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1102274184317,
+            "ipProtocol" : 17,
+            "lastPacket" : 1102274184387,
+            "length" : 70,
+            "node" : "test",
+            "packetLen" : [
+               358,
+               358
+            ],
+            "packetPos" : [
+               354,
+               1042
+            ],
+            "protocol" : [
+               "udp",
+               "dhcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 684,
+            "srcDataBytes" : 668,
+            "srcIp" : "192.168.0.1",
+            "srcMac" : [
+               "00:08:74:ad:f1:9b"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 2,
+            "srcPayload8" : "0201060000003d1d",
+            "srcPort" : 67,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 684,
+            "totDataBytes" : 668,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-041205",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

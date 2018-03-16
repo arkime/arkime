@@ -90,6 +90,28 @@
       this.loadData();
     }
 
+    exclude(type, value) {
+      this.StatsService.exclude(type, value)
+        .then((response) => {
+          this.loadData();
+        })
+        .catch((error) => {
+          this.error    = error;
+          this.loading  = false;
+        });
+    }
+
+    include(type, value) {
+      this.StatsService.include(type, value)
+        .then((response) => {
+          this.loadData();
+        })
+        .catch((error) => {
+          this.error    = error;
+          this.loading  = false;
+        });
+    }
+
     /* loads the es stats data and computes the total and average values */
     loadData() {
       this.loading = true;

@@ -20,9 +20,9 @@
 #include <arpa/inet.h>
 
 extern MolochConfig_t        config;
-static int hostField;
-static int uaField;
-static int versionField;
+LOCAL  int hostField;
+LOCAL  int uaField;
+LOCAL  int versionField;
 
 #define FBZERO_MAX_SIZE 4096
 typedef struct {
@@ -31,7 +31,7 @@ typedef struct {
 } FBZeroInfo_t;
 
 /******************************************************************************/
-int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
+LOCAL int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
 
     guchar *tag = 0;
     int     tagLen = 0;
@@ -77,7 +77,7 @@ int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
     return 1;
 }
 /******************************************************************************/
-int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     int version = -1;
     int offset = 1;
@@ -166,21 +166,21 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
     return 0;
 }
 /******************************************************************************/
-void quic_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 100 && (data[0] & 0x83) == 0x01) {
         moloch_parsers_register(session, quic_udp_parser, 0, 0);
     }
 }
 /******************************************************************************/
-void quic_fbzero_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void quic_fbzero_free(MolochSession_t UNUSED(*session), void *uw)
 {
     FBZeroInfo_t            *fbzero          = uw;
 
     MOLOCH_TYPE_FREE(FBZeroInfo_t, fbzero);
 }
 /******************************************************************************/
-int quic_fb_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int quic_fb_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     if (which != 0)
         return 0;
@@ -209,7 +209,7 @@ int quic_fb_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *
 }
 
 /******************************************************************************/
-void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
+LOCAL void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
 {
     if (which == 0 && len > 13) {
         FBZeroInfo_t *fbzero = MOLOCH_TYPE_ALLOC(FBZeroInfo_t);
@@ -225,19 +225,19 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
 
     hostField = moloch_field_define("quic", "lotermfield",
-        "host.quic", "Hostname", "quic.host-term", 
+        "host.quic", "Hostname", "quic.host", 
         "QUIC host header field", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
         "aliases", "[\"quic.host\"]", NULL);
 
     uaField = moloch_field_define("quic", "termfield",
-        "quic.user-agent", "User-Agent", "quic.ua-term",
+        "quic.user-agent", "User-Agent", "quic.useragent",
         "User-Agent",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     versionField = moloch_field_define("quic", "termfield",
-        "quic.version", "Version", "quic.version-term",
+        "quic.version", "Version", "quic.version",
         "QUIC Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);

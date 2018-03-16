@@ -4,22 +4,22 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/smtp-subject-8859-b.pcap||file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-originating.pcap||file=$pwd/smtp-zip.pcap||file=$pwd/smtp-subject-multi-nospace.pcap||file=$pwd/smtp-subject-utf8-q.pcap)";
 
 countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # asn.email
     countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001 Cool Beans!\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS0001\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS0001*\""));
 
 # ip.email
     countTest(2, "date=-1&expression=" . uri_escape("$files&&ip.email==10.0.0.4"));
 
 # country.email
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==USA"));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==usa"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==US"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&country.email==us"));
 
 # rir.email
     countTest(1, "date=-1&expression=" . uri_escape("$files&&rir.email==ARIN"));
@@ -45,10 +45,13 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&email.fn==\"A.zip\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.fn.cnt==1"));
 
+SKIP: {
+    skip "Upgrade test", 6 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have email.has-header
 # email.has-header
     countTest(6, "date=-1&expression=" . uri_escape("$files&&email.has-header==\"to\""));
     countTest(6, "date=-1&expression=" . uri_escape("$files&&email.has-header==\"To\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.has-header.cnt==3"));
+}
 
 # email.bodymagic
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"application/zip\""));
@@ -77,8 +80,8 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # email.x-mailer
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"Mutt/1.5.20 (2009-12-10)\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"mutt/1.5.20 (2009-12-10)\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==Mutt"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==\"mutt/1.5.20 (2009-12-10)\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.x-mailer==Mutt*"));
     countTest(3, "date=-1&expression=" . uri_escape("$files&&email.x-mailer.cnt==1"));
 
 # host.email

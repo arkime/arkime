@@ -1,78 +1,38 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "by1" : 1110,
-            "ps" : [
-               24,
-               122,
-               216,
-               302,
-               432,
-               518,
-               665,
-               751,
-               880,
-               966,
-               1067,
-               1153,
-               1572,
-               1838,
-               1924,
-               2010,
-               2112,
-               2198,
-               2342,
-               2994,
-               3080,
-               3166,
-               3273,
-               3359,
-               3445,
-               3531
+            "dstBytes" : 2067,
+            "dstDataBytes" : 1219,
+            "dstIp" : "10.11.11.11",
+            "dstMac" : [
+               "00:1b:17:00:01:24"
             ],
-            "p2" : 80,
-            "db1" : 118,
-            "sl" : 375017,
-            "pa" : 26,
-            "mac1-term-cnt" : 1,
-            "fb2" : "3a746d692e747769",
-            "lp" : 1483561951,
-            "pr" : 6,
-            "portSrc" : 59604,
-            "pa2" : 12,
-            "vlan-cnt" : 1,
-            "mac2-term-cnt" : 1,
-            "ss" : 1,
-            "mac1-term" : [
-               "00:22:83:3f:17:c5"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Palo Alto Networks"
             ],
-            "portDst" : 80,
-            "vlan" : [
-               100
-            ],
-            "lastPacket" : 1483561951602,
-            "db" : 1337,
-            "timestamp" : "SET",
-            "by" : 3177,
-            "ircnckcnt" : 1,
-            "pa1" : 14,
-            "prot-term-cnt" : 2,
-            "ircnck" : [
-               "THE-USER"
-            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 12,
+            "dstPayload8" : "3a746d692e747769",
+            "dstPort" : 80,
+            "fileId" : [],
             "firstPacket" : 1483561576585,
-            "tcpflags" : {
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "ack" : 12,
-               "psh" : 10,
-               "rst" : 0,
-               "urg" : 0
+            "ipProtocol" : 6,
+            "irc" : {
+               "channel" : [
+                  "#THE-USER"
+               ],
+               "channelCnt" : 1,
+               "nick" : [
+                  "THE-USER"
+               ],
+               "nickCnt" : 1
             },
-            "a1" : "10.10.10.10",
-            "psl" : [
+            "lastPacket" : 1483561951602,
+            "length" : 375017,
+            "node" : "test",
+            "packetLen" : [
                98,
                94,
                86,
@@ -100,34 +60,78 @@
                86,
                86
             ],
-            "p1" : 59604,
-            "lpd" : 1483561951602,
-            "fb1" : "4341502052455120",
-            "db2" : 1219,
-            "prot-term" : [
+            "packetPos" : [
+               24,
+               122,
+               216,
+               302,
+               432,
+               518,
+               665,
+               751,
+               880,
+               966,
+               1067,
+               1153,
+               1572,
+               1838,
+               1924,
+               2010,
+               2112,
+               2198,
+               2342,
+               2994,
+               3080,
+               3166,
+               3273,
+               3359,
+               3445,
+               3531
+            ],
+            "protocol" : [
                "irc",
                "tcp"
             ],
-            "ircchcnt" : 1,
-            "ipSrc" : "10.10.10.10",
-            "fpd" : 1483561576585,
-            "ipDst" : "10.11.11.11",
-            "fs" : [],
-            "fp" : 1483561576,
-            "ircch" : [
-               "#THE-USER"
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1110,
+            "srcDataBytes" : 118,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
             ],
-            "by2" : 2067,
-            "a2" : "10.11.11.11",
-            "mac2-term" : [
-               "00:1b:17:00:01:24"
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
             ],
-            "no" : "test"
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "4341502052455120",
+            "srcPort" : 59604,
+            "tcpflags" : {
+               "ack" : 12,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 10,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3177,
+            "totDataBytes" : 1337,
+            "totPackets" : 26,
+            "vlan" : [
+               100
+            ],
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-170104"
+               "_index" : "tests_sessions2-170104",
+               "_type" : "session"
             }
          }
       }

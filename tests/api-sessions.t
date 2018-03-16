@@ -7,7 +7,7 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
 # bigendian pcap file tests
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
@@ -24,7 +24,7 @@ my $pwd = getcwd() . "/pcap";
 # Check facets short
     $json = viewerGet("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "map short");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}}'), "map short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "pa1Histo short");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "pa2Histo short");
@@ -38,7 +38,7 @@ my $pwd = getcwd() . "/pcap";
 # multi Check facets short
     $json = multiGet("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "multi map short");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}}'), "multi map short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "multi lpHisto short");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "multi pa1Histo short");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "multi pa2Histo short");
@@ -52,7 +52,7 @@ my $pwd = getcwd() . "/pcap";
 # Check facets medium
     $json = viewerGet("/sessions.json?startTime=1386004308&stopTime=1386349908&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "map medium");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}}'), "map medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "pa1Histo medium");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004260000", 20]]'), "pa2Histo medium");
@@ -66,7 +66,7 @@ my $pwd = getcwd() . "/pcap";
 # mutli Check facets medium
     $json = multiGet("/sessions.json?startTime=1386004308&stopTime=1386349908&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3}, "src":{"USA": 3}}'), "multi map medium");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}}'), "multi map medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "multi lpHisto medium");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "multi pa1Histo medium");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004260000", 20]]'), "multi pa2Histo medium");
@@ -80,7 +80,7 @@ my $pwd = getcwd() . "/pcap";
 # Check facets ALL 
     $json = viewerGet("/sessions.json?date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}}'), "map ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "pa1Histo ALL");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "pa2Histo ALL");
@@ -92,7 +92,7 @@ my $pwd = getcwd() . "/pcap";
 # multi Check facets ALL 
     $json = multiGet("/sessions.json?date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
-    eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "multi map ALL");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}}'), "multi map ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "multi lpHisto ALL");
     eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "multi pa1Histo ALL");
     eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "multi pa2Histo ALL");
@@ -102,20 +102,20 @@ my $pwd = getcwd() . "/pcap";
     is ($json->{graph}->{interval}, 3600, "multi correct interval ALL");
 
 # Check ip.protocol=blah
-    my $json = viewerGet("/sessions.json?date=-1&&spi=a1&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    my $json = viewerGet("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
     is($json->{bsqErr}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # multi Check ip.protocol=blah
-    my $json = multiGet("/sessions.json?date=-1&&spi=a1&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    my $json = multiGet("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
     is($json->{bsqErr}, "Unknown protocol string blah", "multi ip.protocol==blah");
 
 # csv
     my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
-tcp,1386004309,1386004309,10.180.156.185,53533,USA,10.180.156.249,1080,USA,2698,1754,14,test
-tcp,1386004312,1386004312,10.180.156.185,53534,USA,10.180.156.249,1080,USA,2780,1770,15,test
-tcp,1386004317,1386004317,10.180.156.185,53535,USA,10.180.156.249,1080,USA,2905,1763,17,test
+tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
+tcp,1386004312331,1386004312384,10.180.156.185,53534,US,10.180.156.249,1080,US,2780,1770,15,test
+tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2905,1763,17,test
 ', "CSV Expression");
    
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
@@ -123,22 +123,22 @@ tcp,1386004317,1386004317,10.180.156.185,53535,USA,10.180.156.249,1080,USA,2905,
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 
 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
-tcp,1386004309,1386004309,10.180.156.185,53533,USA,10.180.156.249,1080,USA,2698,1754,14,test
+tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
-    my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?fields=fp,lp,a1,g1,a2,g2,pa,no,tcpflags.rst,tcpflags.psh&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?fields=firstPacket,lastPacket,srcIp,srcGEO,dstIp,dstGEO,totPackets,node,tcpflags.rst,tcpflags.psh&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Moloch Node, TCP Flag RST, TCP Flag PSH
-1386004309,1386004309,10.180.156.185,USA,10.180.156.249,USA,14,test,0,4
-1386004312,1386004312,10.180.156.185,USA,10.180.156.249,USA,15,test,0,4
-1386004317,1386004317,10.180.156.185,USA,10.180.156.249,USA,17,test,0,6
+1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4
+1386004312331,1386004312384,10.180.156.185,US,10.180.156.249,US,15,test,0,4
+1386004317979,1386004317989,10.180.156.185,US,10.180.156.249,US,17,test,0,6
 ', "CSV Expression");
 
 
 # bigendian pcap fs tests
-    my $json = viewerGet("/sessions.json?date=-1&fields=fs&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    ok ($json->{data}->[0]->{fs}->[0] =~ /bigendian.pcap/, "correct fs");
+    my $json = viewerGet("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");
 
 # bigendian pcap fs tests 2 fields
-    my $json = viewerGet("/sessions.json?date=-1&fields=tls&fields=fs&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    ok ($json->{data}->[0]->{fs}->[0] =~ /bigendian.pcap/, "correct fs");
+    my $json = viewerGet("/sessions.json?date=-1&fields=tls&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");

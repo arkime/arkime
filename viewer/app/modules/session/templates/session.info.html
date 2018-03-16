@@ -1,7 +1,7 @@
 <div class="small">
 
-  <div ng-if="::($ctrl.session.us)">
-    <div ng-repeat="value in $ctrl.session.us | limitTo:$ctrl.limit track by $index">
+  <div ng-if="::($ctrl.session['http.uri'])">
+    <div ng-repeat="value in $ctrl.session['http.uri'] | limitTo:$ctrl.limit track by $index">
       <session-field  expr="http.uri" field="::$ctrl.fieldMap['http.uri']"
          value="{{::value}}" session="::$ctrl.session"></session-field>
     </div>
@@ -14,32 +14,32 @@
     </a>
   </div>
 
-  <div ng-if="::($ctrl.session.esrc)">
+  <div ng-if="::($ctrl.session['email.src'])">
     <strong>From:</strong>
-    <span ng-repeat="value in ::$ctrl.session.esrc track by $index">
+    <span ng-repeat="value in ::$ctrl.session['email.src'] track by $index">
       <session-field  expr="email.src" field="::$ctrl.fieldMap['email.src']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
     </span>
     <br>
-    <div ng-if="::($ctrl.session.edst)">
+    <div ng-if="::($ctrl.session['email.dst'])">
       <strong>To:</strong>
-      <span ng-repeat="value in ::$ctrl.session.edst track by $index">
+      <span ng-repeat="value in ::$ctrl.session['email.dst'] track by $index">
       <session-field  expr="email.dst" field="::$ctrl.fieldMap['email.dst']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
       </span>
       <br>
     </div>
-    <div ng-if="::($ctrl.session.esub)">
+    <div ng-if="::($ctrl.session['email.subject'])">
       <strong>Subject:</strong>
-      <span ng-repeat="value in ::$ctrl.session.esub track by $index">
+      <span ng-repeat="value in ::$ctrl.session['email.subject'] track by $index">
       <session-field  expr="email.subject" field="::$ctrl.fieldMap['email.subject']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
       </span>
       <br>
     </div>
-    <div ng-if="::($ctrl.session.efn)">
+    <div ng-if="::($ctrl.session['email.filename'])">
       <strong>Files:</strong>
-      <span ng-repeat="value in ::$ctrl.session.efn track by $index">
+      <span ng-repeat="value in ::$ctrl.session['email.filename'] track by $index">
       <session-field  expr="email.fn" field="::$ctrl.fieldMap['email.fn']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
       </span>
@@ -47,35 +47,35 @@
     </div>
   </div>
 
-  <div ng-if="::($ctrl.session.dnsho)">
-    <span ng-repeat="value in $ctrl.session.dnsho | limitTo:$ctrl.limit track by $index">
+  <div ng-if="::($ctrl.session['dns.host'])">
+    <span ng-repeat="value in $ctrl.session['dns.host'] | limitTo:$ctrl.limit track by $index">
       <session-field  expr="dns.host" field="::$ctrl.fieldMap['host.dns']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
     </span>
     <a class="cursor-pointer"
       style="text-decoration:none;"
-      ng-if="::($ctrl.session.dnsho.length > $ctrl.initialLimit)"
+      ng-if="::($ctrl.session['dns.host'].length > $ctrl.initialLimit)"
       ng-click="$ctrl.toggleShowAll()">
       <span ng-if="!$ctrl.showAll">more...</span>
       <span ng-if="$ctrl.showAll">...less</span>
     </a>
   </div>
 
-  <div ng-if="::($ctrl.session.tls)"
-    ng-repeat="tls in $ctrl.session.tls track by $index">
-    <span ng-repeat="value in ::tls.sCn track by $index">
+  <div ng-if="::($ctrl.session.cert)"
+    ng-repeat="cert in $ctrl.session.cert track by $index">
+    <span ng-repeat="value in ::cert.subjectCN track by $index">
       <session-field  expr="cert.subject.cn" field="::$ctrl.fieldMap['cert.subject.cn']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
     </span>
-    <span ng-if="::(tls.alt)">
-      <div ng-repeat="value in tls.alt | limitTo:$ctrl.limit track by $index">
+    <span ng-if="::(cert.alt)">
+      <div ng-repeat="value in cert.alt | limitTo:$ctrl.limit track by $index">
         <span ng-if="::$first">[</span>
         <session-field  expr="cert.alt" field="::$ctrl.fieldMap['cert.alt']"
           value="{{::value}}" session="::$ctrl.session"></session-field>
         <span ng-if="$last">
           <a class="cursor-pointer"
             style="text-decoration:none;"
-            ng-if="::(tls.alt.length > $ctrl.initialLimit)"
+            ng-if="::(cert.alt.length > $ctrl.initialLimit)"
             ng-click="$ctrl.toggleShowAll()">
             <span ng-if="!$ctrl.showAll">more...</span>
             <span ng-if="$ctrl.showAll">...less</span>
@@ -86,9 +86,9 @@
     </span>
   </div>
 
-  <div ng-if="::($ctrl.session.ircch)">
+  <div ng-if="::($ctrl.session['irc.channel'])">
     <strong>Channel:</strong>
-    <span ng-repeat="value in ::$ctrl.session.ircch track by $index">
+    <span ng-repeat="value in ::$ctrl.session['irc.channel'] track by $index">
       <session-field  expr="irc.channel" field="::$ctrl.fieldMap['irc.channel']"
         value="{{::value}}" session="::$ctrl.session"></session-field>
     </span>

@@ -1,4 +1,4 @@
-use Test::More tests => 36;
+use Test::More tests => 37;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -7,7 +7,7 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 
     my $token = getTokenCookie();
 
@@ -79,6 +79,8 @@ my $pwd = getcwd() . "/pcap";
     my $item = $json->{data}->[0];
     is ($item->{api}, "/sessions.json", "Test4: api");
     $json = viewerGet("/history/list?userId=historytest1&api=somethingsilly");
+    is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
+    $json = viewerGet("/history/list?userId=somethingsilly&api=sessions");
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
 
 # Should be able to filter by time range

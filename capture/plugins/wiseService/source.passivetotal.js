@@ -48,9 +48,9 @@ function PassiveTotalSource (api, section) {
     "if (session.passivetotal)\n" +
     "  div.sessionDetailMeta.bold PassiveTotal\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.passivetotal, 'tags-term', 'Tags', 'passivetotal.tags')\n";
+    "    +arrayList(session.passivetotal, 'tags', 'Tags', 'passivetotal.tags')\n";
 
-  this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags-term;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
+  this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
 
   this.api.addView("passivetotal", str);
 }

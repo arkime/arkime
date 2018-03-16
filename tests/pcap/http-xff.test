@@ -1,31 +1,124 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 863,
+            "dstDataBytes" : 569,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "5c:5e:ab:b3:67:c2"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 5,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
             "firstPacket" : 1454513228371,
-            "portDst" : 80,
-            "lpd" : 1454513228516,
-            "mac1-term-cnt" : 1,
             "http" : {
-               "method-term-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "www.xxxxxxxxx.xx"
+               ],
+               "hostCnt" : 1,
+               "key" : [
+                  "xx"
+               ],
+               "keyCnt" : 1,
+               "md5" : [
+                  "9daa848cbed13db71c8cce96e14a6d57"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/xx/xxxxx"
+               ],
+               "pathCnt" : 1,
+               "request-referer" : [
+                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "user-agent",
+                  "x-forwarded-for",
+                  "referer",
+                  "accept-encoding",
+                  "connection",
+                  "host"
+               ],
+               "requestHeaderCnt" : 6,
+               "responseHeader" : [
+                  "content-type",
+                  "transfer-encoding",
+                  "cf-ray",
+                  "date",
+                  "content-encoding",
+                  "connection",
+                  "server",
+                  "set-cookie"
+               ],
+               "responseHeaderCnt" : 8,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "af205d1c0b8409f29764420aa9b74fc81216a509d4d242aab62699fbb204c127"
+               ],
+               "sha256Cnt" : 1,
                "statuscode" : [
                   403
                ],
-               "bodymagic-term" : [
-                  "application/x-gzip"
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
                ],
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
+               ],
+               "useragentCnt" : 1,
+               "value" : [
+                  "xxxxxxxxxxxx"
+               ],
+               "valueCnt" : 1,
+               "xffASN" : [
+                  "AS0002 Hmm!@#$%^&*()"
+               ],
+               "xffGEO" : [
+                  "---"
+               ],
+               "xffIp" : [
+                  "10.0.0.3"
+               ],
+               "xffIpCnt" : 1,
+               "xffRIR" : [
+                  ""
                ]
             },
-            "ipSrc" : "10.0.0.1",
-            "timestamp" : "SET",
-            "hkeycnt" : 1,
-            "prot-term-cnt" : 2,
-            "mac2-term-cnt" : 2,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1454513228516,
+            "length" : 145,
+            "node" : "test",
+            "packetLen" : [
                90,
                82,
                76,
@@ -38,74 +131,7 @@
                76,
                76
             ],
-            "db2" : 569,
-            "lp" : 1454513228,
-            "as1" : "AS0000 This is neat",
-            "hh1cnt" : 6,
-            "hmd5" : [
-               "9daa848cbed13db71c8cce96e14a6d57"
-            ],
-            "asxff" : [
-               "AS0002 Hmm!@#$%^&*()"
-            ],
-            "pa" : 11,
-            "hdver" : [
-               "1.1"
-            ],
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:41954,33554442:80"
-               ]
-            },
-            "by1" : 680,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "psh" : 3,
-               "urg" : 0,
-               "fin" : 1,
-               "ack" : 4,
-               "rst" : 1,
-               "syn" : 1
-            },
-            "ss" : 1,
-            "hh2cnt" : 8,
-            "xff" : [
-               167772163
-            ],
-            "fb1" : "474554202f78782f",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "gxff" : [
-               "---"
-            ],
-            "uacnt" : 1,
-            "hdrs" : {
-               "hreq-referer" : [
-                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
-               ],
-               "hreq-referercnt" : 1
-            },
-            "ho" : [
-               "www.xxxxxxxxx.xx"
-            ],
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                196,
@@ -118,97 +144,72 @@
                1591,
                1667
             ],
-            "db1" : 312,
-            "pa2" : 5,
-            "hh2" : [
-               "http:header:cf-ray",
-               "http:header:connection",
-               "http:header:content-encoding",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:server",
-               "http:header:set-cookie",
-               "http:header:transfer-encoding"
-            ],
-            "fp" : 1454513228,
-            "fpd" : 1454513228371,
-            "hmd5cnt" : 1,
-            "hdvercnt" : 1,
-            "us" : [
-               "//www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
-            ],
-            "lastPacket" : 1454513228516,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
-            ],
-            "sl" : 145,
-            "hvalcnt" : 1,
-            "portSrc" : 41954,
-            "fs" : [],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "5c:5e:ab:b3:67:c2"
-            ],
-            "hh1" : [
-               "http:header:accept-encoding",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent",
-               "http:header:x-forwarded-for"
-            ],
-            "hpathcnt" : 1,
-            "prot-term" : [
+            "protocol" : [
                "http",
                "tcp"
             ],
-            "ipDst" : "10.0.0.2",
-            "fb2" : "485454502f312e31",
-            "by" : 1543,
-            "pa1" : 6,
-            "as2" : "AS0001 Cool Beans!",
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 680,
+            "srcDataBytes" : 312,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
                "00:0a:f3:31:90:00"
             ],
-            "db" : 881,
-            "hocnt" : 1,
-            "a1" : "10.0.0.1",
-            "no" : "test",
-            "uscnt" : 1,
-            "a2" : "10.0.0.2",
-            "hkey" : [
-               "xx"
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
             ],
-            "p2" : 80,
-            "tacnt" : 2,
-            "hsver" : [
-               "1.1"
+            "srcOuiCnt" : 1,
+            "srcPackets" : 6,
+            "srcPayload8" : "474554202f78782f",
+            "srcPort" : 41954,
+            "tags" : [
+               "dstip",
+               "srcip"
             ],
-            "g1" : "RUS",
-            "pr" : 6,
-            "xffscnt" : 1,
-            "rir2" : "TEST",
-            "p1" : 41954,
-            "hpath" : [
-               "/xx/xxxxx"
-            ],
-            "hval" : [
-               "xxxxxxxxxxxx"
-            ],
-            "g2" : "CAN",
-            "rirxff" : [
-               ""
-            ],
-            "hsvercnt" : 1,
-            "by2" : 863
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 3,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:41954,33554442:80"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1543,
+            "totDataBytes" : 881,
+            "totPackets" : 11
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-160203",
+               "_index" : "tests_sessions2-160203",
                "_type" : "session"
             }
          }

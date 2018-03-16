@@ -14,17 +14,17 @@
  */
 #include "moloch.h"
 
-static char                 *qclasses[256];
-static char                 *qtypes[256];
-static char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
-static char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
+LOCAL  char                 *qclasses[256];
+LOCAL  char                 *qtypes[256];
+LOCAL  char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
+LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
 
-static int                   ipField;
-static int                   hostField;
-static int                   queryTypeField;
-static int                   queryClassField;
-static int                   statusField;
-static int                   opCodeField;
+LOCAL  int                   ipField;
+LOCAL  int                   hostField;
+LOCAL  int                   queryTypeField;
+LOCAL  int                   queryClassField;
+LOCAL  int                   statusField;
+LOCAL  int                   opCodeField;
 
 typedef struct {
     unsigned char      *data[2];
@@ -36,7 +36,7 @@ typedef struct {
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-void dns_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void dns_free(MolochSession_t *UNUSED(session), void *uw)
 {
     DNSInfo_t            *info          = uw;
 
@@ -47,7 +47,7 @@ void dns_free(MolochSession_t *UNUSED(session), void *uw)
     MOLOCH_TYPE_FREE(DNSInfo_t, info);
 }
 /******************************************************************************/
-int dns_name_element(BSB *nbsb, BSB *bsb)
+LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
 {
     int nlen = 0;
     BSB_IMPORT_u08(*bsb, nlen);
@@ -77,7 +77,7 @@ int dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
+LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
 {
     BSB  nbsb;
     int  didPointer = 0;
@@ -122,7 +122,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
     return name;
 }
 /******************************************************************************/
-void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
+LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
 {
 
     if (len < 17)
@@ -167,8 +167,6 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
         if (opcode == 5)
             continue;
 
-        char *lower = g_ascii_strdown((char*)name, namelen);
-
         if (qclass <= 255 && qclasses[qclass]) {
             moloch_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
         }
@@ -177,9 +175,8 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             moloch_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
         }
 
-        if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-            g_free(lower);
-        }
+        if (namelen > 0)
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     switch(kind) {
@@ -235,13 +232,10 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             unsigned char *ptr = BSB_WORK_PTR(bsb);
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
-            moloch_field_int_add(ipField, session, in.s_addr);
+            moloch_field_ip4_add(ipField, session, in.s_addr);
 
             if (opcode == 5) {
-                char *lower = g_ascii_strdown((char*)name, namelen);
-                if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             }
             break;
         }
@@ -255,11 +249,7 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            char *lower = g_ascii_strdown((char*)name, namelen);
-
-            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                g_free(lower);
-            }
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             break;
         }
         case 15: {
@@ -273,18 +263,26 @@ void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, i
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            char *lower = g_ascii_strdown((char*)name, namelen);
+            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+        }
+        case 28: {
+            if (rdlength != 16)
+                break;
+            unsigned char *ptr = BSB_WORK_PTR(bsb);
 
-            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
-                g_free(lower);
+            moloch_field_ip6_add(ipField, session, ptr);
+
+            if (opcode == 5) {
+                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
             }
+            break;
         }
         } /* switch */
         BSB_IMPORT_skip(bsb, rdlength);
     }
 }
 /******************************************************************************/
-int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     DNSInfo_t *info = uw;
     while (len >= 2) {
@@ -336,7 +334,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (/*which == 0 &&*/ session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
@@ -345,7 +343,7 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
     }
 }
 /******************************************************************************/
-int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
     if (uw == 0 || (session->port1 != 53 && session->port2 != 53)) {
         dns_parser(session, (long)uw, data, len);
@@ -353,7 +351,7 @@ int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     moloch_parsers_register(session, dns_udp_parser, uw, 0);
 }
@@ -361,7 +359,7 @@ void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 void moloch_parser_init()
 {
     ipField = moloch_field_define("dns", "ip",
-        "ip.dns", "IP",  "dnsip",
+        "ip.dns", "IP",  "dns.ip",
         "IP from DNS result",
         MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "aliases", "[\"dns.ip\"]",
@@ -369,7 +367,7 @@ void moloch_parser_init()
         NULL);
 
     hostField = moloch_field_define("dns", "lotermfield",
-        "host.dns", "Host", "dnsho",
+        "host.dns", "Host", "dns.host",
         "DNS host looked up",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"dns.host\"]",
@@ -377,27 +375,27 @@ void moloch_parser_init()
         NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
-        "dns.status", "Status Code", "dns.status-term",
+        "dns.status", "Status Code", "dns.status",
         "DNS lookup return code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     opCodeField = moloch_field_define("dns", "uptermfield",
-        "dns.opcode", "Op Code", "dns.opcode-term",
+        "dns.opcode", "Op Code", "dns.opcode",
         "DNS lookup op code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     queryTypeField = moloch_field_define("dns", "uptermfield",
-        "dns.query.type", "Query Type", "dns.qt-term",
+        "dns.query.type", "Query Type", "dns.qt",
         "DNS lookup query type",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     queryClassField = moloch_field_define("dns", "uptermfield",
-        "dns.query.class", "Query Class", "dns.qc-term",
+        "dns.query.class", "Query Class", "dns.qc",
         "DNS lookup query class",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
 

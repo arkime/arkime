@@ -129,7 +129,7 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', () => {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
+          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions2|sessions|stats|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
           result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v1)\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
@@ -139,6 +139,7 @@ function simpleGather(req, res, bodies, doneCb) {
         asyncCb(null, result);
       });
     });
+    preq.setHeader('content-type', "application/json");
     if (req._body) {
       if (bodies && bodies[node]) {
         preq.end(bodies[node]);
@@ -241,11 +242,13 @@ app.get("/:index/_stats", (req, res) => {
   });
 });
 
-app.get("/MULTIPREFIX_dstats/version/version", (req, res) => {
+app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
+    //console.log("DEBUG -", util.inspect(results, false, 50));
+
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
-      if (results[i]._source.version < obj._source.version) {
+      if (results[i].MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion) {
         obj = results[i];
       }
     }
@@ -270,45 +273,6 @@ app.get("/:index/:type/_search", (req, res) => {
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
     res.send(obj);
-  });
-});
-
-app.get("/MULTIPREFIX_sessions-*/:type/:id", (req, res) => {
-  function fixTags(node, container, field, doneCb) {
-    if (!container || !container[field]) {
-      return doneCb(null);
-    }
-
-    async.map(container[field], (item, cb) => {
-      tagIdToName(node, item, (name) => {
-        cb(null, name);
-      });
-    },
-    function(err, results) {
-      container[field] = results;
-      doneCb(err);
-    });
-  }
-
-  simpleGather(req, res, null, (err, results) => {
-    for (var i = 0; i < results.length; i++) {
-      if (results[i].found) {
-        async.parallel([
-          function(parallelCb) {
-            fixTags(results[i]._node, results[i]._source, "ta", parallelCb);
-          },
-          function(parallelCb) {
-            fixTags(results[i]._node, results[i]._source, "hh1", parallelCb);
-          },
-          function(parallelCb) {
-            fixTags(results[i]._node, results[i]._source, "hh2", parallelCb);
-          }], () => {
-            return res.send(results[i]);
-          });
-        return;
-      }
-    }
-    res.send(results[0]);
   });
 });
 
@@ -475,42 +439,6 @@ function aggAdd(obj1, obj2) {
   }
 }
 
-// Tags Fun
-
-var tags = {};
-
-function tagNameToId(node, name, cb) {
-  if (tags[node].tagName2Id[name]) {
-    return setImmediate(cb, tags[node].tagName2Id[name]);
-  }
-
-  clients[node].get({index: 'tags', type: 'tag', id: name}, (err, tdata) => {
-    if (!err && (tdata.found)) {
-      tags[node].tagName2Id[name] = tdata._source.n;
-      tags[node].tagId2Name[tdata._source.n] = name;
-      return cb (tags[node].tagName2Id[name]);
-    }
-    return cb(-1);
-  });
-}
-
-function tagIdToName (node, id, cb) {
-  if (tags[node].tagId2Name[id]) {
-    return setImmediate(cb, tags[node].tagId2Name[id]);
-  }
-
-  var query = {query: {term: {n:id}}};
-  clients[node].search({index: node2Prefix(node) + 'tags', type: 'tag', body: query}, (err, tdata) => {
-    if (!err && tdata.hits.hits[0]) {
-      tags[node].tagId2Name[id] = tdata.hits.hits[0]._id;
-      tags[node].tagName2Id[tdata.hits.hits[0]._id] = id;
-      return cb(tags[node].tagId2Name[id]);
-    }
-
-    return cb(null);
-  });
-}
-
 function fixQuery(node, body, doneCb) {
   body = JSON.parse(body);
 
@@ -527,67 +455,7 @@ function fixQuery(node, body, doneCb) {
   function process(parent, obj, item) {
     var query;
 
-    if (item.match(/^(ta|hh1|hh2)$/) && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
-      if (obj[item].indexOf("*") !== -1) {
-        delete parent.wildcard;
-        outstanding++;
-        if (item === "ta") {
-          query = {bool: {must: {wildcard: {_id: obj[item]}},
-                          must_not: {wildcard: {_id: "http:header:*"}}
-                         }
-                  };
-        } else {
-          query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
-        }
-        clients[node].search({index: node2Prefix(node) + 'tags', type: 'tag', size:500, _source:["id", "n"], body: {query: query}}, (err, result) => {
-          var terms = [];
-          result.hits.hits.forEach((hit) => {
-            terms.push(hit._source.n);
-          });
-          parent.terms = {};
-          parent.terms[item] = terms;
-          outstanding--;
-          if (finished && outstanding === 0) {
-            doneCb(err, body);
-          }
-        });
-      } else if (Array.isArray(obj[item])) {
-        outstanding++;
-
-        async.map(obj[item], (str, cb) => {
-          var tag = (item !== "ta" && str.indexOf("http:header:") !== 0?"http:header:" + str.toLowerCase():str);
-          tagNameToId(node, tag, (id) => {
-            if (id === null) {
-              cb(null, -1);
-            } else {
-              cb(null, id);
-            }
-          });
-        },
-        function (err, results) {
-          outstanding--;
-          obj[item] = results;
-          if (finished && outstanding === 0) {
-            doneCb(err, body);
-          }
-        });
-      } else {
-        outstanding++;
-        var tag = (item !== "ta" && obj[item].indexOf("http:header:") !== 0?"http:header:" + obj[item].toLowerCase():obj[item]);
-
-        tagNameToId(node, tag, (id) => {
-          outstanding--;
-          if (id === null) {
-            err = "Tag '" + tag + "' not found";
-          } else {
-            obj[item] = id;
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err, body);
-          }
-        });
-      }
-    } else if (item === "fileand" && typeof obj[item] === "string") {
+    if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
       outstanding++;
@@ -603,7 +471,7 @@ function fixQuery(node, body, doneCb) {
         outstanding--;
         obj.bool = {should: []};
         result.hits.hits.forEach((file) => {
-          obj.bool.should.push({bool: {must:[{term: {no: file._source.node}}, {term: {fs: file._source.num}}]}});
+          obj.bool.should.push({bool: {must:[{term: {node: file._source.node}}, {term: {fileId: file._source.num}}]}});
         });
         if (obj.bool.should.length === 0) {
           err = "No matching files found";
@@ -631,69 +499,6 @@ function fixQuery(node, body, doneCb) {
   finished = 1;
 }
 
-function fixResult(node, result, doField, doneCb) {
-  function facetTags(container, field, doneCb) {
-    if (!container || !container[field]) {
-      return doneCb(null);
-    }
-
-    async.map(container[field].terms, (item, cb) => {
-      tagIdToName(node, item.term, (name) => {
-        item.term = name;
-        cb(null, item);
-      });
-    },
-    function(err, tagsResults) {
-      container[field].terms = tagsResults;
-      doneCb(err);
-    });
-  }
-
-  function aggTags(container, field, doneCb) {
-    if (!container || !container[field]) {
-      return doneCb(null);
-    }
-
-    async.map(container[field].buckets, (item, cb) => {
-      tagIdToName(node, item.key, (name) => {
-        item.key = name;
-        cb(null, item);
-      });
-    },
-    function(err, tagsResults) {
-      container[field].buckets = tagsResults;
-      doneCb(err);
-    });
-  }
-
-  async.parallel([
-    function(parallelCb) {
-      facetTags(result.facets, "ta", parallelCb);
-    },
-    function(parallelCb) {
-      facetTags(result.facets, "hh1", parallelCb);
-    },
-    function(parallelCb) {
-      facetTags(result.facets, "hh2", parallelCb);
-    },
-    function(parallelCb) {
-      aggTags(result.aggregations, "ta", parallelCb);
-    },
-    function(parallelCb) {
-      aggTags(result.aggregations, "hh1", parallelCb);
-    },
-    function(parallelCb) {
-      aggTags(result.aggregations, "hh2", parallelCb);
-    },
-    function(parallelCb) {
-      if (!doField) {
-        return parallelCb();
-      }
-      aggTags(result.aggregations, "field", parallelCb);
-    }], () => {
-      return setImmediate(doneCb);
-    });
-}
 function combineResults(obj, result) {
   if (!result.hits) {
     console.log("NO RESULTS", result);
@@ -770,37 +575,6 @@ function newResult(search) {
   return result;
 }
 
-// Only tags search is for auto complete so unique the results
-app.post("/MULTIPREFIX_tags/tag/_search", function(req, res) {
-  var search = JSON.parse(req.body);
-
-  simpleGather(req, res, null, (err, results) => {
-    async.each(results, (result, asyncCb) => {
-      fixResult(result._node, result, false, asyncCb);
-    }, (err) => {
-      var tags = {};
-      for (var i = 0; i < results.length; i++) {
-        if (results[i].error || !results[i].hits) {
-          console.log("Issue with tag results", results[i].error);
-          continue;
-        }
-        for (var h = 0; h < results[i].hits.hits.length; h++) {
-          tags[results[i].hits.hits[h]._id] = results[i].hits.hits[h];
-        }
-      }
-      var obj = results[0];
-      obj.hits.hits = [];
-
-      for (var tag in tags) {
-        obj.hits.hits.push(tags[tag]);
-      }
-
-      res.send(obj);
-    });
-  });
-
-});
-
 app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = {
@@ -849,28 +623,23 @@ app.post("/:index/:type/_search", function(req, res) {
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
-      async.each(results, (result, asyncCb) => {
-        //console.log("DEBUG - RESULT", util.inspect(result, false, 50));
-        fixResult(result._node, result, doField, asyncCb);
-      }, (err) => {
-        var obj = newResult(search);
+      var obj = newResult(search);
 
-        for (var i = 0; i < results.length; i++) {
-          combineResults(obj, results[i]);
-        }
+      for (var i = 0; i < results.length; i++) {
+        combineResults(obj, results[i]);
+      }
 
-        if (obj.facets) {
-          facetConvert2Arr(obj.facets);
-        }
+      if (obj.facets) {
+        facetConvert2Arr(obj.facets);
+      }
 
-        if (obj.aggregations) {
-          aggConvert2Arr(obj.aggregations);
-        }
+      if (obj.aggregations) {
+        aggConvert2Arr(obj.aggregations);
+      }
 
-        sortResults(search, obj);
+      sortResults(search, obj);
 
-        res.send(obj);
-      });
+      res.send(obj);
     });
   });
 });
@@ -891,7 +660,7 @@ function msearch(req, res) {
         lineCb();
       });
     }, (err) => {
-      bodies[node] = nlines.join("\n");
+      bodies[node] = nlines.join("\n") + "\n";
       var prefix = node2Prefix(node);
       bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
       nodeCb();
@@ -899,34 +668,26 @@ function msearch(req, res) {
   }, (err) => {
     var responses = [];
     simpleGather(req, res, bodies, (err, results) => {
-      async.eachSeries(results, (result, resultCb) => {
-        async.eachSeries(result.responses, (response, responseCb) => {
-          fixResult(result._node, response, false, responseCb);
-        }, (err) => {
-          resultCb();
-        });
-      }, (err) => {
-        var obj = {responses:[]};
-        for (var h = 0; h < results[0].responses.length; h++) {
-          obj.responses[h] = newResult(JSON.parse(lines[h*2+1]));
+      var obj = {responses:[]};
+      for (var h = 0; h < results[0].responses.length; h++) {
+        obj.responses[h] = newResult(JSON.parse(lines[h*2+1]));
 
-          for (var i = 0; i < results.length; i++) {
-            combineResults(obj.responses[h], results[i].responses[h]);
-          }
-
-          if (obj.responses[h].facets) {
-            facetConvert2Arr(obj.responses[h].facets);
-          }
-
-          if (obj.responses[h].aggregations) {
-            aggConvert2Arr(obj.responses[h].aggregations);
-          }
-
-          sortResults(JSON.parse(lines[h*2+1]), obj.responses[h]);
+        for (var i = 0; i < results.length; i++) {
+          combineResults(obj.responses[h], results[i].responses[h]);
         }
 
-        res.send(obj);
-      });
+        if (obj.responses[h].facets) {
+          facetConvert2Arr(obj.responses[h].facets);
+        }
+
+        if (obj.responses[h].aggregations) {
+          aggConvert2Arr(obj.responses[h].aggregations);
+        }
+
+        sortResults(JSON.parse(lines[h*2+1]), obj.responses[h]);
+      }
+
+      res.send(obj);
     });
   });
 }
@@ -963,21 +724,24 @@ if (nodes.length === 0 || nodes[0] === "") {
   process.exit(1);
 }
 
+// First connect
 nodes.forEach((node) => {
-  tags[node] = {tagName2Id: {}, tagId2Name: {}};
-
   clients[node] = new ESC.Client({
     host: node.split(",")[0],
     apiVersion: "5.5",
-    requestTimeout: 300000
+    requestTimeout: 300000,
+    keepAlive: true
   });
+});
 
+// Now check version numbers
+nodes.forEach((node) => {
   clients[node].info((err,data) => {
     if (err) {
       console.log(err);
     }
-    if (data.version.number.match(/^(1.[01]|0)/)) {
-      console.log("ES", data.version.number,"is not supported, upgrade to 1.2.x or 1.3.x:", node);
+    if (data.version.number.match(/^([01234])/)) {
+      console.log("ES", data.version.number, "is not supported, upgrade to >= 5.5.x:", node);
       process.exit();
     }
   });

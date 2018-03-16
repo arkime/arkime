@@ -81,5 +81,5 @@ my $json;
     is (!exists $json->{graph}, 1, "Shouldn't have connections.json graph");
     is (!exists $json->{map}, 1, "Shouldn't have connections.json map");
 
-    $json = viewerGet2("/uniqueValue.json?type=tags");
-    is (scalar @{$json}, 0, "Empty uniqueValue");
+    my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8124/unique.txt?field=tags")->content;
+    is ($txt, "", "Empty unique.txt");

@@ -21,14 +21,14 @@ typedef struct {
     uint16_t   done;
 } SSHInfo_t;
 
-static int verField;
-static int keyField;
 extern MolochConfig_t        config;
+LOCAL  int verField;
+LOCAL  int keyField;
 
 /******************************************************************************/
 // SSH Parsing currently assumes the parts we want from a SSH Packet will be
 // in a single TCP packet.  Kind of sucks.
-int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
@@ -64,11 +64,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
         if (n) {
             int len = (n - data);
 
-            char *str = g_ascii_strdown((char *)data, len);
-
-            if (!moloch_field_string_add(verField, session, str, len, FALSE)) {
-                g_free(str);
-            }
+            moloch_field_string_add_lower(verField, session, (char *)data, len);
         }
         return 0;
     }
@@ -127,14 +123,14 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void ssh_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void ssh_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SSHInfo_t            *ssh          = uw;
 
     MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "ssh"))
         return;
@@ -149,13 +145,13 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
 void moloch_parser_init()
 {
     verField = moloch_field_define("ssh", "lotermfield",
-        "ssh.ver", "Version", "sshver",
+        "ssh.ver", "Version", "ssh.version",
         "SSH Software Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     keyField = moloch_field_define("ssh", "termfield",
-        "ssh.key", "Key", "sshkey",
+        "ssh.key", "Key", "ssh.key",
         "SSH Key",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);

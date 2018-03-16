@@ -27,17 +27,17 @@ typedef struct socksinfo {
     uint8_t   state5[2];
 } SocksInfo_t;
 
-static int ipField;
-static int portField;
-static int userField;
-static int hostField;
+LOCAL  int ipField;
+LOCAL  int portField;
+LOCAL  int userField;
+LOCAL  int hostField;
 
 //#define SOCKSDEBUG
 
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
 #define SOCKS4_STATE_DATA         1
-int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -47,7 +47,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
             if (socks->ip)
-                moloch_field_int_add(ipField, session, socks->ip);
+                moloch_field_ip4_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
             moloch_session_add_protocol(session, "socks");
 
@@ -86,7 +86,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 #define SOCKS5_STATE_CONN_REQUEST   5
 #define SOCKS5_STATE_CONN_REPLY     6
 #define SOCKS5_STATE_CONN_DATA      7
-int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
     int                     consumed;
@@ -150,15 +150,13 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
         if (data[3] == 1) { // IPV4
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
             memcpy(&socks->ip, data+4, 4);
-            moloch_field_int_add(ipField, session, socks->ip);
+            moloch_field_ip4_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
-            char *lower = g_ascii_strdown((char*)data+5, data[4]);
-            if (!moloch_field_string_add(hostField, session, lower, data[4], FALSE)) {
-                g_free(lower);
-            }
+
+            moloch_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
@@ -200,7 +198,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 }
 
 /******************************************************************************/
-void socks_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void socks_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -211,7 +209,7 @@ void socks_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -251,7 +249,7 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
 }
 
 /******************************************************************************/
-void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -272,16 +270,16 @@ void socks5_classify(MolochSession_t *session, const unsigned char *data, int le
 void moloch_parser_init()
 {
     ipField = moloch_field_define("socks", "ip",
-        "ip.socks", "IP", "socksip",
+        "ip.socks", "IP", "socks.ip",
         "SOCKS destination IP",
         MOLOCH_FIELD_TYPE_IP, MOLOCH_FIELD_FLAG_IPPRE, 
-        "aliases", "[\"ip.socks\"]",
+        "aliases", "[\"socks.ip\"]",
         "portField", "sockspo", 
-        "category", "user",
+        "portField2", "socks.port", 
         NULL);
 
     hostField = moloch_field_define("socks", "lotermfield",
-        "host.socks", "Host", "socksho",
+        "host.socks", "Host", "socks.host",
         "SOCKS destination host",
         MOLOCH_FIELD_TYPE_STR,       0, 
         "aliases", "[\"socks.host\"]", 
@@ -289,7 +287,7 @@ void moloch_parser_init()
         NULL);
 
     portField = moloch_field_define("socks", "integer",
-        "port.socks", "Port", "sockspo",
+        "port.socks", "Port", "socks.port",
         "SOCKS destination port",
         MOLOCH_FIELD_TYPE_INT,       0, 
         "aliases", "[\"socks.port\"]", 
@@ -297,7 +295,7 @@ void moloch_parser_init()
         NULL);
 
     userField = moloch_field_define("socks", "termfield",
-        "socks.user", "User", "socksuser",
+        "socks.user", "User", "socks.user",
         "SOCKS authenticated user",
         MOLOCH_FIELD_TYPE_STR,     0, 
         "aliases", "[\"socksuser\"]", 

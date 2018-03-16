@@ -51,43 +51,31 @@
 
       it('should return the appropriate protocol strings', function () {
         let protocolInt = 1;
-        let result = $filter('protocol')(protocolInt);
+        let result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('icmp');
 
         protocolInt = 6;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('tcp');
 
         protocolInt = 17;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('udp');
 
         protocolInt = 47;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('gre');
 
         protocolInt = 58;
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('icmp6');
 
         protocolInt = 'default';
-        result = $filter('protocol')(protocolInt);
+        result = $filter('ipProtocol')(protocolInt);
         expect(result).toEqual('default');
       });
 
     });
-
-
-    describe('Extract IP String Filter ->', function() {
-
-      it('should return the appropriate ip string', function() {
-        let ip = 3232235777;
-        let result  = $filter('extractIPString')(ip);
-        expect(result).toEqual('192.168.1.1');
-      });
-
-    });
-
 
     describe('Extract IPv6 String Filter ->', function() {
 

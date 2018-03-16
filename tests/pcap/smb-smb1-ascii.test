@@ -1,82 +1,28 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-150423",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "smbfn" : [
-               "XXXXXXXX.exe"
+            "dstBytes" : 1359,
+            "dstDataBytes" : 879,
+            "dstIp" : "10.10.0.2",
+            "dstMac" : [
+               "00:50:56:a8:45:c0"
             ],
-            "no" : "test",
-            "by2" : 1359,
-            "by" : 3188,
-            "p2" : 445,
-            "prot-term" : [
-               "smb",
-               "tcp"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "VMware, Inc."
             ],
-            "ps" : [
-               24,
-               106,
-               188,
-               270,
-               352,
-               432,
-               594,
-               877,
-               957,
-               1214,
-               1642,
-               1722,
-               2263,
-               2481,
-               2561,
-               2706,
-               2830,
-               2910,
-               3057,
-               3184,
-               3264,
-               3421
-            ],
-            "smbsh" : [
-               "\\\\10.10.0.2\\IPC$",
-               "\\\\10.10.0.2\\ADMIN$"
-            ],
-            "pr" : 6,
-            "smbdmcnt" : 1,
-            "vlan-cnt" : 1,
-            "smbuser" : [
-               "Administrator"
-            ],
-            "ipSrc" : "10.10.0.3",
+            "dstOuiCnt" : 1,
+            "dstPackets" : 8,
+            "dstPayload8" : "000000cdff534d42",
+            "dstPort" : 445,
+            "fileId" : [],
+            "firstPacket" : 1429783872765,
+            "ipProtocol" : 6,
             "lastPacket" : 1429783877023,
-            "smboscnt" : 1,
-            "fpd" : 1429783872765,
-            "smbver" : [
-               "Windows 2000 5.0"
-            ],
-            "lp" : 1429783877,
-            "smbhocnt" : 1,
-            "ss" : 1,
-            "db1" : 965,
-            "smbho" : [
-               "THEHOSTNAMEHEREX"
-            ],
-            "mac2-term-cnt" : 1,
-            "smbfncnt" : 1,
-            "sl" : 4258,
-            "a1" : "10.10.0.3",
-            "smbos" : [
-               "Windows 2000 2195"
-            ],
-            "smbusercnt" : 1,
-            "prot-term-cnt" : 2,
-            "psl" : [
+            "length" : 4258,
+            "node" : "test",
+            "packetLen" : [
                82,
                82,
                82,
@@ -100,48 +46,106 @@
                157,
                143
             ],
-            "by1" : 1829,
-            "lpd" : 1429783877023,
-            "db" : 1844,
-            "p1" : 2204,
-            "pa" : 22,
-            "portSrc" : 2204,
-            "smbshcnt" : 2,
-            "pa1" : 14,
-            "mac1-term" : [
+            "packetPos" : [
+               24,
+               106,
+               188,
+               270,
+               352,
+               432,
+               594,
+               877,
+               957,
+               1214,
+               1642,
+               1722,
+               2263,
+               2481,
+               2561,
+               2706,
+               2830,
+               2910,
+               3057,
+               3184,
+               3264,
+               3421
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "smb" : {
+               "domain" : [
+                  "LAB"
+               ],
+               "domainCnt" : 1,
+               "filename" : [
+                  "XXXXXXXX.exe"
+               ],
+               "filenameCnt" : 1,
+               "host" : [
+                  "THEHOSTNAMEHEREX"
+               ],
+               "hostCnt" : 1,
+               "os" : [
+                  "Windows 2000 2195"
+               ],
+               "osCnt" : 1,
+               "share" : [
+                  "\\\\10.10.0.2\\IPC$",
+                  "\\\\10.10.0.2\\ADMIN$"
+               ],
+               "shareCnt" : 2,
+               "user" : [
+                  "Administrator"
+               ],
+               "userCnt" : 1,
+               "version" : [
+                  "Windows 2000 5.0"
+               ],
+               "versionCnt" : 1
+            },
+            "srcBytes" : 1829,
+            "srcDataBytes" : 965,
+            "srcIp" : "10.10.0.3",
+            "srcMac" : [
                "00:50:56:a8:1f:7c"
             ],
-            "mac1-term-cnt" : 1,
-            "a2" : "10.10.0.2",
-            "db2" : 879,
-            "smbvercnt" : 1,
-            "fb2" : "000000cdff534d42",
-            "smbdm" : [
-               "LAB"
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "VMware, Inc."
             ],
-            "fp" : 1429783872,
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "00000054ff534d42",
+            "srcPort" : 2204,
+            "tcpflags" : {
+               "ack" : 6,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 12,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 2,
+               "urg" : 0
+            },
             "timestamp" : "SET",
-            "ipDst" : "10.10.0.2",
-            "pa2" : 8,
+            "totBytes" : 3188,
+            "totDataBytes" : 1844,
+            "totPackets" : 22,
             "vlan" : [
                1113
             ],
-            "firstPacket" : 1429783872765,
-            "portDst" : 445,
-            "tcpflags" : {
-               "ack" : 6,
-               "fin" : 0,
-               "psh" : 12,
-               "urg" : 0,
-               "rst" : 0,
-               "syn-ack" : 2,
-               "syn" : 2
-            },
-            "mac2-term" : [
-               "00:50:56:a8:45:c0"
-            ],
-            "fb1" : "00000054ff534d42",
-            "fs" : []
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150423",
+               "_type" : "session"
+            }
          }
       }
    ]

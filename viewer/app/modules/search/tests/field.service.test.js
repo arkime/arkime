@@ -56,12 +56,6 @@
         $httpBackend.flush();
       });
 
-      it('should send a GET request for http.hasheader values (uniqueValue.json)', function() {
-        var result = FieldService.getHasheaderValues();
-        $httpBackend.expectGET('uniqueValue.json');
-        $httpBackend.flush();
-      });
-
     });
 
   });

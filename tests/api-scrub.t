@@ -2,10 +2,10 @@ use Test::More tests => 34;
 use Cwd;
 use URI::Escape;
 use MolochTest;
+use Data::Dumper;
 use JSON;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
 my $copytest = getcwd() . "/copytest.pcap";
 
 countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));

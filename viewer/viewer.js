@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 37;
+var MIN_DB_VERSION = 50;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -76,9 +76,11 @@ var internals = {
   rightClicks: {},
   pluginEmitter: new EventEmitter(),
   writers: {},
+  oldDBFields: {},
 
-  cronTimeout: Math.max(+Config.get("tcpTimeout", 8*60), +Config.get("udpTimeout", 60), +Config.get("icmpTimeout", 10)) +
-               parseInt(Config.get("dbFlushTimeout", 5), 10) + 60 + 5,
+  cronTimeout: +Config.get("dbFlushTimeout", 5) + // How long capture holds items
+               60 +                               // How long before ES reindexs
+               20,                                // Transmit and extra time
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -168,7 +170,7 @@ app.use(compression());
 app.use(methodOverride());
 
 
-app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
+app.use('/font-awesome', express.static(__dirname + '/../node_modules/font-awesome', { maxAge: 600 * 1000}));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
 
 app.use('/cyberchef.htm', function(req, res, next) {
@@ -310,6 +312,18 @@ function loadFields() {
   Db.loadFields(function (err, data) {
     if (err) {data = [];}
     else {data = data.hits.hits;}
+
+    // Everything will use dbField2 as dbField
+    for (let i = 0, ilen = data.length; i < ilen; i++) {
+      internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+      data[i]._source.dbField = data[i]._source.dbField2;
+      if (data[i]._source.portField2) {
+        data[i]._source.portField = data[i]._source.portField2;
+      } else {
+        delete data[i]._source.portField;
+      }
+      delete data[i]._source.rawField;
+    }
     Config.loadFields(data);
     app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
     app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
@@ -369,20 +383,6 @@ function queryValueToArray(val) {
     val = [val];
   }
   return val.join(",").split(",");
-}
-
-var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
-function fmenum(field) {
-  var fieldsMap = Config.getFieldsMap();
-  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
-      fieldsMap[field] && fieldsMap[field].type === "ip") {
-    return FMEnum.ip;
-  } else if (field.match(/^(ta)$/) !== null) {
-    return FMEnum.tags;
-  } else if (field.match(/^(hh1|hh2)$/) !== null) {
-    return FMEnum.hh;
-  }
-  return FMEnum.other;
 }
 
 function errorString(err, result) {
@@ -920,8 +920,8 @@ var settingDefaults = {
   showTimestamps: 'last',
   sortColumn    : 'start',
   sortDirection : 'asc',
-  spiGraph      : 'no',
-  connSrcField  : 'a1',
+  spiGraph      : 'node',
+  connSrcField  : 'srcIp',
   connDstField  : 'ip.dst:port',
   numPackets    : 'last',
   theme         : 'default-theme'
@@ -1218,28 +1218,36 @@ app.post('/user/cron/create', [checkCookieToken, logAction(), postSettingUser], 
 
   var userId = req.settingUser.userId;
 
-  if (req.body.since === '-1') {
-    document.doc.lpValue =  document.doc.lastRun = 0;
-  } else {
-    document.doc.lpValue =  document.doc.lastRun =
-       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10);
-  }
-  document.doc.count = 0;
-  document.doc.creator = userId || 'anonymous';
+  Db.getMinValue("sessions2-*", "timestamp", (err, minTimestamp) => {
+    if (err || minTimestamp === 0 || minTimestamp === null) {
+      minTimestamp = Math.floor(Date.now()/1000);
+    } else {
+      minTimestamp = Math.floor(minTimestamp/1000);
+    }
 
-  Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
-    if (err) {
-      console.log('/user/cron/create error', err, info);
-      return res.molochUser(500, 'Create cron query failed');
+    if (+req.body.since === -1) {
+      document.doc.lpValue =  document.doc.lastRun = minTimestamp;
+    } else {
+      document.doc.lpValue =  document.doc.lastRun =
+         Math.max(minTimestamp, Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10));
     }
-    if (Config.get('cronQueries', false)) {
-      processCronQueries();
-    }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Created cron query successfully',
-      key     : info._id
-    }));
+    document.doc.count = 0;
+    document.doc.creator = userId || 'anonymous';
+
+    Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+      if (err) {
+        console.log('/user/cron/create error', err, info);
+        return res.molochError(500, 'Create cron query failed');
+      }
+      if (Config.get('cronQueries', false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created cron query successfully',
+        key     : info._id
+      }));
+    });
   });
 });
 
@@ -1332,9 +1340,25 @@ app.post('/user/password/change', [checkCookieToken, logAction(), postSettingUse
   });
 });
 
+function oldDB2newDB(x) {
+  if (!internals.oldDBFields[x]) {return x;}
+  return internals.oldDBFields[x].dbField2;
+}
+
 // gets custom column configurations for a user
 app.get('/user/columns', getSettingUser, function(req, res) {
   if (!req.settingUser) {return res.send([]);}
+
+  // Fix for new names
+  if (req.settingUser.columnConfigs) {
+    for (var key in req.settingUser.columnConfigs) {
+      let item = req.settingUser.columnConfigs[key];
+      item.columns = item.columns.map(oldDB2newDB);
+      if (item.order && item.order.length > 0) {
+        item.order[0][0] = oldDB2newDB(item.order[0][0]);
+      }
+    };
+  }
 
   return res.send(req.settingUser.columnConfigs || []);
 });
@@ -1673,10 +1697,10 @@ function addSortToQuery(query, info, d, missing) {
       var field = parts[0];
 
       var obj = {};
-      if (field === "fp") {
-        obj.fpd = {order: parts[1]};
-      } else if (field === "lp") {
-        obj.lpd = {order: parts[1]};
+      if (field === "firstPacket") {
+        obj.firstPacket = {order: parts[1]};
+      } else if (field === "lastPacket") {
+        obj.lastPacket = {order: parts[1]};
       } else {
         obj[field] = {order: parts[1]};
       }
@@ -1712,10 +1736,10 @@ function addSortToQuery(query, info, d, missing) {
     }
     query.sort.push(obj);
 
-    if (field === "fp") {
-      query.sort.push({fpd: {order: info["sSortDir_" + i]}});
-    } else if (field === "lp") {
-      query.sort.push({lpd: {order: info["sSortDir_" + i]}});
+    if (field === "firstPacket") {
+      query.sort.push({firstPacket: {order: info["sSortDir_" + i]}});
+    } else if (field === "lastPacket") {
+      query.sort.push({lastPacket: {order: info["sSortDir_" + i]}});
     }
   }
 }
@@ -1736,70 +1760,7 @@ function lookupQueryItems(query, doneCb) {
   //jshint latedef: nofunc
   function process(parent, obj, item) {
     //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
-    if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
-      if (obj[item].indexOf("*") !== -1) {
-        delete parent.wildcard;
-        outstanding++;
-        var query;
-        if (item === "ta") {
-          query = {bool: {must: {wildcard: {_uid: "tag#" + obj[item]}},
-                          must_not: {wildcard: {_uid: "tag#" + "http:header:*"}}
-                         }
-                  };
-        } else {
-          query = {wildcard: {_uid: "tag#http:header:" + obj[item].toLowerCase()}};
-        }
-        Db.search('tags', 'tag', {size:500, _source:["id", "n"], query: query}, function(err, result) {
-          var terms = [];
-          result.hits.hits.forEach(function (hit) {
-            var fields = hit._source || hit.fields;
-            terms.push(fields.n);
-          });
-          parent.terms = {};
-          parent.terms[item] = terms;
-          outstanding--;
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      } else if (Array.isArray(obj[item])) {
-        outstanding++;
-
-        async.map(obj[item], function(str, cb) {
-          var tag = (item !== "ta"?"http:header:" + str.toLowerCase():str);
-          Db.tagNameToId(tag, function (id) {
-            if (id === null) {
-              console.log("Tag '" + tag + "' not found");
-              cb(null, -1);
-            } else {
-              cb(null, id);
-            }
-          });
-        },
-        function (err, results) {
-          outstanding--;
-          obj[item] = results;
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      } else {
-        outstanding++;
-        var tag = (item !== "ta"?"http:header:" + obj[item].toLowerCase():obj[item]);
-
-        Db.tagNameToId(tag, function (id) {
-          outstanding--;
-          if (id === null) {
-            err = "Tag '" + tag + "' not found";
-          } else {
-            obj[item] = id;
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
-      }
-    } else if (item === "fileand" && typeof obj[item] === "string") {
+    if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
       outstanding++;
@@ -1810,10 +1771,10 @@ function lookupQueryItems(query, doneCb) {
         } else if (files.length > 1) {
           obj.bool = {should: []};
           files.forEach(function(file) {
-            obj.bool.should.push({bool: {must: [{term: {no: file.node}}, {term: {fs: file.num}}]}});
+            obj.bool.should.push({bool: {must: [{term: {node: file.node}}, {term: {fileId: file.num}}]}});
           });
         } else {
-          obj.bool = {must: [{term: {no: files[0].node}}, {term: {fs: files[0].num}}]};
+          obj.bool = {must: [{term: {node: files[0].node}}, {term: {fileId: files[0].num}}]};
         }
         if (finished && outstanding === 0) {
           doneCb(err);
@@ -1871,19 +1832,19 @@ function buildSessionQuery(req, buildCb) {
 
     switch (req.query.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
       break;
     default:
     case "last":
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
       break;
     case "both":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
-      query.query.bool.filter.push({range: {lp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {lte: req.query.stopTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "database":
       query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
@@ -1907,16 +1868,16 @@ function buildSessionQuery(req, buildCb) {
 
     switch (req.query.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
       break;
     default:
     case "both":
     case "last":
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
       break;
     case "database":
       query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000}}});
@@ -1949,24 +1910,24 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}};
-    query.aggregations.dbHisto = {aggregations: {db1: {sum: {field:"db1"}}, db2: {sum: {field:"db2"}}, pa1: {sum: {field:"pa1"}}, pa2: {sum: {field:"pa2"}}}};
+    query.aggregations = {mapG1: {terms: {field: "srcGEO", size:1000, min_doc_count:1}},
+                          mapG2: {terms: {field: "dstGEO", size:1000, min_doc_count:1}}};
+    query.aggregations.dbHisto = {aggregations: {srcDataBytes: {sum: {field:"srcDataBytes"}}, dstDataBytes: {sum: {field:"dstDataBytes"}}, srcPackets: {sum: {field:"srcPackets"}}, dstPackets: {sum: {field:"dstPackets"}}}};
 
     switch (req.query.bounding) {
     case "first":
-       query.aggregations.dbHisto.histogram = { field:'fp', interval:interval, min_doc_count:1 };
+       query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval*1000, min_doc_count:1 };
       break;
     case "database":
       query.aggregations.dbHisto.histogram = { field:'timestamp', interval:interval*1000, min_doc_count:1 };
       break;
     default:
-      query.aggregations.dbHisto.histogram = { field:'lp', interval:interval, min_doc_count:1 };
+      query.aggregations.dbHisto.histogram = { field:'lastPacket', interval:interval*1000, min_doc_count:1 };
       break;
     }
   }
 
-  addSortToQuery(query, req.query, "fp");
+  addSortToQuery(query, req.query, "firstPacket");
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
@@ -2005,10 +1966,10 @@ function buildSessionQuery(req, buildCb) {
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
-      return buildCb(err || lerr, query, "sessions-*");
+      return buildCb(err || lerr, query, "sessions2-*");
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), req.query.bounding || "last", function(indices) {
       return buildCb(err || lerr, query, indices);
     });
   });
@@ -2042,7 +2003,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     }
     processedRo[fields.ro] = true;
 
-    query.query.bool.filter.push({term: {ro: fields.ro}});
+    query.query.bool.filter.push({term: {rootId: fields.rootId}});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
         console.log("ERROR fetching matching sessions", err, result);
@@ -2064,8 +2025,8 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
 }
 
 function sessionsListFromQuery(req, res, fields, cb) {
-  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("ro") === -1) {
-    fields.push("ro");
+  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
+    fields.push("rootId");
   }
 
   buildSessionQuery(req, function(err, query, indices) {
@@ -2095,12 +2056,12 @@ function sessionsListFromQuery(req, res, fields, cb) {
 
 function sessionsListFromIds(req, ids, fields, cb) {
   var list = [];
-  var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro", "tipv61-term", "tipv62-term"];
+  var nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   // ES treats _source=no as turning off _source, very sad :(
-  if (fields.length === 1 && fields[0] === "no") {
-    fields.push("lp");
+  if (fields.length === 1 && fields[0] === "node") {
+    fields.push("lastPacket");
   }
 
   async.eachLimit(ids, 10, function(id, nextCb) {
@@ -2162,7 +2123,7 @@ app.get('/history/list', function(req, res) {
       query.query.bool.must.push({
         query_string: {
           query : req.query.searchTerm,
-          fields: ['expression','userId','api','view.name','view.expression']
+          _source: ['expression','userId','api','view.name','view.expression']
         }
       });
     }
@@ -2214,37 +2175,30 @@ app.get('/history/list', function(req, res) {
     }];
   }
 
-  async.parallel({
-     logs: function (cb) {
-       Db.searchHistory(query, function(err, result) {
-         if (err || result.error) {
-           console.log("ERROR - history logs", err || result.error);
-           return res.molochError(500, 'Error retrieving log history - ' + err || result.error);
-         } else {
-           var results = { total:result.hits.total, results:[] };
-           for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-             var hit = result.hits.hits[i];
-             var log = hit._source;
-             log.id = hit._id;
-             log.index = hit._index;
-             results.results.push(log);
-           }
-           cb(null, results);
-         }
-       });
-     },
-     total: function (cb) {
-       Db.numberOfLogs(cb);
-     }
-   },
-   function(err, results) {
-     var r = {
-       recordsTotal: results.total,
-       recordsFiltered: results.logs.total,
-       data: results.logs.results
-     };
-     res.send(r);
-   });
+  Promise.all([Db.searchHistory(query),
+               Db.numberOfLogs()
+              ])
+  .then(([logs, total]) => {
+    if (logs.error) { throw logs.error; }
+
+    var results = { total:logs.hits.total, results:[] };
+    for (let i = 0, ilen = logs.hits.hits.length; i < ilen; i++) {
+      var hit = logs.hits.hits[i];
+      var log = hit._source;
+      log.id = hit._id;
+      log.index = hit._index;
+      results.results.push(log);
+    }
+    var r = {
+      recordsTotal: total.count,
+      recordsFiltered: results.total,
+      data: results.results
+    };
+    res.send(r);
+  }).catch(err => {
+    console.log("ERROR - /history/logs", err);
+    return res.molochError(500, 'Error retrieving log history - ' + err);
+  });
 });
 
 app.delete('/history/list/:id', function(req, res) {
@@ -2282,7 +2236,6 @@ app.get('/file/list', logAction('files'), function(req, res) {
                from: +req.query.start || 0,
                size: +req.query.length || 10,
                sort: {}
-
               };
 
   query.sort[req.query.sortField || "num"] = { order: req.query.desc === "true" ? "desc": "asc"};
@@ -2291,39 +2244,31 @@ app.get('/file/list', logAction('files'), function(req, res) {
     query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
   }
 
-  async.parallel({
-    files: function (cb) {
-      Db.search('files', 'file', query, function(err, result) {
-        var results = {total: result.hits.total, results: []};
-        if (err || result.error) {
-          return cb(err || result.error);
-        }
+  Promise.all([Db.search('files', 'file', query),
+               Db.numberOfDocuments('files')
+              ])
+  .then(([files, total]) => {
+    if (files.error) {throw files.error;}
 
-        for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-          if (fields.locked === undefined) {
-            fields.locked = 0;
-          }
-          fields.id = result.hits.hits[i]._id;
-          results.results.push(fields);
-        }
-        cb(null, results);
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('files', cb);
-    }
-  },
-  function(err, results) {
-    if (err) {
-      return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
+    var results = {total: files.hits.total, results: []};
+    for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
+      var fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
+      if (fields.locked === undefined) {
+        fields.locked = 0;
+      }
+      fields.id = files.hits.hits[i]._id;
+      results.results.push(fields);
     }
 
-    var r = {recordsTotal: results.total,
-             recordsFiltered: results.files.total,
-             data: results.files.results};
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.logCounts(r.data.length, r.recordsFiltered, r.total);
     res.send(r);
+
+  }).catch((err) => {
+    console.log("ERROR - /file/list", err);
+    return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
@@ -2388,6 +2333,22 @@ app.get('/esindices/list', function(req, res) {
   });
 });
 
+app.delete('/esindices/:index', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to delete');
+  }
+
+  Db.deleteIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      res.status(404);
+      return res.send(JSON.stringify({ success:false, text:'Error deleting index' }));
+    }
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
 app.get('/estask/list', function(req, res) {
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
@@ -2410,18 +2371,22 @@ app.get('/estask/list', function(req, res) {
         task.childrenCount = 0;
       }
       delete task.children;
+
+      if (req.query.cancellable && req.query.cancellable === 'true') {
+        if (!task.cancellable) { continue; }
+      }
+
       rtasks.push(task);
     }
 
     tasks = rtasks;
 
-    // Implement sorting
     var sortField = req.query.sortField || "action";
     if (sortField === "action") {
       if (req.query.desc === "true") {
-        tasks = tasks.sort(function(a,b){ return b.index.localeCompare(a.index); });
+        tasks = tasks.sort(function(a,b){ return b.action.localeCompare(a.index); });
       } else {
-        tasks = tasks.sort(function(a,b){ return a.index.localeCompare(b.index); });
+        tasks = tasks.sort(function(a,b){ return a.action.localeCompare(b.index); });
       }
     } else {
       if (req.query.desc === "true") {
@@ -2430,6 +2395,7 @@ app.get('/estask/list', function(req, res) {
         tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; });
       }
     }
+
     res.send(tasks);
   });
 });
@@ -2449,12 +2415,7 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 app.get('/esshard/list', function(req, res) {
   Promise.all([Db.shards(),
                Db.getClusterSettings({flatSettings: true})
-              ]).then(([shards, settings], reject) => {
-
-    if (reject) {
-      console.log(reject);
-      return res.send({nodes: [], indices: []});
-    }
+              ]).then(([shards, settings]) => {
 
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
@@ -2480,6 +2441,12 @@ app.get('/esshard/list', function(req, res) {
       }
       result[shard.index].nodes[shard.node].push(shard);
       nodes[shard.node] = {ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node)};
+
+      result[shard.index].nodes[shard.node]
+        .sort((a, b) => {
+          return a.shard - b.shard;
+        });
+
       delete shard.node;
       delete shard.index;
     }
@@ -2498,10 +2465,10 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown exclude type");
+      return res.molochError(403, 'Unknown exclude type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2512,7 +2479,7 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
       exclude.push(req.params.value);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
@@ -2530,10 +2497,10 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 
     if (req.params.type === 'ip') {
       settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === "node") {
+    } else if (req.params.type === 'name') {
       settingName = 'cluster.routing.allocation.exclude._name';
     } else {
-      return res.molochError(403, "Unknown include type");
+      return res.molochError(403, 'Unknown include type');
     }
 
     if (settings.persistent[settingName]) {
@@ -2545,7 +2512,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
       exclude.splice(pos, 1);
     }
     var query = {body: {persistent: {}}};
-    query.body.persistent[settingName] = exclude.join(",");
+    query.body.persistent[settingName] = exclude.join(',');
 
     Db.putClusterSettings(query, function(err, settings) {
       if (err) {console.log("putSettings", err);}
@@ -2558,21 +2525,19 @@ app.get('/esstats.json', function(req, res) {
   var stats = [];
   var r;
 
-  async.parallel({
-    nodes: function(nodesCb) {
-      Db.nodesStats({metric: "jvm,process,fs,os,indices"}, nodesCb);
-    },
-    health: Db.healthCache
-  },
-  function(err, results) {
-    if (err || !results.nodes) {
-      console.log ("ERROR", err);
-      r = {draw: req.query.draw,
-           health: results.health,
-           recordsTotal: 0,
-           recordsFiltered: 0,
-           data: []};
-      return res.send(r);
+  Promise.all([Db.nodesStats({metric: "jvm,process,fs,os,indices"}),
+               Db.healthCachePromise(),
+               Db.getClusterSettings({flatSettings: true})
+             ])
+  .then(([nodes, health, settings]) => {
+    let ipExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
+      ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
+    }
+
+    let nodeExcludes = [];
+    if (settings.persistent['cluster.routing.allocation.exclude._name']) {
+      nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
     }
 
     var now = new Date().getTime();
@@ -2585,25 +2550,29 @@ app.get('/esstats.json', function(req, res) {
       regex = new RegExp(req.query.filter);
     }
 
-
-    var nodes = Object.keys(results.nodes.nodes);
-    for (var n = 0, nlen = nodes.length; n < nlen; n++) {
-      var node = results.nodes.nodes[nodes[n]];
+    var nodeKeys = Object.keys(nodes.nodes);
+    for (var n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+      var node = nodes.nodes[nodeKeys[n]];
 
       if (regex && !node.name.match(regex)) {continue;}
 
       var read = 0;
       var write = 0;
 
-      var oldnode = internals.previousNodeStats[0][nodes[n]];
+      var oldnode = internals.previousNodeStats[0][nodeKeys[n]];
       if (node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
         write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
       }
 
+      var ip = (node.ip?node.ip.split(":")[0]:node.host);
+
       stats.push({
         name: node.name,
+        ip: ip,
+        ipExcluded: ipExcludes.includes(ip),
+        nodeExcluded: nodeExcludes.includes(node.name),
         storeSize: node.indices.store.size_in_bytes,
         docs: node.indices.docs.count,
         searches: node.indices.search.query_current,
@@ -2634,15 +2603,21 @@ app.get('/esstats.json', function(req, res) {
       }
     }
 
-    results.nodes.nodes.timestamp = new Date().getTime();
-    internals.previousNodeStats.push(results.nodes.nodes);
+    nodes.nodes.timestamp = new Date().getTime();
+    internals.previousNodeStats.push(nodes.nodes);
 
-    r = {draw: req.query.draw,
-         health: results.health,
+    r = {health: health,
          recordsTotal: stats.length,
          recordsFiltered: stats.length,
          data: stats};
     res.send(r);
+  }).catch((err) => {
+    console.log ("ERROR -  /esstats.json", err);
+    r = {health: Db.healthCache(),
+         recordsTotal: 0,
+         recordsFiltered: 0,
+         data: []};
+    return res.send(r);
   });
 });
 
@@ -2699,55 +2674,50 @@ app.get('/stats.json', function(req, res) {
     addSortToQuery(query, req.query, "_uid");
   }
 
-  async.parallel({
-    stats: function (cb) {
-      Db.search('stats', 'stat', query, function(err, result) {
-        if (err || result.error) {
-          console.log("ERROR - stats", query, err || result.error);
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            if (result.hits.hits[i]._source) {
-              mergeUnarray(fields, result.hits.hits[i].fields);
-            }
-            fields.id        = result.hits.hits[i]._id;
+  Promise.all([Db.search('stats', 'stat', query),
+               Db.numberOfDocuments('stats')
+  ]).then(([stats, total]) => {
+    if (stats.error) {throw stats.error;}
 
-            for (const key of ["totalPackets", "totalK", "totalSessions",
-             "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
-             "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
-             "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-             "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
-            ]) {
-              fields[key] = fields[key] || 0;
-            }
+    var results = {total: stats.hits.total, results: []};
 
-            fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
-            fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
-            fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
-            fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
-            fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
-            fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
-            fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
-            fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
-            fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('stats', cb);
+    for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
+      var fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+      if (stats.hits.hits[i]._source) {
+        mergeUnarray(fields, stats.hits.hits[i].fields);
+      }
+      fields.id        = stats.hits.hits[i]._id;
+
+      for (const key of ["totalPackets", "totalK", "totalSessions",
+       "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
+       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
+       "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
+       "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
+      ]) {
+        fields[key] = fields[key] || 0;
+      }
+
+      fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+      fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
+      fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+      fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+      fields.deltaSessionBytesPerSec    = Math.floor(fields.deltaSessionBytes * 1000.0/fields.deltaMS);
+      fields.sessionSizePerSec          = Math.floor(fields.deltaSessionBytes/fields.deltaSessions);
+      fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+      fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
+      fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+      fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
+      fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
+      results.results.push(fields);
     }
-  },
-  function(err, results) {
-    var r = {draw: req.query.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.stats.total,
-             data: results.stats.results};
+
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.send(r);
+  }).catch((err) => {
+    console.log("ERROR - /stats.json", query, err);
+    res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
@@ -2786,6 +2756,8 @@ app.get('/dstats.json', function(req, res) {
     deltaBitsPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS * 8);}},
     deltaPacketsPerSec: {_source: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets * 1000.0/item.deltaMS);}},
     deltaSessionsPerSec: {_source: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions * 1000.0/item.deltaMS);}},
+    deltaSessionBytesPerSec: {_source: ["deltaSessionBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessionBytes * 1000.0/item.deltaMS);}},
+    sessionSizePerSec: {_source: ["deltaSessionBytes", "deltaSessions"], func: function(item) {return Math.floor(item.deltaSessionBytes/item.deltaSessions);}},
     deltaDroppedPerSec: {_source: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped * 1000.0/item.deltaMS);}},
     deltaFragsDroppedPerSec: {_source: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped * 1000.0/item.deltaMS);}},
     deltaOverloadDroppedPerSec: {_source: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped * 1000.0/item.deltaMS);}},
@@ -2896,104 +2868,44 @@ function graphMerge(req, query, aggregations) {
     pa2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
+    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval/1000 || 60 : 60
   };
 
   if (!aggregations || !aggregations.dbHisto) {
     return graph;
   }
 
-  if (req.query.bounding === "database") {
-    graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
-    aggregations.dbHisto.buckets.forEach(function (item) {
-      var key = item.key;
-      graph.lpHisto.push([key, item.doc_count]);
-      graph.pa1Histo.push([key, item.pa1.value]);
-      graph.pa2Histo.push([key, item.pa2.value]);
-      graph.db1Histo.push([key, item.db1.value]);
-      graph.db2Histo.push([key, item.db2.value]);
-    });
-  } else {
-    aggregations.dbHisto.buckets.forEach(function (item) {
-      var key = item.key*1000;
-      graph.lpHisto.push([key, item.doc_count]);
-      graph.pa1Histo.push([key, item.pa1.value]);
-      graph.pa2Histo.push([key, item.pa2.value]);
-      graph.db1Histo.push([key, item.db1.value]);
-      graph.db2Histo.push([key, item.db2.value]);
-    });
-  }
+  graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
+  aggregations.dbHisto.buckets.forEach(function (item) {
+    var key = item.key;
+    graph.lpHisto.push([key, item.doc_count]);
+    graph.pa1Histo.push([key, item.srcPackets.value]);
+    graph.pa2Histo.push([key, item.dstPackets.value]);
+    graph.db1Histo.push([key, item.srcDataBytes.value]);
+    graph.db2Histo.push([key, item.dstDataBytes.value]);
+  });
   return graph;
 }
 
-function fixTagsField(container, field, doneCb, offset) {
-  if (container[field] === undefined) {
-    return doneCb(null);
-  }
-  async.map(container[field], function (item, cb) {
-    Db.tagIdToName(item, function (name) {
-      cb(null, name.substring(offset));
-    });
-  },
-  function(err, results) {
-    container[field] = results;
-    doneCb(err);
-  });
-}
-
-function fixTagBucketsField(container, field, doneCb, offset) {
-  if (container[field] === undefined) {
-    return doneCb(null);
-  }
-  async.map(container[field].buckets, function (item, cb) {
-    Db.tagIdToName(item.key, function (name) {
-      item.key = name.substring(offset);
-      cb(null, item);
-    });
-  },
-  function(err, results) {
-    container[field].buckets = results;
-    doneCb(err);
-  });
-}
-
 function fixFields(fields, fixCb) {
-  async.parallel([
-    function(parallelCb) {
-      fixTagsField(fields, "ta", parallelCb, 0);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh", parallelCb, 12);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh1", parallelCb, 12);
-    },
-    function(parallelCb) {
-      fixTagsField(fields, "hh2", parallelCb, 12);
-    },
-    function(parallelCb) {
-      var files = [];
-      if (!fields.fs) {
-        fields.fs = [];
-        return parallelCb(null);
+  if (!fields.fileId) {
+    fields.fileId = [];
+    return fixCb(null, fields);
+  }
+
+  var files = [];
+  async.forEachSeries(fields.fileId, function (item, cb) {
+    Db.fileIdToFile(fields.node, item, function (file) {
+      if (file && file.locked === 1) {
+        files.push(file.name);
       }
-      async.forEachSeries(fields.fs, function (item, cb) {
-        Db.fileIdToFile(fields.no, item, function (file) {
-          if (file && file.locked === 1) {
-            files.push(file.name);
-          }
-          cb(null);
-        });
-      },
-      function(err) {
-        fields.fs = files;
-        parallelCb(err);
-      });
-    }],
-    function(err, results) {
-      fixCb(err, fields);
-    }
-  );
+      cb(null);
+    });
+  },
+  function(err) {
+    fields.fileId = files;
+    fixCb(err, fields);
+  });
 }
 
 /**
@@ -3061,11 +2973,10 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      var r = {draw: req.query.draw,
-               recordsTotal: 0,
+      var r = {recordsTotal: 0,
                recordsFiltered: 0,
-               graph: graph,
-               map: map,
+               graph: {},
+               map: {},
                bsqErr: bsqErr.toString(),
                health: Db.healthCache(),
                data:[]};
@@ -3075,14 +2986,14 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
     var addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
-      ["no", "a1", "p1", "a2", "p2"].forEach(function(item) {
+      ["node", "srcIp", "srcPort", "dstIp", "dstPort"].forEach(function(item) {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
         }
       });
     } else {
       addMissing = true;
-      query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
+      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel"];
     }
 
     if (query.aggregations && query.aggregations.dbHisto) {
@@ -3093,71 +3004,68 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
       console.log("sessions.json query", JSON.stringify(query, null, 1));
     }
 
-    async.parallel({
-      sessions: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, function(err, result) {
-          if (Config.debug) {
-            console.log("sessions.json result", util.inspect(result, false, 50));
-          }
-          if (err || result.error) {
-            console.log("sessions.json error", err, (result?result.error:null));
-            sessionsCb(null, {total: 0, results: []});
-            return;
-          }
-
-          graph = graphMerge(req, query, result.aggregations);
-          map = mapMerge(result.aggregations);
-
-          var results = {total: result.hits.total, results: []};
-          async.each(result.hits.hits, function (hit, hitCb) {
-            var fields = hit._source || hit.fields;
-            if (fields === undefined) {
-              return hitCb(null);
-            }
-            fields.index = hit._index;
-            fields.id = hit._id;
-
-            if (req.query.flatten === '1') {
-              fields = flattenFields(fields);
-            }
-
-            if (addMissing) {
-              ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
-                if (fields[item] === undefined) {
-                  fields[item] = -1;
-                }
-              });
-              results.results.push(fields);
-              return hitCb();
-            } else {
-              fixFields(fields, function() {
-                results.results.push(fields);
-                return hitCb();
-              });
-            }
-          }, function () {
-            sessionsCb(null, results);
-          });
-        });
-      },
-      total: function (totalCb) {
-        Db.numberOfDocuments('sessions-*', totalCb);
-      },
-      health: Db.healthCache
-    },
-    function(err, results) {
-      var r = {draw: req.query.draw,
-               recordsTotal: results.total,
-               recordsFiltered: (results.sessions?results.sessions.total:0),
-               graph: graph,
-               health: results.health,
-               map: map,
-               data: (results.sessions?results.sessions.results:[])};
-      res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-      try {
-        res.send(r);
-      } catch (c) {
+    Promise.all([Db.searchPrimary(indices, 'session', query),
+                 Db.numberOfDocuments('sessions2-*'),
+                 Db.healthCachePromise()
+    ]).then(([sessions, total, health]) => {
+      if (Config.debug) {
+        console.log("sessions.json result", util.inspect(sessions, false, 50));
       }
+
+      if (sessions.error) {throw sessions.err;}
+
+      graph = graphMerge(req, query, sessions.aggregations);
+      map = mapMerge(sessions.aggregations);
+
+      var results = {total: sessions.hits.total, results: []};
+      async.each(sessions.hits.hits, function (hit, hitCb) {
+        var fields = hit._source || hit.fields;
+        if (fields === undefined) {
+          return hitCb(null);
+        }
+        fields.index = hit._index;
+        fields.id = hit._id;
+
+        if (req.query.flatten === '1') {
+          fields = flattenFields(fields);
+        }
+
+        if (addMissing) {
+          ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
+            if (fields[item] === undefined) {
+              fields[item] = -1;
+            }
+          });
+          results.results.push(fields);
+          return hitCb();
+        } else {
+          fixFields(fields, function() {
+            results.results.push(fields);
+            return hitCb();
+          });
+        }
+      }, function () {
+        var r = {recordsTotal: total.count,
+                 recordsFiltered: (results?results.total:0),
+                 graph: graph,
+                 health: health,
+                 map: map,
+                 data: (results?results.results:[])};
+        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
+        try {
+          res.send(r);
+        } catch (c) {
+        }
+      });
+    }).catch ((err) => {
+      console.log("ERROR - /sessions.json error", err);
+      var r = {recordsTotal: 0,
+               recordsFiltered: 0,
+               graph: {},
+               map: {},
+               health: Db.healthCache(),
+               data:[]};
+      res.send(r);
     });
   });
 });
@@ -3165,7 +3073,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
 app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
-    var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
+    var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
       return res.molochError(403, bsqErr.toString());
     }
@@ -3174,46 +3082,18 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     query.size = 0;
     var size = +req.query.size || 20;
 
-    var field = req.query.field || "no";
+    var field = req.query.field || "node";
     query.aggregations.field = {terms: {field: field, size: size}};
 
-    /* Need the setImmediate so we don't blow max stack frames */
-    var eachCb;
-    switch (fmenum(field)) {
-    case FMEnum.other:
-      eachCb = function (item, cb) {setImmediate(cb);};
-      break;
-    case FMEnum.ip:
-      eachCb = function(item, cb) {
-        item.name = Pcap.inet_ntoa(item.name);
-        setImmediate(cb);
-      };
-      break;
-    case FMEnum.tags:
-      eachCb = function(item, cb) {
-        Db.tagIdToName(item.name, function (name) {
-          item.name = name;
-          setImmediate(cb);
-        });
-      };
-      break;
-    case FMEnum.hh:
-      eachCb = function(item, cb) {
-        Db.tagIdToName(item.name, function (name) {
-          item.name = name.substring(12);
-          setImmediate(cb);
-        });
-      };
-      break;
-    }
+    Promise.all([Db.healthCachePromise(),
+                 Db.numberOfDocuments('sessions2-*'),
+                 Db.searchPrimary(indices, 'session', query)
+                ])
+    .then(([health, total, result]) => {
+      if (result.error) {throw result.error;}
 
-    Db.healthCache(function(err, health) {results.health = health;});
-    Db.numberOfDocuments('sessions-*', function (err, total) {results.recordsTotal = total;});
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
-      if (err || result.error) {
-        console.log("spigraph.json error", err, (result?result.error:null));
-        return res.molochError(403, errorString(err, result));
-      }
+      results.health = health;
+      results.recordsTotal = total.count;
       results.recordsFiltered = result.hits.total;
 
       results.graph = graphMerge(req, query, result.aggregations);
@@ -3254,30 +3134,31 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
           }
 
           r.map = mapMerge(result.responses[i].aggregations);
-          eachCb(r, function () {
-            results.items.push(r);
-            r.lpHisto = 0.0;
-            r.dbHisto = 0.0;
-            r.paHisto = 0.0;
-            var graph = r.graph;
-            for (let i = 0; i < graph.lpHisto.length; i++) {
-              r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-              r.paHisto += graph.pa2Histo[i][1] + graph.pa2Histo[i][1];
-            }
-            if (results.items.length === result.responses.length) {
-              var s = req.query.sort || "lpHisto";
-              results.items = results.items.sort(function (a, b) {
-                var result;
-                if (s === 'name') { result = a.name.localeCompare(b.name); }
-                else { result = b[s] - a[s]; }
-                return result;
-              });
-              return res.send(results);
-            }
-          });
+          results.items.push(r);
+          r.lpHisto = 0.0;
+          r.dbHisto = 0.0;
+          r.paHisto = 0.0;
+          var graph = r.graph;
+          for (let i = 0; i < graph.lpHisto.length; i++) {
+            r.lpHisto += graph.lpHisto[i][1];
+            r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+            r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
+          }
+          if (results.items.length === result.responses.length) {
+            var s = req.query.sort || "lpHisto";
+            results.items = results.items.sort(function (a, b) {
+              var result;
+              if (s === 'name') { result = a.name.localeCompare(b.name); }
+              else { result = b[s] - a[s]; }
+              return result;
+            });
+            return res.send(results);
+          }
         });
       });
+    }).catch((err) => {
+      console.log("spigraph.json error", err);
+      return res.molochError(403, errorString(err));
     });
   });
 });
@@ -3309,13 +3190,13 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     }
 
     if (req.query.facets) {
-      query.aggregations.protocols = {terms: {field: "prot-term", size:1000}};
+      query.aggregations.protocols = {terms: {field: "protocol", size:1000}};
     }
 
     queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
-        query.aggregations[parts[0]] = {terms: {field: "no", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
+        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fileId: {terms: {field: "fileId", size: parts.length>1?parseInt(parts[1],10):10}}}};
       } else {
         query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 
@@ -3363,8 +3244,8 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
             }
           }
 
-          if (result.aggregations.pr) {
-            result.aggregations.pr.buckets.forEach(function (item) {
+          if (result.aggregations.ipProtocol) {
+            result.aggregations.ipProtocol.buckets.forEach(function (item) {
               item.key = Pcap.protocol2Name(item.key);
             });
           }
@@ -3387,70 +3268,56 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
         });
       },
       total: function (totalCb) {
-        Db.numberOfDocuments('sessions-*', totalCb);
+        Db.numberOfDocuments('sessions2-*', totalCb);
       },
       health: Db.healthCache
     },
     function(err, results) {
-      async.parallel([
-        function(parallelCb) {
-          if (!results.spi.fileand) {
-            return parallelCb();
-          }
-          var nresults = [];
-          var sodc = 0;
-          async.each(results.spi.fileand.buckets, function(nobucket, cb) {
-            sodc += nobucket.fs.sum_other_doc_count;
-            async.each(nobucket.fs.buckets, function (fsitem, cb) {
-              Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
-                if (file && file.name) {
-                  nresults.push({key: file.name, doc_count: fsitem.doc_count});
-                }
-                cb();
-              });
-            }, function () {
-              cb();
-            });
-          }, function () {
-            nresults = nresults.sort(function(a, b) {
-              if (a.doc_count === b.doc_count) {
-                return a.key.localeCompare(b.key);
-              }
-              return b.doc_count - a.doc_count;
-            });
-            results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
-            parallelCb();
-          });
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "ta", parallelCb, 0);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh", parallelCb, 12);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh1", parallelCb, 12);
-        },
-        function(parallelCb) {
-          fixTagBucketsField(results.spi, "hh2", parallelCb, 12);
-        }],
-        function() {
-          r = {health: results.health,
-               recordsTotal: results.total,
-               spi: results.spi,
-               recordsFiltered: recordsFiltered,
-               graph: graph,
-               map: map,
-               protocols: protocols,
-               bsqErr: bsqErr
-          };
-          res.logCounts(r.spi.count, r.recordsFiltered, r.total);
-          try {
-            res.send(r);
-          } catch (c) {
-          }
+      function sendResult() {
+        r = {health: results.health,
+             recordsTotal: results.total,
+             spi: results.spi,
+             recordsFiltered: recordsFiltered,
+             graph: graph,
+             map: map,
+             protocols: protocols,
+             bsqErr: bsqErr
+        };
+        res.logCounts(r.spi.count, r.recordsFiltered, r.total);
+        try {
+          res.send(r);
+        } catch (c) {
         }
-      );
+      }
+
+      if (!results.spi.fileand) {
+        return sendResult();
+      }
+
+      var nresults = [];
+      var sodc = 0;
+      async.each(results.spi.fileand.buckets, function(nobucket, cb) {
+        sodc += nobucket.fileId.sum_other_doc_count;
+        async.each(nobucket.fileId.buckets, function (fsitem, cb) {
+          Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
+            if (file && file.name) {
+              nresults.push({key: file.name, doc_count: fsitem.doc_count});
+            }
+            cb();
+          });
+        }, function () {
+          cb();
+        });
+      }, function () {
+        nresults = nresults.sort(function(a, b) {
+          if (a.doc_count === b.doc_count) {
+            return a.key.localeCompare(b.key);
+          }
+          return b.doc_count - a.doc_count;
+        });
+        results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
+        return sendResult();
+      });
     });
   });
 });
@@ -3468,30 +3335,31 @@ app.get('/dns.json', logAction(), function(req, res) {
 function buildConnections(req, res, cb) {
   if (req.query.dstField === "ip.dst:port") {
     var dstipport = true;
-    req.query.dstField = "a2";
+    req.query.dstField = "dstIp";
   }
 
-  req.query.srcField       = req.query.srcField || "a1";
-  req.query.dstField       = req.query.dstField || "a2";
-  var fsrc                 = req.query.srcField.replace(".snow", "");
-  var fdst                 = req.query.dstField.replace(".snow", "");
+  req.query.srcField       = req.query.srcField || "srcIp";
+  req.query.dstField       = req.query.dstField || "dstIp";
+  var fsrc                 = req.query.srcField;
+  var fdst                 = req.query.dstField;
   var minConn              = req.query.minConn  || 1;
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
 
+  var srcIsIp              = fsrc.match(/(\.ip|Ip)$/);
+  var dstIsIp              = fdst.match(/(\.ip|Ip)$/);
+
   var nodesHash = {};
   var connects = {};
-  var tsrc = fmenum(fsrc);
-  var tdst = fmenum(fdst);
 
-  function process(vsrc, vdst, f, cb) {
+  function process(vsrc, vdst, f) {
     if (nodesHash[vsrc] === undefined) {
       nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
     }
 
     nodesHash[vsrc].sessions++;
-    nodesHash[vsrc].by += f.by;
-    nodesHash[vsrc].db += f.db;
-    nodesHash[vsrc].pa += f.pa;
+    nodesHash[vsrc].by += f.totBytes;
+    nodesHash[vsrc].db += f.totDataBytes;
+    nodesHash[vsrc].pa += f.totPackets;
     nodesHash[vsrc].type |= 1;
 
     if (nodesHash[vdst] === undefined) {
@@ -3499,49 +3367,23 @@ function buildConnections(req, res, cb) {
     }
 
     nodesHash[vdst].sessions++;
-    nodesHash[vdst].by += f.by;
-    nodesHash[vdst].db += f.db;
-    nodesHash[vdst].pa += f.pa;
+    nodesHash[vdst].by += f.totBytes;
+    nodesHash[vdst].db += f.totDataBytes;
+    nodesHash[vdst].pa += f.totPackets;
     nodesHash[vdst].type |= 2;
 
     var n = "" + vsrc + "->" + vdst;
     if (connects[n] === undefined) {
-      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, no: {}};
+      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, node: {}};
       nodesHash[vsrc].cnt++;
       nodesHash[vdst].cnt++;
     }
 
     connects[n].value++;
-    connects[n].by += f.by;
-    connects[n].db += f.db;
-    connects[n].pa += f.pa;
-    connects[n].no[f.no] = 1;
-    return setImmediate(cb);
-  }
-
-  function processDst(vsrc, adst, f, cb) {
-    async.each(adst, function(vdst, dstCb) {
-      if (tdst === FMEnum.other) {
-        process(vsrc, vdst, f, dstCb);
-      } else if (tdst === FMEnum.ip) {
-        vdst = Pcap.inet_ntoa(vdst);
-        if (dstipport) {
-          vdst += ":" + f.p2;
-        }
-        process(vsrc, vdst, f, dstCb);
-      } else {
-        Db.tagIdToName(vdst, function (name) {
-          if (tdst === FMEnum.tags) {
-            vdst = name;
-          } else {
-            vdst = name.substring(12);
-          }
-          process(vsrc, vdst, f, dstCb);
-        });
-      }
-    }, function (err) {
-      return setImmediate(cb);
-    });
+    connects[n].by += f.totBytes;
+    connects[n].db += f.totDataBytes;
+    connects[n].pa += f.totPackets;
+    connects[n].node[f.node] = 1;
   }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -3552,14 +3394,11 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.srcField}});
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
-    query._source = ["by", "db", "pa", "no"];
-    if (Db.isES5) {
-      query.docvalue_fields = [fsrc, fdst];
-    } else {
-      query.fields = [fsrc, fdst];
-    }
+    query._source = ["totBytes", "totDataBytes", "totPackets", "node"];
+    query.docvalue_fields = [fsrc, fdst];
+
     if (dstipport) {
-      query._source.push("p2");
+      query._source.push("dstPort");
     }
 
     console.log("buildConnections query", JSON.stringify(query));
@@ -3591,28 +3430,23 @@ function buildConnections(req, res, cb) {
           adst = [adst];
         }
 
-        async.each(asrc, function(vsrc, srcCb) {
-          if (tsrc === FMEnum.other) {
-            processDst(vsrc, adst, f, srcCb);
-          } else if (tsrc === FMEnum.ip) {
-            vsrc = Pcap.inet_ntoa(vsrc);
-            processDst(vsrc, adst, f, srcCb);
-          } else {
-            Db.tagIdToName(vsrc, function (name) {
-              if (tsrc === FMEnum.tags) {
-                vsrc = name;
-              } else {
-                vsrc = name.substring(12);
-              }
-              processDst(vsrc, adst, f, srcCb);
-            });
+        for (let vsrc of asrc) {
+          for (let vdst of adst) {
+            if (dstIsIp && dstipport) {
+              if (vdst.includes(":")) {vdst = '[' + vdst + ']';}
+              vdst += ":" + f.dstPort;
+            }
+            process(vsrc, vdst, f);
           }
-        }, function (err) {
-          setImmediate(hitCb);
-        });
+        }
+        setImmediate(hitCb);
       }, function (err) {
         var nodes = [];
-        for (var node in nodesHash) {
+        var nodeKeys = Object.keys(nodesHash);
+        if (Config.get("regressionTests", false)) {
+          nodeKeys = nodeKeys.sort(function(a,b){return nodesHash[a].id.localeCompare(nodesHash[b].id);});
+        }
+        for (var node of nodeKeys) {
           if (nodesHash[node].cnt < minConn) {
             nodesHash[node].pos = -1;
           } else {
@@ -3675,9 +3509,9 @@ app.get('/connections.csv', logAction(), function(req, res) {
 
 function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   if (list.length > 0 && list[0].fields) {
-    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+    list = list.sort(function(a,b){return a.fields.lastPacket - b.fields.lastPacket;});
   } else if (list.length > 0 && list[0]._source) {
-    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+    list = list.sort(function(a,b){return a._source.lastPacket - b._source.lastPacket;});
   }
 
   var fieldObjects  = Config.getDBFieldsMap();
@@ -3685,7 +3519,9 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
   if (fields) {
     var columnHeaders = [];
     for (let i = 0, ilen = fields.length; i < ilen; ++i) {
-      columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+      if (fieldObjects[fields[i]] !== undefined) {
+        columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+      }
     }
     res.write(columnHeaders.join(', '));
     res.write('\r\n');
@@ -3699,23 +3535,8 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
     var values = [];
     for (let k = 0, klen = fields.length; k < klen; ++k) {
       let value = sessionData[fields[k]];
-      if (fields[k] === 'pr' && value) {
-        switch (value) {
-          case 1:
-            value = 'icmp';
-            break;
-          case 6:
-            value = 'tcp';
-            break;
-          case 17:
-            value =  'udp';
-            break;
-          case 58:
-            value =  'icmpv6';
-            break;
-        }
-      } else if (fieldObjects[fields[k]].type === 'ip' && value) {
-        value = Pcap.inet_ntoa(value);
+      if (fields[k] === 'ipProtocol' && value) {
+        value = Pcap.protocol2Name(value);
       }
 
       if (Array.isArray(value)) {
@@ -3737,9 +3558,9 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
 app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   noCache(req, res, "text/csv");
   // default fields to display in csv
-  var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
+  var fields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node"];
   // save requested fields because sessionsListFromQuery returns fields with
-  // "ro" appended onto the end
+  // "rootId" appended onto the end
   var reqFields = fields;
 
   if (req.query.fields) {
@@ -3756,41 +3577,6 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
       csvListWriter(req, res, list, reqFields);
     });
   }
-});
-
-app.get('/uniqueValue.json', logAction(), function(req, res) {
-  if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
-    res.send([]);
-    return;
-  }
-
-  noCache(req, res);
-
-  var query;
-
-  if (req.query.type === "tags") {
-    query = {bool: {must: {wildcard: {_uid: "tag#" + req.query.filter + "*"}},
-                  must_not: {wildcard: {_uid: "tag#http:header:*"}}
-                     }
-          };
-  } else {
-    query = {wildcard: {_uid: "tag#http:header:" + req.query.filter + "*"}};
-  }
-
-  console.log("uniqueValue query", JSON.stringify(query));
-  Db.search('tags', 'tag', {size:200, query: query}, function(err, result) {
-    var terms = [];
-    if (req.query.type === "tags") {
-      result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id);
-      });
-    } else {
-      result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id.substring(12));
-      });
-    }
-    res.send(terms);
-  });
 });
 
 app.get('/unique.txt', logAction(), function(req, res) {
@@ -3813,6 +3599,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
   var writes = 0;
   var items = [];
   var aggSize = 1000000;
+
   if (req.query.autocomplete !== undefined) {
     if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
       res.send([]);
@@ -3828,80 +3615,33 @@ app.get('/unique.txt', logAction(), function(req, res) {
       }
     }
 
-    aggSize = 1000;
+    aggSize = 1000; // lower agg size for autocomplete
     doneCb = function() {
       res.send(items);
     };
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       items.push(item.key);
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   } else if (parseInt(req.query.counts, 10) || 0) {
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       res.write("" + item.key + ", " + item.doc_count + "\n");
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   } else {
-    writeCb = function (item, cb) {
+    writeCb = function (item) {
       res.write("" + item.key + "\n");
-      if (writes++ > 1000) {
-        writes = 0;
-        setImmediate(cb);
-      } else {
-        cb();
-      }
     };
   }
 
   /* How should each item be processed. */
-  var eachCb;
-  switch (fmenum(req.query.field)) {
-  case FMEnum.other:
-    eachCb = writeCb;
-    break;
-  case FMEnum.ip:
-    eachCb = function(item, cb) {
-      item.key = Pcap.inet_ntoa(item.key);
-      writeCb(item, cb);
-    };
-    break;
-  case FMEnum.tags:
-    eachCb = function(item, cb) {
-      Db.tagIdToName(item.key, function (name) {
-        item.key = name;
-        writeCb(item, cb);
-      });
-    };
-    break;
-  case FMEnum.hh:
-    eachCb = function(item, cb) {
-      Db.tagIdToName(item.key, function (name) {
-        item.key = name.substring(12);
-        writeCb(item, cb);
-      });
-    };
-    break;
-  }
+  var eachCb = writeCb;
 
-  if (req.query.field === "ip.src:p1" || req.query.field === "ip.dst:p2" ||
-      req.query.field === "a1:p1" || req.query.field === "a2:p2") {
-    eachCb = function(item, cb) {
-      var key = Pcap.inet_ntoa(item.key);
-      item.field2.buckets.forEach(function (item2) {
-        item2.key = key + ":" + item2.key;
-        writeCb(item2, function() {});
+  if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+    eachCb = function(item) {
+      var sep = (item.key.indexOf(":") === -1)? ':' : '.';
+      item.field2.buckets.forEach((item2) => {
+        item2.key = item.key + sep + item2.key;
+        writeCb(item2);
       });
-      cb();
     };
   }
 
@@ -3909,68 +3649,32 @@ app.get('/unique.txt', logAction(), function(req, res) {
     delete query.sort;
     delete query.aggregations;
 
-    if (req.query.field.match(/^(rawus|rawua)$/)) {
-      var field = req.query.field.substring(3);
-      query.size   = 200000;
-
-      query._source = [field];
-
-      query.query.bool.filter.push({exists: {field: field}});
-
-      console.log("unique query", indices, JSON.stringify(query));
-      Db.searchPrimary(indices, 'session', query, function(err, result) {
-        console.log(err);
-        var counts = {};
-
-        // Count up hits
-        var hits = result.hits.hits;
-        for (let i = 0, ilen = hits.length; i < ilen; i++) {
-          var fields = hits[i]._source || hits[i].fields;
-          var avalue = fields[field];
-          if (Array.isArray(avalue)) {
-            for (var j = 0, jlen = avalue.length; j < jlen; j++) {
-              var value = avalue[j];
-              counts[value] = (counts[value] || 0) + 1;
-            }
-          } else {
-            counts[avalue] = (counts[avalue] || 0) + 1;
-          }
-        }
-
-        // Change to aggregations looking array
-        var aggregations = [];
-        for (var key in counts) {
-          aggregations.push({key: key, doc_count: counts[key]});
-        }
-
-        async.forEachSeries(aggregations, eachCb, function () {
-          return doneCb?doneCb():res.end();
-        });
-      });
-    } else {
-      if (req.query.field === "ip.src:p1" || req.query.field === "a1:p1") {
-        query.aggregations = {field: { terms : {field : "a1", size: aggSize}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
-      } else if (req.query.field === "ip.dst:p2" || req.query.field === "a2:p2") {
-        query.aggregations = {field: { terms : {field : "a2", size: aggSize}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
-      } else  {
-        query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
-      }
-      query.size = 0;
-      console.log("unique aggregations", indices, JSON.stringify(query));
-      Db.searchPrimary(indices, 'session', query, function(err, result) {
-        if (err) {
-          console.log("Error", query, err);
-          return doneCb?doneCb():res.end();
-        }
-        if (Config.debug) {
-          console.log("unique.txt result", util.inspect(result, false, 50));
-        }
-
-        async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
-          return doneCb?doneCb():res.end();
-        });
-      });
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort)/)) {
+      query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
+    } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+      query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
+    } else  {
+      query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
     }
+    query.size = 0;
+    console.log("unique aggregations", indices, JSON.stringify(query));
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err) {
+        console.log("Error", query, err);
+        return doneCb?doneCb():res.end();
+      }
+      if (Config.debug) {
+        console.log("unique.txt result", util.inspect(result, false, 50));
+      }
+      if (!result.aggregations || !result.aggregations.field) {
+        return doneCb?doneCb():res.end();
+      }
+
+      for (var i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
+        eachCb(result.aggregations.field.buckets[i]);
+      }
+      return doneCb?doneCb():res.end();
+    });
   });
 });
 
@@ -3982,7 +3686,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.ps.length);
+        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
         console.log("ERROR - processSessionIdDisk -", msg);
         endCb(msg, null);
         break;
@@ -4000,19 +3704,19 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 
   var fileNum;
   var itemPos = 0;
-  async.eachLimit(fields.ps, limit || 1, function(pos, nextCb) {
+  async.eachLimit(fields.packetPos, limit || 1, function(pos, nextCb) {
     if (pos < 0) {
       fileNum = pos * -1;
       return nextCb(null);
     }
 
     // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-    var opcap = Pcap.get(fields.no + ":" + fileNum);
+    var opcap = Pcap.get(fields.node + ":" + fileNum);
     if (!opcap.isOpen()) {
-      Db.fileIdToFile(fields.no, fileNum, function(file) {
+      Db.fileIdToFile(fields.node, fileNum, function(file) {
         if (!file) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
-          return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+          return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
         }
         if (file.kekId) {
           file.kek = Config.sectionGet("keks", file.kekId, undefined);
@@ -4022,7 +3726,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
           }
         }
 
-        var ipcap = Pcap.get(fields.no + ":" + file.num);
+        var ipcap = Pcap.get(fields.node + ":" + file.num);
 
         try {
           ipcap.open(file.name, file);
@@ -4053,7 +3757,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {_source: "no,pa,ps,psl,a1,p1,tipv61-term"};
+    options  = {_source: "node,totPackets,packetPos,packetLen,srcIp,srcPort"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
@@ -4064,18 +3768,18 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
 
     var fields = session._source || session.fields;
 
-    if (maxPackets && fields.ps.length > maxPackets) {
-      fields.ps.length = maxPackets;
+    if (maxPackets && fields.packetPos.length > maxPackets) {
+      fields.packetPos.length = maxPackets;
     }
 
     /* Go through the list of prefetch the id to file name if we are running in parallel to
      * reduce the number of elasticsearch queries and problems
      */
     var outstanding = 0;
-    for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
-      if (fields.ps[i] < 0) {
+    for (var i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+      if (fields.packetPos[i] < 0) {
         outstanding++;
-        Db.fileIdToFile(fields.no, -1 * fields.ps[i], function (info) {
+        Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], function (info) {
           outstanding--;
           if (i === ilen && outstanding === 0) {
             i++; // So not called again below
@@ -4090,7 +3794,7 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     }
 
     function readyToProcess() {
-      var pcapWriteMethod = Config.getFull(fields.no, "pcapWriteMethod");
+      var pcapWriteMethod = Config.getFull(fields.node, "pcapWriteMethod");
       var psid = processSessionIdDisk;
       var writer = internals.writers[pcapWriteMethod];
       if (writer && writer.processSessionId) {
@@ -4102,8 +3806,8 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
           return endCb(err, fields);
         }
 
-        if (!fields.ta) {
-          fields.ta = [];
+        if (!fields.tags) {
+          fields.tags = [];
         }
 
         fixFields(fields, endCb);
@@ -4139,13 +3843,8 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      var key;
-      if (session["tipv61-term"]) {
-        key = session["tipv61-term"];
-      } else {
-        key = Pcap.inet_ntoa(session.a1);
-      }
-      Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.p1, function(err, results) {
+      var key = session.srcIp;
+      Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.srcPort, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 17) {
@@ -4322,6 +4021,26 @@ function localSessionDetailReturn(req, res, session, incoming) {
   decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
 }
 
+function sortFields(session) {
+  if (session.tags) {
+    session.tags = session.tags.sort();
+  }
+  if (session.http) {
+    if (session.http.requestHeader) {
+      session.http.requestHeader = session.http.requestHeader.sort();
+    }
+    if (session.http.responseHeader) {
+      session.http.responseHeader = session.http.responseHeader.sort();
+    }
+  }
+  if (session.email && session.email.headers) {
+    session.email.headers = session.email.headers.sort();
+  }
+  if (session.ipProtocol) {
+    session.ipProtocol = Pcap.protocol2Name(session.ipProtocol);
+  }
+}
+
 
 function localSessionDetail(req, res) {
   if (!req.query) {
@@ -4354,23 +4073,8 @@ function localSessionDetail(req, res) {
       return res.end("Problem loading packets for " + req.params.id + " Error: " + err);
     }
     session.id = req.params.id;
+    sortFields(session);
 
-    if (session.ta) {
-      session.ta = session.ta.sort();
-    }
-
-    if (session.hh) {
-      session.hh = session.hh.sort();
-    }
-    if (session.hh1) {
-      session.hh1 = session.hh1.sort();
-    }
-    if (session.hh2) {
-      session.hh2 = session.hh2.sort();
-    }
-    if (session.pr) {
-      session.pr = Pcap.protocol2Name(session.pr);
-    }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
@@ -4385,13 +4089,8 @@ function localSessionDetail(req, res) {
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 6) {
-      var key;
-      if (session["tipv61-term"]) {
-        key = session["tipv61-term"];
-      } else {
-        key = Pcap.inet_ntoa(session.a1);
-      }
-      Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.p1, function(err, results) {
+      var key = session.srcIp;
+      Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -4426,21 +4125,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
 
     session.id = req.params.id;
 
-    if (session.ta) {
-      session.ta = session.ta.sort();
-    }
-    if (session.hh) {
-      session.hh = session.hh.sort();
-    }
-    if (session.hh1) {
-      session.hh1 = session.hh1.sort();
-    }
-    if (session.hh2) {
-      session.hh2 = session.hh2.sort();
-    }
-    if (session.pr) {
-      session.pr = Pcap.protocol2Name(session.pr);
-    }
+    sortFields(session);
 
     fixFields(session, function() {
       pug.render(internals.sessionDetailNew, {
@@ -4654,7 +4339,7 @@ function writePcapNg(res, id, options, doneCb) {
     res.write(b.slice(0, boffset));
 
     session.version = molochversion.version;
-    delete session.ps;
+    delete session.packetPos;
     var json = JSON.stringify(session);
 
     var len = ((json.length + 20 + 3) >> 2) << 2;
@@ -4743,15 +4428,15 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   var options = {writeHeader: true};
 
-  var query = { _source: ["ro"],
+  var query = { _source: ["rootId"],
                 size: 1000,
-                query: {term: {ro: req.params.id}},
-                sort: { lp: { order: 'asc' } }
+                query: {term: {rootId: req.params.id}},
+                sort: { lastPacket: { order: 'asc' } }
               };
 
   console.log("entirePcap query", JSON.stringify(query));
 
-  Db.searchPrimary('sessions-*', 'session', query, function(err, data) {
+  Db.searchPrimary('sessions2-*', 'session', query, function(err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
       writePcap(res, item._id, options, nextCb);
     }, function (err) {
@@ -4763,30 +4448,30 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 function sessionsPcapList(req, res, list, pcapWriter, extension) {
 
   if (list.length > 0 && list[0].fields) {
-    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+    list = list.sort(function(a,b){return a.fields.lastPacket - b.fields.lastPacket;});
   } else if (list.length > 0 && list[0]._source) {
-    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+    list = list.sort(function(a,b){return a._source.lastPacket - b._source.lastPacket;});
   }
 
   var options = {writeHeader: true};
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       // Get from our DISK
       pcapWriter(res, item._id, options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var buffer = Buffer.alloc(fields.pa*20 + fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + "/" + extension + "/" + item._id + "." + extension;
+        info.path = Config.basePath(fields.node) + fields.node + "/" + extension + "/" + item._id + "." + extension;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
 
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
@@ -4826,11 +4511,11 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
 
-    sessionsListFromIds(req, ids, ["lp", "no", "by", "pa", "ro"], function(err, list) {
+    sessionsListFromIds(req, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
-    sessionsListFromQuery(req, res, ["lp", "no", "by", "pa", "ro"], function(err, list) {
+    sessionsListFromQuery(req, res, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   }
@@ -4878,38 +4563,30 @@ app.post('/user/list', logAction('users'), function(req, res) {
   query.sort[req.body.sortField] = { order: req.body.desc === true ? "desc": "asc"};
   query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
 
-  async.parallel({
-    users: function (cb) {
-      Db.searchUsers(query, function(err, result) {
-        if (err || result.error) {
-          console.log("ERROR - users.json", err || result.error);
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (let i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            fields.id = result.hits.hits[i]._id;
-            fields.expression = fields.expression || "";
-            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-            fields.emailSearch = fields.emailSearch || false;
-            fields.removeEnabled = fields.removeEnabled || false;
-            fields.userName = safeStr(fields.userName || "");
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfUsers(cb);
+  Promise.all([Db.searchUsers(query),
+               Db.numberOfUsers()
+              ])
+  .then(([users, total]) => {
+    if (users.error) {throw users.error;}
+    var results = {total: users.hits.total, results: []};
+    for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
+      var fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
+      fields.id = users.hits.hits[i]._id;
+      fields.expression = fields.expression || "";
+      fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+      fields.emailSearch = fields.emailSearch || false;
+      fields.removeEnabled = fields.removeEnabled || false;
+      fields.userName = safeStr(fields.userName || "");
+      results.results.push(fields);
     }
-  },
-  function(err, results) {
-    var r = {draw: req.body.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.users.total,
-             data: results.users.results};
+
+    var r = {recordsTotal: total.count,
+             recordsFiltered: results.total,
+             data: results.results};
     res.send(r);
+  }).catch((err) => {
+    console.log("ERROR - /user/list", err);
+    return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
 
@@ -5049,6 +4726,16 @@ app.get('/state/:name', function(req, res) {
   if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
     return res.send("{}");
   }
+
+  // Fix for new names
+  if (req.params.name === "sessionsNew" && req.user.tableStates && req.user.tableStates.sessionsNew) {
+    let item = req.user.tableStates.sessionsNew;
+    item.visibleHeaders = item.visibleHeaders.map(oldDB2newDB);
+    if (item.order && item.order.length > 0) {
+      item.order[0][0] = oldDB2newDB(item.order[0][0]);
+    }
+  }
+
   return res.send(req.user.tableStates[req.params.name]);
 });
 
@@ -5056,10 +4743,8 @@ app.get('/state/:name', function(req, res) {
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
 
-function addTagsList(allTagIds, allTagNames, list, doneCb) {
+function addTagsList(allTagNames, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
-    var tagIds = [];
-
     var fields = session._source || session.fields;
 
     if (!fields) {
@@ -5067,88 +4752,64 @@ function addTagsList(allTagIds, allTagNames, list, doneCb) {
       return nextCb(null);
     }
 
-    if (fields.ta === undefined) {
-      fields.ta = [];
-      fields["tags-term"] = [];
+    if (fields.tags === undefined) {
+      fields.tags = [];
     }
 
 
-    // Find which tags need to be added to this session
-    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      if (fields.ta.indexOf(allTagIds[i]) === -1) {
-        fields.ta.push(allTagIds[i]);
+    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
+      if (fields.tags.indexOf(allTagNames[i]) === -1) {
+        fields.tags.push(allTagNames[i]);
       }
     }
 
     // Do the ES update
     var document = {
       doc: {
-        ta: fields.ta,
-        tacnt: fields.ta.length
+        tags: fields.tags,
+        tagsCnt: fields.tags.length
       }
     };
 
-    // Do the same for tags-term if it exists.  (it won't for old sessions)
-    if (fields["tags-term"]) {
-      for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-        if (fields["tags-term"].indexOf(allTagNames[i]) === -1) {
-          fields["tags-term"].push(allTagNames[i]);
-        }
-      }
-      document.doc["tags-term"] = fields["tags-term"];
-    }
-
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       if (err) {
-        console.log("CAN'T UPDATE", session, err, data);
+        console.log("addTagsList error", session, err, data);
       }
       nextCb(null);
     });
   }, doneCb);
 }
 
-function removeTagsList(res, allTagIds, allTagNames, list) {
+function removeTagsList(res, allTagNames, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
-    var tagIds = [];
-
     var fields = session._source || session.fields;
-    if (!fields || !fields.ta) {
+
+    if (!fields || !fields.tags) {
       return nextCb(null);
     }
 
-    // Find which tags need to be removed from this session
-    for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      let pos = fields.ta.indexOf(allTagIds[i]);
+    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
+      let pos = fields.tags.indexOf(allTagNames[i]);
       if (pos !== -1) {
-        fields.ta.splice(pos, 1);
+        fields.tags.splice(pos, 1);
       }
     }
 
     let document;
-    if (fields.ta.length === 0) {
+    if (fields.tags.length === 0) {
       // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
       document = {
-        script: "ctx._source.remove(\"ta\");ctx._source.remove(\"tacnt\");ctx._source.remove(\"tags-term\");"
+        script: "ctx._source.remove(\"tags\");ctx._source.remove(\"tagsCnt\");"
       };
     } else {
       // Do the ES update
       document = {
         doc: {
-          ta: fields.ta,
-          tacnt: fields.ta.length
+          tags: fields.tags,
+          tagsCnt: fields.tags.length
         }
       };
 
-      // Do the same for tags-term if it exists.  (it won't for old sessions)
-      if (fields["tags-term"]) {
-        for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-          let pos = fields["tags-term"].indexOf(allTagNames[i]);
-          if (pos !== -1) {
-            fields["tags-term"].splice(pos, 1);
-          }
-        }
-        document.doc["tags-term"] = fields["tags-term"];
-      }
     }
 
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -5162,22 +4823,6 @@ function removeTagsList(res, allTagIds, allTagNames, list) {
   });
 }
 
-function mapTags(tags, prefix, tagsCb) {
-  async.map(tags, function (tag, cb) {
-    Db.tagNameToId(prefix + tag, function (tagid) {
-      if (tagid === -1) {
-        Db.createTag(prefix + tag, function(tagid) {
-          cb(null, tagid);
-        });
-      } else {
-        cb(null, tagid);
-      }
-    });
-  }, function (err, result) {
-    tagsCb(null, result);
-  });
-}
-
 app.post('/addTags', logAction(), function(req, res) {
   var tags = [];
   if (req.body.tags) {
@@ -5186,23 +4831,21 @@ app.post('/addTags', logAction(), function(req, res) {
 
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
-        addTagsList(tagIds, tags, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
-        addTagsList(tagIds, tags, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    }
-  });
+    });
+  }
 });
 
 app.post('/removeTags', logAction(), function(req, res) {
@@ -5215,19 +4858,17 @@ app.post('/removeTags', logAction(), function(req, res) {
 
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term"], function(err, list) {
-        removeTagsList(res, tagIds, tags, list);
-      });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term"], function(err, list) {
-        removeTagsList(res, tagIds, tags, list);
-      });
-    }
-  });
+    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
+      removeTagsList(res, tags, list);
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags"], function(err, list) {
+      removeTagsList(res, tags, list);
+    });
+  }
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -5278,7 +4919,7 @@ app.get('/:nodeName/searchSession/:id', checkProxyRequest, function(req, res) {
 
 function searchSession(req, session, cb) {
   var fields = session._source || session.fields;
-  isLocalView(fields.no, function () {
+  isLocalView(fields.node, function () {
     var options = {};
     options.regex = req.body.regex || req.params.regex;
     options.findString = req.body.findString || req.params.findString;
@@ -5288,12 +4929,12 @@ function searchSession(req, session, cb) {
   },
   function () {
     // Check Remotely
-    getViewUrl(fields.no, function(err, viewUrl, client) {
+    getViewUrl(fields.node, function(err, viewUrl, client) {
       var info = url.parse(viewUrl);
-      info.path = Config.basePath(fields.no) + fields.no + "/searchSession/" + session._id;
+      info.path = Config.basePath(fields.node) + fields.node + "/searchSession/" + session._id;
       info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-      addAuth(info, req.user, fields.no);
-      addCaTrust(info, fields.no);
+      addAuth(info, req.user, fields.node);
+      addCaTrust(info, fields.node);
       var preq = client.request(info, function(pres) {
         pres.on('end', function () {
           cb(null, true); // ALW FIX
@@ -5308,7 +4949,7 @@ function searchSession(req, session, cb) {
   });
 }
 
-function searchAndTagList(req, allTagIds, list, doneCb) {
+function searchAndTagList(req, tags, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
     if (!fields) {
@@ -5317,9 +4958,9 @@ function searchAndTagList(req, allTagIds, list, doneCb) {
     }
 
     var doit = false;
-    if (fields.ta) {
-      for (let i = 0, ilen = allTagIds.length; i < ilen; i++) {
-        if (fields.ta.indexOf(allTagIds[i]) === -1) {
+    if (fields.tags) {
+      for (let i = 0, ilen = tags.length; i < ilen; i++) {
+        if (fields.tags.indexOf(tags[i]) === -1) {
           doit = true;
           break;
         }
@@ -5348,23 +4989,21 @@ app.post('/searchAndTag', logAction(), function(req, res) {
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
   if (regex.length === 0) { return res.molochError(200, "No regex specified"); }
 
-  mapTags(tags, "", function(err, tagIds) {
-    if (req.body.ids) {
-      var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
-        searchAndTagList(req, tagIds, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    sessionsListFromIds(req, ids, ["ta", "tags-term", "node"], function(err, list) {
+      searchAndTagList(req, tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    } else {
-      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
-        searchAndTagList(req, tagIds, list, function () {
-          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-        });
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["ta", "tags-term", "node"], function(err, list) {
+      searchAndTagList(req, tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
-    }
-  });
+    });
+  }
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -5407,28 +5046,28 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "no,pr,ps,psl"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "node,ipProtocol,packetPos,packetLen"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
     var itemPos = 0;
-    async.eachLimit(fields.ps, 10, function(pos, nextCb) {
+    async.eachLimit(fields.packetPos, 10, function(pos, nextCb) {
       if (pos < 0) {
         fileNum = pos * -1;
         return nextCb(null);
       }
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-      var opcap = Pcap.get("write"+fields.no + ":" + fileNum);
+      var opcap = Pcap.get("write"+fields.node + ":" + fileNum);
       if (!opcap.isOpen()) {
-        Db.fileIdToFile(fields.no, fileNum, function(file) {
+        Db.fileIdToFile(fields.node, fileNum, function(file) {
 
           if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
-            return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+            console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+            return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
           }
 
-          var ipcap = Pcap.get("write"+fields.no + ":" + file.num);
+          var ipcap = Pcap.get("write"+fields.node + ":" + file.num);
 
           try {
             ipcap.openReadWrite(file.name, file);
@@ -5493,18 +5132,18 @@ function scrubList(req, res, entire, list) {
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
 
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       // Get from our DISK
       pcapScrub(req, res, item._id, entire, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + (entire?"/delete/":"/scrub/") + item._id;
+        info.path = Config.basePath(fields.node) + fields.node + (entire?"/delete/":"/scrub/") + item._id;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('end', function () {
             setImmediate(nextCb);
@@ -5528,11 +5167,11 @@ app.post('/scrub', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else {
@@ -5546,11 +5185,11 @@ app.post('/delete', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else {
@@ -5604,7 +5243,7 @@ function sendSessionWorker(options, cb) {
       return;
     }
     session.id = options.id;
-    session.ps = ps;
+    session.packetPos = ps;
     delete session.fs;
 
     if (options.tags) {
@@ -5725,29 +5364,29 @@ function sendSessionsList(req, res, list) {
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    isLocalView(fields.no, function () {
+    isLocalView(fields.node, function () {
       var options = {
         user: req.user,
         cluster: req.body.cluster,
         id: item._id,
         saveId: saveId,
         tags: req.query.tags,
-        nodeName: fields.no
+        nodeName: fields.node
       };
       // Get from our DISK
       internals.sendSessionQueue.push(options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.no) + fields.no + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
+        info.path = Config.basePath(fields.node) + fields.node + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         if (req.query.tags) {
           info.path += "&tags=" + req.query.tags;
         }
-        addAuth(info, req.user, fields.no);
-        addCaTrust(info, fields.no);
+        addAuth(info, req.user, fields.node);
+        addCaTrust(info, fields.node);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
           });
@@ -5776,10 +5415,10 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
   var nodes = {};
 
   list.forEach(function (item) {
-    if (!nodes[item.no]) {
-      nodes[item.no] = [];
+    if (!nodes[item.node]) {
+      nodes[item.node] = [];
     }
-    nodes[item.no].push(item.id);
+    nodes[item.node].push(item.id);
   });
 
   var keys = Object.keys(nodes);
@@ -5876,7 +5515,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
     Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
       var filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "-" + req.query.saveId + ".pcap";
       saveId.seq      = seq;
-      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: filename, first: session.fp, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
+      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
       });
@@ -5884,34 +5523,10 @@ app.post('/receiveSession', function receiveSession(req, res) {
   }
 
   function saveSession() {
-    function tags(container, field, prefix, cb) {
-      if (!container[field]) {
-        return cb(null);
-      }
-
-      mapTags(session[field], prefix, function (err, tagIds) {
-        session[field] = tagIds;
-        cb(null);
-      });
-    }
-
-    async.parallel([
-      function(parallelCb) {
-        tags(session, "ta", "", parallelCb);
-      },
-      function(parallelCb) {
-        tags(session, "hh1", "http:header:", parallelCb);
-      },
-      function(parallelCb) {
-        tags(session, "hh2", "http:header:", parallelCb);
-      }],
-      function() {
-        var id = session.id;
-        delete session.id;
-        Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
-        });
-      }
-    );
+    var id = session.id;
+    delete session.id;
+    Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
+    });
   }
 
   function chunkWrite(chunk) {
@@ -5948,7 +5563,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
     // If we know the session len and haven't read the session
     if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
       session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
-      session.no = Config.nodeName();
+      session.node = Config.nodeName();
       buffer = buffer.slice(sessionlen);
 
       if (filelen > 0) {
@@ -5956,7 +5571,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
         makeFilename(function (filename) {
           req.resume();
-          session.ps[0] = - saveId.seq;
+          session.packetPos[0] = - saveId.seq;
           session.fs = [saveId.seq];
 
           if (saveId.start === 0) {
@@ -5968,8 +5583,8 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
           // Adjust packet location based on where we start writing
           if (saveId.start > 0) {
-            for (var p = 1, plen = session.ps.length; p < plen; p++) {
-              session.ps[p] += (saveId.start - 24);
+            for (var p = 1, plen = session.packetPos.length; p < plen; p++) {
+              session.packetPos[p] += (saveId.start - 24);
             }
           }
 
@@ -6004,11 +5619,11 @@ app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   } else {
-    sessionsListFromQuery(req, res, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   }
@@ -6084,7 +5699,80 @@ app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, 
   });
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+// Vue app
+//////////////////////////////////////////////////////////////////////////////////
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
 
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: `<div id="app"></div>`
+  });
+}
+
+// expose vue bundles (prod)
+app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+
+app.get('/stats', (req, res) => {
+  let cookieOptions = { path: app.locals.basePath };
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     cookieOptions
+  );
+
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
+  });
+
+  let theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
+
+  let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
+    .replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:'-')
+    .replace(/_userName_/g, req.user?req.user.userName:'-')
+
+  const appContext = {
+    theme: theme,
+    titleConfig: titleConfig,
+    path: app.locals.basePath,
+    version: app.locals.molochversion,
+    devMode: Config.get('devMode', false),
+    demoMode: Config.get('demoMode', false),
+    themeUrl: theme === 'custom-theme' ? 'user.css' : ''
+  }
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.error(err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
+});
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// Angular app
+//////////////////////////////////////////////////////////////////////////////////
 app.use(express.static(__dirname + '/views'));
 app.use(express.static(__dirname + '/bundle'));
 app.use(function (req, res) {
@@ -6123,8 +5811,8 @@ app.use(function (req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 
 /* Process a single cron query.  At max it will process 24 hours worth of data
- * to give other queries a chance to run.  It searches for the first time range
- * where there is an available index.
+ * to give other queries a chance to run.  Because its timestamp based and not
+ * lastPacket based since 1.0 it now search all indices each time.
  */
 function processCronQuery(cq, options, query, endTime, cb) {
   if (Config.debug > 2) {
@@ -6136,77 +5824,65 @@ function processCronQuery(cq, options, query, endTime, cb) {
   async.doWhilst(function(whilstCb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
-    query.query.bool.filter[0] = {range: {lp: {gt: cq.lpValue, lte: singleEndTime}}};
+    query.query.bool.filter[0] = {range: {timestamp: {gte: cq.lpValue*1000, lt: singleEndTime*1000}}};
 
     if (Config.debug > 2) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
+      function doNext() {
+        count += result.hits.hits.length;
 
-      // There are no matching indices, continue while loop
-      if (indices === "sessions-*") {
-        cq.lpValue += 24*60*60;
-        return setImmediate(whilstCb, null);
+        // No more data, all done
+        if (result.hits.hits.length === 0) {
+          return setImmediate(whilstCb, "DONE");
+        } else {
+          var document = { doc: { count: (query.count || 0) + count} };
+          Db.update("queries", "query", options.qid, document, {refresh: true}, function () {});
+        }
+
+        query = {
+          body: {
+            scroll_id: result._scroll_id,
+          },
+          scroll: '600s'
+        };
+
+        Db.scroll(query, getMoreUntilDone);
       }
 
-      // We have found some indices, now scroll thru ES
-      Db.search(indices, 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
-        function doNext() {
-          count += result.hits.hits.length;
+      if (err || result.error) {
+        console.log("cronQuery error", err, (result?result.error:null), "for", cq);
+        return setImmediate(whilstCb, "ERR");
+      }
 
-          // No more data, all done
-          if (result.hits.hits.length === 0) {
-            return setImmediate(whilstCb, "DONE");
-          } else {
-            var document = { doc: { count: (query.count || 0) + count} };
-            Db.update("queries", "query", options.qid, document, {refresh: true}, function () {});
-          }
-
-          query = {
-            body: {
-              scroll_id: result._scroll_id,
-            },
-            scroll: '600s'
-          };
-
-          Db.scroll(query, getMoreUntilDone);
+      var ids = [];
+      var hits = result.hits.hits;
+      var i, ilen;
+      if (cq.action.indexOf("forward:") === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push({id: hits[i]._id, node: hits[i]._source.node});
         }
 
-        if (err || result.error) {
-          console.log("cronQuery error", err, (result?result.error:null), "for", cq);
-          return setImmediate(whilstCb, "ERR");
+        sendSessionsListQL(options, ids, doNext);
+      } else if (cq.action.indexOf("tag") === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push(hits[i]._id);
         }
 
-        var ids = [];
-        var hits = result.hits.hits;
-        var i, ilen;
-        if (cq.action.indexOf("forward:") === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push({id: hits[i]._id, no: hits[i]._source.no});
-          }
-
-          sendSessionsListQL(options, ids, doNext);
-        } else if (cq.action.indexOf("tag") === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push(hits[i]._id);
-          }
-
-          if (Config.debug > 1) {
-            console.log("CRON", cq.name, cq.creator, "- Updating tags:", ids.length);
-          }
-
-          var tags = options.tags.split(",");
-          mapTags(tags, "", function(err, tagIds) {
-            sessionsListFromIds(null, ids, ["ta", "tags-term", "no"], function(err, list) {
-              addTagsList(tagIds, tags, list, doNext);
-            });
-          });
-        } else {
-          console.log("Unknown action", cq);
-          doNext();
+        if (Config.debug > 1) {
+          console.log("CRON", cq.name, cq.creator, "- Updating tags:", ids.length);
         }
-      });
+
+        var tags = options.tags.split(",");
+        sessionsListFromIds(null, ids, ["tags", "node"], function(err, list) {
+          addTagsList(tags, list, doNext);
+        });
+      } else {
+        console.log("Unknown action", cq);
+        doNext();
+      }
     });
   }, function () {
     if (Config.debug > 1) {
@@ -6286,7 +5962,7 @@ function processCronQueries() {
           var query = {from: 0,
                        size: 1000,
                        query: {bool: {filter: [{}]}},
-                       _source: ["_id", "no"]
+                       _source: ["_id", "node"]
                       };
 
           try {

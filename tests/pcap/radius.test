@@ -1,125 +1,121 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160515"
-            }
-         },
          "body" : {
-            "test" : {
-               "string" : [
-                  "16777226:45210,33554442:1813"
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 66,
+            "dstDataBytes" : 58,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "05e3001400000000",
+            "dstPort" : 1813,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1463339353458,
+            "ipProtocol" : 17,
+            "lastPacket" : 1463339353461,
+            "length" : 3,
+            "node" : "test",
+            "packetLen" : [
+               405,
+               82
+            ],
+            "packetPos" : [
+               24,
+               429
+            ],
+            "protocol" : [
+               "udp",
+               "radius"
+            ],
+            "protocolCnt" : 2,
+            "radius" : {
+               "framedASN" : [
+                  "AS0002 Hmm!@#$%^&*()"
                ],
-               "ip-asn" : [
+               "framedGEO" : [
+                  "---"
+               ],
+               "framedIp" : [
+                  "10.0.0.3"
+               ],
+               "framedIpCnt" : 1,
+               "framedRIR" : [
+                  ""
+               ],
+               "mac" : [
+                  "98:5a:eb:89:80:00"
+               ],
+               "macCnt" : 1,
+               "user" : [
+                  "xxxxxxxxx"
+               ]
+            },
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 389,
+            "srcDataBytes" : 381,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "04e3015700000000",
+            "srcPort" : 45210,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "test" : {
+               "ASN" : [
                   "AS0000 This is neat"
                ],
-               "ip-geo" : [
-                  "RUS"
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
                ],
                "number" : [
                   33554442
                ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
+               "string.snow" : [
+                  "16777226:45210,33554442:1813"
                ]
             },
-            "db1" : 381,
-            "lp" : 1463339353,
-            "by" : 455,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "lastPacket" : 1463339353461,
-            "a1" : "10.0.0.1",
             "timestamp" : "SET",
-            "pa2" : 1,
-            "fb2" : "05e3001400000000",
-            "ipDst" : "10.0.0.2",
-            "db" : 439,
-            "pa" : 2,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "portSrc" : 45210,
-            "db2" : 58,
-            "tacnt" : 2,
-            "ipSrc" : "10.0.0.1",
-            "as1" : "AS0000 This is neat",
+            "totBytes" : 455,
+            "totDataBytes" : 439,
+            "totPackets" : 2,
             "vlan" : [
                50
             ],
-            "fpd" : 1463339353458,
-            "lpd" : 1463339353461,
-            "no" : "test",
-            "mac2-term" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "p1" : 45210,
-            "g1" : "RUS",
-            "prot-term" : [
-               "udp",
-               "radius"
-            ],
-            "mac1-term-cnt" : 1,
-            "prot-term-cnt" : 2,
-            "pr" : 17,
-            "p2" : 1813,
-            "mac1-term" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "by2" : 66,
-            "g2" : "CAN",
-            "portDst" : 1813,
-            "firstPacket" : 1463339353458,
-            "by1" : 389,
-            "fs" : [],
-            "ps" : [
-               24,
-               429
-            ],
-            "rir2" : "TEST",
-            "fp" : 1463339353,
-            "radius" : {
-               "fip-cnt" : 1,
-               "fip-asn" : [
-                  "AS0002 Hmm!@#$%^&*()"
-               ],
-               "mac-term-cnt" : 1,
-               "fip-rir" : [
-                  ""
-               ],
-               "mac-term" : [
-                  "98:5a:eb:89:80:00"
-               ],
-               "fip" : [
-                  "10.0.0.3"
-               ],
-               "user-term" : [
-                  "xxxxxxxxx"
-               ],
-               "fip-geo" : [
-                  "---"
-               ]
-            },
-            "ss" : 1,
-            "pa1" : 1,
-            "mac2-term-cnt" : 1,
-            "a2" : "10.0.0.2",
-            "vlan-cnt" : 1,
-            "sl" : 3,
-            "fb1" : "04e3015700000000",
-            "as2" : "AS0001 Cool Beans!",
-            "psl" : [
-               405,
-               82
-            ]
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160515",
+               "_type" : "session"
+            }
          }
       }
    ]

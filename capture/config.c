@@ -17,8 +17,11 @@
  */
 
 #include "moloch.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <errno.h>
 
 extern MolochConfig_t        config;
 
@@ -372,11 +375,10 @@ void moloch_config_load()
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
-    config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
-    config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
-    config.geoip6File       = moloch_config_str(keyfile, "geoip6File", NULL);
-    config.geoipASN6File    = moloch_config_str(keyfile, "geoipASN6File", NULL);
+    config.ouiFile          = moloch_config_str(keyfile, "ouiFile", NULL);
+    config.geoLite2ASN      = moloch_config_str(keyfile, "geoLite2ASN", "/data/moloch/etc/GeoLite2-ASN.mmdb");
+    config.geoLite2Country  = moloch_config_str(keyfile, "geoLite2Country", "/data/moloch/etc/GeoLite2-Country.mmdb");
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
@@ -438,20 +440,12 @@ void moloch_config_load()
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
+    config.supportSha256         = moloch_config_boolean(keyfile, "supportSha256", FALSE);
     config.reqBodyOnlyUtf8       = moloch_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
 
-}
-/******************************************************************************/
-void moloch_config_get_tag_cb(MolochIpInfo_t *ii, int UNUSED(tagtype), const char *tagName, uint32_t tag)
-{
-    if (ii->numtags >= 10) return;
-
-    ii->tags[ii->numtags] = tag;
-    ii->tagsStr[ii->numtags] = strdup(tagName);
-    ii->numtags++;
 }
 /******************************************************************************/
 void moloch_config_load_local_ips()
@@ -482,7 +476,10 @@ void moloch_config_load_local_ips()
             } else if (strncmp(values[v], "rir:", 4) == 0) {
                 ii->rir = g_strdup(values[v]+4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
-                moloch_db_get_tag(ii, 0, values[v]+4, (MolochTag_cb)moloch_config_get_tag_cb);
+                if (ii->numtags < 10) {
+                    ii->tagsStr[ii->numtags] = strdup(values[v]+4);
+                    ii->numtags++;
+                }
             } else if (strncmp(values[v], "country:", 8) == 0) {
                 ii->country = g_strdup(values[v]+8);
             }
@@ -590,7 +587,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 
         switch (type) {
         case 0:
-            kind = "textfield";
+            kind = "termfield";
             if (unique)
                 t = MOLOCH_FIELD_TYPE_STR_HASH;
             else
@@ -621,38 +618,92 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 
         char expression[100];
         char field[100];
-        char rawfield[100];
         char help[100];
 
-        if (type == 0) {
-            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
-            snprintf(field, sizeof(field), "%s%s.snow", dbBase, name);
-            snprintf(rawfield, sizeof(rawfield), "%s%s.raw", dbBase, name);
-            snprintf(help, sizeof(help), "%s%s", helpBase, name);
-        } else {
-            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
-            snprintf(field, sizeof(field), "%s%s", dbBase, name);
-            rawfield[0] = 0;
-            snprintf(help, sizeof(help), "%s%s", helpBase, name);
-        }
+        snprintf(expression, sizeof(expression), "%s%s", expBase, name);
+        snprintf(field, sizeof(field), "%s%s", dbBase, name);
+        snprintf(help, sizeof(help), "%s%s", helpBase, name);
 
         int pos;
-        if (rawfield[0]) {
-            pos = moloch_field_define(group, kind,
-                    expression, expression, field,
-                    help,
-                    t, f,
-                    "rawField", rawfield, NULL);
-        } else {
-            pos = moloch_field_define(group, kind,
-                    expression, expression, field,
-                    help,
-                    t, f, NULL);
-        }
+        pos = moloch_field_define(group, kind,
+                expression, expression, field,
+                help,
+                t, f, NULL);
         moloch_config_add_header(hash, g_strdup(keys[k]), pos);
         g_strfreev(values);
     }
     g_strfreev(keys);
+}
+
+/******************************************************************************/
+typedef struct {
+    char                 *desc;
+    char                 *name;
+    MolochFileChange_cb   cb;
+    off_t                 size;
+    int64_t               modify;
+    char                  freeOld;
+} MolochFileChange_t;
+
+LOCAL int                numFiles;
+LOCAL MolochFileChange_t files[100];
+/******************************************************************************/
+void moloch_config_monitor_file(char *desc, char *name, MolochFileChange_cb cb)
+{
+    struct stat     sb;
+
+    if (numFiles >= 100)
+        LOGEXIT("Couldn't monitor anymore files %s %s", desc, name);
+
+    if (stat(name, &sb) != 0) {
+        LOGEXIT("Couldn't stat %s file %s error %s", desc, name, strerror(errno));
+    }
+
+    files[numFiles].desc = g_strdup(desc);
+    files[numFiles].name = g_strdup(name);
+    files[numFiles].cb = cb;
+    files[numFiles].modify = sb.st_mtime;
+    numFiles++;
+    cb(name);
+}
+/******************************************************************************/
+gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
+{
+    int             i;
+    struct stat     sb;
+
+    for (i = 0; i < numFiles; i++) {
+        if (files[i].freeOld) {
+            if (config.debug)
+                LOG("Free old %s %s", files[i].desc, files[i].name);
+            files[i].cb(NULL);
+            files[i].freeOld = 0;
+        }
+
+        if (stat(files[i].name, &sb) != 0) {
+            LOG("Couldn't stat %s file %s error %s", files[i].desc, files[i].name, strerror(errno));
+            continue;
+        }
+
+        if (sb.st_size <= 1) { // Ignore tiny files for reloads
+            continue;
+        }
+
+        if (sb.st_mtime > files[i].modify) {
+            if (files[i].size != sb.st_size) {
+                files[i].size = sb.st_size;
+                continue;
+            }
+            if (config.debug)
+                LOG("Load new %s %s", files[i].desc, files[i].name);
+            files[i].cb(files[i].name);
+            files[i].freeOld = 1;
+            files[i].size = 0;
+            files[i].modify = sb.st_mtime;
+        }
+    }
+
+    return TRUE;
 }
 /******************************************************************************/
 void moloch_config_init()
@@ -678,6 +729,10 @@ void moloch_config_init()
     if (!config.pcapDir) {
         printf("Must set a pcapDir to save files to\n");
         exit(1);
+    }
+
+    if (!config.dryRun) {
+        g_timeout_add_seconds( 10, moloch_config_reload_files, 0);
     }
 }
 /******************************************************************************/

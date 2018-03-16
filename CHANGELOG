@@ -1,15 +1,59 @@
-ES Support:
-  * Moloch 0.50.x supports ES >= 5.5.0, not 6.x
-  * Moloch 0.20.x supports ES 2.4.x or > 5.3.1 not 6.x
+NOTICE: If upgrading read https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
-Node Support:
-  * Moloch >= 0.20.x requires NodeJS 6.x
-  * Moloch >= 0.16.x requires NodeJS 4.x
+ES Versions:
+  * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (no prod tested, only for new installs), not 7.x
+  * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x
+  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3,1 not 6.x
+
+Node Versions:
+  * Moloch >= 1.0.0 requires NodeJS 8.x
+  * Moloch >= 0.20.0 requires NodeJS 6.x
+  * Moloch >= 0.18.1 requires NodeJS 4.x
 
 NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
         outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
 
 NOTICE: Restart wiseService before capture when upgrading
+
+1.0.0-beta3 2018/03/15
+  - viewer - stats page implemented in Vue instead of Angular
+  - capture - some code clean and better thread safe counters
+  - viewer - convert field names in saved column sets from pre 1.0
+
+1.0.0-beta2 2018/03/08
+  - capture - decode some dhcp
+  - capture - tag a tls session with cert:self-signed
+  - capture - reload geo, rir, yara and oui files without restarting (issue #692)
+  - capture - remove yara 1.x support
+  - viewer - cron jobs now use the timestamp time and not last packet time when choosing sessions to look at
+             this means delay is shorter, although when upgrading to 1.0 some sessions will be not looked at.
+
+1.0.0-beta1 2018/02/20
+  - capture - calculate sha256 too (set supportSha256 tru)
+  - wise - support sha256 lookups
+  - capture - fix disable fields
+  - capture - src/dst ip/port can be used to trigger rules now
+  - capture - ip fields in rules can now be CIDR
+  - capture - simple writer now flushes after 10 seconds of no writting
+              there still can be pagesize bytes unwritten (issue #777)
+
+1.0.0-alpha2 2018/01/31
+  - Read alpha1 below
+  - release - correct geo files
+  - capture - set default geo file path
+
+1.0.0-alpha1 2018/01/26
+  - NOTICE: Supported ES Versions: 5.6.x, 6.x (for new installs)
+  - NOTICE: hasheader for email/http for old sessions will not be migrated
+  - all - rename all field names
+  - all - no more analyzed ES fields, everything is a keyword field
+  - all - full ipv6 support
+  - all - tags index removed, tags/hasheader stored as first class fields
+  - all - new reindex2 script to move from pre 1.0 to 1.0
+  - capture - http uri field no longer starts with // (issue #732)
+  - capture - use maxminddb instead of geoip now (issue #771)
+  - all - Country codes are now 2 letters instead of 3 letters
+  - release - node 8.9.4
 
 0.50.1 2017/03/XX
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
@@ -127,7 +171,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - handle corrupt theme
   - capture - fix quic parser crash
   - release - libyaml as a dependency
- 
+
 
 0.19.0 2017/07/11
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x, > 5.3.1, 5.4.x
@@ -229,7 +273,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - tpacketv3 handles multiple interfaces correctly (issue #658)
   - easybutton - singlehost and config removed, build remains for now
                  make install & make config should work
-  - capture - 
+  - capture -
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)

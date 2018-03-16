@@ -86,42 +86,6 @@
     }
 
     /**
-     * Gets hasheader field values from the server
-     * @param {Object} params     The parameters to send with the query
-     * @returns {Promise} Promise A promise object that signals the completion
-     *                            or rejection of the request.
-     */
-    getHasheaderValues(params) {
-      let deferred = this.$q.defer();
-
-      let request = this.$http({
-        url     : 'uniqueValue.json',
-        method  : 'GET',
-        params  : params,
-        timeout : deferred.promise
-      });
-
-      let promise = request
-        .then((response) => {
-          return(response.data);
-        }, (error) => {
-          return(this.$q.reject(error));
-        }).catch(angular.noop); // handle abort
-
-      promise.abort = () => {
-        deferred.resolve({error:'Request canceled.'});
-      };
-
-      // cleanup
-      promise.finally(() => {
-        promise.abort = angular.noop;
-        deferred = request = promise = null;
-      });
-
-      return(promise);
-    }
-
-    /**
      * Gets the cached country code list
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.

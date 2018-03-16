@@ -142,7 +142,6 @@ uint32_t moloch_session_hash(const void *key)
     uint32_t *p = (uint32_t *)key;
     const uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
     uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
-    
 
     while (p < end) {
         h ^= *p;
@@ -175,35 +174,22 @@ void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointe
     MOLOCH_UNLOCK(sessionCmds[session->thread].lock);
 }
 /******************************************************************************/
-void moloch_session_get_tag_cb(void *sessionV, int tagType, const char *tagName, uint32_t tag, gboolean async)
+void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, MolochCmd_func func)
 {
-    MolochSession_t *session = sessionV;
+    static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
 
-    if (tag == 0) {
-        LOG("ERROR - Not adding tag %s type %d couldn't get tag num", tagName, tagType);
-        moloch_session_decr_outstanding(session);
-    } else if (async) {
-        moloch_session_add_cmd(session, MOLOCH_SES_CMD_ADD_TAG, (gpointer)(long)tagType, (gpointer)(long)tag, NULL);
-    } else {
-        moloch_field_int_add(tagType, session, tag);
-        moloch_session_decr_outstanding(session);
-    }
+    fakeSessions[thread].thread = thread;
 
-}
-/******************************************************************************/
-gboolean moloch_session_has_tag(MolochSession_t *session, const char *tagName)
-{
-    uint32_t tagValue;
-
-    if (!session->fields[config.tagsField])
-        return FALSE;
-
-    if ((tagValue = moloch_db_peek_tag(tagName)) == 0)
-        return FALSE;
-
-    MolochInt_t          *hint;
-    HASH_FIND_INT(i_, *(session->fields[config.tagsField]->ihash), tagValue, hint);
-    return hint != 0;
+    MolochSesCmd_t *cmd = MOLOCH_TYPE_ALLOC(MolochSesCmd_t);
+    cmd->cmd = MOLOCH_SES_CMD_FUNC;
+    cmd->session = &fakeSessions[thread];
+    cmd->uw1 = uw1;
+    cmd->uw2 = uw2;
+    cmd->func = func;
+    MOLOCH_LOCK(sessionCmds[thread].lock);
+    DLL_PUSH_TAIL(cmd_, &sessionCmds[thread], cmd);
+    moloch_packet_thread_wake(thread);
+    MOLOCH_UNLOCK(sessionCmds[thread].lock);
 }
 /******************************************************************************/
 void moloch_session_add_protocol(MolochSession_t *session, const char *protocol)
@@ -222,33 +208,7 @@ gboolean moloch_session_has_protocol(MolochSession_t *session, const char *proto
 }
 /******************************************************************************/
 void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
-    moloch_session_incr_outstanding(session);
-    moloch_db_get_tag(session, config.tagsField, tag, moloch_session_get_tag_cb);
     moloch_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
-
-    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
-        MolochString_t *tstring;
-
-        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
-        if (tstring) {
-            session->stopSaving = (int)(long)tstring->uw;
-        }
-    }
-}
-
-/******************************************************************************/
-void moloch_session_add_tag_type(MolochSession_t *session, int tagtype, const char *tag) {
-    moloch_session_incr_outstanding(session);
-    moloch_db_get_tag(session, tagtype, tag, moloch_session_get_tag_cb);
-
-    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
-        MolochString_t *tstring;
-
-        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
-        if (tstring) {
-            session->stopSaving = (long)tstring->uw;
-        }
-    }
 }
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, int ses)
@@ -348,13 +308,6 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
         moloch_plugins_cb_pre_save(session, FALSE);
 
     moloch_rules_run_before_save(session, 0);
-
-#ifdef FIXLATER
-    /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
-    while (session->outstandingQueries > 0 && config.pcapReadOffline) {
-        g_main_context_iteration (g_main_context_default(), TRUE);
-    }
-#endif
 
     if (!session->rootId) {
         session->rootId = "ROOT";
@@ -519,10 +472,6 @@ void moloch_session_process_commands(int thread)
             break;
 
         switch (cmd->cmd) {
-        case MOLOCH_SES_CMD_ADD_TAG:
-            moloch_field_int_add((long)cmd->uw1, cmd->session, (long)cmd->uw2);
-            moloch_session_decr_outstanding(cmd->session);
-            break;
         case MOLOCH_SES_CMD_FUNC:
             cmd->func(cmd->session, cmd->uw1, cmd->uw2);
             break;
@@ -615,9 +564,9 @@ void moloch_session_init()
     if (p == 12) p = 11;
 
     protocolField = moloch_field_define("general", "termfield",
-        "protocols", "Protocols", "prot-term",
+        "protocols", "Protocols", "protocol",
         "Protocols set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     if (config.debug)
@@ -642,7 +591,7 @@ void moloch_session_init()
     moloch_add_can_quit(moloch_session_need_save_outstanding, "session save outstanding");
 }
 /******************************************************************************/
-static void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
+LOCAL void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
 {
     int thread = session->thread;
     int i;
@@ -661,12 +610,9 @@ void moloch_session_flush()
 {
     moloch_packet_flush();
 
-    static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
-
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        fakeSessions[thread].thread = thread;
-        moloch_session_add_cmd(&fakeSessions[thread], MOLOCH_SES_CMD_FUNC, NULL, NULL, moloch_session_flush_close);
+        moloch_session_add_cmd_thread(thread, NULL, NULL, moloch_session_flush_close);
     }
 }
 /******************************************************************************/

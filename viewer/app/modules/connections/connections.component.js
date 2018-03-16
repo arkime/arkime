@@ -63,8 +63,8 @@
       // load route params
       this.query = {};
       this.query.length   = this.$routeParams.connLength || 100;
-      this.query.srcField = this.$routeParams.srcField || 'a1';
-      this.query.dstField = this.$routeParams.dstField || 'a2';
+      this.query.srcField = this.$routeParams.srcField || 'srcIp';
+      this.query.dstField = this.$routeParams.dstField || 'dstIp';
       this.query.nodeDist = parseInt(this.$routeParams.nodeDist || '125');
       this.query.minConn  = parseInt(this.$routeParams.minConn || '1');
 
@@ -113,13 +113,13 @@
           this.query.length = size;
         }
 
-        let srcField = current.params.srcField || 'a1';
+        let srcField = current.params.srcField || 'srcIp';
         if (srcField !== this.query.srcField) {
           change = true;
           this.query.srcField = srcField;
         }
 
-        let dstField = current.params.dstField || 'a2';
+        let dstField = current.params.dstField || 'dstIp';
         if (dstField !== this.query.dstField) {
           change = true;
           this.query.dstField = dstField;

@@ -11,6 +11,7 @@ use Cwd;
 use URI::Escape;
 use TAP::Harness;
 use MolochTest;
+use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
@@ -24,20 +25,16 @@ sub doGeo {
         system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
     }
 
-    if (! -f "GeoIPASNum.dat") {
-        system("wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip GeoIPASNum.dat.gz");
+    if (! -f "oui.txt") {
+        system("wget -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
     }
 
-    if (! -f "GeoIPASNumv6.dat") {
-        system("wget http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip GeoIPASNumv6.dat.gz");
+    if (! -f "GeoLite2-Country.mmdb") {
+        system("wget -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'; gunzip GeoLite2-Country.mmdb.gz");
     }
 
-    if (! -f "GeoIP.dat") {
-        system("wget http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz; gunzip GeoIP.dat.gz");
-    }
-
-    if (! -f "GeoIPv6.dat") {
-        system("wget http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz; gunzip GeoIPv6.dat.gz");
+    if (! -f "GeoLite2-ASN.mmdb") {
+        system("wget -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'; gunzip GeoLite2-ASN.mmdb.gz");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
@@ -48,9 +45,9 @@ sub doGeo {
 sub sortJson {
     my ($json) = @_;
 
-    foreach my $session (@{$json->{sessions}}) {
+    foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
-        foreach my $i ("dnsip", "tags-term", "ta") {
+        foreach my $i ("tags", "srcMac", "dstMac", "srcOui", "dstOui") {
             if (exists $body->{$i}) {
                 my @tmp = sort (@{$body->{$i}});
                 $body->{$i} = \@tmp;
@@ -102,31 +99,34 @@ sub doFix {
 ################################################################################
 sub fix {
 my ($json) = @_;
-    foreach my $session (@{$json->{sessions}}) {
+    my $json = sortJson($json);
+    foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
 
         delete $session->{header}->{index}->{_id};
-        if (exists $body->{ro}) {
-            $body->{ro} = "SET";
+        if (exists $body->{rootId}) {
+            $body->{rootId} = "SET";
         }
         if (exists $body->{timestamp}) {
             $body->{timestamp} = "SET";
         }
-        foreach my $field ("a1", "a2", "dnsip", "socksip", "eip") {
-            $body->{$field} = fixIp($body->{$field}) if (exists $body->{$field});
-        }
-        if ($body->{radius}) {
-            foreach my $field ("eip", "fip") {
-                $body->{radius}->{$field} = fixIp($body->{radius}->{$field}) if (exists $body->{radius}->{$field});
-            }
-        }
 
-        foreach my $field ("ta", "hh1", "hh2") {
-            $body->{$field} = fixTags($json, $body->{$field}) if (exists $body->{$field});
+        if ($body->{srcIp} =~ /:/) {
+            $body->{srcIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{srcIp})) =~ m/(....)/g );
+        }
+        if ($body->{dstIp} =~ /:/) {
+            $body->{dstIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dstIp})) =~ m/(....)/g );
+        }
+        if (exists $body->{dns} && exists $body->{dns}->{ip}) {
+            for (my $i = 0; $i < @{$body->{dns}->{ip}}; $i++) {
+                if ($body->{dns}->{ip}[$i] =~ /:/) {
+                    $body->{dns}->{ip}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{ip}[$i])) =~ m/(....)/g );
+                }
+            }
         }
     }
 
-    @{$json->{sessions}} = sort {$a->{body}->{fpd} <=> $b->{body}->{fpd}} @{$json->{sessions}};
+    @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};
 
     delete $json->{tags};
 }
@@ -241,7 +241,11 @@ my ($cmd) = @_;
         system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
 
         # Start Wise
-        system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+        if ($main::debug) {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+        } else {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
+        }
 
         sleep 1;
         $main::userAgent->get("$ELASTICSEARCH/_flush");

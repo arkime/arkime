@@ -32,7 +32,7 @@
 /* operator associations and precedence */
 
 %left '!'
-%left '<' '<=' '>' '>=' '==' '!=' 
+%left '<' '<=' '>' '>=' '==' '!='
 %left '||'
 %left '&&'
 %left UMINUS
@@ -60,7 +60,7 @@ VALUE : STR
       | LIST
       ;
 
- 
+
 e
     : e '&&' e
         {$$ = {bool: {must: [$1, $3]}};}
@@ -89,17 +89,12 @@ var    moment         = require('moment');
 function parseIpPort(yy, field, ipPortStr) {
   var dbField = yy.fieldsMap[field].dbField;
 
-  function singleIp(dbField, ip1, ip2, port) {
+  function singleIp(dbField, ip, port) {
     var obj;
 
-    if (ip1 !== undefined) {
-      if (ip1 === ip2) {
-        obj = {term: {}};
-        obj.term[dbField] = ip1>>>0;
-      } else {
-        obj = {range: {}};
-        obj.range[dbField] = {from: ip1>>>0, to: ip2>>>0};
-      }
+    if (ip !== undefined) {
+      obj = {term: {}};
+      obj.term[dbField] = ip;
     }
 
     if (port !== -1) {
@@ -110,12 +105,43 @@ function parseIpPort(yy, field, ipPortStr) {
         throw field + " doesn't support port";
       }
 
-      if (ip1 === undefined) {
+      if (ip === undefined) {
         obj = obj.bool.must[1];
       }
     }
 
     return obj;
+  }
+
+  function allIp(ip, port) {
+    var ors = [];
+    var completed = {};
+    for (field in yy.fieldsMap) {
+      var info = yy.fieldsMap[field];
+
+      // If ip itself or not an ip field stop
+      if (field === "ip" || info.type !== "ip")
+        continue;
+
+      // Already completed
+      if (completed[info.dbField])
+        continue;
+      completed[info.dbField] = 1;
+
+      // If port specified then skip ips without ports
+      if (port !== -1 && !info.portField)
+        continue;
+
+      if (info.requiredRight && yy[info.requiredRight] !== true) {
+        continue;
+      }
+      obj = singleIp(info.dbField, ip, port);
+      if (obj) {
+        ors.push(obj);
+      }
+    }
+
+    return {bool: {should: ors}};
   }
 
 
@@ -136,72 +162,72 @@ function parseIpPort(yy, field, ipPortStr) {
       return obj;
   }
 
-  // Support '10.10.10/16:4321'
+  // Support ':80' and '.80'
+  if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
+      (ipPortStr[0] === '.')) {
+    if (dbField !== "ipall") {
+      return singleIp(dbField, undefined, +ipPortStr.slice(1));
+    } else {
+      return allIp(undefined, +ipPortStr.slice(1));
+    }
+  }
 
-  var ip1, ip2;
-  var colons = ipPortStr.split(':');
-  var slash = colons[0].split('/');
-  var dots = slash[0].split('.');
+  // Support ip4: '10.10.10.10' '10.10.10/16:80' '10.10.10:80' '10.10.10/16'
+  // Support ip6: '1::2' '1::2/16.80' '1::2.80' '1::2/16'
+  var ip;
   var port = -1;
-  if (colons[1]) {
-    port = parseInt(colons[1], 10);
-  }
+  var colons = ipPortStr.split(':');
 
-  if (dots.length === 4) {
-    ip1 = ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8) | parseInt(dots[3], 10);
-  } else if (dots.length === 3) {
-    ip1 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8);
-    ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (parseInt(dots[2], 10) << 8) | 255;
-  } else if (dots.length === 2) {
-    ip1 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16);
-    ip2 = (parseInt(dots[0], 10) << 24) | (parseInt(dots[1], 10) << 16) | (255 << 8) | 255;
-  } else if (dots.length === 1 && dots[0].length > 0) {
-    ip1 = (parseInt(dots[0], 10) << 24);
-    ip2 = (parseInt(dots[0], 10) << 24) | (255 << 16) | (255 << 8) | 255;
-  }
-
-  // Can't shift by 32 bits in javascript, who knew!
-  if (slash[1] && slash[1] !== '32') {
-    if (ip1 === undefined) {
-      ip1 = ip2 = 0xffffffff;
+  // More then 1 colon is ip 6
+  if (colons.length > 2) {
+    // Everything after . is port
+    let dots = ipPortStr.split('.');
+    if (dots.length > 1 && dots[1] !== '') {
+      port = +dots[1];
     }
-    var s = parseInt(slash[1], 10);
-    ip1 = ip1 & (0xffffffff << (32 - s));
-    ip2 = ip2 | (0xffffffff >>> s);
+    // Everything before . is ip and slash
+    ip = dots[0];
+  } else {
+    // everything after : is port
+    if (colons.length > 1 && colons[1] !== '') {
+      port = +colons[1];
+    }
+
+    // Have to do extra because we allow shorthand for /8, /16, /24
+    let slash = colons[0].split('/');
+    let dots = slash[0].split('.');
+
+    switch(dots.length) {
+    case 4:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
+      break;
+    case 3:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
+      if (slash[1] === undefined) {slash[1] = '24';}
+      break;
+    case 2:
+      ip = `${dots[0]}.${dots[1]}.0.0`;
+      if (slash[1] === undefined) {slash[1] = '16';}
+      break;
+    case 1:
+      if (dots[0].length > 0) {
+        ip = `${dots[0]}.0.0.0`;
+        if (slash[1] === undefined) {slash[1] = '8';}
+      }
+      break;
+    }
+
+    // Add the slash back to the ip
+    if (slash[1] && slash[1] !== '32') {
+      ip = `${ip}/${slash[1]}`;
+    }
   }
-  
+
   if (dbField !== "ipall") {
-    return singleIp(dbField, ip1, ip2, port);
+    return singleIp(dbField, ip, port);
+  } else {
+    return allIp(ip, port);
   }
-
-  var ors = [];
-  var completed = {};
-  for (field in yy.fieldsMap) {
-    var info = yy.fieldsMap[field];
-
-    // If ip itself or not an ip field stop
-    if (field === "ip" || info.type !== "ip")
-      continue;
-
-    // Already completed
-    if (completed[info.dbField])
-      continue;
-    completed[info.dbField] = 1;
-
-    // If port specified then skip ips without ports
-    if (port !== -1 && !info.portField)
-      continue;
-
-    if (info.requiredRight && yy[info.requiredRight] !== true) {
-      continue;
-    }
-    obj = singleIp(info.dbField, ip1, ip2, port);
-    if (obj) {
-      ors.push(obj);
-    }
-  }
-
-  return {bool: {should: ors}};
 }
 
 function stripQuotes (str) {
@@ -288,7 +314,7 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   }
 
-  switch (info.type) {
+  switch (info.type2 || info.type) {
   case "ip":
     if (value[0] === "/")
       throw value + " - Regex not supported for ip queries";
@@ -383,6 +409,25 @@ function formatQuery(yy, field, op, value)
     obj = {range: {}};
     obj.range[info.dbField] = {};
     obj.range[info.dbField][op] = parseSeconds(stripQuotes(value));
+    return obj;
+  case "date":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for date queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsDate(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = moment.unix(parseSeconds(stripQuotes(value))).format();
     return obj;
   default:
     throw "Unknown field type: " + info.type;
@@ -522,34 +567,6 @@ global.moloch.utf8ToHex = function (utf8) {
     return hex;
 }
 
-global.moloch.ipv6ToHex = function (ip) {
-  ip = stripQuotes(ip);
-  if (ip[0] === "[") {
-    var closing = ip.indexOf(']');
-    ip =  ip.substring(1, closing);
-  }
-
-  if (ip.indexOf("*") !== -1 && ip.indexOf("::") !== -1) {
-    throw "Can't use :: in ipv6 and * at the same time";
-  }
-  var parts = ip.split(":");
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i].indexOf("*") !== -1) {
-      continue;
-    }
-    if (parts[i] === "") {
-      for (var j = 0; j <= 8 - parts.length; j++) {
-        parts[i] += "0000";
-      }
-    } else {
-      while (parts[i].length < 4) {
-        parts[i] = "0" + parts[i];
-      }
-    }
-  }
-  return parts.join("");
-}
-
 var protocols = {
     icmp:   1,
     tcp:    6,
@@ -622,6 +639,23 @@ function termOrTermsSeconds(dbField, str) {
   return obj;
 }
 
+function termOrTermsDate(dbField, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {bool: {should: []}};
+    ListToArray(str).forEach(function(str) {
+      let r = {range: {}};
+      r.range[dbField] = {gte: d, lte: d};
+      obj.bool.should.push(r);
+    });
+  } else {
+    let d = moment.unix(parseSeconds(stripQuotes(str))).format();
+    obj = {range: {}};
+    obj.range[dbField] = {gte: d, lte: d};
+  }
+  return obj;
+}
+
 function str2format(str) {
   var m;
   if (str.match(/^(s|sec|secs|second|seconds)$/)) {
@@ -657,7 +691,7 @@ function parseSeconds(str) {
     }
 
     if (snap) {
-      d.startOf(snap); 
+      d.startOf(snap);
       if (n = m[5].match(/^(w|week|weeks)(\d+)$/)) {
         d.day(n[2]);
       }

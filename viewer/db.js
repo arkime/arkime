@@ -26,9 +26,7 @@ var ESC            = require('elasticsearch'),
     fs             = require('fs'),
     util           = require('util');
 
-var internals = {tagId2Name: {},
-                 tagName2Id: {},
-                 fileId2File: {},
+var internals = {fileId2File: {},
                  fileName2File: {},
                  molochNodeStatsCache: {},
                  healthCache: {},
@@ -76,7 +74,6 @@ exports.initialize = function (info, cb) {
       process.exit();
       throw new Error("Exiting");
     }
-    exports.isES5 = data.version.number.match(/^5/);
 
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
@@ -95,8 +92,6 @@ exports.initialize = function (info, cb) {
 
   // Replace tag implementation
   if (internals.dontMapTags) {
-    exports.tagIdToName = function (id, cb) { return cb(id); };
-    exports.tagNameToId = function (name, cb) { return cb(name); };
     exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
     internals.prefix = "MULTIPREFIX_";
   }
@@ -316,7 +311,7 @@ exports.taskCancel = function(taskId, cb) {
 };
 
 exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, (err, data, status) => {cb(err, data);});
+  return internals.elasticSearchClient.nodes.stats(options, cb);
 };
 
 exports.update = function (index, type, id, document, options, cb) {
@@ -346,8 +341,6 @@ exports.refresh = function (index, cb) {
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
 exports.flushCache = function () {
-  internals.tagId2Name = {};
-  internals.tagName2Id = {};
   internals.fileId2File = {};
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
@@ -383,13 +376,7 @@ exports.getUserCache = function (name, cb) {
 };
 
 exports.numberOfUsers = function(cb) {
-  internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, (err, result) => {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
-
-    return cb(null, result.count);
-  });
+  return internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, cb);
 };
 
 exports.deleteUser = function (name, cb) {
@@ -419,14 +406,9 @@ exports.searchHistory = function(query, cb) {
   return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query}, cb);
 };
 exports.numberOfLogs = function(cb) {
-  internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, function(err, result) {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
-
-    return cb(null, result.count);
-  });
+  return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
 };
+
 exports.deleteHistoryItem = function (id, index, cb) {
   return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: true}, cb);
 };
@@ -469,22 +451,32 @@ exports.healthCache = function (cb) {
   }
 
   return exports.health((err, health) => {
-      if (err) {
-        // Even if an error, if we have a cache use it
-        if (internals.healthCache._timeStamp !== undefined) {
-          return cb(null, internals.healthCache);
-        }
-        return cb(err, null);
+    if (err) {
+      // Even if an error, if we have a cache use it
+      if (internals.healthCache._timeStamp !== undefined) {
+        return cb(null, internals.healthCache);
       }
+      return cb(err, null);
+    }
 
-      exports.get("dstats", "version", "version", (err, doc) => {
-        if (doc !== undefined && doc._source !== undefined) {
-          health.molochDbVersion = doc._source.version;
-        }
-        internals.healthCache = health;
-        internals.healthCache._timeStamp = Date.now();
-        cb(null, health);
-      });
+    internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
+      health.molochDbVersion = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
+      internals.healthCache = health;
+      internals.healthCache._timeStamp = Date.now();
+      cb(null, health);
+    });
+  });
+};
+
+exports.healthCachePromise = function () {
+  return new Promise(function(resolve, reject) {
+    exports.healthCache((err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
   });
 };
 
@@ -522,51 +514,6 @@ exports.hostnameToNodeids = function (hostname, cb) {
       }
     }
     cb(nodes);
-  });
-};
-
-function tagWorker(task, callback) {
-  if (task.type === "tagIdToName") {
-    if (internals.tagId2Name[task.id]) {
-      return setImmediate(callback, null, internals.tagId2Name[task.id]);
-    }
-    var query = {query: {term: {n:task.id}}};
-    exports.search('tags', 'tag', query, (err, tdata) => {
-      if (!err && tdata.hits.hits[0]) {
-        internals.tagId2Name[task.id] = tdata.hits.hits[0]._id;
-        internals.tagName2Id[tdata.hits.hits[0]._id] = task.id;
-        return callback(null, internals.tagId2Name[task.id]);
-      }
-      console.log("LOOKUPERROR", query, err, tdata.hits);
-      return callback(null, "<lookuperror>");
-    });
-  } else {
-    if (internals.tagName2Id[task.name]) {
-      return setImmediate(callback, null, internals.tagName2Id[task.name]);
-    }
-
-    exports.get('tags', 'tag', task.name, (err, tdata) => {
-      if (!err && tdata.found) {
-        internals.tagName2Id[task.name] = tdata._source.n;
-        internals.tagId2Name[tdata._source.n] = task.name;
-        return callback(null, internals.tagName2Id[task.name]);
-      }
-      return callback(null, -1);
-    });
-  }
-}
-
-internals.tagQueue = async.queue(tagWorker, 5);
-
-exports.tagIdToName = function (id, cb) {
-  internals.tagQueue.push({id: id, type: "tagIdToName"}, (err, data) => {
-    return cb(data);
-  });
-};
-
-exports.tagNameToId = function (name, cb) {
-  internals.tagQueue.push({name: name, type: "tagNameToId"}, (err, data) => {
-    return cb(data);
   });
 };
 
@@ -628,38 +575,20 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.createTag = function (name, cb) {
-  // Only allow 1 create at a time, the lazy way
-  if (exports.createTag.inProgress === 1) {
-    setTimeout(exports.createTag, 50, name, cb);
-    return;
-  }
-
-  // Was already created while waiting
-  if (internals.tagName2Id[name]) {
-    return cb(internals.tagName2Id[name]);
-  }
-
-  // Do a create
-  exports.createTag.inProgress = 1;
-  exports.getSequenceNumber("tags", (err, num) => {
-    exports.index("tags", "tag", name, {n: num}, (err, tinfo) => {
-      exports.createTag.inProgress = 0;
-      internals.tagId2Name[num] = name;
-      internals.tagName2Id[name] = num;
-      cb(num);
-    });
-  });
-};
-
 exports.numberOfDocuments = function (index, cb) {
-  internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
-    if (err || result.error) {
-      return cb(null, 0);
-    }
+  if (cb === undefined) {
+    // Promise version
+    return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
+  } else {
+    // cb version - remove in future
+    internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
+      if (err || result.error) {
+        return cb(null, 0);
+      }
 
-    return cb(null, result.count);
-  });
+      return cb(null, result.count);
+    });
+  }
 };
 
 exports.updateFileSize = function (item, filesize) {
@@ -669,15 +598,15 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 40600) {
-    console.log("ERROR - Need at least node 4.6.0, currently using", process.version);
+  if (version < 60000) {
+    console.log("ERROR - Need at least node 6.0.0, currently using", process.version);
     process.exit(1);
     throw new Error("Exiting");
   }
 
   var index;
 
-  ["stats", "dstats", "tags", "sequence", "files"].forEach((index) => {
+  ["stats", "dstats", "sequence", "files"].forEach((index) => {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
@@ -687,23 +616,21 @@ exports.checkVersion = function(minVersion, checkUsers) {
     });
   });
 
-  exports.get("dstats", "version", "version", (err, doc) => {
-    var version;
+  internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
-      throw new Error("Exiting");
     }
-    if (!doc.found) {
-      version = 0;
-    } else {
-      version = doc._source.version;
-    }
+    try {
+      var version = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
 
-    if (version < minVersion) {
-        console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
-        process.exit(1);
-        throw new Error("Exiting");
+      if (version < minVersion) {
+          console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
+          process.exit(1);
+      }
+    } catch (e) {
+      console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?");
+      process.exit(0);
     }
   });
 
@@ -739,16 +666,18 @@ exports.deleteFile = function(node, id, path, cb) {
 };
 
 exports.id2Index = function (id) {
-  return 'sessions-' + id.substr(0,id.indexOf('-'));
+  return 'sessions2-' + id.substr(0,id.indexOf('-'));
 };
 
 exports.loadFields = function(cb) {
   return exports.search("fields", "field", {size:1000}, cb);
 };
 
-exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
+exports.getIndices = function(startTime, stopTime, rotateIndex, bounding, cb) {
+  if (bounding !== "last") {return cb("sessions2-*");}
+
   var indices = [];
-  exports.getAliasesCache("sessions-*", (err, aliases) => {
+  exports.getAliasesCache("sessions2-*", (err, aliases) => {
 
     if (err || aliases.error) {
       return cb("");
@@ -768,32 +697,32 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       var d = new Date(startTime*1000);
       switch (rotateIndex) {
       case "monthly":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) + 'm' +
           twoDigitString(d.getUTCMonth()+1);
         break;
       case "weekly":
         var jan = new Date(d.getUTCFullYear(), 0, 0);
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) + 'w' +
           twoDigitString(Math.floor((d - jan) / 604800000));
         break;
       case "hourly6":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
           twoDigitString((d.getUTCHours()/6)*6);
         break;
       case "hourly":
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
           twoDigitString(d.getUTCHours());
         break;
       default:
-        iname = internals.prefix + "sessions-" +
+        iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate());
@@ -808,9 +737,17 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
     }
 
     if (indices.length === 0) {
-      return cb("sessions-*");
+      return cb("sessions2-*");
     }
 
     return cb(indices.join());
+  });
+};
+
+exports.getMinValue = function(index, field, cb) {
+  var params = {index: fixIndex(index), body: {size: 0, aggs: {min: {min: {field: field}}}}};
+  return internals.elasticSearchClient.search(params, (err, data) => {
+    if (err) {return cb(err, 0)};
+    return cb(null, data.aggregations.min.value);
   });
 };

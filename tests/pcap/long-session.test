@@ -1,217 +1,215 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140529"
-            }
-         },
          "body" : {
-            "ta" : [
-               "dstip",
-               "srcip"
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 66,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
-            "test" : {
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:54869,33554442:80"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Cisco Systems, Inc"
             ],
-            "pa2" : 1,
-            "pa" : 4,
-            "rir2" : "TEST",
-            "sl" : 908493,
-            "psl" : [
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1401385380102,
+            "ipProtocol" : 6,
+            "lastPacket" : 1401386288595,
+            "length" : 908493,
+            "node" : "test",
+            "packetLen" : [
                90,
                82,
                70,
                75
             ],
-            "firstPacket" : 1401385380102,
-            "g2" : "CAN",
-            "timestamp" : "SET",
-            "mac2-term-cnt" : 2,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "fpd" : 1401385380102,
-            "db" : 5,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "db1" : 5,
-            "fb1" : "4745540d0a",
-            "no" : "test",
-            "ipDst" : "10.0.0.2",
-            "by1" : 187,
-            "lpd" : 1401386288595,
-            "by" : 253,
-            "as1" : "AS0000 This is neat",
-            "a2" : "10.0.0.2",
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "g1" : "RUS",
-            "fp" : 1401385380,
-            "ro" : "SET",
-            "tacnt" : 2,
-            "a1" : "10.0.0.1",
-            "pa1" : 3,
-            "db2" : 0,
-            "portSrc" : 54869,
-            "tcpflags" : {
-               "psh" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "ack" : 1,
-               "syn" : 1,
-               "fin" : 0,
-               "syn-ack" : 1
-            },
-            "p1" : 54869,
-            "p2" : 80,
-            "pr" : 6,
-            "as2" : "AS0001 Cool Beans!",
-            "by2" : 66,
-            "lastPacket" : 1401386288595,
-            "prot-term-cnt" : 2,
-            "lp" : 1401386288,
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                196,
                266
             ],
-            "portDst" : 80,
-            "ipSrc" : "10.0.0.1",
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "ss" : 1
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140529"
-            }
-         },
-         "body" : {
-            "ps" : [
-               341
-            ],
-            "prot-term-cnt" : 2,
-            "lp" : 1401386288,
-            "ss" : 2,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "portDst" : 80,
-            "ipSrc" : "10.0.0.1",
-            "tcpflags" : {
-               "urg" : 0,
-               "ack" : 0,
-               "psh" : 0,
-               "rst" : 1,
-               "syn-ack" : 0,
-               "fin" : 0,
-               "syn" : 0
-            },
-            "pa1" : 0,
-            "portSrc" : 54869,
-            "db2" : 0,
-            "lastPacket" : 1401386288597,
-            "p1" : 54869,
-            "p2" : 80,
-            "as2" : "AS0001 Cool Beans!",
-            "pr" : 6,
-            "by2" : 60,
-            "prot-term" : [
+            "protocol" : [
                "http",
                "tcp"
             ],
-            "a2" : "10.0.0.2",
-            "fp" : 1401385380,
-            "a1" : "10.0.0.1",
-            "tacnt" : 2,
-            "ro" : "SET",
-            "g1" : "RUS",
-            "fb1" : "4745540d0a",
-            "db1" : 0,
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "protocolCnt" : 2,
+            "rootId" : "SET",
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 187,
+            "srcDataBytes" : 5,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "as1" : "AS0000 This is neat",
-            "lpd" : 1401386288597,
-            "by" : 60,
-            "no" : "test",
-            "ipDst" : "10.0.0.2",
-            "by1" : 0,
-            "mac2-term-cnt" : 2,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "db" : 0,
-            "fpd" : 1401385380102,
-            "g2" : "CAN",
-            "timestamp" : "SET",
-            "firstPacket" : 1401385380102,
-            "rir2" : "TEST",
-            "sl" : 908494,
-            "psl" : [
-               76
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
             ],
-            "ta" : [
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "4745540d0a",
+            "srcPort" : 54869,
+            "tags" : [
                "dstip",
                "srcip"
             ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "test" : {
-               "ip-rir" : [
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
                   ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
                ],
                "number" : [
                   33554442
                ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
+               "string.snow" : [
                   "16777226:54869,33554442:80"
                ]
             },
-            "pa" : 1,
-            "pa2" : 1
+            "timestamp" : "SET",
+            "totBytes" : 253,
+            "totDataBytes" : 5,
+            "totPackets" : 4
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140529",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 60,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1401385380102,
+            "ipProtocol" : 6,
+            "lastPacket" : 1401386288597,
+            "length" : 908494,
+            "node" : "test",
+            "packetLen" : [
+               76
+            ],
+            "packetPos" : [
+               341
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "rootId" : "SET",
+            "segmentCnt" : 2,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 0,
+            "srcDataBytes" : 0,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 0,
+            "srcPayload8" : "4745540d0a",
+            "srcPort" : 54869,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:54869,33554442:80"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 60,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140529",
+               "_type" : "session"
+            }
          }
       }
    ]

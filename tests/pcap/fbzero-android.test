@@ -1,117 +1,31 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a2" : "31.13.74.1",
-            "g2" : "IRL",
-            "timestamp" : "SET",
-            "lastPacket" : 1479719902505,
-            "prot-term-cnt" : 3,
-            "ipDst" : "31.13.74.1",
-            "quic" : {
-               "host-termcnt" : 1,
-               "host-term" : [
-                  "graph.facebook.com"
-               ]
-            },
-            "by1" : 6462,
-            "portSrc" : 39584,
-            "portDst" : 443,
-            "sl" : 22965,
-            "as2" : "AS32934 Facebook, Inc.",
-            "mac1-term-cnt" : 1,
-            "mac2-term" : [
+            "dstASN" : "AS32934 Facebook, Inc.",
+            "dstBytes" : 5678,
+            "dstDataBytes" : 4416,
+            "dstGEO" : "IE",
+            "dstIp" : "31.13.74.1",
+            "dstMac" : [
                "4c:02:89:0a:d2:76"
             ],
-            "fp" : 1479719879,
-            "a1" : "192.168.1.111",
-            "ipSrc" : "192.168.1.111",
-            "db2" : 4416,
-            "fs" : [],
-            "by2" : 5678,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Lex Computech Co., Ltd"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 19,
+            "dstPayload8" : "3151545630300000",
+            "dstPort" : 443,
+            "dstRIR" : "RIPE",
+            "fileId" : [],
             "firstPacket" : 1479719879541,
-            "pr" : 6,
-            "fpd" : 1479719879541,
-            "p2" : 443,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               575,
-               1930,
-               2012,
-               2232,
-               2391,
-               2473,
-               2555,
-               3791,
-               3933,
-               5363,
-               5643,
-               5725,
-               6901,
-               6983,
-               7103,
-               7185,
-               7503,
-               7585,
-               7709,
-               7833,
-               7915,
-               8559,
-               8679,
-               8761,
-               9144,
-               9226,
-               9684,
-               9804,
-               9886,
-               10234,
-               10316,
-               10776,
-               10896,
-               10978,
-               11270,
-               11352,
-               12246,
-               12366,
-               12448,
-               12786
-            ],
-            "db1" : 4804,
-            "pa" : 44,
-            "p1" : 39584,
-            "by" : 12140,
-            "ss" : 1,
-            "db" : 9220,
-            "rir2" : "RIPE",
-            "pa1" : 25,
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "urg" : 0,
-               "fin" : 0,
-               "psh" : 24,
-               "ack" : 18,
-               "syn" : 1,
-               "rst" : 0
-            },
-            "no" : "test",
-            "fb1" : "3151545630c60000",
-            "pa2" : 19,
-            "lpd" : 1479719902505,
-            "fb2" : "3151545630300000",
-            "mac2-term-cnt" : 1,
-            "mac1-term" : [
-               "88:28:b3:b3:7c:41"
-            ],
-            "prot-term" : [
-               "fbzero",
-               "quic",
-               "tcp"
-            ],
-            "rir1" : "ARIN",
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1479719902505,
+            "length" : 22965,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -157,12 +71,100 @@
                338,
                82
             ],
-            "lp" : 1479719902
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               575,
+               1930,
+               2012,
+               2232,
+               2391,
+               2473,
+               2555,
+               3791,
+               3933,
+               5363,
+               5643,
+               5725,
+               6901,
+               6983,
+               7103,
+               7185,
+               7503,
+               7585,
+               7709,
+               7833,
+               7915,
+               8559,
+               8679,
+               8761,
+               9144,
+               9226,
+               9684,
+               9804,
+               9886,
+               10234,
+               10316,
+               10776,
+               10896,
+               10978,
+               11270,
+               11352,
+               12246,
+               12366,
+               12448,
+               12786
+            ],
+            "protocol" : [
+               "fbzero",
+               "quic",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "quic" : {
+               "host" : [
+                  "graph.facebook.com"
+               ],
+               "hostCnt" : 1
+            },
+            "segmentCnt" : 1,
+            "srcBytes" : 6462,
+            "srcDataBytes" : 4804,
+            "srcIp" : "192.168.1.111",
+            "srcMac" : [
+               "88:28:b3:b3:7c:41"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Huawei Technologies Co.,Ltd"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 25,
+            "srcPayload8" : "3151545630c60000",
+            "srcPort" : 39584,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 18,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 24,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 12140,
+            "totDataBytes" : 9220,
+            "totPackets" : 44
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-161121"
+               "_index" : "tests_sessions2-161121",
+               "_type" : "session"
             }
          }
       }

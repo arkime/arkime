@@ -1,77 +1,32 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a1" : "10.0.0.2",
-            "a2" : "10.0.0.1",
-            "as1" : "AS0001 Cool Beans!",
-            "as2" : "AS0000 This is neat",
-            "by" : 1492,
-            "by1" : 638,
-            "by2" : 854,
-            "db" : 327,
-            "db1" : 47,
-            "db2" : 280,
-            "fb1" : "050100050100030e",
-            "fb2" : "0500050000010a00",
-            "firstPacket" : 1385474626674,
-            "fp" : 1385474626,
-            "fpd" : 1385474626674,
-            "fs" : [],
-            "g1" : "CAN",
-            "g2" : "RUS",
-            "ipDst" : "10.0.0.1",
-            "ipSrc" : "10.0.0.2",
-            "lastPacket" : 1385474639455,
-            "lp" : 1385474639,
-            "lpd" : 1385474639455,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "mac1-term-cnt" : 1,
-            "mac2-term" : [
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 854,
+            "dstDataBytes" : 280,
+            "dstGEO" : "RU",
+            "dstIp" : "10.0.0.1",
+            "dstMac" : [
                "00:00:5e:00:01:01",
                "80:71:1f:82:cf:c6"
             ],
-            "mac2-term-cnt" : 2,
-            "no" : "test",
-            "p1" : 53709,
-            "p2" : 1080,
-            "pa" : 20,
-            "pa1" : 10,
-            "pa2" : 10,
-            "portDst" : 1080,
-            "portSrc" : 53709,
-            "pr" : 6,
-            "prot-term" : [
-               "socks",
-               "smtp",
-               "tcp"
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
             ],
-            "prot-term-cnt" : 3,
-            "ps" : [
-               24,
-               106,
-               188,
-               264,
-               340,
-               416,
-               492,
-               568,
-               644,
-               735,
-               811,
-               891,
-               967,
-               1113,
-               1194,
-               1270,
-               1489,
-               1571,
-               1647,
-               1760
-            ],
-            "psl" : [
+            "dstOuiCnt" : 2,
+            "dstPackets" : 10,
+            "dstPayload8" : "0500050000010a00",
+            "dstPort" : 1080,
+            "fileId" : [],
+            "firstPacket" : 1385474626674,
+            "ipProtocol" : 6,
+            "lastPacket" : 1385474639455,
+            "length" : 12781,
+            "node" : "test",
+            "packetLen" : [
                82,
                82,
                76,
@@ -93,36 +48,81 @@
                113,
                76
             ],
-            "rir1" : "TEST",
-            "sl" : 12781,
-            "socksho" : "010.000.00.003",
-            "sockspo" : 25,
-            "ss" : 1,
-            "ta" : [
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               492,
+               568,
+               644,
+               735,
+               811,
+               891,
+               967,
+               1113,
+               1194,
+               1270,
+               1489,
+               1571,
+               1647,
+               1760
+            ],
+            "protocol" : [
+               "socks",
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "socks" : {
+               "host" : "010.000.00.003",
+               "port" : 25
+            },
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 638,
+            "srcDataBytes" : 47,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPayload8" : "050100050100030e",
+            "srcPort" : 53709,
+            "srcRIR" : "TEST",
+            "tags" : [
                "dstip",
                "smtp:authlogin",
                "srcip"
             ],
-            "tacnt" : 3,
-            "tags-term" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ],
+            "tagsCnt" : 3,
             "tcpflags" : {
                "ack" : 6,
+               "dstZero" : 0,
                "fin" : 0,
                "psh" : 10,
                "rst" : 1,
+               "srcZero" : 0,
                "syn" : 2,
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET"
+            "timestamp" : "SET",
+            "totBytes" : 1492,
+            "totDataBytes" : 327,
+            "totPackets" : 20
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131126",
+               "_index" : "tests_sessions2-131126",
                "_type" : "session"
             }
          }

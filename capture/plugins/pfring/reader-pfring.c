@@ -62,7 +62,7 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
         moloch_packet_batch_flush(batch);
 }
 /******************************************************************************/
-static void *reader_pfring_thread(void *ringv)
+LOCAL void *reader_pfring_thread(void *ringv)
 {
     pfring                *ring = ringv;
 

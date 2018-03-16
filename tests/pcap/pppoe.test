@@ -1,37 +1,79 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "ss" : 1,
-            "p2" : 443,
-            "by2" : 3596,
-            "mac2-term-cnt" : 1,
-            "prot-term" : [
-               "pppoe",
-               "tls",
-               "tcp"
+            "cert" : [
+               {
+                  "hash" : "cc:04:2e:48:2f:29:6a:3a:dc:a4:8b:fb:79:a6:cd:5f:67:8a:c1:e2",
+                  "issuerCN" : [
+                     "aol member ca"
+                  ],
+                  "issuerON" : "America Online Inc.",
+                  "notAfter" : 1231995540000,
+                  "notBefore" : 1168837200000,
+                  "serial" : "0119",
+                  "subjectCN" : [
+                     "kdc.uas.aol.com"
+                  ],
+                  "subjectON" : "AOL LLC",
+                  "validDays" : 730
+               },
+               {
+                  "hash" : "39:21:c1:15:c1:5d:0e:ca:5c:cb:5b:c4:f0:7d:21:d8:05:0b:56:6a",
+                  "issuerCN" : [
+                     "america online root certification authority 1"
+                  ],
+                  "issuerON" : "America Online Inc.",
+                  "notAfter" : 2142276180000,
+                  "notBefore" : 1022565600000,
+                  "serial" : "01",
+                  "subjectCN" : [
+                     "america online root certification authority 1"
+                  ],
+                  "subjectON" : "America Online Inc.",
+                  "validDays" : 12959
+               },
+               {
+                  "hash" : "a1:44:6b:ce:0c:87:4d:f0:f2:c3:f6:1d:a5:c9:a2:bc:f9:da:b2:04",
+                  "issuerCN" : [
+                     "america online root certification authority 1"
+                  ],
+                  "issuerON" : "America Online Inc.",
+                  "notAfter" : 1875288399000,
+                  "notBefore" : 1086369999000,
+                  "serial" : "07",
+                  "subjectCN" : [
+                     "aol member ca"
+                  ],
+                  "subjectON" : "America Online Inc.",
+                  "validDays" : 9131
+               }
             ],
-            "db" : 3564,
-            "fs" : [],
-            "ps" : [
-               24,
-               110,
-               192,
-               270,
-               426,
-               1864,
-               3302,
-               3380,
-               3953,
-               4235
+            "certCnt" : 3,
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstBytes" : 3596,
+            "dstDataBytes" : 3282,
+            "dstGEO" : "US",
+            "dstIp" : "64.12.189.217",
+            "dstMac" : [
+               "00:90:1a:a0:3d:a4"
             ],
-            "by" : 4196,
-            "rir1" : "ARIN",
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Unisphere Solutions"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "160300004a020000",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
             "firstPacket" : 1193676055856,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "lpd" : 1193676056235,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1193676056235,
+            "length" : 380,
+            "node" : "test",
+            "packetLen" : [
                86,
                82,
                78,
@@ -43,112 +85,74 @@
                282,
                145
             ],
-            "pa" : 10,
-            "mac2-term" : [
-               "00:90:1a:a0:3d:a4"
+            "packetPos" : [
+               24,
+               110,
+               192,
+               270,
+               426,
+               1864,
+               3302,
+               3380,
+               3953,
+               4235
             ],
-            "portSrc" : 1063,
-            "prot-term-cnt" : 3,
-            "pr" : 6,
-            "g2" : "USA",
-            "tlsver-termcnt" : 1,
-            "g1" : "GBR",
-            "tlsdstid-term" : [
-               "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
+            "protocol" : [
+               "pppoe",
+               "tls",
+               "tcp"
             ],
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_MD5"
-            ],
-            "by1" : 600,
-            "as2" : "AS1668 AOL Transit Data Network",
-            "ipSrc" : "172.202.246.57",
-            "db2" : 3282,
-            "fpd" : 1193676055856,
-            "pa1" : 5,
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1193676056235,
-            "a2" : "64.12.189.217",
-            "as1" : "AS1668 AOL Transit Data Network",
-            "mac1-term" : [
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcASN" : "AS1668 AOL Transit Data Network",
+            "srcBytes" : 600,
+            "srcDataBytes" : 282,
+            "srcGEO" : "GB",
+            "srcIp" : "172.202.246.57",
+            "srcMac" : [
                "00:11:f5:13:d7:a3"
             ],
-            "fp" : 1193676055,
-            "lp" : 1193676056,
-            "fb2" : "160300004a020000",
-            "db1" : 282,
-            "portDst" : 443,
-            "a1" : "172.202.246.57",
-            "fb1" : "804c010300003300",
-            "sl" : 380,
-            "tls" : [
-               {
-                  "hash" : "cc:04:2e:48:2f:29:6a:3a:dc:a4:8b:fb:79:a6:cd:5f:67:8a:c1:e2",
-                  "notBefore" : 1168837200,
-                  "sn" : "0119",
-                  "iCn" : [
-                     "aol member ca"
-                  ],
-                  "notAfter" : 1231995540,
-                  "diffDays" : 730,
-                  "iOn" : "America Online Inc.",
-                  "sOn" : "AOL LLC",
-                  "sCn" : [
-                     "kdc.uas.aol.com"
-                  ]
-               },
-               {
-                  "iCn" : [
-                     "america online root certification authority 1"
-                  ],
-                  "notBefore" : 1022565600,
-                  "hash" : "39:21:c1:15:c1:5d:0e:ca:5c:cb:5b:c4:f0:7d:21:d8:05:0b:56:6a",
-                  "sn" : "01",
-                  "sCn" : [
-                     "america online root certification authority 1"
-                  ],
-                  "sOn" : "America Online Inc.",
-                  "diffDays" : 12959,
-                  "iOn" : "America Online Inc.",
-                  "notAfter" : 2142276180
-               },
-               {
-                  "iCn" : [
-                     "america online root certification authority 1"
-                  ],
-                  "sn" : "07",
-                  "hash" : "a1:44:6b:ce:0c:87:4d:f0:f2:c3:f6:1d:a5:c9:a2:bc:f9:da:b2:04",
-                  "notBefore" : 1086369999,
-                  "sOn" : "America Online Inc.",
-                  "sCn" : [
-                     "aol member ca"
-                  ],
-                  "iOn" : "America Online Inc.",
-                  "diffDays" : 9131,
-                  "notAfter" : 1875288399
-               }
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Askey Computer Corp"
             ],
-            "tlsver-term" : [
-               "SSLv3"
-            ],
-            "tlscnt" : 3,
-            "pa2" : 5,
-            "tlscipher-termcnt" : 1,
-            "p1" : 1063,
-            "timestamp" : "SET",
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "804c010300003300",
+            "srcPort" : 1063,
+            "srcRIR" : "ARIN",
             "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 0,
                "psh" : 4,
                "rst" : 0,
-               "ack" : 4,
+               "srcZero" : 0,
                "syn" : 1,
-               "fin" : 0,
                "syn-ack" : 1,
                "urg" : 0
             },
-            "ipDst" : "64.12.189.217"
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_MD5"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
+               ],
+               "version" : [
+                  "SSLv3"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 4196,
+            "totDataBytes" : 3564,
+            "totPackets" : 10
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-071029",
+               "_index" : "tests_sessions2-071029",
                "_type" : "session"
             }
          }

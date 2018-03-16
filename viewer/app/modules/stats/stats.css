@@ -45,18 +45,17 @@ moloch-stats table.table tr.border-top-bold > td {
   border-top: 2px solid var(--color-gray);
 }
 moloch-stats table.table-striped > tbody > tr.no-stripe {
-    background-color: var(--color-background);
+  background-color: var(--color-background);
 }
 
 moloch-stats table.table.table-condensed tr > td {
   height: 27px !important;
 }
 
-
-moloch-stats table .shards-col-header:hover .btn-group {
+moloch-stats table .hover-menu:hover .btn-group {
   visibility: visible;
 }
-moloch-stats table .shards-col-header .btn-group {
+moloch-stats table .hover-menu .btn-group {
   visibility : hidden;
 }
 

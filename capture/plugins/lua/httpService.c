@@ -30,7 +30,7 @@ typedef struct {
 } LuaHttp_t;
 
 /******************************************************************************/
-static void *checkMHS (lua_State *L, int index)
+LOCAL void *checkMHS (lua_State *L, int index)
 {
     void **pmhs, *mhs;
     luaL_checktype(L, index, LUA_TUSERDATA);
@@ -45,7 +45,7 @@ static void *checkMHS (lua_State *L, int index)
     return mhs;
 }
 /******************************************************************************/
-static void *pushMHS (lua_State *L, void *mhs)
+LOCAL void *pushMHS (lua_State *L, void *mhs)
 {
     void **pmhs = (void **)lua_newuserdata(L, sizeof(void *));
     *pmhs = mhs;
@@ -55,7 +55,7 @@ static void *pushMHS (lua_State *L, void *mhs)
 }
 
 /******************************************************************************/
-static int MHS_new(lua_State *L)
+LOCAL int MHS_new(lua_State *L)
 {
     if (lua_gettop(L) != 3 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isinteger(L, 3)) {
         return luaL_error(L, "usage: <hosts:ports> <maxConnections> <maxRequests>");
@@ -66,7 +66,7 @@ static int MHS_new(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static void mhs_http_response_cb_process(MolochSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
+LOCAL void mhs_http_response_cb_process(MolochSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
     LuaHttp_t *lhttp = uw1;
 
@@ -93,7 +93,7 @@ void mhs_http_response_cb(int code, unsigned char *data, int len, gpointer uw)
     moloch_session_add_cmd(&moluaFakeSessions[lhttp->thread], MOLOCH_SES_CMD_FUNC, lhttp, NULL, mhs_http_response_cb_process);
 }
 /******************************************************************************/
-static int MHS_request(lua_State *L)
+LOCAL int MHS_request(lua_State *L)
 {
     if (config.debug > 2)
         molua_stackDump(L);
@@ -140,7 +140,7 @@ static int MHS_request(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int MHS_gc(lua_State *L)
+LOCAL int MHS_gc(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <server>");
@@ -152,7 +152,7 @@ static int MHS_gc(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MHS_tostring (lua_State *L)
+LOCAL int MHS_tostring (lua_State *L)
 {
     lua_pushfstring(L, "MolochHttpService: %p", lua_touserdata(L, 1));
     return 1;

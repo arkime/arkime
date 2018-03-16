@@ -1,90 +1,91 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "lpd" : 1386104997055,
-            "fpd" : 1386104996973,
-            "db2" : 208,
-            "portSrc" : 51427,
-            "no" : "test",
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa" : 2,
-            "prot-term-cnt" : 2,
-            "fs" : [],
-            "psl" : [
-               82,
-               232
-            ],
-            "by1" : 66,
-            "dnsho" : [
-               "cluster5.us.messagelabs.com",
-               "mx.com",
-               "cluster5a.us.messagelabs.com"
-            ],
-            "ps" : [
-               24,
-               106
-            ],
-            "fb1" : "4c17010000010000",
-            "a2" : "10.2.95.39",
-            "pr" : 17,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "dnshocnt" : 3,
-            "pa1" : 1,
-            "by" : 282,
-            "db" : 266,
-            "fb2" : "4c17818000010002",
-            "ss" : 1,
-            "portDst" : 53,
-            "a1" : "10.180.156.185",
-            "mac2-term-cnt" : 2,
-            "sl" : 83,
-            "mac2-term" : [
+            "dns" : {
+               "host" : [
+                  "cluster5.us.messagelabs.com",
+                  "mx.com",
+                  "cluster5a.us.messagelabs.com"
+               ],
+               "hostCnt" : 3,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "MX"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 216,
+            "dstDataBytes" : 208,
+            "dstIp" : "10.2.95.39",
+            "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "ipSrc" : "10.180.156.185",
-            "dns" : {
-               "qt-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "status-term-cnt" : 1,
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "qc-term-cnt" : 1,
-               "qt-term" : [
-                  "MX"
-               ],
-               "qc-term" : [
-                  "IN"
-               ]
-            },
-            "mac1-term-cnt" : 1,
-            "fp" : 1386104996,
-            "lp" : 1386104997,
-            "g1" : "USA",
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Jetcell, Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPayload8" : "4c17818000010002",
+            "dstPort" : 53,
+            "fileId" : [],
             "firstPacket" : 1386104996973,
+            "ipProtocol" : 17,
             "lastPacket" : 1386104997055,
-            "db1" : 58,
+            "length" : 83,
+            "node" : "test",
+            "packetLen" : [
+               82,
+               232
+            ],
+            "packetPos" : [
+               24,
+               106
+            ],
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 66,
+            "srcDataBytes" : 58,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.185",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Apple, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "4c17010000010000",
+            "srcPort" : 51427,
             "timestamp" : "SET",
-            "ipDst" : "10.2.95.39",
-            "by2" : 216,
-            "pa2" : 1,
-            "p1" : 51427,
-            "p2" : 53
+            "totBytes" : 282,
+            "totDataBytes" : 266,
+            "totPackets" : 2
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131203"
+               "_index" : "tests_sessions2-131203",
+               "_type" : "session"
             }
          }
       }

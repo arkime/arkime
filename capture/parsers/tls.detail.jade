@@ -1,56 +1,61 @@
-if (session.tls || session["tlsver-term"])
+if (session.tls)
   div.sessionDetailMeta.bold TLS
   dl.sessionDetailMeta
-    +arrayList(session, "tlsver-term", "Version", "tls.version")
-    +arrayList(session, "tlscipher-term", "Cipher", "tls.cipher")
-    +arrayList(session, "tlssrcid-term", "Src Session Id", "tls.sessionid.src")
-    +arrayList(session, "tlsdstid-term", "Dst Session Id", "tls.sessionid.dst")
-    +arrayList(session, "tlsja3-term", "JA3", "tls.ja3")
-    if (session.tls)
-      each cert in session.tls
-        dt Certificate
-        dd
-          - if (cert.sn)
-            | Serial: 
-            a.moloch-right-click(href='#', molochexpr='cert.serial') #{cert.sn}
-          if (cert.hash)
-            |  [
-            a.moloch-right-click(href='#', molochexpr='cert.hash') #{cert.hash}
-            | ]
-          - if (cert.notBefore)
-            |  Not Before: 
-            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
-          - if (cert.notAfter)
-            |  Not After: 
-            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notAfter});') #{cert.notAfter}
-          - if (cert.iCn && Array.isArray(cert.iCn))
-            |  Issuer Common: 
-            each cn,i in cert.iCn
-              if (i > 0)
-                |, 
-              a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cn}
-          - else if (cert.iCn)
-            |  Issuer Common: 
-            a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cert.iCn}
-          - if (cert.iOn)
-            |  Issuer Org: 
-            a.moloch-right-click(href='#', molochexpr='cert.issuer.on') #{cert.iOn}
-          - if (cert.sCn && Array.isArray(cert.sCn))
-            |  Subject Common: 
-            each cn,i in cert.sCn
-              if (i > 0)
-                |, 
-              a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cn}
-          - else if (cert.sCn)
-            | Subject Common: 
-            a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cert.sCn}
-          - if (cert.sOn)
-            |  Subject Org: 
-            a.moloch-right-click(href='#', molochexpr='cert.subject.on') #{cert.sOn}
-          if (cert.alt)
-            |  [
-            each alt,i in cert.alt
-              if (i > 0)
-                |, 
-              a.moloch-right-click(href='#', molochexpr='cert.alt') #{alt}
-            | ]
+    +arrayList(session.tls, "version", "Version", "tls.version")
+    +arrayList(session.tls, "cipher", "Cipher", "tls.cipher")
+    +arrayList(session.tls, "srcSessionId", "Src Session Id", "tls.sessionid.src")
+    +arrayList(session.tls, "dstSessionsId", "Dst Session Id", "tls.sessionid.dst")
+    +arrayList(session.tls, "ja3", "JA3", "tls.ja3")
+    +arrayList(session.tls, "ja3Comment", "JA3 Comment", "tls.ja3comment")
+
+if (session.tls)
+if (session.cert)
+  div.sessionDetailMeta.bold Cert
+  dl.sessionDetailMeta
+  each cert in session.cert
+    dt Certificate
+    dd
+      - if (cert.serial)
+        | Serial: 
+        a.moloch-right-click(href='#', molochexpr='cert.serial') #{cert.sn}
+      if (cert.hash)
+        |  [
+        a.moloch-right-click(href='#', molochexpr='cert.hash') #{cert.hash}
+        | ]
+      - if (cert.notBefore)
+        |  Not Before: 
+        a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
+      - if (cert.notAfter)
+        |  Not After: 
+        a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notAfter});') #{cert.notAfter}
+      - if (cert.issueCN && Array.isArray(cert.issueCN))
+        |  Issuer Common: 
+        each cn,i in cert.issueCN
+          if (i > 0)
+            |, 
+          a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cn}
+      - else if (cert.issueCN)
+        |  Issuer Common: 
+        a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cert.issueCN}
+      - if (cert.issuerON)
+        |  Issuer Org: 
+        a.moloch-right-click(href='#', molochexpr='cert.issuer.on') #{cert.issuerON}
+      - if (cert.subjectCN && Array.isArray(cert.subjectCN))
+        |  Subject Common: 
+        each cn,i in cert.subjectCN
+          if (i > 0)
+            |, 
+          a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cn}
+      - else if (cert.subjectCN)
+        | Subject Common: 
+        a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cert.subjectCN}
+      - if (cert.subjectON)
+        |  Subject Org: 
+        a.moloch-right-click(href='#', molochexpr='cert.subject.on') #{cert.subjectON}
+      if (cert.alt)
+        |  [
+        each alt,i in cert.alt
+          if (i > 0)
+            |, 
+          a.moloch-right-click(href='#', molochexpr='cert.alt') #{alt}
+        | ]

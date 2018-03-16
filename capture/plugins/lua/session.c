@@ -21,7 +21,7 @@ extern lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
-static void *checkMolochSession (lua_State *L, int index)
+LOCAL void *checkMolochSession (lua_State *L, int index)
 {
     void **pms, *ms;
     luaL_checktype(L, index, LUA_TUSERDATA);
@@ -86,7 +86,7 @@ void molua_parsers_free_cb(MolochSession_t *session, void *uw)
     luaL_unref(L, LUA_REGISTRYINDEX, (long)uw);
 }
 /******************************************************************************/
-static int MS_register_tcp_classifier(lua_State *L)
+LOCAL int MS_register_tcp_classifier(lua_State *L)
 {
     if (L != Ls[0]) // Only do once
         return 0;
@@ -105,7 +105,7 @@ static int MS_register_tcp_classifier(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_register_udp_classifier(lua_State *L)
+LOCAL int MS_register_udp_classifier(lua_State *L)
 {
     if (L != Ls[0]) // Only do once
         return 0;
@@ -123,8 +123,8 @@ static int MS_register_udp_classifier(lua_State *L)
     moloch_parsers_classifier_register_udp(name, function, offset, match, match_len, molua_classify_cb);
     return 0;
 }
-static char *callbackRefs[MOLUA_REF_SIZE][MOLUA_REF_MAX_CNT];
-static int   callbackRefsCnt[MOLUA_REF_SIZE];
+LOCAL  char *callbackRefs[MOLUA_REF_SIZE][MOLUA_REF_MAX_CNT];
+LOCAL  int   callbackRefsCnt[MOLUA_REF_SIZE];
 /******************************************************************************/
 void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), const char *at, size_t length)
 {
@@ -155,7 +155,7 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), c
     }
 }
 /******************************************************************************/
-static int MS_register_body_feed(lua_State *L)
+LOCAL int MS_register_body_feed(lua_State *L)
 {
     if (L != Ls[0]) // Only do once
         return 0;
@@ -180,7 +180,7 @@ static int MS_register_body_feed(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_register_parser(lua_State *L)
+LOCAL int MS_register_parser(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isfunction(L, 2)) {
         return luaL_error(L, "usage: <session> <function>");
@@ -194,7 +194,7 @@ static int MS_register_parser(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_add_tag(lua_State *L)
+LOCAL int MS_add_tag(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
         return luaL_error(L, "usage: <session> <tag>");
@@ -207,7 +207,7 @@ static int MS_add_tag(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_incr_outstanding(lua_State *L)
+LOCAL int MS_incr_outstanding(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <session>");
@@ -219,7 +219,7 @@ static int MS_incr_outstanding(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_decr_outstanding(lua_State *L)
+LOCAL int MS_decr_outstanding(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <session>");
@@ -231,7 +231,7 @@ static int MS_decr_outstanding(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_add_protocol(lua_State *L)
+LOCAL int MS_add_protocol(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
         return luaL_error(L, "usage: <session> <protocol>");
@@ -243,7 +243,7 @@ static int MS_add_protocol(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int MS_has_protocol(lua_State *L)
+LOCAL int MS_has_protocol(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
         return luaL_error(L, "usage: <session> <protocol>");
@@ -256,7 +256,7 @@ static int MS_has_protocol(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int MS_add_string(lua_State *L)
+LOCAL int MS_add_string(lua_State *L)
 {
     if (config.debug > 2)
         molua_stackDump(L);
@@ -281,7 +281,7 @@ static int MS_add_string(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int MS_add_int(lua_State *L)
+LOCAL int MS_add_int(lua_State *L)
 {
     if (config.debug > 2)
         molua_stackDump(L);
@@ -305,7 +305,7 @@ static int MS_add_int(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int MS_tostring(lua_State *L)
+LOCAL int MS_tostring(lua_State *L)
 {
     MolochSession_t *session = checkMolochSession(L, 1);
     lua_pushfstring(L, "MolochSession: %p", session);
@@ -313,7 +313,7 @@ static int MS_tostring(lua_State *L)
 }
 
 /******************************************************************************/
-static int MS_table(lua_State *L)
+LOCAL int MS_table(lua_State *L)
 {
     MolochSession_t *session = checkMolochSession(L, 1);
     MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];

@@ -1,60 +1,70 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131206",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "ect" : [
-               "text/plain; charset=utf-8"
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstBytes" : 1753,
+            "dstDataBytes" : 835,
+            "dstGEO" : "US",
+            "dstIp" : "64.12.168.40",
+            "dstMac" : [
+               "00:00:5e:00:01:02",
+               "80:71:1f:82:cf:c6"
             ],
-            "tacnt" : 3,
-            "esrccnt" : 1,
-            "by2" : 1753,
-            "test" : {
-               "ip-rir" : [
-                  ""
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 16,
+            "dstPayload8" : "3232302d6d74616f",
+            "dstPort" : 587,
+            "dstRIR" : "ARIN",
+            "email" : {
+               "contentType" : [
+                  "text/plain; charset=utf-8"
                ],
-               "ip" : [
-                  167772161
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "xxxx.xxxxxx@xxxxx.com"
                ],
-               "string" : [
-                  "16777226:3293,682101824:587"
+               "dstCnt" : 1,
+               "header" : [
+                  "content-type",
+                  "message-id",
+                  "mime-version",
+                  "from",
+                  "to",
+                  "content-transfer-encoding",
+                  "date",
+                  "subject"
                ],
-               "number" : [
-                  682101824
+               "headerCnt" : 8,
+               "id" : [
+                  "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
                ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
+               "idCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
                ],
-               "ip-geo" : [
-                  "RUS"
-               ]
+               "mimeVersionCnt" : 1,
+               "src" : [
+                  "12345678@aol.com"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "Re: xxx xxx xxxxx xxxxxx..."
+               ],
+               "subjectCnt" : 1
             },
-            "eid" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
-            ],
-            "esub" : [
-               "Re: xxx xxx xxxxx xxxxxx..."
-            ],
-            "prot-term-cnt" : 2,
-            "pr" : 6,
-            "no" : "test",
-            "tags-term" : [
-               "smtp:statuscode:250",
-               "smtp:authplain",
-               "srcip"
-            ],
-            "fp" : 1386338020,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "emvcnt" : 1,
-            "psl" : [
+            "fileId" : [],
+            "firstPacket" : 1386338020379,
+            "ipProtocol" : 6,
+            "lastPacket" : 1386338052390,
+            "length" : 32010,
+            "node" : "test",
+            "packetLen" : [
                82,
                82,
                76,
@@ -86,23 +96,7 @@
                76,
                76
             ],
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "content-transfer-encoding",
-               "date",
-               "subject"
-            ],
-            "by" : 3620,
-            "fb2" : "3232302d6d74616f",
-            "fpd" : 1386338020379,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "ps" : [
+            "packetPos" : [
                24,
                106,
                188,
@@ -134,73 +128,79 @@
                3972,
                4048
             ],
-            "pa" : 30,
-            "tcpflags" : {
-               "syn" : 1,
-               "psh" : 15,
-               "fin" : 1,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "ack" : 12
-            },
-            "lastPacket" : 1386338052390,
-            "lpd" : 1386338052390,
-            "lp" : 1386338052,
-            "a1" : "10.0.0.1",
-            "g1" : "RUS",
-            "ipSrc" : "10.0.0.1",
-            "timestamp" : "SET",
-            "edst" : [
-               "xxxx.xxxxxx@xxxxx.com"
+            "protocol" : [
+               "smtp",
+               "tcp"
             ],
-            "mac1-term-cnt" : 1,
-            "sl" : 32010,
-            "db2" : 835,
-            "ss" : 1,
-            "pa2" : 16,
-            "user" : [
-               "12345678@aol.com"
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 1867,
+            "srcDataBytes" : 1063,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:0a:f3:31:94:00"
             ],
-            "mac2-term-cnt" : 2,
-            "portDst" : 587,
-            "by1" : 1867,
-            "edstcnt" : 1,
-            "ta" : [
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "45484c4f206c6f63",
+            "srcPort" : 3293,
+            "tags" : [
                "smtp:authplain",
                "smtp:statuscode:250",
                "srcip"
             ],
-            "g2" : "USA",
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "80:71:1f:82:cf:c6"
-            ],
-            "fs" : [],
-            "firstPacket" : 1386338020379,
-            "ehhcnt" : 8,
-            "p1" : 3293,
-            "ipDst" : "64.12.168.40",
-            "p2" : 587,
-            "as1" : "AS0000 This is neat",
-            "eidcnt" : 1,
-            "as2" : "AS1668 AOL Transit Data Network",
-            "emv" : [
-               "1.0"
-            ],
-            "fb1" : "45484c4f206c6f63",
-            "esubcnt" : 1,
-            "db1" : 1063,
-            "portSrc" : 3293,
-            "db" : 1898,
-            "rir2" : "ARIN",
-            "pa1" : 14,
-            "ectcnt" : 1,
-            "usercnt" : 1,
-            "a2" : "64.12.168.40",
-            "esrc" : [
+            "tagsCnt" : 3,
+            "tcpflags" : {
+               "ack" : 12,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 15,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  682101824
+               ],
+               "string.snow" : [
+                  "16777226:3293,682101824:587"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3620,
+            "totDataBytes" : 1898,
+            "totPackets" : 30,
+            "user" : [
                "12345678@aol.com"
-            ]
+            ],
+            "userCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131206",
+               "_type" : "session"
+            }
          }
       }
    ]

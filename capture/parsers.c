@@ -25,9 +25,9 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-static gchar                 classTag[100];
+LOCAL  gchar                 classTag[100];
 
-static magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
+LOCAL  magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
 
 extern unsigned char         moloch_char_to_hexstr[256][3];
 
@@ -611,25 +611,22 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
         value = 0;
     }
 }
-
+/******************************************************************************/
+LOCAL int cstring_cmp(const void *a, const void *b)
+{
+   return strcmp(*(char **)a, *(char **)b);
+}
 /******************************************************************************/
 void moloch_parsers_init()
 {
-    moloch_field_define("general", "lotermfield",
-        "user", "User", "user",
-        "External user set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        NULL);
-
     moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "ss",
+        "session.segments", "Session Segments", "segmentCnt",
         "Number of segments in session so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("general", "integer",
-        "session.length", "Session Length", "sl",
+        "session.length", "Session Length", "length",
         "Session Length in milliseconds so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
@@ -707,13 +704,10 @@ void moloch_parsers_init()
             continue;
 
         const gchar *filename;
-        while (1) {
-            filename = g_dir_read_name(dir);
+        gchar *filenames[100];
+        int    flen = 0;
 
-            // No more files, stop processing this directory
-            if (!filename)
-                break;
-
+        while ((filename = g_dir_read_name(dir))) {
             // Skip hidden files/directories
             if (filename[0] == '.')
                 continue;
@@ -731,11 +725,19 @@ void moloch_parsers_init()
                 continue; /* Already loaded */
             }
 
-            gchar   *path = g_build_filename (config.parsersDir[d], filename, NULL);
+            filenames[flen] = g_strdup(filename);
+            flen++;
+        }
+
+        qsort((void *)filenames, (size_t)flen, sizeof(char *), cstring_cmp);
+
+        int i;
+        for (i = 0; i < flen; i++) {
+            gchar *path = g_build_filename (config.parsersDir[d], filenames[i], NULL);
             GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 
             if (!parser) {
-                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filename, path, g_module_error());
+                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
                 g_free (path);
                 continue;
             }
@@ -744,18 +746,23 @@ void moloch_parsers_init()
             MolochPluginInitFunc parser_init;
 
             if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
-                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filename);
+                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
+                g_free(filenames[i]);
                 continue;
             }
+
+            if (config.debug > 1) {
+                LOG("Loaded %s", path);
+            }
+
 
             parser_init();
 
             hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-            hstring->str = g_strdup(filename);
-            hstring->len = strlen(filename);
+            hstring->str = filenames[i];
+            hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
         }
-
         g_dir_close(dir);
     }
 
@@ -765,35 +772,18 @@ void moloch_parsers_init()
     );
 
     // Set tags field up AFTER loading plugins
-    config.tagsField = moloch_field_define("general", "termfield",
-        "tags", "Tags", "ta",
+    config.tagsStringField = moloch_field_define("general", "termfield",
+        "tags", "Tags", "tags",
         "Tags set for session",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
-
-    config.tagsStringField = moloch_field_define("general", "notreal",
-        "tags", "Tags", "tags-term",
-        "Tags set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NODB,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "lotermfield",
-        "asset", "Asset", "asset-term",
+        "asset", "Asset", "asset",
         "Asset name",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
-    if (config.nodeClass) {
-        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, config.tagsField, classTag, NULL);
-    }
-
-    if (config.extraTags) {
-        int i;
-        for (i = 0; config.extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, config.tagsField, config.extraTags[i], NULL);
-        }
-    }
 
     if (config.extraOps) {
         int i;

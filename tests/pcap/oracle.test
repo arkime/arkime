@@ -1,8 +1,34 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "psl" : [
+            "dstBytes" : 78,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.0.0.17",
+            "dstMac" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:84:ef:c5"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 1,
+            "dstPort" : 1522,
+            "fileId" : [],
+            "firstPacket" : 1476102172344,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476102172528,
+            "length" : 183,
+            "node" : "test",
+            "oracle" : {
+               "host" : "10.000.000.11",
+               "service" : "xxxxx.xxx",
+               "user" : "user"
+            },
+            "packetLen" : [
                98,
                98,
                94,
@@ -10,12 +36,7 @@
                86,
                310
             ],
-            "ipDst" : "10.0.0.17",
-            "sl" : 183,
-            "lp" : 1476102172,
-            "mac1-term-cnt" : 2,
-            "a1" : "10.0.0.16",
-            "ps" : [
+            "packetPos" : [
                24,
                122,
                220,
@@ -23,69 +44,52 @@
                400,
                486
             ],
-            "a2" : "10.0.0.17",
+            "protocol" : [
+               "tcp",
+               "oracle"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 598,
+            "srcDataBytes" : 224,
+            "srcIp" : "10.0.0.16",
+            "srcMac" : [
+               "00:1b:17:00:14:30",
+               "80:71:1f:84:ef:cc"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks",
+               "Palo Alto Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 5,
+            "srcPayload8" : "00e0000001000000",
+            "srcPort" : 64084,
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 676,
+            "totDataBytes" : 224,
+            "totPackets" : 6,
             "vlan" : [
                50,
                300
             ],
-            "fpd" : 1476102172344,
-            "by" : 676,
-            "fs" : [],
-            "fb1" : "00e0000001000000",
-            "ipSrc" : "10.0.0.16",
-            "pa" : 6,
-            "timestamp" : "SET",
-            "db2" : 0,
-            "lpd" : 1476102172528,
-            "mac1-term" : [
-               "00:1b:17:00:14:30",
-               "80:71:1f:84:ef:cc"
-            ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:84:ef:c5"
-            ],
-            "ss" : 1,
-            "pa2" : 1,
-            "pa1" : 5,
-            "fp" : 1476102172,
-            "portDst" : 1522,
-            "p2" : 1522,
-            "db1" : 224,
-            "firstPacket" : 1476102172344,
-            "portSrc" : 64084,
-            "no" : "test",
-            "db" : 224,
-            "by2" : 78,
-            "pr" : 6,
-            "lastPacket" : 1476102172528,
-            "oracle" : {
-               "service-term" : "xxxxx.xxx",
-               "host-term" : "10.000.000.11",
-               "user-term" : "user"
-            },
-            "tcpflags" : {
-               "rst" : 0,
-               "syn" : 2,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "ack" : 2,
-               "psh" : 1,
-               "fin" : 0
-            },
-            "mac2-term-cnt" : 2,
-            "p1" : 64084,
-            "prot-term-cnt" : 2,
-            "vlan-cnt" : 2,
-            "by1" : 598,
-            "prot-term" : [
-               "tcp",
-               "oracle"
-            ]
+            "vlanCnt" : 2
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-161010",
+               "_index" : "tests_sessions2-161010",
                "_type" : "session"
             }
          }

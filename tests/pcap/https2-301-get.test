@@ -1,119 +1,71 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "by1" : 1513,
-            "db2" : 4204,
-            "tls" : [
+            "cert" : [
                {
-                  "sCn" : [
-                     "github.com"
-                  ],
-                  "notBefore" : 1370822400,
-                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
-                  "notAfter" : 1441195200,
-                  "diffDays" : 814,
-                  "iCn" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "iOn" : "DigiCert Inc",
-                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "alt" : [
                      "github.com",
                      "www.github.com"
                   ],
-                  "sOn" : "GitHub, Inc.",
-                  "altcnt" : 2
-               },
-               {
-                  "notAfter" : 1636502400,
-                  "notBefore" : 1194609600,
-                  "sCn" : [
+                  "altCnt" : 2,
+                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
+                  "issuerCN" : [
                      "digicert high assurance ev ca-1"
                   ],
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1441195200000,
+                  "notBefore" : 1370822400000,
+                  "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "subjectCN" : [
+                     "github.com"
+                  ],
+                  "subjectON" : "GitHub, Inc.",
+                  "validDays" : 814
+               },
+               {
                   "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
-                  "iOn" : "DigiCert Inc",
-                  "sn" : "0337b928347c60a6aec5adb1217f3860",
-                  "sOn" : "DigiCert Inc",
-                  "diffDays" : 5114,
-                  "iCn" : [
+                  "issuerCN" : [
                      "digicert high assurance ev root ca"
-                  ]
+                  ],
+                  "issuerON" : "DigiCert Inc",
+                  "notAfter" : 1636502400000,
+                  "notBefore" : 1194609600000,
+                  "serial" : "0337b928347c60a6aec5adb1217f3860",
+                  "subjectCN" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "subjectON" : "DigiCert Inc",
+                  "validDays" : 5114
                }
             ],
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ],
-            "ss" : 1,
-            "lastPacket" : 1385410274128,
-            "g2" : "USA",
-            "lp" : 1385410274,
-            "fb1" : "8080010301005700",
-            "portDst" : 443,
-            "db" : 4817,
-            "p1" : 50754,
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               502,
-               2008,
-               3514,
-               4485,
-               4567,
-               4649,
-               5045,
-               5174,
-               5256,
-               5480,
-               5955,
-               6037,
-               6146,
-               6228,
-               6337,
-               6419,
-               6501,
-               6571,
-               6641
-            ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "mac2-term-cnt" : 2,
-            "fs" : [],
-            "firstPacket" : 1385410273592,
-            "tlsver-termcnt" : 1,
-            "tlsdstid-term" : [
-               "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
-            ],
-            "ipSrc" : "10.180.156.141",
-            "tlscipher-termcnt" : 1,
-            "pa1" : 14,
-            "g1" : "USA",
-            "lpd" : 1385410274128,
-            "fpd" : 1385410273592,
-            "portSrc" : 50754,
-            "prot-term-cnt" : 2,
-            "db1" : 613,
-            "rir2" : "ARIN",
-            "fb2" : "1603010051020000",
-            "no" : "test",
-            "mac2-term" : [
+            "certCnt" : 2,
+            "dstASN" : "AS36459 GitHub, Inc.",
+            "dstBytes" : 4806,
+            "dstDataBytes" : 4204,
+            "dstGEO" : "US",
+            "dstIp" : "192.30.252.131",
+            "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "as2" : "AS36459 GitHub, Inc.",
-            "pa" : 23,
-            "p2" : 443,
-            "psl" : [
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Jetcell, Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 9,
+            "dstPayload8" : "1603010051020000",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1385410273592,
+            "ipProtocol" : 6,
+            "lastPacket" : 1385410274128,
+            "length" : 536,
+            "node" : "test",
+            "packetLen" : [
                94,
                90,
                82,
@@ -138,32 +90,85 @@
                70,
                70
             ],
-            "pa2" : 9,
-            "tlsver-term" : [
-               "TLSv1"
+            "packetPos" : [
+               24,
+               118,
+               208,
+               290,
+               502,
+               2008,
+               3514,
+               4485,
+               4567,
+               4649,
+               5045,
+               5174,
+               5256,
+               5480,
+               5955,
+               6037,
+               6146,
+               6228,
+               6337,
+               6419,
+               6501,
+               6571,
+               6641
             ],
-            "a2" : "192.30.252.131",
-            "by2" : 4806,
-            "a1" : "10.180.156.141",
-            "fp" : 1385410273,
-            "pr" : 6,
-            "sl" : 536,
-            "ipDst" : "192.30.252.131",
-            "mac1-term-cnt" : 1,
-            "timestamp" : "SET",
-            "tlscnt" : 2,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
+            "protocol" : [
+               "tls",
+               "tcp"
             ],
-            "by" : 6319,
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1513,
+            "srcDataBytes" : 613,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.141",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Apple, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "8080010301005700",
+            "srcPort" : 50754,
             "tcpflags" : {
-               "psh" : 8,
                "ack" : 8,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 8,
+               "rst" : 3,
+               "srcZero" : 0,
                "syn" : 1,
                "syn-ack" : 1,
-               "fin" : 2,
-               "urg" : 0,
-               "rst" : 3
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_RC4_128_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 6319,
+            "totDataBytes" : 4817,
+            "totPackets" : 23
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131125",
+               "_type" : "session"
             }
          }
       }
