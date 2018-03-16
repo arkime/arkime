@@ -2,7 +2,7 @@
 
 Moloch viewer is an [AngularJS][angularjs] and [Vue.js][vuejs] web app.
 
-Read the main Moloch README for more information on how to build and run the app for demo or production. These instructions are for running in development mode out of the source tree.
+Read the main [Moloch README](../README.rst) for more information on how to build and run the app for demo or production. These instructions are for running in development mode out of the source tree.
 
 ---
 
@@ -44,7 +44,7 @@ npm install
 
 ### Run the Application
 
-**To run the web application, you must have an elasticsearch cluster running and already built and configured Moloch.**
+**To run the web application, you must have an elasticsearch cluster running and already built and configured Moloch. Read the main [Moloch README](../README.rst) for more information.**
 
 
 #### The simplest way to start the web app is:
@@ -70,7 +70,7 @@ npm run start:testuser
 
 For this to work, your `tests/config.test.ini` must be valid.
 
-These commands add an "admin" user, starts the node server, bundles all Angular app files into `viewer/bundles`, and bundles all Vue app files into `viewer/vueapp/dist`.
+These first command adds an "admin" user. The second command starts the node server, bundles all Angular app files into `viewer/bundles`, and bundles all Vue app files into `viewer/vueapp/dist`.
 
 Now browse to the app at `http://localhost:8123` and login using username "admin" and password "admin".
 
@@ -134,7 +134,11 @@ npm test
 
 This script will start the Karma test runner to execute the unit tests. Before running the test, the script makes sure that all JavaScript is linted. The tests will not execute if the linter returns errors in the JavaScript.
 
-**Please run the unit tests before contributing.**
+---
+
+### Contributing
+
+View the [contributing guide](../CONTRIBUTING.md) for more information.
 
 [angularjs]: http://angularjs.org/
 [webpack]: https://webpack.github.io/
