@@ -10,14 +10,23 @@
   "dependencies": {
     "async": "^2.5.0",
     "body-parser": "^1.15.2",
+    "bson": "^0.5.5",
+    "csv": "^1.1.0",
     "elasticsearch": "^13.3.0",
     "express": "^4.16.1",
-    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
-    "pug": "^2.0.0",
-    "glob": "^7.1.2",
-    "stylus": "^0.54.5",
     "font-awesome": "^4.7.0",
-    "morgan": "^1.9.0"
+    "glob": "^7.1.2",
+    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
+    "moment": "^2.19.1",
+    "morgan": "^1.9.0",
+    "pug": "^2.0.0",
+    "redis": "^2.6.2",
+    "stylus": "^0.54.5",
+    "sqlite3": "^3.1.4",
+    "vue": "^2.5.13",
+    "vue-server-renderer": "^2.5.13",
+    "vue-router": "^3.0.1",
+    "unzip": "^0.1.11"
   },
   "scripts": {
   },

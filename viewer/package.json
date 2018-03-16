@@ -13,15 +13,12 @@
     "compression": "^1.6.2",
     "fs-ext": "^0.5.0",
     "method-override": "^2.3.6",
-    "moment": "^2.19.1",
     "multer": "^1.2.0",
     "passport": "^0.3.2",
     "passport-http": "^0.3.0",
     "peek-stream": "^1.1.1",
     "serve-favicon": "^2.3.0",
-    "through2": "^2.0.1",
-    "vue": "^2.5.13",
-    "vue-server-renderer": "^2.5.13"
+    "through2": "^2.0.1"
   },
   "scripts": {
     "addtestuser": "node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin",
