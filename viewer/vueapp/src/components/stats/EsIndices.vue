@@ -47,7 +47,7 @@
               <td class="text-left">Average</td>
               <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
               <td>{{ averageValues['store.size'] | humanReadable }}</td>
-              <td>{{ averageValues.pir | round(0) | commaString }}</td>
+              <td>{{ averageValues.pri | round(0) | commaString }}</td>
               <td>{{ averageValues.rep| round(0) | commaString }}</td>
               <td class="text-left">-</td>
               <td class="text-left">-</td>
@@ -56,7 +56,7 @@
               <td class="text-left">Total</td>
               <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
               <td>{{ totalValues['store.size'] | humanReadable }}</td>
-              <td>{{ totalValues.pir | round(0) | commaString }}</td>
+              <td>{{ totalValues.pri | round(0) | commaString }}</td>
               <td>{{ totalValues.rep| round(0) | commaString }}</td>
               <td class="text-left">-</td>
               <td class="text-left">-</td>
@@ -74,7 +74,7 @@
             </td>
             <td>{{ stat['docs.count'] | round(0) | commaString }}</td>
             <td>{{ stat['store.size'] | humanReadable }}</td>
-            <td>{{ stat.pir | round(0) | commaString }}</td>
+            <td>{{ stat.pri | round(0) | commaString }}</td>
             <td>{{ stat.rep| round(0) | commaString }}</td>
             <td class="text-left">{{ stat.health }}</td>
             <td class="text-left">{{ stat.status }}</td>
@@ -92,7 +92,7 @@
             <td class="text-left">Average</td>
             <td>{{ averageValues['docs.count'] | round(0) | commaString }}</td>
             <td>{{ averageValues['store.size'] | humanReadable }}</td>
-            <td>{{ averageValues.pir | round(0) | commaString }}</td>
+            <td>{{ averageValues.pri | round(0) | commaString }}</td>
             <td>{{ averageValues.rep| round(0) | commaString }}</td>
             <td class="text-left">-</td>
             <td class="text-left">-</td>
@@ -101,7 +101,7 @@
             <td class="text-left">Total</td>
             <td>{{ totalValues['docs.count'] | round(0) | commaString }}</td>
             <td>{{ totalValues['store.size'] | humanReadable }}</td>
-            <td>{{ totalValues.pir | round(0) | commaString }}</td>
+            <td>{{ totalValues.pri | round(0) | commaString }}</td>
             <td>{{ totalValues.rep| round(0) | commaString }}</td>
             <td class="text-left">-</td>
             <td class="text-left">-</td>
