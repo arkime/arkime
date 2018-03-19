@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "async": "^2.5.0",
     "aws-sdk": "^2.188.0"
   }
 }

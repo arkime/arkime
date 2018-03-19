@@ -170,7 +170,7 @@ app.use(compression());
 app.use(methodOverride());
 
 
-app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
+app.use('/font-awesome', express.static(__dirname + '/../node_modules/font-awesome', { maxAge: 600 * 1000}));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
 
 app.use('/cyberchef.htm', function(req, res, next) {
