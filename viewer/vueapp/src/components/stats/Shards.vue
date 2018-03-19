@@ -29,9 +29,7 @@
           <tr>
             <th v-for="column in columns"
               :key="column.name"
-              class="hover-menu"
-              v-b-tooltip.hover
-              :title="column.name">
+              class="hover-menu">
               <div>
                 <!-- column dropdown menu -->
                 <b-dropdown right
@@ -300,9 +298,6 @@ table > thead > tr > th {
   display: inline-block;
   width: 100%;
   word-break: break-word;
-  max-height: 36px;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .table tbody > tr > td:first-child {
