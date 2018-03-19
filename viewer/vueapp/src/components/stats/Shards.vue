@@ -9,99 +9,122 @@
       :message="error">
     </moloch-error>
 
-    <table v-if="!error && !loading"
-      class="table table-sm table-hover small">
-      <thead>
-        <tr>
-          <th v-for="column in columns"
-            :key="column.name"
-            class="hover-menu"
-            v-b-tooltip.hover
-            :title="column.name">
-            <div>
-              <!-- column dropdown menu -->
-              <b-dropdown right
-                size="sm"
-                v-if="column.hasDropdown"
-                class="column-actions-btn pull-right"
-                v-has-permission="'createEnabled'">
-                <b-dropdown-item v-if="!column.nodeExcluded"
-                  @click="exclude('name', column)">
-                  Exclude node {{ column.name }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="column.nodeExcluded"
-                  @click="include('name', column)">
-                  Include node {{ column.name }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="!column.ipExcluded"
-                  @click="exclude('ip', column)">
-                  Exclude IP {{ column.ip }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="column.ipExcluded"
-                  @click="include('ip', column)">
-                  Include IP {{ column.ip }}
-                </b-dropdown-item>
-              </b-dropdown> <!-- /column dropdown menu -->
-              <div class="header-text">
-                {{ column.name }}
+    <div v-if="!error && !loading">
+
+      <div class="input-group input-group-sm mt-1">
+        <div class="input-group-prepend">
+          <span class="input-group-text">
+            <span class="fa fa-search"></span>
+          </span>
+        </div>
+        <input type="text"
+          class="form-control"
+          v-model="query.filter"
+          @keyup="searchForES()"
+          placeholder="Begin typing to search for ES nodes and indices">
+      </div>
+
+      <table class="table table-sm table-hover small mt-3">
+        <thead>
+          <tr>
+            <th v-for="column in columns"
+              :key="column.name"
+              class="hover-menu"
+              v-b-tooltip.hover
+              :title="column.name">
+              <div>
+                <!-- column dropdown menu -->
+                <b-dropdown right
+                  size="sm"
+                  v-if="column.hasDropdown"
+                  class="column-actions-btn pull-right"
+                  v-has-permission="'createEnabled'">
+                  <b-dropdown-item v-if="!column.nodeExcluded"
+                    @click="exclude('name', column)">
+                    Exclude node {{ column.name }}
+                  </b-dropdown-item>
+                  <b-dropdown-item v-if="column.nodeExcluded"
+                    @click="include('name', column)">
+                    Include node {{ column.name }}
+                  </b-dropdown-item>
+                  <b-dropdown-item v-if="!column.ipExcluded"
+                    @click="exclude('ip', column)">
+                    Exclude IP {{ column.ip }}
+                  </b-dropdown-item>
+                  <b-dropdown-item v-if="column.ipExcluded"
+                    @click="include('ip', column)">
+                    Include IP {{ column.ip }}
+                  </b-dropdown-item>
+                </b-dropdown> <!-- /column dropdown menu -->
+                <div class="header-text"
+                  :class="{'cursor-pointer':column.sort !== undefined}"
+                  @click="columnClick(column.sort)">
+                  {{ column.name }}
+                  <span v-if="column.sort !== undefined">
+                    <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                    <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                    <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                  </span>
+                </div>
               </div>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="stat in stats.indices"
-          :key="stat.name">
-          <td>
-            {{ stat.name }}
-          </td>
-          <td v-for="node in nodes"
-            :key="node"
-            class="text-center">
-            <template v-if="stat.nodes[node]"
-              v-for="item in stat.nodes[node]">
-              <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
-                class="badge badge-pill badge-secondary cursor-help"
-                :class="{'badge-primary':item.prirep === 'p'}"
-                :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
-                {{ item.shard }}
-              </span>
-              <b-tooltip :key="node + '-' + stat.name + '-' + item.shard + '-tooltip'"
-                :target="node + '-' + stat.name + '-' + item.shard + '-btn'"
-                placement="left">
-                <div v-if="item.ip">
-                  <strong>IP:</strong>
-                  {{ item.ip }}
-                </div>
-                <div>
-                  <strong>State:</strong>
-                  {{ item.state }}
-                </div>
-                <div v-if="item.store">
-                  <strong>Size:</strong>
-                  {{ item.store }}
-                </div>
-                <div v-if="item.docs">
-                  <strong>Documents:</strong>
-                  {{ item.docs }}
-                </div>
-                <div>
-                  <strong>Primary/Replicate:</strong>
-                  {{ item.prirep }}
-                </div>
-              </b-tooltip>
-            </template>
-          </td>
-        </tr>
-        <tr v-if="!stats.indices.length">
-          <td colspan="6"
-            class="text-danger">
-            <span class="fa fa-warning"></span>&nbsp;
-            No results match your search
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="stat in stats.indices"
+            :key="stat.name">
+            <td>
+              {{ stat.name }}
+            </td>
+            <td v-for="node in nodes"
+              :key="node"
+              class="text-center">
+              <template v-if="stat.nodes[node]"
+                v-for="item in stat.nodes[node]">
+                <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
+                  class="badge badge-pill badge-secondary cursor-help"
+                  :class="{'badge-primary':item.prirep === 'p'}"
+                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
+                  {{ item.shard }}
+                </span>
+                <b-tooltip :key="node + '-' + stat.name + '-' + item.shard + '-tooltip'"
+                  :target="node + '-' + stat.name + '-' + item.shard + '-btn'"
+                  placement="left">
+                  <div v-if="item.ip">
+                    <strong>IP:</strong>
+                    {{ item.ip }}
+                  </div>
+                  <div>
+                    <strong>State:</strong>
+                    {{ item.state }}
+                  </div>
+                  <div v-if="item.store">
+                    <strong>Size:</strong>
+                    {{ item.store }}
+                  </div>
+                  <div v-if="item.docs">
+                    <strong>Documents:</strong>
+                    {{ item.docs }}
+                  </div>
+                  <div>
+                    <strong>Primary/Replicate:</strong>
+                    {{ item.prirep }}
+                  </div>
+                </b-tooltip>
+              </template>
+            </td>
+          </tr>
+          <tr v-if="!stats.indices.length">
+            <td colspan="6"
+              class="text-danger text-center">
+              <span class="fa fa-warning"></span>&nbsp;
+              No results match your search
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
 
   </div>
 
@@ -112,6 +135,7 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
+let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'Shards',
@@ -123,8 +147,13 @@ export default {
       error: '',
       stats: {},
       nodes: {},
+      query: {
+        filter: null,
+        sortField: 'index',
+        desc: false
+      },
       columns: [
-        { name: 'Index', sort: 'action', doClick: false, hasDropdown: false }
+        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false }
       ]
     };
   },
@@ -151,6 +180,21 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
+    searchForES () {
+      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      searchInputTimeout = setTimeout(() => {
+        searchInputTimeout = null;
+        this.loadData();
+      }, 400);
+    },
+    columnClick (name) {
+      if (!name) { return; }
+
+      this.query.sortField = name;
+      this.query.desc = !this.query.desc;
+      this.loadData();
+    },
     exclude: function (type, column) {
       this.$http.post(`esshard/exclude/${type}/${column[type]}`)
         .then((response) => {
@@ -182,7 +226,7 @@ export default {
       }, parseInt(this.dataInterval, 10));
     },
     loadData: function () {
-      this.$http.get('esshard/list')
+      this.$http.get('esshard/list', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;

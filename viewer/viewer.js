@@ -2427,11 +2427,18 @@ app.get('/esshard/list', function(req, res) {
       nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
     }
 
+    var regex;
+    if (req.query.filter !== undefined) {
+      regex = new RegExp(req.query.filter);
+    }
+
     let result = {};
     let nodes = {};
 
     for (var shard of shards) {
       if (shard.node === null || shard.node === "null") { shard.node = "Unassigned"; }
+
+      if (regex && !shard.index.match(regex) && !shard.node.match(regex)) { continue; }
 
       if (result[shard.index] === undefined) {
         result[shard.index] = {name: shard.index, nodes: {}};
@@ -2451,7 +2458,17 @@ app.get('/esshard/list', function(req, res) {
       delete shard.index;
     }
 
-    let indices = Object.keys(result).map((k) => result[k]).sort(function(a,b){ return a.name.localeCompare(b.name); });
+    let indices = Object.keys(result).map((k) => result[k]);
+    if (req.query.desc === 'true') {
+      indices = indices.sort(function (a, b) {
+        return b.name.localeCompare(a.name);
+      });
+    } else {
+      indices = indices.sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      });
+    }
+
     res.send({nodes: nodes, indices: indices, nodeExcludes: nodeExcludes, ipExcludes: ipExcludes});
   });
 });
