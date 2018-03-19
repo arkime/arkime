@@ -61,7 +61,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS29169 GANDI SAS",
+            "srcASN" : "AS203476 GANDI SAS",
             "srcBytes" : 165,
             "srcDataBytes" : 157,
             "srcGEO" : "FR",
