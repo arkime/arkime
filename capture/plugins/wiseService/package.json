@@ -4,23 +4,9 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "async": "^2.5.0",
-    "bson": "^0.5.5",
-    "connect-timeout": "^1.7.0",
-    "console-stamp": "^0.2.2",
-    "csv": "^1.1.0",
-    "elasticsearch": "^13.3.0",
-    "express": "^4.16.1",
-    "glob": "^7.1.0",
     "hashtable": "^2.0.2",
-    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
     "lru-cache": "^4.0.1",
-    "morgan": "^1.9.0",
-    "native-dns": "^0.7.0",
-    "redis": "^2.6.2",
-    "request": "^2.75.0",
-    "sqlite3": "^3.1.4",
-    "unzip": "^0.1.11"
+    "native-dns": "^0.7.0"
   }
 }
