@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.provider "virtualbox" do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "2500"]
+    vb.customize ["modifyvm", :id, "--memory", "4000"]
   end
 
   config.vm.define "ubuntu-14.04" do |ubuntu1404|
@@ -25,9 +25,9 @@ Vagrant.configure("2") do |config|
     centos7.vm.box = "bento/centos-7.2"
   end
 
-  config.vm.define "debian8" do |debian8|
-    debian8.vm.box = "debian/jessie64"
-  end
+#  config.vm.define "debian8" do |debian8|
+#    debian8.vm.box = "debian/jessie64"
+#  end
 
 
   config.vm.provision "ansible" do |ansible|
