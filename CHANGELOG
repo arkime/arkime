@@ -15,6 +15,10 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0-rc1 2018/03/20
+  - viewer - minor stats page fixes
+  - release - new top level package.json/node_modules to make package smaller
+
 1.0.0-beta3 2018/03/15
   - viewer - stats page implemented in Vue instead of Angular
   - capture - some code clean and better thread safe counters
