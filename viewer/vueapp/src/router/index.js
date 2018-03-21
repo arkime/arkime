@@ -1,18 +1,24 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Stats from '@/components/stats/Stats';
+import Sessions from '@/components/sessions/Sessions';
 
 Vue.use(Router);
 
+/* eslint-disable no-undef */
 const router = new Router({
   mode: 'history',
-  base: window.location.pathname,
+  base: MOLOCH_PATH,
   routes: [
     {
       path: '/stats',
-      alias: '/',
       name: 'Stats',
       component: Stats
+    },
+    {
+      path: '/sessions2',
+      name: 'Sessions',
+      component: Sessions
     }
   ]
 });
@@ -20,7 +26,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
   // loads the angular app pages (for now, anything but the stats page)
-  if (!to.path.includes('stats') && to.path !== '/') {
+  if (!to.path.includes('stats') && !to.path.includes('sessions2') && to.path !== '/') {
     location.reload();
   }
 

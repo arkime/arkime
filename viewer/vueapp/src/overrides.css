@@ -170,6 +170,7 @@ input.field-typeahead + ul[uib-typeahead-popup] {
 .dropdown-menu > a.dropdown-item.active:hover,
 .dropdown-menu > a.dropdown-item.active:focus {
   background-color: var(--color-primary);
+  color: var(--color-white);
 }
 .dropdown-menu li.active a,
 .dropdown-menu > li.active > a,

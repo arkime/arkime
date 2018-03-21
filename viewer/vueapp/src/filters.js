@@ -78,3 +78,33 @@ Vue.filter('round', function (value, decimals) {
 
   return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
 });
+
+Vue.filter('readableTime', function (ms) {
+  if (isNaN(ms)) { return '?'; }
+
+  let seconds = parseInt((ms / 1000) % 60);
+  let minutes = parseInt((ms / (1000 * 60)) % 60);
+  let hours = parseInt((ms / (1000 * 60 * 60)) % 24);
+  let days = parseInt((ms / (1000 * 60 * 60 * 24)));
+
+  let result = '';
+
+  if (days) {
+    result += days + ' day';
+    if (days > 1) {
+      result += 's ';
+    } else {
+      result += ' ';
+    }
+  }
+
+  if (hours || minutes || seconds) {
+    result += (hours < 10) ? '0' + hours : hours;
+    result += ':';
+    result += (minutes < 10) ? '0' + minutes : minutes;
+    result += ':';
+    result += (seconds < 10) ? '0' + seconds : seconds;
+  }
+
+  return result || '0';
+});
