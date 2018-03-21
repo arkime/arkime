@@ -102,25 +102,25 @@ function ThreatStreamSource (api, section) {
     process.exit(0);
   }
 
-  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;count:true");
+  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity;kind:lotermfield;friendly:Severity;help:Threatstream Severity;count:true");
   this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;count:true");
   this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;count:true");
-  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;count:true");
-  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;count:true");
-  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;count:true");
+  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type;kind:lotermfield;friendly:Type;help:Threatstream Type;count:true");
+  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;count:true");
+  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source;kind:termfield;friendly:Source;help:Threatstream Source;count:true");
   this.importIdField = this.api.addField("field:threatstream.importId;db:threatstream.importId;kind:integer;friendly:Import Id;help:Threatstream Import Id;count:true");
 
   this.api.addView("threatstream",
     "if (session.threatstream)\n" +
     "  div.sessionDetailMeta.bold Threatstream\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.threatstream, 'severity-term', 'Severity', 'threatstream.severity')\n" +
+    "    +arrayList(session.threatstream, 'severity', 'Severity', 'threatstream.severity')\n" +
     "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
     "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
     "    +arrayList(session.threatstream, 'importId', 'Import Id', 'threatstream.importId')\n" +
-    "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
-    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n" +
-    "    +arrayList(session.threatstream, 'source-term', 'Source', 'threatstream.source')\n"
+    "    +arrayList(session.threatstream, 'type', 'Type', 'threatstream.type')\n" +
+    "    +arrayList(session.threatstream, 'maltype', 'Malware Type', 'threatstream.maltype')\n" +
+    "    +arrayList(session.threatstream, 'source', 'Source', 'threatstream.source')\n"
   );
 
   this.api.addRightClick("threatstreamip", {name:"Threatstream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});

@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/socks-http-example.pcap||file=$pwd/socks-http-pass.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/socks5-http-302.pcap||file=$pwd/socks5-rdp.pcap||file=$pwd/socks5-reverse.pcap||file=$pwd/socks5-smtp-503.pcap)";
 
 countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
@@ -18,19 +18,19 @@ countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
     countTest(3, "date=-1&expression=" . uri_escape("$files&&ip.socks==93.184.216.119:80"));
 
 # country.socks
-    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==USA"));
-    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==usa"));
+    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==US"));
+    countTest(6, "date=-1&expression=" . uri_escape("$files&&country.socks==us"));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&country.socks==EU"));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&country.socks==eu"));
 
-# rir.socks
+# socks.rir
     countTest(5, "date=-1&expression=" . uri_escape("$files&&rir.socks==RIPE"));
     countTest(5, "date=-1&expression=" . uri_escape("$files&&rir.socks==ripe"));
 
-# asn.socks
+# socks.asn
     countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0000 This is neat\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0000\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"aS0000\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0000*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"aS0000*\""));
 
 # socks.port
     countTest(6, "date=-1&expression=" . uri_escape("$files&&socks.port==80"));

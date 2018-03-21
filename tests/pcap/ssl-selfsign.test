@@ -1,0 +1,137 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "cert" : [
+               {
+                  "hash" : "d5:14:6c:45:45:60:f6:78:1e:67:bb:5a:67:b6:89:d4:98:a2:ec:2e",
+                  "issuerCN" : [
+                     "molochftw"
+                  ],
+                  "notAfter" : 1521991598000,
+                  "notBefore" : 1519399598000,
+                  "serial" : "00b27e45d092b4dddf",
+                  "subjectCN" : [
+                     "molochftw"
+                  ],
+                  "validDays" : 30
+               }
+            ],
+            "certCnt" : 1,
+            "dstBytes" : 6086,
+            "dstDataBytes" : 5526,
+            "dstGEO" : "US",
+            "dstIp" : "10.180.152.137",
+            "dstPackets" : 10,
+            "dstPayload8" : "1603000051020000",
+            "dstPort" : 4443,
+            "fileId" : [],
+            "firstPacket" : 1519400125658,
+            "ipProtocol" : 6,
+            "lastPacket" : 1519400125663,
+            "length" : 4,
+            "node" : "test",
+            "packetLen" : [
+               84,
+               84,
+               72,
+               72,
+               166,
+               72,
+               777,
+               72,
+               1040,
+               72,
+               147,
+               72,
+               162,
+               72,
+               4818,
+               72,
+               72,
+               72,
+               109,
+               60
+            ],
+            "packetPos" : [
+               24,
+               108,
+               192,
+               264,
+               336,
+               502,
+               574,
+               1351,
+               1423,
+               2463,
+               2535,
+               2682,
+               2754,
+               2916,
+               2988,
+               7806,
+               7878,
+               7950,
+               8022,
+               8131
+            ],
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1761,
+            "srcDataBytes" : 1189,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.152.137",
+            "srcPackets" : 10,
+            "srcPayload8" : "1603000059010000",
+            "srcPort" : 60101,
+            "tags" : [
+               "cert:self-signed"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 9,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 7,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_256_CBC_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "d8085c19d95282c3729bf84782c55e9464780f2721648365a55ad6be14ede710"
+               ],
+               "ja3" : [
+                  "03e697d7655911e630ee3ee8e2a02ba4"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "SSLv3"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 7847,
+            "totDataBytes" : 6715,
+            "totPackets" : 20
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-180223",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -57,6 +57,7 @@
 typedef void (*void_fn_t)();
 /* { from defs.h */
 #define prefix_touchar(prefix) ((u_char *)&(prefix)->add.sin)
+#define prefix_tochar(prefix) (prefix?((u_char *)&(prefix)->add.sin):NULL)
 #define MAXLINE 1024
 #define BIT_TEST(f, b)  ((f) & (b))
 /* } */
@@ -113,15 +114,17 @@ typedef struct _patricia_tree_t {
 
 patricia_node_t *patricia_search_exact (patricia_tree_t *patricia, prefix_t *prefix);
 patricia_node_t *patricia_search_best (patricia_tree_t *patricia, prefix_t *prefix);
-patricia_node_t * patricia_search_best2 (patricia_tree_t *patricia, prefix_t *prefix, 
-				   int inclusive);
+patricia_node_t *patricia_search_best2 (patricia_tree_t *patricia, prefix_t *prefix, int inclusive);
+patricia_node_t *patricia_search_best3(patricia_tree_t * patricia, const u_char *addr, int bitlen);
 int patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive, patricia_node_t **results);
+int patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, patricia_node_t **results, int resultsize);
 patricia_node_t *patricia_lookup (patricia_tree_t *patricia, prefix_t *prefix);
 void patricia_remove (patricia_tree_t *patricia, patricia_node_t *node);
 patricia_tree_t *New_Patricia (int maxbits);
 void Clear_Patricia (patricia_tree_t *patricia, void_fn_t func);
 void Destroy_Patricia (patricia_tree_t *patricia, void_fn_t func);
 void patricia_process (patricia_tree_t *patricia, void_fn_t func);
+prefix_t *New_Prefix2(int family, void *dest, int bitlen, prefix_t * prefix);
 
 void Deref_Prefix (prefix_t * prefix);
 

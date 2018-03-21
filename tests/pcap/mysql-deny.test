@@ -1,30 +1,33 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140422"
-            }
-         },
          "body" : {
-            "a1" : "192.168.1.3",
-            "mysql" : {
-               "ver-term" : "5.5.35-0FUNntu0.12.04.2",
-               "user-term" : "user0"
-            },
-            "rir2" : "ARIN",
-            "pa2" : 5,
-            "mac2-term-cnt" : 1,
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
+            "dstBytes" : 513,
+            "dstDataBytes" : 175,
+            "dstIp" : "192.168.1.3",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "fp" : 1398195861,
-            "a2" : "192.168.1.3",
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "5b0000000a352e35",
+            "dstPort" : 3306,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1398195861493,
+            "ipProtocol" : 6,
             "lastPacket" : 1398195861496,
-            "pa" : 10,
-            "psl" : [
+            "length" : 2,
+            "mysql" : {
+               "user" : "user0",
+               "version" : "5.5.35-0FUNntu0.12.04.2"
+            },
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -36,31 +39,7 @@
                82,
                82
             ],
-            "timestamp" : "SET",
-            "portDst" : 3306,
-            "prot-term-cnt" : 2,
-            "rir1" : "ARIN",
-            "by" : 916,
-            "ss" : 1,
-            "sl" : 2,
-            "pr" : 6,
-            "ipDst" : "192.168.1.3",
-            "p2" : 3306,
-            "lp" : 1398195861,
-            "p1" : 42418,
-            "fs" : [],
-            "by2" : 513,
-            "portSrc" : 42418,
-            "tcpflags" : {
-               "rst" : 0,
-               "ack" : 3,
-               "urg" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "psh" : 3,
-               "fin" : 2
-            },
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -72,25 +51,48 @@
                936,
                1018
             ],
-            "fpd" : 1398195861493,
-            "prot-term" : [
+            "protocol" : [
                "mysql",
                "tcp"
             ],
-            "mac2-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 403,
+            "srcDataBytes" : 65,
+            "srcIp" : "192.168.1.3",
+            "srcMac" : [
                "00:00:00:00:00:00"
             ],
-            "fb1" : "3d00000105a60f00",
-            "no" : "test",
-            "by1" : 403,
-            "firstPacket" : 1398195861493,
-            "db1" : 65,
-            "lpd" : 1398195861496,
-            "fb2" : "5b0000000a352e35",
-            "db" : 240,
-            "db2" : 175,
-            "ipSrc" : "192.168.1.3",
-            "pa1" : 5
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "3d00000105a60f00",
+            "srcPort" : 42418,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 916,
+            "totDataBytes" : 240,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140422",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/mysql-allow.pcap||file=$pwd/mysql-deny.pcap)";
 
 countTest(2, "date=-1&expression=" . uri_escape("$files&&protocols==mysql"));

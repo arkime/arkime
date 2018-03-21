@@ -1,78 +1,29 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "pa2" : 6,
-            "ipSrc" : "192.168.114.1",
-            "mac2-term" : [
+            "dstBytes" : 1326,
+            "dstDataBytes" : 922,
+            "dstIp" : "192.168.114.129",
+            "dstMac" : [
                "00:0c:29:30:60:27"
             ],
-            "rir2" : "ARIN",
-            "smbho" : [
-               "BLU"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "VMware, Inc."
             ],
-            "smbdmcnt" : 1,
-            "smbusercnt" : 1,
-            "p1" : 52703,
-            "fp" : 1132371118,
-            "by2" : 1326,
-            "pa" : 14,
-            "portDst" : 445,
-            "timestamp" : "SET",
-            "mac1-term" : [
-               "00:50:56:c0:00:01"
-            ],
-            "smbdm" : [
-               "VNET3"
-            ],
-            "pa1" : 8,
-            "tcpflags" : {
-               "ack" : 2,
-               "psh" : 10,
-               "urg" : 0,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "syn" : 1
-            },
-            "fs" : [],
-            "smbsh" : [
-               "\\\\192.168.114.129\\TEST"
-            ],
-            "db" : 1824,
-            "a2" : "192.168.114.129",
-            "ipDst" : "192.168.114.129",
-            "db2" : 922,
-            "portSrc" : 52703,
-            "smbuser" : [
-               "administrator"
-            ],
-            "ss" : 1,
-            "no" : "test",
-            "mac1-term-cnt" : 1,
-            "smbvercnt" : 1,
-            "sl" : 56,
-            "a1" : "192.168.114.1",
-            "smboscnt" : 1,
-            "smbos" : [
-               "Unix"
-            ],
-            "smbver" : [
-               "Samba 3.9.0-SVN-build-11572"
-            ],
-            "fpd" : 1132371118535,
-            "prot-term-cnt" : 2,
-            "fb2" : "00000095ff534d42",
-            "smbhocnt" : 1,
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "mac2-term-cnt" : 1,
-            "by1" : 1438,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 6,
+            "dstPayload8" : "00000095ff534d42",
+            "dstPort" : 445,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1132371118535,
+            "ipProtocol" : 6,
             "lastPacket" : 1132371118592,
-            "p2" : 445,
-            "psl" : [
+            "length" : 56,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -88,10 +39,7 @@
                121,
                131
             ],
-            "pr" : 6,
-            "lpd" : 1132371118592,
-            "firstPacket" : 1132371118535,
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -107,17 +55,73 @@
                2760,
                2881
             ],
-            "lp" : 1132371118,
-            "smbshcnt" : 1,
-            "by" : 2764,
-            "db1" : 902,
-            "rir1" : "ARIN",
-            "fb1" : "000000dbff534d42"
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "smb" : {
+               "domain" : [
+                  "VNET3"
+               ],
+               "domainCnt" : 1,
+               "host" : [
+                  "BLU"
+               ],
+               "hostCnt" : 1,
+               "os" : [
+                  "Unix"
+               ],
+               "osCnt" : 1,
+               "share" : [
+                  "\\\\192.168.114.129\\TEST"
+               ],
+               "shareCnt" : 1,
+               "user" : [
+                  "administrator"
+               ],
+               "userCnt" : 1,
+               "version" : [
+                  "Samba 3.9.0-SVN-build-11572"
+               ],
+               "versionCnt" : 1
+            },
+            "srcBytes" : 1438,
+            "srcDataBytes" : 902,
+            "srcIp" : "192.168.114.1",
+            "srcMac" : [
+               "00:50:56:c0:00:01"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "000000dbff534d42",
+            "srcPort" : 52703,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 10,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 2764,
+            "totDataBytes" : 1824,
+            "totPackets" : 14
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-051119"
+               "_index" : "tests_sessions2-051119",
+               "_type" : "session"
             }
          }
       }

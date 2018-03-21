@@ -1,78 +1,78 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a2" : "10.150.10.150",
-            "fp" : 1466252055,
-            "p2" : 88,
-            "by" : 297,
-            "ps" : [
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.150.10.150",
+            "dstMac" : [
+               "00:00:5e:00:01:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "ICANN, IANA Department"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 88,
+            "fileId" : [],
+            "firstPacket" : 1466252055201,
+            "ipProtocol" : 17,
+            "krb5" : {
+               "cname" : [
+                  "xxxxxxxx$"
+               ],
+               "cnameCnt" : 1,
+               "realm" : [
+                  "xx.xxx.xxxxx.NET"
+               ],
+               "realmCnt" : 1,
+               "sname" : [
+                  "krbtgt/xx.xxx.xxxxx.NET"
+               ],
+               "snameCnt" : 1
+            },
+            "lastPacket" : 1466252055201,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               313
+            ],
+            "packetPos" : [
                24
             ],
-            "vlan-cnt" : 1,
-            "lpd" : 1466252055201,
-            "firstPacket" : 1466252055201,
-            "a1" : "10.172.10.172",
-            "fpd" : 1466252055201,
-            "ss" : 1,
-            "p1" : 58412,
-            "pr" : 17,
-            "prot-term-cnt" : 2,
-            "prot-term" : [
+            "protocol" : [
                "udp",
                "krb5"
             ],
-            "fb1" : "6a81f83081f5a103",
-            "mac2-term" : [
-               "00:00:5e:00:01:01"
-            ],
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 297,
+            "srcDataBytes" : 289,
+            "srcIp" : "10.172.10.172",
+            "srcMac" : [
                "00:1b:17:00:02:30"
             ],
-            "by1" : 297,
-            "krb5" : {
-               "sname-term" : [
-                  "krbtgt/xx.xxx.xxxxx.NET"
-               ],
-               "cname-termcnt" : 1,
-               "realm-termcnt" : 1,
-               "cname-term" : [
-                  "xxxxxxxx$"
-               ],
-               "sname-termcnt" : 1,
-               "realm-term" : [
-                  "xx.xxx.xxxxx.NET"
-               ]
-            },
-            "psl" : [
-               313
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Palo Alto Networks"
             ],
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1466252055201,
-            "by2" : 0,
-            "portDst" : 88,
-            "mac2-term-cnt" : 1,
-            "pa" : 1,
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "6a81f83081f5a103",
+            "srcPort" : 58412,
             "timestamp" : "SET",
-            "pa1" : 1,
-            "sl" : 0,
-            "db1" : 289,
-            "pa2" : 0,
-            "ipDst" : "10.150.10.150",
-            "portSrc" : 58412,
+            "totBytes" : 297,
+            "totDataBytes" : 289,
+            "totPackets" : 1,
             "vlan" : [
                300
             ],
-            "no" : "test",
-            "db2" : 0,
-            "fs" : [],
-            "lp" : 1466252055,
-            "db" : 289,
-            "ipSrc" : "10.172.10.172"
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-160618",
+               "_index" : "tests_sessions2-160618",
                "_type" : "session"
             }
          }

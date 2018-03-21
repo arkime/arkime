@@ -1,0 +1,70 @@
+/* Cubism stuff -------------------- */
+.axis path, .axis line {
+  fill            : none;
+  stroke          : var(--color-foreground);
+  shape-rendering : crispEdges;
+}
+
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis text {
+  -webkit-transition: fill-opacity 250ms linear;
+  stroke : var(--color-foreground);
+}
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke          : var(--color-foreground);
+  shape-rendering : crispEdges;
+}
+
+.horizon {
+  border-bottom : solid 1px var(--color-black);
+  overflow      : hidden;
+  position      : relative;
+}
+
+.horizon + .horizon {
+  border-top: none;
+}
+
+.horizon canvas {
+  display: block;
+}
+
+.horizon .title, .horizon .value {
+  bottom      : 0;
+  line-height : 30px;
+  margin      : 0 6px;
+  position    : absolute;
+  text-shadow : 0 1px 0 var(--color-white);
+  color       : var(--color-black);
+  white-space : nowrap;
+  font-weight : 600;
+}
+
+.horizon .title {
+  left: 0;
+}
+
+.horizon .value {
+  right: 0;
+}
+
+.rule {
+  position: fixed;
+  z-index : 3;
+  bottom  : 0;
+  top     : 0;
+}
+
+.line {
+  background: var(--color-black);
+  position  : absolute;
+  opacity   : .4;
+}

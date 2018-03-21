@@ -1,45 +1,31 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               401,
-               483,
-               581,
-               663,
-               779,
-               883
-            ],
-            "ipSrc" : "10.10.30.26",
-            "lp" : 1454301531,
-            "mac2-term" : [
+            "dstASN" : "AS4385 Rochester Institute of Technology",
+            "dstBytes" : 428,
+            "dstDataBytes" : 90,
+            "dstGEO" : "US",
+            "dstIp" : "129.21.171.72",
+            "dstMac" : [
                "58:f3:9c:f7:2f:9f"
             ],
-            "a2" : "129.21.171.72",
-            "lastPacket" : 1454301531009,
-            "ss" : 1,
-            "fpd" : 1454301530932,
-            "no" : "test",
-            "user" : [
-               "anonymous"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
             ],
-            "timestamp" : "SET",
-            "fs" : [],
-            "portDst" : 21,
-            "tcpflags" : {
-               "psh" : 5,
-               "ack" : 3,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "fin" : 0,
-               "syn" : 1
-            },
-            "psl" : [
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "3232302057656c63",
+            "dstPort" : 21,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1454301530932,
+            "ipProtocol" : 6,
+            "lastPacket" : 1454301531009,
+            "length" : 78,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -51,46 +37,62 @@
                104,
                105
             ],
-            "as2" : "AS4385 Rochester Institute of Technology",
-            "mac2-term-cnt" : 1,
-            "by2" : 428,
-            "pa" : 10,
-            "fp" : 1454301530,
-            "ipDst" : "129.21.171.72",
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
-               "00:08:e3:ff:fc:28"
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               401,
+               483,
+               581,
+               663,
+               779,
+               883
             ],
-            "a1" : "10.10.30.26",
-            "lpd" : 1454301531009,
-            "prot-term-cnt" : 2,
-            "pa2" : 5,
-            "p1" : 43958,
-            "pr" : 6,
-            "rir2" : "ARIN",
-            "by" : 804,
-            "db" : 128,
-            "fb2" : "3232302057656c63",
-            "portSrc" : 43958,
-            "firstPacket" : 1454301530932,
-            "fb1" : "5553455220616e6f",
-            "sl" : 78,
-            "by1" : 376,
-            "db1" : 38,
-            "g2" : "USA",
-            "usercnt" : 1,
-            "pa1" : 5,
-            "db2" : 90,
-            "prot-term" : [
+            "protocol" : [
                "ftp",
                "tcp"
             ],
-            "p2" : 21
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 376,
+            "srcDataBytes" : 38,
+            "srcIp" : "10.10.30.26",
+            "srcMac" : [
+               "00:08:e3:ff:fc:28"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "5553455220616e6f",
+            "srcPort" : 43958,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 5,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 804,
+            "totDataBytes" : 128,
+            "totPackets" : 10,
+            "user" : [
+               "anonymous"
+            ],
+            "userCnt" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160201"
+               "_index" : "tests_sessions2-160201",
+               "_type" : "session"
             }
          }
       }

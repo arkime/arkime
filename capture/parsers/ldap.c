@@ -16,15 +16,15 @@
 
 extern MolochConfig_t        config;
 
-static int bindNameField;
-static int authTypeField;
+LOCAL  int bindNameField;
+LOCAL  int authTypeField;
 
 typedef struct {
     unsigned char       buf[2][8192];
     int                 len[2];
 } LDAPInfo_t;
 /******************************************************************************/
-void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
+LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
 {
     BSB obsb, ibsb;
     uint32_t opc, otag, olen;
@@ -102,7 +102,7 @@ void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
     }
 }
 /******************************************************************************/
-int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     LDAPInfo_t            *ldap          = uw;
 
@@ -123,7 +123,7 @@ int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
     return 0;
 }
 /******************************************************************************/
-void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
+LOCAL void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
 {
     LDAPInfo_t            *ldap          = uw;
 
@@ -136,14 +136,14 @@ void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
     }
 }
 /******************************************************************************/
-void ldap_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void ldap_free(MolochSession_t *UNUSED(session), void *uw)
 {
     LDAPInfo_t            *ldap          = uw;
 
     MOLOCH_TYPE_FREE(LDAPInfo_t, ldap);
 }
 /******************************************************************************/
-void ldap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void ldap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "ldap"))
         return;
@@ -181,14 +181,14 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
 
     authTypeField = moloch_field_define("ldap", "termfield",
-        "ldap.authtype", "Auth Type", "ldap.authtype-term",
+        "ldap.authtype", "Auth Type", "ldap.authtype",
         "The auth type of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     bindNameField = moloch_field_define("ldap", "termfield",
-        "ldap.bindname", "Bind Name", "ldap.bindname-term",
+        "ldap.bindname", "Bind Name", "ldap.bindname",
         "The bind name of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 }

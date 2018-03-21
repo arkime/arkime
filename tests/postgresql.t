@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/postgres-badpass.pcap||file=$pwd/postgres-good.pcap||file=$pwd/postgres-no-sslrequest.pcap)";
 
 countTest(3, "date=-1&expression=" . uri_escape("$files&&protocols==postgresql"));

@@ -62,6 +62,9 @@ var internals = {
   ja3: {
     sources: []
   },
+  sha256: {
+    sources: []
+  },
   sources: [],
   requestStats: [0,0,0,0,0,0,0],
   foundStats: [0,0,0,0,0,0,0],
@@ -186,7 +189,7 @@ internals.sourceApi = {
   },
   debug: internals.debug,
   addSource: function(section, src) {
-    src.srcInProgress = {ip: {}, domain: {}, email: {}, md5: {}, url: {}, tuple: {}, ja3: {}};
+    src.srcInProgress = {ip: {}, domain: {}, email: {}, md5: {}, url: {}, tuple: {}, ja3: {}, sha256: {}};
     internals.sources[section] = src;
     if (src.getIp) {
       internals.ip.sources.push(src);
@@ -208,6 +211,9 @@ internals.sourceApi = {
     }
     if (src.getJa3) {
       internals.ja3.sources.push(src);
+    }
+    if (src.getSha256) {
+      internals.sha256.sources.push(src);
     }
   },
   app: app
@@ -236,9 +242,9 @@ app.get("/rightClicks", function(req, res) {
   res.send(internals.rightClicks);
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.type2Func = ["getIp", "getDomain", "getMd5", "getEmail", "getURL", "getTuple", "getJa3"];
-internals.type2Name = ["ip", "domain", "md5", "email", "url", "tuple", "ja3"];
-internals.name2Type = {ip:0, 0:0, domain:1, 1:1, md5:2, 2:2, email:3, 3:3, url:4, 4:4, tuple:5, 5:5, ja3:6, 6:6};
+internals.type2Func = ["getIp", "getDomain", "getMd5", "getEmail", "getURL", "getTuple", "getJa3", "getSha256"];
+internals.type2Name = ["ip", "domain", "md5", "email", "url", "tuple", "ja3", "sha256"];
+internals.name2Type = {ip:0, 0:0, domain:1, 1:1, md5:2, 2:2, email:3, 3:3, url:4, 4:4, tuple:5, 5:5, ja3:6, 6:6, sha256:7, 7:7};
 
 //////////////////////////////////////////////////////////////////////////////////
 function processQuery(req, query, cb) {
@@ -246,7 +252,7 @@ function processQuery(req, query, cb) {
   var funcName = internals.type2Func[query.type];
   var typeInfo = internals[typeName];
 
-  if (query.type === 2) {
+  if (query.type === 2 || query.type == 7) {
     var parts = query.value.split(";");
     query.value = parts[0];
     query.contentType = parts[1];
@@ -512,16 +518,16 @@ if (getConfig("wiseService", "regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 function printStats()
 {
-  console.log(sprintf("REQUESTS:          domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d",
-      internals.requestStats[1], internals.requestStats[0], internals.requestStats[3], internals.requestStats[2], internals.requestStats[4], internals.requestStats[5], internals.requestStats[6]));
-  console.log(sprintf("FOUND:             domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d",
-      internals.foundStats[1], internals.foundStats[0], internals.foundStats[3], internals.foundStats[2], internals.foundStats[4], internals.foundStats[5], internals.foundStats[6]));
-  console.log(sprintf("CACHE HIT:         domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d",
-      internals.cacheHitStats[1], internals.cacheHitStats[0], internals.cacheHitStats[3], internals.cacheHitStats[2], internals.cacheHitStats[4], internals.cacheHitStats[5], internals.cacheHitStats[6]));
-  console.log(sprintf("CACHE SRC HIT:     domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d",
-      internals.cacheSrcHitStats[1], internals.cacheSrcHitStats[0], internals.cacheSrcHitStats[3], internals.cacheSrcHitStats[2], internals.cacheSrcHitStats[4], internals.cacheSrcHitStats[5], internals.cacheSrcHitStats[6]));
-  console.log(sprintf("CACHE SRC REFRESH: domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d",
-      internals.cacheSrcRefreshStats[1], internals.cacheSrcRefreshStats[0], internals.cacheSrcRefreshStats[3], internals.cacheSrcRefreshStats[2], internals.cacheSrcRefreshStats[4], internals.cacheSrcRefreshStats[5], internals.cacheSrcRefreshStats[6]));
+  console.log(sprintf("REQUESTS:          domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d sha256: %7d",
+      internals.requestStats[1], internals.requestStats[0], internals.requestStats[3], internals.requestStats[2], internals.requestStats[4], internals.requestStats[5], internals.requestStats[6], internals.requestStats[7]));
+  console.log(sprintf("FOUND:             domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d sha256: %7d",
+      internals.foundStats[1], internals.foundStats[0], internals.foundStats[3], internals.foundStats[2], internals.foundStats[4], internals.foundStats[5], internals.foundStats[6], internals.foundStats[7]));
+  console.log(sprintf("CACHE HIT:         domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d sha256: %7d",
+      internals.cacheHitStats[1], internals.cacheHitStats[0], internals.cacheHitStats[3], internals.cacheHitStats[2], internals.cacheHitStats[4], internals.cacheHitStats[5], internals.cacheHitStats[6], internals.cacheHitStats[7]));
+  console.log(sprintf("CACHE SRC HIT:     domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d sha256: %7d",
+      internals.cacheSrcHitStats[1], internals.cacheSrcHitStats[0], internals.cacheSrcHitStats[3], internals.cacheSrcHitStats[2], internals.cacheSrcHitStats[4], internals.cacheSrcHitStats[5], internals.cacheSrcHitStats[6], internals.cacheSrcHitStats[7]));
+  console.log(sprintf("CACHE SRC REFRESH: domain: %7d ip: %7d email: %7d md5: %7d url: %7d tuple: %7d ja3: %7d sha256: %7d",
+      internals.cacheSrcRefreshStats[1], internals.cacheSrcRefreshStats[0], internals.cacheSrcRefreshStats[3], internals.cacheSrcRefreshStats[2], internals.cacheSrcRefreshStats[4], internals.cacheSrcRefreshStats[5], internals.cacheSrcRefreshStats[6], internals.cacheSrcRefreshStats[7]));
 
   for (var section in internals.sources) {
     let src = internals.sources[section];
@@ -585,6 +591,7 @@ internals.tuple.global_allowed = function(value) {
   return true;
 };
 internals.ja3.global_allowed = function(value) {return true;};
+internals.sha256.global_allowed = function(value) {return true;};
 
 internals.ip.source_allowed = function(src, value) {
   if (src.excludeIPs.find(value)) {
@@ -644,6 +651,7 @@ internals.tuple.source_allowed = function(src, value) {
   return true;
 };
 internals.ja3.source_allowed = function(src, value) {return true;};
+internals.sha256.source_allowed = function(src, value) {return true;};
 //////////////////////////////////////////////////////////////////////////////////
 function loadExcludes() {
   ["excludeDomains", "excludeEmails", "excludeURLs", "excludeTuples"].forEach((type) => {

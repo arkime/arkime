@@ -1,120 +1,28 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131219",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "timestamp" : "SET",
-            "fp" : 1387494788,
-            "lastPacket" : 1387494791811,
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "smbshcnt" : 1,
-            "portSrc" : 41823,
-            "mac2-term-cnt" : 1,
-            "smbuser" : [
-               "user"
-            ],
-            "a2" : "127.0.0.1",
-            "smbvercnt" : 1,
-            "smbdmcnt" : 1,
-            "pa2" : 13,
-            "pa" : 34,
-            "smbsh" : [
-               "\\\\LOCALHOST\\MP3"
-            ],
-            "mac2-term" : [
+            "dstBytes" : 1667,
+            "dstDataBytes" : 801,
+            "dstIp" : "127.0.0.1",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "lpd" : 1387494791811,
-            "fb1" : "000000beff534d42",
-            "prot-term-cnt" : 2,
-            "smbdm" : [
-               "WORKGROUP"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
-            "fb2" : "00000061ff534d42",
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               562,
-               644,
-               827,
-               909,
-               1123,
-               1305,
-               1473,
-               1621,
-               1703,
-               1842,
-               1981,
-               2063,
-               2237,
-               2419,
-               2501,
-               2671,
-               2822,
-               2904,
-               3062,
-               3296,
-               3437,
-               3597,
-               3724,
-               3845,
-               3927,
-               4048,
-               4169,
-               4251,
-               4333,
-               4415
-            ],
-            "sl" : 3669,
-            "pr" : 6,
-            "ss" : 1,
-            "portDst" : 445,
-            "lp" : 1387494791,
-            "mac1-term" : [
-               "00:00:00:00:00:00"
-            ],
-            "smbos" : [
-               "Unix"
-            ],
-            "tcpflags" : {
-               "psh" : 20,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 10,
-               "urg" : 0
-            },
-            "smbfncnt" : 1,
-            "a1" : "127.0.0.1",
-            "no" : "test",
-            "db1" : 868,
-            "ipSrc" : "127.0.0.1",
-            "fs" : [],
-            "p1" : 41823,
-            "by2" : 1667,
-            "smbver" : [
-               "Samba 3.6.3"
-            ],
-            "by" : 3929,
-            "ipDst" : "127.0.0.1",
-            "smbfn" : [
-               "\\tmp\\foo"
-            ],
-            "by1" : 2262,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 13,
+            "dstPayload8" : "00000061ff534d42",
+            "dstPort" : 445,
+            "fileId" : [],
             "firstPacket" : 1387494788141,
-            "db" : 1669,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1387494791811,
+            "length" : 3669,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -150,13 +58,109 @@
                82,
                82
             ],
-            "smboscnt" : 1,
-            "mac1-term-cnt" : 1,
-            "p2" : 445,
-            "db2" : 801,
-            "pa1" : 21,
-            "fpd" : 1387494788141,
-            "smbusercnt" : 1
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               562,
+               644,
+               827,
+               909,
+               1123,
+               1305,
+               1473,
+               1621,
+               1703,
+               1842,
+               1981,
+               2063,
+               2237,
+               2419,
+               2501,
+               2671,
+               2822,
+               2904,
+               3062,
+               3296,
+               3437,
+               3597,
+               3724,
+               3845,
+               3927,
+               4048,
+               4169,
+               4251,
+               4333,
+               4415
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "smb" : {
+               "domain" : [
+                  "WORKGROUP"
+               ],
+               "domainCnt" : 1,
+               "filename" : [
+                  "\\tmp\\foo"
+               ],
+               "filenameCnt" : 1,
+               "os" : [
+                  "Unix"
+               ],
+               "osCnt" : 1,
+               "share" : [
+                  "\\\\LOCALHOST\\MP3"
+               ],
+               "shareCnt" : 1,
+               "user" : [
+                  "user"
+               ],
+               "userCnt" : 1,
+               "version" : [
+                  "Samba 3.6.3"
+               ],
+               "versionCnt" : 1
+            },
+            "srcBytes" : 2262,
+            "srcDataBytes" : 868,
+            "srcIp" : "127.0.0.1",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 21,
+            "srcPayload8" : "000000beff534d42",
+            "srcPort" : 41823,
+            "tcpflags" : {
+               "ack" : 10,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 20,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3929,
+            "totDataBytes" : 1669,
+            "totPackets" : 34
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131219",
+               "_type" : "session"
+            }
          }
       }
    ]

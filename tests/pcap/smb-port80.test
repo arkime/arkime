@@ -1,74 +1,30 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-130918"
-            }
-         },
          "body" : {
-            "firstPacket" : 1379519109833,
-            "fb2" : "b378fd2aae2d4aee",
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "pa" : 9,
-            "g1" : "CAN",
-            "p2" : 80,
-            "by1" : 506,
-            "rir1" : "TEST",
-            "fb1" : "000000a4ff534d42",
-            "g2" : "RUS",
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "syn" : 1,
-               "fin" : 2,
-               "rst" : 0,
-               "psh" : 3,
-               "ack" : 3,
-               "urg" : 0
-            },
-            "fs" : [],
-            "pa1" : 5,
-            "ss" : 1,
-            "by" : 847,
-            "mac2-term-cnt" : 1,
-            "portDst" : 80,
-            "tacnt" : 2,
-            "pr" : 6,
-            "db2" : 69,
-            "mac2-term" : [
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 341,
+            "dstDataBytes" : 69,
+            "dstGEO" : "RU",
+            "dstIp" : "10.0.0.1",
+            "dstMac" : [
                "00:0b:45:b7:08:80"
             ],
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
             ],
-            "a2" : "10.0.0.1",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "mac1-term" : [
-               "00:26:88:df:17:c6",
-               "00:00:5e:00:01:02"
-            ],
-            "as2" : "AS0000 This is neat",
-            "timestamp" : "SET",
-            "ipDst" : "10.0.0.1",
-            "prot-term-cnt" : 2,
-            "fp" : 1379519109,
-            "lpd" : 1379519110616,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 4,
+            "dstPayload8" : "b378fd2aae2d4aee",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1379519109833,
+            "ipProtocol" : 6,
             "lastPacket" : 1379519110616,
-            "portSrc" : 46735,
-            "db1" : 168,
-            "no" : "test",
-            "p1" : 46735,
-            "by2" : 341,
-            "mac1-term-cnt" : 2,
-            "psl" : [
+            "length" : 784,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -79,14 +35,7 @@
                82,
                82
             ],
-            "lp" : 1379519110,
-            "fpd" : 1379519109833,
-            "db" : 237,
-            "pa2" : 4,
-            "a1" : "10.0.0.2",
-            "as1" : "AS0001 Cool Beans!",
-            "ipSrc" : "10.0.0.2",
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -97,7 +46,57 @@
                851,
                933
             ],
-            "sl" : 784
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 506,
+            "srcDataBytes" : 168,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "00:00:5e:00:01:02",
+               "00:26:88:df:17:c6"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 5,
+            "srcPayload8" : "000000a4ff534d42",
+            "srcPort" : 46735,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 847,
+            "totDataBytes" : 237,
+            "totPackets" : 9
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-130918",
+               "_type" : "session"
+            }
          }
       }
    ]

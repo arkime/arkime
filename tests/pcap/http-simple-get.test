@@ -1,112 +1,90 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "mac2-term" : [
+            "dstBytes" : 5773,
+            "dstDataBytes" : 5237,
+            "dstGEO" : "US",
+            "dstIp" : "10.180.156.249",
+            "dstMac" : [
                "00:13:72:c4:f1:e1"
             ],
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Dell Inc."
             ],
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               524,
-               606,
-               2136,
-               3666,
-               3748,
-               5278,
-               5360,
-               6335,
-               6417,
-               6499,
-               6581,
-               6663
-            ],
-            "pa2" : 8,
+            "dstOuiCnt" : 1,
+            "dstPackets" : 8,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1385391358382,
             "http" : {
-               "bodymagic-term" : [
+               "bodyMagic" : [
                   "text/html"
                ],
-               "method-term" : [
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "230e3b4387b64caf54a7487b4f726adb"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
                   "GET"
                ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "host"
+               ],
+               "requestHeaderCnt" : 3,
+               "responseHeader" : [
+                  "content-type",
+                  "accept-ranges",
+                  "content-length",
+                  "date",
+                  "connection",
+                  "server"
+               ],
+               "responseHeaderCnt" : 6,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "a5bae43656eb0c0c5db924a1764dd4631f58d3f0d2145333589521ea1d514ba5"
+               ],
+               "sha256Cnt" : 1,
                "statuscode" : [
                   403
                ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "method-term-cnt" : 1
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "xxxxxxxxxxxxx.xxx.com/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+               ],
+               "useragentCnt" : 1
             },
-            "hh2cnt" : 6,
-            "ho" : [
-               "xxxxxxxxxxxxx.xxx.com"
-            ],
-            "g2" : "USA",
-            "no" : "test",
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "uacnt" : 1,
-            "ipSrc" : "10.180.156.141",
-            "pr" : 6,
-            "ss" : 1,
-            "hmd5cnt" : 1,
-            "fb2" : "485454502f312e31",
-            "db" : 5389,
-            "uscnt" : 1,
-            "prot-term-cnt" : 2,
-            "a2" : "10.180.156.249",
-            "db2" : 5237,
-            "hsver" : [
-               "1.1"
-            ],
-            "fp" : 1385391358,
-            "hh1cnt" : 3,
+            "ipProtocol" : 6,
             "lastPacket" : 1385391358387,
-            "us" : [
-               "//xxxxxxxxxxxxx.xxx.com/"
-            ],
-            "pa" : 16,
-            "by1" : 692,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "pa1" : 8,
-            "portDst" : 80,
-            "hsvercnt" : 1,
-            "by2" : 5773,
-            "hdver" : [
-               "1.1"
-            ],
-            "hpathcnt" : 1,
-            "g1" : "USA",
-            "tcpflags" : {
-               "psh" : 2,
-               "rst" : 0,
-               "ack" : 10,
-               "syn" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "syn-ack" : 1
-            },
-            "hocnt" : 1,
-            "sl" : 5,
-            "hmd5" : [
-               "230e3b4387b64caf54a7487b4f726adb"
-            ],
-            "firstPacket" : 1385391358382,
-            "a1" : "10.180.156.141",
-            "hdvercnt" : 1,
-            "p2" : 80,
-            "lpd" : 1385391358387,
-            "timestamp" : "SET",
-            "psl" : [
+            "length" : 5,
+            "node" : "test",
+            "packetLen" : [
                94,
                90,
                82,
@@ -124,36 +102,64 @@
                82,
                82
             ],
-            "by" : 6465,
-            "lp" : 1385391358,
-            "p1" : 61450,
-            "fpd" : 1385391358382,
-            "db1" : 152,
-            "mac1-term-cnt" : 1,
-            "portSrc" : 61450,
-            "ipDst" : "10.180.156.249",
-            "fb1" : "474554202f204854",
-            "hpath" : [
-               "/"
+            "packetPos" : [
+               24,
+               118,
+               208,
+               290,
+               524,
+               606,
+               2136,
+               3666,
+               3748,
+               5278,
+               5360,
+               6335,
+               6417,
+               6499,
+               6581,
+               6663
             ],
-            "mac2-term-cnt" : 1,
-            "fs" : [],
-            "prot-term" : [
+            "protocol" : [
                "http",
                "tcp"
             ],
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:connection",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:server"
-            ]
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 692,
+            "srcDataBytes" : 152,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.141",
+            "srcMac" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Apple, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "474554202f204854",
+            "srcPort" : 61450,
+            "tcpflags" : {
+               "ack" : 10,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 6465,
+            "totDataBytes" : 5389,
+            "totPackets" : 16
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131125",
+               "_index" : "tests_sessions2-131125",
                "_type" : "session"
             }
          }

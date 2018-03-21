@@ -77,14 +77,14 @@ typedef struct molochhttpconnhead_t {
 
 } MolochHttpConnHead_t;
 
-static HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
-static MOLOCH_LOCK_DEFINE(connections);
+LOCAL HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
+LOCAL MOLOCH_LOCK_DEFINE(connections);
 
-static MolochHttpRequestHead_t requests;
-static int                     requestsTimer;
-static MOLOCH_LOCK_DEFINE(requests);
+LOCAL MolochHttpRequestHead_t requests;
+LOCAL int                     requestsTimer;
+LOCAL MOLOCH_LOCK_DEFINE(requests);
 
-uint64_t connectionsSet[2048];
+LOCAL uint64_t connectionsSet[2048];
 
 typedef struct {
     MolochHttpServer_t  *server;
@@ -116,8 +116,8 @@ struct molochhttpserver_t {
     MolochHttpHeader_cb      headerCb;
 };
 
-static z_stream z_strm;
-static MOLOCH_LOCK_DEFINE(z_strm);
+LOCAL z_stream z_strm;
+LOCAL MOLOCH_LOCK_DEFINE(z_strm);
 
 LOCAL gboolean moloch_http_send_timer_callback(gpointer);
 LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async);
@@ -130,7 +130,7 @@ int moloch_http_conn_cmp(const void *keyv, const void *elementv)
     return memcmp(keyv, conn->sessionId, MIN(((uint8_t *)keyv)[0], conn->sessionId[0])) == 0;
 }
 /******************************************************************************/
-static size_t moloch_http_curl_write_callback(void *contents, size_t size, size_t nmemb, void *requestP)
+LOCAL size_t moloch_http_curl_write_callback(void *contents, size_t size, size_t nmemb, void *requestP)
 {
     MolochHttpRequest_t *request = requestP;
 
@@ -315,7 +315,7 @@ LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest
     }
 }
 /******************************************************************************/
-static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
+LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
 {
     char *eff_url;
     CURLMsg *msg;
@@ -397,7 +397,7 @@ static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
     }
 }
 /******************************************************************************/
-static gboolean moloch_http_watch_callback(int fd, GIOCondition condition, gpointer serverV)
+LOCAL gboolean moloch_http_watch_callback(int fd, GIOCondition condition, gpointer serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
@@ -412,7 +412,7 @@ static gboolean moloch_http_watch_callback(int fd, GIOCondition condition, gpoin
     return TRUE;
 }
 /******************************************************************************/
-static int moloch_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t fd, int what, void *serverV, void *evP)
+LOCAL int moloch_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t fd, int what, void *serverV, void *evP)
 {
     MolochHttpServer_t        *server = serverV;
     long                       ev = (long)evP;
@@ -435,7 +435,7 @@ static int moloch_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t f
 }
 /******************************************************************************/
 /* Called by glib when our timeout expires */
-static gboolean moloch_http_timer_callback(gpointer serverV)
+LOCAL gboolean moloch_http_timer_callback(gpointer serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
@@ -445,7 +445,7 @@ static gboolean moloch_http_timer_callback(gpointer serverV)
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-static int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_ms, void *serverV)
+LOCAL int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_ms, void *serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
@@ -491,7 +491,7 @@ size_t moloch_http_curlm_header_function(char *buffer, size_t size, size_t nitem
     return sz;
 }
 /******************************************************************************/
-static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condition, gpointer snameV)
+LOCAL gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condition, gpointer snameV)
 {
     MolochHttpServerName_t    *sname = snameV;
     MolochHttpServer_t        *server = sname->server;
@@ -654,7 +654,7 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
     return 0;
 }
 /******************************************************************************/
-static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
+LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
 {
     MolochHttpRequest_t       *request;
 
@@ -688,7 +688,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
         LOG("ERROR - Dropping request %.*s of size %d queue %d is too big", key_len, key, data_len, server->outstanding);
-        server->dropped++;
+        MOLOCH_THREAD_INCR(server->dropped);
 
         if (data) {
             MOLOCH_SIZE_FREE(buffer, data);

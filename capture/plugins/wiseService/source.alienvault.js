@@ -37,15 +37,15 @@ function AlienVaultSource (api, section) {
   this.api.addSource("alienvault", this);
 
   this.idField          = this.api.addField("field:alienvault.id;db:alienvault.id;kind:integer;friendly:Id;help:Alien Vault ID;count:true");
-  this.reliabilityField = this.api.addField("field:alienvault.reliability;db:alienvault.reliability;kind:integer;friendly:Reliability;help:Alient Vault Reliability;count:true");
-  this.threatlevelField = this.api.addField("field:alienvault.threat-level;db:alienvault.threatlevel;kind:integer;friendly:Threat Level;help:Alient Vault Threat Level;count:true");
-  this.activityField    = this.api.addField("field:alienvault.activity;db:alienvault.activity-term;kind:termfield;friendly:Activity;help:Alient Vault Activity;count:true");
+  this.reliabilityField = this.api.addField("field:alienvault.reliability;db:alienvault.reliability;kind:integer;friendly:Reliability;help:Alien Vault Reliability;count:true");
+  this.threatlevelField = this.api.addField("field:alienvault.threat-level;db:alienvault.threatlevel;kind:integer;friendly:Threat Level;help:Alien Vault Threat Level;count:true");
+  this.activityField    = this.api.addField("field:alienvault.activity;db:alienvault.activity;kind:termfield;friendly:Activity;help:Alien Vault Activity;count:true");
 
   this.api.addView("alienvault",
     "if (session.alienvault)\n" +
     "  div.sessionDetailMeta.bold AlienVault\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.alienvault, 'activity-term', 'Activity', 'alienvault.activity')\n" +
+    "    +arrayList(session.alienvault, 'activity', 'Activity', 'alienvault.activity')\n" +
     "    +arrayList(session.alienvault, 'threatlevel', 'Threat Level', 'alienvault.threat-level')\n" +
     "    +arrayList(session.alienvault, 'reliability', 'Reliability', 'alienvault.reliability')\n" +
     "    +arrayList(session.alienvault, 'id', 'Id', 'alienvault.id')\n"

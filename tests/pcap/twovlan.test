@@ -1,63 +1,98 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "hdver" : [
-               "1.1"
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 4574,
+            "dstDataBytes" : 4344,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "00:09:0f:db:f4:3e"
             ],
-            "ua" : [
-               "Wget/1.15 (linux-gnu)"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Fortinet Inc."
             ],
-            "ho" : [
-               "xxxxxxx.xxx.xxx"
-            ],
-            "no" : "test",
-            "hpath" : [
-               "/"
-            ],
-            "mac1-term" : [
-               "00:0c:29:c1:2d:24"
-            ],
-            "pa1" : 3,
-            "as1" : "AS0000 This is neat",
-            "fpd" : 1456042921641,
-            "ps" : [
-               24,
-               122,
-               220,
-               310,
-               513,
-               603
-            ],
-            "db2" : 4344,
-            "uscnt" : 1,
-            "by" : 4917,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "hdvercnt" : 1,
-            "vlan-cnt" : 2,
-            "tacnt" : 2,
-            "hsver" : [
-               "1.1"
-            ],
-            "pr" : 6,
-            "mac2-term-cnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "us" : [
-               "//xxxxxxx.xxx.xxx/"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "pa" : 6,
-            "g2" : "CAN",
-            "prot-term-cnt" : 2,
-            "psl" : [
+            "dstOuiCnt" : 1,
+            "dstPackets" : 3,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1456042921641,
+            "http" : {
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "xxxxxxx.xxx.xxx"
+               ],
+               "hostCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "connection",
+                  "host"
+               ],
+               "requestHeaderCnt" : 4,
+               "responseHeader" : [
+                  "content-type",
+                  "x-cache",
+                  "vary",
+                  "cache-control",
+                  "x-xss-protection",
+                  "access-control-allow-origin",
+                  "accept-ranges",
+                  "content-length",
+                  "date",
+                  "x-timer",
+                  "connection",
+                  "x-servedbyhost",
+                  "set-cookie",
+                  "content-security-policy",
+                  "x-served-by",
+                  "fastly-debug-digest",
+                  "via",
+                  "x-cache-hits",
+                  "age"
+               ],
+               "responseHeaderCnt" : 19,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "xxxxxxx.xxx.xxx/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Wget/1.15 (linux-gnu)"
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1456042921761,
+            "length" : 120,
+            "node" : "test",
+            "packetLen" : [
                98,
                98,
                90,
@@ -65,123 +100,86 @@
                90,
                4434
             ],
-            "ipDst" : "10.0.0.2",
-            "mac2-term" : [
-               "00:09:0f:db:f4:3e"
+            "packetPos" : [
+               24,
+               122,
+               220,
+               310,
+               513,
+               603
             ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 343,
+            "srcDataBytes" : 113,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:0c:29:c1:2d:24"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "474554202f204854",
+            "srcPort" : 54422,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
             "tcpflags" : {
-               "syn" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "psh" : 1,
-               "fin" : 0,
                "ack" : 3,
-               "syn-ack" : 1
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
             },
-            "lastPacket" : 1456042921761,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:54422,33554442:80"
+               ]
+            },
             "timestamp" : "SET",
-            "portDst" : 80,
+            "totBytes" : 4917,
+            "totDataBytes" : 4457,
+            "totPackets" : 6,
             "vlan" : [
                200,
                201
             ],
-            "lpd" : 1456042921761,
-            "hh2cnt" : 19,
-            "ss" : 1,
-            "fp" : 1456042921,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "fb1" : "474554202f204854",
-            "hsvercnt" : 1,
-            "g1" : "RUS",
-            "mac1-term-cnt" : 1,
-            "p2" : 80,
-            "hh1cnt" : 4,
-            "rir2" : "TEST",
-            "fs" : [],
-            "fb2" : "485454502f312e31",
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:54422,33554442:80"
-               ]
-            },
-            "db" : 4457,
-            "http" : {
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term" : [
-                  "text/html"
-               ]
-            },
-            "by1" : 343,
-            "p1" : 54422,
-            "sl" : 120,
-            "uacnt" : 1,
-            "db1" : 113,
-            "lp" : 1456042921,
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:access-control-allow-origin",
-               "http:header:age",
-               "http:header:cache-control",
-               "http:header:connection",
-               "http:header:content-length",
-               "http:header:content-security-policy",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:fastly-debug-digest",
-               "http:header:set-cookie",
-               "http:header:vary",
-               "http:header:via",
-               "http:header:x-cache",
-               "http:header:x-cache-hits",
-               "http:header:x-served-by",
-               "http:header:x-servedbyhost",
-               "http:header:x-timer",
-               "http:header:x-xss-protection"
-            ],
-            "hocnt" : 1,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "portSrc" : 54422,
-            "a1" : "10.0.0.1",
-            "pa2" : 3,
-            "ipSrc" : "10.0.0.1",
-            "by2" : 4574,
-            "firstPacket" : 1456042921641,
-            "a2" : "10.0.0.2",
-            "hpathcnt" : 1
+            "vlanCnt" : 2
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160221"
+               "_index" : "tests_sessions2-160221",
+               "_type" : "session"
             }
          }
       }

@@ -181,7 +181,7 @@
     getDetailData(message) {
       this.loading = true;
 
-      this.SessionService.getDetail(this.$scope.session.id, this.$scope.session.no)
+      this.SessionService.getDetail(this.$scope.session.id, this.$scope.session.node)
         .then((response) => {
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
@@ -217,7 +217,7 @@
       }
 
       this.packetPromise = this.SessionService.getPackets(this.$scope.session.id,
-         this.$scope.session.no, this.$scope.params);
+         this.$scope.session.node, this.$scope.params);
 
       this.packetPromise.then((response) => {
         this.loadingPackets = false;
@@ -442,8 +442,8 @@
           scope.openPermalink = function() {
             $location.path('sessions')
               .search('expression', `id=${scope.session.id}`)
-              .search('startTime', scope.session.fp)
-              .search('stopTime', scope.session.lp)
+              .search('startTime', scope.session.firstPacket)
+              .search('stopTime', scope.session.lastPacket)
               .search('openAll', 1);
           };
 

@@ -44,7 +44,11 @@
               - centos-release-scl
 
           - name: install devtoolset centos 6
-            yum: state=present name=devtoolset-3-toolchain
+            yum: state=present name={{item}}
+            with_items:
+              - devtoolset-3-toolchain
+              - python27-python-devel
+              - python27-python-pip
 
           # TPACKET_V3 block end
           when: ansible_distribution_major_version == "6"
@@ -125,19 +129,24 @@
 # Actually build
     - block:
       - name: git clone
-        git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
+        git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes version=v1.0.0-rc1
 
-      - name: build
+      - name: build centos 6
+        shell: cd {{moloch_name}}; make clean; scl enable devtoolset-3 python27 "./easybutton-build.sh -d /data/{{moloch_name}} --daq"
+        when: ansible_distribution_major_version == "6"
+
+      - name: build not centos 6
         shell: cd {{moloch_name}}; make clean; ./easybutton-build.sh -d /data/{{moloch_name}} --daq
+        when: ansible_distribution_major_version != "6"
 
       - name: install centos 6
-        shell: cd {{moloch_name}}; scl enable devtoolset-3 "make install"
+        shell: npm -g config set user root; cd {{moloch_name}}; scl enable devtoolset-3 "make install"
         environment:
           PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
         when: ansible_distribution_major_version == "6"
 
       - name: install not centos 6
-        shell: cd {{moloch_name}}; make install
+        shell: npm -g config set user root; cd {{moloch_name}}; make install
         environment:
           PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
         when: ansible_distribution_major_version != "6"

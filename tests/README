@@ -26,7 +26,8 @@ pppoe.pcap - Subset of http://www.pcapr.net/view/tyson.key/2009/8/0/14/AOLTraffi
 fbzero-android.pcap - Subset of https://github.com/ntop/nDPI/issues/300#issuecomment-261893575
 wireshark-bdat.pcap - https://www.wireshark.org/lists/wireshark-bugs/201610/msg00410.html
 mpls-basic.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=mpls-basic.cap
-
+wireshark-dhcp.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=dhcp.pcap
+CVE-2018-6794.pcap - https://redmine.openinfosecfoundation.org/issues/2427
 
 
 2) Viewer

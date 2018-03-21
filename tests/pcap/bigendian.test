@@ -1,68 +1,70 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a2" : "10.64.11.49",
-            "ipSrc" : "192.168.177.160",
-            "prot-term-cnt" : 1,
-            "fp" : 1335958313,
-            "by1" : 196,
-            "pa" : 2,
-            "icmpType" : [
-               8
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.64.11.49",
+            "dstMac" : [
+               "00:00:5e:00:01:b1"
             ],
-            "portDst" : 0,
-            "prot-term" : [
-               "icmp"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "ICANN, IANA Department"
             ],
-            "portSrc" : 0,
-            "pr" : 1,
-            "ipDst" : "10.64.11.49",
-            "timestamp" : "SET",
-            "db" : 0,
-            "fpd" : 1335958313152,
-            "p1" : 0,
-            "mac2-term-cnt" : 1,
-            "fs" : [],
-            "lpd" : 1335958317529,
-            "pa2" : 0,
-            "pa1" : 2,
-            "ps" : [
-               24,
-               138
-            ],
-            "no" : "test",
-            "mac1-term" : [
-               "00:21:28:05:29:ba"
-            ],
-            "by2" : 0,
-            "lp" : 1335958317,
-            "db2" : 0,
-            "psl" : [
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1335958313152,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  8
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1335958317529,
+            "length" : 4376,
+            "node" : "test",
+            "packetLen" : [
                114,
                114
             ],
-            "mac2-term" : [
-               "00:00:5e:00:01:b1"
+            "packetPos" : [
+               24,
+               138
             ],
-            "sl" : 4376,
-            "ss" : 1,
-            "p2" : 0,
-            "icmpCode" : [
-               0
+            "protocol" : [
+               "icmp"
             ],
-            "a1" : "192.168.177.160",
-            "rir1" : "ARIN",
-            "firstPacket" : 1335958313152,
-            "by" : 196,
-            "db1" : 0,
-            "mac1-term-cnt" : 1,
-            "lastPacket" : 1335958317529
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 196,
+            "srcDataBytes" : 0,
+            "srcIp" : "192.168.177.160",
+            "srcMac" : [
+               "00:21:28:05:29:ba"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Oracle Corporation"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 2,
+            "srcPort" : 0,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 196,
+            "totDataBytes" : 0,
+            "totPackets" : 2
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-120502"
+               "_index" : "tests_sessions2-120502",
+               "_type" : "session"
             }
          }
       }

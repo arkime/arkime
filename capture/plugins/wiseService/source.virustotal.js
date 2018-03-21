@@ -56,17 +56,17 @@ function VirusTotalSource (api, section) {
     "  div.sessionDetailMeta.bold VirusTotal\n" +
     "  dl.sessionDetailMeta\n" +
     "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n" +
-    "    +arrayList(session.virustotal, 'links-term', 'Links', 'virustotal.links')\n";
+    "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
 
   for(var i = 0; i < this.dataSources.length; i++) {
     var uc = this.dataSources[i];
     var lc = this.dataSourcesLC[i];
-    this.dataFields[i] = this.api.addField(`field:virustotal.${lc};db:virustotal.${lc}-term;kind:lotermfield;friendly:${uc};help:VirusTotal ${uc} Status;count:true`);
-    str += "    +arrayList(session.virustotal, '" + lc + "-term', '" + uc + "', 'virustotal." + lc + "')\n";
+    this.dataFields[i] = this.api.addField(`field:virustotal.${lc};db:virustotal.${lc};kind:lotermfield;friendly:${uc};help:VirusTotal ${uc} Status;count:true`);
+    str += "    +arrayList(session.virustotal, '" + lc + "', '" + uc + "', 'virustotal." + lc + "')\n";
   }
 
   this.hitsField = this.api.addField("field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true");
-  this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links-term;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
+  this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
 
   this.api.addRightClick("virustotallinks", {name:"Open", url:"%TEXT%", fields:"virustotal.links"});
 

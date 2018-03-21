@@ -2,7 +2,13 @@
 
 cd BUILD_MOLOCH_INSTALL_DIR/etc
 wget -N -nv --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
-wget -N -nv http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip -f GeoIPASNum.dat.gz
-wget -N -nv http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip -f GeoIPASNumv6.dat.gz
-wget -N -nv http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz; gunzip -f GeoIP.dat.gz
-wget -N -nv http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz; gunzip -f GeoIPv6.dat.gz
+
+wget -N -nv -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'
+/bin/rm -f GeoLite2-Country.mmdb
+zcat GeoLite2-Country.mmdb.gz > GeoLite2-Country.mmdb
+
+wget -N -nv -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'
+/bin/rm -f GeoLite2-ASN.mmdb
+zcat GeoLite2-ASN.mmdb.gz > GeoLite2-ASN.mmdb
+
+wget -nv -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf

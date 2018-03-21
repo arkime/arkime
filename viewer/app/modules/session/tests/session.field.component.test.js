@@ -3,29 +3,29 @@
   'use strict';
 
   let session = {
-    pa2   : 0,
-    p1    : 10000,
-    no    : 'demo',
-    pa1   : 1,
-    p2    : 2948,
-    pr    : 17,
-    lp    : 1055289981,
-    fp    : 1055289978,
-    a1    : 16843009,
-    a2    : 33686018,
-    pa    : 1,
-    db1   : 437,
-    db2   : 0,
-    by    : 445,
-    by2   : 0,
-    by1   : 445,
-    db    : 437,
+    dstPackets   : 0,
+    srcPort    : 10000,
+    node    : 'demo',
+    srcPackets   : 1,
+    dstPort    : 2948,
+    ipProtocol    : 17,
+    lastPacket    : 1055289981000,
+    firstPacket    : 1055289978000,
+    srcIp    : 16843009,
+    dstIp    : 33686018,
+    totPackets    : 1,
+    srcDataBytes   : 437,
+    dstDataBytes   : 0,
+    totBytes    : 445,
+    dstBytes   : 0,
+    srcBytes   : 445,
+    totDataBytes    : 437,
     index : 'sessions-',
     id    : '--RzB4CrWwqlMZIHRa0CzjUYn'
   };
 
   let startTimeCol = {
-    dbField     : 'fp',
+    dbField     : 'firstPacket',
     exp         : 'starttime',
     friendlyName: 'Start Time',
     group       : 'general',
@@ -69,7 +69,7 @@
         SessionService: SessionService
       }, {
         expr    : 'starttime',
-        value   : session.fp,
+        value   : session.firstPacket,
         session : session,
         field   : startTimeCol,
         parse   : true
@@ -108,7 +108,7 @@
       sessionField.expr = 'protocols';
       sessionField.value = 'udp';
       sessionField.field = {
-        dbField     : 'prot-term',
+        dbField     : 'protocols',
         exp         : 'protocols',
         friendlyName: 'Protocols',
         group       : 'general'
@@ -121,11 +121,11 @@
     });
 
     it('should be able to click a time field', function() {
-      sessionField.timeClick('starttime', session.fp);
+      sessionField.timeClick('starttime', session.firstPacket);
 
       expect(sessionField.$scope.$emit).toHaveBeenCalled();
       expect(sessionField.$scope.$emit).toHaveBeenCalledWith('change:time', {
-        start: session.fp });
+        start: session.firstPacket });
     });
 
   });

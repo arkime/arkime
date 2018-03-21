@@ -8,14 +8,17 @@ CP = /bin/cp
 all:
 
 install:
-	@mkdir -p "$(VIEWERDIR)"
+	@mkdir -p "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
-	npm update
+	npm install
+	(cd vueapp ; npm install)
 	npm run bundle:min
 	$(CP) -pr views public bundle $(VIEWERDIR)
-	(cd $(VIEWERDIR) ; npm update --production)
+	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
+	(cd $(VIEWERDIR) ; npm install --production)
 
 distclean realclean clean:
 	rm -rf node_modules
 	rm -rf bundle
+	(cd vueapp ; rm -rf node_modules ; rm -rf dist)

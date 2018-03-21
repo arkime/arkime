@@ -1,73 +1,93 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "ectcnt" : 1,
-            "as1" : "AS0000 This is neat",
-            "emvcnt" : 1,
-            "db1" : 1834,
-            "ipDst" : "64.236.64.226",
-            "portSrc" : 20720,
-            "emd5" : [
-               "5b153a606bea42005e1eedb5ddeabcf0"
-            ],
-            "ehocnt" : 3,
-            "prot-term-cnt" : 2,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               439,
-               549,
-               631,
-               882,
-               1064,
-               1187,
-               1269,
-               1453,
-               2983,
-               3323,
-               3405,
-               3519,
-               3681,
-               3763,
-               3845
-            ],
-            "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:20720,-499061696:25"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "number" : [
-                  3795905600
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "lp" : 1384762016,
-            "ect" : [
-               "multipart/mixed; boundary=\"===============1250870193309395048==\""
-            ],
-            "by2" : 1163,
-            "mac2-term" : [
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstBytes" : 1163,
+            "dstDataBytes" : 495,
+            "dstGEO" : "US",
+            "dstIp" : "64.236.64.226",
+            "dstMac" : [
                "00:25:90:ac:d0:6a"
             ],
-            "eip" : [
-               "10.168.0.1",
-               "10.168.0.2"
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Super Micro Computer, Inc."
             ],
-            "fb2" : "32323020616f6c6d",
-            "psl" : [
+            "dstOuiCnt" : 1,
+            "dstPackets" : 10,
+            "dstPayload8" : "32323020616f6c6d",
+            "dstPort" : 25,
+            "dstRIR" : "ARIN",
+            "email" : {
+               "ASN" : [
+                  "---",
+                  "---"
+               ],
+               "GEO" : [
+                  "---",
+                  "---"
+               ],
+               "RIR" : [
+                  "",
+                  ""
+               ],
+               "contentType" : [
+                  "multipart/mixed; boundary=\"===============1250870193309395048==\""
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
+               ],
+               "dstCnt" : 1,
+               "header" : [
+                  "content-type",
+                  "mime-version",
+                  "from",
+                  "to",
+                  "received",
+                  "subject"
+               ],
+               "headerCnt" : 6,
+               "host" : [
+                  "xxxx.xxxx.xxxxxxxxx.com",
+                  "smtp-02.xxxxxxxxx.com",
+                  "smtp-01.xxxxxxxxx.com"
+               ],
+               "hostCnt" : 3,
+               "ip" : [
+                  "10.168.0.1",
+                  "10.168.0.2"
+               ],
+               "ipCnt" : 2,
+               "md5" : [
+                  "5b153a606bea42005e1eedb5ddeabcf0"
+               ],
+               "md5Cnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "sha256" : [
+                  "8d4b2e39ccf34cff2147c7b6896f4bd5ce0a209d0cd87ca75035b4c8243bf865"
+               ],
+               "sha256Cnt" : 1,
+               "src" : [
+                  "xxxxxxxxx@xxxxxxxxx.com"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
+               ],
+               "subjectCnt" : 1
+            },
+            "fileId" : [],
+            "firstPacket" : 1384762012670,
+            "ipProtocol" : 6,
+            "lastPacket" : 1384762016457,
+            "length" : 3788,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -88,111 +108,96 @@
                82,
                82
             ],
-            "by1" : 2436,
-            "emv" : [
-               "1.0"
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               549,
+               631,
+               882,
+               1064,
+               1187,
+               1269,
+               1453,
+               2983,
+               3323,
+               3405,
+               3519,
+               3681,
+               3763,
+               3845
             ],
-            "pa2" : 10,
-            "mac1-term-cnt" : 2,
-            "lastPacket" : 1384762016457,
-            "mac1-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0b:5f:6b:5d:40"
-            ],
-            "db2" : 495,
-            "esub" : [
-               "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
-            ],
-            "eipcnt" : 2,
-            "g2" : "USA",
-            "rireip" : [
-               "",
-               ""
-            ],
-            "by" : 3599,
-            "firstPacket" : 1384762012670,
-            "rir2" : "ARIN",
-            "pa" : 19,
-            "no" : "test",
-            "tags-term" : [
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "edstcnt" : 1,
-            "g1" : "RUS",
-            "lpd" : 1384762016457,
-            "fpd" : 1384762012670,
-            "esrc" : [
-               "xxxxxxxxx@xxxxxxxxx.com"
-            ],
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "rst" : 0,
-               "psh" : 9,
-               "syn" : 1,
-               "urg" : 0,
-               "ack" : 7,
-               "fin" : 2
-            },
-            "edst" : [
-               "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
-            ],
-            "mac2-term-cnt" : 1,
-            "a1" : "10.0.0.1",
-            "fp" : 1384762012,
-            "emd5cnt" : 1,
-            "p1" : 20720,
-            "prot-term" : [
+            "protocol" : [
                "smtp",
                "tcp"
             ],
-            "pr" : 6,
-            "ta" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 2436,
+            "srcDataBytes" : 1834,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0b:5f:6b:5d:40"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Cisco",
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 9,
+            "srcPayload8" : "45484c4f20736d74",
+            "srcPort" : 20720,
+            "tags" : [
                "smtp:statuscode:250",
                "srcip"
             ],
-            "fs" : [],
-            "pa1" : 9,
-            "ipSrc" : "10.0.0.1",
-            "ss" : 1,
-            "esrccnt" : 1,
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 7,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 9,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  3795905600
+               ],
+               "string.snow" : [
+                  "16777226:20720,-499061696:25"
+               ]
+            },
             "timestamp" : "SET",
-            "tacnt" : 2,
-            "ehh" : [
-               "content-type",
-               "mime-version",
-               "from",
-               "to",
-               "received",
-               "subject"
-            ],
-            "fb1" : "45484c4f20736d74",
-            "esubcnt" : 1,
-            "a2" : "64.236.64.226",
-            "as2" : "AS1668 AOL Transit Data Network",
-            "portDst" : 25,
-            "db" : 2329,
-            "p2" : 25,
-            "geip" : [
-               "---",
-               "---"
-            ],
-            "sl" : 3788,
-            "aseip" : [
-               "---",
-               "---"
-            ],
-            "ehhcnt" : 6,
-            "eho" : [
-               "xxxx.xxxx.xxxxxxxxx.com",
-               "smtp-02.xxxxxxxxx.com",
-               "smtp-01.xxxxxxxxx.com"
-            ]
+            "totBytes" : 3599,
+            "totDataBytes" : 2329,
+            "totPackets" : 19
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131118"
+               "_index" : "tests_sessions2-131118",
+               "_type" : "session"
             }
          }
       }

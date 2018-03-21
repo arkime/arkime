@@ -1,194 +1,190 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "lp" : 1387253713,
-            "no" : "test",
-            "a1" : "10.0.0.2",
-            "tacnt" : 2,
-            "as2" : "AS0000 This is neat",
-            "pa" : 1,
-            "prot-term" : [
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "RU",
+            "dstIp" : "10.0.0.1",
+            "dstMac" : [
+               "00:10:db:ff:26:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 3207,
+            "fileId" : [],
+            "firstPacket" : 1387253713030,
+            "ipProtocol" : 17,
+            "lastPacket" : 1387253713030,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               161
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "psl" : [
-               161
-            ],
-            "ipDst" : "10.0.0.1",
-            "by2" : 0,
-            "by1" : 145,
-            "by" : 145,
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 145,
+            "srcDataBytes" : 137,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
                "78:fe:3d:11:21:f2"
             ],
-            "prot-term-cnt" : 2,
-            "db1" : 137,
-            "mac2-term-cnt" : 1,
-            "ta" : [
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a6164323a69",
+            "srcPort" : 50759,
+            "srcRIR" : "TEST",
+            "tags" : [
                "dstip",
                "srcip"
             ],
-            "ipSrc" : "10.0.0.2",
-            "rir1" : "TEST",
-            "pr" : 17,
-            "g2" : "RUS",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "ss" : 1,
-            "pa2" : 0,
-            "ps" : [
-               24
-            ],
-            "db2" : 0,
-            "fs" : [],
+            "tagsCnt" : 2,
             "timestamp" : "SET",
-            "p1" : 50759,
-            "sl" : 0,
-            "pa1" : 1,
-            "lastPacket" : 1387253713030,
-            "fp" : 1387253713,
-            "p2" : 3207,
-            "mac2-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "as1" : "AS0001 Cool Beans!",
-            "fb1" : "64313a6164323a69",
-            "a2" : "10.0.0.1",
-            "db" : 137,
-            "firstPacket" : 1387253713030,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1387253713030,
-            "g1" : "CAN",
-            "portDst" : 3207,
-            "fpd" : 1387253713030,
-            "portSrc" : 50759
+            "totBytes" : 145,
+            "totDataBytes" : 137,
+            "totPackets" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131217",
+               "_index" : "tests_sessions2-131217",
                "_type" : "session"
             }
          }
       },
       {
          "body" : {
-            "mac2-term-cnt" : 1,
-            "db1" : 321,
-            "prot-term-cnt" : 2,
-            "ipSrc" : "10.0.0.4",
-            "pr" : 17,
-            "as2" : "AS0002 Hmm!@#$%^&*()",
-            "no" : "test",
-            "a1" : "10.0.0.4",
-            "lp" : 1387253793,
-            "psl" : [
+            "dstASN" : "AS0002 Hmm!@#$%^&*()",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.0.0.3",
+            "dstMac" : [
+               "00:00:5e:00:01:03"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "ICANN, IANA Department"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 12074,
+            "fileId" : [],
+            "firstPacket" : 1387253793904,
+            "ipProtocol" : 17,
+            "lastPacket" : 1387253793904,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
                345
             ],
-            "prot-term" : [
+            "packetPos" : [
+               185
+            ],
+            "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "pa" : 1,
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 329,
+            "srcDataBytes" : 321,
+            "srcIp" : "10.0.0.4",
+            "srcMac" : [
                "00:10:db:ff:26:00"
             ],
-            "by2" : 0,
-            "by1" : 329,
-            "by" : 329,
-            "ipDst" : "10.0.0.3",
-            "fb1" : "64313a7264323a69",
-            "p2" : 12074,
-            "mac2-term" : [
-               "00:00:5e:00:01:03"
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
             ],
-            "a2" : "10.0.0.3",
-            "db" : 321,
-            "portDst" : 12074,
-            "firstPacket" : 1387253793904,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1387253793904,
-            "portSrc" : 44102,
-            "fpd" : 1387253793904,
-            "ss" : 1,
-            "fs" : [],
-            "db2" : 0,
-            "ps" : [
-               185
-            ],
-            "pa2" : 0,
-            "sl" : 0,
-            "p1" : 44102,
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a7264323a69",
+            "srcPort" : 44102,
             "timestamp" : "SET",
-            "fp" : 1387253793,
-            "lastPacket" : 1387253793904,
-            "pa1" : 1
+            "totBytes" : 329,
+            "totDataBytes" : 321,
+            "totPackets" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131217",
+               "_index" : "tests_sessions2-131217",
                "_type" : "session"
             }
          }
       },
       {
          "body" : {
-            "ss" : 1,
-            "db2" : 0,
-            "fs" : [],
-            "pa2" : 0,
-            "ps" : [
-               530
-            ],
-            "sl" : 0,
-            "timestamp" : "SET",
-            "p1" : 47061,
-            "pa1" : 1,
-            "fp" : 1387257610,
-            "lastPacket" : 1387257610963,
-            "fb1" : "64313a71393a6669",
-            "mac2-term" : [
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.0.0.5",
+            "dstMac" : [
                "00:00:5e:00:01:03"
             ],
-            "p2" : 20551,
-            "db" : 328,
-            "a2" : "10.0.0.5",
-            "portDst" : 20551,
-            "mac1-term-cnt" : 1,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "ICANN, IANA Department"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 20551,
+            "fileId" : [],
             "firstPacket" : 1387257610963,
-            "lpd" : 1387257610963,
-            "portSrc" : 47061,
-            "fpd" : 1387257610963,
-            "a1" : "10.0.0.6",
-            "no" : "test",
-            "lp" : 1387257610,
-            "psl" : [
+            "ipProtocol" : 17,
+            "lastPacket" : 1387257610963,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
                352
             ],
-            "pa" : 1,
-            "prot-term" : [
+            "packetPos" : [
+               530
+            ],
+            "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 336,
+            "srcDataBytes" : 328,
+            "srcIp" : "10.0.0.6",
+            "srcMac" : [
                "00:10:db:ff:26:00"
             ],
-            "ipDst" : "10.0.0.5",
-            "by1" : 336,
-            "by2" : 0,
-            "by" : 336,
-            "mac2-term-cnt" : 1,
-            "prot-term-cnt" : 2,
-            "db1" : 328,
-            "ipSrc" : "10.0.0.6",
-            "pr" : 17
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a71393a6669",
+            "srcPort" : 47061,
+            "timestamp" : "SET",
+            "totBytes" : 336,
+            "totDataBytes" : 328,
+            "totPackets" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131217"
+               "_index" : "tests_sessions2-131217",
+               "_type" : "session"
             }
          }
       }

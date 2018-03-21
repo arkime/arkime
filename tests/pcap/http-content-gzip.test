@@ -1,152 +1,116 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "hmd5cnt" : 1,
-            "db" : 895,
-            "hh2cnt" : 10,
-            "mac2-term-cnt" : 2,
-            "by" : 2093,
-            "p2" : 80,
-            "lpd" : 1407242225628,
-            "hckey-term" : [
-               "xxxxxxxxxx"
-            ],
-            "db1" : 417,
-            "sl" : 916,
-            "g2" : "CAN",
-            "mac2-term" : [
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 1250,
+            "dstDataBytes" : 478,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
                "00:00:5e:00:01:01",
                "00:26:88:d8:bf:c2"
             ],
-            "fpd" : 1407242224712,
-            "us" : [
-               "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
             ],
-            "g1" : "RUS",
-            "uscnt" : 1,
-            "fp" : 1407242224,
-            "uacnt" : 1,
-            "fb2" : "485454502f312e31",
-            "as1" : "AS0000 This is neat",
-            "portDst" : 80,
-            "pa2" : 5,
-            "p1" : 50638,
-            "mac1-term-cnt" : 1,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "a2" : "10.0.0.2",
-            "pa1" : 7,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
-                  "16777226:50638,33554442:80"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
-            "ps" : [
-               24,
-               106,
-               188,
-               264,
-               751,
-               827,
-               1375,
-               1923,
-               1999,
-               2081,
-               2157,
-               2233
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:if-none-match",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "prot-term-cnt" : 2,
-            "fs" : [],
-            "mac1-term" : [
-               "00:0a:f3:31:90:00"
-            ],
-            "tcpflags" : {
-               "syn" : 1,
-               "ack" : 5,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "psh" : 3
-            },
-            "hdver" : [
-               "1.1"
-            ],
-            "hcval-term-cnt" : 1,
-            "hcval-term" : [
-               "xxx"
-            ],
-            "ipDst" : "10.0.0.2",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "hpathcnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "ipSrc" : "10.0.0.1",
-            "rir2" : "TEST",
-            "hh2" : [
-               "http:header:age",
-               "http:header:alternate-protocol",
-               "http:header:cache-control",
-               "http:header:content-encoding",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:expires",
-               "http:header:server"
-            ],
-            "by1" : 843,
-            "tacnt" : 2,
-            "hh1cnt" : 9,
+            "dstOuiCnt" : 2,
+            "dstPackets" : 5,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1407242224712,
             "http" : {
-               "method-term-cnt" : 1,
+               "bodyMagic" : [
+                  "application/x-gzip"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "cookieKey" : [
+                  "xxxxxxxxxx"
+               ],
+               "cookieKeyCnt" : 1,
+               "cookieValue" : [
+                  "xxx"
+               ],
+               "cookieValueCnt" : 1,
+               "host" : [
+                  "xxxxxxxxxxx.xxxxxxx.xxx"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "5ff7b2c69c3b22826a717cd5ea4c9f32"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/crossdomain.xml"
+               ],
+               "pathCnt" : 1,
+               "request-referer" : [
+                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "accept-encoding",
+                  "if-none-match",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 9,
+               "responseHeader" : [
+                  "expires",
+                  "content-type",
+                  "alternate-protocol",
+                  "cache-control",
+                  "content-length",
+                  "etag",
+                  "date",
+                  "content-encoding",
+                  "server",
+                  "age"
+               ],
+               "responseHeaderCnt" : 10,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "5f814421f0d932b8b082cdc539469c85ae89a09d4b01ea41c1ff0424e184206a"
+               ],
+               "sha256Cnt" : 1,
                "statuscode" : [
                   200
                ],
-               "method-term" : [
-                  "GET"
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
                ],
-               "statuscode-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "application/x-gzip"
-               ]
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+               ],
+               "useragentCnt" : 1
             },
-            "hdvercnt" : 1,
-            "db2" : 478,
-            "hsvercnt" : 1,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1407242225628,
+            "length" : 916,
+            "node" : "test",
+            "packetLen" : [
                82,
                82,
                76,
@@ -160,50 +124,87 @@
                76,
                76
             ],
-            "lp" : 1407242225,
-            "ss" : 1,
-            "timestamp" : "SET",
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               751,
+               827,
+               1375,
+               1923,
+               1999,
+               2081,
+               2157,
+               2233
             ],
-            "no" : "test",
-            "pa" : 12,
-            "hpath" : [
-               "/crossdomain.xml"
+            "protocol" : [
+               "http",
+               "tcp"
             ],
-            "hmd5" : [
-               "5ff7b2c69c3b22826a717cd5ea4c9f32"
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 843,
+            "srcDataBytes" : 417,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:0a:f3:31:90:00"
             ],
-            "a1" : "10.0.0.1",
-            "hckey-term-cnt" : 1,
-            "portSrc" : 50638,
-            "ho" : [
-               "xxxxxxxxxxx.xxxxxxx.xxx"
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
             ],
-            "firstPacket" : 1407242224712,
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "474554202f63726f",
+            "srcPort" : 50638,
+            "tags" : [
+               "dstip",
+               "srcip"
             ],
-            "by2" : 1250,
-            "pr" : 6,
-            "hocnt" : 1,
-            "fb1" : "474554202f63726f",
-            "hdrs" : {
-               "hreq-referercnt" : 1,
-               "hreq-referer" : [
-                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:50638,33554442:80"
                ]
             },
-            "lastPacket" : 1407242225628,
-            "hsver" : [
-               "1.1"
-            ]
+            "timestamp" : "SET",
+            "totBytes" : 2093,
+            "totDataBytes" : 895,
+            "totPackets" : 12
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140805"
+               "_index" : "tests_sessions2-140805",
+               "_type" : "session"
             }
          }
       }

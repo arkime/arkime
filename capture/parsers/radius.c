@@ -16,13 +16,13 @@
 #include <arpa/inet.h>
 
 extern MolochConfig_t        config;
-static int userField;
-static int macField;
-static int endpointIpField;
-static int framedIpField;
+LOCAL  int userField;
+LOCAL  int macField;
+LOCAL  int endpointIpField;
+LOCAL  int framedIpField;
 
 /******************************************************************************/
-int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     BSB bsb;
 
@@ -53,7 +53,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
             break;*/
         case 8:
             memcpy(&in.s_addr, value, 4);
-            moloch_field_int_add(framedIpField, session, in.s_addr);
+            moloch_field_ip4_add(framedIpField, session, in.s_addr);
             break;
         case 31:
             if (length == 12) {
@@ -74,8 +74,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
         case 66:
             memcpy(str, value, length);
             str[length] = 0;
-            inet_aton(str, &in);
-            moloch_field_int_add(endpointIpField, session, in.s_addr);
+            moloch_field_ip_add_str(endpointIpField, session, str);
             break;
 
 /*        default:
@@ -85,7 +84,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     return 0;
 }
 /******************************************************************************/
-void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len != ((data[2] << 8) | data[3])) {
         return;
@@ -103,28 +102,28 @@ void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(d
 void moloch_parser_init()
 {
     userField = moloch_field_define("radius", "termfield",
-        "radius.user", "User", "radius.user-term",
+        "radius.user", "User", "radius.user",
         "RADIUS user",
         MOLOCH_FIELD_TYPE_STR_HASH,     0, 
         "category", "user",
         NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
-        "radius.mac", "MAC", "radius.mac-term",
+        "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL); 
 
     endpointIpField = moloch_field_define("radius", "ip",
-        "radius.endpoint-ip", "Endpoint IP", "radius.eip",
+        "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
         "Radius endpoint ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     framedIpField = moloch_field_define("radius", "ip",
-        "radius.framed-ip", "Framed IP", "radius.fip",
+        "radius.framed-ip", "Framed IP", "radius.framedIp",
         "Radius framed ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
 
