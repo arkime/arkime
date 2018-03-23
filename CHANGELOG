@@ -24,6 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - correctly lowercase user
   - release - added --install to easybutton (issue #812)
   - capture - basic memcache classify
+  - viewer - disable TLS 1.0
 
 
 0.50.0 2017/01/24

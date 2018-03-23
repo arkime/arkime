@@ -6388,7 +6388,7 @@ function main () {
 
   var server;
   if (Config.isHTTPS()) {
-    server = https.createServer({key: Config.keyFileData, cert: Config.certFileData}, app);
+    server = https.createServer({key: Config.keyFileData, cert: Config.certFileData, secureOptions: require('constants').SSL_OP_NO_TLSv1}, app);
   } else {
     server = http.createServer(app);
   }
