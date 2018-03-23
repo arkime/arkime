@@ -1,6 +1,6 @@
 <template>
 
-  <div class="form-inline">
+  <div class="form-inline" style="font-size:12px;">
 
     <!-- time range select -->
     <div class="form-group">
@@ -42,7 +42,14 @@
             Start
           </span>
         </span>
-        <!-- TODO -->
+        <flat-pickr v-model="startTime"
+          @on-change="changeStartTime"
+          @on-close="validateDate"
+          :config="startTimeConfig"
+          class="form-control"
+          name="startTime"
+          ref="startTime">
+        </flat-pickr>
         <div class="input-group-append">
           <button class="btn btn-default"
             @click="openStartPicker"
@@ -64,7 +71,14 @@
               End
             </span>
           </span>
-          <!-- TODO -->
+          <flat-pickr v-model="stopTime"
+            @on-change="changeStopTime"
+            @on-close="validateDate"
+            :config="stopTimeConfig"
+            class="form-control"
+            name="stopTime"
+            ref="stopTime">
+          </flat-pickr>
           <div class="input-group-append">
             <button class="btn btn-default"
               @click="openStopPicker"
@@ -129,27 +143,30 @@
       <div class="ml-2 display-inline">
         <strong class="small text-theme-accent no-wrap">
           <span v-if="deltaTime && !timeError">
-            Time Range: {{ deltaTime | readableTime }}
+            Time Range: {{ deltaTime * 1000 | readableTime }}
           </span>
           <span v-if="timeError">
             <span class="fa fa-exclamation-triangle"></span>&nbsp;
             {{ timeError }}
           </span>
         </strong>
-      </div>
-      <!-- /human readable time range or error -->
+      </div> <!-- /human readable time range or error -->
 
   </div>
 
 </template>
 
 <script>
-// TODO find date time picker that allows user input AND time
-const hourMS = 3600000;
-let currentTime = new Date().getTime();
+// import VueDatetimePicker from 'vue-datetime-picker/src/vue-datetime-picker.js';
+import flatPickr from 'vue-flatpickr-component';
+import 'flatpickr/dist/flatpickr.css';
+
+const hourSec = 3600;
+let currentTimeSec;
 
 export default {
   name: 'MolochTime',
+  components: { flatPickr },
   props: [ 'timezone', 'hideBounding', 'hideInterval' ],
   data: function () {
     return {
@@ -158,39 +175,85 @@ export default {
       deltaTime: null,
       timeError: '',
       timeRange: 1, // default to last hour
-      timeBounding: 'last',
-      timeInterval: 'auto',
-      dateTimeFormat: 'yyyy/MM/dd HH:mm:ss'
+      timeBounding: this.$route.query.bounding || 'last',
+      timeInterval: this.$route.query.interval || 'auto',
+      // date configs must be separate
+      startTimeConfig: {
+        dateFormat: 'U', // seconds from Jan 1, 1970
+        wrap: true, // for input groups
+        altFormat: 'Y/m/d H:i:S', // 'yyyy/MM/dd HH:mm:ss'
+        altInput: true, // input date display differs from model
+        allowInput: true, // let user edit the input manually
+        enableTime: true, // display time picker
+        enableSeconds: true, // display seconds in time picker
+        minuteIncrement: 1 // increment minutes by 1 instead of 5 (default)
+      },
+      stopTimeConfig: {
+        dateFormat: 'U', // seconds from Jan 1, 1970
+        wrap: true, // for input groups
+        altFormat: 'Y/m/d H:i:S', // 'yyyy/MM/dd HH:mm:ss'
+        altInput: true, // input date display differs from model
+        allowInput: true, // let user edit the input manually
+        enableTime: true, // display time picker
+        enableSeconds: true, // display seconds in time picker
+        minuteIncrement: 1 // increment minutes by 1 instead of 5 (default)
+      }
     };
   },
+  watch: {
+    // watch for the route to change, then update the view
+    '$route': 'updateParams'
+  },
   created: function () {
+    this.setCurrentTime();
+
     this.setupTimeParams(
       this.$route.query.date,
       this.$route.query.startTime,
       this.$route.query.stopTime
     );
+
+    // TODO listen for time update events from other components
+
+    // calculate initial startTime and stopTime
+    this.updateStartStopTime();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
+    /* Fired when the time range value changes */
     changeTimeRange: function () {
       this.deltaTime = null;
-      this.timeError = false;
+      this.timeError = '';
 
       this.$router.push({
         query: {
           ...this.$route.query,
           date: this.timeRange,
-          stopTime: null,
-          startTime: null
+          stopTime: undefined,
+          startTime: undefined
         }
       });
+
+      this.notifyParent();
     },
-    changeDate: function () {
-      this.timeError = false;
+    /* Fired when start datetime is changed */
+    changeStartTime: function (selectedDates, dateStr, instance) {
+      this.startTime = dateStr;
+    },
+    /* Fired when stop datetime is changed */
+    changeStopTime: function (selectedDates, dateStr, instance) {
+      this.stopTime = dateStr;
+    },
+    /**
+     * Validates a date and updates delta time (stop time - start time)
+     * TODO Fired when a date value is changed (with 500 ms delay)
+     */
+    validateDate: function () {
+      this.timeError = '';
       this.timeRange = '0'; // custom time range
 
-      let stopSec = parseInt((this.stopTime / 1000).toFixed());
-      let startSec = parseInt((this.startTime / 1000).toFixed());
+      let stopSec = parseInt(this.stopTime, 10);
+      let startSec = parseInt(this.startTime, 10);
 
       // only continue if start and stop are valid numbers
       if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
@@ -203,106 +266,117 @@ export default {
       }
 
       // update the displayed time range
-      this.deltaTime = this.stopTime - this.startTime;
+      this.deltaTime = stopSec - startSec;
 
       this.applyDate();
+      this.notifyParent();
     },
+    /**
+     * Fired when change bounded select box is changed
+     * Applies the timeBounding url parameter
+     * Updating the url parameter triggers $routeUpdate which notifies the parent
+     */
     changeTimeBounding: function () {
       this.$router.push({
         query: {
           ...this.$route.query,
-          bounding: this.timeBounding !== 'last' ? this.timeBounding : null
+          bounding: this.timeBounding !== 'last' ? this.timeBounding : undefined
         }
       });
     },
+    /**
+     * Fired when change interval select box is changed
+     * Applies the timeBounding url parameter
+     * Updating the url parameter triggers $routeUpdate which notifies the parent
+     */
     changeTimeInterval: function () {
       this.$router.push({
         query: {
           ...this.$route.query,
-          bounding: this.timeInterval !== 'auto' ? this.timeInterval : null
+          interval: this.timeInterval !== 'auto' ? this.timeInterval : undefined
         }
       });
     },
+    /* Fired when the start time date picker button is clicked */
     openStartPicker: function () {
-      this.$refs.startTime.showCalendar();
+      this.$refs.startTime.fp.toggle();
     },
+    /* Fired when the stop time date picker button is clicked */
     openStopPicker: function () {
-      this.$refs.stopTime.showCalendar();
+      this.$refs.stopTime.fp.toggle();
     },
-    /* helper functions ------------------------------------------ */
+    /**
+     * Fired a date is changed or when search button or enter is clicked
+     * Updates the date, stopTime, and startTime url parameters
+     */
     applyDate: function () {
       this.$router.push({
         query: {
           ...this.$route.query,
-          date: null,
-          stopTime: parseInt((this.stopTime / 1000).toFixed()),
-          startTime: parseInt((this.startTime / 1000).toFixed())
+          date: undefined,
+          stopTime: this.stopTime,
+          startTime: this.startTime
         }
       });
     },
-    change: function () {
-      let useDateRange = false;
-
-      currentTime = new Date().getTime();
+    /* helper functions ------------------------------------------ */
+    /**
+     * Fired on init and when search parameters for date, stopTime, startTime,
+     * bounding, and interval are changed
+     * Calculates the new date or stopTime and startTime
+     * Emits an event for the parent to catch
+     */
+    updateStartStopTime: function () {
+      this.setCurrentTime();
 
       // build the parameters to send to the parent controller that makes the req
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time
-        this.stopTime = currentTime;
-        this.startTime = currentTime - (hourMS * this.timeRange);
+        this.stopTime = currentTimeSec.toString();
+        this.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
       }
 
-      if (parseInt(this.timeRange) === -1) { // all time
-        this.startTime = hourMS * 5;
-        this.stopTime = currentTime;
-        useDateRange = true;
-      }
-
-      // always use startTime and stopTime instead of date range (except for all)
-      // querying with date range causes unexpected paging behavior
-      // because there are always new sessions
-      if (this.startTime && this.stopTime) {
-        let args = {
-          bounding: this.timeBounding,
-          interval: this.timeInterval
-        };
-
-        if (useDateRange) {
-          args.date = -1;
-        } else {
-          args.startTime = (this.startTime / 1000).toFixed();
-          args.stopTime = (this.stopTime / 1000).toFixed();
-        }
-
-        // TODO
-        // this.$scope.$emit('change:time:input', args);
+      if (parseInt(this.timeRange, 10) === -1) { // all time
+        this.startTime = (hourSec * 5).toString();
+        this.stopTime = (currentTimeSec).toString();
       }
     },
+    /**
+     * Sets up time query parameters
+     * @param {string} date       The time range to query within
+     * @param {string} startTime  The start time for a custom time range
+     * @param {string} stopTime   The stop time for a custom time range
+     */
     setupTimeParams: function (date, startTime, stopTime) {
       if (date) { // time range is available
         this.timeRange = date;
-        if (parseInt(this.timeRange) === -1) { // all time
-          this.startTime = hourMS * 5;
-          this.stopTime = currentTime;
+        if (parseInt(this.timeRange, 10) === -1) { // all time
+          this.startTime = (hourSec * 5).toString();
+          this.stopTime = currentTimeSec.toString();
         } else if (this.timeRange > 0) {
-          this.stopTime = currentTime;
-          this.startTime = currentTime - (hourMS * this.timeRange);
+          this.stopTime = currentTimeSec.toString();
+          this.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
         }
       } else if (startTime && stopTime) {
         // start and stop times available
-        let stop = parseInt(stopTime * 1000, 10);
-        let start = parseInt(startTime * 1000, 10);
+        let stop = stopTime;
+        let start = startTime;
 
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
           // if we can parse start and stop time, set them
           this.timeRange = '0'; // custom time range
           this.stopTime = stop;
           this.startTime = start;
+
+          stop = parseInt(stop, 10);
+          start = parseInt(start, 10);
+
           if (stop < start) {
             this.timeError = 'Stop time cannot be before start time';
           }
+
           // update the displayed time range
-          this.deltaTime = this.stopTime - this.startTime;
+          this.deltaTime = stop - start;
         } else { // if we can't parse stop or start time, set default
           this.timeRange = '1'; // default to 1 hour
         }
@@ -310,12 +384,62 @@ export default {
         // there are no time query parameters, so set defaults
         this.timeRange = '1'; // default to 1 hour
       }
+    },
+    /* watch for the url parameters to change and update the page */
+    updateParams: function () {
+      let queryParams = this.$route.query;
+
+      if (queryParams.bounding !== this.timeBounding) {
+        this.timeBounding = queryParams.bounding || 'last';
+      }
+
+      if (queryParams.interval !== this.timeInterval) {
+        this.timeInterval = queryParams.interval || 'auto';
+      }
+
+      this.setupTimeParams(queryParams.date, queryParams.startTime, queryParams.stopTime);
+      this.updateStartStopTime();
+      this.notifyParent();
+    },
+    // Sets the current time in seconds
+    setCurrentTime: function () {
+      currentTimeSec = Math.floor(new Date().getTime() / 1000);
+    },
+    /**
+     * Emits an event for the parent to catch
+     * Always emits start and stop times instead of date range (except for all [-1])
+     * because querying with date range causes unexpected paging behavior as there are always new sessions
+     */
+    notifyParent: function () {
+      let args = {
+        bounding: this.timeBounding,
+        interval: this.timeInterval
+      };
+
+      if (parseInt(this.timeRange, 10) === -1) { // all time
+        args.date = -1;
+      } else {
+        args.startTime = this.startTime;
+        args.stopTime = this.stopTime;
+      }
+
+      this.$emit('timeChange', args);
     }
   }
 };
 </script>
 
+<style>
+input.form-control.flatpickr-input {
+  font-size: var(--px-lg);
+}
+</style>
+
 <style scoped>
+select.form-control {
+  font-size: var(--px-lg);
+}
+
 .time-range-control {
   -webkit-appearance: none;
 }

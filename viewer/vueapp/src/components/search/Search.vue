@@ -84,7 +84,8 @@
 
       <!-- TODO time inputs -->
       <div class="form-inline">
-        <moloch-time :timezone="timezone">
+        <moloch-time :timezone="timezone"
+          @timeChange="timeChange">
         </moloch-time>
       </div> <!-- /time inputs -->
 
@@ -313,6 +314,11 @@ export default {
         .then((response) => {
           this.molochClusters = response;
         });
+    },
+    /* event functions ------------------------------------------- */
+    timeChange: function (args) {
+      console.log('time change event caught', args);
+      // TODO
     }
   }
 };
