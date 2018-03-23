@@ -6,7 +6,8 @@
       <!-- actions dropdown menu -->
       <b-dropdown right
         size="sm"
-        class="pull-right ml-1">
+        class="pull-right ml-1"
+        variant="theme-primary">
         <b-dropdown-item @click="exportPCAP()">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
           Export PCAP
@@ -46,7 +47,8 @@
       <b-dropdown right
         size="sm"
         class="pull-right ml-1"
-        text="Views ">
+        text="Views "
+        variant="theme-quaternary">
         <b-dropdown-item @click="createView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View

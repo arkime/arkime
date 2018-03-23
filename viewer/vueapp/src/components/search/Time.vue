@@ -1,6 +1,6 @@
 <template>
 
-  <div class="form-inline" style="font-size:12px;">
+  <div class="form-inline">
 
     <!-- time range select -->
     <div class="form-group">
@@ -157,7 +157,6 @@
 </template>
 
 <script>
-// import VueDatetimePicker from 'vue-datetime-picker/src/vue-datetime-picker.js';
 import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 
