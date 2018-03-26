@@ -11,12 +11,14 @@
           <span class="fa fa-search"></span>
         </span>
       </span>
+      <!-- TODO focus input -->
       <input type="text"
         tabindex="1"
         v-model="expression"
+        v-caret-pos="caretPos"
         placeholder="Search"
         @blur="onOffFocus"
-        @keydown="keydown($event)"
+        @keyup="keyup($event)"
         @change="debounceExprChange"
         class="form-control search-control" />
       <span v-if="expression"
@@ -32,6 +34,7 @@
 <script>
 import Store from '../../store';
 import FieldService from './FieldService';
+import CaretPos from '../utils/CaretPos';
 
 let tokens;
 let timeout;
@@ -40,6 +43,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
+  directives: { CaretPos },
   data: function () {
     return {
       expression: Store.state.expression,
@@ -61,7 +65,6 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     clear: function () {
-      // TODO
       this.expression = '';
       Store.clearExpression();
     },
@@ -75,9 +78,9 @@ export default {
         this.changeExpression();
       }, 500);
     },
-    keydown: function (event) {
+    keyup: function (event) {
       // TODO
-      console.log('keydown', event);
+      console.log('caret position:', this.caretPos);
     },
     /* Removes typeahead results */
     onOffFocus: function () {
@@ -103,7 +106,7 @@ export default {
 
       // if the cursor is at a space
       let spaceCP = (this.caretPos > 0 &&
-        this.caretPos === this.$rootScope.expression.length &&
+        this.caretPos === this.expression.length &&
         this.expression[this.caretPos - 1] === ' ');
 
       let end = this.caretPos;
