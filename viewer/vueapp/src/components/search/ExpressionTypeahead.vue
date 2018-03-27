@@ -16,6 +16,7 @@
         tabindex="1"
         v-model="expression"
         v-caret-pos="caretPos"
+        v-focus-input="focusInput"
         placeholder="Search"
         @blur="onOffFocus"
         @keyup="keyup($event)"
@@ -35,6 +36,7 @@
 import Store from '../../store';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos';
+import FocusInput from '../utils/FocusInput';
 
 let tokens;
 let timeout;
@@ -43,7 +45,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  directives: { CaretPos },
+  directives: { CaretPos, FocusInput },
   data: function () {
     return {
       expression: Store.state.expression,

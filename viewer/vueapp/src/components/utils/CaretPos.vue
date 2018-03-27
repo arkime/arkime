@@ -1,9 +1,6 @@
 <script>
 export default {
   name: 'caretPos',
-  inserted: function (el) {
-    console.log('caret pos directive inserted');
-  },
   bind: function (el, binding, vnode) {
     if (!binding.value) { binding.value = 0; }
 
