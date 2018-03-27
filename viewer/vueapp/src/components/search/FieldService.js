@@ -4,7 +4,6 @@ import countries from './countries.json';
 
 let _fieldsCache;
 let queryInProgress;
-const noop = () => {};
 
 export default {
 
@@ -39,36 +38,29 @@ export default {
 
   /**
    * Gets field values from the server
-   * @param {Object} params     The parameters to send with the query
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
+   * @param {Object} params The parameters to send with the query
+   * @returns {Object} { promise, source } An object including a promise object
+   * that signals the completion or rejection of the request and a source object
+   * to allow the request to be cancelled
    */
   getValues (params) {
-    let deferred = Promise.defer();
+    let source = Vue.axios.CancelToken.source();
 
-    let request = Vue.axios.get('unique.text', {
-      params: params,
-      timeout: deferred.promise
+    let promise = new Promise((resolve, reject) => {
+      let options = { params: params, cancelToken: source.token };
+
+      Vue.axios.get('unique.txt', options)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          if (!Vue.axios.isCancel(error)) {
+            reject(error);
+          }
+        });
     });
 
-    let promise = request
-      .then((response) => {
-        return response.data;
-      }, (error) => {
-        return Promise.reject(error);
-      }).catch(noop); // handle abort
-
-    promise.abort = () => {
-      deferred.resolve({ error: 'Request canceled.' });
-    };
-
-    // cleanup
-    promise.finally(() => {
-      promise.abort = noop;
-      deferred = request = promise = null;
-    });
-
-    return promise;
+    return { promise, source };
   },
 
   /**
@@ -77,11 +69,11 @@ export default {
    *                            or rejection of the request.
    */
   getCountryCodes () {
-    return this.$q((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (countries) {
         resolve(countries);
       } else {
-        reject('Error retrieving country codes');
+        reject(new Error('Error retrieving country codes'));
       }
     });
   }

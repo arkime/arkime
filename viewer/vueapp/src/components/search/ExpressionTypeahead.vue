@@ -2,6 +2,7 @@
 
   <div class="mb-1">
 
+    <!-- typeahead input -->
     <div class="input-group input-group-sm">
       <span class="input-group-prepend cursor-help"
         v-b-tooltip.hover
@@ -11,7 +12,6 @@
           <span class="fa fa-search"></span>
         </span>
       </span>
-      <!-- TODO focus input -->
       <input type="text"
         tabindex="1"
         v-model="expression"
@@ -19,14 +19,52 @@
         v-focus-input="focusInput"
         placeholder="Search"
         @blur="onOffFocus"
-        @keyup="keyup($event)"
-        @change="debounceExprChange"
+        @input="debounceExprChange"
+        @keyup.esc.tab.enter.down.up.stop="keyup($event)"
         class="form-control search-control" />
       <span v-if="expression"
         @click="clear()"
         class="fa fa-close text-muted clear-input cursor-pointer">
       </span>
-    </div>
+    </div> <!-- /typeahead input -->
+
+    <!-- TODO fix tooltip placement issues -->
+    <!-- results dropdown -->
+    <div id="typeahead-results"
+      ref="typeaheadResults"
+      class="dropdown-menu typeahead-results"
+      v-show="expression && results && results.length">
+      <a v-for="(value, key) in results"
+        :key="key"
+        class="dropdown-item cursor-pointer"
+        :class="{'active':key === activeIdx}"
+        @click="addToQuery(value)"
+        v-b-tooltip.hover
+        placement="right"
+        :title="value.help">
+        <strong v-if="value.exp">{{ value.exp }}</strong>
+        <strong v-if="!value.exp">{{ value }}</strong>
+        <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+      </a>
+    </div> <!-- /results dropdown -->
+
+    <!-- error -->
+    <div class="dropdown-menu typeahead-results"
+      v-show="expression && loadingError">
+      <a class="dropdown-item text-danger">
+        <span class="fa fa-warning"></span>&nbsp;
+        Error: {{ loadingError }}
+      </a>
+    </div> <!-- /error -->
+
+    <!-- loading -->
+    <div class="dropdown-menu typeahead-results"
+      v-show="expression && loadingValues">
+      <a class="dropdown-item">
+        <span class="fa fa-spinner fa-spin"></span>&nbsp;
+        Loading...
+      </a>
+    </div> <!-- /loading -->
 
   </div>
 
@@ -51,12 +89,13 @@ export default {
       expression: Store.state.expression,
       activeIdx: -1,
       focusInput: true,
-      results: null,
+      results: [],
       fields: null,
       loadingError: '',
       loadingValues: false,
       caretPos: 0,
-      promise: null
+      cancellablePromise: null,
+      resultsElement: null
     };
   },
   created: function () {
@@ -64,25 +103,122 @@ export default {
     // TODO watch for issue search
     // TODO watch for additions to search params
   },
+  mounted: function () {
+    // set the results element for keyup event handler
+    this.resultsElement = this.$refs.typeaheadResults;
+  },
   methods: {
     /* exposed page functions ------------------------------------ */
     clear: function () {
       this.expression = '';
       Store.clearExpression();
     },
+    /**
+     * Fired when a value from the typeahead menu is selected
+     * @param {Object} val The value to be added to the query
+     */
+    addToQuery: function (val) {
+      let str = val;
+      if (val.exp) { str = val.exp; }
+
+      this.expression = this.rebuildQuery(this.expression, str);
+
+      Store.setExpression(this.expression);
+
+      this.results = null;
+      this.focusInput = true; // re-focus on input
+      this.activeIdx = -1;
+    },
     /* Fired when the search input is changed */
     debounceExprChange: function () {
-      // this.cancelPromise();
-      // TODO might not need this since change is triggered on off focus?
+      this.cancelPromise();
+
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
         Store.setExpression(this.expression);
         this.changeExpression();
       }, 500);
     },
+    /**
+     * Watches for keyup events for escape, tab, enter, down, and up keys
+     * Pressing the up and down arrows navigate the dropdown.
+     * Pressing enter, adds the active item in the dropdown to the query.
+     * Pressing escape, removes the typeahead results.
+     * @param {Object} event The keydown event fired by the input
+     */
     keyup: function (event) {
-      // TODO
-      console.log('caret position:', this.caretPos);
+      let target;
+
+      // always check for escape before anything else
+      if (event.keyCode === 27) {
+        // if there's a request in progress, cancel it
+        this.cancelPromise();
+
+        this.loadingValues = false;
+        this.loadingError = false;
+        this.results = null;
+        this.activeIdx = -1;
+
+        return;
+      }
+
+      // check for tab click when results are visible
+      if (this.results && this.results.length && event.keyCode === 9) {
+        event.preventDefault();
+
+        // if there is no item in the results is selected, use the first one
+        if (this.activeIdx < 0) { this.activeIdx = 0; }
+
+        let result = this.results[this.activeIdx];
+        if (result) { this.addToQuery(result); }
+
+        this.cancelPromise();
+
+        this.loadingValues = false;
+        this.loadingError = false;
+        this.results = null;
+        this.activeIdx = -1;
+
+        return;
+      }
+
+      // if there are no results, just check for enter click to remove typeahead
+      if (!this.results || this.results.length === 0) {
+        if (event.keyCode === 13) {
+          this.cancelPromise();
+
+          this.loadingValues = false;
+          this.loadingError = false;
+          this.results = null;
+          this.activeIdx = -1;
+        }
+
+        return;
+      }
+
+      if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
+
+      switch (event.keyCode) {
+        case 40: // down arrow
+          event.preventDefault();
+          this.activeIdx = (this.activeIdx + 1) % this.results.length;
+          target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
+          target.parentNode.scrollTop = target.offsetTop;
+          break;
+        case 38: // up arrow
+          event.preventDefault();
+          this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : this.results.length) - 1;
+          target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
+          target.parentNode.scrollTop = target.offsetTop;
+          break;
+        case 13: // enter
+          if (this.activeIdx >= 0) {
+            event.preventDefault();
+            let result = this.results[this.activeIdx];
+            if (result) { this.addToQuery(result); }
+          }
+          break;
+      }
     },
     /* Removes typeahead results */
     onOffFocus: function () {
@@ -96,10 +232,8 @@ export default {
       }, 300);
     },
     /* helper functions ------------------------------------------ */
-    /* Displays appropriate autocomplete suggestions */
+    /* Displays appropriate typeahead suggestions */
     changeExpression: function () {
-      // TODO
-      console.log('change expression');
       this.activeIdx = -1;
       this.results = null;
       this.focusInput = false;
@@ -217,20 +351,23 @@ export default {
 
         this.loadingValues = true;
 
-        this.promise = FieldService.getValues(params);
+        this.cancellablePromise = FieldService.getValues(params);
 
-        this.promise.then((result) => {
-          this.promise = null;
-          if (result) {
+        this.cancellablePromise.promise
+          .then((result) => {
+            this.cancellablePromise = null;
+            if (result) {
+              this.loadingValues = false;
+              this.loadingError = '';
+              this.results = result;
+              this.addExistsItem(lastToken, operatorToken);
+            }
+          })
+          .catch((error) => {
+            this.cancellablePromise = null;
             this.loadingValues = false;
-            this.results = result;
-            this.addExistsItem(lastToken, operatorToken);
-          }
-        }).catch((error) => {
-          this.promise = null;
-          this.loadingValues = false;
-          this.loadingError = error;
-        });
+            this.loadingError = error;
+          });
       }
     },
     /**
@@ -247,10 +384,11 @@ export default {
     },
     /* aborts a pending promise */
     cancelPromise: function () {
-      if (this.promise) {
-        this.promise.abort();
-        this.promise = null;
+      if (this.cancellablePromise) {
+        this.cancellablePromise.source.cancel();
+        this.cancellablePromise = null;
         this.loadingValues = false;
+        this.loadingError = '';
       }
     },
     getFields: function () {
@@ -381,6 +519,7 @@ export default {
     }
   },
   beforeDestroy: function () {
+    this.cancelPromise();
     if (timeout) { clearTimeout(timeout); }
   }
 };
@@ -406,6 +545,7 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 500px;
+  margin-left: 30px;
 }
 
 /* make sure corners are rounded even
