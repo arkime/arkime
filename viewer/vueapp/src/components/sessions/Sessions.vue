@@ -20,6 +20,7 @@
 <script>
 import UserService from '../UserService';
 import MolochSearch from '../search/Search';
+
 export default {
   name: 'Sessions',
   components: { MolochSearch },

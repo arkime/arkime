@@ -200,8 +200,13 @@ export default {
     };
   },
   watch: {
-    // watch for the route to change, then update the view
-    '$route': 'updateParams'
+    // watch for the date, startTime, stopTime, interval, and bounding
+    // route parameters to change, then update the view
+    '$route.query.date': 'updateParams',
+    '$route.query.startTime': 'updateParams',
+    '$route.query.stopTime': 'updateParams',
+    '$route.query.interval': 'updateParams',
+    '$route.query.bounding': 'updateParams'
   },
   created: function () {
     this.setCurrentTime();

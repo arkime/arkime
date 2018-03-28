@@ -54,21 +54,20 @@
           New View
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
-        <b-dropdown-item @click="setView('')"
+        <b-dropdown-item @click="setView(undefined)"
           :class="{'active':!view}">
           None
         </b-dropdown-item>
         <b-dropdown-item v-for="(value, key) in views"
           :key="key"
           :class="{'active':view === key}"
-          @click="setView(view)">
+          @click.self="setView(key)">
           <button class="btn btn-xs btn-default pull-right"
+            type="button"
             @click="deleteView(key)">
             <span class="fa fa-trash-o"></span>
           </button>
-          <span @click="setView(key)">
-            {{ key }}
-          </span>
+          {{ key }}
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
@@ -99,38 +98,59 @@
         </moloch-toast>
       </div> <!-- /form message -->
 
-      <div v-if="actionForm"
-        class="row">
+      <div v-if="actionForm">
         <hr class="action-form-separator">
-        <div v-if="showApplyButtons"
-          class="col-md-3">
-          <!-- TODO fix titles -->
-          <b-form-group>
-            <b-form-radio-group
-              size="sm"
-              buttons
-              v-model="actionsFormItemRadio">
-              <b-radio value="open"
-                v-b-tooltip.hover
-                :title="'Apply action to ' + openSessions.length + ' opened sessions'">
-                Open Items
-              </b-radio>
-              <b-radio value="visible"
-                v-b-tooltip.hover
-                :title="'Apply action to ' + Math.min(numVisibleSessions, numMatchingSessions) + ' visible sessions'">
-                Visible Items
-              </b-radio>
-              <b-radio value="matching"
-                v-b-tooltip.hover
-                :title="'Apply action to ' + numMatchingSessions + ' query matching sessions'">
-                Matching Items
-              </b-radio>
-            </b-form-radio-group>
-          </b-form-group>
-        </div>
-        <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-          <!-- TODO actions menu forms -->
-          FORMS GO HERE
+        <div class="row">
+          <div v-if="showApplyButtons"
+            class="col-md-3">
+            <!-- TODO fix titles -->
+            <b-form-group>
+              <b-form-radio-group
+                size="sm"
+                buttons
+                v-model="actionsFormItemRadio">
+                <b-radio value="open"
+                  v-b-tooltip.hover
+                  :title="'Apply action to ' + openSessions.length + ' opened sessions'">
+                  Open Items
+                </b-radio>
+                <b-radio value="visible"
+                  v-b-tooltip.hover
+                  :title="'Apply action to ' + Math.min(numVisibleSessions, numMatchingSessions) + ' visible sessions'">
+                  Visible Items
+                </b-radio>
+                <b-radio value="matching"
+                  v-b-tooltip.hover
+                  :title="'Apply action to ' + numMatchingSessions + ' query matching sessions'">
+                  Matching Items
+                </b-radio>
+              </b-form-radio-group>
+            </b-form-group>
+          </div>
+          <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
+            <!-- TODO actions menu forms -->
+            <moloch-create-view v-if="actionForm === 'create:view'"
+              :done="actionFormDone"
+              @newView="newView">
+            </moloch-create-view>
+            <moloch-tag-sessions v-else-if="actionForm === 'add:tags'"
+              :add="true"
+              :num-visible="numVisibleSessions"
+              :start="start"
+              :num-matching="numMatchingSessions"
+              :done="actionFormDone">
+            </moloch-tag-sessions>
+            <moloch-tag-sessions v-else-if="actionForm === 'remove:tags'"
+              :add="false"
+              :num-visible="numVisibleSessions"
+              :start="start"
+              :num-matching="numMatchingSessions"
+              :done="actionFormDone">
+            </moloch-tag-sessions>
+            <div v-else>
+              Invalid form ID
+            </div>
+          </div>
         </div>
       </div> <!-- /actions menu forms -->
 
@@ -145,13 +165,21 @@ import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
+import MolochCreateView from '../sessions/CreateView';
+import MolochTagSessions from '../sessions/Tags';
 
 // TODO
 // let manualChange = false;
 
 export default {
   name: 'MolochSearch',
-  components: { ExpressionTypeahead, MolochTime, MolochToast },
+  components: {
+    ExpressionTypeahead,
+    MolochTime,
+    MolochToast,
+    MolochCreateView,
+    MolochTagSessions
+  },
   props: [
     'openSessions',
     'numVisibleSessions',
@@ -170,17 +198,21 @@ export default {
         { text: 'Visible Items', value: 'visible' },
         { text: 'Matching Items', value: 'matching' }
       ],
-      actionForm: '',
+      actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
       view: '',
       message: undefined,
-      messageType: undefined
+      messageType: undefined,
+      expression: '' // TODO
     };
   },
+  // TODO watch for route update of expression and view params?
   created: function () {
     this.getMolochClusters();
     this.getViews();
+    // TODO watch for apply expression
+    // TODO watch for shift time
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -220,14 +252,10 @@ export default {
       this.showApplyButtons = true;
     },
     addTags: function () {
-      // TODO
-      console.log('add tags');
       this.actionForm = 'add:tags';
       this.showApplyButtons = true;
     },
     removeTags: function () {
-      // TODO
-      console.log('remove tags');
       this.actionForm = 'remove:tags';
       this.showApplyButtons = true;
     },
@@ -251,23 +279,35 @@ export default {
       this.showApplyButtons = true;
     },
     createView: function () {
-      // TODO
-      console.log('create view');
       this.actionForm = 'create:view';
       this.showApplyButtons = false;
     },
+    actionFormDone: function (message, success, reloadData) {
+      console.log('action form DONE');
+      this.actionForm = undefined;
+      if (message) {
+        this.message = message;
+        this.messageType = success ? 'success' : 'warning';
+      }
+      // TODO reload data if necessary
+    },
+    /* updates the views list with the included new view */
+    newView: function (views) {
+      if (views) { this.views = views; }
+    },
     setView: function (view) {
       this.view = view;
-      // TODO
-      // update url and session storage (to persist user's choice)
-      // if (!view) {
-      //   delete sessionStorage['moloch-view'];
-      //   this.$location.search('view', null);
-      // } else {
-      //   sessionStorage['moloch-view'] = view;
-      //   this.$location.search('view', view);
-      // }
 
+      // update url and session storage (to persist user's choice)
+      sessionStorage['moloch-view'] = view;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          view: view
+        }
+      });
+
+      // TODO
       // this.$scope.$emit('change:search', {
       //   expression : this.$rootScope.expression,
       //   view       : this.view
@@ -281,20 +321,14 @@ export default {
     deleteView: function (view) {
       UserService.deleteView(view)
         .then((response) => {
-          // let args = {};
-
-          this.actionForm = false; // close the form
-
+          // display success message
           if (response.text) {
             this.message = response.text;
             this.messageType = response.success ? 'success' : 'warning';
           }
 
-          // TODO
-          // notify parent to close form and display message
-          // this.$scope.$emit('close:form:container', args);
-
           if (response.success) {
+            // remove the deleted view if it was selected
             if (this.view === view) {
               this.setView(undefined);
             }
@@ -304,11 +338,6 @@ export default {
           }
         })
         .catch((error) => {
-          // TODO
-          // notify parent to close form and display message
-          // this.$scope.$emit('close:form:container', {
-          //   message: err, success: false
-          // });
           this.message = error;
           this.messageType = 'danger';
         });
@@ -350,33 +379,8 @@ form {
 }
 
 .action-form-separator {
-  margin: 7px 15px;
+  margin: 5px 0;
   border-top: 1px solid var(--color-gray-light);
-}
-
-/* dropdown menus in search bar */
-.dropdown-menu {
-  min-width: 200px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.dropdown-menu > li > div {
-  display: block;
-  padding: 2px 8px;
-  white-space: nowrap;
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.dropdown-menu > li > div > div {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.dropdown-menu > li > div a {
-  color: var(--color-black);
-  text-decoration: none;
 }
 
 /* make sure action menu dropdown is above all the things
