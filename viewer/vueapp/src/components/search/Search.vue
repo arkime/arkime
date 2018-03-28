@@ -48,7 +48,7 @@
         size="sm"
         class="pull-right ml-1"
         text="Views "
-        variant="theme-quaternary">
+        variant="theme-secondary">
         <b-dropdown-item @click="createView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
@@ -79,20 +79,24 @@
         Search
       </a> <!-- /search button -->
 
-      <!-- TODO search box typeahead -->
+      <!-- search box typeahead -->
       <!-- TODO enter-click="applyParams()" -->
       <expression-typeahead>
       </expression-typeahead> <!-- /search box typeahead -->
 
-      <!-- TODO time inputs -->
+      <!-- time inputs -->
       <div class="form-inline">
         <moloch-time :timezone="timezone"
           @timeChange="timeChange">
         </moloch-time>
       </div> <!-- /time inputs -->
 
-      <!-- TODO form message -->
-      <div class="small">
+      <!-- form message -->
+      <div class="small mt-1">
+        <moloch-toast :message="message"
+          :type="messageType"
+          :done="messageDone">
+        </moloch-toast>
       </div> <!-- /form message -->
 
       <div v-if="actionForm"
@@ -140,13 +144,14 @@ import UserService from '../UserService';
 import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
+import MolochToast from '../utils/Toast';
 
 // TODO
 // let manualChange = false;
 
 export default {
   name: 'MolochSearch',
-  components: { ExpressionTypeahead, MolochTime },
+  components: { ExpressionTypeahead, MolochTime, MolochToast },
   props: [
     'openSessions',
     'numVisibleSessions',
@@ -169,8 +174,8 @@ export default {
       showApplyButtons: false,
       cluster: {},
       view: '',
-      message: '',
-      messageType: ''
+      message: undefined,
+      messageType: undefined
     };
   },
   created: function () {
@@ -180,9 +185,8 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     messageDone () {
-      // TODO
-      this.message = '';
-      this.messageType = '';
+      this.message = undefined;
+      this.messageType = undefined;
     },
     applyExpression () {
       // TODO
@@ -275,33 +279,38 @@ export default {
       // });
     },
     deleteView: function (view) {
-      // TODO
       UserService.deleteView(view)
         .then((response) => {
           // let args = {};
-          //
-          // if (response.text) {
-          //   args.message = response.text;
-          //   args.success = response.success;
-          // }
-          //
-          // // notify parent to close form and display message
+
+          this.actionForm = false; // close the form
+
+          if (response.text) {
+            this.message = response.text;
+            this.messageType = response.success ? 'success' : 'warning';
+          }
+
+          // TODO
+          // notify parent to close form and display message
           // this.$scope.$emit('close:form:container', args);
-          //
-          // if (response.success) {
-          //   if (this.view === view) {
-          //     this.setView(undefined);
-          //   }
-          //
-          //   this.views[view] = null;
-          //   delete this.views[view];
-          // }
+
+          if (response.success) {
+            if (this.view === view) {
+              this.setView(undefined);
+            }
+
+            this.views[view] = null;
+            delete this.views[view];
+          }
         })
-        .catch((err) => {
+        .catch((error) => {
+          // TODO
           // notify parent to close form and display message
           // this.$scope.$emit('close:form:container', {
           //   message: err, success: false
           // });
+          this.message = error;
+          this.messageType = 'danger';
         });
     },
     /* helper functions ------------------------------------------ */
