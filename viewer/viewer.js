@@ -3185,7 +3185,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
   }
 
-  var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 1);
+  var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 4);
 
   if (req.query.date === '-1' && spiDataMaxIndices !== -1) {
     return res.send({spi: {}, bsqErr: "'All' date range not allowed for spiview query"});
@@ -3369,6 +3369,16 @@ function buildConnections(req, res, cb) {
   var connects = {};
 
   function process(vsrc, vdst, f) {
+
+    // ES 6 is returning formatted timestamps instead of ms like pre 6 did
+    // https://github.com/elastic/elasticsearch/issues/27740
+    if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
+      vsrc = new Date(vsrc).getTime();
+    }
+    if (vdst.length === 24 && vdst[23] === 'Z' && vdst.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
+      vdst = new Date(vdst).getTime();
+    }
+
     if (nodesHash[vsrc] === undefined) {
       nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
     }
@@ -3623,7 +3633,7 @@ app.get('/unique.txt', logAction(), function(req, res) {
       return;
     }
 
-    var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 3);
+    var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 4);
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
           (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
