@@ -11,7 +11,6 @@ use Cwd;
 use URI::Escape;
 use TAP::Harness;
 use MolochTest;
-use Time::HiRes;
 use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
@@ -209,7 +208,6 @@ my ($cmd) = @_;
         if ($main::debug) {
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
-            sleep(0.5);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
@@ -217,7 +215,6 @@ my ($cmd) = @_;
         } else {
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
-            sleep(0.5);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
@@ -283,11 +280,13 @@ my ($cmd) = @_;
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
         sleep 1;
     }
