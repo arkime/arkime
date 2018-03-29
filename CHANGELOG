@@ -19,6 +19,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Change default spiDataMaxIndices to 4 everywhere
   - viewer - work around for ES 6 issue https://github.com/elastic/elasticsearch/issues/27740
   - capture - fixed netflow plugin
+  - tests - initial parliament tests
 
 1.0.0-rc1 2018/03/20
   - viewer - minor stats page fixes
@@ -64,7 +65,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
-0.50.1 2017/03/XX
+0.50.1 2017/03/29
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
   - viewer - sessions.csv handle multiple fields parameters
