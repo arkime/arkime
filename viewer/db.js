@@ -164,10 +164,10 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
   if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
     var totalResults;
-    var params = {scroll: '2m'};
+    var params = {scroll: '5m'};
     exports.merge(params, options);
     var querySize = query.size;
-    delete query.size;
+    query.size = 1000; // Get 1000 items per scroll call
     exports.search(index, type, query, params,
       function getMoreUntilDone(error, response) {
         if (error) {
@@ -182,7 +182,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
         if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
-            scroll: '2m',
+            scroll: '5m',
             body: {
               scroll_id: response._scroll_id,
             }
