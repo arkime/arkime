@@ -1,8 +1,8 @@
 <template>
 
-  <!-- tag sessions form -->
+  <!-- export pcap form -->
   <div class="row"
-    @keyup.stop.prevent.enter="apply(add)">
+    @keyup.stop.prevent.enter="exportPcap()">
 
     <!-- segments select input -->
     <div class="col-md-4">
@@ -29,54 +29,29 @@
 
     <div class="col-md-7">
 
-      <!-- tags input -->
+      <!-- filename input -->
       <div class="input-group input-group-sm">
         <div class="input-group-prepend">
           <span class="input-group-text">
-            Tags
+            Filename
           </span>
         </div>
-        <input v-model="tags"
+        <input v-model="filename"
           v-focus-input="true"
           type="text"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
+          placeholder="Enter a filename"
         />
         <div class="input-group-append">
           <button class="btn btn-theme-tertiary"
-            v-if="add"
-            @click="apply(true)"
-            :class="{'disabled':loading}"
+            @click="exportPcap()"
             type="button">
-            <span v-if="!loading">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Add Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Adding Tags
-            </span>
-          </button>
-          <button class="btn btn-danger"
-            v-else
-            @click="apply(false)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-trash-o">
-              </span>&nbsp;
-              Remove Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Removing Tags
-            </span>
+            <span class="fa fa-paper-plane-o">
+            </span>&nbsp;
+            Export PCAP
           </button>
         </div>
-      </div> <!-- /tags input -->
+      </div> <!-- /filename input -->
 
       <!-- error -->
       <p v-if="error"
@@ -98,7 +73,7 @@
       </div>
     </div> <!-- /cancel button -->
 
-  </div> <!-- /tag sessions form -->
+  </div> <!-- /export pcap form -->
 
 </template>
 
@@ -107,10 +82,9 @@ import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
 
 export default {
-  name: 'MolochTagSessions',
+  name: 'MolochExportPcap',
   directives: { FocusInput },
   props: {
-    add: Boolean,
     start: Number,
     done: Function,
     applyTo: String,
@@ -121,50 +95,31 @@ export default {
   data: function () {
     return {
       error: '',
-      loading: false,
       segments: 'no',
-      tags: ''
+      filename: 'sessions.pcap'
     };
   },
   methods: {
     /* exposed functions ----------------------------------------- */
-    apply: function (addTags) {
-      if (!this.tags) {
-        this.error = 'No tag(s) specified.';
+    exportPcap: function () {
+      if (this.filename === '') {
+        this.error = 'No filename specified.';
         return;
       }
 
-      this.loading = true;
-
       let data = {
-        tags: this.tags,
         start: this.start,
         applyTo: this.applyTo,
+        filename: this.filename,
         segments: this.segments,
         sessions: this.sessions,
         numVisible: this.numVisible,
         numMatching: this.numMatching
       };
 
-      SessionsService.tag(addTags, data, this.$route.query)
-        .then((response) => {
-          this.tags = '';
-          this.loading = false;
+      SessionsService.exportPcap(data, this.$route.query);
 
-          let reloadData = false;
-          //  only reload data if tags were added to only one
-          if (data.sessions && data.sessions.length === 1) {
-            reloadData = true;
-          }
-
-          this.done(response.data.text, response.data.success, reloadData);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an oportunity to try again (don't close the form)
-          this.error = error.text;
-          this.loading = false;
-        });
+      this.done('PCAP Exported', true);
     }
   }
 };

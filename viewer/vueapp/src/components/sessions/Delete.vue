@@ -1,8 +1,18 @@
 <template>
 
-  <!-- tag sessions form -->
-  <div class="row"
-    @keyup.stop.prevent.enter="apply(add)">
+  <!-- delete sessions form -->
+  <div class="row">
+
+    <!-- deletion warning! -->
+    <div class="col-md-4">
+      <em class="small">
+        <strong class="text-danger">
+          <span class="fa fa-exclamation-triangle"></span>&nbsp;
+          This will perform a three pass overwrite of all packet data for matching
+          packets. SPI data will be non forensically removed for matching sessions.
+        </strong>
+      </em>
+    </div> <!-- /deletion warning! -->
 
     <!-- segments select input -->
     <div class="col-md-4">
@@ -25,68 +35,33 @@
           </span>
         </div>
       </div>
-    </div> <!-- /segments select input -->
-
-    <div class="col-md-7">
-
-      <!-- tags input -->
-      <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Tags
-          </span>
-        </div>
-        <input v-model="tags"
-          v-focus-input="true"
-          type="text"
-          class="form-control"
-          placeholder="Enter a comma separated list of tags"
-        />
-        <div class="input-group-append">
-          <button class="btn btn-theme-tertiary"
-            v-if="add"
-            @click="apply(true)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Add Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Adding Tags
-            </span>
-          </button>
-          <button class="btn btn-danger"
-            v-else
-            @click="apply(false)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-trash-o">
-              </span>&nbsp;
-              Remove Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Removing Tags
-            </span>
-          </button>
-        </div>
-      </div> <!-- /tags input -->
-
-      <!-- error -->
+      <!-- delete error -->
       <p v-if="error"
         class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
         {{ error }}
-      </p> <!-- /error -->
+      </p> <!-- /delete error -->
+    </div> <!-- /segments select input -->
 
-    </div>
+    <!-- delete button -->
+    <div class="col-md-3">
+      <button class="btn btn-danger btn-sm pull-right"
+        @click="deleteSessions()"
+        :class="{'disabled':loading}"
+        type="button">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o">
+          </span>&nbsp;
+          Destructively Delete Data
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin">
+          </span>&nbsp;
+          Destructively Deleting Data
+        </span>
+      </button>
+    </div> <!-- /delete button -->
 
     <!-- cancel button -->
     <div class="col-md-1">
@@ -98,19 +73,16 @@
       </div>
     </div> <!-- /cancel button -->
 
-  </div> <!-- /tag sessions form -->
+  </div> <!-- /delete sessions form -->
 
 </template>
 
 <script>
-import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
 
 export default {
-  name: 'MolochTagSessions',
-  directives: { FocusInput },
+  name: 'MolochDeleteSessions',
   props: {
-    add: Boolean,
     start: Number,
     done: Function,
     applyTo: String,
@@ -122,22 +94,15 @@ export default {
     return {
       error: '',
       loading: false,
-      segments: 'no',
-      tags: ''
+      segments: 'no'
     };
   },
   methods: {
     /* exposed functions ----------------------------------------- */
-    apply: function (addTags) {
-      if (!this.tags) {
-        this.error = 'No tag(s) specified.';
-        return;
-      }
-
+    deleteSessions: function () {
       this.loading = true;
 
       let data = {
-        tags: this.tags,
         start: this.start,
         applyTo: this.applyTo,
         segments: this.segments,
@@ -146,17 +111,17 @@ export default {
         numMatching: this.numMatching
       };
 
-      SessionsService.tag(addTags, data, this.$route.query)
+      SessionsService.remove(data, this.$route.query)
         .then((response) => {
-          this.tags = '';
           this.loading = false;
 
           let reloadData = false;
-          //  only reload data if tags were added to only one
+          //  only reload data if only one was deleted
           if (data.sessions && data.sessions.length === 1) {
             reloadData = true;
           }
 
+          // notify parent to close form
           this.done(response.data.text, response.data.success, reloadData);
         })
         .catch((error) => {

@@ -108,7 +108,7 @@
               <b-form-radio-group
                 size="sm"
                 buttons
-                v-model="actionsFormItemRadio">
+                v-model="actionFormItemRadio">
                 <b-radio value="open"
                   v-b-tooltip.hover
                   :title="'Apply action to ' + openSessions.length + ' opened sessions'">
@@ -127,32 +127,65 @@
               </b-form-radio-group>
             </b-form-group>
           </div>
+          <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <!-- TODO actions menu forms -->
             <moloch-create-view v-if="actionForm === 'create:view'"
               :done="actionFormDone"
               @newView="newView">
             </moloch-create-view>
-            <moloch-tag-sessions v-else-if="actionForm === 'add:tags'"
-              :add="true"
-              :num-visible="numVisibleSessions"
+            <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
+              :add="actionForm === 'add:tags'"
               :start="start"
-              :num-matching="numMatchingSessions"
-              :done="actionFormDone">
-            </moloch-tag-sessions>
-            <moloch-tag-sessions v-else-if="actionForm === 'remove:tags'"
-              :add="false"
+              :done="actionFormDone"
+              :sessions="openSessions"
               :num-visible="numVisibleSessions"
-              :start="start"
               :num-matching="numMatchingSessions"
-              :done="actionFormDone">
+              :apply-to="actionFormItemRadio">
             </moloch-tag-sessions>
-            <div v-else>
-              Invalid form ID
-            </div>
-          </div>
+            <moloch-delete-sessions v-else-if="actionForm === 'delete:session'"
+              :start="start"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-delete-sessions>
+            <moloch-scrub-pcap v-else-if="actionForm === 'scrub:pcap'"
+              :start="start"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-scrub-pcap>
+            <moloch-send-sessions v-else-if="actionForm === 'send:session'"
+              :start="start"
+              :cluster="cluster"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-send-sessions>
+            <moloch-export-pcap v-else-if="actionForm === 'export:pcap'"
+              :start="start"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-export-pcap>
+            <moloch-export-csv v-else-if="actionForm === 'export:csv'"
+              :start="start"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-export-csv>
+          </div> <!-- /actions menu forms -->
         </div>
-      </div> <!-- /actions menu forms -->
+      </div>
 
     </div>
   </form>
@@ -167,6 +200,11 @@ import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
 import MolochCreateView from '../sessions/CreateView';
 import MolochTagSessions from '../sessions/Tags';
+import MolochDeleteSessions from '../sessions/Delete';
+import MolochScrubPcap from '../sessions/Scrub';
+import MolochSendSessions from '../sessions/Send';
+import MolochExportPcap from '../sessions/ExportPcap';
+import MolochExportCsv from '../sessions/ExportCsv';
 
 // TODO
 // let manualChange = false;
@@ -178,7 +216,12 @@ export default {
     MolochTime,
     MolochToast,
     MolochCreateView,
-    MolochTagSessions
+    MolochTagSessions,
+    MolochDeleteSessions,
+    MolochScrubPcap,
+    MolochSendSessions,
+    MolochExportPcap,
+    MolochExportCsv
   },
   props: [
     'openSessions',
@@ -192,8 +235,8 @@ export default {
     return {
       views: {},
       molochClusters: {},
-      actionsFormItemRadio: 'visible',
-      actionsFormItemRadioOptions: [
+      actionFormItemRadio: 'visible',
+      actionFormItemRadioOptions: [
         { text: 'Open Item', value: 'open' },
         { text: 'Visible Items', value: 'visible' },
         { text: 'Matching Items', value: 'matching' }
@@ -240,14 +283,10 @@ export default {
       // this.$scope.$broadcast('update:time');
     },
     exportPCAP: function () {
-      // TODO
-      console.log('export pcap');
       this.actionForm = 'export:pcap';
       this.showApplyButtons = true;
     },
     exportCSV: function () {
-      // TODO
-      console.log('export csv');
       this.actionForm = 'export:csv';
       this.showApplyButtons = true;
     },
@@ -260,20 +299,14 @@ export default {
       this.showApplyButtons = true;
     },
     scrubPCAP: function () {
-      // TODO
-      console.log('scrub pcap');
       this.actionForm = 'scrub:pcap';
       this.showApplyButtons = true;
     },
     deleteSession: function () {
-      // TODO
-      console.log('delete session');
       this.actionForm = 'delete:session';
       this.showApplyButtons = true;
     },
     sendSession: function (cluster) {
-      // TODO
-      console.log('send session to', cluster);
       this.cluster = cluster;
       this.actionForm = 'send:session';
       this.showApplyButtons = true;
@@ -283,7 +316,6 @@ export default {
       this.showApplyButtons = false;
     },
     actionFormDone: function (message, success, reloadData) {
-      console.log('action form DONE');
       this.actionForm = undefined;
       if (message) {
         this.message = message;
@@ -386,4 +418,8 @@ form {
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
+
+.form-group {
+  margin-bottom: 0;
+}
 </style>

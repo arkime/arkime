@@ -1,8 +1,8 @@
 <template>
 
-  <!-- tag sessions form -->
+  <!-- send sessions form -->
   <div class="row"
-    @keyup.stop.prevent.enter="apply(add)">
+    @keyup.stop.prevent.enter="send()">
 
     <!-- segments select input -->
     <div class="col-md-4">
@@ -44,35 +44,18 @@
         />
         <div class="input-group-append">
           <button class="btn btn-theme-tertiary"
-            v-if="add"
-            @click="apply(true)"
+            @click="send()"
             :class="{'disabled':loading}"
             type="button">
             <span v-if="!loading">
-              <span class="fa fa-plus-circle">
+              <span class="fa fa-paper-plane-o">
               </span>&nbsp;
-              Add Tags
+              Send Session(s)
             </span>
             <span v-else>
               <span class="fa fa-spinner fa-spin">
               </span>&nbsp;
-              Adding Tags
-            </span>
-          </button>
-          <button class="btn btn-danger"
-            v-else
-            @click="apply(false)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-trash-o">
-              </span>&nbsp;
-              Remove Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Removing Tags
+              Sending Session(s)
             </span>
           </button>
         </div>
@@ -98,7 +81,19 @@
       </div>
     </div> <!-- /cancel button -->
 
-  </div> <!-- /tag sessions form -->
+    <!-- info -->
+    <div class="col-md-12">
+      <p class="text-info small mb-0">
+        <em>
+          <strong>
+            <span class="fa fa-info-circle"></span>&nbsp;
+            This will send the SPI and PCAP data to the remote Moloch instance.
+          </strong>
+        </em>
+      </p>
+    </div> <!-- /info -->
+
+  </div> <!-- /send sessions form -->
 
 </template>
 
@@ -110,7 +105,7 @@ export default {
   name: 'MolochTagSessions',
   directives: { FocusInput },
   props: {
-    add: Boolean,
+    cluster: String,
     start: Number,
     done: Function,
     applyTo: String,
@@ -128,12 +123,7 @@ export default {
   },
   methods: {
     /* exposed functions ----------------------------------------- */
-    apply: function (addTags) {
-      if (!this.tags) {
-        this.error = 'No tag(s) specified.';
-        return;
-      }
-
+    send: function () {
       this.loading = true;
 
       let data = {
@@ -146,7 +136,7 @@ export default {
         numMatching: this.numMatching
       };
 
-      SessionsService.tag(addTags, data, this.$route.query)
+      SessionsService.send(data, this.$route.query)
         .then((response) => {
           this.tags = '';
           this.loading = false;
