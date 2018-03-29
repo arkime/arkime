@@ -813,7 +813,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
   let parliamentClone = JSON.parse(JSON.stringify(parliament));
-  if (parliamentClone.password) { parliamentClone.password = undefined; }
+  delete parliamentClone.settings
+  delete parliamentClone.password
   return res.json(parliamentClone);
 });
 
