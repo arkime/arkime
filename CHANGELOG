@@ -25,6 +25,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - added --install to easybutton (issue #812)
   - capture - basic memcache classify
   - viewer - disable TLS 1.0
+  - viewer - ES scrolling should be much faster
 
 
 0.50.0 2017/01/24
