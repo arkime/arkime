@@ -8,7 +8,8 @@
       :num-visible-sessions="query.length"
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
-      :timezone="settings.timezone">
+      :timezone="settings.timezone"
+      @changeSearch="changeSearch">
     </moloch-search>
 
     sessions go here!
@@ -74,6 +75,36 @@ export default {
     loadData: function () {
       // TODO
       console.log('load data');
+    },
+    changeSearch: function (args) {
+      // TODO
+      console.log('change search');
+      this.loadData();
+      // either (startTime && stopTime) || date
+      // if (args.startTime && args.stopTime) {
+      //   _query.startTime  = this.query.startTime  = args.startTime;
+      //   _query.stopTime   = this.query.stopTime   = args.stopTime;
+      //   _query.date       = this.query.date       = null;
+      // } else if (args.date) {
+      //   _query.date       = this.query.date       = args.date;
+      //   _query.startTime  = this.query.startTime  = null;
+      //   _query.stopTime   = this.query.stopTime   = null;
+      // }
+      //
+      // _query.expression = this.query.expression = args.expression;
+      // if (args.bounding) {_query.bounding = this.query.bounding = args.bounding;}
+      // if (args.interval) {_query.interval = this.query.interval = args.interval;}
+      //
+      // // reset to the first page, because we are issuing a new query
+      // // and there may only be 1 page of results
+      // _query.start = this.query.start = 0;
+      //
+      // this.query.view = args.view;
+      //
+      // // don't issue search when the first change:search event is fired
+      // if (!componentInitialized || this.loading) { return; }
+      //
+      // this.loadData(true);
     }
   }
 };

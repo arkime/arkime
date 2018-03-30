@@ -20,6 +20,7 @@
         placeholder="Search"
         @blur="onOffFocus"
         @input="debounceExprChange"
+        @keyup.enter="enterClick"
         @keyup.esc.tab.enter.down.up.stop="keyup($event)"
         class="form-control search-control" />
       <span v-if="expression"
@@ -86,7 +87,7 @@ export default {
   directives: { CaretPos, FocusInput },
   data: function () {
     return {
-      expression: Store.state.expression,
+      expression: this.$route.query.expression,
       activeIdx: -1,
       focusInput: true,
       results: [],
@@ -98,10 +99,27 @@ export default {
       resultsElement: null
     };
   },
+  watch: {
+    // watch for route update of expression
+    '$route.query.expression': function (newVal, oldVal) {
+      this.expression = newVal;
+      Store.setExpression(this.expression);
+
+      // reset necessary vars
+      this.results = null;
+      this.focusInput = true;
+      this.activeIdx = -1;
+
+      // notify parent
+      this.$emit('changeExpression');
+    }
+  },
   created: function () {
+    // save the expression (it could come from the route params)
+    Store.setExpression(this.expression);
     this.getFields();
     // TODO watch for issue search
-    // TODO watch for additions to search params
+    // TODO watch for additions to typeahead
   },
   mounted: function () {
     // set the results element for keyup event handler
@@ -138,6 +156,11 @@ export default {
         Store.setExpression(this.expression);
         this.changeExpression();
       }, 500);
+    },
+    enterClick: function () {
+      // only apply the expression on enter click when not selecting
+      // something inside the typeahead dropdown results list
+      if (this.activeIdx < 0) { this.$emit('applyExpression'); }
     },
     /**
      * Watches for keyup events for escape, tab, enter, down, and up keys

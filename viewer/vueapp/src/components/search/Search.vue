@@ -79,14 +79,16 @@
       </a> <!-- /search button -->
 
       <!-- search box typeahead -->
-      <!-- TODO enter-click="applyParams()" -->
-      <expression-typeahead>
+      <expression-typeahead
+        @applyExpression="applyParams"
+        @changeExpression="changeExpression">
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
       <div class="form-inline">
         <moloch-time :timezone="timezone"
-          @timeChange="timeChange">
+          @timeChange="timeChange"
+          :updateTime="updateTime">
         </moloch-time>
       </div> <!-- /time inputs -->
 
@@ -111,17 +113,20 @@
                 v-model="actionFormItemRadio">
                 <b-radio value="open"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + openSessions.length + ' opened sessions'">
+                  :title="'Apply action to ' + openSessions.length + ' opened sessions'"
+                  class="btn-radio">
                   Open Items
                 </b-radio>
                 <b-radio value="visible"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + Math.min(numVisibleSessions, numMatchingSessions) + ' visible sessions'">
+                  :title="'Apply action to ' + Math.min(numVisibleSessions, numMatchingSessions) + ' visible sessions'"
+                  class="btn-radio">
                   Visible Items
                 </b-radio>
                 <b-radio value="matching"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + numMatchingSessions + ' query matching sessions'">
+                  :title="'Apply action to ' + numMatchingSessions + ' query matching sessions'"
+                  class="btn-radio">
                   Matching Items
                 </b-radio>
               </b-form-radio-group>
@@ -193,6 +198,7 @@
 </template>
 
 <script>
+import Store from '../../store';
 import UserService from '../UserService';
 import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
@@ -244,43 +250,77 @@ export default {
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
-      view: '',
+      view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      expression: '' // TODO
+      expression: undefined,
+      updateTime: false
     };
   },
-  // TODO watch for route update of expression and view params?
+  watch: {
+    // watch route update of view param
+    '$route.query.view': function (newVal, oldVal) {
+      this.view = newVal;
+      sessionStorage['moloch-view'] = newVal;
+
+      this.$emit('changeSearch', {
+        expression: this.expression,
+        view: this.view
+      });
+
+      // TODO update the page title
+      // this.$rootScope.$broadcast('issue:search', {
+      //   expression: this.$rootScope.expression,
+      //   view: this.view
+      // });
+    }
+  },
   created: function () {
     this.getMolochClusters();
     this.getViews();
-    // TODO watch for apply expression
     // TODO watch for shift time
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    messageDone () {
+    messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
     },
-    applyExpression () {
-      // TODO
-      // if (this.$rootScope.expression && this.$rootScope.expression !== '') {
-      //   this.$location.search('expression', this.$rootScope.expression);
-      // } else {
-      //   this.$location.search('expression', null);
-      // }
-    },
-    applyParams () {
-      // TODO
-      // manualChange = true;
+    applyExpression: function () {
+      this.expression = Store.state.expression;
 
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          expression: this.expression
+        }
+      });
+
+      this.$emit('changeSearch', {
+        expression: this.expression,
+        view: this.view
+      });
+    },
+    changeExpression: function () {
+      this.expression = Store.state.expression;
+
+      this.$emit('changeSearch', {
+        expression: this.expression,
+        view: this.view
+      });
+    },
+    applyParams: function () {
+      // TODO is this necessary?
+      // manualChange = true;
       this.applyExpression();
 
-      // update the stop/start times in time.component, which in turn
-      // notifies this controller (usin the 'change:time:input' event), which
-      // then updates the time params and calls this.change()
-      // this.$scope.$broadcast('update:time');
+      // update the stop/start times in time component, which in turn
+      // notifies this controller (usin the 'changeTime' event), then
+      // updates the time params and emits a 'changeSearch' event to parent
+      this.updateTime = true;
+      setTimeout(() => {
+        this.updateTime = false;
+      }, 1000);
     },
     exportPCAP: function () {
       this.actionForm = 'export:pcap';
@@ -330,7 +370,8 @@ export default {
     setView: function (view) {
       this.view = view;
 
-      // update url and session storage (to persist user's choice)
+      // update the url and session storage (to persist user's choice)
+      // triggers the '$route.query.view' watcher that issues changeSearch event
       sessionStorage['moloch-view'] = view;
       this.$router.push({
         query: {
@@ -338,17 +379,6 @@ export default {
           view: view
         }
       });
-
-      // TODO
-      // this.$scope.$emit('change:search', {
-      //   expression : this.$rootScope.expression,
-      //   view       : this.view
-      // });
-      //
-      // this.$rootScope.$broadcast('issue:search', {
-      //   expression : this.$rootScope.expression,
-      //   view       : this.view
-      // });
     },
     deleteView: function (view) {
       UserService.deleteView(view)
@@ -390,7 +420,10 @@ export default {
     /* event functions ------------------------------------------- */
     timeChange: function (args) {
       console.log('time change event caught', args);
-      // TODO
+      // TODO test
+      args.expression = this.expression;
+      args.view = this.view;
+      this.$emit('changeSearch', args);
     }
   }
 };

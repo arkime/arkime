@@ -32,7 +32,8 @@
     </div> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="form-group ml-1">
+    <div class="form-group ml-1"
+      @keyup.esc="closeStartPicker">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
           placement="topright"
@@ -52,7 +53,7 @@
         </flat-pickr>
         <div class="input-group-append">
           <button class="btn btn-default"
-            @click="openStartPicker"
+            @click="toggleStartPicker"
             type="button">
             <span class="fa fa-calendar-o"></span>
           </button>
@@ -60,97 +61,98 @@
       </div>
     </div> <!-- /start time -->
 
-      <!-- stop time -->
-      <div class="form-group ml-1">
-        <div class="input-group input-group-sm">
-          <span class="input-group-prepend cursor-help"
-            placement="topright"
-            v-b-tooltip.hover
-            title="Stop Time">
-            <span class="input-group-text">
-              End
-            </span>
+    <!-- stop time -->
+    <div class="form-group ml-1"
+      @keyup.esc="closeStopPicker">
+      <div class="input-group input-group-sm">
+        <span class="input-group-prepend cursor-help"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Stop Time">
+          <span class="input-group-text">
+            End
           </span>
-          <flat-pickr v-model="stopTime"
-            @on-change="changeStopTime"
-            @on-close="validateDate"
-            :config="stopTimeConfig"
-            class="form-control"
-            name="stopTime"
-            ref="stopTime">
-          </flat-pickr>
-          <div class="input-group-append">
-            <button class="btn btn-default"
-              @click="openStopPicker"
-              type="button">
-              <span class="fa fa-calendar-o"></span>
-            </button>
-          </div>
+        </span>
+        <flat-pickr v-model="stopTime"
+          @on-change="changeStopTime"
+          @on-close="validateDate"
+          :config="stopTimeConfig"
+          class="form-control"
+          name="stopTime"
+          ref="stopTime">
+        </flat-pickr>
+        <div class="input-group-append">
+          <button class="btn btn-default"
+            @click="toggleStopPicker"
+            type="button">
+            <span class="fa fa-calendar-o"></span>
+          </button>
         </div>
-      </div> <!-- /stop time -->
+      </div>
+    </div> <!-- /stop time -->
 
-      <!-- time bounding select -->
-      <div class="form-group ml-1"
-        v-if="!hideBounding">
-        <div class="input-group input-group-sm">
-          <span class="input-group-prepend cursor-help"
-            placement="topright"
-            v-b-tooltip.hover
-            title="Time Bounding">
-            <span class="input-group-text">
-              Bounding
-            </span>
+    <!-- time bounding select -->
+    <div class="form-group ml-1"
+      v-if="!hideBounding">
+      <div class="input-group input-group-sm">
+        <span class="input-group-prepend cursor-help"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Time Bounding">
+          <span class="input-group-text">
+            Bounding
           </span>
-          <select class="form-control time-range-control"
-            v-model="timeBounding"
-            tabindex="6"
-            @change="changeTimeBounding()">
-            <option value="first">First Packet</option>
-            <option value="last">Last Packet</option>
-            <option value="both">Bounded</option>
-            <option value="either">Session Overlaps</option>
-            <option value="database">Database</option>
-          </select>
-        </div>
-      </div> <!-- /time bounding select -->
+        </span>
+        <select class="form-control time-range-control"
+          v-model="timeBounding"
+          tabindex="6"
+          @change="changeTimeBounding()">
+          <option value="first">First Packet</option>
+          <option value="last">Last Packet</option>
+          <option value="both">Bounded</option>
+          <option value="either">Session Overlaps</option>
+          <option value="database">Database</option>
+        </select>
+      </div>
+    </div> <!-- /time bounding select -->
 
-      <!-- time interval select -->
-      <div class="form-group ml-1"
-        v-if="!hideInterval">
-        <div class="input-group input-group-sm">
-          <span class="input-group-prepend cursor-help"
-            tooltip-placement="topright"
-            v-b-tooltip.hover
-            title="Time Interval">
-            <span class="input-group-text">
-              Interval
-            </span>
+    <!-- time interval select -->
+    <div class="form-group ml-1"
+      v-if="!hideInterval">
+      <div class="input-group input-group-sm">
+        <span class="input-group-prepend cursor-help"
+          tooltip-placement="topright"
+          v-b-tooltip.hover
+          title="Time Interval">
+          <span class="input-group-text">
+            Interval
           </span>
-          <select class="form-control time-range-control"
-            v-model="timeInterval"
-            tabindex="6"
-            @change="changeTimeInterval()">
-            <option value="auto">Auto</option>
-            <option value="second">Seconds</option>
-            <option value="minute">Minutes</option>
-            <option value="hour">Hours</option>
-            <option value="day">Days</option>
-          </select>
-        </div>
-      </div> <!-- /time interval select -->
+        </span>
+        <select class="form-control time-range-control"
+          v-model="timeInterval"
+          tabindex="6"
+          @change="changeTimeInterval()">
+          <option value="auto">Auto</option>
+          <option value="second">Seconds</option>
+          <option value="minute">Minutes</option>
+          <option value="hour">Hours</option>
+          <option value="day">Days</option>
+        </select>
+      </div>
+    </div> <!-- /time interval select -->
 
-      <!-- human readable time range or error -->
-      <div class="ml-2 display-inline">
-        <strong class="small text-theme-accent no-wrap">
-          <span v-if="deltaTime && !timeError">
-            Time Range: {{ deltaTime * 1000 | readableTime }}
-          </span>
-          <span v-if="timeError">
-            <span class="fa fa-exclamation-triangle"></span>&nbsp;
-            {{ timeError }}
-          </span>
-        </strong>
-      </div> <!-- /human readable time range or error -->
+    <!-- human readable time range or error -->
+    <div class="ml-2 display-inline">
+      <strong class="small text-theme-accent no-wrap">
+        <span v-if="deltaTime && !timeError">
+          Time Range: {{ deltaTime * 1000 | readableTime }}
+        </span>
+        <span v-if="timeError">
+          <span class="fa fa-exclamation-triangle"></span>&nbsp;
+          {{ timeError }}
+        </span>
+      </strong>
+    </div> <!-- /human readable time range or error -->
 
   </div>
 
@@ -162,11 +164,12 @@ import 'flatpickr/dist/flatpickr.css';
 
 const hourSec = 3600;
 let currentTimeSec;
+let dateChanged = false;
 
 export default {
   name: 'MolochTime',
   components: { flatPickr },
-  props: [ 'timezone', 'hideBounding', 'hideInterval' ],
+  props: [ 'timezone', 'hideBounding', 'hideInterval', 'updateTime' ],
   data: function () {
     return {
       startTime: null,
@@ -202,11 +205,15 @@ export default {
   watch: {
     // watch for the date, startTime, stopTime, interval, and bounding
     // route parameters to change, then update the view
-    '$route.query.date': 'updateParams',
-    '$route.query.startTime': 'updateParams',
-    '$route.query.stopTime': 'updateParams',
-    '$route.query.interval': 'updateParams',
-    '$route.query.bounding': 'updateParams'
+    '$route.query': 'updateParams',
+    'updateTime': function (newVal, oldVal) {
+      if (newVal) {
+        // calculate new stop/start time
+        this.updateStartStopTime();
+        // tell the parent the new stop/start times
+        this.notifyParent();
+      }
+    }
   },
   created: function () {
     this.setCurrentTime();
@@ -237,22 +244,29 @@ export default {
           startTime: undefined
         }
       });
-
-      this.notifyParent();
     },
     /* Fired when start datetime is changed */
     changeStartTime: function (selectedDates, dateStr, instance) {
-      this.startTime = dateStr;
+      if (this.startTime !== dateStr) {
+        dateChanged = true;
+        this.startTime = dateStr;
+      }
     },
     /* Fired when stop datetime is changed */
     changeStopTime: function (selectedDates, dateStr, instance) {
-      this.stopTime = dateStr;
+      if (this.stopTime !== dateStr) {
+        dateChanged = true;
+        this.stopTime = dateStr;
+      }
     },
     /**
      * Validates a date and updates delta time (stop time - start time)
-     * TODO Fired when a date value is changed (with 500 ms delay)
+     * Fired when a date value is changed manually or the datepicker is closed
      */
     validateDate: function () {
+      if (!dateChanged) { return; }
+      dateChanged = false;
+
       this.timeError = '';
       this.timeRange = '0'; // custom time range
 
@@ -273,7 +287,6 @@ export default {
       this.deltaTime = stopSec - startSec;
 
       this.applyDate();
-      this.notifyParent();
     },
     /**
      * Fired when change bounded select box is changed
@@ -301,12 +314,16 @@ export default {
         }
       });
     },
-    /* Fired when the start time date picker button is clicked */
-    openStartPicker: function () {
-      this.$refs.startTime.fp.toggle();
+    closeStartPicker: function () {
+      this.$refs.startTime.fp.close();
     },
-    /* Fired when the stop time date picker button is clicked */
-    openStopPicker: function () {
+    toggleStartPicker: function () {
+      this.$refs.startTime.fp.open();
+    },
+    closeStopPicker: function () {
+      this.$refs.stopTime.fp.close();
+    },
+    toggleStopPicker: function () {
       this.$refs.stopTime.fp.toggle();
     },
     /**
@@ -390,20 +407,30 @@ export default {
       }
     },
     /* watch for the url parameters to change and update the page */
-    updateParams: function () {
-      let queryParams = this.$route.query;
+    updateParams: function (newParams, oldParams) {
+      let change = false;
 
-      if (queryParams.bounding !== this.timeBounding) {
-        this.timeBounding = queryParams.bounding || 'last';
+      if (newParams.bounding !== oldParams.bounding) {
+        change = true;
+        this.timeBounding = newParams.bounding || 'last';
       }
 
-      if (queryParams.interval !== this.timeInterval) {
-        this.timeInterval = queryParams.interval || 'auto';
+      if (newParams.interval !== oldParams.interval) {
+        change = true;
+        this.timeInterval = newParams.interval || 'auto';
       }
 
-      this.setupTimeParams(queryParams.date, queryParams.startTime, queryParams.stopTime);
-      this.updateStartStopTime();
-      this.notifyParent();
+      if (newParams.date !== oldParams.date ||
+        newParams.stopTime !== oldParams.stopTime ||
+        newParams.startTime !== oldParams.startTime) {
+        change = true;
+        this.setupTimeParams(newParams.date, newParams.startTime, newParams.stopTime);
+      }
+
+      if (change) {
+        this.updateStartStopTime();
+        this.notifyParent();
+      }
     },
     // Sets the current time in seconds
     setCurrentTime: function () {

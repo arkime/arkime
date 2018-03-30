@@ -1,11 +1,11 @@
 export default {
   state: {
-    expression: ''
+    expression: undefined
   },
   setExpression (newValue) {
-    this.state.message = newValue;
+    this.state.expression = newValue;
   },
   clearExpression () {
-    this.state.message = '';
+    this.state.expression = undefined;
   }
 };

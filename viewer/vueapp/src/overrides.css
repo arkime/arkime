@@ -158,7 +158,7 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   font-size: .85rem;
   min-width: 12rem;
 }
-.dropdown-menu > .dropdown-item {
+.dropdown-menu > a.dropdown-item {
   color: var(--color-foreground);
   padding: 2px 8px;
 }
@@ -166,12 +166,13 @@ input.field-typeahead + ul[uib-typeahead-popup] {
 .dropdown-menu > a.dropdown-item:hover,
 .dropdown-menu > a.dropdown-item:focus {
   background-color: var(--color-gray-light);
+  color: var(--color-foreground);
 }
 .dropdown-menu > a.dropdown-item.active,
 .dropdown-menu > a.dropdown-item.active:hover,
 .dropdown-menu > a.dropdown-item.active:focus {
   background-color: var(--color-primary);
-  color: var(--color-white);
+  color: var(--color-foreground);
 }
 .dropdown-menu li.active a,
 .dropdown-menu > li.active > a,
@@ -203,4 +204,22 @@ input.field-typeahead + ul[uib-typeahead-popup] {
 pre {
   background-color: var(--color-gray-lighter);
   border-color    : var(--color-gray-light);
+}
+
+
+/* themed radio/checkbox buttons */
+label.btn-radio, button.btn-checkbox {
+  background-image: none;
+  background-color: transparent;
+  border-color    : var(--color-primary);
+  color           : var(--color-primary);
+}
+label.btn-radio:hover, button.btn-checkbox:hover {
+  color: var(--color-gray) !important;
+  background-color: var(--color-primary-dark);
+}
+label.btn-radio.active, button.btn-checkbox.active {
+  color           : var(--color-gray-light) !important;
+  border-color    : var(--color-primary) !important;
+  background-color: var(--color-primary) !important;
 }
