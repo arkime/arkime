@@ -15,7 +15,7 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.0.0-rc2 2018/03/xx
+1.0.0-rc2 2018/03/29
   - viewer - Change default spiDataMaxIndices to 4 everywhere
   - viewer - work around for ES 6 issue https://github.com/elastic/elasticsearch/issues/27740
   - capture - fixed netflow plugin

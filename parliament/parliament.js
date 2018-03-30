@@ -27,7 +27,7 @@ const version = 1;
 const issueTypes = {
   esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
   esDown: { on: true, name: 'ES Down', text:' ES is down', severity: 'red', description: 'ES is unreachable' },
-  esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping packets', severity: 'yellow', description: 'the capture node is overloading ES' },
+  esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
   noPackets: { on: true, name: 'No Packets', text: 'is not receiving packets', severity: 'red', description: 'the capture node is not receiving packets' }
 };
