@@ -20,13 +20,13 @@ typedef struct {
     char      ssl;
 } Info_t;
 
-static int userField;
-static int versionField;
+LOCAL  int userField;
+LOCAL  int versionField;
 
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != 0) {
@@ -73,7 +73,7 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
     return 0;
 }
 /******************************************************************************/
-void mysql_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void mysql_free(MolochSession_t UNUSED(*session), void *uw)
 {
     Info_t *info = uw;
 
@@ -82,7 +82,7 @@ void mysql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (which != 1)
         return;
@@ -117,14 +117,14 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("mysql", NULL, 1, (unsigned char*)"\x00\x00\x00\x0a", 4, mysql_classify);
 
     userField = moloch_field_define("mysql", "lotermfield",
-        "mysql.user", "User", "mysql.user-term",
+        "mysql.user", "User", "mysql.user",
         "Mysql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
         NULL);
 
     versionField = moloch_field_define("mysql", "termfield",
-        "mysql.ver", "Version", "mysql.ver-term",
+        "mysql.ver", "Version", "mysql.version",
         "Mysql server version string",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);

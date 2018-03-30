@@ -139,7 +139,7 @@ chmod 0700 $MOLOCH_INSTALL_DIR/raw
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
-    ES_VERSION=5.6.0
+    ES_VERSION=5.6.7
     mkdir $MOLOCH_INSTALL_DIR/data
     chown nobody $MOLOCH_INSTALL_DIR/data
     if [ -f "/etc/redhat-release" ]; then

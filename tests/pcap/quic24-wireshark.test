@@ -1,86 +1,87 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "by1" : 2866,
-            "p2" : 443,
-            "pa2" : 2,
-            "timestamp" : "SET",
-            "pr" : 17,
-            "g2" : "USA",
-            "fp" : 1429686316,
-            "pa1" : 3,
-            "db" : 5610,
-            "ipDst" : "216.58.208.195",
-            "fb1" : "0d00db40daa3bbe2",
-            "db2" : 2768,
-            "portDst" : 443,
-            "quic" : {
-               "ua-term" : [
-                  "canary Chrome/44.0.2375.0"
-               ],
-               "version-termcnt" : 1,
-               "host-termcnt" : 1,
-               "host-term" : [
-                  "www.google.fr"
-               ],
-               "ua-termcnt" : 1,
-               "version-term" : [
-                  "Q024"
-               ]
-            },
-            "firstPacket" : 1429686316293,
-            "ps" : [
-               24,
-               1432,
-               2840,
-               4248,
-               4346
-            ],
-            "a1" : "10.44.100.22",
-            "prot-term" : [
-               "udp",
-               "quic"
-            ],
-            "prot-term-cnt" : 2,
-            "lpd" : 1429686316327,
-            "mac2-term" : [
+            "dstASN" : "AS15169 Google LLC",
+            "dstBytes" : 2784,
+            "dstDataBytes" : 2768,
+            "dstGEO" : "US",
+            "dstIp" : "216.58.208.195",
+            "dstMac" : [
                "00:12:ef:c0:d7:a3"
             ],
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "OneAccess SA"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 2,
+            "dstPayload8" : "0c00db40daa3bbe2",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1429686316293,
+            "ipProtocol" : 17,
+            "lastPacket" : 1429686316327,
+            "length" : 33,
+            "node" : "test",
+            "packetLen" : [
                1408,
                1408,
                1408,
                98,
                1408
             ],
-            "ss" : 1,
-            "lp" : 1429686316,
-            "fs" : [],
-            "as2" : "AS15169 Google LLC",
-            "sl" : 33,
-            "a2" : "216.58.208.195",
-            "by" : 5650,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "db1" : 2842,
-            "by2" : 2784,
-            "ipSrc" : "10.44.100.22",
-            "lastPacket" : 1429686316327,
-            "mac2-term-cnt" : 1,
-            "mac1-term" : [
+            "packetPos" : [
+               24,
+               1432,
+               2840,
+               4248,
+               4346
+            ],
+            "protocol" : [
+               "udp",
+               "iprulztest",
+               "quic"
+            ],
+            "protocolCnt" : 3,
+            "quic" : {
+               "host" : [
+                  "www.google.fr"
+               ],
+               "hostCnt" : 1,
+               "useragent" : [
+                  "canary Chrome/44.0.2375.0"
+               ],
+               "useragentCnt" : 1,
+               "version" : [
+                  "Q024"
+               ],
+               "versionCnt" : 1
+            },
+            "segmentCnt" : 1,
+            "srcBytes" : 2866,
+            "srcDataBytes" : 2842,
+            "srcIp" : "10.44.100.22",
+            "srcMac" : [
                "a0:88:b4:1e:16:0c"
             ],
-            "p1" : 50509,
-            "mac1-term-cnt" : 1,
-            "fpd" : 1429686316293,
-            "pa" : 5,
-            "fb2" : "0c00db40daa3bbe2",
-            "portSrc" : 50509
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Intel Corporate"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "0d00db40daa3bbe2",
+            "srcPort" : 50509,
+            "timestamp" : "SET",
+            "totBytes" : 5650,
+            "totDataBytes" : 5610,
+            "totPackets" : 5
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-150422",
+               "_index" : "tests_sessions2-150422",
                "_type" : "session"
             }
          }

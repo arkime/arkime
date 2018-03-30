@@ -4,10 +4,10 @@
     <tr>
       <th ng-repeat="column in :refreshShards:$ctrl.columns track by column.name"
       style="min-width:90px"
-      class="shards-col-header">
+      class="hover-menu">
         {{:refreshShards:column.name}}
         <!-- column dropdown menu -->
-        <div class="btn-group" ng-if="column.doClick" uib-dropdown>
+        <div class="btn-group" has-permission="createEnabled" uib-dropdown>
           <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
             <span class="fa fa-caret-down"></span>
           </button>

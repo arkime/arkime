@@ -319,17 +319,17 @@
       <h4 id="examples">Examples</h4>
 
       <p>
-        Find all the sessions involving Russia (RUS) or China (CHN) that are
+        Find all the sessions involving Russia (RU) or China (CN) that are
         using port 80 and also a hostname which contains "com":
         <pre>
-          <code>(country == RUS || country == CHN) &amp;&amp; port == 80 &amp;&amp; host == *com</code>
+          <code>(country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com</code>
         </pre>
       </p>
       <p>
-        Find all the sessions of type "text/plain", involving Canada (CAN), and
+        Find all the sessions of type "text/plain", involving Canada (CA), and
         containing less than 20 packets:
         <pre>
-          <code>tags == "http:content:text/plain" &amp;&amp; country == CAN &amp;&amp; packets &lt; 20</code>
+          <code>tags == "http:content:text/plain" &amp;&amp; country == CA &amp;&amp; packets &lt; 20</code>
         </pre>
       </p>
 

@@ -1,46 +1,28 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-041219",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "a1" : "127.0.0.1",
-            "fpd" : 1103485433560,
-            "db1" : 96,
-            "p1" : 57827,
-            "mac1-term-cnt" : 1,
-            "db" : 256,
-            "pa" : 11,
-            "lp" : 1103485433,
-            "fs" : [],
-            "postgresql" : {
-               "db-term" : "dbdb",
-               "user-term" : "user"
-            },
-            "portSrc" : 57827,
-            "db2" : 160,
-            "by1" : 566,
-            "ipDst" : "127.0.0.1",
-            "pa1" : 7,
-            "pr" : 6,
-            "portDst" : 5432,
-            "prot-term-cnt" : 2,
-            "prot-term" : [
-               "tcp",
-               "postgresql"
-            ],
-            "ipSrc" : "127.0.0.1",
-            "fb2" : "5200000008000000",
-            "fb1" : "0000005b00030000",
-            "no" : "test",
-            "mac1-term" : [
+            "dstBytes" : 432,
+            "dstDataBytes" : 160,
+            "dstIp" : "127.0.0.1",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 4,
+            "dstPayload8" : "5200000008000000",
+            "dstPort" : 5432,
+            "fileId" : [],
+            "firstPacket" : 1103485433560,
+            "ipProtocol" : 6,
+            "lastPacket" : 1103485433664,
+            "length" : 104,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -53,25 +35,7 @@
                82,
                82
             ],
-            "lastPacket" : 1103485433664,
-            "fp" : 1103485433,
-            "a2" : "127.0.0.1",
-            "sl" : 104,
-            "mac2-term-cnt" : 1,
-            "ss" : 1,
-            "tcpflags" : {
-               "psh" : 3,
-               "fin" : 2,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 4,
-               "syn" : 1,
-               "urg" : 0
-            },
-            "lpd" : 1103485433664,
-            "pa2" : 4,
-            "p2" : 5432,
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -84,13 +48,51 @@
                1034,
                1116
             ],
-            "mac2-term" : [
+            "postgresql" : {
+               "db" : "dbdb",
+               "user" : "user"
+            },
+            "protocol" : [
+               "tcp",
+               "postgresql"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 566,
+            "srcDataBytes" : 96,
+            "srcIp" : "127.0.0.1",
+            "srcMac" : [
                "00:00:00:00:00:00"
             ],
-            "by2" : 432,
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "0000005b00030000",
+            "srcPort" : 57827,
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "timestamp" : "SET",
-            "by" : 998,
-            "firstPacket" : 1103485433560
+            "totBytes" : 998,
+            "totDataBytes" : 256,
+            "totPackets" : 11
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-041219",
+               "_type" : "session"
+            }
          }
       }
    ]

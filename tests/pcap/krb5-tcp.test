@@ -1,95 +1,97 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160618"
-            }
-         },
          "body" : {
-            "sl" : 2,
-            "by1" : 461,
-            "db" : 273,
+            "dstBytes" : 70,
+            "dstDataBytes" : 0,
+            "dstIp" : "10.11.11.11",
+            "dstMac" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPort" : 88,
+            "fileId" : [],
+            "firstPacket" : 1466265698248,
+            "ipProtocol" : 6,
             "krb5" : {
-               "realm-term" : [
-                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "cname-term" : [
+               "cname" : [
                   "xxxxxxxxxxx$"
                ],
-               "realm-termcnt" : 1,
-               "sname-term" : [
+               "cnameCnt" : 1,
+               "realm" : [
+                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+               ],
+               "realmCnt" : 1,
+               "sname" : [
                   "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
                ],
-               "sname-termcnt" : 1,
-               "cname-termcnt" : 1
+               "snameCnt" : 1
             },
-            "pa1" : 3,
-            "a2" : "10.11.11.11",
-            "portDst" : 88,
-            "ss" : 1,
-            "psl" : [
+            "lastPacket" : 1466265698251,
+            "length" : 2,
+            "node" : "test",
+            "packetLen" : [
                86,
                86,
                76,
                347
             ],
-            "pa" : 4,
-            "mac2-term" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "prot-term" : [
-               "tcp",
-               "krb5"
-            ],
-            "timestamp" : "SET",
-            "no" : "test",
-            "tcpflags" : {
-               "syn" : 1,
-               "fin" : 0,
-               "syn-ack" : 1,
-               "psh" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "ack" : 1
-            },
-            "db2" : 0,
-            "fpd" : 1466265698248,
-            "p2" : 88,
-            "by" : 531,
-            "fb1" : "0000010d6a820109",
-            "ipSrc" : "10.10.10.10",
-            "pa2" : 1,
-            "vlan" : [
-               50
-            ],
-            "prot-term-cnt" : 2,
-            "mac1-term-cnt" : 1,
-            "a1" : "10.10.10.10",
-            "portSrc" : 57167,
-            "mac2-term-cnt" : 1,
-            "mac1-term" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "pr" : 6,
-            "lpd" : 1466265698251,
-            "firstPacket" : 1466265698248,
-            "by2" : 70,
-            "p1" : 57167,
-            "ps" : [
+            "packetPos" : [
                24,
                110,
                196,
                272
             ],
-            "fp" : 1466265698,
-            "fs" : [],
-            "vlan-cnt" : 1,
-            "ipDst" : "10.11.11.11",
-            "db1" : 273,
-            "lastPacket" : 1466265698251,
-            "lp" : 1466265698
+            "protocol" : [
+               "tcp",
+               "krb5"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 461,
+            "srcDataBytes" : 273,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "0000010d6a820109",
+            "srcPort" : 57167,
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 531,
+            "totDataBytes" : 273,
+            "totPackets" : 4,
+            "vlan" : [
+               50
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160618",
+               "_type" : "session"
+            }
          }
       }
    ]

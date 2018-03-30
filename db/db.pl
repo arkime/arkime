@@ -52,7 +52,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 37;
+my $VERSION = 50;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -268,42 +268,6 @@ sub esAlias
 }
 
 ################################################################################
-sub tagsCreate
-{
-    my $settings = '
-{
-  "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0,
-    "auto_expand_replicas": "0-3"
-  }
-}';
-
-    print "Creating tags_v3 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}tags_v3", $settings);
-    esAlias("add", "tags_v3", "tags");
-    tagsUpdate();
-}
-
-################################################################################
-sub tagsUpdate
-{
-    my $mapping = '
-{
-  "tag": {
-    "dynamic": "strict",
-    "properties": {
-      "n": {
-        "type": "integer"
-      }
-    }
-  }
-}';
-
-    print "Setting tags_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}tags_v3/tag/_mapping", $mapping);
-}
-################################################################################
 sub sequenceCreate
 {
     my $settings = '
@@ -390,15 +354,13 @@ sub filesUpdate
         "type": "long"
       },
       "node": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "first": {
         "type": "long"
       },
       "name": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "filesize": {
         "type": "long"
@@ -455,12 +417,10 @@ my $mapping = '
     ],
     "properties": {
       "hostname": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "nodeName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "currentTime": {
         "type": "date",
@@ -521,8 +481,7 @@ my $mapping = '
     ],
     "properties": {
       "nodeName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "interval": {
         "type": "short"
@@ -568,7 +527,7 @@ sub fieldsUpdate
         "string_template": {
           "match_mapping_type": "string",
           "mapping": {
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       }
@@ -585,6 +544,7 @@ sub fieldsUpdate
       "help": "Search all ip fields",
       "type": "ip",
       "dbField": "ipall",
+      "dbField2": "ipall",
       "portField": "portall",
       "noFacet": "true"
     }');
@@ -594,6 +554,7 @@ sub fieldsUpdate
       "help": "Search all port fields",
       "type": "integer",
       "dbField": "portall",
+      "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
     esPost("/${PREFIX}fields_v1/field/rir", '{
@@ -601,7 +562,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all rir fields",
       "type": "uptermfield",
-      "dbField": "all",
+      "dbField": "rirall",
+      "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
     esPost("/${PREFIX}fields_v1/field/country", '{
@@ -609,23 +571,26 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all country fields",
       "type": "uptermfield",
-      "dbField": "all",
+      "dbField": "geoall",
+      "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
     esPost("/${PREFIX}fields_v1/field/asn", '{
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
-      "type": "textfield",
-      "dbField": "all",
+      "type": "termfield",
+      "dbField": "asnall",
+      "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
     esPost("/${PREFIX}fields_v1/field/host", '{
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
-      "type": "lotextfield",
-      "dbField": "all",
+      "type": "lotermfield",
+      "dbField": "hostall",
+      "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.src", '{
@@ -634,7 +599,9 @@ sub fieldsUpdate
       "help": "Source IP",
       "type": "ip",
       "dbField": "a1",
+      "dbField2": "srcIp",
       "portField": "p1",
+      "portField2": "srcPort",
       "category": "ip"
     }');
     esPost("/${PREFIX}fields_v1/field/port.src", '{
@@ -643,14 +610,16 @@ sub fieldsUpdate
       "help": "Source Port",
       "type": "integer",
       "dbField": "p1",
+      "dbField2": "srcPort",
       "category": "port"
     }');
     esPost("/${PREFIX}fields_v1/field/asn.src", '{
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
-      "type": "textfield",
+      "type": "termfield",
       "dbField": "as1",
+      "dbField2": "srcASN",
       "rawField": "rawas1",
       "category": "asn"
     }');
@@ -660,6 +629,7 @@ sub fieldsUpdate
       "help": "Source Country",
       "type": "uptermfield",
       "dbField": "g1",
+      "dbField2": "srcGEO",
       "category": "country"
     }');
     esPost("/${PREFIX}fields_v1/field/rir.src", '{
@@ -668,6 +638,7 @@ sub fieldsUpdate
       "help": "Source RIR",
       "type": "uptermfield",
       "dbField": "rir1",
+      "dbField2": "srcRIR",
       "category": "rir"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.dst", '{
@@ -676,7 +647,9 @@ sub fieldsUpdate
       "help": "Destination IP",
       "type": "ip",
       "dbField": "a2",
+      "dbField2": "dstIp",
       "portField": "p2",
+      "portField2": "dstPort",
       "category": "ip"
     }');
     esPost("/${PREFIX}fields_v1/field/port.dst", '{
@@ -685,14 +658,16 @@ sub fieldsUpdate
       "help": "Source Port",
       "type": "integer",
       "dbField": "p2",
+      "dbField2": "dstPort",
       "category": "port"
     }');
     esPost("/${PREFIX}fields_v1/field/asn.dst", '{
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
-      "type": "textfield",
+      "type": "termfield",
       "dbField": "as2",
+      "dbField2": "dstASN",
       "rawField": "rawas2",
       "category": "asn"
     }');
@@ -702,6 +677,7 @@ sub fieldsUpdate
       "help": "Destination Country",
       "type": "uptermfield",
       "dbField": "g2",
+      "dbField2": "dstGEO",
       "category": "country"
     }');
     esPost("/${PREFIX}fields_v1/field/rir.dst", '{
@@ -710,6 +686,7 @@ sub fieldsUpdate
       "help": "Destination RIR",
       "type": "uptermfield",
       "dbField": "rir2",
+      "dbField2": "dstRIR",
       "category": "rir"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes", '{
@@ -717,63 +694,72 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "by"
+      "dbField": "by",
+      "dbField2": "totBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes.src", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
       "type": "integer",
-      "dbField": "by1"
+      "dbField": "by1",
+      "dbField2": "srcBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/bytes.dst", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "by2"
+      "dbField": "by2",
+      "dbField2": "dstBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "db"
+      "dbField": "db",
+      "dbField2": "totDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes.src", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
       "type": "integer",
-      "dbField": "db1"
+      "dbField": "db1",
+      "dbField2": "srcDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/databytes.dst", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "db2"
+      "dbField": "db2",
+      "dbField2": "dstDataBytes"
     }');
     esPost("/${PREFIX}fields_v1/field/packets", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
       "type": "integer",
-      "dbField": "pa"
+      "dbField": "pa",
+      "dbField2": "totPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/packets.src", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
       "type": "integer",
-      "dbField": "pa1"
+      "dbField": "pa1",
+      "dbField2": "srcPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/packets.dst", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
       "type": "integer",
-      "dbField": "pa2"
+      "dbField": "pa2",
+      "dbField2": "dstPackets"
     }');
     esPost("/${PREFIX}fields_v1/field/ip.protocol", '{
       "friendlyName": "IP Protocol",
@@ -781,6 +767,7 @@ sub fieldsUpdate
       "help": "IP protocol number or friendly name",
       "type": "lotermfield",
       "dbField": "pr",
+      "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
     esPost("/${PREFIX}fields_v1/field/id", '{
@@ -789,6 +776,7 @@ sub fieldsUpdate
       "help": "Moloch ID for the session",
       "type": "termfield",
       "dbField": "_id",
+      "dbField2": "_id",
       "noFacet": "true"
 
     }');
@@ -797,21 +785,24 @@ sub fieldsUpdate
       "group": "general",
       "help": "Moloch ID of the first session in a multi session stream",
       "type": "termfield",
-      "dbField": "ro"
+      "dbField": "ro",
+      "dbField2": "rootId"
     }');
     esPost("/${PREFIX}fields_v1/field/node", '{
       "friendlyName": "Moloch Node",
       "group": "general",
       "help": "Moloch node name the session was recorded on",
       "type": "termfield",
-      "dbField": "no"
+      "dbField": "no",
+      "dbField2": "node"
     }');
     esPost("/${PREFIX}fields_v1/field/file", '{
       "friendlyName": "Filename",
       "group": "general",
       "help": "Moloch offline pcap filename",
       "type": "fileand",
-      "dbField": "fileand"
+      "dbField": "fileand",
+      "dbField2": "fileand"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.src.hex", '{
       "friendlyName": "Payload Src Hex",
@@ -819,6 +810,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of source payload in hex",
       "type": "lotermfield",
       "dbField": "fb1",
+      "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.src.utf8", '{
@@ -827,6 +819,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of source payload in utf8",
       "type": "termfield",
       "dbField": "fb1",
+      "dbField2": "srcPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
@@ -836,6 +829,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of destination payload in hex",
       "type": "lotermfield",
       "dbField": "fb2",
+      "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.dst.utf8", '{
@@ -844,6 +838,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of destination payload in utf8",
       "type": "termfield",
       "dbField": "fb2",
+      "dbField2": "dstPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
@@ -853,6 +848,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballhex",
+      "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
     esPost("/${PREFIX}fields_v1/field/payload8.utf8", '{
@@ -861,6 +857,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballutf8",
+      "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
     esPost("/${PREFIX}fields_v1/field/scrubbed.by", '{
@@ -868,7 +865,8 @@ sub fieldsUpdate
       "group": "general",
       "help": "SPI data was scrubbed by",
       "type": "lotermfield",
-      "dbField": "scrubby"
+      "dbField": "scrubby",
+      "dbField2": "scrubby"
     }');
     esPost("/${PREFIX}fields_v1/field/view", '{
       "friendlyName": "View Name",
@@ -876,6 +874,7 @@ sub fieldsUpdate
       "help": "Moloch view name",
       "type": "viewand",
       "dbField": "viewand",
+      "dbField2": "viewand",
       "noFacet": "true"
     }');
     esPost("/${PREFIX}fields_v1/field/starttime", '{
@@ -883,14 +882,18 @@ sub fieldsUpdate
       "group": "general",
       "help": "Session Start Time",
       "type": "seconds",
-      "dbField": "fp"
+      "type2": "date",
+      "dbField": "fp",
+      "dbField2": "firstPacket"
     }');
     esPost("/${PREFIX}fields_v1/field/stoptime", '{
       "friendlyName": "Stop Time",
       "group": "general",
       "help": "Session Stop Time",
       "type": "seconds",
-      "dbField": "lp"
+      "type2": "date",
+      "dbField": "lp",
+      "dbField2": "lastPacket"
     }');
 }
 
@@ -921,8 +924,7 @@ sub queriesUpdate
     "dynamic": "strict",
     "properties": {
       "name": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "enabled": {
         "type": "boolean"
@@ -937,20 +939,16 @@ sub queriesUpdate
         "type": "long"
       },
       "query": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "action": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "creator": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "tags": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       }
     }
   }
@@ -962,47 +960,38 @@ sub queriesUpdate
 }
 
 ################################################################################
-sub sessionsUpdate
+sub sessions2Update
 {
     my $mapping = '
 {
   "session": {
+    "_meta": {
+      "molochDbVersion": ' . $VERSION . '
+    },
     "_all": {"enabled": "false"},
     "dynamic": "true",
     "dynamic_templates": [
       {
-        "template_hdrs": {
-          "path_match": "hdrs.*",
-          "match_mapping_type": "string",
+        "template_ip_end": {
+          "match": "*Ip",
           "mapping": {
-            "type": "string",
-            "index": "no",
-            "fields": {
-              "snow": {"type": "string", "analyzer" : "snowball"},
-              "raw": {"type": "string", "index" : "not_analyzed"}
-            }
+            "type": "ip"
           }
         }
-      }, {
-        "template_georir": {
-          "match_pattern": "regex",
-          "path_match": ".*-(geo|rir|term)$",
-          "match_mapping_type": "string",
+      },
+      {
+        "template_ip_alone": {
+          "match": "ip",
           "mapping": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "ip"
           }
         }
-      }, {
+      },
+      {
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
-            "type": "string",
-            "index": "no",
-            "fields": {
-              "snow" : {"type": "string", "analyzer" : "snowball"},
-              "raw" : {"type": "string", "index" : "not_analyzed"}
-            }
+            "type": "keyword"
           }
         }
       }
@@ -1017,597 +1006,24 @@ sub sessionsUpdate
       "lastPacket": {
         "type": "date"
       },
-      "ipSrc": {
-        "type": "ip"
-      },
-      "portSrc": {
-        "type": "integer"
-      },
-      "ipDst": {
-        "type": "ip"
-      },
-      "portDst": {
-        "type": "integer"
-      },
-      "us": {
-        "type": "string",
-        "analyzer": "url_analyzer",
-        "copy_to": "rawus",
-        "norms": {"enabled": "false"}
-      },
-      "rawus": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "uscnt": {
-        "type": "integer"
-      },
-      "ua": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawua",
-        "norms": {"enabled": "false"}
-      },
-      "rawua": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "uacnt": {
-        "type": "integer"
-      },
-      "ps": {
+      "packetPosArray": {
         "type": "long",
-        "index": "no"
+        "index": false
       },
-      "psl": {
+      "packetLenArray": {
         "type": "integer",
-        "index": "no"
+        "index": false
       },
-      "fs": {
-        "type": "long"
-      },
-      "lp": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "lpd": {
-        "type": "date",
-        "doc_values": "true"
-      },
-      "fp": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "fpd": {
-        "type": "date",
-        "doc_values": "true"
-      },
-      "a1": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "g1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "as1": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawas1",
-        "norms": {"enabled": "false"}
-      },
-      "rawas1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rir1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "p1": {
-        "type": "integer",
-        "doc_values": "true"
-      },
-      "fb1": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "a2": {
-        "type": "long",
-        "doc_values": "true"
-      },
-      "g2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "as2": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawas2",
-        "norms": {"enabled": "false"}
-      },
-      "rawas2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rir2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "p2": {
-        "type": "integer",
-        "doc_values": "true"
-      },
-      "fb2": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "xff": {
-        "type": "long"
-      },
-      "xffcnt": {
-        "type": "integer"
-      },
-      "xffscnt": {
-        "type": "integer"
-      },
-      "gxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "asxff": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawasxff",
-        "norms": {"enabled": "false"}
-      },
-      "rawasxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirxff": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hmd5cnt": {
-        "type": "short"
-      },
-      "hmd5": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "dnshocnt": {
-        "type": "integer"
-      },
-      "dnsho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "dnsip": {
-        "type": "long"
-      },
-      "dnsipcnt": {
-        "type": "integer"
-      },
-      "gdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "asdnsip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawasdnsip",
-        "norms": {"enabled": "false"}
-      },
-      "rawasdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirdnsip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "pr": {
-        "type": "short"
-      },
-      "pa": {
-        "type": "integer"
-      },
-      "pa1": {
-        "type": "integer"
-      },
-      "pa2": {
-        "type": "integer"
-      },
-      "by": {
-        "type": "long"
-      },
-      "by1": {
-        "type": "long"
-      },
-      "by2": {
-        "type": "long"
-      },
-      "db": {
-        "type": "long"
-      },
-      "db1": {
-        "type": "long"
-      },
-      "db2": {
-        "type": "long"
-      },
-      "ro": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "no": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hocnt": {
-        "type": "integer"
-      },
-      "ta": {
-        "type": "integer"
-      },
-      "tacnt": {
-        "type": "integer"
-      },
-      "hh": {
-        "type": "integer"
-      },
-      "hh1": {
-        "type": "integer"
-      },
-      "hh2": {
-        "type": "integer"
-      },
-      "hh1cnt": {
-        "type": "integer"
-      },
-      "hh2cnt": {
-        "type": "integer"
-      },
-      "hsver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hsvercnt": {
-        "type": "integer"
-      },
-      "hdver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hdvercnt": {
-        "type": "integer"
-      },
-      "hpath": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hpathcnt": {
-        "type": "integer"
-      },
-      "hkey": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hkeycnt": {
-        "type": "integer"
-      },
-      "hval": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "hvalcnt": {
-        "type": "integer"
-      },
-      "user": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "usercnt": {
-        "type": "integer"
-      },
-      "tls": {
+      "cert": {
         "type": "object",
-        "dynamic": "strict",
         "properties": {
-          "iCn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "iOn": {
-            "type": "string",
-            "analyzer": "snowball",
-            "norms": {"enabled": "false"},
-            "fields": {
-              "rawiOn": {"type": "string", "index": "not_analyzed"}
-            }
-          },
-          "sCn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "sOn": {
-            "type": "string",
-            "analyzer": "snowball",
-            "norms": {"enabled": "false"},
-            "fields": {
-              "rawsOn": {"type": "string", "index": "not_analyzed"}
-            }
-          },
-          "sn": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "alt": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "altcnt": {
-            "type": "integer"
-          },
           "notBefore": {
-            "type": "long"
+            "type": "date"
           },
           "notAfter": {
-            "type": "long"
-          },
-          "diffDays": {
-            "type": "integer"
-          },
-          "hash": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "date"
           }
         }
-      },
-      "tlscnt": {
-        "type": "integer"
-      },
-      "sshkey": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sshkeycnt": {
-        "type": "short"
-      },
-      "sshver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sshvercnt": {
-        "type": "short"
-      },
-      "euacnt": {
-        "type": "short"
-      },
-      "eua": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "raweua",
-        "norms": {"enabled": "false"}
-      },
-      "raweua": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "esubcnt": {
-        "type": "short"
-      },
-      "esub": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawesub",
-        "norms": {"enabled": "false"}
-      },
-      "rawesub": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "eidcnt": {
-        "type": "short"
-      },
-      "eid": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ectcnt": {
-        "type": "short"
-      },
-      "ect": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "emvcnt": {
-        "type": "short"
-      },
-      "emv": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "efncnt": {
-        "type": "short"
-      },
-      "efn": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "emd5cnt": {
-        "type": "short"
-      },
-      "emd5": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "esrccnt": {
-        "type": "short"
-      },
-      "esrc": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "edstcnt": {
-        "type": "short"
-      },
-      "edst": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "eho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ehocnt": {
-        "type": "integer"
-      },
-      "eip": {
-        "type": "long"
-      },
-      "eipcnt": {
-        "type": "integer"
-      },
-      "ehh": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ehhcnt": {
-        "type": "integer"
-      },
-      "geip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "aseip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawaseip",
-        "norms": {"enabled": "false"}
-      },
-      "rawaseip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rireip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircnck": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircnckcnt": {
-        "type": "integer"
-      },
-      "ircch": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "ircchcnt": {
-        "type": "integer"
-      },
-      "hdrs": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "plugin": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "scrubat": {
-        "type": "date"
-      },
-      "scrubby": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbdmcnt": {
-        "type": "short"
-      },
-      "smbdm": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbfncnt": {
-        "type": "short"
-      },
-      "smbfn": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbhocnt": {
-        "type": "short"
-      },
-      "smbho": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smboscnt": {
-        "type": "short"
-      },
-      "smbos": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbshcnt": {
-        "type": "short"
-      },
-      "smbsh": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbusercnt": {
-        "type": "short"
-      },
-      "smbuser": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "smbvercnt": {
-        "type": "short"
-      },
-      "smbver": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "socksip": {
-        "type": "long"
-      },
-      "gsocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "assocksip": {
-        "type": "string",
-        "analyzer": "snowball",
-        "copy_to": "rawassocksip",
-        "norms": {"enabled": "false"}
-      },
-      "rawassocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "rirsocksip": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "sockspo": {
-        "type": "integer"
-      },
-      "socksuser": {
-        "type": "string",
-        "index": "not_analyzed"
-      },
-      "socksho": {
-        "type": "string",
-        "index": "not_analyzed"
       }
     }
   }
@@ -1619,34 +1035,24 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     my $template = '
 {
-  "template": "' . $PREFIX . 'sessions-*",
+  "template": "' . $PREFIX . 'sessions2-*",
   "settings": {
     "index": {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
       "refresh_interval": "60s",
       "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . ',
-      "analysis": {
-        "analyzer": {
-          "url_analyzer": {
-            "type": "custom",
-            "tokenizer": "pattern",
-            "filter": ["lowercase"]
-          }
-        }
-      }
+      "number_of_replicas": ' . $REPLICAS . '
     }
   },
   "mappings":' . $mapping . '
 }';
 
     print "Creating sessions template\n" if ($verbose > 0);
-    #print "$template\n";
-    esPut("/_template/${PREFIX}sessions_template", $template);
+    esPut("/_template/${PREFIX}sessions2_template", $template);
 
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
-    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+    print "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
         esPut("/$i/session/_mapping", $mapping, 1);
@@ -1666,24 +1072,19 @@ sub historyUpdate
     "dynamic": "strict",
     "properties": {
       "uiPage": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "userId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "method": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "api": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "expression": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "view": {
         "type": "object",
@@ -1696,8 +1097,7 @@ sub historyUpdate
         "type": "integer"
       },
       "query": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "queryTime": {
         "type": "integer"
@@ -1773,12 +1173,10 @@ sub usersUpdate
     "dynamic": "strict",
     "properties": {
       "userId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "userName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "enabled": {
         "type": "boolean"
@@ -1799,12 +1197,10 @@ sub usersUpdate
         "type": "boolean"
       },
       "passStore": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "expression": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "settings": {
         "type": "object",
@@ -1903,6 +1299,19 @@ sub dbESVersion {
 ################################################################################
 sub dbVersion {
 my ($loud) = @_;
+    my $version;
+
+    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta", 1);
+
+    if (defined $version &&
+        exists $version->{"${PREFIX}sessions2_template"} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion}
+    ) {
+        $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion};
+        return;
+    }
 
     my $version = esGet("/${PREFIX}dstats/version/version", 1);
 
@@ -1957,12 +1366,12 @@ sub dbCheck {
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
     if ($main::esVersion < 50500 ||
-        $main::esVersion >= 60000)
+        $main::esVersion >= 70000)
     {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* < 5.5.0 are not supported\n",
               "* 5.6.x is recommended\n",
-              "* >= 6.x are not supported\n",
+              "* >= 6.x is supported but not well tested\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -2039,7 +1448,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1", "${PREFIX}tags_v3", "${PREFIX}users_v4") {
+    foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1",  "${PREFIX}users_v4") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
         esPost("/$i/_upgrade", "", 1);
@@ -2121,10 +1530,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
 
     # First handle sessions expire
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
     my $endTime = time();
-    my $endTimeIndex = time2index($ARGV[2], "sessions-", $endTime);
+    my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
     delete $indices->{$endTimeIndex};
 
     my @startTime = gmtime;
@@ -2143,7 +1552,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $optimizecnt = 0;
     my $startTime = mktime(@startTime);
     while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], "sessions-", $startTime);
+        my $iname = time2index($ARGV[2], "sessions2-", $startTime);
         if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
             $indices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
@@ -2175,7 +1584,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esDelete("/$i", 1);
         }
     }
-
     # Now figure out history expire
     my $hindices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
@@ -2205,9 +1613,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
             esDelete("/$i", 1);
         }
     }
+    esPost("/_flush/synced", "", 1);
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
-    my $indices = esGet("/${PREFIX}sessions-*/_alias", 1);
+    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
     dbESVersion();
     $main::userAgent->timeout(3600);
@@ -2218,6 +1627,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
         esPost("/$i/_forcemerge?max_num_segments=4", "", 1);
         esPost("/$i/_upgrade", "", 1);
     }
+    esPost("/_flush/synced", "", 1);
     print "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
@@ -2228,9 +1638,9 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     my $sessions = 0;
     my $sessionsBytes = 0;
-    my @sessions = grep /^${PREFIX}sessions-/, keys %{$status->{indices}};
+    my @sessions = grep /^${PREFIX}sessions2-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
-        next if ($index !~ /^${PREFIX}sessions-/);
+        next if ($index !~ /^${PREFIX}sessions2-/);
         $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
         $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
@@ -2255,7 +1665,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printf "DB Version:          %10s\n", $main::versionNumber;
     printf "ES Nodes:            %10s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %10s\n", commify(scalar(@sessions));
-    printf "Sessions:            %10s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printf "Sessions2:            %10s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
         printf "Session Density:     %10s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
                                                        commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
@@ -2268,8 +1678,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
     printIndex($status, "files_v4");
     printIndex($status, "files_v3");
-    printIndex($status, "tags_v3");
-    printIndex($status, "tags_v2");
     printIndex($status, "users_v4");
     printIndex($status, "users_v3");
     exit 0;
@@ -2507,12 +1915,11 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     sleep(1);
 
     print "Creating\n";
-    tagsCreate();
     sequenceCreate();
     filesCreate();
     statsCreate();
     dstatsCreate();
-    sessionsUpdate();
+    sessions2Update();
     fieldsCreate();
     historyUpdate();
     if ($ARGV[1] =~ "init") {
@@ -2525,8 +1932,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 19) {
-        print "No longer supported.  Please upgrade to Moloch 0.17.0 first. (Db version $main::VersionNumber)\n\n";
+    if ($main::versionNumber < 37) {
+        print "No longer supported.  Please upgrade to Moloch 0.20.x first. (Db version $main::VersionNumber)\n\n";
         exit 1;
     }
 
@@ -2540,58 +1947,21 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "Starting Upgrade\n";
 
-    if ($main::versionNumber <= 31) {
-        dbCheckForActivity();
-        esGet("/_flush", 0);
-        esGet("/_refresh", 0);
-
-        sequenceUpgrade();
-
-        if ($main::versionNumber < 20) {
-            queriesCreate();
-        } else {
-            createAliasedFromNonAliased("queries", "queries_v1", \&queriesCreate);
-        }
-
-        esDelete("/${PREFIX}tags_v1", 1);
-        createAliasedFromNonAliased("fields", "fields_v1", \&fieldsCreate);
-        createNewAliasesFromOld("tags", "tags_v3", "tags_v2", \&tagsCreate);
-
-        esDelete("/${PREFIX}users_v1", 1);
-        esDelete("/${PREFIX}users_v2", 1);
-        createNewAliasesFromOld("users", "users_v4", "users_v3", \&usersCreate);
-
-        esDelete("/${PREFIX}files_v1", 1);
-        esDelete("/${PREFIX}files_v2", 1);
-        createNewAliasesFromOld("files", "files_v4", "files_v3", \&filesCreate);
-
-        if ($main::versionNumber <= 30) {
-            createNewAliasesFromOld("dstats", "dstats_v2", "dstats_v1", \&dstatsCreate);
-            createAliasedFromNonAliased("stats", "stats_v2", \&statsCreate);
-        }
-
-        esDelete("/_template/${PREFIX}template_1", 1);
-        historyUpdate();
-        sessionsUpdate();
-        checkForOldIndices();
-    } elsif ($main::versionNumber <= 33) {
-        createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
+    if ($main::versionNumber <= 38) {
+        esDelete("/_template/${PREFIX}sessions_template", 1);
         usersUpdate();
         historyUpdate();
-        sessionsUpdate();
+        sessions2Update();
         checkForOldIndices();
-    } elsif ($main::versionNumber <= 37) {
-        usersUpdate();
-        historyUpdate();
-        sessionsUpdate();
-        checkForOldIndices();
+        fieldsUpdate();
+    } elsif ($main::versionNumber <= 50) {
+        sessions2Update();
     } else {
         print "db.pl is hosed\n";
     }
-
 }
 
 print "Finished\n";
 
 sleep 1;
-esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
+#esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");

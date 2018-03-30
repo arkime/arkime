@@ -3,7 +3,7 @@ if (session._err)
     span.fa.fa-exclamation-triangle
     strong &nbsp; #{session._err}
 else 
-  if (session.pa[0] > reqPackets)
+  if (session.totPackets[0] > reqPackets)
     h5.text-theme-quaternary
       span.fa.fa-info-circle.fa-lg
       | &nbsp; Only showing first #{reqPackets} packets
@@ -11,10 +11,10 @@ else
   div.row#textpacket
     div.col-md-6
       h4
-        span.srccol(title="Source Bytes:<br><img src='" + session.no + "/raw/" + session.id + ".png?type=src'>") Source
+        span.srccol(title="Source Bytes:<br><img src='" + session.node + "/raw/" + session.id + ".png?type=src'>") Source
     div.col-md-6
       h4
-        span.dstcol(title="Destination Bytes:<br><img src='" + session.no + "/raw/" + session.id + ".png?type=dst'>") Destination
+        span.dstcol(title="Destination Bytes:<br><img src='" + session.node + "/raw/" + session.id + ".png?type=dst'>") Destination
 
   each item, i in data
     div.row

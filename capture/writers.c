@@ -26,7 +26,7 @@ MolochWriterExit moloch_writer_exit;
 /******************************************************************************/
 extern MolochConfig_t        config;
 
-static MolochStringHashStd_t writersHash;
+LOCAL  MolochStringHashStd_t writersHash;
 
 /******************************************************************************/
 void moloch_writers_start(char *name) {

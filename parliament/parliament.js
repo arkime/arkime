@@ -85,12 +85,21 @@ const issueTypes = {
         i++;
         break;
 
+      case '--regressionTests':
+        app.set('regressionTests', 1);
+        break;
+
+      case '--debug':
+        // Someday support debug :)
+        break;
+
       case '-h':
       case '--help':
         help();
         break;
 
       default:
+        console.log(`Unknown option ${appArgs[i]}`);
         help();
         break;
     }
@@ -104,6 +113,13 @@ const issueTypes = {
   app.set('port', port || 8008);
   app.set('file', file || './parliament.json');
 }());
+
+if (!!app.get("regressionTests")) {
+  app.post('/shutdown', function(req, res) {
+    process.exit(0);
+    throw new Error("Exiting");
+  });
+};
 
 // get the parliament file or create it if it doesn't exist
 let parliament;
@@ -797,7 +813,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
   let parliamentClone = JSON.parse(JSON.stringify(parliament));
-  if (parliamentClone.password) { parliamentClone.password = undefined; }
+  delete parliamentClone.settings
+  delete parliamentClone.password
   return res.json(parliamentClone);
 });
 
@@ -1205,6 +1222,13 @@ router.post('/testAlert', (req, res, next) => {
   writeParliament(req, res, next, successObj, errorText);
 });
 
+
+/* SIGNALS! ----------------------------------------------------------------- */
+// Explicit sigint handler for running under docker
+// See https://github.com/nodejs/node/issues/4182
+process.on('SIGINT', function() {
+    process.exit();
+});
 
 /* LISTEN! ----------------------------------------------------------------- */
 let server;

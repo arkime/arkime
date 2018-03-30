@@ -141,6 +141,9 @@ void reader_snf_init(char *UNUSED(name))
 
         for (r = 0; r < snfNumRings; r++) {
             err = snf_ring_open(handles[i], &rings[i][r]);
+            if (err != 0) {
+                LOGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);
+            }
         }
 
     }
@@ -153,6 +156,5 @@ void reader_snf_init(char *UNUSED(name))
 /******************************************************************************/
 void moloch_plugin_init()
 {
-    LOG("ALW START");
     moloch_readers_add("snf", reader_snf_init);
 }

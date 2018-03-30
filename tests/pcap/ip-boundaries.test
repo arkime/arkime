@@ -1,61 +1,61 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "psl" : [
-               161
-            ],
-            "p1" : 50759,
-            "db2" : 0,
-            "pa2" : 0,
-            "a1" : "255.255.255.255",
-            "ps" : [
-               103
-            ],
-            "pa1" : 1,
-            "lpd" : 1387253713030,
-            "portSrc" : 50759,
-            "p2" : 3207,
-            "fb1" : "64313a6164323a69",
-            "ipSrc" : "255.255.255.255",
-            "firstPacket" : 1387253713030,
-            "portDst" : 3207,
-            "prot-term-cnt" : 2,
-            "timestamp" : "SET",
-            "by2" : 0,
-            "fpd" : 1387253713030,
-            "mac2-term" : [
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "0.0.0.0",
+            "dstMac" : [
                "00:10:db:ff:26:00"
             ],
-            "pr" : 17,
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 3207,
+            "fileId" : [],
+            "firstPacket" : 1387253713030,
+            "ipProtocol" : 17,
             "lastPacket" : 1387253713030,
-            "sl" : 0,
-            "ss" : 1,
-            "mac2-term-cnt" : 1,
-            "pa" : 1,
-            "db1" : 137,
-            "by" : 145,
-            "by1" : 145,
-            "lp" : 1387253713,
-            "db" : 137,
-            "prot-term" : [
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               161
+            ],
+            "packetPos" : [
+               103
+            ],
+            "protocol" : [
                "udp",
                "bittorrent"
             ],
-            "no" : "test",
-            "a2" : "0.0.0.0",
-            "mac1-term-cnt" : 1,
-            "ipDst" : "0.0.0.0",
-            "fs" : [],
-            "mac1-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 145,
+            "srcDataBytes" : 137,
+            "srcIp" : "255.255.255.255",
+            "srcMac" : [
                "78:fe:3d:11:21:f2"
             ],
-            "fp" : 1387253713
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "64313a6164323a69",
+            "srcPort" : 50759,
+            "timestamp" : "SET",
+            "totBytes" : 145,
+            "totDataBytes" : 137,
+            "totPackets" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131217"
+               "_index" : "tests_sessions2-131217",
+               "_type" : "session"
             }
          }
       }

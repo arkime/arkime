@@ -34,8 +34,8 @@
         <select class="form-control pull-right sort-by-select"
           ng-model="sortBy" ng-change="sort()">
           <option value="">Sort by...</option>
-          <option value="fp">Start Time</option>
-          <option value="lp">Stop Time</option>
+          <option value="firstPacket">Start Time</option>
+          <option value="lastPacket">Stop Time</option>
         </select>
         <h4>
           {{sessions.length}} Open
@@ -53,14 +53,14 @@
           <small>
             <span class="fa fa-clock-o fa-fw"></span>
             <em>
-              {{::session.fp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}} -
-              {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
+              {{::session.firstPacket/1000 | date:'yyyy/MM/dd HH:mm:ss'}} -
+              {{::session.lastPacket/1000 | date:'yyyy/MM/dd HH:mm:ss'}}
             </em>
             <br>
-            <strong>{{::session.a1 | extractIPString}}{{::session.tipv61-term | extractIPv6String}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
-            <strong>{{::session.a2 | extractIPString}}{{::session.tipv62-term | extractIPv6String}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
+            <strong>{{::session.srcIp}}</strong>:{{::session.srcPort}} <strong>{{::session.srcGEO}}</strong> -
+            <strong>{{::session.dstIp}}</strong>:{{::session.dstPort}} <strong>{{::session.dstGEO}}</strong>
             <br>
-            <strong>{{::session.pr | protocol}}</strong> - {{::session.no}}
+            <strong>{{::session.ipProtocol | ipProtocol}}</strong> - {{::session.node}}
           </small>
         </p>
       </a>

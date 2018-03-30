@@ -4,7 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = getcwd() . "/pcap";
+my $pwd = "*/pcap";
 my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pwd/https3-301-get.pcap)";
 
 # cert.alt tests
@@ -25,10 +25,10 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.cn==\"google internet authority g3\""));
 
 # cert.issuer.cn
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"Google Inc\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"Foo Inc\""));
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"Google\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"Foo\""));
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Google Inc*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Foo Inc*\""));
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Google*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Foo*\""));
 
 # cert.notafter
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.notafter==\"2018/08/21 00:00:00\""));
@@ -51,7 +51,7 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
 # cert.subject.cn
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Google Inc\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Foo Inc\""));
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Google\""));
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"*Google*\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Foo\""));
 
 # cert.validfor

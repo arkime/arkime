@@ -18,13 +18,13 @@
 
 extern MolochConfig_t   config;
 
-static int domainField;
-static int userField;
-static int hostField;
-static int osField;
-static int verField;
-static int fnField;
-static int shareField;
+LOCAL  int domainField;
+LOCAL  int userField;
+LOCAL  int hostField;
+LOCAL  int osField;
+LOCAL  int verField;
+LOCAL  int fnField;
+LOCAL  int shareField;
 
 #define MAX_SMB_BUFFER 4096
 typedef struct {
@@ -57,7 +57,7 @@ typedef struct {
 #define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
 
 /******************************************************************************/
-void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
+LOCAL void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
 {
     GError *error = 0;
     gsize bread, bwritten;
@@ -78,7 +78,7 @@ void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int
 }
 /******************************************************************************/
 // 2.2.13 AUTHENTICATE_MESSAGE from  http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/[MS-NLMP].pdf
-void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
+LOCAL void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
 {
     BSB bsb;
 
@@ -144,7 +144,7 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
     }
 }
 /******************************************************************************/
-void smb1_str_null_split(char *buf, int len, char **out, int max)
+LOCAL void smb1_str_null_split(char *buf, int len, char **out, int max)
 {
     memset(out, 0, max*sizeof(char *));
     out[0] = buf;
@@ -157,7 +157,7 @@ void smb1_str_null_split(char *buf, int len, char **out, int max)
     }
 }
 /******************************************************************************/
-void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, int useunicode)
+LOCAL void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, int useunicode)
 {
     char        *out;
     gsize        bread, bwritten;
@@ -191,7 +191,7 @@ void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, int us
     }
 }
 /******************************************************************************/
-void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int len, int useunicode)
+LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int len, int useunicode)
 {
     char        *out;
     gsize        bread, bwritten;
@@ -227,7 +227,7 @@ void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int len, in
     }
 }
 /******************************************************************************/
-int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
+LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
     unsigned char cmd    = 0;
@@ -364,7 +364,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
     return 0;
 }
 /******************************************************************************/
-int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
 
@@ -460,7 +460,7 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
     return 0;
 }
 /******************************************************************************/
-int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMBInfo_t            *smb          = uw;
     char                 *state        = &smb->state[which];
@@ -556,14 +556,14 @@ int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void smb_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void smb_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SMBInfo_t            *smb          = uw;
 
     MOLOCH_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (data[4] != 0xff && data[4] != 0xfe)
         return;
@@ -581,44 +581,44 @@ void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSE
 void moloch_parser_init()
 {
     shareField =moloch_field_define("smb", "termfield",
-        "smb.share", "Share", "smbsh",
+        "smb.share", "Share", "smb.share",
         "SMB shares connected to",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     fnField = moloch_field_define("smb", "termfield",
-        "smb.fn", "Filename", "smbfn",
+        "smb.fn", "Filename", "smb.filename",
         "SMB files opened, created, deleted",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     osField = moloch_field_define("smb", "termfield",
-        "smb.os", "OS", "smbos",
+        "smb.os", "OS", "smb.os",
         "SMB OS information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     domainField = moloch_field_define("smb", "termfield",
-        "smb.domain", "Domain", "smbdm",
+        "smb.domain", "Domain", "smb.domain",
         "SMB domain",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     verField = moloch_field_define("smb", "termfield",
-        "smb.ver", "Version", "smbver",
+        "smb.ver", "Version", "smb.version",
         "SMB Version information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     userField = moloch_field_define("smb", "termfield",
-        "smb.user", "User", "smbuser",
+        "smb.user", "User", "smb.user",
         "SMB User",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
         NULL);
 
     hostField = moloch_field_define("smb", "termfield",
-        "host.smb", "Hostname", "smbho",
+        "host.smb", "Hostname", "smb.host",
         "SMB Host name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "host",

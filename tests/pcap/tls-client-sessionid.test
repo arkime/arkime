@@ -1,26 +1,37 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-150105",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "sl" : 91,
-            "pa1" : 7,
-            "by" : 2005,
-            "timestamp" : "SET",
-            "hocnt" : 1,
-            "fb1" : "16030100c0010000",
-            "db1" : 618,
-            "mac1-term" : [
-               "b8:ca:3a:8d:c1:87"
+            "dstASN" : "AS10913 Internap Network Services Corporation",
+            "dstBytes" : 983,
+            "dstDataBytes" : 459,
+            "dstGEO" : "US",
+            "dstIp" : "74.217.87.13",
+            "dstMac" : [
+               "60:73:5c:b4:90:00"
             ],
-            "tlsver-termcnt" : 1,
-            "pr" : 6,
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 9,
+            "dstPayload8" : "1603010051020000",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1420490708340,
+            "http" : {
+               "host" : [
+                  "bl.a.im"
+               ],
+               "hostCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1420490708431,
+            "length" : 91,
+            "node" : "test",
+            "packetLen" : [
                78,
                78,
                76,
@@ -38,23 +49,7 @@
                76,
                76
             ],
-            "ipDst" : "74.217.87.13",
-            "tlscipher-term" : [
-               "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
-            ],
-            "prot-term-cnt" : 2,
-            "tlssrcid-term" : [
-               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-            ],
-            "mac1-term-cnt" : 1,
-            "tlsdstid-term" : [
-               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-            ],
-            "a1" : "10.23.46.37",
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "ps" : [
+            "packetPos" : [
                24,
                102,
                180,
@@ -72,56 +67,67 @@
                2133,
                2209
             ],
-            "tcpflags" : {
-               "rst" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "syn" : 1,
-               "psh" : 6,
-               "ack" : 6
-            },
-            "db2" : 459,
-            "p2" : 443,
-            "firstPacket" : 1420490708340,
-            "mac2-term" : [
-               "60:73:5c:b4:90:00"
-            ],
-            "as2" : "AS10913 Internap Network Services Corporation",
-            "mac2-term-cnt" : 1,
-            "fb2" : "1603010051020000",
-            "ipSrc" : "10.23.46.37",
-            "g2" : "USA",
-            "lp" : 1420490708,
-            "lastPacket" : 1420490708431,
-            "a2" : "74.217.87.13",
-            "rir2" : "ARIN",
-            "tlscipher-termcnt" : 1,
-            "tlsja3-termcnt" : 1,
-            "pa2" : 9,
-            "fp" : 1420490708,
-            "fpd" : 1420490708340,
-            "lpd" : 1420490708431,
-            "no" : "test",
-            "fs" : [],
-            "db" : 1077,
-            "tlsja3-term" : [
-               "42e6d8174e649efbf780f0d9b6ef9610"
-            ],
-            "pa" : 16,
-            "ho" : [
-               "bl.a.im"
-            ],
-            "by2" : 983,
-            "ss" : 1,
-            "p1" : 62938,
-            "by1" : 1022,
-            "prot-term" : [
+            "protocol" : [
                "tls",
                "tcp"
             ],
-            "portDst" : 443,
-            "portSrc" : 62938
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1022,
+            "srcDataBytes" : 618,
+            "srcIp" : "10.23.46.37",
+            "srcMac" : [
+               "b8:ca:3a:8d:c1:87"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "16030100c0010000",
+            "srcPort" : 62938,
+            "tcpflags" : {
+               "ack" : 6,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 6,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+               ],
+               "ja3" : [
+                  "42e6d8174e649efbf780f0d9b6ef9610"
+               ],
+               "ja3Cnt" : 1,
+               "srcSessionId" : [
+                  "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+               ],
+               "version" : [
+                  "TLSv1"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 2005,
+            "totDataBytes" : 1077,
+            "totPackets" : 16
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-150105",
+               "_type" : "session"
+            }
          }
       }
    ]

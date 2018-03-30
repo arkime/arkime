@@ -1,19 +1,48 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "lpd" : 1482552218503,
-            "vlan-cnt" : 1,
-            "a1" : "10.10.10.10",
-            "sl" : 4,
-            "portSrc" : 41324,
-            "mac1-term-cnt" : 2,
-            "tlscipher-termcnt" : 1,
-            "mac1-term" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
+            "cert" : [
+               {
+                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
+                  "issuerCN" : [
+                     "mysql_server_5.7.12_auto_generated_ca_certificate"
+                  ],
+                  "notAfter" : 1779463436000,
+                  "notBefore" : 1464103436000,
+                  "serial" : "02",
+                  "subjectCN" : [
+                     "mysql_server_5.7.12_auto_generated_server_certificate"
+                  ],
+                  "validDays" : 3650
+               }
             ],
-            "psl" : [
+            "certCnt" : 1,
+            "dstBytes" : 1309,
+            "dstDataBytes" : 951,
+            "dstIp" : "10.10.10.11",
+            "dstMac" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "4a0000000a352e37",
+            "dstPort" : 3306,
+            "fileId" : [],
+            "firstPacket" : 1482552218498,
+            "ipProtocol" : 6,
+            "lastPacket" : 1482552218503,
+            "length" : 4,
+            "mysql" : {
+               "version" : "5.7.16"
+            },
+            "node" : "test",
+            "packetLen" : [
                94,
                94,
                86,
@@ -25,17 +54,7 @@
                86,
                959
             ],
-            "fb2" : "4a0000000a352e37",
-            "fs" : [],
-            "fpd" : 1482552218498,
-            "p1" : 41324,
-            "mac2-term" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "tlsja3-termcnt" : 1,
-            "fb1" : "200000018faa3a00",
-            "ps" : [
+            "packetPos" : [
                24,
                118,
                212,
@@ -47,83 +66,68 @@
                998,
                1084
             ],
-            "prot-term-cnt" : 3,
-            "mysql" : {
-               "ver-term" : "5.7.16"
-            },
-            "timestamp" : "SET",
-            "pa" : 10,
-            "portDst" : 3306,
-            "vlan" : [
-               50
-            ],
-            "by" : 1859,
-            "prot-term" : [
+            "protocol" : [
                "tls",
                "mysql",
                "tcp"
             ],
-            "ss" : 1,
-            "tls" : [
-               {
-                  "diffDays" : 3650,
-                  "iCn" : [
-                     "mysql_server_5.7.12_auto_generated_ca_certificate"
-                  ],
-                  "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
-                  "sCn" : [
-                     "mysql_server_5.7.12_auto_generated_server_certificate"
-                  ],
-                  "notAfter" : 1779463436,
-                  "sn" : "02",
-                  "notBefore" : 1464103436
-               }
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 550,
+            "srcDataBytes" : 192,
+            "srcIp" : "10.10.10.10",
+            "srcMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
             ],
-            "pr" : 6,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_AES_256_CBC_SHA"
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks"
             ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 5,
+            "srcPayload8" : "200000018faa3a00",
+            "srcPort" : 41324,
             "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
                "fin" : 0,
                "psh" : 4,
-               "syn" : 1,
-               "urg" : 0,
                "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
                "syn-ack" : 1,
-               "ack" : 4
+               "urg" : 0
             },
-            "db1" : 192,
-            "ipDst" : "10.10.10.11",
-            "fp" : 1482552218,
-            "firstPacket" : 1482552218498,
-            "p2" : 3306,
-            "by2" : 1309,
-            "lp" : 1482552218,
-            "a2" : "10.10.10.11",
-            "pa1" : 5,
-            "tlscnt" : 1,
-            "mac2-term-cnt" : 2,
-            "by1" : 550,
-            "tlsja3-term" : [
-               "3509fd9d38bde48d8abc69cd321c0ba0"
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_RSA_WITH_AES_256_CBC_SHA"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
+               ],
+               "ja3" : [
+                  "3509fd9d38bde48d8abc69cd321c0ba0"
+               ],
+               "ja3Cnt" : 1,
+               "version" : [
+                  "TLSv1.1"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 1859,
+            "totDataBytes" : 1143,
+            "totPackets" : 10,
+            "vlan" : [
+               50
             ],
-            "tlsver-term" : [
-               "TLSv1.1"
-            ],
-            "lastPacket" : 1482552218503,
-            "db" : 1143,
-            "no" : "test",
-            "ipSrc" : "10.10.10.10",
-            "tlsver-termcnt" : 1,
-            "pa2" : 5,
-            "tlsdstid-term" : [
-               "6ecd687d8a5b4d46007ae3294abff81da76c864b02e63e5cf78d70012df8629c"
-            ],
-            "db2" : 951
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-161224",
+               "_index" : "tests_sessions2-161224",
                "_type" : "session"
             }
          }

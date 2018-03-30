@@ -55,7 +55,6 @@ close (FILE);
 my $md5hex = md5_hex($elements);
 
 my $content  = '{' . $fields . '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
-#print $content,"\n";
 $response = $userAgent->post("$host/tagger/file/$ARGV[2]", "Content-Type" => "application/json;charset=UTF-8", Content => $content);
 print $response->content, "\n";
 

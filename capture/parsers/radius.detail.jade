@@ -1,7 +1,7 @@
 if (session.radius)
   div.sessionDetailMeta.bold radius
   dl.sessionDetailMeta
-    +arrayList(session.radius, "user-term", "User", "radius.user")
-    +arrayList(session.radius, "mac-term", "Mac", "radius.mac")
-    +ipArrayList(session.radius, "eip", "Endpoint IPs", "radius.endpoint-ip")
-    +ipArrayList(session.radius, "fip", "Framed IPs", "radius.framed-ip")
+    +arrayList(session.radius, "user", "User", "radius.user")
+    +arrayList(session.radius, "mac", "Mac", "radius.mac")
+    +ipArrayList(session.radius, "endpointIp", "Endpoint IPs", "radius.endpoint-ip")
+    +ipArrayList(session.radius, "framedIp", "Framed IPs", "radius.framed-ip")

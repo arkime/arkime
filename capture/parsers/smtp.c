@@ -24,24 +24,25 @@ extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
 extern uint32_t         pluginsCbs;
 
-static MolochStringHashStd_t emailHeaders;
+LOCAL  MolochStringHashStd_t emailHeaders;
 
-static int receivedField;
-static int idField;
-static int ipField;
-static int hostField;
-static int srcField;
-static int dstField;
+LOCAL  int receivedField;
+LOCAL  int idField;
+LOCAL  int ipField;
+LOCAL  int hostField;
+LOCAL  int srcField;
+LOCAL  int dstField;
 extern int userField;
-static int hhField;
-static int subField;
-static int ctField;
-static int md5Field;
-static int fnField;
-static int uaField;
-static int mvField;
-static int fctField;
-static int magicField;
+LOCAL  int hhField;
+LOCAL  int subField;
+LOCAL  int ctField;
+LOCAL  int md5Field;
+LOCAL  int sha256Field;
+LOCAL  int fnField;
+LOCAL  int uaField;
+LOCAL  int mvField;
+LOCAL  int fctField;
+LOCAL  int magicField;
 
 typedef struct {
     MolochStringHead_t boundaries;
@@ -51,7 +52,7 @@ typedef struct {
     gint               state64[2];
     guint              save64[2];
     guint              bdatRemaining[2];
-    GChecksum         *checksum[2];
+    GChecksum         *checksum[4];
 
     uint16_t           base64Decode:2;
     uint16_t           firstInContent:2;
@@ -86,7 +87,7 @@ EMAIL_MIME_DATA,
 EMAIL_MIME_DATA_RETURN
 };
 /******************************************************************************/
-char *smtp_remove_matching(char *str, char start, char stop)
+LOCAL char *smtp_remove_matching(char *str, char start, char stop)
 {
     while (isspace(*str))
         str++;
@@ -103,8 +104,7 @@ char *smtp_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-void
-smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
+LOCAL void smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
 {
     while (isspace(*s)) {
         s++;
@@ -122,24 +122,13 @@ smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
     case MOLOCH_FIELD_TYPE_STR_HASH:
         moloch_field_string_add(pos, session, s, l, TRUE);
         break;
-    case MOLOCH_FIELD_TYPE_IP_HASH:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
         for (i = 0; parts[i]; i++) {
-            gchar *ip = parts[i];
-            while (*ip == ' ')
-                ip++;
-
-            in_addr_t ia = inet_addr(ip);
-            if (ia == 0 || ia == 0xffffffff) {
-                moloch_session_add_tag(session, "http:bad-xff");
-                LOG("ERROR - Didn't understand ip: %s %s %d", s, ip, ia);
-                continue;
-            }
-
-            moloch_field_int_add(pos, session, ia);
+            moloch_field_ip_add_str(pos, session, parts[i]);
         }
 
         g_strfreev(parts);
@@ -148,8 +137,7 @@ smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
     } /* SWITCH */
 }
 /******************************************************************************/
-char *
-smtp_quoteable_decode_inplace(char *str, gsize *olen)
+LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
 {
     char *start = str;
     int   ipos = 0;
@@ -190,8 +178,7 @@ smtp_quoteable_decode_inplace(char *str, gsize *olen)
 }
 
 /******************************************************************************/
-void
-smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
+LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 {
     /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
     /* =?charset?encoding?encoded-text?= */
@@ -299,7 +286,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
     }
 }
 /******************************************************************************/
-void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
+LOCAL void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
 {
     char *end = data+len;
 
@@ -324,17 +311,14 @@ void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data,
             while (data < end && *data != '>') data++;
         }
 
-        char *lower = g_ascii_strdown(start, data - start);
-        if (!moloch_field_string_add(field, session, lower, data - start, FALSE)) {
-            g_free(lower);
-        }
+        moloch_field_string_add_lower(field, session, start, data - start);
 
         while (data < end && *data != ',') data++;
         if (data < end && *data == ',') data++;
     }
 }
 /******************************************************************************/
-void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
+LOCAL void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
 {
     char *start = data;
     char *end = data+len;
@@ -351,10 +335,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                     while (data < end && *data != ']') data++;
                     *data = 0;
                     data++;
-                    in_addr_t ia = inet_addr(ipstart);
-                    if (ia == 0 || ia == 0xffffffff)
-                        continue;
-                    moloch_field_int_add(ipField, session, ia);
+                    moloch_field_ip_add_str(ipField, session, ipstart);
                     continue;
                 }
 
@@ -364,10 +345,8 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                         fromstart = data+1;
                     data++;
                 }
-                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
-                if (!moloch_field_string_add(hostField, session, lower, data - fromstart, FALSE)) {
-                    g_free(lower);
-                }
+
+                moloch_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
                 while(data < end && isspace(*data)) data++;
@@ -377,10 +356,7 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
                         fromstart = data+1;
                     data++;
                 }
-                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
-                if (!moloch_field_string_add(hostField, session, lower, data - fromstart, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
             }
         }
 
@@ -389,16 +365,13 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
             char *ipstart = data;
             while (data < end && *data != ']') data++;
             *data = 0;
-            in_addr_t ia = inet_addr(ipstart);
-            if (ia == 0 || ia == 0xffffffff)
-                continue;
-            moloch_field_int_add(ipField, session, ia);
+            moloch_field_ip_add_str(ipField, session, ipstart);
         }
         data++;
     }
 }
 /******************************************************************************/
-int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMTPInfo_t           *email        = uw;
     GString              *line         = email->line[which];
@@ -432,16 +405,10 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 moloch_session_add_tag(session, tag);
             } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+10, '<', '>'), -1);
-                if (!moloch_field_string_add(srcField, session, lower, -1, FALSE)) {
-                    g_free(lower);
-                }
+                moloch_field_string_add_lower(srcField, session, smtp_remove_matching(line->str+10, '<', '>'), -1);
             } else if (strncasecmp(line->str, "RCPT TO:", 8) == 0) {
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+8, '<', '>'), -1);
-                if (!moloch_field_string_add(dstField, session, lower, -1, FALSE)) {
-                    g_free(lower);
-                }
                 *state = EMAIL_CMD;
+                moloch_field_string_add_lower(dstField, session, smtp_remove_matching(line->str+8, '<', '>'), -1);
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
                 email->seenHeaders |= (1 << which);
@@ -612,10 +579,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
                         char *ip = smtp_remove_matching(line->str+l+1, '[', ']');
-                        in_addr_t ia = inet_addr(ip);
-                        if (ia == 0 || ia == 0xffffffff)
-                            break;
-                        moloch_field_int_add(ipField, session, ia);
+                        moloch_field_ip_add_str(ipField, session, ip);
                     }
                 }
             }
@@ -668,12 +632,19 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     if (email->base64Decode & (1 << which)) {
                         const char *md5 = g_checksum_get_string(email->checksum[which]);
                         moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
+                        if (config.supportSha256) {
+                            const char *sha256 = g_checksum_get_string(email->checksum[which+2]);
+                            moloch_field_string_add(sha256Field, session, (char*)sha256, 64, TRUE);
+                        }
                     }
                     email->firstInContent |= (1 << which);
                     email->base64Decode &= ~(1 << which);
                     email->state64[which] = 0;
                     email->save64[which] = 0;
                     g_checksum_reset(email->checksum[which]);
+                    if (config.supportSha256) {
+                        g_checksum_reset(email->checksum[which+2]);
+                    }
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
                     if (email->base64Decode & (1 << which)) {
@@ -683,6 +654,9 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                                                             &(email->state64[which]),
                                                             &(email->save64[which]));
                             g_checksum_update(email->checksum[which], buf, b);
+                            if (config.supportSha256) {
+                                g_checksum_update(email->checksum[which+2], buf, b);
+                            }
 
                             if (email->firstInContent & (1 << which)) {
                                 email->firstInContent &= ~(1 << which);
@@ -813,7 +787,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
     return 0;
 }
 /******************************************************************************/
-void smtp_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void smtp_free(MolochSession_t UNUSED(*session), void *uw)
 {
     SMTPInfo_t            *email          = uw;
 
@@ -824,6 +798,10 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
 
     g_checksum_free(email->checksum[0]);
     g_checksum_free(email->checksum[1]);
+    if (config.supportSha256) {
+        g_checksum_free(email->checksum[2]);
+        g_checksum_free(email->checksum[3]);
+    }
 
     while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
         g_free(string->str);
@@ -833,7 +811,7 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMTPInfo_t, email);
 }
 /******************************************************************************/
-void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 5)
         return;
@@ -855,6 +833,10 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
 
         email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
         email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+        if (config.supportSha256) {
+            email->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
+            email->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
+        }
 
         DLL_INIT(s_, &(email->boundaries));
 
@@ -865,7 +847,7 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
 void moloch_parser_init()
 {
     hostField = moloch_field_define("email", "lotermfield",
-        "host.email", "Hostname", "eho",
+        "host.email", "Hostname", "email.host",
         "Email hostnames",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"email.host\"]",
@@ -873,16 +855,15 @@ void moloch_parser_init()
         "category", "host",
         NULL);
 
-    uaField = moloch_field_define("email", "lotextfield",
-        "email.x-mailer", "X-Mailer Header", "eua",
+    uaField = moloch_field_define("email", "termfield",
+        "email.x-mailer", "X-Mailer Header", "email.useragent",
         "Email X-Mailer header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "rawField", "raweua",
         "requiredRight", "emailSearch",
         NULL);
 
     srcField = moloch_field_define("email", "lotermfield",
-        "email.src", "Sender", "esrc",
+        "email.src", "Sender", "email.src",
         "Email from address",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
@@ -890,83 +871,93 @@ void moloch_parser_init()
         NULL);
 
     dstField = moloch_field_define("email", "lotermfield",
-        "email.dst", "Receiver", "edst",
+        "email.dst", "Receiver", "email.dst",
         "Email to address",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "user",
         NULL);
 
-    subField = moloch_field_define("email", "textfield",
-        "email.subject", "Subject", "esub",
+    subField = moloch_field_define("email", "termfield",
+        "email.subject", "Subject", "email.subject",
         "Email subject header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "rawField", "rawesub",
         "requiredRight", "emailSearch",
         NULL);
 
     idField = moloch_field_define("email", "termfield",
-        "email.message-id", "Id", "eid",
+        "email.message-id", "Id", "email.id",
         "Email Message-Id header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     ctField = moloch_field_define("email", "termfield",
-        "email.content-type", "Content-Type", "ect",
+        "email.content-type", "Content-Type", "email.contentType",
         "Email content-type header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     mvField = moloch_field_define("email", "termfield",
-        "email.mime-version", "Mime-Version", "emv",
+        "email.mime-version", "Mime-Version", "email.mimeVersion",
         "Email Mime-Header header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     fnField = moloch_field_define("email", "termfield",
-        "email.fn", "Filenames", "efn",
+        "email.fn", "Filenames", "email.filename",
         "Email attachment filenames",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     md5Field = moloch_field_define("email", "termfield",
-        "email.md5", "Attach MD5s", "emd5",
+        "email.md5", "Attach MD5s", "email.md5",
         "Email attachment MD5s",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "md5",
         NULL);
 
+    if (config.supportSha256) {
+        sha256Field = moloch_field_define("email", "termfield",
+            "email.sha256", "Attach SHA256s", "email.sha256",
+            "Email attachment SHA256s",
+            MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+            "requiredRight", "emailSearch",
+            "category", "sha256",
+            "disabled", "true",
+            NULL);
+    }
+
     fctField = moloch_field_define("email", "termfield",
-        "email.file-content-type", "Attach Content-Type", "efct",
+        "email.file-content-type", "Attach Content-Type", "email.fileContentType",
         "Email attachment content types",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     ipField = moloch_field_define("email", "ip",
-        "ip.email", "IP", "eip",
+        "ip.email", "IP", "email.ip",
         "Email IP address",
-        MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        MOLOCH_FIELD_TYPE_IP_GHASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
         "category", "ip",
         NULL);
 
     hhField = moloch_field_define("email", "lotermfield",
-        "email.has-header", "Header", "ehh",
+        "email.has-header", "Header", "email.header",
         "Email has the header set",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
 
     magicField = moloch_field_define("email", "termfield",
-        "email.bodymagic", "Body Magic", "email.bodymagic-term",
+        "email.bodymagic", "Body Magic", "email.bodyMagic",
         "The content type of body determined by libfile/magic",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);
@@ -980,7 +971,7 @@ void moloch_parser_init()
     moloch_config_add_header(&emailHeaders, "user-agent", uaField);
     moloch_config_add_header(&emailHeaders, "mime-version", mvField);
     moloch_config_add_header(&emailHeaders, "received", receivedField);
-    moloch_config_load_header("headers-email", "email", "Email header ", "email.", "hdrs.ehead-", &emailHeaders, 0);
+    moloch_config_load_header("headers-email", "email", "Email header ", "email.", "email.header-", &emailHeaders, 0);
 
     if (config.parseSMTP) {
         moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"HELO", 4, smtp_classify);

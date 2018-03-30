@@ -22,32 +22,15 @@
      * Displays the protocol string
      *
      * @example
-     * '{{session.pr | protocol}}'
+     * '{{session.ipProtocol | ipProtocol}}'
      */
-    .filter('protocol', () => {
+    .filter('ipProtocol', () => {
       let lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 58:'icmp6' };
 
       return (input) => {
         let result = lookup[input];
         if (!result) { result = input; }
         return result;
-      };
-    })
-
-    /**
-     * Extract IP String filter
-     * Parses the ip
-     *
-     * @example
-     * '{{session.a1 | extractIPString}}'
-     */
-    .filter('extractIPString', () => {
-      return (ip) => {
-        if (!ip) { return ''; }
-        if (typeof ip === 'string' && ip.indexOf('.') !== -1) { return ip; }
-
-        return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
-                '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
       };
     })
 

@@ -1,50 +1,43 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131220"
-            }
-         },
          "body" : {
-            "fb2" : "3a636172642e6672",
-            "p1" : 45921,
-            "lpd" : 1387554256201,
-            "as2" : "AS23028 Team Cymru Inc.",
-            "fb1" : "5553455220787878",
-            "a1" : "10.180.156.249",
-            "ss" : 1,
-            "ircnck" : [
-               "molochtest"
-            ],
-            "db1" : 114,
-            "ircch" : [
-               "#moloch-fpc"
-            ],
-            "lastPacket" : 1387554256201,
-            "by" : 8945,
-            "no" : "test",
-            "mac2-term-cnt" : 2,
-            "fs" : [],
-            "ipDst" : "38.229.70.20",
-            "portDst" : 8000,
-            "sl" : 14568,
-            "prot-term" : [
-               "irc",
-               "tcp"
-            ],
-            "a2" : "38.229.70.20",
-            "mac2-term" : [
+            "dstASN" : "AS23028 Team Cymru Inc.",
+            "dstBytes" : 7899,
+            "dstDataBytes" : 6901,
+            "dstGEO" : "US",
+            "dstIp" : "38.229.70.20",
+            "dstMac" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Jetcell, Inc."
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 15,
+            "dstPayload8" : "3a636172642e6672",
+            "dstPort" : 8000,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
             "firstPacket" : 1387554241634,
-            "g1" : "USA",
-            "pa1" : 14,
-            "lp" : 1387554256,
-            "g2" : "USA",
-            "psl" : [
+            "ipProtocol" : 6,
+            "irc" : {
+               "channel" : [
+                  "#moloch-fpc"
+               ],
+               "channelCnt" : 1,
+               "nick" : [
+                  "molochtest"
+               ],
+               "nickCnt" : 1
+            },
+            "lastPacket" : 1387554256201,
+            "length" : 14568,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -75,35 +68,7 @@
                82,
                638
             ],
-            "pa2" : 15,
-            "p2" : 8000,
-            "prot-term-cnt" : 2,
-            "db" : 7015,
-            "ircnckcnt" : 1,
-            "pr" : 6,
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "timestamp" : "SET",
-            "db2" : 6901,
-            "pa" : 29,
-            "fp" : 1387554241,
-            "by2" : 7899,
-            "portSrc" : 45921,
-            "by1" : 1046,
-            "tcpflags" : {
-               "psh" : 11,
-               "fin" : 0,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "ack" : 16,
-               "syn-ack" : 1
-            },
-            "ircchcnt" : 1,
-            "rir2" : "ARIN",
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -134,8 +99,48 @@
                8713,
                8795
             ],
-            "fpd" : 1387554241634,
-            "ipSrc" : "10.180.156.249"
+            "protocol" : [
+               "irc",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1046,
+            "srcDataBytes" : 114,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.249",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 14,
+            "srcPayload8" : "5553455220787878",
+            "srcPort" : 45921,
+            "tcpflags" : {
+               "ack" : 16,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 11,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 8945,
+            "totDataBytes" : 7015,
+            "totPackets" : 29
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-131220",
+               "_type" : "session"
+            }
          }
       }
    ]

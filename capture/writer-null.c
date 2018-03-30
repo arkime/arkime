@@ -26,23 +26,19 @@
 
 extern MolochConfig_t        config;
 
-static uint32_t              outputFilePos = 24;
+LOCAL  uint32_t              outputFilePos = 24;
 
 /******************************************************************************/
-uint32_t writer_null_queue_length()
+LOCAL uint32_t writer_null_queue_length()
 {
     return 0;
 }
 /******************************************************************************/
-void writer_null_flush(gboolean UNUSED(all))
+LOCAL void writer_null_exit()
 {
 }
 /******************************************************************************/
-void writer_null_exit()
-{
-}
-/******************************************************************************/
-void writer_null_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+LOCAL void writer_null_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     packet->writerFileNum = 0;
     packet->writerFilePos = outputFilePos;

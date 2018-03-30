@@ -1,57 +1,94 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "mac2-term-cnt" : 2,
-            "pa1" : 15,
-            "timestamp" : "SET",
-            "fs" : [],
-            "db" : 1570,
-            "emvcnt" : 1,
-            "eid" : [
-               "20131212030845.GA715@xxx.net"
+            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstBytes" : 1425,
+            "dstDataBytes" : 493,
+            "dstGEO" : "US",
+            "dstIp" : "64.236.55.17",
+            "dstMac" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
-            "edstcnt" : 1,
-            "p2" : 25,
-            "esrccnt" : 1,
-            "ipDst" : "64.236.55.17",
-            "by" : 3500,
-            "tcpflags" : {
-               "urg" : 0,
-               "syn" : 1,
-               "ack" : 12,
-               "fin" : 2,
-               "rst" : 0,
-               "psh" : 13,
-               "syn-ack" : 1
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco",
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 2,
+            "dstPackets" : 14,
+            "dstPayload8" : "3232302078787878",
+            "dstPort" : 25,
+            "dstRIR" : "ARIN",
+            "email" : {
+               "ASN" : [
+                  "---"
+               ],
+               "GEO" : [
+                  "---"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "contentType" : [
+                  "text/plain; charset=us-ascii"
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "xxxxxxxxx@xxxxxxx.com"
+               ],
+               "dstCnt" : 1,
+               "header" : [
+                  "content-type",
+                  "message-id",
+                  "mime-version",
+                  "from",
+                  "to",
+                  "user-agent",
+                  "received",
+                  "content-disposition",
+                  "date",
+                  "subject"
+               ],
+               "headerCnt" : 10,
+               "host" : [
+                  "localhost",
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "hostCnt" : 2,
+               "id" : [
+                  "20131212030845.GA715@xxx.net"
+               ],
+               "idCnt" : 1,
+               "ip" : [
+                  "127.0.0.1"
+               ],
+               "ipCnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "src" : [
+                  "xxxxx@xxx.net"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "é î ø ü                                                                                                                                                                                         test"
+               ],
+               "subjectCnt" : 1,
+               "useragent" : [
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "useragentCnt" : 1
             },
-            "eho" : [
-               "localhost",
-               "xxxxxxxxxxxxx.xxx.com"
-            ],
-            "prot-term-cnt" : 2,
-            "fpd" : 1386817725755,
-            "fb1" : "45484c4f20787878",
-            "sl" : 401,
-            "p1" : 35796,
-            "pa" : 29,
-            "ipSrc" : "10.180.156.249",
-            "aseip" : [
-               "---"
-            ],
-            "rir2" : "ARIN",
-            "by2" : 1425,
-            "pa2" : 14,
-            "esub" : [
-               "é î ø ü                                                                                                                                                                                         test"
-            ],
-            "fp" : 1386817725,
-            "eipcnt" : 1,
-            "ectcnt" : 1,
-            "eip" : [
-               "127.0.0.1"
-            ],
-            "psl" : [
+            "fileId" : [],
+            "firstPacket" : 1386817725755,
+            "ipProtocol" : 6,
+            "lastPacket" : 1386817726156,
+            "length" : 401,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -82,67 +119,7 @@
                82,
                82
             ],
-            "a2" : "64.236.55.17",
-            "emv" : [
-               "1.0"
-            ],
-            "db1" : 1077,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1386817726156,
-            "firstPacket" : 1386817725755,
-            "portDst" : 25,
-            "rireip" : [
-               ""
-            ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "tacnt" : 1,
-            "eua" : [
-               "Mutt/1.5.20 (2009-12-10)"
-            ],
-            "euacnt" : 1,
-            "ect" : [
-               "text/plain; charset=us-ascii"
-            ],
-            "geip" : [
-               "---"
-            ],
-            "ehocnt" : 2,
-            "portSrc" : 35796,
-            "ss" : 1,
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "user-agent",
-               "received",
-               "content-disposition",
-               "date",
-               "subject"
-            ],
-            "by1" : 2075,
-            "no" : "test",
-            "ta" : [
-               "smtp:statuscode:250"
-            ],
-            "esrc" : [
-               "xxxxx@xxx.net"
-            ],
-            "eidcnt" : 1,
-            "db2" : 493,
-            "edst" : [
-               "xxxxxxxxx@xxxxxxx.com"
-            ],
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "esubcnt" : 1,
-            "ehhcnt" : 10,
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -173,26 +150,51 @@
                3824,
                3906
             ],
-            "fb2" : "3232302078787878",
-            "prot-term" : [
+            "protocol" : [
                "smtp",
                "tcp"
             ],
-            "as2" : "AS1668 AOL Transit Data Network",
-            "lp" : 1386817726,
-            "lastPacket" : 1386817726156,
-            "pr" : 6,
-            "g2" : "USA",
-            "a1" : "10.180.156.249",
-            "g1" : "USA",
-            "tags-term" : [
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 2075,
+            "srcDataBytes" : 1077,
+            "srcGEO" : "US",
+            "srcIp" : "10.180.156.249",
+            "srcMac" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 15,
+            "srcPayload8" : "45484c4f20787878",
+            "srcPort" : 35796,
+            "tags" : [
                "smtp:statuscode:250"
-            ]
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 12,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 13,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3500,
+            "totDataBytes" : 1570,
+            "totPackets" : 29
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131212"
+               "_index" : "tests_sessions2-131212",
+               "_type" : "session"
             }
          }
       }

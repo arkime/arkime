@@ -1,101 +1,43 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "ss" : 1,
-            "portDst" : 3268,
-            "fb2" : "3084000000100201",
-            "db2" : 188,
-            "tacnt" : 2,
-            "as1" : "AS0000 This is neat",
-            "db1" : 258,
-            "pa2" : 4,
-            "lp" : 1463256637,
-            "fp" : 1463256456,
-            "portSrc" : 25936,
-            "fs" : [],
-            "by1" : 742,
-            "by" : 1174,
-            "g1" : "RUS",
-            "mac1-term" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "pa1" : 8,
-            "db" : 446,
-            "pr" : 6,
-            "sl" : 181520,
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "ipSrc" : "10.0.0.1",
-            "ps" : [
-               24,
-               110,
-               196,
-               272,
-               398,
-               494,
-               570,
-               757,
-               975,
-               1142,
-               1238,
-               1314
-            ],
-            "mac2-term" : [
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 432,
+            "dstDataBytes" : 188,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
                "00:22:83:3f:17:cc",
                "2c:6b:f5:d6:17:cc"
             ],
-            "mac2-term-cnt" : 2,
-            "no" : "test",
-            "mac1-term-cnt" : 2,
-            "ta" : [
-               "dstip",
-               "srcip"
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Juniper Networks"
             ],
-            "vlan-cnt" : 1,
-            "tcpflags" : {
-               "fin" : 0,
-               "rst" : 1,
-               "psh" : 6,
-               "syn" : 1,
-               "urg" : 0,
-               "ack" : 3,
-               "syn-ack" : 1
+            "dstOuiCnt" : 1,
+            "dstPackets" : 4,
+            "dstPayload8" : "3084000000100201",
+            "dstPort" : 3268,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1463256456040,
+            "ipProtocol" : 6,
+            "lastPacket" : 1463256637560,
+            "ldap" : {
+               "authtype" : [
+                  "simple"
+               ],
+               "authtypeCnt" : 1,
+               "bindname" : [
+                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
+                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
+               ],
+               "bindnameCnt" : 2
             },
-            "a1" : "10.0.0.1",
-            "rir2" : "TEST",
-            "test" : {
-               "string" : [
-                  "16777226:25936,33554442:3268"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ]
-            },
-            "prot-term-cnt" : 2,
-            "a2" : "10.0.0.2",
-            "ipDst" : "10.0.0.2",
-            "p1" : 25936,
-            "timestamp" : "SET",
-            "fpd" : 1463256456040,
-            "by2" : 432,
-            "as2" : "AS0001 Cool Beans!",
-            "psl" : [
+            "length" : 181520,
+            "node" : "test",
+            "packetLen" : [
                86,
                86,
                76,
@@ -109,36 +51,92 @@
                76,
                76
             ],
-            "g2" : "CAN",
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "packetPos" : [
+               24,
+               110,
+               196,
+               272,
+               398,
+               494,
+               570,
+               757,
+               975,
+               1142,
+               1238,
+               1314
             ],
-            "firstPacket" : 1463256456040,
-            "fb1" : "3032020101602d02",
-            "lastPacket" : 1463256637560,
-            "lpd" : 1463256637560,
-            "p2" : 3268,
-            "ldap" : {
-               "bindname-term-cnt" : 2,
-               "bindname-term" : [
-                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
-                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
-               ],
-               "authtype-term" : [
-                  "simple"
-               ],
-               "authtype-term-cnt" : 1
+            "protocol" : [
+               "ldap",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 742,
+            "srcDataBytes" : 258,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "3032020101602d02",
+            "srcPort" : 25936,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
             },
-            "pa" : 12,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:25936,33554442:3268"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1174,
+            "totDataBytes" : 446,
+            "totPackets" : 12,
             "vlan" : [
                50
-            ]
+            ],
+            "vlanCnt" : 1
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160514"
+               "_index" : "tests_sessions2-160514",
+               "_type" : "session"
             }
          }
       }

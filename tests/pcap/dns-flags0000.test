@@ -1,101 +1,98 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "a1" : "10.0.0.2",
-            "ta" : [
-               "dstip",
-               "srcip"
+            "dns" : {
+               "host" : [
+                  "flashservice.adobe.com"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "REFUSED"
+               ],
+               "statusCnt" : 1
+            },
+            "dstASN" : "AS0000 This is neat",
+            "dstBytes" : 82,
+            "dstDataBytes" : 74,
+            "dstGEO" : "RU",
+            "dstIp" : "10.0.0.1",
+            "dstMac" : [
+               "00:10:db:ff:26:00"
             ],
-            "db1" : 74,
-            "by1" : 82,
-            "fb1" : "b2b5000000010000",
-            "db2" : 74,
-            "rir1" : "TEST",
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "b2b5800500010000",
+            "dstPort" : 53,
+            "fileId" : [],
+            "firstPacket" : 1393422583830,
+            "ipProtocol" : 17,
+            "lastPacket" : 1393422583932,
+            "length" : 102,
+            "node" : "test",
+            "packetLen" : [
                98,
                98
             ],
-            "pa" : 2,
-            "fpd" : 1393422583830,
-            "fb2" : "b2b5800500010000",
-            "mac2-term-cnt" : 1,
-            "sl" : 102,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "portSrc" : 61912,
-            "dnsho" : [
-               "flashservice.adobe.com"
-            ],
-            "fp" : 1393422583,
-            "prot-term-cnt" : 2,
-            "timestamp" : "SET",
-            "no" : "test",
-            "mac2-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "as2" : "AS0000 This is neat",
-            "lastPacket" : 1393422583932,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "pa2" : 1,
-            "ps" : [
+            "packetPos" : [
                24,
                122
             ],
-            "dns" : {
-               "qt-term" : [
-                  "A"
-               ],
-               "qc-term-cnt" : 1,
-               "qt-term-cnt" : 1,
-               "status-term" : [
-                  "REFUSED"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "status-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "opcode-term-cnt" : 1
-            },
-            "g2" : "RUS",
-            "portDst" : 53,
-            "as1" : "AS0001 Cool Beans!",
-            "fs" : [],
-            "a2" : "10.0.0.1",
-            "pr" : 17,
-            "p2" : 53,
-            "g1" : "CAN",
-            "by" : 164,
-            "db" : 148,
-            "pa1" : 1,
-            "mac1-term-cnt" : 2,
-            "dnshocnt" : 1,
-            "lp" : 1393422583,
-            "ipSrc" : "10.0.0.2",
-            "mac1-term" : [
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001 Cool Beans!",
+            "srcBytes" : 82,
+            "srcDataBytes" : 74,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
                "00:00:5e:00:01:03",
                "88:e0:f3:f1:91:f2"
             ],
-            "ipDst" : "10.0.0.1",
-            "ss" : 1,
-            "tacnt" : 2,
-            "lpd" : 1393422583932,
-            "p1" : 61912,
-            "firstPacket" : 1393422583830,
-            "by2" : 82
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 1,
+            "srcPayload8" : "b2b5000000010000",
+            "srcPort" : 61912,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "timestamp" : "SET",
+            "totBytes" : 164,
+            "totDataBytes" : 148,
+            "totPackets" : 2
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140226"
+               "_index" : "tests_sessions2-140226",
+               "_type" : "session"
             }
          }
       }

@@ -31,7 +31,7 @@ LOCAL SS_t               ss[MAX_SS];
 
 
 /******************************************************************************/
-void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
     int                    s;
     guint                  i;
@@ -73,11 +73,14 @@ void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
             );
 
             break;
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
+            LOGEXIT("MOLOCH_FIELD_TYPE_STR_GHASH not supported yet, open an issue");
+            break;
         }
     }
 }
 /******************************************************************************/
-void scrubspi_add_entry(char *key, char *value)
+LOCAL void scrubspi_add_entry(char *key, char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];
@@ -103,7 +106,8 @@ void scrubspi_add_entry(char *key, char *value)
         MolochFieldInfo_t *field = config.fields[pos];
         if (field->type != MOLOCH_FIELD_TYPE_STR &&
             field->type != MOLOCH_FIELD_TYPE_STR_ARRAY &&
-            field->type != MOLOCH_FIELD_TYPE_STR_HASH) {
+            field->type != MOLOCH_FIELD_TYPE_STR_HASH &&
+            field->type != MOLOCH_FIELD_TYPE_STR_GHASH) {
             LOGEXIT("Field %s in [scrubspi] is not of type string", keys[j]);
         }
         ss[ssLen].pos     = pos;

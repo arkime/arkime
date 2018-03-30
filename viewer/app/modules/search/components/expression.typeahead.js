@@ -204,32 +204,6 @@
         return;
       }
 
-      // autocomplete http.hasheader values after 1 char
-      if (lastToken.trim().length >= 1) {
-        if (/^(tags|http.hasheader)/.test(token)) {
-          this.loadingValues = true;
-
-          this.promise = this.FieldService.getHasheaderValues({
-            type:token, filter:lastToken
-          });
-
-          this.promise.then((result) => {
-            this.promise         = null;
-            if (result) {
-              this.loadingValues = false;
-              this.results       = result;
-              this.addExistsItem(lastToken, operatorToken);
-            }
-          }).catch((error) => {
-            this.promise       = null;
-            this.loadingValues = false;
-            this.loadingError  = error;
-          });
-
-          return;
-        }
-      }
-
       // autocomplete other values after 2 chars
       if (lastToken.trim().length >= 2) {
         let params = { // build parameters for getting value(s)

@@ -18,11 +18,11 @@ typedef struct {
     int ircState;
 } IRCInfo_t;
 
-static int channelsField;
-static int nickField;
+LOCAL  int channelsField;
+LOCAL  int nickField;
 
 /******************************************************************************/
-int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     IRCInfo_t *irc = uw;
 
@@ -75,14 +75,14 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
-void irc_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void irc_free(MolochSession_t UNUSED(*session), void *uw)
 {
     IRCInfo_t            *irc          = uw;
 
     MOLOCH_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 8)
         return;
@@ -109,14 +109,14 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len, 
 void moloch_parser_init()
 {
     nickField = moloch_field_define("irc", "termfield",
-        "irc.nick", "Nickname", "ircnck", 
+        "irc.nick", "Nickname", "irc.nick", 
         "Nicknames set", 
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
         "category", "user",
         NULL);
 
     channelsField = moloch_field_define("irc", "termfield",
-        "irc.channel", "Channel", "ircch", 
+        "irc.channel", "Channel", "irc.channel", 
         "Channels joined",  
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
         NULL);

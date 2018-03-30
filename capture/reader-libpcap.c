@@ -24,7 +24,7 @@
 
 extern MolochConfig_t        config;
 
-static pcap_t               *pcaps[MAX_INTERFACES];
+LOCAL  pcap_t               *pcaps[MAX_INTERFACES];
 
 /******************************************************************************/
 int reader_libpcap_stats(MolochReaderStats_t *stats)
@@ -63,10 +63,11 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
     moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
 }
 /******************************************************************************/
-static void *reader_libpcap_thread(gpointer pcapv)
+LOCAL void *reader_libpcap_thread(gpointer pcapv)
 {
     pcap_t *pcap = pcapv;
-    LOG("THREAD %p", (gpointer)pthread_self());
+    if (config.debug)
+        LOG("THREAD %p", (gpointer)pthread_self());
 
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
@@ -112,7 +113,7 @@ void reader_libpcap_start() {
     }
 }
 /******************************************************************************/
-void reader_libpcap_stop() 
+void reader_libpcap_stop()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

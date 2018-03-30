@@ -1,43 +1,76 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "portDst" : 80,
-            "sl" : 775,
-            "timestamp" : "SET",
-            "hh2cnt" : 4,
-            "a1" : "10.172.10.16",
-            "lpd" : 1361891421481,
-            "p1" : 49323,
-            "no" : "test",
-            "tcpflags" : {
-               "psh" : 2,
-               "rst" : 0,
-               "urg" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 2,
-               "ack" : 4
-            },
-            "firstPacket" : 1361891420707,
-            "lp" : 1361891421,
-            "hpathcnt" : 1,
-            "db" : 312,
-            "hh1cnt" : 4,
-            "by1" : 457,
-            "db1" : 157,
-            "hh2" : [
-               "http:header:connection",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:server"
-            ],
-            "ipDst" : "10.156.206.202",
-            "mac2-term" : [
+            "dstBytes" : 455,
+            "dstDataBytes" : 155,
+            "dstIp" : "10.156.206.202",
+            "dstMac" : [
                "00:10:db:ff:26:00"
             ],
-            "pr" : 6,
-            "psl" : [
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1361891420707,
+            "http" : {
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "samples.example.com"
+               ],
+               "hostCnt" : 1,
+               "method" : [
+                  "HEAD"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/UpdataConfig.dat"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "user-agent",
+                  "connection",
+                  "host"
+               ],
+               "requestHeaderCnt" : 4,
+               "responseHeader" : [
+                  "content-type",
+                  "date",
+                  "connection",
+                  "server"
+               ],
+               "responseHeaderCnt" : 4,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "statuscode" : [
+                  500
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "samples.example.com/UpdataConfig.dat"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1361891421481,
+            "length" : 775,
+            "node" : "test",
+            "packetLen" : [
                82,
                82,
                76,
@@ -49,57 +82,7 @@
                76,
                76
             ],
-            "prot-term-cnt" : 2,
-            "uacnt" : 1,
-            "hdvercnt" : 1,
-            "http" : {
-               "statuscode" : [
-                  500
-               ],
-               "statuscode-cnt" : 1,
-               "method-term-cnt" : 1,
-               "method-term" : [
-                  "HEAD"
-               ]
-            },
-            "hsvercnt" : 1,
-            "hpath" : [
-               "/UpdataConfig.dat"
-            ],
-            "hsver" : [
-               "1.1"
-            ],
-            "by" : 912,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "ipSrc" : "10.172.10.16",
-            "pa1" : 5,
-            "us" : [
-               "//samples.example.com/UpdataConfig.dat"
-            ],
-            "by2" : 455,
-            "ua" : [
-               "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
-            ],
-            "a2" : "10.156.206.202",
-            "fb2" : "485454502f312e31",
-            "ss" : 1,
-            "pa" : 10,
-            "mac1-term" : [
-               "78:fe:3d:11:21:f2",
-               "00:00:5e:00:01:03"
-            ],
-            "lastPacket" : 1361891421481,
-            "pa2" : 5,
-            "portSrc" : 49323,
-            "p2" : 80,
-            "ho" : [
-               "samples.example.com"
-            ],
-            "fs" : [],
-            "ps" : [
+            "packetPos" : [
                24,
                106,
                188,
@@ -111,28 +94,48 @@
                944,
                1020
             ],
-            "mac1-term-cnt" : 2,
-            "uscnt" : 1,
-            "mac2-term-cnt" : 1,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:user-agent"
+            "protocol" : [
+               "http",
+               "tcp"
             ],
-            "fp" : 1361891420,
-            "hocnt" : 1,
-            "fpd" : 1361891420707,
-            "fb1" : "48454144202f5570",
-            "hdver" : [
-               "1.1"
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 457,
+            "srcDataBytes" : 157,
+            "srcIp" : "10.172.10.16",
+            "srcMac" : [
+               "00:00:5e:00:01:03",
+               "78:fe:3d:11:21:f2"
             ],
-            "db2" : 155
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 5,
+            "srcPayload8" : "48454144202f5570",
+            "srcPort" : 49323,
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 912,
+            "totDataBytes" : 312,
+            "totPackets" : 10
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-130226"
+               "_index" : "tests_sessions2-130226",
+               "_type" : "session"
             }
          }
       }

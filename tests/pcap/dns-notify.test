@@ -1,94 +1,95 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-130923"
-            }
-         },
          "body" : {
-            "db2" : 65,
-            "mac2-term" : [
-               "52:54:00:d9:83:b3"
-            ],
-            "by1" : 165,
-            "pa" : 2,
-            "g1" : "FRA",
-            "portDst" : 53,
-            "pa1" : 1,
-            "lastPacket" : 1379970300840,
-            "ss" : 1,
-            "portSrc" : 55612,
-            "fpd" : 1379970300840,
-            "pa2" : 1,
-            "a1" : "217.70.190.232",
-            "rir2" : "ARIN",
-            "sl" : 0,
-            "ipSrc" : "217.70.190.232",
-            "db" : 222,
-            "mac2-term-cnt" : 1,
-            "fb2" : "9668a40000010000",
-            "rir1" : "RIPE",
-            "g2" : "USA",
-            "db1" : 157,
-            "lpd" : 1379970300840,
-            "as1" : "AS29169 GANDI SAS",
-            "as2" : "AS46636 NatCoWeb Corp.",
-            "mac1-term" : [
-               "00:23:33:69:4d:00",
-               "00:00:5e:00:01:01"
-            ],
-            "prot-term-cnt" : 2,
-            "fb1" : "9668240000010001",
             "dns" : {
-               "qc-term" : [
-                  "IN"
+               "host" : [
+                  "bortzmeyer.42"
                ],
-               "qt-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "qt-term" : [
-                  "SOA"
-               ],
-               "qc-term-cnt" : 1,
-               "status-term-cnt" : 1,
-               "opcode-term" : [
+               "hostCnt" : 1,
+               "opcode" : [
                   "NOTIFY"
                ],
-               "status-term" : [
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "SOA"
+               ],
+               "qtCnt" : 1,
+               "status" : [
                   "NOERROR"
-               ]
+               ],
+               "statusCnt" : 1
             },
-            "no" : "test",
-            "p2" : 53,
-            "fs" : [],
-            "a2" : "204.62.14.153",
-            "dnshocnt" : 1,
-            "by" : 238,
-            "ipDst" : "204.62.14.153",
+            "dstASN" : "AS46636 NatCoWeb Corp.",
+            "dstBytes" : 73,
+            "dstDataBytes" : 65,
+            "dstGEO" : "US",
+            "dstIp" : "204.62.14.153",
+            "dstMac" : [
+               "52:54:00:d9:83:b3"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Realtek (UpTech? also reported)"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "9668a40000010000",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
             "firstPacket" : 1379970300840,
-            "mac1-term-cnt" : 2,
-            "by2" : 73,
-            "psl" : [
+            "ipProtocol" : 17,
+            "lastPacket" : 1379970300840,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
                181,
                89
             ],
-            "dnsho" : [
-               "bortzmeyer.42"
-            ],
-            "lp" : 1379970300,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "fp" : 1379970300,
-            "timestamp" : "SET",
-            "ps" : [
+            "packetPos" : [
                24,
                205
             ],
-            "p1" : 55612,
-            "pr" : 17
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS203476 GANDI SAS",
+            "srcBytes" : 165,
+            "srcDataBytes" : 157,
+            "srcGEO" : "FR",
+            "srcIp" : "217.70.190.232",
+            "srcMac" : [
+               "00:00:5e:00:01:01",
+               "00:23:33:69:4d:00"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Cisco Systems, Inc",
+               "ICANN, IANA Department"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 1,
+            "srcPayload8" : "9668240000010001",
+            "srcPort" : 55612,
+            "srcRIR" : "RIPE",
+            "timestamp" : "SET",
+            "totBytes" : 238,
+            "totDataBytes" : 222,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-130923",
+               "_type" : "session"
+            }
          }
       }
    ]

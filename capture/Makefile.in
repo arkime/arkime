@@ -9,7 +9,7 @@ INCLUDE_PCAP  = @PCAP_CFLAGS@
 INCLUDE_OTHER = -Ithirdparty \
                 @GLIB2_CFLAGS@ \
 	        @YARA_CFLAGS@ \
-	        @GEOIP_CFLAGS@ \
+	        @MAXMINDDB_CFLAGS@ \
 	        @MAGIC_CFLAGS@ \
 	        @CURL_CFLAGS@
 
@@ -18,7 +18,7 @@ LIB_PCAP      = @PCAP_LIBS@
 LIB_SNF       = /opt/snf/lib/*.so
 LIB_OTHER     = @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
-	        @GEOIP_LIBS@ \
+	        @MAXMINDDB_LIBS@ \
 	        @CURL_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \

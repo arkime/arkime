@@ -1,25 +1,28 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
          "body" : {
-            "ss" : 1,
-            "db1" : 129,
-            "portDst" : 5432,
-            "pa" : 11,
-            "db2" : 327,
-            "portSrc" : 36060,
-            "tacnt" : 1,
-            "by1" : 533,
-            "mac2-term-cnt" : 1,
-            "as1" : "AS0000 This is neat",
-            "g1" : "RUS",
-            "a1" : "10.0.0.1",
+            "dstBytes" : 665,
+            "dstDataBytes" : 327,
+            "dstIp" : "10.0.13.120",
+            "dstMac" : [
+               "00:0c:29:18:7f:fe"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "4e520000000c0000",
+            "dstPort" : 5432,
+            "fileId" : [],
+            "firstPacket" : 1399300685023,
+            "ipProtocol" : 6,
             "lastPacket" : 1399300685032,
-            "fs" : [],
-            "pr" : 6,
-            "a2" : "10.0.13.120",
-            "by2" : 665,
-            "psl" : [
+            "length" : 8,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -32,22 +35,7 @@
                123,
                395
             ],
-            "sl" : 8,
-            "db" : 456,
-            "no" : "test",
-            "pa1" : 6,
-            "fb2" : "4e520000000c0000",
-            "by" : 1198,
-            "fpd" : 1399300685023,
-            "mac1-term" : [
-               "90:e2:ba:52:f6:2a",
-               "00:00:5e:00:01:71"
-            ],
-            "ipDst" : "10.0.13.120",
-            "ta" : [
-               "srcip"
-            ],
-            "ps" : [
+            "packetPos" : [
                24,
                114,
                204,
@@ -60,67 +48,79 @@
                880,
                1003
             ],
-            "fb1" : "0000000804d2162f",
-            "tags-term" : [
+            "postgresql" : {
+               "app" : "pgAdmin III - Browser",
+               "db" : "dbdbdbdb",
+               "user" : "cooluser"
+            },
+            "protocol" : [
+               "tcp",
+               "postgresql"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 533,
+            "srcDataBytes" : 129,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "00:00:5e:00:01:71",
+               "90:e2:ba:52:f6:2a"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "ICANN, IANA Department",
+               "Intel Corporate"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 6,
+            "srcPayload8" : "0000000804d2162f",
+            "srcPort" : 36060,
+            "tags" : [
                "srcip"
             ],
-            "mac1-term-cnt" : 2,
-            "timestamp" : "SET",
-            "lpd" : 1399300685032,
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "test" : {
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
+               "ASN" : [
                   "AS0000 This is neat"
                ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
                "ip" : [
-                  167772161
+                  "10.0.0.1"
                ],
                "number" : [
                   2014117898
                ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
+               "string.snow" : [
                   "16777226:36060,2014117898:5432"
                ]
             },
-            "prot-term" : [
-               "tcp",
-               "postgresql"
-            ],
-            "lp" : 1399300685,
-            "pa2" : 5,
-            "prot-term-cnt" : 2,
-            "postgresql" : {
-               "user-term" : "cooluser",
-               "app-term" : "pgAdmin III - Browser",
-               "db-term" : "dbdbdbdb"
-            },
-            "mac2-term" : [
-               "00:0c:29:18:7f:fe"
-            ],
-            "ipSrc" : "10.0.0.1",
-            "fp" : 1399300685,
-            "p2" : 5432,
-            "p1" : 36060,
-            "tcpflags" : {
-               "fin" : 0,
-               "psh" : 6,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 3
-            },
-            "firstPacket" : 1399300685023
+            "timestamp" : "SET",
+            "totBytes" : 1198,
+            "totDataBytes" : 456,
+            "totPackets" : 11
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140505"
+               "_index" : "tests_sessions2-140505",
+               "_type" : "session"
             }
          }
       }

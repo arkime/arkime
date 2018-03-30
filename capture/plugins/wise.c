@@ -37,7 +37,9 @@ LOCAL char                  udpTuple;
 LOCAL int                   httpHostField;
 LOCAL int                   httpXffField;
 LOCAL int                   httpMd5Field;
+LOCAL int                   httpSha256Field;
 LOCAL int                   emailMd5Field;
+LOCAL int                   emailSha256Field;
 LOCAL int                   emailSrcField;
 LOCAL int                   emailDstField;
 LOCAL int                   dnsHostField;
@@ -66,9 +68,10 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_URL     4
 #define INTEL_TYPE_TUPLE   5
 #define INTEL_TYPE_JA3     6
-#define INTEL_TYPE_SIZE    7
+#define INTEL_TYPE_SHA256  7
+#define INTEL_TYPE_SIZE    8
 
-LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple", "ja3"};
+LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple", "ja3", "sha256"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -122,7 +125,7 @@ LOCAL MOLOCH_LOCK_DEFINE(iRequest);
 LOCAL char          *iBuf = 0;
 
 /******************************************************************************/
-int wise_item_cmp(const void *keyv, const void *elementv)
+LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 {
     char *key = (char*)keyv;
     WiseItem_t *element = (WiseItem_t *)elementv;
@@ -130,7 +133,7 @@ int wise_item_cmp(const void *keyv, const void *elementv)
     return strcmp(key, element->key) == 0;
 }
 /******************************************************************************/
-void wise_print_stats()
+LOCAL void wise_print_stats()
 {
     int i;
     for (i = 0; i < INTEL_TYPE_SIZE; i++) {
@@ -146,7 +149,7 @@ void wise_print_stats()
     }
 }
 /******************************************************************************/
-void wise_load_fields()
+LOCAL void wise_load_fields()
 {
     char                key[500];
     int                 key_len;
@@ -183,7 +186,7 @@ void wise_load_fields()
     free(data);
 }
 /******************************************************************************/
-void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
+LOCAL void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
 {
     WiseItem_t    *wi = uw1;
 
@@ -193,7 +196,7 @@ void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED
     moloch_session_decr_outstanding(session);
 }
 /******************************************************************************/
-void wise_free_item_unlocked(WiseItem_t *wi)
+LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
 {
     int i;
     HASH_REMOVE(wih_, itemHash[(int)wi->type], wi);
@@ -209,7 +212,7 @@ void wise_free_item_unlocked(WiseItem_t *wi)
     MOLOCH_TYPE_FREE(WiseItem_t, wi);
 }
 /******************************************************************************/
-void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
 
     BSB             bsb;
@@ -290,7 +293,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
     MOLOCH_TYPE_FREE(WiseRequest_t, request);
 }
 /******************************************************************************/
-void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, int type)
+LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, int type)
 {
 
     if (*value == 0)
@@ -368,7 +371,7 @@ cleanup:
     MOLOCH_UNLOCK(item);
 }
 /******************************************************************************/
-void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
+LOCAL void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
 {
     unsigned char *end = (unsigned char*)domain;
     unsigned char *colon = 0;
@@ -498,7 +501,6 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 {
     MolochString_t *hstring;
-    uint32_t        i;
 
     MOLOCH_LOCK(iRequest);
     if (!iRequest) {
@@ -564,6 +566,29 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
+    //SHA256s
+    if (config.supportSha256) {
+        if (session->fields[httpSha256Field]) {
+            MolochStringHashStd_t *shash = session->fields[httpSha256Field]->shash;
+            HASH_FORALL(s_, *shash, hstring,
+                if (hstring->uw) {
+                    char str[1000];
+                    snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
+                    wise_lookup(session, iRequest, str, INTEL_TYPE_SHA256);
+                } else {
+                    wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+                }
+            );
+        }
+
+        if (session->fields[emailSha256Field]) {
+            MolochStringHashStd_t *shash = session->fields[emailSha256Field]->shash;
+            HASH_FORALL(s_, *shash, hstring,
+                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_SHA256);
+            );
+        }
+    }
+
     //Email
     if (session->fields[emailSrcField]) {
         MolochStringHashStd_t *shash = session->fields[emailSrcField]->shash;
@@ -581,6 +606,16 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 
     //URLs
     if (session->fields[httpUrlField]) {
+        MolochStringHashStd_t *shash = session->fields[httpUrlField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            if (hstring->str[0] == 'h' && memcmp("http://", hstring->str, 7) == 0) {
+                wise_lookup_url(session, iRequest, hstring->str+7);
+            } else {
+                wise_lookup_url(session, iRequest, hstring->str);
+            }
+        );
+
+        /*
         GPtrArray *sarray =  session->fields[httpUrlField]->sarray;
 
         for(i = 0; i < sarray->len; i++) {
@@ -592,7 +627,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                 wise_lookup_url(session, iRequest, str+7);
             } else
                 wise_lookup_url(session, iRequest, str);
-        }
+        }*/
     }
 
     // Tuples
@@ -615,7 +650,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     MOLOCH_UNLOCK(iRequest);
 }
 /******************************************************************************/
-void wise_plugin_exit()
+LOCAL void wise_plugin_exit()
 {
     MOLOCH_LOCK(item);
     int h;
@@ -630,7 +665,7 @@ void wise_plugin_exit()
     MOLOCH_UNLOCK(item);
 }
 /******************************************************************************/
-uint32_t wise_plugin_outstanding()
+LOCAL uint32_t wise_plugin_outstanding()
 {
     int count;
     MOLOCH_LOCK(iRequest);
@@ -658,17 +693,22 @@ void moloch_plugin_init()
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
-    httpHostField  = moloch_field_by_db("ho");
-    httpXffField   = moloch_field_by_db("xff");
-    httpMd5Field   = moloch_field_by_db("hmd5");
-    emailMd5Field  = moloch_field_by_db("emd5");
-    emailSrcField  = moloch_field_by_db("esrc");
-    emailDstField  = moloch_field_by_db("edst");
-    dnsHostField   = moloch_field_by_db("dnsho");
-    tagsField      = moloch_field_by_db("ta");
-    httpUrlField   = moloch_field_by_db("us");
-    protocolField  = moloch_field_by_db("prot-term");
-    ja3Field       = moloch_field_by_db("tlsja3-term");
+    httpHostField    = moloch_field_by_db("http.host");
+    httpXffField     = moloch_field_by_db("http.xffIp");
+    httpMd5Field     = moloch_field_by_db("http.md5");
+    emailMd5Field    = moloch_field_by_db("email.md5");
+    emailSrcField    = moloch_field_by_db("email.src");
+    emailDstField    = moloch_field_by_db("email.dst");
+    dnsHostField     = moloch_field_by_db("dns.host");
+    tagsField        = moloch_field_by_db("tags");
+    httpUrlField     = moloch_field_by_db("http.uri");
+    protocolField    = moloch_field_by_db("protocol");
+    ja3Field         = moloch_field_by_db("tls.ja3");
+
+    if (config.supportSha256) {
+        httpSha256Field  = moloch_field_by_db("http.sha256");
+        emailSha256Field = moloch_field_by_db("email.sha256");
+    }
 
     char hoststr[200];
     snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);

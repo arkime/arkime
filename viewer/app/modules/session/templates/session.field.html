@@ -4,7 +4,7 @@
 
   <span lazy-menu class="field dropdown" ng-if="::(!$ctrl.time)">
     <a href class="value" ng-click="$ctrl.toggleDropdown($event)"
-      ng-class="::{'small':$ctrl.field.exp === 'tipv6.dst' || $ctrl.field.exp === 'tipv6.src'}">
+      ng-class="::{'small':($ctrl.field.exp === 'ip.dst' || $ctrl.field.exp === 'ip.src') && parsed.value.includes(':')}">
       <span class="all-copy">{{::parsed.value}}</span><span class="fa fa-caret-down"></span>
     </a>
   </span>

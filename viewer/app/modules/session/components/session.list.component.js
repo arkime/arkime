@@ -10,8 +10,8 @@
   };
 
   const defaultTableState = {
-    order         : [['fp', 'asc']],
-    visibleHeaders: ['fp','lp','src','p1','dst','p2','pa','dbby','no','info']
+    order         : [['firstPacket', 'asc']],
+    visibleHeaders: ['firstPacket','lastPacket','src','srcPort','dst','dstPort','totPackets','dbby','node','info']
   };
 
   let customCols = require('./custom.columns.json');
@@ -201,9 +201,7 @@
 
       this.stickySessions = []; // clear sticky sessions
 
-      // TODO: tipv6*-term goes away with ES5
-      // clear fields to query for but always include protocols field
-      this.query.fields   = ['pr','tipv61-term','tipv62-term'];
+      this.query.fields   = ['ipProtocol'];
 
       this.mapHeadersToFields();
 
@@ -634,7 +632,7 @@
           }
 
           // if there are no columns to sort by, sort by start time
-          if (!newSort) { newSort = 'fp'; }
+          if (!newSort) { newSort = 'firstPacket'; }
 
           this.tableState.order = [[newSort,'asc']];
         } else {

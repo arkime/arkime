@@ -42,13 +42,13 @@ function EmergingThreatsSource (api, section) {
   this.api.addSource("emergingthreats", this);
 
   this.scoreField = this.api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
-  this.categoryField = this.api.addField("field:emergingthreats.category;db:et.category-term;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
+  this.categoryField = this.api.addField("field:emergingthreats.category;db:et.category;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
 
   this.api.addView("emergingthreats",
     "if (session.et)\n" +
     "  div.sessionDetailMeta.bold Emerging Threats\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.et, 'category-term', 'Category', 'emergingthreats.category')\n" +
+    "    +arrayList(session.et, 'category', 'Category', 'emergingthreats.category')\n" +
     "    +arrayList(session.et, 'score', 'Score', 'emergingthreats.score')\n"
   );
 

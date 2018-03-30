@@ -88,11 +88,6 @@
           template      : '<moloch-users></moloch-users>',
           reloadOnSearch: false
         })
-        .when('/stats', {
-          title         : 'Stats',
-          template      : '<moloch-stats></moloch-stats>',
-          reloadOnSearch: false
-        })
         .when('/spiview', {
           title         : 'SPI View',
           template      : '<moloch-spiview></moloch-spiview>',

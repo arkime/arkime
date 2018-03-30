@@ -70,9 +70,9 @@ Moloch is a complex system to build and install manually. The following are roug
 Installing Elasticsearch
 ------------------------
 
-Recommended version **5.5.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
+Recommended version **5.6.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   5.5.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-5-1>`_.
+   5.6.7 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-6-7>`_.
 
 Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
@@ -82,50 +82,7 @@ Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
 Building Capture
 ----------------
 
-1. Install prerequisite standard packages.
-
-   - CentOS::
-
-        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
-
-   - Ubuntu::
-    
-        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev
-
-   - OS X::
-
-        port install yara libpcap openssl pcre flex bison zlib file gettext p5-JSON p5-libwww-perl libffi xz ossp-uuid libgeoip glib2
-        ./configure --with-libpcap=/opt/local --with-yara=/opt/local --with-GeoIP=/opt/local LDFLAGS=-L/opt/local/lib --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
-
-2. Building ``capture`` can be a pain because of OS versions.
-
-   - Try ``./easybutton-build.sh`` which will download all the following, compile them statically, and run the local configure script.
-   - Or if you want build yourself, or use some already installed packages then here are the pieces you need:
-
-     + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.40 or
-       higher (2.50.2 is recommended)::
-
-            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.50/glib-2.50.2.tar.xz
-            ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal
-
-     + `yara <https://github.com/VirusTotal/yara>`_ version 1.6 or higher::
-
-            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz
-            ./configure --enable-static
-
-     + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be recent enough::
-            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.6.9.tar.gz
-            libtoolize -f # Only some platforms need this
-            ./configure --enable-static
-
-     + `libpcap <http://www.tcpdump.org/#latest-release>`_ - version 1.3 or higher (most OS versions are older)::
-       
-             wget http://www.tcpdump.org/release/libpcap-1.7.4.tar.gz
-             ./configure --disable-dbus
-
-3. Run ``configure``. Optionally use the ``--with-<foo>`` directives to use static libraries from build directories.
-
-4. Run ``make``.
+Use the ``./easybutton-build.sh`` script to download all thirdparty libraries and build moloch.
 
 .. _building-viewer:
 
@@ -133,7 +90,7 @@ Building Viewer
 ---------------
 1. Install `Node.js <http://nodejs.org/>`_ version 6.x, currently 8.x is not supported.  (Moloch versions before 0.18 required 4)
 
-2. In the ``viewer`` directory run ``npm update``.
+2. In the ``viewer`` directory run ``npm install``.
 
 .. _configuration:
 

@@ -1,90 +1,38 @@
 {
-   "sessions" : [
+   "sessions2" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160120",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "mac1-term-cnt" : 1,
-            "pr" : 6,
-            "db1" : 82,
-            "esrccnt" : 1,
-            "mac2-term-cnt" : 1,
-            "ipDst" : "127.0.0.1",
-            "pa2" : 9,
-            "lpd" : 1453298304047,
-            "by2" : 872,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "fpd" : 1453298297881,
-            "timestamp" : "SET",
-            "p2" : 25,
-            "a1" : "127.0.0.1",
-            "portDst" : 25,
-            "mac1-term" : [
+            "dstBytes" : 872,
+            "dstDataBytes" : 270,
+            "dstIp" : "127.0.0.1",
+            "dstMac" : [
                "00:00:00:00:00:00"
             ],
-            "p1" : 42971,
-            "lastPacket" : 1453298304047,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               457,
-               539,
-               627,
-               709,
-               821,
-               903,
-               1015,
-               1097,
-               1185,
-               1267,
-               1355,
-               1437,
-               1700,
-               1782,
-               1868
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
-            "by" : 1622,
-            "edst" : [
-               "reciever@example.com"
-            ],
-            "mac2-term" : [
-               "00:00:00:00:00:00"
-            ],
-            "prot-term-cnt" : 2,
-            "no" : "test",
-            "pa" : 19,
-            "fb1" : "48454c4f0d0a4d41",
-            "by1" : 750,
-            "a2" : "127.0.0.1",
-            "fb2" : "323230206c6f6361",
-            "pa1" : 10,
-            "tcpflags" : {
-               "fin" : 0,
-               "urg" : 0,
-               "rst" : 0,
-               "ack" : 9,
-               "psh" : 8,
-               "syn-ack" : 1,
-               "syn" : 1
+            "dstOuiCnt" : 1,
+            "dstPackets" : 9,
+            "dstPayload8" : "323230206c6f6361",
+            "dstPort" : 25,
+            "email" : {
+               "dst" : [
+                  "reciever@example.com"
+               ],
+               "dstCnt" : 1,
+               "src" : [
+                  "random@example.com"
+               ],
+               "srcCnt" : 1
             },
+            "fileId" : [],
             "firstPacket" : 1453298297881,
-            "db" : 352,
-            "esrc" : [
-               "random@example.com"
-            ],
-            "sl" : 6167,
-            "edstcnt" : 1,
-            "portSrc" : 42971,
-            "psl" : [
+            "ipProtocol" : 6,
+            "lastPacket" : 1453298304047,
+            "length" : 6167,
+            "node" : "test",
+            "packetLen" : [
                90,
                90,
                82,
@@ -105,12 +53,68 @@
                86,
                82
             ],
-            "db2" : 270,
-            "lp" : 1453298304,
-            "ipSrc" : "127.0.0.1",
-            "fp" : 1453298297,
-            "ss" : 1,
-            "fs" : []
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               457,
+               539,
+               627,
+               709,
+               821,
+               903,
+               1015,
+               1097,
+               1185,
+               1267,
+               1355,
+               1437,
+               1700,
+               1782,
+               1868
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 750,
+            "srcDataBytes" : 82,
+            "srcIp" : "127.0.0.1",
+            "srcMac" : [
+               "00:00:00:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPayload8" : "48454c4f0d0a4d41",
+            "srcPort" : 42971,
+            "tcpflags" : {
+               "ack" : 9,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 8,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1622,
+            "totDataBytes" : 352,
+            "totPackets" : 19
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160120",
+               "_type" : "session"
+            }
          }
       }
    ]

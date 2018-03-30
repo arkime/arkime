@@ -1,0 +1,204 @@
+/* Bootstrap Overrides ======================= */
+
+/* dark default buttons */
+.btn.btn-default {
+  color           : var(--color-foreground, #333);
+  background-color: var(--color-background, #FFF);
+  border-color    : var(--color-gray);
+}
+.btn.btn-default.active {
+  color           : var(--color-foreground, #333);
+  background-color: var(--color-gray-light);
+  border-color    : var(--color-gray);
+}
+.btn.btn-default:hover {
+  color           : #333;
+  background-color: var(--color-gray);
+  border-color    : var(--color-gray);
+}
+
+
+/* dark input group addon */
+.input-group-addon {
+  color           : var(--color-foreground, #555);
+  background-color: var(--color-background, #EEE);
+  border-color    : var(--color-gray);
+}
+
+
+/* give error text theme color */
+.text-danger {
+  color: var(--color-foreground-accent);
+}
+
+
+/* display labels inline with proper wrapping */
+.label {
+  /* https://github.com/twbs/bootstrap/issues/13219 */
+  display: inline-block;
+}
+
+
+/* condense the table more! */
+.table-sm > thead > tr > th,
+.table-sm > tbody > tr > th,
+.table-sm > tfoot > tr > th,
+.table-sm > thead > tr > td,
+.table-sm > tbody > tr > td,
+.table-sm > tfoot > tr > td {
+  padding: 0.1rem 0.5rem;
+}
+
+/* make stripes darker */
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--color-gray-lighter);
+}
+
+/* don't stripe average and total rows */
+.table-striped > tbody > tr.average-row, tr.total-row {
+  background-color: var(--color-background);
+}
+
+/* give hoverable rows theme color */
+.table-hover tbody tr:hover {
+  background-color: var(--color-gray-light);
+}
+
+/* make active table items darker */
+.table > thead > tr > td.active,
+.table > tbody > tr > td.active,
+.table > tfoot > tr > td.active,
+.table > thead > tr > th.active,
+.table > tbody > tr > th.active,
+.table > tfoot > tr > th.active,
+.table > thead > tr.active > td,
+.table > tbody > tr.active > td,
+.table > tfoot > tr.active > td,
+.table > thead > tr.active > th,
+.table > tbody > tr.active > th,
+.table > tfoot > tr.active > th {
+  background-color: var(--color-gray-lighter);
+}
+
+
+/* give navs theme color */
+.nav > li > a:hover,
+.nav > li > a:focus {
+  color           : var(--color-black);
+  background-color: var(--color-gray-light);
+}
+
+.nav-pills > li > a {
+  color: var(--color-foreground, #333);
+}
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  color           : var(--color-foreground, #FFF);
+  background-color: var(--color-primary);
+}
+
+.nav-tabs > li.nav-item > a.nav-link.active,
+.nav-tabs > li.nav-item > a.nav-link.active:hover,
+.nav-tabs > li.nav-item > a.nav-link.active:focus {
+  color               : var(--color-foreground);
+  background-color    : var(--color-background);
+  border-bottom-color : var(--color-background, #fff);
+  font-weight: bold;
+}
+
+
+/* give pagination theme color */
+.pagination > .page-item > .page-link {
+  color           : var(--color-foreground);
+  background-color: var(--color-background);
+  border          : 1px solid var(--color-gray-light);
+  cursor          : pointer !important;
+}
+.pagination > .page-item.disabled {
+  cursor: not-allowed !important;
+}
+.pagination > .page-item.disabled > span,
+.pagination > .page-item.disabled > span:hover,
+.pagination > .page-item.disabled > span:focus,
+.pagination > .page-item.disabled > a,
+.pagination > .page-item.disabled > a:hover,
+.pagination > .page-item.disabled > a:focus {
+  color           : var(--color-gray-light);
+  background-color: var(--color-background);
+  border-color    : var(--color-gray-light);
+}
+
+.pagination > .page-item.active > a,
+.pagination > .page-item.active > span,
+.pagination > .page-item.active > a:hover,
+.pagination > .page-item.active > span:hover,
+.pagination > .page-item.active > a:focus,
+.pagination > .page-item.active > span:focus {
+  z-index         : 3;
+  cursor          : default;
+  color           : var(--color-foreground);
+  background-color: var(--color-primary-lightest);
+  border-color    : var(--color-gray-light);
+}
+
+
+/* display dropdown results in scrolling div */
+input.field-typeahead + ul[uib-typeahead-popup] {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* give dropdowns theme color and make them more condensed */
+.dropdown-menu {
+  background-color: var(--color-background, #FFF);
+  border-color: var(--color-gray-light);
+  padding: 2px 0;
+  font-size: .85rem;
+}
+.dropdown-menu > .dropdown-item {
+  color: var(--color-foreground);
+  padding: 2px 8px;
+}
+
+.dropdown-menu > a.dropdown-item:hover,
+.dropdown-menu > a.dropdown-item:focus {
+  background-color: var(--color-gray-light);
+}
+.dropdown-menu > a.dropdown-item.active,
+.dropdown-menu > a.dropdown-item.active:hover,
+.dropdown-menu > a.dropdown-item.active:focus {
+  background-color: var(--color-primary);
+}
+.dropdown-menu li.active a,
+.dropdown-menu > li.active > a,
+.dropdown-menu div li.active a,
+.dropdown-menu > .active > div a,
+.dropdown-menu > .active > div:focus a {
+  color: #FFF !important;
+}
+
+/* give cards theme color */
+.card {
+  background-color: var(--color-background, #FFF);
+  border-color    : var(--color-gray-light);
+}
+.card .card-header {
+  color: var(--color-foreground, #333);
+  background-color: var(--color-gray-light)
+}
+
+
+/* give wells theme color */
+.well {
+  background-color: var(--color-gray-lighter);
+  border-color    : var(--color-gray-light);
+}
+
+
+/* give pres theme color */
+pre {
+  background-color: var(--color-gray-lighter);
+  border-color    : var(--color-gray-light);
+}
