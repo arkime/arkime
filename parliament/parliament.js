@@ -380,7 +380,8 @@ function getHealth(cluster) {
   let options = {
     url: `${cluster.localUrl || cluster.url}/eshealth.json`,
     method: 'GET',
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    timeout: 5000
   };
 
   rp(options)
@@ -414,7 +415,7 @@ function getHealth(cluster) {
 
       cluster.healthError = message;
 
-      console.error('HEALTH ERROR:', message);
+      console.error('HEALTH ERROR:', options.url, message);
       return resolve();
     });
 
@@ -428,7 +429,8 @@ function getStats(cluster) {
   let options = {
     url: `${cluster.localUrl || cluster.url}/stats.json`,
     method: 'GET',
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    timeout: 5000
   };
 
   rp(options)
@@ -497,7 +499,7 @@ function getStats(cluster) {
     })
     .catch((error) => {
       let message = error.message || error;
-      console.error('STATS ERROR:', message);
+      console.error('STATS ERROR:', options.url, message);
 
       setIssue(cluster, { type: 'esDown', value: message });
 
