@@ -1419,7 +1419,7 @@ sub dbCheck {
     }
 }
 ################################################################################
-sub checkForOldIndices {
+sub checkForOld2Indices {
     my $result = esGet("/_all/_settings/index.version.created?pretty");
     my $found = 0;
 
@@ -1431,7 +1431,23 @@ sub checkForOldIndices {
     }
 
     if ($found) {
-        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 2.x or ES 5.x will NOT start.\n\n";
+        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 2.x otherwise ES 5.x will NOT start.\n\n";
+    }
+}
+################################################################################
+sub checkForOld5Indices {
+    my $result = esGet("/_all/_settings/index.version.created?pretty");
+    my $found = 0;
+
+    while ( my ($key, $value) = each (%{$result})) {
+        if ($value->{settings}->{index}->{version}->{created} < 5000000) {
+            print "WARNING: You must delete index '$key' before upgrading to ES 6\n";
+            $found = 1;
+        }
+    }
+
+    if ($found) {
+        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 5.x otherwise ES 6.x will NOT start.\n\n";
     }
 }
 ################################################################################
@@ -1952,10 +1968,15 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         usersUpdate();
         historyUpdate();
         sessions2Update();
-        checkForOldIndices();
+        checkForOld2Indices();
         fieldsUpdate();
+        statsUpdate();
+        dstatsUpdate();
     } elsif ($main::versionNumber <= 50) {
+        #checkForOld5Indices();
         sessions2Update();
+        statsUpdate();
+        dstatsUpdate();
     } else {
         print "db.pl is hosed\n";
     }
