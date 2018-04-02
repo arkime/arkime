@@ -5,6 +5,114 @@ export default {
 
   /* service methods ------------------------------------------------------- */
   /**
+   * Gets a list of sessions from the server
+   * @param {object} query      Parameters to query the server
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  get: function (query) {
+    return new Promise((resolve, reject) => {
+      let params = { flatten: 1 };
+
+      if (query) {
+        if (query.length) { params.length = query.length; }
+        if (query.start) { params.start = query.start; }
+        if (query.facets) { params.facets = query.facets; }
+        if (query.expression) { params.expression = query.expression; }
+        if (query.view) { params.view = query.view; }
+        if (query.bounding) { params.bounding = query.bounding; }
+        if (query.interval) { params.interval = query.interval; }
+
+        if (query.startTime) {
+          params.startTime = (query.startTime) | 0;
+        }
+        if (query.stopTime) {
+          params.stopTime = (query.stopTime) | 0;
+        }
+        if (query.date) {
+          params.date = query.date;
+        }
+
+        let i, len, item;
+        // server takes one param (order)
+        if (query.sorts && query.sorts.length) {
+          params.order = '';
+          for (i = 0, len = query.sorts.length; i < len; ++i) {
+            item = query.sorts[i];
+            params.order += item[0] + ':' + item[1];
+            if (i < len - 1) { params.order += ','; }
+          }
+        }
+
+        // server takes one param (fields)
+        if (query.fields && query.fields.length) {
+          params.fields = '';
+          for (i = 0, len = query.fields.length; i < len; ++i) {
+            item = query.fields[i];
+            params.fields += item;
+            if (i < len - 1) { params.fields += ','; }
+          }
+        }
+      }
+
+      let options = {
+        url: 'sessions.json',
+        method: 'GET',
+        params: params
+      };
+
+      Vue.axios(options)
+        .then((response) => {
+          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Gets a state
+   * @param {string} name       The name of the state to get
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getState: function (name) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`state/${name}`)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Saves a state
+   * @param {object} state      The object to save as the state
+   * @param {string} name       The name of the state to save
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  saveState: function (state, name) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: `state/${name}`,
+        method: 'POST',
+        data: state
+      };
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
    * Adds or Removes tags from sessions
    * @param {Boolean} addTags     Whether to add tags (otherwise remove)
    * @param {object} params       The parameters to be added to the url

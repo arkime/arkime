@@ -10,7 +10,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCurrent () {
+  getCurrent: function () {
     if (queryInProgress) { return queryInProgress; }
 
     queryInProgress = new Promise((resolve, reject) => {
@@ -38,7 +38,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  hasPermission (priv) {
+  hasPermission: function (priv) {
     return new Promise((resolve, reject) => {
       this.getCurrent()
         .then((user) => {
@@ -62,7 +62,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getViews (userId) {
+  getViews: function (userId) {
     return new Promise((resolve, reject) => {
       let url = 'user/views';
       if (userId) { url += `?userId=${userId}`; }
@@ -86,7 +86,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createView (params, userId) {
+  createView: function (params, userId) {
     return new Promise((resolve, reject) => {
       let url = 'user/views/create';
       if (userId) { url += `?userId=${userId}`; }
@@ -108,12 +108,33 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteView (view, userId) {
+  deleteView: function (view, userId) {
     return new Promise((resolve, reject) => {
       let url = 'user/views/delete';
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.post(url, { view: view })
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Gets a user's custom column configurations
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getColumnConfigs: function (userId) {
+    return new Promise((resolve, reject) => {
+      let url = 'user/columns';
+      if (userId) { url += `?userId=${userId}`; }
+
+      Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
@@ -129,7 +150,7 @@ export default {
    * @returns {object} views  The object containing views, now with name
    *                          properties on each view object
    */
-  parseViews (views) {
+  parseViews: function (views) {
     for (var name in views) {
       if (views.hasOwnProperty(name)) {
         views[name].name = name;

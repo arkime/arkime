@@ -1,0 +1,125 @@
+{
+  "info": {
+    "width": 250,
+    "dbField": "info",
+    "exp": "info",
+    "group": "general",
+    "friendlyName": "Info",
+    "help": "Information",
+    "unsortable": true,
+    "children": [
+      "http.uri",
+      "email.src",
+      "email.dst",
+      "email.subject",
+      "email.filename",
+      "dns.host",
+      "cert.alt",
+      "irc.channel"
+    ]
+  },
+  "src": {
+    "width": 140,
+    "dbField": "src",
+    "exp": "src",
+    "group": "general",
+    "friendlyName": "Src IP / Country",
+    "help": "Src IP & Country",
+    "sortBy": "srcIp",
+    "children": [
+      "srcIp",
+      "srcGEO"
+    ]
+  },
+  "dst": {
+    "width": 140,
+    "dbField": "dst",
+    "exp": "dst",
+    "group": "general",
+    "friendlyName": "Dst IP / Country",
+    "help": "Dst IP & Country",
+    "sortBy": "dstIp",
+    "children": [
+      "dstIp",
+      "dstGEO"
+    ]
+  },
+  "dbby": {
+    "width": 120,
+    "dbField": "dbby",
+    "exp": "dbby",
+    "group": "general",
+    "friendlyName": "Databytes / Bytes",
+    "help": "Data Bytes & Bytes",
+    "sortBy": "totBytes",
+    "children": [
+      "totDataBytes",
+      "totBytes"
+    ]
+  },
+  "pa1pa2": {
+    "width": 120,
+    "dbField": "pa1pa2",
+    "exp": "pa1pa2",
+    "group": "general",
+    "friendlyName": "Src Packets / Dst Packets",
+    "help": "Src Packets & Dst Packets",
+    "sortBy": "totPackets",
+    "children": [
+      "srcPackets",
+      "dstPackets"
+    ]
+  },
+  "db1db2": {
+    "width": 140,
+    "dbField": "db1db2",
+    "exp": "db1db2",
+    "group": "general",
+    "friendlyName": "Src Databytes / Dst Databytes",
+    "help": "Src Databytes & Dst Databytes",
+    "sortBy": "totDataBytes",
+    "children": [
+      "srcDataBytes",
+      "dstDataBytes"
+    ]
+  },
+  "by1by2": {
+    "width": 120,
+    "dbField": "by1by2",
+    "exp": "by1by2",
+    "group": "general",
+    "friendlyName": "Src Bytes / Dst Bytes",
+    "help": "Src Bytes & Dst Bytes",
+    "sortBy": "totBytes",
+    "children": [
+      "srcBytes",
+      "dstBytes"
+    ]
+  },
+  "db1by1": {
+    "width": 140,
+    "dbField": "db1by1",
+    "exp": "db1by1",
+    "group": "general",
+    "friendlyName": "Src Databytes / Src Bytes",
+    "help": "Src Databytes & Src Bytes",
+    "sortBy": "srcDataBytes",
+    "children": [
+      "srcDataBytes",
+      "srcBytes"
+    ]
+  },
+  "db2by2": {
+    "width": 140,
+    "dbField": "db2by2",
+    "exp": "db2by2",
+    "group": "general",
+    "friendlyName": "Dst Databytes / Dst Bytes",
+    "help": "Dst Databytes & Dst Bytes",
+    "sortBy": "dstDataBytes",
+    "children": [
+      "dstDataBytes",
+      "dstBytes"
+    ]
+  }
+}

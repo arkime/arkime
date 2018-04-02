@@ -10,8 +10,7 @@
     </b-navbar-toggle>
 
     <b-navbar-brand>
-      <!-- TODO this won't always be the stats page -->
-      <a href="help#stats"
+      <a :href="'help#' + activePage"
         class="cursor-pointer">
         <img src="../../assets/logo.png"
           class="moloch-logo"
@@ -27,7 +26,7 @@
           v-for="item of menu"
           :key="item.link"
           :href="item.link"
-          :active="item.link === 'stats'"
+          :active="isActive(item.link)"
           v-has-permission="item.permission">
           {{ item.title }}
         </b-nav-item>
@@ -59,7 +58,7 @@ export default {
   computed: {
     menu: function () {
       let menu = {
-        sessions: { title: 'Sessions', link: 'sessions' },
+        sessions: { title: 'Sessions', link: 'sessions2' },
         spiview: { title: 'SPI View', link: 'spiview' },
         spigraph: { title: 'SPI Graph', link: 'spigraph' },
         connections: { title: 'Connections', link: 'connections' },
@@ -75,6 +74,19 @@ export default {
       }
 
       return menu;
+    },
+    activePage: function () {
+      for (let page in this.menu) {
+        let link = this.menu[page].link;
+        if (link === this.$route.path.split('/')[1]) {
+          return link;
+        }
+      }
+    }
+  },
+  methods: {
+    isActive: function (link) {
+      return link === this.$route.path.split('/')[1];
     }
   }
 };
