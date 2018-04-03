@@ -267,12 +267,6 @@ export default {
         expression: this.expression,
         view: this.view
       });
-
-      // TODO update the page title
-      // this.$rootScope.$broadcast('issue:search', {
-      //   expression: this.$rootScope.expression,
-      //   view: this.view
-      // });
     }
   },
   created: function () {
@@ -295,32 +289,16 @@ export default {
           expression: this.expression
         }
       });
-
-      this.$emit('changeSearch', {
-        expression: this.expression,
-        view: this.view
-      });
     },
     changeExpression: function () {
       this.expression = Store.state.expression;
-
-      this.$emit('changeSearch', {
-        expression: this.expression,
-        view: this.view
-      });
+      this.timeUpdate();
     },
     applyParams: function () {
       // TODO is this necessary?
       // manualChange = true;
       this.applyExpression();
-
-      // update the stop/start times in time component, which in turn
-      // notifies this controller (usin the 'changeTime' event), then
-      // updates the time params and emits a 'changeSearch' event to parent
-      this.updateTime = true;
-      setTimeout(() => {
-        this.updateTime = false;
-      }, 1000);
+      this.timeUpdate();
     },
     exportPCAP: function () {
       this.actionForm = 'export:pcap';
@@ -417,10 +395,19 @@ export default {
           this.molochClusters = response;
         });
     },
+    /**
+     * update the stop/start times in time component, which in turn
+     * notifies this controller (using the 'changeTime' event), then
+     * updates the time params and emits a 'changeSearch' event to parent
+     */
+    timeUpdate: function () {
+      this.updateTime = true;
+      setTimeout(() => {
+        this.updateTime = false;
+      }, 1000);
+    },
     /* event functions ------------------------------------------- */
     timeChange: function (args) {
-      console.log('time change event caught', args);
-      // TODO test
       args.expression = this.expression;
       args.view = this.view;
       this.$emit('changeSearch', args);
@@ -437,10 +424,6 @@ form {
   border: none;
   z-index : 4;
   background-color: var(--color-secondary-lightest);
-
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
 }
 
 .action-form-separator {

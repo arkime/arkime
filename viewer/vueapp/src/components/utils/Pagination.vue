@@ -19,12 +19,12 @@
       @input="notifyParent()">
     </b-pagination> <!-- paging -->
     <!-- page info -->
-    <span class="pagination-info cursor-help"
+    <div class="pagination-info cursor-help"
       v-b-tooltip.hover
       :title="pagingInfoTitle">
       Showing {{ start + 1 }} - {{ start + length }}
       of {{ recordsFiltered | commaString }} entries
-    </span> <!-- /page info -->
+    </div> <!-- /page info -->
   </div>
 
 </template>
@@ -117,11 +117,10 @@ export default {
 
 select.page-select {
   width: 120px;
-  font-size: .9rem;
-  color: var(--color-foreground);
-  background-color: var(--color-background);
+  font-size: .8rem;
   display: inline-flex;
-  height: 32px !important;
+  height: 31px !important;
+  margin-top: 1px;
   margin-right: -5px;
   margin-bottom: var(--px-xs);
   padding-top: var(--px-xs);
@@ -133,10 +132,11 @@ select.page-select {
 }
 
 .pagination-info {
+  display: inline-block;
   font-size: .8rem;
   color: var(--color-gray-dark);
   border: 1px solid var(--color-gray-light);
-  padding: 8px 10px 6px;
+  padding: 5px 10px;
   margin-left: -6px;
   border-radius: 0 var(--px-sm) var(--px-sm) 0;
   background-color: var(--color-white);

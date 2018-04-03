@@ -30,9 +30,9 @@ router.beforeEach((to, from, next) => {
     location.reload();
   }
 
-  let page = to.name || 'Moloch Vue App'; // TODO different fallback?
-  let expression = ''; // TODO set expression
-  let view = ''; // TODO set view
+  let page = to.name || 'Moloch - ';
+  let view = to.query.view ? ` - ${to.query.view}` : '';
+  let expression = to.query.expression ? ` - ${to.query.expression}` : '';
 
   /* eslint-disable no-undef */
   let title = MOLOCH_TITLE_CONFIG.replace(/_page_/g, page)

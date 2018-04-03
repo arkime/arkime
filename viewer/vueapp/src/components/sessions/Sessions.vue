@@ -11,27 +11,72 @@
       @changeSearch="changeSearch">
     </moloch-search>
 
-    <!-- TODO fix styles -->
-    <form class="sessions-nav">
+    <form class="sessions-paging">
       <div class="form-inline">
         <moloch-paging
           class="mt-1 ml-1"
-          :length="query.length"
           :records-total="sessions.recordsTotal"
           :records-filtered="sessions.recordsFiltered"
-          :current-page="currentPage"
-          :start="query.start"
           @changePaging="changePaging">
         </moloch-paging>
       </div>
     </form>
 
-    <div class="sessions-vis">
-      sessions visualizations go here!
-    </div>
+    <div class="container-fluid">
 
-    <div class="sessions-table">
-      sessions table goes here!
+      <div class="sessions-vis">
+        sessions visualizations go here!
+      </div>
+
+      <div class="sessions-table">
+        <!-- TODO table width -->
+        <table v-if="headers && headers.length"
+          class="table-striped sessions-table"
+          id="sessionsTable">
+          <thead>
+            <tr>
+              <!-- table options -->
+              <th>
+                &nbsp;
+                <!-- TODO col vis button -->
+                <!-- TODO col save button -->
+              </th> <!-- /table options -->
+              <!-- TODO drag n drop columns -->
+              <!-- TODO resize columns -->
+              <!-- table headers -->
+              <th v-for="header of headers"
+                :key="header.dbField"
+                class="moloch-col-header"
+                :style="{'width':header.width+'px'}"
+                :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
+                {{ header.friendlyName }}
+                <!-- TODO column sort & dropdown -->
+              </th> <!-- /table headers -->
+            </tr>
+          </thead>
+          <tbody class="small">
+            <!-- TODO session detail -->
+            <tr v-for="session of sessions.data"
+              :key="session.id">
+              <td>
+                <!-- TODO toggle button -->
+                <toggle-btn @toggle="toggleSessionDetail(session)">
+                </toggle-btn>
+                <small>
+                  <!-- TODO session field parser -->
+                  {{ session.ipProtocol }}
+                </small>
+              </td>
+              <td v-for="col in headers"
+                :key="col.dbField">
+                <!-- TODO determine if it's an array or not -->
+                {{ session[col.dbField] }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
   </div>
@@ -45,6 +90,7 @@ import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
 import customCols from './customCols.json';
 import MolochPaging from '../utils/Pagination';
+import ToggleBtn from '../utils/ToggleBtn';
 
 const defaultTableState = {
   order: [['firstPacket', 'asc']],
@@ -58,7 +104,7 @@ let timeout;
 
 export default {
   name: 'Sessions',
-  components: { MolochSearch, MolochPaging },
+  components: { MolochSearch, MolochPaging, ToggleBtn },
   data: function () {
     return {
       user: null,
@@ -78,19 +124,19 @@ export default {
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined
       },
-      currentPage: 1,
       colWidths: {},
-      colConfigError: ''
+      colConfigError: '',
+      headers: []
     };
   },
   created: function () {
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
-    // TODO LISTEN for change pagination, change search, add to search, change time, and window resize
+    // TODO LISTEN for add to search, change time, and window resize
   },
   methods: {
-    /* exposed page functions ------------------------------------ */
+    /* exposed page functions ---------------------------------------------- */
     /* SESSION DETAIL */
     /**
      * Toggles the display of the session detail for each session
@@ -264,7 +310,7 @@ export default {
       return this.tableState.visibleHeaders.indexOf(id);
     },
     // TODO organize and add functions: onDropComplete, toggleVisibility, loadColumnConfiguration, saveColumnConfiguration, deleteColumnConfiguration, openSpiGraph, exportUnique
-    /* helper functions ------------------------------------------ */
+    /* helper functions ---------------------------------------------------- */
     /* Gets the column widths of the table if they exist */
     getColumnWidths: function () {
       SessionsService.getState('sessionsColWidths')
@@ -293,7 +339,6 @@ export default {
               this.setupFields();
               this.getUserSettings(); // IMPORTANT: kicks off the initial search query!
             }).catch((error) => {
-              console.log('error getting fields');
               this.loading = false;
               this.error = error;
             });
@@ -317,7 +362,6 @@ export default {
         .then((response) => {
           this.settings = response;
 
-          // TODO
           // if settings has custom sort field and the custom sort field
           // exists in the table headers, apply it
           if (this.settings && this.settings.sortColumn !== 'last' &&
@@ -346,8 +390,7 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
-      // TODO
-      console.log('load data');
+      console.log('load data', this.query); // TODO remove
       this.loading = true;
       this.error = '';
 
@@ -380,7 +423,8 @@ export default {
           this.mapData = response.data.map;
           this.graphData = response.data.graph;
 
-          if (updateTable) { this.reloadTable(); }
+          // TODO this is unnecessary? because there are no one time bindings?
+          // if (updateTable) { this.reloadTable(); }
 
           if (parseInt(this.$route.query.openAll) === 1) {
             this.openAll();
@@ -392,43 +436,9 @@ export default {
         })
         .catch((error) => {
           this.error = error;
-          this.reloadTable(); // sets loading to false
+          this.loading = false;
+          // this.reloadTable(); // sets loading to false
         });
-    },
-    changeSearch: function (args) {
-      // TODO
-      console.log('change search', args);
-      this.loadData();
-      // either (startTime && stopTime) || date
-      // if (args.startTime && args.stopTime) {
-      //   _query.startTime  = this.query.startTime  = args.startTime;
-      //   _query.stopTime   = this.query.stopTime   = args.stopTime;
-      //   _query.date       = this.query.date       = null;
-      // } else if (args.date) {
-      //   _query.date       = this.query.date       = args.date;
-      //   _query.startTime  = this.query.startTime  = null;
-      //   _query.stopTime   = this.query.stopTime   = null;
-      // }
-      //
-      // _query.expression = this.query.expression = args.expression;
-      // if (args.bounding) {_query.bounding = this.query.bounding = args.bounding;}
-      // if (args.interval) {_query.interval = this.query.interval = args.interval;}
-      //
-      // // reset to the first page, because we are issuing a new query
-      // // and there may only be 1 page of results
-      // _query.start = this.query.start = 0;
-      //
-      // this.query.view = args.view;
-      //
-      // // don't issue search when the first change:search event is fired
-      // if (!componentInitialized || this.loading) { return; }
-      //
-      // this.loadData(true);
-    },
-    changePaging: function (args) {
-      // TODO
-      console.log('change paging', args);
-      this.loadData();
     },
     /**
      * Saves the table state
@@ -543,6 +553,48 @@ export default {
           openAll: undefined
         }
       }).replace();
+    },
+    /* event handlers ------------------------------------------------------ */
+    /**
+     * fired when search parameters change (from search/Search)
+     * update startTime, stopTime, date, bounding, interval, view, and expression
+     * then load data to update the table with new results
+     */
+    changeSearch: function (args) {
+      // either (startTime && stopTime) || date
+      if (args.startTime && args.stopTime) {
+        this.query.startTime = args.startTime;
+        this.query.stopTime = args.stopTime;
+        this.query.date = undefined;
+      } else if (args.date) {
+        this.query.date = args.date;
+        this.query.stopTime = undefined;
+        this.query.startTime = undefined;
+      }
+
+      if (args.bounding) { this.query.bounding = args.bounding; }
+      if (args.interval) { this.query.interval = args.interval; }
+
+      this.query.view = args.view;
+      this.query.expression = args.expression;
+
+      // reset to the first page, because we are issuing a new query
+      // and there may only be 1 page of results
+      this.query.start = 0;
+
+      this.loadData(true);
+    },
+    /**
+     * fired when paging changes (from utils/Pagination)
+     * update start and length, then get data if one has changed
+     */
+    changePaging: function (args) {
+      if (this.query.start !== args.start ||
+        this.query.length !== args.length) {
+        this.query.start = args.start;
+        this.query.length = args.length;
+        this.loadData(true);
+      }
     }
   },
   beforeDestroy: function () {
@@ -556,24 +608,16 @@ export default {
   margin-top: 36px;
 }
 
-form.sessions-nav {
+form.sessions-paging {
   position: fixed;
   top: 110px;
   left: 0;
   right: 0;
   height: 40px;
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
 }
 
-session form.sessions-nav .form-inline {
-  margin-top: -3px;
-}
-
-.sessions-vis {
+.container-fluid {
   padding-top: 115px;
 }
 </style>
