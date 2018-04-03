@@ -65,11 +65,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
-<<<<<<< HEAD
-0.50.1 2017/03/XX
-=======
+
 0.50.1 2017/03/29
->>>>>>> 37813f18f48f16d398bc6e511fc73f9f41719e5b
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
   - viewer - sessions.csv handle multiple fields parameters
