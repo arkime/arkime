@@ -1,4 +1,4 @@
-#!/usr/bin/env node --max_old_space_size=2000
+#!/data/moloch/bin/node --max_old_space_size=2000
 /******************************************************************************/
 /* reindex2.js  -- Reindex all the sessions indices to sessions2, which will
  *                 * rename most fields
