@@ -15,6 +15,16 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0-rc2 2018/03/29
+  - viewer - Change default spiDataMaxIndices to 4 everywhere
+  - viewer - work around for ES 6 issue https://github.com/elastic/elasticsearch/issues/27740
+  - capture - fixed netflow plugin
+  - tests - initial parliament tests
+
+1.0.0-rc1 2018/03/20
+  - viewer - minor stats page fixes
+  - release - new top level package.json/node_modules to make package smaller
+
 1.0.0-beta3 2018/03/15
   - viewer - stats page implemented in Vue instead of Angular
   - capture - some code clean and better thread safe counters
@@ -55,7 +65,11 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Country codes are now 2 letters instead of 3 letters
   - release - node 8.9.4
 
+<<<<<<< HEAD
 0.50.1 2017/03/XX
+=======
+0.50.1 2017/03/29
+>>>>>>> 37813f18f48f16d398bc6e511fc73f9f41719e5b
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
   - viewer - sessions.csv handle multiple fields parameters
@@ -68,6 +82,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - correctly lowercase user
   - release - added --install to easybutton (issue #812)
   - capture - basic memcache classify
+  - viewer - disable TLS 1.0
+  - viewer - ES scrolling should be much faster
 
 
 0.50.0 2017/01/24

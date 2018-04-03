@@ -3,13 +3,14 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
 use JSON;
 use URI::Escape;
 use Data::Dumper;
+use IO::Socket::INET;
 
 $MolochTest::userAgent = LWP::UserAgent->new(timeout => 120);
 $MolochTest::host = "127.0.0.1";
@@ -236,5 +237,68 @@ sub getTokenCookie2 {
     return $1;
 }
 ################################################################################
+sub parliamentGet {
+my ($url, $debug) = @_;
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url");
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentGetToken {
+my ($url, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url", "x-access-token" => $token);
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentPost {
+my ($url, $content, $debug) = @_;
+    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentPut {
+my ($url, $content, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentDelete {
+my ($url, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:8008$url"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentDeleteToken {
+my ($url, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:8008$url", "x-access-token" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub waitFor {
+my ($host, $port) = @_;
+    while (1) {
+        my $sock = IO::Socket::INET->new(
+	    PeerAddr => $host,
+	    PeerPort => $port,
+	    Proto    => 'tcp'
+	);
+        if ($sock) {
+            close($sock);
+            return;
+        };
+        sleep 1;
+    }
+}
 
 return 1;

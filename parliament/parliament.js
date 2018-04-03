@@ -27,7 +27,7 @@ const version = 1;
 const issueTypes = {
   esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
   esDown: { on: true, name: 'ES Down', text:' ES is down', severity: 'red', description: 'ES is unreachable' },
-  esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping packets', severity: 'yellow', description: 'the capture node is overloading ES' },
+  esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
   noPackets: { on: true, name: 'No Packets', text: 'is not receiving packets', severity: 'red', description: 'the capture node is not receiving packets' }
 };
@@ -85,12 +85,21 @@ const issueTypes = {
         i++;
         break;
 
+      case '--regressionTests':
+        app.set('regressionTests', 1);
+        break;
+
+      case '--debug':
+        // Someday support debug :)
+        break;
+
       case '-h':
       case '--help':
         help();
         break;
 
       default:
+        console.log(`Unknown option ${appArgs[i]}`);
         help();
         break;
     }
@@ -104,6 +113,13 @@ const issueTypes = {
   app.set('port', port || 8008);
   app.set('file', file || './parliament.json');
 }());
+
+if (!!app.get("regressionTests")) {
+  app.post('/shutdown', function(req, res) {
+    process.exit(0);
+    throw new Error("Exiting");
+  });
+};
 
 // get the parliament file or create it if it doesn't exist
 let parliament;
@@ -364,7 +380,8 @@ function getHealth(cluster) {
   let options = {
     url: `${cluster.localUrl || cluster.url}/eshealth.json`,
     method: 'GET',
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    timeout: 5000
   };
 
   rp(options)
@@ -398,7 +415,7 @@ function getHealth(cluster) {
 
       cluster.healthError = message;
 
-      console.error('HEALTH ERROR:', message);
+      console.error('HEALTH ERROR:', options.url, message);
       return resolve();
     });
 
@@ -412,7 +429,8 @@ function getStats(cluster) {
   let options = {
     url: `${cluster.localUrl || cluster.url}/stats.json`,
     method: 'GET',
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    timeout: 5000
   };
 
   rp(options)
@@ -481,7 +499,7 @@ function getStats(cluster) {
     })
     .catch((error) => {
       let message = error.message || error;
-      console.error('STATS ERROR:', message);
+      console.error('STATS ERROR:', options.url, message);
 
       setIssue(cluster, { type: 'esDown', value: message });
 
@@ -797,7 +815,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
   let parliamentClone = JSON.parse(JSON.stringify(parliament));
-  if (parliamentClone.password) { parliamentClone.password = undefined; }
+  delete parliamentClone.settings
+  delete parliamentClone.password
   return res.json(parliamentClone);
 });
 
@@ -1205,6 +1224,13 @@ router.post('/testAlert', (req, res, next) => {
   writeParliament(req, res, next, successObj, errorText);
 });
 
+
+/* SIGNALS! ----------------------------------------------------------------- */
+// Explicit sigint handler for running under docker
+// See https://github.com/nodejs/node/issues/4182
+process.on('SIGINT', function() {
+    process.exit();
+});
 
 /* LISTEN! ----------------------------------------------------------------- */
 let server;

@@ -211,14 +211,16 @@ my ($cmd) = @_;
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
-        sleep 1;
+        waitFor($MolochTest::host, 8081);
         sleep (10000) if ($cmd eq "--viewerhang");
     } else {
         print ("Initializing ES\n");
@@ -247,7 +249,9 @@ my ($cmd) = @_;
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
         }
 
+        waitFor($MolochTest::host, 8081);
         sleep 1;
+
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
 
@@ -278,14 +282,22 @@ my ($cmd) = @_;
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
-        sleep 1;
     }
+
+    waitFor($MolochTest::host, 8123);
+    waitFor($MolochTest::host, 8124);
+    waitFor($MolochTest::host, 8125);
+    waitFor($MolochTest::host, 8008);
+    waitFor($MolochTest::host, 8200);
+    sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
@@ -304,6 +316,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8125/shutdown");
         $main::userAgent->post("http://localhost:8200/shutdown");
         $main::userAgent->post("http://localhost:8081/shutdown");
+        $main::userAgent->post("http://localhost:8008/shutdown");
     }
 
     exit(1) if ( $parser->has_errors );

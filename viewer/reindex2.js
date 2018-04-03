@@ -43,7 +43,7 @@ var MIN_DB_VERSION = 38;
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  sliceMax: 3,
+  sliceMax: 5,
   sliceNum: 0,
   scrollSize: 500,
   index: "sessions-*",
@@ -1123,8 +1123,8 @@ for (let i = 0; i < process.argv.length; i++) {
     break;
   case "--help":
     console.log("--config <file>                = moloch config.ini file");
-    console.log("--size <scroll size>           = batch size [1000]");
-    console.log("--slices <parallel processes>  = number of parallel processes");
+    console.log("--size <scroll size>           = batch size [500]");
+    console.log("--slices <parallel processes>  = number of parallel processes [5]");
     console.log("--index <index pattern>        = indices to process [sessions-*]");
     console.log("--deleteExisting               = delete existing sessions2 indices before reindexing");
     console.log("--deleteOnDone                 = delete sessions index after reindexing");
@@ -1133,7 +1133,9 @@ for (let i = 0; i < process.argv.length; i++) {
 }
 
 if (internals.sliceMax <= 1) {internals.sliceMax = 2;}
+if (internals.sliceMax > 24) {internals.sliceMax = 24;}
 if (internals.scrollSize <= 50) {internals.scrollSize = 50;}
+if (internals.scrollSize > 2000) {internals.scrollSize = 2000;}
 
 if (cluster.isMaster) {
 // If master connect to DB and call mainMaster

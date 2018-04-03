@@ -201,7 +201,7 @@ pluginsDir=MOLOCH_INSTALL_DIR/plugins
 
 # Specify the max number of indices we calculate spidata for.
 # ES will blow up if we allow the spiData to search too many indices.
-spiDataMaxIndices=3
+spiDataMaxIndices=4
 
 # Uncomment the following to allow direct uploads.  This is experimental
 #uploadCommand=MOLOCH_INSTALL_DIR/bin/moloch-capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}

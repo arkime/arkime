@@ -406,7 +406,7 @@
             "dstASN" : "AS4589 EASYNET Easynet Global Services",
             "dstBytes" : 2563,
             "dstDataBytes" : 2259,
-            "dstGEO" : "GB",
+            "dstGEO" : "DE",
             "dstIp" : "2001:06f8:0900:07c0:0000:0000:0000:0002",
             "dstMac" : [
                "00:11:25:82:95:b5"
@@ -558,4 +558,3 @@
       }
    ]
 }
-
