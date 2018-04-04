@@ -6,14 +6,6 @@ Vue.filter('commaString', (input) => {
   return input.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 });
 
-Vue.filter('extractIPString', (ip) => {
-  if (!ip) { return ''; }
-  if (typeof ip === 'string' && ip.indexOf('.') !== -1) { return ip; }
-
-  return (+ip >> 24 & 0xff) + '.' + (+ip >> 16 & 0xff) +
-          '.' + (+ip >> 8 & 0xff) + '.' + (+ip & 0xff);
-});
-
 Vue.filter('extractIPv6String', (ipv6) => {
   if (!ipv6) { return ''; }
 
@@ -62,7 +54,7 @@ Vue.filter('humanReadable', (fileSizeInBytes) => {
 });
 
 Vue.filter('timezoneDateString', (seconds, timezone, format) => {
-  if (!format) { format = 'yyyy/MM/dd HH:mm:ss'; }
+  if (!format) { format = 'YYYY/MM/DD HH:mm:ss z'; }
 
   if (timezone === 'gmt') {
     return moment.tz(1000 * seconds, 'gmt').format(format);

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="sessions-content">
+  <div class="sessions-page">
 
     <moloch-search
       :open-sessions="stickySessions"
@@ -22,7 +22,7 @@
       </div>
     </form>
 
-    <div class="container-fluid">
+    <div class="sessions-content ml-1 mr-2">
 
       <div class="sessions-vis">
         sessions visualizations go here!
@@ -55,27 +55,78 @@
             </tr>
           </thead>
           <tbody class="small">
-            <!-- TODO session detail -->
-            <tr v-for="session of sessions.data"
-              :key="session.id">
-              <td>
-                <!-- TODO toggle button -->
-                <toggle-btn @toggle="toggleSessionDetail(session)">
-                </toggle-btn>
-                <small>
-                  <!-- TODO session field parser -->
-                  {{ session.ipProtocol }}
-                </small>
-              </td>
-              <td v-for="col in headers"
-                :key="col.dbField">
-                <!-- TODO determine if it's an array or not -->
-                {{ session[col.dbField] }}
-              </td>
-            </tr>
+            <!-- session + detail -->
+            <template v-for="session of sessions.data">
+              <tr :key="session.id">
+                <td>
+                  <toggle-btn @toggle="toggleSessionDetail(session)">
+                  </toggle-btn>
+                  <small>
+                    <!-- TODO session field parser -->
+                    <!-- {{ session.ipProtocol }} -->
+                    <moloch-session-field
+                      :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                      :session="session"
+                      :expr="'ipProtocol'"
+                      :value="session.ipProtocol"
+                      :parse="true">
+                    </moloch-session-field>
+                  </small>
+                </td>
+                <td v-for="col in headers"
+                  :key="col.dbField">
+                  <!-- TODO test array fields -->
+                  <span v-if="Array.isArray(session[col.dbField])">
+                    <span v-for="value in session[col.dbField]"
+                      :key="value + col.dbField">
+                      <moloch-session-field
+                        :field="col"
+                        :session="session"
+                        :expr="col.exp"
+                        :value="value"
+                        :parse="true"
+                        :timezone="settings.settings.timezone">
+                      </moloch-session-field>
+                    </span>
+                  </span>
+                  <span v-else>
+                    <moloch-session-field
+                      :field="col"
+                      :session="session"
+                      :expr="col.exp"
+                      :value="session[col.dbField]"
+                      :parse="true"
+                      :timezone="settings.settings.timezone">
+                    </moloch-session-field>
+                  </span>
+                </td>
+              </tr>
+              <tr :key="session.id + '-detail'"
+                v-if="session.expanded"
+                class="session-detail-row">
+                <td :colspan="headers.length + 1">
+                  <!-- TODO session detail component -->
+                  session detail goes here
+                </td>
+              </tr>
+            </template> <!-- /session + detail -->
           </tbody>
         </table>
       </div>
+
+      <moloch-loading v-if="loading && !error">
+      </moloch-loading>
+
+      <moloch-error v-if="error"
+        :message="error"
+        class="mt-5 mb-5">
+      </moloch-error>
+
+      <moloch-no-results class="mt-5 mb-5"
+        v-if="!error && !loading && !sessions.data.length"
+        :records-total="sessions.recordsTotal"
+        :view="query.view">
+      </moloch-no-results>
 
     </div>
 
@@ -91,6 +142,9 @@ import SessionsService from './SessionsService';
 import customCols from './customCols.json';
 import MolochPaging from '../utils/Pagination';
 import ToggleBtn from '../utils/ToggleBtn';
+import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
+import MolochNoResults from '../utils/NoResults';
 
 const defaultTableState = {
   order: [['firstPacket', 'asc']],
@@ -104,7 +158,14 @@ let timeout;
 
 export default {
   name: 'Sessions',
-  components: { MolochSearch, MolochPaging, ToggleBtn },
+  components: {
+    MolochSearch,
+    MolochPaging,
+    ToggleBtn,
+    MolochError,
+    MolochLoading,
+    MolochNoResults
+  },
   data: function () {
     return {
       user: null,
@@ -122,7 +183,8 @@ export default {
         stopTime: this.$route.query.stopTime || undefined,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
-        view: this.$route.query.view || undefined
+        view: this.$route.query.view || undefined,
+        expression: this.$route.query.expression || undefined
       },
       colWidths: {},
       colConfigError: '',
@@ -604,11 +666,12 @@ export default {
 </script>
 
 <style scoped>
-.sessions-content {
+.sessions-page {
   margin-top: 36px;
 }
 
 form.sessions-paging {
+  z-index: 1;
   position: fixed;
   top: 110px;
   left: 0;
@@ -617,7 +680,7 @@ form.sessions-paging {
   background-color: var(--color-quaternary-lightest);
 }
 
-.container-fluid {
+.sessions-content {
   padding-top: 115px;
 }
 </style>

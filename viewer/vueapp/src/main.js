@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 // internal deps
 import App from './App';
+import MolochSessionField from './components/sessions/SessionField';
 import HasPermission from './components/utils/HasPermission';
 import interceptorSetup from './interceptors';
 import router from './router';
@@ -32,6 +33,7 @@ Vue.use(BootstrapVue);
 Vue.use(VueMoment, { moment });
 
 Vue.directive('has-permission', HasPermission);
+Vue.component('moloch-session-field', MolochSessionField);
 
 interceptorSetup();
 
