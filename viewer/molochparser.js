@@ -511,6 +511,11 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   }
 
+  // Remove the "http:" from http.uri queries
+  if (field == "http.uri" && value.startsWith("http:")) {
+    value = value.substring(5);
+  }
+
   switch (info.type2 || info.type) {
   case "ip":
     if (value[0] === "/")
