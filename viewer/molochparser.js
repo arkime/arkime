@@ -511,9 +511,20 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   }
 
-  // Remove the "http:" from http.uri queries
-  if (field == "http.uri" && value.startsWith("http:")) {
-    value = value.substring(5);
+  // Remove the "http:", "https:", etc from http.uri queries
+  if (field == "http.uri") {
+    value = value.replace(/^[a-z]+:/i, '');
+  }
+  
+  // Remove everything but the host from host, host.http,
+  // host.dns, etc
+  // E.g. turn host.dns == http://www.site.com/path into
+  //           host.dns == www.site.com
+  if (field.match(/^host/)) {
+    // Remove e.g. "http://"
+    value = value.replace(/^[a-z]+:\/\//i, '');
+    // Remove everything from the first slash onward
+    value = value.replace(/\/.*/, '');
   }
 
   switch (info.type2 || info.type) {
