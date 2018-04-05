@@ -15,6 +15,11 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.0.0 2018/04/05
+  - db - always update stats/dstats indices for now
+  - parliament - fix es drop error msg
+  - tests - make server everything has started before running tests
+
 1.0.0-rc2 2018/03/29
   - viewer - Change default spiDataMaxIndices to 4 everywhere
   - viewer - work around for ES 6 issue https://github.com/elastic/elasticsearch/issues/27740
