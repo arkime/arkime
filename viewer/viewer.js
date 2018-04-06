@@ -154,7 +154,7 @@ app.use(function(req, res, next) {
   return next();
 });
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 //app.use(multer({dest: Config.get("pcapDir")}));
 
 // send req to access log file or stdout
@@ -2964,7 +2964,13 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.get('/buildQuery.json', logAction('query'), function(req, res) {
+app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
+
+  if (req.method === "POST") {
+    req.query = req.body;
+  } else if (req.method !== "GET") {
+    next();
+  }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
