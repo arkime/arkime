@@ -14,7 +14,10 @@
         </span> <!-- /normal parsed value -->
         <!-- time value -->
         <span v-else
-          class="field time-field cursor-pointer">
+          class="field time-field cursor-pointer"
+          title="Click to apply time constraint"
+          v-b-tooltip.hover
+          @click="timeClick(expr, pd.queryVal)">
           <a class="value">
             <span class="all-copy">
               {{ pd.value }}
@@ -51,7 +54,7 @@
 
     <!-- just a value (does not correspond to a field; display it but it's not clickable) -->
     <span v-else>
-      {{ value }}&nbsp;&nbsp;
+      {{ value }}
     </span> <!-- /just a value -->
 
   </span>
@@ -96,7 +99,6 @@ export default {
         let val = result[i].value;
         let qVal = result[i].queryVal;
 
-        // TODO case 'ip': (field.exp === 'ip.dst' || field.exp === 'ip.src') && pd.value.includes(':')
         switch (this.field.type) {
           case 'seconds':
             qVal = val; // save original value as the query value
@@ -135,9 +137,154 @@ export default {
         return result;
       }
     }
+  },
+  methods: {
+    /**
+     * Triggered when a time field is clicked
+     * Updates the vuex store start/stop time in the search bar
+     * @param {string} field The field name ('starttime' || 'stoptime')
+     * @param {string} value The value of the field
+     */
+    timeClick: function (field, value) {
+      value = Math.floor(value / 1000); // seconds not milliseconds
+      if (field === 'starttime') {
+        this.$store.commit('setStartTime', value);
+      } else {
+        this.$store.commit('setStopTime', value);
+      }
+    }
   }
 };
 </script>
 
 <style scoped>
+.detail-field .field {
+  margin: 2px -6px 0 -1px;
+  padding: 2px;
+}
+
+.detail-field .field a {
+  color: var(--color-foreground-accent);
+  word-break: break-word;
+}
+
+.field {
+  cursor: pointer;
+  z-index: 1;
+  display: inline-block;
+  padding: 0 1px;
+  margin: 0 -4px 0 0;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+.field:not(.time-field) {
+  word-break: break-all;
+}
+
+.field a {
+  color: var(--color-foreground-accent);
+  text-decoration: none;
+}
+
+.field a .fa {
+  opacity: 0;
+  visibility: hidden;
+  margin-left: var(--px-xs);
+}
+
+.field.time-field {
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.field:hover {
+  z-index: 4;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-light);
+}
+
+.field:hover a {
+  color: var(--color-black);
+}
+
+/* if a user right clicks a value, highlight the entire value */
+.field a .all-copy {
+  -webkit-user-select: all;
+     -moz-user-select: all;
+      -ms-user-select: all;
+          user-select: all;
+}
+
+.field:hover ul.session-field-dropdown {
+  opacity: 1;
+  visibility: visible;
+}
+
+.field:hover .fa {
+  opacity: 1;
+  visibility: visible;
+}
+
+.field-children:not(:first-child) {
+  margin-top: -3px;
+}
+
+/* custom session field dropdown styles because we can't use the dropdown-menu
+ * class as it is specific to bootstraps dropdown implementation
+ * this class is the same as dropdown-menu, but LESS whitespace */
+ul.session-field-dropdown {
+  opacity: 0;
+  visibility: hidden;
+  max-width: 700px;
+  min-width: 160px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 1.25rem;
+  position: absolute;
+  z-index: 1000;
+  display: block;
+  padding: 5px 0;
+  text-align: left;
+  list-style: none;
+  border-radius: 4px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-light);
+  margin-top: 0;
+
+          background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+
+          box-shadow: 0 6px 12px -3px #333;
+  -webkit-box-shadow: 0 6px 12px -3px #333;
+}
+
+ul.session-field-dropdown.pull-right {
+  right: 0;
+  left: auto;
+}
+ul.session-field-dropdown.pull-left {
+  left: 0;
+  right: auto;
+}
+
+ul.session-field-dropdown div > li > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  padding: 2px 8px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: var(--color-black);
+  white-space: nowrap;
+}
+
+ul.session-field-dropdown div > li > a:hover {
+  text-decoration: none;
+  color: var(--color-black);
+  background-color: var(--color-gray-lighter);
+}
 </style>

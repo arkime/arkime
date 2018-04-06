@@ -2,9 +2,9 @@
 
   <div>
 
-    <!-- http.uri TODO limit -->
+    <!-- http.uri -->
     <div v-if="session['http.uri']">
-      <div v-for="value in session['http.uri']"
+      <div v-for="value in limitArrayLength(session['http.uri'], limit)"
         :key="value">
         <moloch-session-field
           :value="value"
@@ -80,9 +80,9 @@
       </div>
     </div> <!-- /email.src -->
 
-    <!-- dns.host TODO limit -->
+    <!-- dns.host -->
     <div v-if="session['dns.host']">
-      <span v-for="value in session['dns.host']"
+      <span v-for="value in limitArrayLength(session['dns.host'], limit)"
         :key="value">
         <moloch-session-field
           :value="value"
@@ -104,7 +104,7 @@
       </a>
     </div> <!-- /dns.host -->
 
-    <!-- cert TODO limit alt-->
+    <!-- cert -->
     <div v-if="session.cert"
       v-for="(cert, key, index) in session.cert"
       :key="index">
@@ -118,7 +118,7 @@
         </moloch-session-field>
       </span>
       <span v-if="cert.alt">
-        <div v-for="(value, key) in cert.alt"
+        <div v-for="(value, key) in limitArrayLength(cert.alt, limit)"
           :key="key">
           <span v-if="key === 0">[</span>
           <moloch-session-field
@@ -127,7 +127,7 @@
             :expr="'cert.alt'"
             :field="fieldMap['cert.alt']">
           </moloch-session-field>
-          <span v-if="key === cert.alt.length - 1 || (!showAll && key === initialLimit)">
+          <span v-if="key === cert.alt.length - 1 || (!showAll && key === initialLimit - 1)">
             <a class="cursor-pointer"
               style="text-decoration:none;"
               v-if="cert.alt.length > initialLimit"
@@ -198,6 +198,15 @@ export default {
       } else {
         this.limit = 3;
       }
+    },
+    limitArrayLength: function (array, length) {
+      let limitCount = parseInt(length, 10);
+
+      if (limitCount <= 0) {
+        return array;
+      }
+
+      return array.slice(0, limitCount);
     }
   }
 };

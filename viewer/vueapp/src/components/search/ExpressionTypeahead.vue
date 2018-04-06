@@ -72,7 +72,6 @@
 </template>
 
 <script>
-import Store from '../../store';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos';
 import FocusInput from '../utils/FocusInput';
@@ -87,7 +86,7 @@ export default {
   directives: { CaretPos, FocusInput },
   data: function () {
     return {
-      expression: this.$route.query.expression,
+      // expression: this.$route.query.expression,
       activeIdx: -1,
       focusInput: true,
       results: [],
@@ -99,11 +98,20 @@ export default {
       resultsElement: null
     };
   },
+  computed: {
+    expression: {
+      get: function () {
+        return this.$store.state.expression;
+      },
+      set: function (newValue) {
+        this.$store.commit('setExpression', newValue);
+      }
+    }
+  },
   watch: {
     // watch for route update of expression
     '$route.query.expression': function (newVal, oldVal) {
       this.expression = newVal;
-      Store.setExpression(this.expression);
 
       // reset necessary vars
       this.results = null;
@@ -115,8 +123,11 @@ export default {
     }
   },
   created: function () {
-    // save the expression (it could come from the route params)
-    Store.setExpression(this.expression);
+    // set the expression if it is in route params
+    if (this.$route.query.expression) {
+      this.expression = this.$route.query.expression;
+    }
+
     this.getFields();
     // TODO watch for issue search
     // TODO watch for additions to typeahead
@@ -128,8 +139,7 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     clear: function () {
-      this.expression = '';
-      Store.clearExpression();
+      this.expression = undefined;
     },
     /**
      * Fired when a value from the typeahead menu is selected
@@ -141,8 +151,6 @@ export default {
 
       this.expression = this.rebuildQuery(this.expression, str);
 
-      Store.setExpression(this.expression);
-
       this.results = null;
       this.focusInput = true; // re-focus on input
       this.activeIdx = -1;
@@ -153,7 +161,6 @@ export default {
 
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
-        Store.setExpression(this.expression);
         this.changeExpression();
       }, 500);
     },

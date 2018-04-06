@@ -8,7 +8,7 @@
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
       :timezone="settings.timezone"
-      @changeSearch="changeSearch">
+      @changeSearch="loadData">
     </moloch-search>
 
     <form class="sessions-paging">
@@ -36,7 +36,7 @@
           <thead>
             <tr>
               <!-- table options -->
-              <th>
+              <th style="white-space:nowrap;width:85px!important;">
                 &nbsp;
                 <!-- TODO col vis button -->
                 <!-- TODO col save button -->
@@ -61,21 +61,17 @@
                 <td>
                   <toggle-btn @toggle="toggleSessionDetail(session)">
                   </toggle-btn>
-                  <small>
-                    <!-- TODO session field parser -->
-                    <!-- {{ session.ipProtocol }} -->
-                    <moloch-session-field
-                      :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                      :session="session"
-                      :expr="'ipProtocol'"
-                      :value="session.ipProtocol"
-                      :parse="true">
-                    </moloch-session-field>
-                  </small>
+                  <moloch-session-field
+                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                    :session="session"
+                    :expr="'ipProtocol'"
+                    :value="session.ipProtocol"
+                    :parse="true">
+                  </moloch-session-field>
+                  &nbsp;
                 </td>
                 <td v-for="col in headers"
                   :key="col.dbField">
-                  <!-- TODO test array fields -->
                   <span v-if="Array.isArray(session[col.dbField])">
                     <span v-for="value in session[col.dbField]"
                       :key="value + col.dbField">
@@ -88,8 +84,7 @@
                         :timezone="settings.settings.timezone">
                       </moloch-session-field>
                     </span>
-                  </span>
-                  <span v-else>
+                  </span><span v-else>
                     <moloch-session-field
                       :field="col"
                       :session="session"
@@ -174,18 +169,6 @@ export default {
       sessions: {}, // page data
       stickySessions: [],
       settings: {}, // user settings
-      query: { // set query defaults:
-        length: this.$route.query.length || 50, // page length
-        start: 0, // first item index
-        facets: 1,
-        date: this.$route.query.date || 1,
-        startTime: this.$route.query.startTime || undefined,
-        stopTime: this.$route.query.stopTime || undefined,
-        bounding: this.$route.query.bounding || 'last',
-        interval: this.$route.query.interval || 'auto',
-        view: this.$route.query.view || undefined,
-        expression: this.$route.query.expression || undefined
-      },
       colWidths: {},
       colConfigError: '',
       headers: []
@@ -196,6 +179,22 @@ export default {
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
     // TODO LISTEN for add to search, change time, and window resize
+  },
+  computed: {
+    query: function () {
+      return { // query defaults
+        length: this.$route.query.length || 50, // page length
+        start: 0, // first item index
+        facets: 1,
+        date: this.$store.state.timeRange,
+        startTime: this.$store.state.startTime,
+        stopTime: this.$store.state.stopTime,
+        bounding: this.$route.query.bounding || 'last',
+        interval: this.$route.query.interval || 'auto',
+        view: this.$route.query.view || undefined,
+        expression: this.$route.query.expression || undefined
+      };
+    }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -497,6 +496,7 @@ export default {
           // if (!colResizeInitialized) { this.initializeColResizable(); }
         })
         .catch((error) => {
+          this.sessions.data = undefined;
           this.error = error;
           this.loading = false;
           // this.reloadTable(); // sets loading to false
@@ -618,35 +618,6 @@ export default {
     },
     /* event handlers ------------------------------------------------------ */
     /**
-     * fired when search parameters change (from search/Search)
-     * update startTime, stopTime, date, bounding, interval, view, and expression
-     * then load data to update the table with new results
-     */
-    changeSearch: function (args) {
-      // either (startTime && stopTime) || date
-      if (args.startTime && args.stopTime) {
-        this.query.startTime = args.startTime;
-        this.query.stopTime = args.stopTime;
-        this.query.date = undefined;
-      } else if (args.date) {
-        this.query.date = args.date;
-        this.query.stopTime = undefined;
-        this.query.startTime = undefined;
-      }
-
-      if (args.bounding) { this.query.bounding = args.bounding; }
-      if (args.interval) { this.query.interval = args.interval; }
-
-      this.query.view = args.view;
-      this.query.expression = args.expression;
-
-      // reset to the first page, because we are issuing a new query
-      // and there may only be 1 page of results
-      this.query.start = 0;
-
-      this.loadData(true);
-    },
-    /**
      * fired when paging changes (from utils/Pagination)
      * update start and length, then get data if one has changed
      */
@@ -666,12 +637,13 @@ export default {
 </script>
 
 <style scoped>
+/* sessions page, navbar, and content styles - */
 .sessions-page {
   margin-top: 36px;
 }
 
 form.sessions-paging {
-  z-index: 1;
+  z-index: 2;
   position: fixed;
   top: 110px;
   left: 0;
@@ -682,5 +654,83 @@ form.sessions-paging {
 
 .sessions-content {
   padding-top: 115px;
+}
+
+/* sessions table -------------------------- */
+table.sessions-table {
+  table-layout: fixed;
+  border-top: var(--color-gray-light) solid 1px;
+  margin-bottom: 20px;
+}
+
+table.sessions-table thead tr th {
+  vertical-align: top;
+  border-bottom: 2px solid var(--color-gray);
+  border-right: 1px dotted var(--color-gray);
+}
+table.sessions-table thead tr th:first-child {
+  border-right: none;
+}
+
+table.sessions-table thead tr th:first-child {
+  padding: 0;
+  vertical-align: middle;
+}
+
+table.sessions-table tbody tr:not(.session-detail-row):hover {
+  background-color: var(--color-tertiary-lightest);
+}
+
+table.sessions-table tbody tr:not(.session-detail-row):hover td.active {
+  background-color: var(--color-tertiary-light);
+}
+
+table.sessions-table tbody tr.session-detail-row {
+  background-color: var(--color-quaternary-lightest) !important;
+}
+
+table.sessions-table tbody tr td {
+  padding: 0 2px;
+  line-height: 1.42857143;
+  vertical-align: top;
+}
+
+/*!* table.sessions-table column reorder *!*/
+.JColResizer > tbody > tr > td, .JColResizer > tbody > tr > th {
+  overflow: visible !important; /* show overflow for clickable fields */
+}
+
+/* table column headers -------------------- */
+.moloch-col-header {
+  font-size: .9rem;
+}
+
+.moloch-col-header.active {
+  color: var(--color-foreground-accent);
+}
+
+.moloch-col-header:hover .btn-group {
+  visibility: visible;
+}
+
+.moloch-col-header .btn-group {
+  visibility: hidden;
+  margin-left: -8px;
+}
+
+.moloch-col-header .header-text {
+  display: inline-block;
+  width: calc(100% - 24px);
+}
+
+.moloch-col-header .header-sort {
+  display: inline-block;
+  width: 8px;
+  vertical-align: top;
+}
+
+.moloch-col-header ul.dropdown-menu {
+  max-height: 250px;
+  overflow: auto;
 }
 </style>

@@ -198,7 +198,6 @@
 </template>
 
 <script>
-import Store from '../../store';
 import UserService from '../UserService';
 import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
@@ -253,9 +252,18 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      expression: undefined,
       updateTime: false
     };
+  },
+  computed: {
+    expression: {
+      get: function () {
+        return this.$store.state.expression;
+      },
+      set: function (newValue) {
+        this.$store.commit('setExpression', newValue);
+      }
+    }
   },
   watch: {
     // watch route update of view param
@@ -281,8 +289,6 @@ export default {
       this.messageType = undefined;
     },
     applyExpression: function () {
-      this.expression = Store.state.expression;
-
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -291,7 +297,6 @@ export default {
       });
     },
     changeExpression: function () {
-      this.expression = Store.state.expression;
       this.timeUpdate();
     },
     applyParams: function () {
@@ -408,9 +413,7 @@ export default {
     },
     /* event functions ------------------------------------------- */
     timeChange: function (args) {
-      args.expression = this.expression;
-      args.view = this.view;
-      this.$emit('changeSearch', args);
+      this.$emit('changeSearch');
     }
   }
 };

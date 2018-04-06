@@ -23,14 +23,16 @@ export default {
         if (query.bounding) { params.bounding = query.bounding; }
         if (query.interval) { params.interval = query.interval; }
 
-        if (query.startTime) {
-          params.startTime = (query.startTime) | 0;
-        }
-        if (query.stopTime) {
-          params.stopTime = (query.stopTime) | 0;
-        }
-        if (query.date) {
+        // always send stopTime and startTime unless date is all time (-1)
+        if (parseInt(query.date, 10) === -1) {
           params.date = query.date;
+        } else {
+          if (query.startTime) {
+            params.startTime = query.startTime;
+          }
+          if (query.stopTime) {
+            params.stopTime = query.stopTime;
+          }
         }
 
         let i, len, item;
