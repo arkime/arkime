@@ -1126,6 +1126,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"tcpSessions\": %u, "
         "\"udpSessions\": %u, "
         "\"icmpSessions\": %u, "
+        "\"sctpSessions\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
@@ -1161,6 +1162,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         moloch_session_watch_count(SESSION_TCP),
         moloch_session_watch_count(SESSION_UDP),
         moloch_session_watch_count(SESSION_ICMP),
+        moloch_session_watch_count(SESSION_SCTP),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),

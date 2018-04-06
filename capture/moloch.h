@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 100
+#define MOLOCH_API_VERSION 101
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -253,10 +253,11 @@ typedef struct {
 
 /******************************************************************************/
 
-#define SESSION_TCP  0
-#define SESSION_UDP  1
-#define SESSION_ICMP 2
-#define SESSION_MAX  3
+#define SESSION_TCP   0
+#define SESSION_UDP   1
+#define SESSION_ICMP  2
+#define SESSION_SCTP  3
+#define SESSION_MAX   4
 
 /******************************************************************************/
 /*
@@ -336,7 +337,7 @@ typedef struct moloch_config {
     uint32_t  maxFileTimeM;
     uint32_t  timeouts[SESSION_MAX];
     uint32_t  tcpSaveTimeout;
-    uint32_t  maxStreams;
+    uint32_t  maxStreams[SESSION_MAX];
     uint32_t  maxPackets;
     uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;

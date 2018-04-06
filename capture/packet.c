@@ -510,7 +510,6 @@ LOCAL void *moloch_packet_thread(void *threadp)
                                   ip4->ip_dst.s_addr, udphdr->uh_dport);
             }
             break;
-            break;
         case IPPROTO_ICMP:
             if (packet->v6) {
                 moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
@@ -518,6 +517,16 @@ LOCAL void *moloch_packet_thread(void *threadp)
             } else {
                 moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
                                   ip4->ip_dst.s_addr, 0);
+            }
+            break;
+        case IPPROTO_SCTP:
+            udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
+            if (packet->v6) {
+                moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
+                                   ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+            } else {
+                moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
+                                  ip4->ip_dst.s_addr, udphdr->uh_dport);
             }
             break;
         case IPPROTO_ICMPV6:
@@ -578,6 +587,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 session->port1 = ntohs(udphdr->uh_sport);
                 session->port2 = ntohs(udphdr->uh_dport);
                 break;
+            case IPPROTO_SCTP:
+                session->port1 = ntohs(udphdr->uh_sport);
+                session->port2 = ntohs(udphdr->uh_dport);
             case IPPROTO_ICMP:
                 break;
             }
@@ -601,6 +613,13 @@ LOCAL void *moloch_packet_thread(void *threadp)
         packet->direction = 0;
         switch (session->protocol) {
         case IPPROTO_UDP:
+            udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
+            packet->direction = (dir &&
+                                 session->port1 == ntohs(udphdr->uh_sport) &&
+                                 session->port2 == ntohs(udphdr->uh_dport))?0:1;
+            session->databytes[packet->direction] += (packet->pktlen - 8);
+            break;
+        case IPPROTO_SCTP:
             udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
             packet->direction = (dir &&
                                  session->port1 == ntohs(udphdr->uh_sport) &&
@@ -1089,6 +1108,19 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
         packet->ses = SESSION_UDP;
         break;
+    case IPPROTO_SCTP:
+        if (len < ip_hdr_len + 12) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: too small for sctp hdr %p %d", packet, len);
+#endif
+            return MOLOCH_PACKET_CORRUPT;
+        }
+        udphdr = (struct udphdr *)((char*)ip4 + ip_hdr_len); /* Not really udp, but port in same location */
+
+        moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
+                          ip4->ip_dst.s_addr, udphdr->uh_dport);
+        packet->ses = SESSION_SCTP;
+        break;
     case IPPROTO_ICMP:
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
                           ip4->ip_dst.s_addr, 0);
@@ -1177,6 +1209,17 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
             packet->ses = SESSION_UDP;
             done = 1;
+            break;
+        case IPPROTO_SCTP:
+            if (len < ip_hdr_len + 12) {
+                return MOLOCH_PACKET_CORRUPT;
+            }
+
+            udphdr = (struct udphdr *)(data + ip_hdr_len); /* Not really udp, but port in same location */
+
+            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
+                               ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+            packet->ses = SESSION_SCTP;
             break;
         case IPPROTO_ICMP:
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,

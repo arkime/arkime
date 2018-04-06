@@ -572,7 +572,8 @@ var protocols = {
     tcp:    6,
     udp:    17,
     icmp6:  58,
-    icmpv6: 58
+    icmpv6: 58,
+    sctp:   132,
 };
 
 global.moloch.ipProtocolLookup = function (text) {
