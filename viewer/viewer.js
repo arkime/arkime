@@ -2966,9 +2966,9 @@ function flattenFields(fields) {
 
 app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
 
-  if (req.method == "POST") {
+  if (req.method === "POST") {
     req.query = req.body;
-  } else if (req.method != "GET") {
+  } else if (req.method !== "GET") {
     next();
   }
 
