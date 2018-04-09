@@ -11,8 +11,8 @@ shared:
 #        beta.screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/1.0.0"
-        MOLOCH_FILE_NAME: 1
+        MOLOCH_COPY_BRANCH: "origin/master"
+        MOLOCH_FILE_NAME: "master"
 
 jobs:
     centos-6:

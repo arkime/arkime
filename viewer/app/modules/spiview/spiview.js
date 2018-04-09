@@ -490,7 +490,7 @@
           if (this.categoryObjects.hasOwnProperty(key)) {
             category = this.categoryObjects[key];
           } else { // categorize special protocols that don't match category
-            if (key === 'tcp' || key === 'udp' || key === 'icmp') {
+            if (key === 'tcp' || key === 'udp' || key === 'icmp' || key == 'sctp') {
               category = this.categoryObjects.general;
             } else if (key === 'smtp' || key === 'lmtp') {
               category = this.categoryObjects.email;

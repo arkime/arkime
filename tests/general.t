@@ -1,4 +1,4 @@
-use Test::More tests => 581;
+use Test::More tests => 589;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -159,6 +159,8 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=tcp"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,6]"));
     countTest(5, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,17]"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/sctp-www.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=132"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/sctp-www.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=sctp"));
 # IP:Port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0:50759"));
@@ -240,6 +242,8 @@ my $pwd = "*/pcap";
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols==[socks,tcp]"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols==*cp"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols==/.*ttp/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/sctp-www.pcap&&protocols==tcp"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/sctp-www.pcap&&protocols==sctp"));
 # protocols.cnt tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols.cnt==1"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols.cnt!=1"));

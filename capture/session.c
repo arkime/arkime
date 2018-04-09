@@ -451,10 +451,12 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 uint32_t moloch_session_monitoring()
 {
     uint32_t count = 0;
-    int      i;
+    int      t, s;
 
-    for (i = 0; i < config.packetThreads; i++) {
-        count += HASH_COUNT(h_, sessions[i][SESSION_TCP]) + HASH_COUNT(h_, sessions[i][SESSION_UDP]) + HASH_COUNT(h_, sessions[i][SESSION_ICMP]);
+    for (t = 0; t < config.packetThreads; t++) {
+        for (s = 0; s < config.packetThreads; s++) {
+            count += HASH_COUNT(h_, sessions[t][s]);
+        }
     }
     return count;
 }
@@ -498,7 +500,7 @@ void moloch_session_process_commands(int thread)
         for (count = 0; count < 10; count++) {
             MolochSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
-            if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams ||
+            if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams[ses] ||
                             ((uint64_t)session->lastPacket.tv_sec + config.timeouts[ses] < (uint64_t)lastPacketSecs[thread]))) {
 
                 moloch_session_save(session);
@@ -552,34 +554,42 @@ int moloch_session_idle_seconds(int ses)
 }
 
 /******************************************************************************/
-void moloch_session_init()
+LOCAL uint32_t moloch_get_prime(uint32_t v)
 {
-    uint32_t primes[] = {10007, 49999, 99991, 199799, 400009, 500009, 732209, 1092757, 1299827, 1500007, 1987411, 2999999};
+    static uint32_t primes[] = {10007, 49999, 99991, 199799, 400009, 500009, 732209, 1092757, 1299827, 1500007, 1987411, 2999999, 5000011, 8000009, 11000027, 15485863};
 
     int p;
-    for (p = 0; p < 12; p++) {
-        if (primes[p] >= config.maxStreams/2)
-            break;
+    for (p = 0; p <= 15; p++) {
+        if (primes[p] > v)
+            return primes[p];
     }
-    if (p == 12) p = 11;
-
+    return primes[p-1];
+}
+/******************************************************************************/
+void moloch_session_init()
+{
     protocolField = moloch_field_define("general", "termfield",
         "protocols", "Protocols", "protocol",
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
+    int primes[SESSION_MAX];
+    int s;
+    for (s = 0; s < SESSION_MAX; s++) {
+        primes[s] = moloch_get_prime(config.maxStreams[s]);
+    }
+
     if (config.debug)
-        LOG("session hash size %d", primes[p]);
+        LOG("session hash size %d %d %d %d", primes[SESSION_ICMP], primes[SESSION_UDP], primes[SESSION_TCP], primes[SESSION_SCTP]);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {
-        HASHP_INIT(h_, sessions[t][SESSION_UDP], primes[p], moloch_session_hash, moloch_session_cmp);
-        HASHP_INIT(h_, sessions[t][SESSION_TCP], primes[p], moloch_session_hash, moloch_session_cmp);
-        HASHP_INIT(h_, sessions[t][SESSION_ICMP], primes[p], moloch_session_hash, moloch_session_cmp);
-        DLL_INIT(q_, &sessionsQ[t][SESSION_UDP]);
-        DLL_INIT(q_, &sessionsQ[t][SESSION_TCP]);
-        DLL_INIT(q_, &sessionsQ[t][SESSION_ICMP]);
+        for (s = 0; s < SESSION_MAX; s++) {
+            HASHP_INIT(h_, sessions[t][s], primes[s], moloch_session_hash, moloch_session_cmp);
+            DLL_INIT(q_, &sessionsQ[t][s]);
+        }
+
         DLL_INIT(tcp_, &tcpWriteQ[t]);
         DLL_INIT(q_, &closingQ[t]);
         DLL_INIT(cmd_, &sessionCmds[t]);
@@ -618,21 +628,22 @@ void moloch_session_flush()
 /******************************************************************************/
 void moloch_session_exit()
 {
-    int counts[SESSION_MAX] = {0, 0, 0};
+    int counts[SESSION_MAX] = {0, 0, 0, 0};
 
-    int t;
+    int t, s;
 
     for (t = 0; t < config.packetThreads; t++) {
-        counts[SESSION_TCP] += sessionsQ[t][SESSION_TCP].q_count;
-        counts[SESSION_UDP] += sessionsQ[t][SESSION_UDP].q_count;
-        counts[SESSION_ICMP] += sessionsQ[t][SESSION_ICMP].q_count;
+        for (s = 0; s < SESSION_MAX; s++) {
+            counts[s] += sessionsQ[t][s].q_count;
+        }
     }
 
-    LOG("sessions: %d tcp: %d udp: %d icmp: %d",
+    LOG("sessions: %d tcp: %d udp: %d icmp: %d sctp: %d",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],
-            counts[SESSION_ICMP]);
+            counts[SESSION_ICMP],
+            counts[SESSION_SCTP]);
 
     moloch_session_flush();
 }

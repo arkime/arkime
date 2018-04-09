@@ -154,7 +154,7 @@ app.use(function(req, res, next) {
   return next();
 });
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 //app.use(multer({dest: Config.get("pcapDir")}));
 
 // send req to access log file or stdout
@@ -2706,7 +2706,7 @@ app.get('/stats.json', function(req, res) {
       fields.id        = stats.hits.hits[i]._id;
 
       for (const key of ["totalPackets", "totalK", "totalSessions",
-       "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
+       "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions",
        "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
        "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
        "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
@@ -2964,7 +2964,13 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.get('/buildQuery.json', logAction('query'), function(req, res) {
+app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
+
+  if (req.method === "POST") {
+    req.query = req.body;
+  } else if (req.method !== "GET") {
+    next();
+  }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
@@ -3876,6 +3882,10 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
       Pcap.reassemble_udp(packets, numPackets, function(err, results) {
         return doneCb(err, session, results);
       });
+    } else if (packets[0].ip.p === 132) {
+      Pcap.reassemble_sctp(packets, numPackets, function(err, results) {
+        return doneCb(err, session, results);
+      });
     } else {
       return doneCb(null, session, []);
     }
@@ -4121,6 +4131,11 @@ function localSessionDetail(req, res) {
       });
     } else if (packets[0].ip.p === 17) {
       Pcap.reassemble_udp(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets[0].ip.p === 132) {
+      Pcap.reassemble_sctp(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });

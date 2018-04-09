@@ -1,0 +1,356 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS9270 National Infomation Society Agency",
+            "dstBytes" : 22472,
+            "dstDataBytes" : 22296,
+            "dstGEO" : "KR",
+            "dstIp" : "203.255.252.194",
+            "dstMac" : [
+               "00:04:96:08:e0:40"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Extreme Networks, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 22,
+            "dstPort" : 80,
+            "dstRIR" : "APNIC",
+            "fileId" : [],
+            "firstPacket" : 1137034844756,
+            "ipProtocol" : 132,
+            "lastPacket" : 1137034859213,
+            "length" : 14458,
+            "node" : "test",
+            "packetLen" : [
+               122,
+               294,
+               258,
+               76,
+               482,
+               78,
+               382,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               406,
+               78,
+               78,
+               78,
+               78,
+               466,
+               382,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1422,
+               78,
+               78,
+               78,
+               78,
+               78,
+               70,
+               76,
+               66
+            ],
+            "packetPos" : [
+               24,
+               146,
+               440,
+               698,
+               774,
+               1256,
+               1334,
+               1716,
+               1794,
+               3304,
+               4814,
+               4892,
+               6402,
+               7912,
+               7990,
+               9500,
+               9906,
+               9984,
+               10062,
+               10140,
+               10218,
+               10684,
+               12942,
+               14452,
+               14530,
+               16040,
+               17550,
+               17628,
+               25334,
+               26844,
+               26922,
+               28432,
+               29942,
+               30020,
+               31530,
+               32952,
+               42324,
+               42402,
+               42480,
+               48246,
+               48638,
+               48850,
+               48926
+            ],
+            "protocol" : [
+               "sctp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS10052 Kyungpook National University",
+            "srcBytes" : 2298,
+            "srcDataBytes" : 2130,
+            "srcGEO" : "KR",
+            "srcIp" : "155.230.24.155",
+            "srcMac" : [
+               "00:0e:2e:24:37:5f"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Edimax Technology Co. Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 21,
+            "srcPort" : 32836,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 24770,
+            "totDataBytes" : 24426,
+            "totPackets" : 43
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060112",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS9270 National Infomation Society Agency",
+            "dstBytes" : 20770,
+            "dstDataBytes" : 20618,
+            "dstGEO" : "KR",
+            "dstIp" : "203.255.252.194",
+            "dstMac" : [
+               "00:04:96:08:e0:40"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Extreme Networks, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 19,
+            "dstPort" : 80,
+            "dstRIR" : "APNIC",
+            "fileId" : [],
+            "firstPacket" : 1137034844891,
+            "ipProtocol" : 132,
+            "lastPacket" : 1137034859213,
+            "length" : 14322,
+            "node" : "test",
+            "packetLen" : [
+               122,
+               294,
+               258,
+               76,
+               462,
+               78,
+               386,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               1510,
+               78,
+               1510,
+               710,
+               78,
+               1510,
+               1334,
+               78,
+               78,
+               78,
+               78,
+               78,
+               78,
+               78,
+               70,
+               76,
+               66
+            ],
+            "packetPos" : [
+               11066,
+               11188,
+               11482,
+               11740,
+               11816,
+               12278,
+               12356,
+               12742,
+               19138,
+               20648,
+               22158,
+               22236,
+               23746,
+               25256,
+               33030,
+               34540,
+               36050,
+               36128,
+               37638,
+               39148,
+               39226,
+               40736,
+               42246,
+               42558,
+               44068,
+               44778,
+               44856,
+               46366,
+               47700,
+               47778,
+               47856,
+               47934,
+               48012,
+               48090,
+               48168,
+               48568,
+               48708,
+               48784
+            ],
+            "protocol" : [
+               "sctp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS10052 Kyungpook National University",
+            "srcBytes" : 1766,
+            "srcDataBytes" : 1614,
+            "srcGEO" : "KR",
+            "srcIp" : "155.230.24.155",
+            "srcMac" : [
+               "00:0e:2e:24:37:5f"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Edimax Technology Co. Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 19,
+            "srcPort" : 32837,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 22536,
+            "totDataBytes" : 22232,
+            "totPackets" : 38
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060112",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS4766 Korea Telecom",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "KR",
+            "dstIp" : "222.96.156.151",
+            "dstMac" : [
+               "00:04:96:08:e0:40"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Extreme Networks, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "dstRIR" : "APNIC",
+            "fileId" : [],
+            "firstPacket" : 1137034844900,
+            "ipProtocol" : 132,
+            "lastPacket" : 1137034853900,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               122,
+               122,
+               122
+            ],
+            "packetPos" : [
+               12820,
+               48324,
+               48446
+            ],
+            "protocol" : [
+               "sctp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS10052 Kyungpook National University",
+            "srcBytes" : 318,
+            "srcDataBytes" : 294,
+            "srcGEO" : "KR",
+            "srcIp" : "155.230.24.155",
+            "srcMac" : [
+               "00:0e:2e:24:37:5f"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Edimax Technology Co. Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPort" : 32838,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 318,
+            "totDataBytes" : 294,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060112",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

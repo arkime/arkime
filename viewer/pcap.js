@@ -36,7 +36,8 @@ var internals = {
     6:  "tcp",
     17: "udp",
     47: "gre",
-    58: "icmpv6"
+    58: "icmpv6",
+    132: "sctp"
   },
   pcaps: {}
 };
@@ -266,6 +267,10 @@ Pcap.prototype.scrubPacket = function(packet, pos, buf, entire) {
       pos += (packet.udp._pos + 8);
       len -= (packet.udp._pos + 8);
       break;
+    case 132:
+      pos += (packet.sctp._pos + 8);
+      len -= (packet.sctp._pos + 8);
+      break;
     default:
       throw "Unknown packet type, can't scrub";
     }
@@ -353,6 +358,17 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   obj.udp.data = buffer.slice(8);
 };
 
+Pcap.prototype.sctp = function (buffer, obj, pos) {
+  obj.sctp = {
+    _pos:       pos,
+    length:     buffer.length,
+    sport:      buffer.readUInt16BE(0),
+    dport:      buffer.readUInt16BE(2),
+  };
+
+  obj.sctp.data = buffer.slice(12);
+};
+
 Pcap.prototype.gre = function (buffer, obj, pos) {
   obj.gre = {
     flags_version: buffer.readUInt16BE(0),
@@ -418,6 +434,9 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
   case 47:
     this.gre(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
+  case 132:
+    this.sctp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
+    break;
   default:
     console.log("Unknown ip.p", obj);
   }
@@ -454,6 +473,9 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
       return;
     case 17:
       this.udp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
+    case 132:
+      this.sctp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     default:
       console.log("Unknown ip.p", obj);
@@ -649,6 +671,32 @@ exports.reassemble_udp = function (packets, numPackets, cb) {
       var newBuf = Buffer.alloc(results[results.length-1].data.length + item.udp.data.length);
       results[results.length-1].data.copy(newBuf);
       item.udp.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
+  } catch (e) {
+    cb(e, results);
+  }
+};
+
+exports.reassemble_sctp = function (packets, numPackets, cb) {
+  try {
+  var results = [];
+  packets.length = Math.min(packets.length, numPackets);
+  packets.forEach((item) => {
+    var key = item.ip.addr1 + ':' + item.sctp.sport;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.sctp.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+      };
+      results.push(result);
+    } else {
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.sctp.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.sctp.data.copy(newBuf, results[results.length-1].data.length);
       results[results.length-1].data = newBuf;
     }
   });
