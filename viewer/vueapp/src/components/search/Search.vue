@@ -47,8 +47,13 @@
       <b-dropdown right
         size="sm"
         class="pull-right ml-1"
-        text="Views "
+        no-caret
         variant="theme-secondary">
+        <template slot="button-content">
+          <span class="fa fa-eye"></span>
+          <span v-if="view">{{ view }}</span>
+          <span class="sr-only">Views</span>
+        </template>
         <b-dropdown-item @click="createView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View

@@ -25,6 +25,23 @@ const store = new Vuex.Store({
     setExpression (state, value) {
       this.state.expression = value;
     },
+    addToExpression (state, value) {
+      let newExpr = '';
+
+      if (!this.state.expression) { this.state.expression = ''; }
+
+      if (this.state.expression && this.state.expression !== '') {
+        if (this.state.expression[this.state.expression.length - 1] !== ' ') {
+          // if last char is not a space, add it
+          newExpr += ' ';
+        }
+        newExpr += (value.op || '&&') + ' ';
+      }
+
+      newExpr += value.expression;
+
+      this.state.expression += newExpr;
+    },
     clearExpression (state) {
       this.state.expression = undefined;
     }

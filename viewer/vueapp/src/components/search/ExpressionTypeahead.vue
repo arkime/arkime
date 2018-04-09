@@ -86,7 +86,6 @@ export default {
   directives: { CaretPos, FocusInput },
   data: function () {
     return {
-      // expression: this.$route.query.expression,
       activeIdx: -1,
       focusInput: true,
       results: [],

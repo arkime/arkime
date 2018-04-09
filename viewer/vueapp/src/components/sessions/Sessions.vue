@@ -84,7 +84,8 @@
                         :timezone="settings.settings.timezone">
                       </moloch-session-field>
                     </span>
-                  </span><span v-else>
+                  </span>
+                  <span v-else>
                     <moloch-session-field
                       :field="col"
                       :session="session"
