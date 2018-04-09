@@ -17,6 +17,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.0.1 2018/04/XX
   - all - basic sctp capturing, no decoding (issue #828)
+  - all - intial unencrypted 802.11 Data Frame support (issue #834)
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now

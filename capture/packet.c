@@ -1439,6 +1439,36 @@ LOCAL int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * cons
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
+LOCAL int moloch_packet_radiotap(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (data[0] != 0 || len < 36)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    int hl = packet->pkt[2];
+    if (hl + 24 + 8 >= len)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    if (data[hl] != 8)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    hl += 24 + 3;
+
+    if (data[hl] != 0 || data[hl+1] != 0 || data[hl+2] != 0)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    hl += 3;
+
+    if (data[hl] == 0x08 && data[hl+1] == 0x00) {
+        hl += 2;
+        return moloch_packet_ip4(batch, packet, data+hl, len - hl);
+    }
+    if (data[hl] == 0x86 && data[hl+1] == 0xdd) {
+        hl += 2;
+        return moloch_packet_ip6(batch, packet, data+hl, len - hl);
+    }
+    return MOLOCH_PACKET_UNKNOWN;
+}
+/******************************************************************************/
 void moloch_packet_batch_init(MolochPacketBatch_t *batch)
 {
     int t;
@@ -1495,6 +1525,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case 127: // radiotap
+        rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 239: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
