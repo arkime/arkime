@@ -59,7 +59,7 @@ LOCAL  MOLOCH_LOCK_DEFINE(freeOutputBufs);
 LOCAL  uint32_t              outputId;
 LOCAL  char                 *outputFileName;
 LOCAL  uint64_t              outputFilePos = 0;
-LOCAL  struct timeval        outputFileTime;
+LOCAL  struct timespec       outputFileTime;
 
 #define MOLOCH_WRITE_NORMAL 0x00
 #define MOLOCH_WRITE_DIRECT 0x01
@@ -335,7 +335,7 @@ LOCAL void writer_disk_create(MolochPacket_t * const packet)
     output->max = config.pcapWriteSize;
     writer_disk_alloc_buf(output);
     output->pos = 24;
-    gettimeofday(&outputFileTime, 0);
+    clock_gettime(CLOCK_REALTIME_COARSE, &outputFileTime);
 
     output->fileId = outputId;
     memcpy(output->buf, &pcapFileHeader, 24);
@@ -386,10 +386,10 @@ LOCAL void writer_disk_write(const MolochSession_t * const UNUSED(session), Molo
 /******************************************************************************/
 LOCAL gboolean writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
 {
-    static struct timeval tv;
-    gettimeofday(&tv, 0);
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
-    if (outputFileName && outputFilePos > 24 && (tv.tv_sec - outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+    if (outputFileName && outputFilePos > 24 && (ts.tv_sec - outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
         writer_disk_flush(TRUE);
         outputFileName = 0;
     }

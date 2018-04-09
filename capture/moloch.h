@@ -251,6 +251,10 @@ typedef struct {
 #define LOCAL static
 #endif
 
+#ifndef CLOCK_REALTIME_COARSE
+#define CLOCK_REALTIME_COARSE CLOCK_REALTIME
+#endif
+
 /******************************************************************************/
 
 #define SESSION_TCP   0
@@ -720,6 +724,17 @@ void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
 
 /******************************************************************************/
 /*
+ * drophash.c
+ */
+
+typedef struct molochdrophash_t MolochDropHash_t;
+MolochDropHash_t *moloch_drophash_init (int num, char isIp4);
+int moloch_drophash_add (MolochDropHash_t *hash, const void *key, uint32_t value);
+uint32_t moloch_drophash_get (MolochDropHash_t *hash, void *key);
+void moloch_drophash_delete (MolochDropHash_t *hash, void *key);
+
+/******************************************************************************/
+/*
  * parsers.c
  */
 typedef struct {
@@ -874,6 +889,7 @@ void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
 
 void     moloch_packet_set_linksnap(int linktype, int snaplen);
+void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 
 /******************************************************************************/
