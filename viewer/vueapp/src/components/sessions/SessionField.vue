@@ -145,11 +145,10 @@
 <script>
 import ConfigService from '../utils/ConfigService';
 import MolochSessionInfo from './SessionInfo';
-import MolochSessionFieldMenu from './SessionFieldMenu';
 
 export default {
   name: 'MolochSessionField',
-  components: { MolochSessionInfo, MolochSessionFieldMenu },
+  components: { MolochSessionInfo },
   props: [
     'field', // the field object that describes the field
     'expr', // the query expression to be put in the search expression
