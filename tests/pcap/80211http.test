@@ -1,0 +1,239 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS4816 China Telecom (Group)",
+            "dstBytes" : 5069,
+            "dstDataBytes" : 3945,
+            "dstGEO" : "CN",
+            "dstIp" : "14.17.32.211",
+            "dstPackets" : 9,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "dstRIR" : "APNIC",
+            "fileId" : [],
+            "firstPacket" : 1523241953739,
+            "http" : {
+               "bodyMagic" : [
+                  "application/x-gzip",
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 2,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "cookieKey" : [
+                  "pgv_pvid",
+                  "fontsize",
+                  "_ga",
+                  "pac_uid"
+               ],
+               "cookieKeyCnt" : 4,
+               "cookieValue" : [
+                  "9816415136",
+                  "GA1.2.1343945816.1520241679",
+                  "size_n",
+                  "0_5a9d0be2ebd90"
+               ],
+               "cookieValueCnt" : 4,
+               "host" : [
+                  "qq.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "a4a7b8b5eaf4c2cf356b1052133c6cdb",
+                  "c90e0392fdda6b9091a886229c14bf66",
+                  "1546e06a87abc6e183260c970e0c3a46",
+                  "1f7b84b70902489a0eb663ce31b8c58a"
+               ],
+               "md5Cnt" : 4,
+               "method" : [
+                  "POST",
+                  "GET"
+               ],
+               "methodCnt" : 2,
+               "path" : [
+                  "/favicon.ico",
+                  "/post.php",
+                  "/static/images/banner.jpg",
+                  "/static/css/index.css",
+                  "/static/css/base.css",
+                  "/"
+               ],
+               "pathCnt" : 6,
+               "request-referer" : [
+                  "http://qq.com/static/css/index.css",
+                  "http://qq.com/"
+               ],
+               "request-refererCnt" : 2,
+               "requestBody" : [
+                  "Username=Qggh&Passwd=Bhhhh&Section=Auuu",
+                  "Username=Q&Passwd=B&Section=A"
+               ],
+               "requestHeader" : [
+                  "origin",
+                  "content-type",
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "cache-control",
+                  "accept-encoding",
+                  "content-length",
+                  "if-none-match",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "if-modified-since",
+                  "upgrade-insecure-requests",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 15,
+               "responseHeader" : [
+                  "content-type",
+                  "transfer-encoding",
+                  "content-length",
+                  "etag",
+                  "date",
+                  "content-encoding",
+                  "last-modified",
+                  "connection",
+                  "server"
+               ],
+               "responseHeaderCnt" : 9,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec",
+                  "7877f668f7e4d55d477a74b3c28b1356edba16c99c0891d95286f31436f6101d",
+                  "cf99a90815d23b4706f8ab84be471da819091ada6c659144af0fbe471049cf06",
+                  "fd2e303330f2cf92a9a4b32425eb42b199ebf9b4604f69f467835a4a271b0fcd"
+               ],
+               "sha256Cnt" : 4,
+               "statuscode" : [
+                  304,
+                  200,
+                  405
+               ],
+               "statuscodeCnt" : 3,
+               "uri" : [
+                  "qq.com/static/images/banner.jpg",
+                  "qq.com/static/css/base.css",
+                  "qq.com/favicon.ico",
+                  "qq.com/post.php",
+                  "qq.com/",
+                  "qq.com/static/css/index.css"
+               ],
+               "uriCnt" : 6,
+               "useragent" : [
+                  "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5 Build/M4B30Z) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.133 Mobile Safari/537.36"
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1523241984047,
+            "length" : 30309,
+            "node" : "test",
+            "packetLen" : [
+               148,
+               148,
+               140,
+               720,
+               140,
+               1109,
+               140,
+               676,
+               321,
+               676,
+               320,
+               140,
+               704,
+               704,
+               322,
+               140,
+               140,
+               655,
+               1109,
+               140,
+               811,
+               872,
+               140,
+               821,
+               872,
+               140
+            ],
+            "packetPos" : [
+               24,
+               172,
+               320,
+               460,
+               1180,
+               1320,
+               2429,
+               2569,
+               3245,
+               3566,
+               4242,
+               4562,
+               4702,
+               5406,
+               6110,
+               6432,
+               6572,
+               6712,
+               7367,
+               8476,
+               8616,
+               9427,
+               10299,
+               10439,
+               11260,
+               12132
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS7018 AT&T Services, Inc.",
+            "srcBytes" : 6763,
+            "srcDataBytes" : 4083,
+            "srcGEO" : "US",
+            "srcIp" : "172.5.5.113",
+            "srcPackets" : 17,
+            "srcPayload8" : "474554202f204854",
+            "srcPort" : 49417,
+            "srcRIR" : "ARIN",
+            "tags" : [
+               "http:password"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 9,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 15,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 11832,
+            "totDataBytes" : 8028,
+            "totPackets" : 26
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-180409",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -29,6 +29,7 @@ mpls-basic.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do
 wireshark-dhcp.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=dhcp.pcap
 CVE-2018-6794.pcap - https://redmine.openinfosecfoundation.org/issues/2427
 sctp-www.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=sctp-www.cap
+80211http.pcap - Subset of https://github.com/aol/moloch/issues/834
 
 
 2) Viewer

@@ -2093,7 +2093,7 @@ void moloch_db_exit()
     }
 
     if (config.tests) {
-        fprintf(stderr, "], \"tags\": {}}\n");
+        fprintf(stderr, "]}\n");
     }
 
     if (ipTree4) {

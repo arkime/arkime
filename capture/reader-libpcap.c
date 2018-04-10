@@ -177,9 +177,9 @@ void reader_libpcap_init(char *UNUSED(name))
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
 
 #ifdef SNF
-        pcaps[i] = pcap_open_live(config.interface[i], config.snapLen, 1, 0, errbuf);
+        pcaps[i] = pcap_open_live(config.interface[i], config.snapLen, 1, 1000, errbuf);
 #else
-        pcaps[i] = reader_libpcap_open_live(config.interface[i], config.snapLen, 1, 0, errbuf);
+        pcaps[i] = reader_libpcap_open_live(config.interface[i], config.snapLen, 1, 1000, errbuf);
 #endif
 
         if (!pcaps[i]) {

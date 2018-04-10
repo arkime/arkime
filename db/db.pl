@@ -59,6 +59,7 @@ my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
 my $HISTORY = 13;
+my $SEGMENTS = 4;
 my $NOOPTIMIZE = 0;
 
 ################################################################################
@@ -95,6 +96,7 @@ sub showHelp($)
     print "  users-export <fn>            - Save the users info to <fn>\n";
     print "  users-import <fn>            - Load the users info from <fn>\n";
     print "  optimize                     - Optimize all indices in ES\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
     print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
     print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
     print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
@@ -106,7 +108,8 @@ sub showHelp($)
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
-    print "    --history <num>            - Number of weeks of history to keep, by default 13\n";
+    print "    --history <num>            - Number of weeks of history to keep, default 13\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
     print "  field disable <exp>          - disable a field from being indexed\n";
     print "  field enable <exp>           - enable a field from being indexed\n";
     exit 1;
@@ -1486,6 +1489,9 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--history") {
             $pos++;
             $HISTORY = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--segments") {
+            $pos++;
+            $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
 	    $NOOPTIMIZE = 1;
         } else {
@@ -1591,7 +1597,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esPost("/$i/_forcemerge?max_num_segments=4", "", 1) unless $NOOPTIMIZE ;
+            esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esGet("/$i/_flush", 1);
                 esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
@@ -1640,7 +1646,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
-        esPost("/$i/_forcemerge?max_num_segments=4", "", 1);
+        esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1);
         esPost("/$i/_upgrade", "", 1);
     }
     esPost("/_flush/synced", "", 1);

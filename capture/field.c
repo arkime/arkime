@@ -22,15 +22,15 @@
 
 extern MolochConfig_t        config;
 
-HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 13);
-HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
+HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 307);
+HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
 
 #define MOLOCH_FIELD_SPECIAL_NOT_FOUND  -1
 #define MOLOCH_FIELD_SPECIAL_STOP_SPI   -2
 #define MOLOCH_FIELD_SPECIAL_STOP_PCAP  -3
 #define MOLOCH_FIELD_SPECIAL_MIN_SAVE   -4
-
-#define MOLOCH_FIELD_EXSPECIAL_START    (MOLOCH_FIELDS_MAX-4)
+#define MOLOCH_FIELD_SPECIAL_DROP_SRC   -5
+#define MOLOCH_FIELD_SPECIAL_DROP_DST   -6
 
 LOCAL va_list empty_va_list;
 
@@ -1145,6 +1145,12 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
                 session->minSaving = op->strLenOrInt;
                 break;
+            case MOLOCH_FIELD_SPECIAL_DROP_SRC:
+                moloch_packet_drophash_add(session, 0, op->strLenOrInt);
+                break;
+            case MOLOCH_FIELD_SPECIAL_DROP_DST:
+                moloch_packet_drophash_add(session, 1, op->strLenOrInt);
+                break;
             }
             continue;
         }
@@ -1227,6 +1233,8 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_SPECIAL_STOP_SPI:
         case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
         case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
+        case MOLOCH_FIELD_SPECIAL_DROP_SRC:
+        case MOLOCH_FIELD_SPECIAL_DROP_DST:
             op->strLenOrInt = atoi(value);
             op->str = 0;
             break;
@@ -1282,6 +1290,8 @@ void moloch_field_init()
     moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
     moloch_field_by_exp_add_special("_maxPacketsToSave", MOLOCH_FIELD_SPECIAL_STOP_PCAP);
     moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
+    moloch_field_by_exp_add_special("_dropBySrc", MOLOCH_FIELD_SPECIAL_DROP_SRC);
+    moloch_field_by_exp_add_special("_dropByDst", MOLOCH_FIELD_SPECIAL_DROP_DST);
 
     moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
     moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);

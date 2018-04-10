@@ -60,7 +60,8 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 #define MOLOCH_PACKET_OVERLOAD_DROPPED 2
 #define MOLOCH_PACKET_CORRUPT          3
 #define MOLOCH_PACKET_UNKNOWN          4
-#define MOLOCH_PACKET_MAX              5
+#define MOLOCH_PACKET_IPPORT_DROPPED   5
+#define MOLOCH_PACKET_MAX              6
 
 LOCAL uint64_t               packetStats[MOLOCH_PACKET_MAX];
 
@@ -97,6 +98,10 @@ typedef HASH_VAR(h_, MolochFragsHash_t, MolochFragsHead_t, 199337);
 
 MolochFragsHash_t          fragsHash;
 MolochFragsHead_t          fragsList;
+
+// These are in network byte order
+MolochDropHash_t          *packetDrop4[0x10000];
+MolochDropHash_t          *packetDrop6[0x10000];
 
 /******************************************************************************/
 LOCAL void moloch_packet_free(MolochPacket_t *packet)
@@ -460,11 +465,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
         MOLOCH_LOCK(packetQ[thread].lock);
         inProgress[thread] = 0;
         if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
-            struct timeval tv;
             struct timespec ts;
-            gettimeofday(&tv, NULL);
-            ts.tv_sec = tv.tv_sec + 1;
-            ts.tv_nsec = 0;
+            clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+            ts.tv_sec++;
             MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
         }
         inProgress[thread] = 1;
@@ -1090,9 +1093,31 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         }
 
         tcphdr = (struct tcphdr *)((char*)ip4 + ip_hdr_len);
+
+        if (packetDrop4[tcphdr->th_sport]) {
+            uint32_t end = moloch_drophash_get(packetDrop4[tcphdr->th_sport], &ip4->ip_src.s_addr);
+            if (end) {
+                if (end > packet->ts.tv_sec)
+                    return MOLOCH_PACKET_IPPORT_DROPPED;
+                else
+                    moloch_drophash_delete(packetDrop4[tcphdr->th_sport], &ip4->ip_src.s_addr);
+            }
+        }
+
+        if (packetDrop4[tcphdr->th_dport]) {
+            uint32_t end = moloch_drophash_get(packetDrop4[tcphdr->th_dport], &ip4->ip_dst.s_addr);
+            if (end) {
+                if (end > packet->ts.tv_sec) {
+                    return MOLOCH_PACKET_IPPORT_DROPPED;
+                } else
+                    moloch_drophash_delete(packetDrop4[tcphdr->th_dport], &ip4->ip_src.s_addr);
+            }
+        }
+
         moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->ses = SESSION_TCP;
+
         break;
     case IPPROTO_UDP:
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
@@ -1414,6 +1439,36 @@ LOCAL int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * cons
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
+LOCAL int moloch_packet_radiotap(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (data[0] != 0 || len < 36)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    int hl = packet->pkt[2];
+    if (hl + 24 + 8 >= len)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    if (data[hl] != 8)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    hl += 24 + 3;
+
+    if (data[hl] != 0 || data[hl+1] != 0 || data[hl+2] != 0)
+        return MOLOCH_PACKET_UNKNOWN;
+
+    hl += 3;
+
+    if (data[hl] == 0x08 && data[hl+1] == 0x00) {
+        hl += 2;
+        return moloch_packet_ip4(batch, packet, data+hl, len - hl);
+    }
+    if (data[hl] == 0x86 && data[hl+1] == 0xdd) {
+        hl += 2;
+        return moloch_packet_ip6(batch, packet, data+hl, len - hl);
+    }
+    return MOLOCH_PACKET_UNKNOWN;
+}
+/******************************************************************************/
 void moloch_packet_batch_init(MolochPacketBatch_t *batch)
 {
     int t;
@@ -1470,6 +1525,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case 127: // radiotap
+        rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 239: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
@@ -1695,6 +1753,67 @@ void moloch_packet_set_linksnap(int linktype, int snaplen)
     pcapFileHeader.linktype = linktype;
     pcapFileHeader.snaplen = snaplen;
     moloch_rules_recompile();
+}
+/******************************************************************************/
+LOCAL void moloch_packet_drophash_make(int v4, int port)
+{
+    static MOLOCH_LOCK_DEFINE(dropHash);
+    int size;
+
+    switch (port) {
+    case 80:
+    case 443:
+    case 25:
+        size = 7919;
+        break;
+    default:
+        size = 409;
+        break;
+    }
+
+    MOLOCH_LOCK(dropHash);
+    if (v4) {
+        if (packetDrop4[port])
+            goto done;
+        packetDrop4[port] = moloch_drophash_init(size, v4);
+    } else {
+        if (packetDrop6[port])
+            goto done;
+        packetDrop6[port] = moloch_drophash_init(size, v4);
+    }
+done:
+    MOLOCH_UNLOCK(dropHash);
+}
+/******************************************************************************/
+void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)
+{
+    if (session->ses != SESSION_TCP)
+        return;
+
+    // packetDrop is kept in network byte order
+    const int port = (which == 0)?htons(session->port1):htons(session->port2);
+
+    if (MOLOCH_SESSION_v6(session)) {
+        if (which == 0) {
+            if (!packetDrop6[port])
+                moloch_packet_drophash_make(0, port);
+            moloch_drophash_add(packetDrop6[port], (void*)&session->addr1, session->lastPacket.tv_sec + min*60);
+        } else {
+            if (!packetDrop6[port])
+                moloch_packet_drophash_make(0, port);
+            moloch_drophash_add(packetDrop6[port], (void*)&session->addr2, session->lastPacket.tv_sec + min*60);
+        }
+    } else {
+        if (which == 0) {
+            if (!packetDrop4[port])
+                moloch_packet_drophash_make(1, port);
+            moloch_drophash_add(packetDrop4[port], &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec + min*60);
+        } else {
+            if (!packetDrop4[port])
+                moloch_packet_drophash_make(1, port);
+            moloch_drophash_add(packetDrop4[port], &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec + min*60);
+        }
+    }
 }
 /******************************************************************************/
 void moloch_packet_exit()

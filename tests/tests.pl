@@ -127,35 +127,8 @@ my ($json) = @_;
     }
 
     @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};
-
-    delete $json->{tags};
 }
 
-################################################################################
-sub fixTags {
-my ($json, $tags) = @_;
-    my @list = ();
-    foreach my $tag (@{$tags}) {
-      push(@list, $json->{tags}->{$tag});
-    }
-    @list = sort(@list);
-    return \@list;
-}
-
-################################################################################
-sub fixIp {
-    if(ref($_[0]) eq 'ARRAY') {
-        my $ips = $_[0];
-        my @list = ();
-        foreach my $ip (@{$ips}) {
-            push(@list, join '.', unpack 'C4', pack 'N', $ip);
-        }
-        return \@list;
-    } else {
-        return join '.', unpack 'C4', pack 'N', $_[0];
-    }
-
-}
 ################################################################################
 sub doMake {
     foreach my $filename (@ARGV) {
