@@ -1,9 +1,9 @@
-NOTICE: If upgrading read https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
+NOTICE: Upgrading from version prior to 1.0.0 read https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
 
 ES Versions:
-  * Moloch >= 1.0.0  supports ES >= 5.5.0, kind of 6.x (no prod tested, only for new installs), not 7.x
+  * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x
-  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3,1 not 6.x
+  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x
 
 Node Versions:
   * Moloch >= 1.0.0 requires NodeJS 8.x
@@ -19,6 +19,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - basic sctp capturing, no decoding (issue #828)
   - all - intial unencrypted 802.11 Data Frame support (issue #834)
   - db - new segments option to expire and optimize
+  - release - new glib, curl, node, cyberchef
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now
