@@ -31,6 +31,7 @@ O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
+installinclude  = @prefix@/include
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
@@ -55,6 +56,8 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 @CFLAGS@ -c thirdparty/http_parser.c -o thirdparty/http_parser.o
 
 install: installdirs
+	@mkdir -p $(installinclude)
+	$(INSTALL) *.h $(installinclude)
 	$(INSTALL) moloch-capture $(bindir)/moloch-capture
 
 installdirs:
