@@ -66,6 +66,7 @@
                     :session="session"
                     :expr="'ipProtocol'"
                     :value="session.ipProtocol"
+                    :pull-left="true"
                     :parse="true">
                   </moloch-session-field>
                   &nbsp;

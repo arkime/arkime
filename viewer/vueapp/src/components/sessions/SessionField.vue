@@ -15,7 +15,8 @@
           </a>
           <!-- clickable field menu -->
           <div v-if="isOpen"
-            class="session-field-dropdown">
+            class="session-field-dropdown"
+            :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
             <b-dropdown-item
               @click.prevent.stop="fieldClick(expr, pd.queryVal, '==', '&&')"
               :title="'&& ' + expr + ' == ' + pd.value">
@@ -77,6 +78,7 @@
               {{ item.value }}
             </b-dropdown-item>
             <b-dropdown-item
+              v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
               :title="'Open in Sessions with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
               <span class="fa fa-folder-open-o"></span>&nbsp;
@@ -161,8 +163,9 @@ export default {
     'value', // the value of the session field (undefined if the field has children)
     'session', // the session object
     'parse', // whether to parse the value
-    'timezone' // what timezone date fields should be in ('gmt' or 'local')
-    // TODO pullLeft? sessionBtn?
+    'timezone', // what timezone date fields should be in ('gmt' or 'local')
+    'sessionBtn', // whether to display a button to add the value to the expression and go to sessions page
+    'pullLeft' // whether the dropdown should drop down from the left
   ],
   data: function () {
     return {
@@ -282,7 +285,7 @@ export default {
       this.isOpen = false; // close the dropdown
 
       let fullExpression = this.buildExpression(field, value, op);
-      // TODO only works with ips and node
+
       this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
     },
     /**
@@ -362,7 +365,6 @@ export default {
     },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
-      // TODO
       if (!this.parsed[0].value || !this.molochClickables) { return; }
 
       let info = this.getInfo();
@@ -470,6 +472,7 @@ export default {
 }
 
 .field {
+  position: relative;
   cursor: pointer;
   z-index: 1;
   display: inline-block;
@@ -537,6 +540,7 @@ export default {
  * class as it is specific to bootstraps dropdown implementation
  * this class is the same as dropdown-menu, but LESS whitespace */
 .session-field-dropdown {
+  position: absolute;
   opacity: 0;
   visibility: hidden;
   max-width: 700px;
