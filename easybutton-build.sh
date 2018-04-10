@@ -11,7 +11,7 @@
 # * install moloch if --install
 
 
-GLIB=2.56.1
+GLIB=2.54.3
 YARA=3.7.1
 MAXMIND=1.3.2
 PCAP=1.8.1
