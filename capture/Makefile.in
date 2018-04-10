@@ -57,7 +57,7 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 
 install: installdirs
 	@mkdir -p $(installinclude)
-	$(INSTALL) *.h $(installinclude)
+	$(INSTALL) *.h thirdparty/http_parser.h $(installinclude)
 	$(INSTALL) moloch-capture $(bindir)/moloch-capture
 
 installdirs:
