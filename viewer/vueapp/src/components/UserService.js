@@ -3,6 +3,8 @@ import Vue from 'vue';
 let _userCache;
 let queryInProgress;
 
+const defaultSettings = { timezone: 'local' };
+
 export default {
 
   /**
@@ -49,6 +51,32 @@ export default {
             }
           }
           resolve(true);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Gets a user's settings
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getSettings: function (userId) {
+    return new Promise((resolve, reject) => {
+      let url = 'user/settings';
+      if (userId) { url += `?userId=${userId}`; }
+
+      Vue.axios.get(url)
+        .then((response) => {
+          let settings = response.data;
+          // if the settings are empty, set smart default
+          if (Object.keys(settings).length === 0) {
+            settings = defaultSettings;
+          }
+          resolve(settings);
         }, (error) => {
           reject(error);
         });

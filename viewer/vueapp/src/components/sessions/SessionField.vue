@@ -97,7 +97,8 @@
               <span class="fa fa-clipboard"></span>&nbsp;
               Copy value
             </b-dropdown-item>
-          </div> <!-- /clickable field menu -->
+          </div>
+          <!-- /clickable field menu -->
         </span><!-- /normal parsed value -->
 
         <!-- time value -->

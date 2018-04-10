@@ -64,7 +64,7 @@
                   <moloch-session-field
                     :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                     :session="session"
-                    :expr="'ipProtocol'"
+                    :expr="'ip.protocol'"
                     :value="session.ipProtocol"
                     :pull-left="true"
                     :parse="true">
@@ -103,7 +103,9 @@
                 class="session-detail-row">
                 <td :colspan="headers.length + 1">
                   <!-- TODO session detail component -->
-                  session detail goes here
+                  <moloch-session-detail
+                    :session="session">
+                  </moloch-session-detail>
                 </td>
               </tr>
             </template> <!-- /session + detail -->
@@ -142,6 +144,7 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
+import MolochSessionDetail from './SessionDetail';
 
 const defaultTableState = {
   order: [['firstPacket', 'asc']],
@@ -161,7 +164,8 @@ export default {
     ToggleBtn,
     MolochError,
     MolochLoading,
-    MolochNoResults
+    MolochNoResults,
+    MolochSessionDetail
   },
   data: function () {
     return {
