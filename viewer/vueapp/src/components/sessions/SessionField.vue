@@ -88,7 +88,13 @@
               <span class="fa fa-external-link-square"></span>&nbsp;
               Open New Sessions Tab
             </b-dropdown-item>
-            <!-- TODO copy value -->
+            <b-dropdown-item
+              @click="isOpen = false"
+              v-clipboard:copy="pd.value"
+              title="Copy value to clipboard">
+              <span class="fa fa-clipboard"></span>&nbsp;
+              Copy value
+            </b-dropdown-item>
           </div> <!-- /clickable field menu -->
         </span><!-- /normal parsed value -->
 
