@@ -9,16 +9,17 @@
       :message="error">
     </moloch-error>
 
-    <div v-if="!error && !loading">
+    <div v-if="!error && !loading"
+      class="shards-container mt-1">
 
-      <div class="input-group input-group-sm mt-1">
+      <div class="input-group input-group-sm">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
           </span>
         </div>
         <input type="text"
-          class="form-control"
+          class="form-control shards-search"
           v-model="query.filter"
           @keyup="searchForES()"
           placeholder="Begin typing to search for ES nodes and indices">
@@ -35,7 +36,7 @@
                 <b-dropdown right
                   size="sm"
                   v-if="column.hasDropdown"
-                  class="column-actions-btn pull-right"
+                  class="column-actions-btn pull-right mb-1"
                   v-has-permission="'createEnabled'">
                   <b-dropdown-item v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
@@ -84,31 +85,29 @@
                   :class="{'badge-primary':item.prirep === 'p'}"
                   :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
                   {{ item.shard }}
+                  <span>
+                    <div v-if="item.ip">
+                      <span>IP:</span>
+                      {{ item.ip }}
+                    </div>
+                    <div>
+                      <span>State:</span>
+                      {{ item.state }}
+                    </div>
+                    <div v-if="item.store">
+                      <span>Size:</span>
+                      {{ item.store }}
+                    </div>
+                    <div v-if="item.docs">
+                      <span>Documents:</span>
+                      {{ item.docs }}
+                    </div>
+                    <div>
+                      <span>Primary/Replicate:</span>
+                      {{ item.prirep }}
+                    </div>
+                  </span>
                 </span>
-                <b-tooltip :key="node + '-' + stat.name + '-' + item.shard + '-tooltip'"
-                  :target="node + '-' + stat.name + '-' + item.shard + '-btn'"
-                  placement="left">
-                  <div v-if="item.ip">
-                    <strong>IP:</strong>
-                    {{ item.ip }}
-                  </div>
-                  <div>
-                    <strong>State:</strong>
-                    {{ item.state }}
-                  </div>
-                  <div v-if="item.store">
-                    <strong>Size:</strong>
-                    {{ item.store }}
-                  </div>
-                  <div v-if="item.docs">
-                    <strong>Documents:</strong>
-                    {{ item.docs }}
-                  </div>
-                  <div>
-                    <strong>Primary/Replicate:</strong>
-                    {{ item.prirep }}
-                  </div>
-                </b-tooltip>
               </template>
             </td>
           </tr>
@@ -273,6 +272,10 @@ table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
 </style>
 
 <style scoped>
+.shards-container {
+  overflow: hidden;
+}
+
 table > thead > tr > th {
   border-top: none;
 }
@@ -305,11 +308,7 @@ table > thead > tr > th {
   white-space:nowrap;
   padding-right: .5rem;
 }
-
 /* hoverable columns */
-table.table.table-hover {
-  overflow:hidden;
-}
 table.table.table-hover td, th {
   position: relative;
 }
@@ -333,4 +332,41 @@ table.table.table-hover th:hover::after {
   font-weight: bold;
   background-color: var(--color-primary);
 }
+.badge:hover {
+  position: relative;
+}
+.badge > span {
+  display: none;
+}
+.badge:hover > span {
+  z-index: 2;
+  font-weight: normal;
+  display: block;
+  position: absolute;
+  margin: 10px;
+  bottom: -14px;
+  right: 20px;
+  padding: 4px 6px;
+  color: white;
+  text-align: center;
+  background-color: black;
+  border-radius: 5px;
+  font-size: 90%;
+}
+.badge > span:before {
+  content:'';
+  display:block;
+  width:0;
+  height:0;
+  position:absolute;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left:8px solid black;
+  right:-8px;
+  bottom:7px;
+}
+.badge > span span {
+  color: #bbb;
+}
+
 </style>
