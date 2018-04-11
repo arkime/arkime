@@ -103,8 +103,13 @@
                       {{ item.docs }}
                     </div>
                     <div>
-                      <span>Primary/Replicate:</span>
-                      {{ item.prirep }}
+                      <span>Shard Type:</span>
+                      <span v-if="item.prirep === 'p'">
+                        primary
+                      </span>
+                      <span v-else>
+                        replicate
+                      </span>
                     </div>
                   </span>
                 </span>
@@ -273,7 +278,7 @@ table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
 
 <style scoped>
 .shards-container {
-  overflow: hidden;
+  overflow-y: hidden;
 }
 
 table > thead > tr > th {
@@ -352,6 +357,7 @@ table.table.table-hover th:hover::after {
   background-color: black;
   border-radius: 5px;
   font-size: 90%;
+  line-height: 1.2;
 }
 .badge > span:before {
   content:'';
