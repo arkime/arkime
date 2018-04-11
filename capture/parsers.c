@@ -347,6 +347,9 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         if (memcmp(data, "wOFF", 4) == 0) {
             return moloch_field_string_add(field, session, "application/font-woff", 21, TRUE);
         }
+        if (memcmp(data, "wOF2", 4) == 0) {
+            return moloch_field_string_add(field, session, "application/font-woff2", 22, TRUE);
+        }
         break;
     case '\x89':
         if (memcmp(data, "\x89PNG", 4) == 0) {
