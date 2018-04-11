@@ -1,3 +1,7 @@
+//- Display a clickable value
+mixin clickableValue(expr, value, parse)
+  session-field(expr=expr, value=value, parse=parse class="detail-field", timezone=user.settings.timezone, pull-left=true)
+
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
   select(id=name,name=name,class=classname)
