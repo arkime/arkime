@@ -18,7 +18,8 @@
     </div> <!-- /detail error -->
 
     <!-- detail -->
-    <div class="detail-container">
+    <div class="detail-container"
+      ref="detailContainer">
     </div> <!-- /detail -->
 
     <hr v-if="!loading && !error">
@@ -28,8 +29,10 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import UserService from '../UserService';
 import SessionsService from './SessionsService';
+import FieldService from '../search/FieldService';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -48,6 +51,7 @@ export default {
       loadingPackets: false,
       userSettings: {},
       packetPromise: undefined,
+      detailHtml: undefined,
       params: {
         base: 'hex',
         line: false,
@@ -69,6 +73,12 @@ export default {
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
+    // TODO allSessions
+    // TODO openPermalink
+    // TODO session detail actions menu
+    // TODO show more/fewer items
+    // TODO exportUnique
+    // TODO openSpiGraph
     /* helper functions ---------------------------------------------------- */
     /**
      * Gets the session detail from the server
@@ -81,10 +91,30 @@ export default {
         .then((response) => {
           this.loading = false;
           // TODO
-          console.log(response);
-          // this.detailHtml = this.$sce.trustAsHtml(response.data);
-          // this.$scope.renderDetail();
+          console.log('got detail');
           // if (message) { this.displayMessage(message); }
+
+          FieldService.get()
+            .then((result) => {
+              // this.fields = result;
+              // this.setupFields();
+              // this.getUserSettings(); // IMPORTANT: kicks off the initial search query!
+              new Vue({
+                // template string here
+                template: response.data,
+                // makes $parent work
+                parent: this,
+                // any props the component should receive.
+                // reference to data in the template will *not* have access the the current
+                // components scope, as you create a new component
+                propsData: { session: this.session, fields: result },
+                props: [ 'session', 'fields' ]
+                // possibly other options
+              }).$mount(this.$refs.detailContainer);
+            }).catch((error) => {
+              // this.loading = false;
+              // this.error = error;
+            });
         })
         .catch((error) => {
           this.loading = false;
@@ -205,7 +235,7 @@ export default {
           this.packetPromise = undefined;
 
           // TODO
-          console.log(response);
+          // console.log(response);
           // this.packetHtml = this.$sce.trustAsHtml(response.data);
           // remove all un-whitelisted tokens from the html
           // this.packetHtml = this.$sanitize(this.$scope.packetHtml);
@@ -220,3 +250,121 @@ export default {
   }
 };
 </script>
+
+<style>
+.sessionDetail {
+  display: block;
+  margin-left: var(--px-md);
+  margin-right: var(--px-md);
+}
+
+.sessionDetail hr {
+  border-color: var(--color-gray);
+}
+
+.sessionDetail h4.sessionDetailMeta {
+  padding-top: 10px;
+  border-top: 1px solid var(--color-gray);
+}
+
+.sessionDetail .packet-options .btn.active {
+  font-weight: bolder;
+}
+
+.sessionDetail .packet-container .tooltip .tooltip-inner {
+  max-width: 400px;
+}
+
+.sessionDetail .packet-container .file {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+/* src/dst packet text colors */
+.sessionDetail .sessiondst {
+  color: var(--color-dst, #0000FF) !important;
+}
+
+.sessionDetail .sessionsrc {
+  color: var(--color-src, #CA0404) !important;
+}
+
+/* timestamps */
+.sessionDetail .session-detail-ts {
+  display: none;
+  color: var(--color-foreground-accent);
+  font-weight: bold;
+  padding: 0 4px;
+  margin-left: 2px;
+  margin-right: 2px;
+  border-bottom: 1px solid var(--color-gray);
+}
+
+.sessionDetail .session-detail-ts + pre {
+  color: inherit;
+  margin-top: -1px;
+}
+
+.sessionDetail .session-detail-ts + pre .sessionln {
+  color: darkgreen;
+}
+
+.sessionDetail .sessionDetail.show-ts ~ .packet-container .session-detail-ts {
+  display: block;
+}
+
+/* list values */
+.sessionDetail dt {
+  float: left;
+  clear: left;
+  width: 160px;
+  text-align: right;
+  margin-right: 6px;
+  line-height: 1.7;
+}
+
+.sessionDetail dd {
+  margin-left: 165px;
+  margin-top: 10px;
+}
+
+/* more items link */
+.sessionDetail .show-more-items {
+  margin-left     : 6px;
+  margin-right    : 6px;
+  font-size: 12px;
+  text-decoration : none;
+}
+
+/* top navigation links */
+.sessionDetail .nav-pills {
+  border-bottom : 1px solid var(--color-gray);
+  padding-bottom: 4px;
+  padding-top   : 4px;
+}
+
+.sessionDetail .nav-pills li a {
+  color:var(--color-foreground);
+}
+
+.sessionDetail .nav-pills > li > a:hover,
+.sessionDetail .nav-pills > li.open > a,
+.sessionDetail .nav-pills > li.open > a:hover {
+  background-color: var(--color-quaternary-lighter);
+}
+
+/* clickable labels */
+.sessionDetail .clickable-label {
+  margin-top: -2px;
+}
+
+.sessionDetail .clickable-label .btn {
+  height: 23px;
+  background-color: transparent;
+}
+
+.sessionDetail .clickable-label .dropdown-menu {
+  max-height: 280px;
+  overflow-y: auto;
+}
+</style>

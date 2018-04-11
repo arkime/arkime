@@ -234,7 +234,7 @@ export default {
 
         result[i].value = val; // update parsed value in array
         result[i].queryVal = qVal; // update query value in array
-        result[i].id = `${this.session.id}-${this.field.dbField}`;
+        result[i].id = `${val}-${this.field.dbField}`;
 
         return result;
       }
