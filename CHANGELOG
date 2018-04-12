@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - intial unencrypted 802.11 Data Frame support (issue #834)
   - db - new segments option to expire and optimize
   - release - curl, node, cyberchef
+  - viewer - http.uri and host* allows pasting a URL and doing the right thing (pull #831)
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now

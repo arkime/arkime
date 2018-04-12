@@ -774,19 +774,32 @@ var protocols = {
 };
 
 global.moloch.ipProtocolLookup = function (text) {
-    if (typeof text !== "string") {
-        for (var i = 0; i < text.length; i++) {
-            if (!protocols[text[i]] && isNaN(text[i]))
-                throw ("Unknown protocol string " + text);
-            text[i] = protocols[text[i]] || +text[i];
-        }
-        return text;
-    } else {
-        if (!protocols[text] && isNaN(text))
-            throw ("Unknown protocol string " + text);
-        return protocols[text] || +text;
+  if (typeof text !== "string") {
+    for (var i = 0; i < text.length; i++) {
+      if (!protocols[text[i]] && isNaN(text[i]))
+        throw ("Unknown protocol string " + text);
+      text[i] = protocols[text[i]] || +text[i];
     }
+    return text;
+  } else {
+    if (!protocols[text] && isNaN(text))
+      throw ("Unknown protocol string " + text);
+    return protocols[text] || +text;
+  }
 };
+
+// Remove the "http://", "https://", etc from http.uri queries
+global.moloch.removeProtocol = function (text) {
+  text = text.replace(/^[a-z]+:\/\//i, '');
+  return text;
+}
+
+// Remove the "http://", "https://" and after the first slash, etc from host queries
+global.moloch.removeProtocolAndURI = function (text) {
+  text = text.replace(/^[a-z]+:\/\//i, '');
+  text = text.replace(/\/.*/, '');
+  return text;
+}
 
 function ListToArray(text) {
   if (text[0] !== "[" || text[text.length -1] !== "]")
