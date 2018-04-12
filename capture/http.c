@@ -532,7 +532,8 @@ LOCAL gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition conditi
         strcat(remoteIp, "]");
     }
 
-    LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
+    if (config.debug)
+        LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
             server->outstanding,
             server->connections,
             sname->name,
@@ -640,7 +641,8 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     server->connections--;
 
-    LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
+    if (config.debug)
+        LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
             server->outstanding,
             server->connections,
             sname->name,
