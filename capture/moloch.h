@@ -364,6 +364,7 @@ typedef struct moloch_config {
     char      logUnknownProtocols;
     char      logESRequests;
     char      logFileCreation;
+    char      logHTTPConnections;
     char      parseSMTP;
     char      parseSMB;
     char      parseQSValue;
