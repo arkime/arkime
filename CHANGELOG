@@ -22,6 +22,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - curl, node, cyberchef
   - viewer - http.uri and host* allows pasting a URL and doing the right thing (pull #831)
   - capture - New logHTTPConnections setting (pull #749)
+  - capture - new wiseExcludeDomains setting, used before sending to wiseService (issue #340)
+              defaults to ".in-addr.arpa;.ip6.arpa"
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now
