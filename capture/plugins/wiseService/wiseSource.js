@@ -56,7 +56,7 @@ function WISESource (api, section) {
       return;
     }
     var parts = item.split("/");
-    this.excludeIPs.add(parts[0], +parts[1] || 32, true);
+    this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
   });
 
   items = api.getConfig(section, "onlyIPs", undefined);
@@ -67,7 +67,7 @@ function WISESource (api, section) {
         return;
       }
       var parts = item.split("/");
-      this.onlyIPs.add(parts[0], +parts[1] || 32, true);
+      this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
     });
   }
 

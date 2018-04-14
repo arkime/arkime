@@ -54,7 +54,7 @@ function ReverseDNSSource (api, section) {
       return;
     }
     var parts = item.split("/");
-    this.trie.add(parts[0], +parts[1] || 32, true);
+    this.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
   });
 
   this.api.addSource("reversedns", this);

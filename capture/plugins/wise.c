@@ -432,11 +432,20 @@ cleanup:
         *colon = ':';
 }
 /******************************************************************************/
-void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, uint32_t ip)
+void wise_lookup_ip4(MolochSession_t *session, WiseRequest_t *request, uint32_t ip)
 {
-    char ipstr[18];
+    char ipstr[INET_ADDRSTRLEN];
 
     snprintf(ipstr, sizeof(ipstr), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+
+    wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
+}
+/******************************************************************************/
+void wise_lookup_ip6(MolochSession_t *session, WiseRequest_t *request, struct in6_addr *ip)
+{
+    char ipstr[INET6_ADDRSTRLEN];
+
+    inet_ntop(AF_INET6, ip, ipstr, sizeof(ipstr));
 
     wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
 }
@@ -524,13 +533,16 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     }
 
     //IPs
-    //ALW Fix - when wise supports v6
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        wise_lookup_ip(session, iRequest, MOLOCH_V6_TO_V4(session->addr1));
+        wise_lookup_ip4(session, iRequest, MOLOCH_V6_TO_V4(session->addr1));
+    } else {
+        wise_lookup_ip6(session, iRequest, &session->addr1);
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-        wise_lookup_ip(session, iRequest, MOLOCH_V6_TO_V4(session->addr2));
+        wise_lookup_ip4(session, iRequest, MOLOCH_V6_TO_V4(session->addr2));
+    } else {
+        wise_lookup_ip6(session, iRequest, &session->addr2);
     }
 
 
