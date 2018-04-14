@@ -33,11 +33,9 @@
 
       this.info = {
         ip          : { operator: '==, !=', type: 'ip' },
-        lotextfield : { operator: '==, !=', type: 'lower case tokenized string' },
-        textfield   : { operator: '==, !=', type: 'tokenized string' },
-        lotermfield : { operator: '==, !=', type: 'lower case non tokenized string' },
-        termfield   : { operator: '==, !=', type: 'non tokenized string' },
-        uptermfield : { operator: '==, !=', type: 'upper case non tokenized string' },
+        lotermfield : { operator: '==, !=', type: 'lower case string' },
+        termfield   : { operator: '==, !=', type: 'mixed case string' },
+        uptermfield : { operator: '==, !=', type: 'upper case string' },
         integer     : { operator: '<, <=, ==, >=, >, !=', type: 'integer' },
         seconds     : { operator: '<, <=, ==, >=, >, !=', type: 'date time' }
       };
