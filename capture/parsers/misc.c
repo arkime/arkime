@@ -236,6 +236,13 @@ LOCAL void aruba_papi_udp_classify(MolochSession_t *session, const unsigned char
     moloch_session_add_protocol(session, "aruba-papi");
 }
 /******************************************************************************/
+LOCAL void sccp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len > 20 && len >= data[0] + 8 && memcmp(data+1, "\0\0\0\0\0\0\0", 7) == 0) {
+        moloch_session_add_protocol(session, "sccp");
+    }
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -375,6 +382,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00stats", 7, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00gets ", 7, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("sccp",  NULL, 2000, MOLOCH_PARSERS_PORT_TCP_DST, sccp_classify);
 
     userField = moloch_field_by_db("user");
 }

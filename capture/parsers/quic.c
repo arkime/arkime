@@ -173,6 +173,11 @@ LOCAL void quic_udp_classify(MolochSession_t *session, const unsigned char *data
     }
 }
 /******************************************************************************/
+LOCAL void quic_add(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    moloch_session_add_protocol(session, "quic");
+}
+/******************************************************************************/
 LOCAL void quic_fbzero_free(MolochSession_t UNUSED(*session), void *uw)
 {
     FBZeroInfo_t            *fbzero          = uw;
@@ -223,6 +228,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_udp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_udp_classify);
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"PRST", 4, quic_add);
 
     hostField = moloch_field_define("quic", "lotermfield",
         "host.quic", "Hostname", "quic.host", 
