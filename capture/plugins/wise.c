@@ -53,6 +53,10 @@ LOCAL int                   fieldsMap[256];
 
 LOCAL uint32_t              inflight;
 
+LOCAL char                **wiseExcludeDomains;
+LOCAL int                  *wiseExcludeDomainsLen;
+LOCAL int                   wiseExcludeDomainsNum;
+
 LOCAL const int validDNS[256] = {
     ['-'] = 1,
     ['_'] = 1,
@@ -413,17 +417,35 @@ LOCAL void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, 
         return;
     }
 
+    int l = strlen(domain);
+    int i;
+    for (i = 0; i < wiseExcludeDomainsNum; i++) {
+        if (l > wiseExcludeDomainsLen[i] && memcmp(domain + l - wiseExcludeDomainsLen[i], wiseExcludeDomains[i], wiseExcludeDomainsLen[i]) == 0) {
+            goto cleanup;
+        }
+    }
+
     wise_lookup(session, request, domain, INTEL_TYPE_DOMAIN);
 
+cleanup:
     if (colon)
         *colon = ':';
 }
 /******************************************************************************/
-void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, uint32_t ip)
+void wise_lookup_ip4(MolochSession_t *session, WiseRequest_t *request, uint32_t ip)
 {
-    char ipstr[18];
+    char ipstr[INET_ADDRSTRLEN];
 
     snprintf(ipstr, sizeof(ipstr), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+
+    wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
+}
+/******************************************************************************/
+void wise_lookup_ip6(MolochSession_t *session, WiseRequest_t *request, struct in6_addr *ip)
+{
+    char ipstr[INET6_ADDRSTRLEN];
+
+    inet_ntop(AF_INET6, ip, ipstr, sizeof(ipstr));
 
     wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
 }
@@ -511,13 +533,16 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     }
 
     //IPs
-    //ALW Fix - when wise supports v6
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        wise_lookup_ip(session, iRequest, MOLOCH_V6_TO_V4(session->addr1));
+        wise_lookup_ip4(session, iRequest, MOLOCH_V6_TO_V4(session->addr1));
+    } else {
+        wise_lookup_ip6(session, iRequest, &session->addr1);
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-        wise_lookup_ip(session, iRequest, MOLOCH_V6_TO_V4(session->addr2));
+        wise_lookup_ip4(session, iRequest, MOLOCH_V6_TO_V4(session->addr2));
+    } else {
+        wise_lookup_ip6(session, iRequest, &session->addr2);
     }
 
 
@@ -704,6 +729,16 @@ void moloch_plugin_init()
     httpUrlField     = moloch_field_by_db("http.uri");
     protocolField    = moloch_field_by_db("protocol");
     ja3Field         = moloch_field_by_db("tls.ja3");
+
+    int i;
+    wiseExcludeDomains = moloch_config_str_list(NULL, "wiseExcludeDomains", ".in-addr.arpa;.ip6.arpa");
+    for (i = 0; wiseExcludeDomains[i]; i++);
+    wiseExcludeDomainsNum = i;
+    wiseExcludeDomainsLen = malloc(sizeof(int) * wiseExcludeDomainsNum);
+
+    for (i = 0; wiseExcludeDomains[i]; i++) {
+        wiseExcludeDomainsLen[i] = strlen(wiseExcludeDomains[i]);
+    }
 
     if (config.supportSha256) {
         httpSha256Field  = moloch_field_by_db("http.sha256");

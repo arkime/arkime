@@ -192,12 +192,6 @@
         The types of string searches are:
       </p>
       <dl class="dl-horizontal small">
-        <dt>Token</dt>
-        <dd class="margined-bottom">
-          Some string fields are tokenized for faster searching. The query
-          engine will automatically turn the search string(s) into tokens
-          using the same algorithms as the indexing system.
-        </dd>
         <dt>Wildcard</dt>
         <dd class="margined-bottom">
           If a <code>*</code> appears in a expression, it is assumed a wildcard
@@ -222,7 +216,7 @@
         <dd class="margined-bottom">
           In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
           <code>protocols == [http, ssh]</code>. This query will search for any sessions containing either http OR ssh.
-          Note: Currently a list containing wildcard or regex strings will be processed as normal tokens instead
+          Note: Currently a list containing wildcard or regex strings will be processed as normal strings instead
           of wildcards and regexes.
         </dd>
       </dl>
@@ -234,7 +228,7 @@
         IP searching is very flexible and can be performed using the full ip
         address, a partial ip address, CIDR representation. For fields
         that include a port number, it is possible to follow any of the ip
-        representations with a colon and then the port number to further refine a query. Ports are also
+        representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
         first class searchable and may be searched for directly. For example:
         <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
         An IP search can also be done with list of IPs which may be in mixed representations: <code>ip == [1.2.3.4, 1.3/16]</code>

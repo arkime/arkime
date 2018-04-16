@@ -88,13 +88,14 @@ hosttaggertest1, 7
 hosttaggertest2, 7
 iptaggertest1, 2
 iptaggertest2, 2
-ipwise, 1
+ipwise, 3
 ipwisecsv, 4
 smtp:authlogin, 1
 socks:password, 2
 srcip, 4
 wisebyhost2, 7
 wisebyip1, 1
+wisebyip3, 2
 ", "tags count", { context => 3 });
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 

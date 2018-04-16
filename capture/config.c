@@ -437,6 +437,7 @@ void moloch_config_load()
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
+    config.logHTTPConnections    = moloch_config_boolean(keyfile, "logHTTPConnections", TRUE);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);

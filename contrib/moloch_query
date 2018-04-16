@@ -83,7 +83,7 @@ def get_field_map():
         if hit["_source"].get("regex", False):
             continue
         key = hit["_id"]
-        val = hit["_source"]["dbField"]
+        val = hit["_source"]["dbField2"]
         fm[key] = val
     log_entry("Done.")
     return fm

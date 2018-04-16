@@ -126,7 +126,7 @@ SimpleSource.prototype.load = function() {
     setFunc  = (key, value) => {
       var parts = key.split("/");
       try {
-        newCache.trie.add(parts[0], +parts[1] || 32, value);
+        newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), value);
       } catch (e) {
         console.log("ERROR adding", this.section, key, e);
       }

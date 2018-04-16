@@ -337,6 +337,17 @@ exports.loadFields = function(data) {
   data.forEach((field) => {
     var source = field._source;
     source.exp = field._id;
+
+    // Add some transforms
+    if (!source.transform) {
+      if (source.exp === "http.uri") {
+        source.transform = "removeProtocol";
+      }
+      if (source.exp === "host" || source.exp.startsWith("host.")) {
+        source.transform = "removeProtocolAndURI";
+      }
+    }
+
     internals.fieldsMap[field._id] = source;
     internals.dbFieldsMap[source.dbField] = source;
     internals.fields.push(source);

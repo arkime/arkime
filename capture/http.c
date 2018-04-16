@@ -532,14 +532,16 @@ LOCAL gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition conditi
         strcat(remoteIp, "]");
     }
 
-    LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
-            server->outstanding,
-            server->connections,
-            sname->name,
-            localPort,
-            remoteIp,
-            remotePort,
-            fd);
+    if (config.logHTTPConnections) {
+        LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
+                server->outstanding,
+                server->connections,
+                sname->name,
+                localPort,
+                remoteIp,
+                remotePort,
+                fd);
+    }
 
     MolochHttpConn_t *conn;
 
@@ -640,15 +642,17 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     server->connections--;
 
-    LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
-            server->outstanding,
-            server->connections,
-            sname->name,
-            localPort,
-            remoteIp,
-            remotePort,
-            fd,
-            conn?"true":"false");
+    if (config.logHTTPConnections) {
+        LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
+                server->outstanding,
+                server->connections,
+                sname->name,
+                localPort,
+                remoteIp,
+                remotePort,
+                fd,
+                conn?"true":"false");
+    }
 
     close (fd);
     return 0;
