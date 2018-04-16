@@ -15,128 +15,216 @@ ul.nav.nav-pills.mb-3
     a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.nav-item
     a.nav-link(@click="openPermalink()", href='sessions?expression=id == ' + session.id + '&startTime=' + session.firstPacket + '&stopTime=' + session.lastPacket + '&openAll=1') Permalink
-  li.nav-item.dropdown
-    a.nav-link(data-toggle="dropdown", role="button") Actions &nbsp;
-      span.fa.fa-caret-down
-    // TODO dropdown menu
-    ul.dropdown-menu.session-actions-menu
+  b-dropdown.nav-item(text="Actions", size="sm")
+    b-dropdown-item(@click="exportPCAP()")
+      | Export PCAP
+    b-dropdown-item(@click="addTags()")
+      | Add Tags
+    b-dropdown-item(@click="removeTags()", v-has-permission="'removeEnabled'")
+      | Remove Tags
+    b-dropdown-item(@click="scrubPCAP()", v-has-permission="'removeEnabled'")
+      | Scrub PCAP Storage
+    b-dropdown-item(@click="deleteSession()", v-has-permission="'removeEnabled'")
+      | Delete SPI &amp; PCAP
+    b-dropdown-item(v-for="(value, key) in molochclusters", key="key", @click="sendSession(key)")
+      | Send Session to {{ value.name }}
 
 div.form-container
 
 dl
   dt Id
   dd
-    moloch-session-field(:expr="'id'", :value="session.id", :field="fields.id", :pull-left="true")
+    +clickableValue('id', '"'+session.id+'"')
     if (session.rootId)
       strong.ml-4 Root Id:
-      moloch-session-field(:expr="'rootId'", :value="session.rootId", :field="field.rootId", pull-left="true")
+      +clickableValue('rootId', '"'+session.rootId+'"')
 
   dt Start
   dd
-    moloch-session-field(:expr="'starttime'", :value=session.firstPacket, :field="fields.starttime", :pull-left="true")
+    +clickableValue('starttime', '"'+session.firstPacket+'"')
     strong.ml-4.mr-1 Stop
-    moloch-session-field(:expr="'stoptime'", :value=session.lastPacket, :field="fields.stoptime", :pull-left="true")
+    +clickableValue('stoptime', '"'+session.lastPacket+'"')
 
   dt
     +clickableLabel('node', 'Node')
   dd
-    moloch-session-field(:expr="'node'", :value="session.node", :field="fields.node", :pull-left="true")
+    +clickableValue('node', '"'+session.node+'"')
 
   +arrayList(session, "protocol", "Protocols", "protocols")
 
   dt
    +clickableLabel('ip.protocol', 'IP Protocol')
   dd
-    moloch-session-field(:expr="'ip.protocol'", :value="session.ipProtocol", :field="fields['ip.protocol']", :pull-left="true")
+    +clickableValue('ip.protocol', '"'+session.ipProtocol+'"')
 
   +arrayList(session, "user", "Users", "user")
 
   +arrayList(session, "asset", "Assets", "asset")
 
-  // TODO dropdown menu
   if (session.srcBytes || session.dstBytes)
     dt
-      div.btn-group.clickable-label
-        button.btn.btn-xs.btn-default
-          strong Src&nbsp;
-          span.caret
-        ul.dropdown-menu
-          li
-            a.cursor-pointer(@click="exportUnique('packets.src', 0)")
-              | Export Unique Src Packets
-          li
-            a.cursor-pointer(@click="exportUnique('packets.src', 1)")
-              | Export Unique Src Packets with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('packets.src')")
-              | Open Src Packets SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(@click="exportUnique('bytes.src', 0)")
-              | Export Unique Src Bytes
-          li
-            a.cursor-pointer(@click="exportUnique('bytes.src', 1)")
-              | Export Unique Src Bytes with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('bytes.src')")
-              | Open Src Bytes SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(@click="exportUnique('databytes.src', 0)")
-              | Export Unique Src Databytes
-          li
-            a.cursor-pointer(@click="exportUnique('databytes.src', 1)")
-              | Export Unique Src Databytes with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('databytes.src')")
-              | Open Src Databytes SPI Graph
+      b-dropdown.clickable-label(text="Src", size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('packets.src', 0)")
+          | Export Unique Src Packets
+        b-dropdown-item(@click="exportUnique('packets.src', 1)")
+          | Export Unique Src Packets with counts
+        b-dropdown-item(@click="openSpiGraph('packets.src')")
+          | Open Src Packets SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('bytes.src', 0)")
+          | Export Unique Src Bytes
+        b-dropdown-item(@click="exportUnique('bytes.src', 1)")
+          | Export Unique Src Bytes with counts
+        b-dropdown-item(@click="openSpiGraph('bytes.src')")
+          | Open Src Bytes SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('databytes.src', 0)")
+          | Export Unique Src Databytes
+        b-dropdown-item(@click="exportUnique('databytes.src', 1)")
+          | Export Unique Src Databytes with counts
+        b-dropdown-item(@click="openSpiGraph('databytes.src')")
+          | Open Src Databytes SPI Graph
     dd
       strong.medium Packets
-      moloch-session-field(:expr="'packets.src'", :value=session.srcPackets, :field="fields['packets.src']", :pull-left="true")
+      +clickableValue('packets.src', '"'+session.srcPackets+'"')
       strong.medium.ml-4 Bytes
-      moloch-session-field(:expr="'bytes.src'", :value=session.srcBytes, :field="fields['bytes.src']", :pull-left="true")
+      +clickableValue('bytes.src', '"'+session.srcBytes+'"')
       strong.medium.ml-4 Databytes
-      moloch-session-field(:expr="'databytes.src'", :value=session.srcDataBytes, :field="fields['databytes.src']", :pull-left="true")
+      +clickableValue('databytes.src', '"'+session.srcDataBytes+'"')
 
     dt
-      div.btn-group.clickable-label
-        button.btn.btn-xs.btn-default
-          strong Dst&nbsp;
-          span.caret
-        ul.dropdown-menu
-          li
-            a.cursor-pointer(@click="exportUnique('packets.dst', 0)")
-              | Export Unique Dst Packets
-          li
-            a.cursor-pointer(@click="exportUnique('packets.dst', 1)")
-              | Export Unique Dst Packets with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('packets.dst')")
-              | Open Dst Packets SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(@click="exportUnique('bytes.dst', 0)")
-              | Export Unique Dst Bytes
-          li
-            a.cursor-pointer(@click="exportUnique('bytes.dst', 1)")
-              | Export Unique Dst Bytes with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('bytes.dst')")
-              | Open Dst Bytes SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(@click="exportUnique('databytes.dst', 0)")
-              | Export Unique Dst Databytes
-          li
-            a.cursor-pointer(@click="exportUnique('databytes.dst', 1)")
-              | Export Unique Dst Databytes with counts
-          li
-            a.cursor-pointer(@click="openSpiGraph('databytes.dst')")
-              | Open Dst Databytes SPI Graph
+      b-dropdown.clickable-label(text="Dst", size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('packets.dst', 0)")
+          | Export Unique Dst Packets
+        b-dropdown-item(@click="exportUnique('packets.dst', 1)")
+          | Export Unique Dst Packets with counts
+        b-dropdown-item(@click="openSpiGraph('packets.dst')")
+          | Open Dst Packets SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('bytes.dst', 0)")
+          | Export Unique Dst Bytes
+        b-dropdown-item(@click="exportUnique('bytes.dst', 1)")
+          | Export Unique Dst Bytes with counts
+        b-dropdown-item(@click="openSpiGraph('bytes.dst')")
+          | Open Dst Bytes SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('databytes.dst', 0)")
+          | Export Unique Dst Databytes
+        b-dropdown-item(@click="exportUnique('databytes.dst', 1)")
+          | Export Unique Dst Databytes with counts
+        b-dropdown-item(@click="openSpiGraph('databytes.dst')")
+          | Open Dst Databytes SPI Graph
     dd
       strong.medium Packets
-      moloch-session-field(:expr="'packets.dst'", :value=session.dstPackets, :field="fields['packets.dst']", :pull-left="true")
+      +clickableValue('packets.dst', '"'+session.dstPackets+'"')
       strong.medium.ml-4 Bytes
-      moloch-session-field(:expr="'bytes.dst'", :value=session.dstBytes, :field="fields['bytes.dst']", :pull-left="true")
+      +clickableValue('bytes.dst', '"'+session.dstBytes+'"')
       strong.medium.ml-4 Databytes
-      moloch-session-field(:expr="'databytes.dst'", :value=session.dstDataBytes, :field="fields['databytes.dst']", :pull-left="true")
+      +clickableValue('databytes.dst', '"'+session.dstDataBytes+'"')
+
+  if (session["srcMac"])
+    dt
+      b-dropdown.clickable-label(text="Ethernet", size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('mac.src', 0)")
+          | Export Unique Src Mac
+        b-dropdown-item(@click="exportUnique('mac.src', 1)")
+          | Export Unique Src Mac with counts
+        b-dropdown-item(@click="openSpiGraph('mac.src')")
+          | Open Src Mac SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('oui.src', 0)")
+          | Export Unique Src OUI
+        b-dropdown-item(@click="exportUnique('oui.src', 1)")
+          | Export Unique Src OUI with counts
+        b-dropdown-item(@click="openSpiGraph('oui.src')")
+          | Open Src OUI SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('mac.dst', 0)")
+          | Export Unique Dst Mac
+        b-dropdown-item(@click="exportUnique('mac.dst', 1)")
+          | Export Unique Dst Mac with counts
+        b-dropdown-item(@click="openSpiGraph('mac.dst')")
+          | Open Dst Mac SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('mac.dst', 0)")
+          | Export Unique Dst Mac
+        b-dropdown-item(@click="exportUnique('mac.dst', 1)")
+          | Export Unique Dst Mac with counts
+        b-dropdown-item(@click="openSpiGraph('mac.dst')")
+          | Open Dst Mac SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('oui.dst', 0)")
+          | Export Unique Dst OUI
+        b-dropdown-item(@click="exportUnique('oui.dst', 1)")
+          | Export Unique Dst OUI with counts
+        b-dropdown-item(@click="openSpiGraph('oui.dst')")
+          | Open Dst OUI SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('vlan', 0)")
+          | Export Unique VLan
+        b-dropdown-item(@click="exportUnique('vlan', 1)")
+          | Export Unique VLan with counts
+        b-dropdown-item(@click="openSpiGraph('vlan')")
+          | Open VLan SPI Graph
+    dd
+      strong.medium Src Mac
+      +arrayPrint(session, "srcMac", "mac.src", true)
+
+      if (session.srcOui)
+        strong.medium OUI
+        +arrayPrint(session, "srcOui", "oui.src", true)
+
+      strong.medium.ml-4 Dst mac
+      +arrayPrint(session, "dstMac", "mac.dst", true)
+
+      if (session.dstOui)
+        strong.medium OUI
+        +arrayPrint(session, "dstOui", "oui.dst", true)
+
+      if (session.vlan)
+        strong.medium.ml-4 VLan
+        +arrayPrint(session, "vlan", "vlan")
+
+    dt
+      b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('ip.src', 0)")
+          | Export Unique Src IP
+        b-dropdown-item(@click="exportUnique('ip.src', 1)")
+          | Export Unique Src IP with counts
+        b-dropdown-item(@click="exportUnique('ip.src:p1', 0)")
+          | Export Unique Src IP:Port
+        b-dropdown-item(@click="exportUnique('ip.src:p1', 1)")
+          | Export Unique Src IP:Port with counts
+        b-dropdown-item(@click="openSpiGraph('ip.src')")
+          | Open Src IPv6 SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('port.src', 0)")
+          | Export Unique Src Port
+        b-dropdown-item(@click="exportUnique('port.src', 1)")
+          | Export Unique Src Port with counts
+        b-dropdown-item(@click="openSpiGraph('port.src')")
+          | Open Src Port SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('country.src', 0)")
+          | Export Unique Src Country
+        b-dropdown-item(@click="exportUnique('country.src', 1)")
+          | Export Unique Src Country with counts
+        b-dropdown-item(@click="openSpiGraph('country.src')")
+          | Open Src Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('rawas1', 0)")
+          | Export Unique Src ASN
+        b-dropdown-item(@click="exportUnique('rawas1', 1)")
+          | Export Unique Src ASN with counts
+        b-dropdown-item(@click="openSpiGraph('rawas1')")
+          | Open Src ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('rir.src', 0)")
+          | Export Unique Src RIR
+        b-dropdown-item(@click="exportUnique('rir.src', 1)")
+          | Export Unique Src RIR with counts
+        b-dropdown-item(@click="openSpiGraph('rir.src')")
+          | Open Src RIR SPI Graph
+
+    dd
+      +ipPrint(session.srcIp, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")

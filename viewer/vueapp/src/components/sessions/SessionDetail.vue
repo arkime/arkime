@@ -31,6 +31,7 @@
 <script>
 import Vue from 'vue';
 import UserService from '../UserService';
+import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
 import FieldService from '../search/FieldService';
 
@@ -52,6 +53,7 @@ export default {
       userSettings: {},
       packetPromise: undefined,
       detailHtml: undefined,
+      molochclusters: {},
       params: {
         base: 'hex',
         line: false,
@@ -87,38 +89,35 @@ export default {
     getDetailData: function (message) {
       this.loading = true;
 
-      SessionsService.getDetail(this.session.id, this.session.node)
-        .then((response) => {
-          this.loading = false;
-          // TODO
-          console.log('got detail');
-          // if (message) { this.displayMessage(message); }
+      let p1 = FieldService.get();
+      let p2 = ConfigService.getMolochClusters();
+      let p3 = SessionsService.getDetail(this.session.id, this.session.node);
 
-          FieldService.get()
-            .then((result) => {
-              // this.fields = result;
-              // this.setupFields();
-              // this.getUserSettings(); // IMPORTANT: kicks off the initial search query!
-              new Vue({
-                // template string here
-                template: response.data,
-                // makes $parent work
-                parent: this,
-                // any props the component should receive.
-                // reference to data in the template will *not* have access the the current
-                // components scope, as you create a new component
-                propsData: { session: this.session, fields: result },
-                props: [ 'session', 'fields' ]
-                // possibly other options
-              }).$mount(this.$refs.detailContainer);
-            }).catch((error) => {
-              // this.loading = false;
-              // this.error = error;
-            });
-        })
-        .catch((error) => {
+      Promise.all([p1, p2, p3])
+        .then((responses) => {
           this.loading = false;
-          this.error = error;
+
+          new Vue({
+            // template string here
+            template: responses[2].data,
+            // makes $parent work
+            parent: this,
+            // any props the component should receive.
+            // reference to data in the template will *not* have access the the current
+            // components scope, as you create a new component
+            propsData: {
+              session: this.session,
+              fields: responses[0],
+              molochclusters: responses[1]
+            },
+            props: [ 'session', 'fields', 'molochclusters' ]
+          }).$mount(this.$refs.detailContainer);
+        }); // TODO catch
+    },
+    getMolochClusters: function () {
+      ConfigService.getMolochClusters()
+        .then((clusters) => {
+          this.molochclusters = clusters;
         });
     },
     getUserSettings: function () {
@@ -143,11 +142,13 @@ export default {
         } else if (this.userSettings.detailFormat) {
           this.params.base = this.userSettings.detailFormat;
         }
+
         if (this.userSettings.numPackets === 'last' && localStorage['moloch-packets']) {
           this.params.packets = localStorage['moloch-packets'];
         } else if (this.userSettings.numPackets) {
           this.params.packets = this.userSettings.numPackets;
         }
+
         if (this.userSettings.showTimestamps === 'last' && localStorage['moloch-ts']) {
           this.params.ts = localStorage['moloch-ts'] === 'true';
         } else if (this.userSettings.showTimestamps) {
@@ -330,26 +331,32 @@ export default {
 
 /* more items link */
 .sessionDetail .show-more-items {
-  margin-left     : 6px;
-  margin-right    : 6px;
+  margin-left: 6px;
+  margin-right: 6px;
   font-size: 12px;
-  text-decoration : none;
+  text-decoration: none;
 }
 
 /* top navigation links */
 .sessionDetail .nav-pills {
-  border-bottom : 1px solid var(--color-gray);
+  border-bottom: 1px solid var(--color-gray);
   padding-bottom: 4px;
-  padding-top   : 4px;
+  padding-top: 4px;
 }
 
-.sessionDetail .nav-pills li a {
-  color:var(--color-foreground);
+.sessionDetail .nav-pills li.nav-item a,
+.sessionDetail .nav-pills div.nav-item button {
+  color: var(--color-foreground);
+  background-color: transparent;
+  border: none;
 }
 
-.sessionDetail .nav-pills > li > a:hover,
-.sessionDetail .nav-pills > li.open > a,
-.sessionDetail .nav-pills > li.open > a:hover {
+.sessionDetail .nav-pills > li.nav-item > a:hover,
+.sessionDetail .nav-pills > li.nav-item.open > a,
+.sessionDetail .nav-pills > li.nav-item.open > a:hover,
+.sessionDetail .nav-pills > div.nav-item > button:hover,
+.sessionDetail .nav-pills > div.nav-item.open > button,
+.sessionDetail .nav-pills > div.nav-item.open > button:hover  {
   background-color: var(--color-quaternary-lighter);
 }
 
@@ -358,13 +365,26 @@ export default {
   margin-top: -2px;
 }
 
-.sessionDetail .clickable-label .btn {
+.sessionDetail .clickable-label button.btn {
   height: 23px;
   background-color: transparent;
+  font-size: 12px;
+  line-height: 21px;
+  padding: 1px 5px;
+}
+
+.sessionDetail .clickable-label button.btn:hover {
+  color: #333;
+  background-color: var(--color-gray);
+  border-color: var(--color-gray);
 }
 
 .sessionDetail .clickable-label .dropdown-menu {
   max-height: 280px;
   overflow-y: auto;
+}
+
+.sessionDetail .clickable-label .dropdown-menu .dropdown-item {
+  font-size: 12px;
 }
 </style>
