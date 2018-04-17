@@ -59,7 +59,7 @@ mixin arrayList(container, field, title, expr, extra, max)
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
       if (extra)
         |!{extra}
-      div(style="display:inline-block;margin-top:3px") &nbsp;
+      div(style="display:inline-block;") &nbsp;
 
 //- Standard method to print an array of values with commas
 mixin stringList(container, field, title, expr, extra)
@@ -196,50 +196,35 @@ mixin ipArrayList(container, field, title, expr, max)
     - max = 25
   if (container[field])
     dt
-      div.btn-group.clickable-label(uib-dropdown="")
-        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
-          strong #{title}&nbsp;
-          span.caret
-        ul.dropdown-menu(uib-dropdown-menu="")
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + "', 0)")
-              | Export Unique #{title}
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + "', 1)")
-              | Export Unique #{title} with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + "')")
-              | Open #{title} SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".country', 0)")
-              | Export Unique #{title} Country
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".country', 1)")
-              | Export Unique #{title} Country with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".country')")
-              | Open #{title} Country SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".asn', 0)")
-              | Export Unique #{title} ASN
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".asn', 1)")
-              | Export Unique #{title} ASN with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".asn')")
-              | Open #{title} ASN SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".rir', 0)")
-              | Export Unique #{title} RIR
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".rir', 1)")
-              | Export Unique #{title} RIR with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".rir')")
-              | Open #{title} RIR SPI Graph
+      b-dropdown.clickable-label(text=title, size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 0)")
+          | Export Unique #{title}
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
+          | Export Unique #{title} with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + "')")
+          | Open #{title} SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 0)")
+          | Export Unique #{title} Country
+        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 1)")
+          | Export Unique #{title} Country with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".country')")
+          | Open #{title} Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 0)")
+          | Export Unique #{title} ASN
+        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 1)")
+          | Export Unique #{title} ASN with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".asn')")
+          | Open #{title} ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 0)")
+          | Export Unique #{title} RIR
+        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 1)")
+          | Export Unique #{title} RIR with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".rir')")
+          | Open #{title} RIR SPI Graph
+
     dd
       each ip,i in container[field]
         if (i == max)
