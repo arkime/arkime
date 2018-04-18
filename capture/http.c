@@ -192,6 +192,11 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         easy = server->syncRequest.easy;
     }
 
+    if (config.insecure) {
+        curl_easy_setopt(easy, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
     if (method[0] != 'G') {
         curl_easy_setopt(easy, CURLOPT_CUSTOMREQUEST, method);
         curl_easy_setopt(easy, CURLOPT_POSTFIELDSIZE, data_len);
@@ -749,6 +754,11 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     request->easy = curl_easy_init();
     if (config.debug >= 2) {
         curl_easy_setopt(request->easy, CURLOPT_VERBOSE, 1);
+    }
+
+    if (config.insecure) {
+        curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
     curl_easy_setopt(request->easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);
