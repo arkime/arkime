@@ -475,7 +475,7 @@ function getStats(cluster) {
           setIssue(cluster, {
             type  : 'outOfDate',
             node  : stat.nodeName,
-            value : Date.now() - stat.currentTime
+            value : stat.currentTime * 1000
           });
         }
 
