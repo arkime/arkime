@@ -756,6 +756,11 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
         curl_easy_setopt(request->easy, CURLOPT_VERBOSE, 1);
     }
 
+    if (config.insecure) {
+        curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
     curl_easy_setopt(request->easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);
     curl_easy_setopt(request->easy, CURLOPT_WRITEDATA, (void *)request);
     curl_easy_setopt(request->easy, CURLOPT_PRIVATE, (void *)request);
