@@ -80,6 +80,7 @@ LOCAL  GOptionEntry entries[] =
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
     { "noLoadTags",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noLoadTags,    "Don't load tags at startup", NULL },
+    { "insecure",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -616,6 +617,9 @@ int main(int argc, char **argv)
     parse_args(argc, argv);
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
+
+    if (config.insecure)
+        LOG("\n\nDON'T DO IT!!!! `--insecure` is a bad idea\n\n");
 
     moloch_hex_init();
     moloch_config_init();

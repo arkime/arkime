@@ -288,6 +288,7 @@ typedef struct moloch_config {
     gchar   **extraOps;
     MolochFieldOps_t ops;
     gchar     debug;
+    gchar     insecure;
     gboolean  quiet;
     gboolean  dryRun;
     gboolean  noSPI;
