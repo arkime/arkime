@@ -25,7 +25,14 @@
           placeholder="Begin typing to search for ES nodes and indices">
       </div>
 
-      <table class="table table-sm table-hover small mt-3">
+      <div v-if="!stats.indices.length"
+        class="text-danger text-center mt-4 mb-4">
+        <span class="fa fa-warning"></span>&nbsp;
+        No results match your search
+      </div>
+
+      <table v-if="stats.indices.length"
+        class="table table-sm table-hover small scrolly-table">
         <thead>
           <tr>
             <th v-for="column in columns"
@@ -114,13 +121,6 @@
                   </span>
                 </span>
               </template>
-            </td>
-          </tr>
-          <tr v-if="!stats.indices.length">
-            <td colspan="6"
-              class="text-danger text-center">
-              <span class="fa fa-warning"></span>&nbsp;
-              No results match your search
             </td>
           </tr>
         </tbody>
@@ -277,23 +277,26 @@ table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
 </style>
 
 <style scoped>
-.shards-container {
-  overflow-y: hidden;
+table.table.scrolly-table {
+  display: block;
+  overflow-y: auto;
+  height: calc(100vh - 210px);
+  margin-bottom: 0;
 }
 
 table > thead > tr > th {
   border-top: none;
 }
 
-.table .hover-menu {
+table.table .hover-menu {
   vertical-align: top;
   min-width: 100px;
 }
-.table .hover-menu:hover .btn-group {
+table.table .hover-menu:hover .btn-group {
   visibility: visible;
 }
 
-.table .hover-menu .btn-group {
+table.table .hover-menu .btn-group {
   visibility: hidden;
   margin-left: -20px !important;
   position: relative;
@@ -302,13 +305,13 @@ table > thead > tr > th {
   margin-top: -2px;
 }
 
-.table .hover-menu .header-text {
+table.table .hover-menu .header-text {
   display: inline-block;
   width: 100%;
   word-break: break-word;
 }
 
-.table tbody > tr > td:first-child {
+table.table tbody > tr > td:first-child {
   width:1px;
   white-space:nowrap;
   padding-right: .5rem;
@@ -324,7 +327,7 @@ table.table.table-hover th:hover::after {
   background-color: var(--color-gray-light) !important;
   left: 0;
   top: -5000px;
-  height: 10000px;
+  height: calc(100% + 5000px);
   width: 100%;
   z-index: -1;
 }
@@ -374,5 +377,4 @@ table.table.table-hover th:hover::after {
 .badge > span span {
   color: #bbb;
 }
-
 </style>
