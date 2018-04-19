@@ -32,7 +32,7 @@
       </div>
 
       <table v-if="stats.indices.length"
-        class="table table-sm table-hover small scrolly-table">
+        class="table table-sm small scrolly-table">
         <thead>
           <tr>
             <th v-for="column in columns"
@@ -316,12 +316,14 @@ table.table tbody > tr > td:first-child {
   white-space:nowrap;
   padding-right: .5rem;
 }
+
 /* hoverable columns */
-table.table.table-hover td, th {
+table.table td, th {
   position: relative;
 }
-table.table.table-hover td:hover::after,
-table.table.table-hover th:hover::after {
+/* apply hover background to column (only cells above the hovered cell) */
+table.table td:hover::after,
+table.table th:hover::after {
   content: "";
   position: absolute;
   background-color: var(--color-gray-light) !important;
@@ -330,6 +332,16 @@ table.table.table-hover th:hover::after {
   height: calc(100% + 5000px);
   width: 100%;
   z-index: -1;
+}
+/* apply hover background to row (only cells left of the hovered cell) */
+table.table td:hover::before {
+  content: "";
+  position: absolute;
+  background-color: var(--color-gray-light) !important;
+  z-index: -1;
+  right: 0;
+  height: 100%;
+  width: 10000px;
 }
 
 .badge {
