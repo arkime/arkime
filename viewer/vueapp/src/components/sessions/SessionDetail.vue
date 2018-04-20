@@ -34,6 +34,11 @@ import UserService from '../UserService';
 import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
 import FieldService from '../search/FieldService';
+import MolochTagSessions from '../sessions/Tags';
+import MolochDeleteSessions from '../sessions/Delete';
+import MolochScrubPcap from '../sessions/Scrub';
+import MolochSendSessions from '../sessions/Send';
+import MolochExportPcap from '../sessions/ExportPcap';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -65,6 +70,24 @@ export default {
       }
     };
   },
+  computed: {
+    expression: {
+      get: function () {
+        return this.$store.state.expression;
+      },
+      set: function (newValue) {
+        this.$store.commit('setExpression', newValue);
+      }
+    },
+    startTime: {
+      get: function () {
+        return this.$store.state.startTime;
+      },
+      set: function (newValue) {
+        this.$store.commit('setStartTime', newValue);
+      }
+    }
+  },
   created: function () {
     console.log('session detail time!', this.session.id);
     this.getUserSettings();
@@ -75,13 +98,57 @@ export default {
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
-    // TODO allSessions
     // TODO openPermalink
-    // TODO session detail actions menu
-    // TODO show more/fewer items
-    // TODO exportUnique
-    // TODO openSpiGraph
-    // TODO displayFormContainer
+    /**
+     * TODO test
+     * Adds a rootId expression
+     * @param {string} rootId The root id of the session
+     * @param {int} startTime The start time of the session
+     */
+    allSessions: function (rootId, startTime) {
+      let fullExpression = `rootId == "${rootId}"`;
+
+      this.expression = fullExpression;
+
+      if (this.$route.query.startTime) {
+        if (this.$route.query.startTime < startTime) {
+          startTime = this.$route.query.startTime;
+        }
+      }
+
+      this.startTime = startTime;
+    },
+    /**
+     * Opens a new browser tab containing all the unique values for a given field
+     * @param {string} fieldID  The field id to display unique values for
+     * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+     */
+    exportUnique: function (fieldID, counts) {
+      SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
+    },
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
+    openSpiGraph: function (fieldID) {
+      SessionsService.openSpiGraph(fieldID, this.$route.query);
+    },
+    /**
+     * Shows more items in a list of values
+     * @param {object} e The click event
+     */
+    showMoreItems: function (e) {
+      e.target.style.display = 'none';
+      e.target.previousSibling.style.display = 'inline-block';
+    },
+    /**
+     * Hides more items in a list of values
+     * @param {object} e The click event
+     */
+    showFewerItems: function (e) {
+      e.target.parentElement.style.display = 'none';
+      e.target.parentElement.nextElementSibling.style.display = 'inline-block';
+    },
     /* helper functions ---------------------------------------------------- */
     /**
      * Gets the session detail from the server
@@ -98,6 +165,7 @@ export default {
         .then((responses) => {
           this.loading = false;
 
+          // TODO put this in own file?
           new Vue({
             // template string here
             template: responses[2].data,
@@ -109,9 +177,57 @@ export default {
             propsData: {
               session: this.session,
               fields: responses[0],
-              molochclusters: responses[1]
+              molochclusters: responses[1],
+              exportUnique: this.exportUnique,
+              openSpiGraph: this.openSpiGraph,
+              showMoreItems: this.showMoreItems,
+              showFewerItems: this.showFewerItems
             },
-            props: [ 'session', 'fields', 'molochclusters' ]
+            props: [
+              // variables
+              'session', 'fields', 'molochclusters',
+              // functions
+              'exportUnique', 'openSpiGraph', 'showMoreItems', 'showFewerItems'
+            ],
+            data: function () {
+              return {
+                form: undefined,
+                cluster: undefined
+              };
+            },
+            methods: {
+              // TODO display succes/error messages
+              // TODO test all actions
+              actionFormDone: function () {
+                this.form = undefined;
+              },
+              addTags: function () {
+                this.form = 'add:tags';
+              },
+              removeTags: function () {
+                this.form = 'remove:tags';
+              },
+              exportPCAP: function () {
+                this.form = 'export:pcap';
+              },
+              scrubPCAP: function () {
+                this.form = 'scrub:pcap';
+              },
+              deleteSession: function () {
+                this.form = 'delete:session';
+              },
+              sendSession: function (cluster) {
+                this.form = 'send:session';
+                this.cluster = cluster;
+              }
+            },
+            components: {
+              MolochTagSessions,
+              MolochDeleteSessions,
+              MolochScrubPcap,
+              MolochSendSessions,
+              MolochExportPcap
+            }
           }).$mount(this.$refs.detailContainer);
         }); // TODO catch
     },

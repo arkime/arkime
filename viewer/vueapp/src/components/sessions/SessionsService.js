@@ -340,6 +340,34 @@ export default {
     window.location = url;
   },
 
+  /**
+   * Open a new page to view unique values for different fields
+   * @param {string} exp          The field to get unique values for
+   * @param {number} counts       1 or 0 whether to include counts of the values
+   * @param {object} routeParams  The current url route parameters
+   */
+  exportUniqueValues: function (exp, counts, routeParams) {
+    routeParams.counts = counts;
+    routeParams.exp = exp;
+
+    let url = `unique.txt?${qs.stringify(routeParams)}`;
+
+    window.open(url, '_blank');
+  },
+
+  /**
+   * Open a new page to view spi graph data
+   * @param {string} dbField      The field to display spi graph data for
+   * @param {object} routeParams  The current url route parameters
+   */
+  openSpiGraph: function (dbField, routeParams) {
+    routeParams.field = dbField;
+
+    let url = `spigraph?${qs.stringify(routeParams)}`;
+
+    window.open(url, '_blank');
+  },
+
   /* internal methods ------------------------------------------------------ */
   /**
    * Get Request Options

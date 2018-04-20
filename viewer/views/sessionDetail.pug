@@ -29,7 +29,20 @@ ul.nav.nav-pills.mb-3
     b-dropdown-item(v-for="(value, key) in molochclusters", key="key", @click="sendSession(key)")
       | Send Session to {{ value.name }}
 
-div.form-container
+div.form-container.mb-2
+  - var sessions = [session];
+  div(v-if="form === 'add:tags'")
+    moloch-tag-sessions.form-container(:sessions=sessions, :add="true", :done="actionFormDone")
+  div(v-if="form === 'remove:tags'")
+    moloch-tag-sessions.form-container(:sessions=sessions, :add="false", :done="actionFormDone")
+  div(v-if="form === 'export:pcap'")
+    moloch-export-pcap.form-container(:sessions=sessions, :done="actionFormDone")
+  div(v-if="form === 'scrub:pcap'")
+    moloch-scrub-pcap.form-container(:sessions=sessions, :done="actionFormDone")
+  div(v-if="form === 'delete:session'")
+    moloch-delete-sessions.form-container(:sessions=sessions, :done="actionFormDone")
+  div(v-if="form === 'send:session'")
+    moloch-send-sessions.form-container(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
 
 dl
   dt Id
