@@ -327,7 +327,6 @@ export default {
 
 .sessionDetail dd {
   margin-left: 165px;
-  margin-top: 10px;
 }
 
 /* more items link */

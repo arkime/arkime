@@ -463,7 +463,7 @@ export default {
 
 <style scoped>
 .detail-field .field {
-  margin: -2px -6px -2px 2px;
+  margin: 0 -6px -2px 2px;
   padding: 2px;
 }
 
@@ -481,7 +481,7 @@ export default {
   margin: 0 -4px 0 0;
   border-radius: 3px;
   border: 1px solid transparent;
-  max-width: 100%;
+  max-width: 98%;
   line-height: 1.3;
 }
 

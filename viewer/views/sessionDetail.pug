@@ -227,7 +227,7 @@ dl
         | Open Src RIR SPI Graph
 
   dd
-    +ipPrint(session.srcIp, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
+    +ipPrint(session, session.srcIp, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -271,7 +271,7 @@ dl
         | Open Dst RIR SPI Graph
 
   dd
-    +ipPrint(session.dstIp, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
+    +ipPrint(session, session.dstIp, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
 
   if (session.srcPayload8 || session.dstPayload8)
     dt
@@ -291,14 +291,11 @@ dl
           | Open Dst Payload8 SPI Graph
 
     dd
-      // TODO payload breaks with newlines
       if (session.srcPayload8)
         strong.medium.ml-1 Src
         - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
         +clickableValue('payload8.src.hex', '"'+session.srcPayload8+'"')
-        | (
-        +clickableValue('payload8.src.utf8', '"'+srcPayload8a+'"')
-        |)
+        | ( #{srcPayload8a} )
       if (session.dstPayload8)
         if (session.srcPayload8)
           strong.medium.ml-4 Dst
@@ -306,9 +303,7 @@ dl
           strong.medium Dst
         - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
         +clickableValue('payload8.dst.hex', '"'+session.dstPayload8+'"')
-        | (
-        +clickableValue('payload8.src.utf8', '"'+dstPayload8a+'"')
-        |)
+        | ( #{dstPayload8a} )
 
   div.tag-list
     +arrayList(session, "tags", "Tags", "tags", '<div @click="displayFormContainer({form:\'add:tags\'})" v-b-tooltip title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ml-1"><span class="fa fa-plus-circle"></span></div>')
@@ -325,7 +320,7 @@ dl
 
   if (session.socks)
     dt
-      b-dropdown.clickable-label(text="Socks", size="sm", variant="default")
+      b-dropdown.clickable-label(text="Socks Dst", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('ip.socks', 0)")
           | Export Unique Socks Dst
         b-dropdown-item(@click="exportUnique('ip.socks', 1)")
@@ -362,7 +357,7 @@ dl
           | Open Socks RIR SPI Graph
 
     dd
-      +ipPrint(session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks")
+      +ipPrint(session, session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks")
 
     dt
       b-dropdown.clickable-label(text="Socks Host", size="sm", variant="default")

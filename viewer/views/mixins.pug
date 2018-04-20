@@ -65,12 +65,12 @@ mixin stringList(container, field, title, expr, extra)
         |!{extra}
 
 //- Standard method to print ip, port, geo, asn, and rir info
-mixin ipPrint(ipstr,port,geo,as,rir,expr,full,v6)
+mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
   span
     if (full)
-      moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+ipstr+'"', :field="fields['"+expr+"']", :pull-left="true")
+      moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+ipstr+'"', :field="fields['"+expr+"']", :pull-left="true", :session="session")
     else
-      moloch-session-field.detail-field(:expr='"ip.'+expr+'"', :value='"'+ipstr+'"', :field="fields['ip."+expr+"']", :pull-left="true")
+      moloch-session-field.detail-field(:expr='"ip.'+expr+'"', :value='"'+ipstr+'"', :field="fields['ip."+expr+"']", :pull-left="true", :session="session")
     - if (port !== undefined)
       strong :
       if (full)
@@ -138,7 +138,7 @@ mixin ipArrayList(container, field, title, expr, max)
       each ip,i in container[field]
         if (i == max)
           |<span style="display:none">
-        +ipPrint(container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
+        +ipPrint(container, container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
       if (container[field].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip;
