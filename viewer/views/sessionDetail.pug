@@ -1,7 +1,7 @@
 ul.nav.nav-pills.mb-3
   if (session.rootId)
     li.nav-item
-      a.nav-link(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
+      a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
     li.nav-item
       a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
     li.nav-item
@@ -14,7 +14,7 @@ ul.nav.nav-pills.mb-3
   li.nav-item
     a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.nav-item
-    a.nav-link(@click="openPermalink()", href='sessions?expression=id == ' + session.id + '&startTime=' + session.firstPacket + '&stopTime=' + session.lastPacket + '&openAll=1') Permalink
+    a.nav-link.cursor-pointer(@click="openPermalink()") Permalink
   b-dropdown.nav-item(text="Actions", size="sm")
     b-dropdown-item(@click="exportPCAP()")
       | Export PCAP
@@ -43,6 +43,9 @@ div.form-container.mb-2
     moloch-delete-sessions.form-container(:sessions=sessions, :done="actionFormDone")
   div(v-if="form === 'send:session'")
     moloch-send-sessions.form-container(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
+
+div.mb-2
+  moloch-toast(:message="message", :type="messageType", :done="messageDone")
 
 dl
   dt Id

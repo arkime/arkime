@@ -615,12 +615,12 @@ export default {
       }
 
       // unset open all for future queries
-      this.$router.push({
+      this.$router.replace({
         query: {
           ...this.$route.query,
           openAll: undefined
         }
-      }).replace();
+      });
     },
     /* event handlers ------------------------------------------------------ */
     /**

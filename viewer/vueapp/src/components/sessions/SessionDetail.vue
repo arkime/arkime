@@ -22,7 +22,210 @@
       ref="detailContainer">
     </div> <!-- /detail -->
 
-    <hr v-if="!loading && !error">
+    <!-- packet options -->
+    <div v-show="!loading"
+      class="packet-options">
+      <form class="form-inline mb-2 pt-2">
+        <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
+          <div class="form-group mb-1">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip
+                title="Number of Packets">
+                <span class="input-group-text">
+                  Packets
+                </span>
+              </span>
+              <select class="form-control"
+                style="-webkit-appearance:none;"
+                v-model="params.packets"
+                @change="getPackets()">
+                <option value="50">50</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="2000">2,000</option>
+              </select>
+            </div>
+            <b-form-group class="ml-1">
+              <b-form-radio-group
+                size="sm"
+                buttons
+                v-model="params.base"
+                @change="getPackets">
+                <b-radio value="natural"
+                  class="btn-radio">
+                  natural
+                </b-radio>
+                <b-radio value="ascii"
+                  class="btn-radio">
+                  ascii
+                </b-radio>
+                <b-radio value="utf8"
+                  class="btn-radio">
+                  utf8
+                </b-radio>
+                <b-radio value="hex"
+                  class="btn-radio">
+                  hex
+                </b-radio>
+              </b-form-radio-group>
+            </b-form-group>
+            <!-- TODO fix hover style -->
+            <button type="button"
+              class="btn btn-checkbox btn-sm ml-1"
+              :disabled="params.base !== 'hex'"
+              :class="{'active':params.line && params.base === 'hex'}"
+              @click="toggleLineNumbers">
+              <span class="fa fa-list-ol">
+              </span>&nbsp;
+              Line Numbers
+            </button>
+            <button type="button"
+              class="btn btn-checkbox btn-sm ml-1"
+              :class="{'active':params.gzip}"
+              @click="toggleCompression">
+              <span class="fa fa-file-archive-o">
+              </span>&nbsp;
+              Uncompress
+            </button>
+            <button type="button"
+              class="btn btn-checkbox btn-sm ml-1"
+              :class="{'active':params.image}"
+              @click="toggleImages">
+              <span class="fa fa-file-image-o">
+              </span>&nbsp;
+              Show Image &amp; Files
+            </button>
+            <button type="button"
+              class="btn btn-checkbox btn-sm ml-1"
+              :class="{'active':params.ts}"
+              @click="toggleTimestamps">
+              <span class="fa fa-clock-o">
+              </span>&nbsp;
+              Show Timestamps
+            </button>
+            <!-- TODO style -->
+            <!-- decodings -->
+            <div class="btn-group ml-1"
+              role="group">
+              <label v-for="(value, key) in decodings"
+                :key="key"
+                type="button"
+                class="btn btn-checkbox btn-sm"
+                v-b-tooltip.hover
+                :title="value.name + 'Decoding'"
+                :class="{'active':params.decode[key]}"
+                @click="toggleDecoding(key)">
+                {{ value.name }}
+              </label>
+            </div> <!-- /decodings -->
+            <!-- cyberchef -->
+            <b-dropdown right
+              size="sm"
+              class="pull-right ml-1"
+              variant="theme-primary"
+              text="CyberChef">
+              <b-dropdown-item target="_blank"
+                :href="cyberChefSrcUrl">
+                <span class="fa fa-fw fa-file-o"></span>&nbsp;
+                Open src packets with CyberChef
+              </b-dropdown-item>
+              <b-dropdown-item target="_blank"
+                :href="cyberChefDstUrl">
+                <span class="fa fa-fw fa-file-o"></span>&nbsp;
+                Open dst packets with CyberChef
+              </b-dropdown-item>
+            </b-dropdown> <!-- cyberchef -->
+          </div>
+        </fieldset>
+      </form>
+      <!-- TODO style and test -->
+      <!-- decoding form -->
+      <form v-if="decodingForm"
+        class="form-inline well well-sm mt-1">
+        <span v-for="field in decodings[decodingForm].fields"
+          :key="field.name"
+          v-if="!field.disabled">
+          <div class="form-group mr-1">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend">
+                <span class="input-group-text">
+                  {{ field.name }}
+                </span>
+              </span>
+              <input v-model="field.value"
+                class="form-control"
+                type="field.type"
+              />
+            </div>
+          </div>
+        </span>
+        <div class="btn-group btn-group-sm pull-right">
+          <button type="button"
+            class="btn btn-warning"
+            title="cancel"
+            v-b-tooltip.hover
+            @click="closeDecodingForm(false)">
+            <span class="fa fa-ban">
+            </span>
+          </button>
+          <button type="button"
+            class="btn btn-theme-primary"
+            title="apply"
+            v-b-tooltip.hover
+            @click="applyDecoding(decodingForm)">
+            <span class="fa fa-check">
+            </span>
+          </button>
+        </div>
+        <div class="help-block">
+          {{ decodings[decodingForm].title }}
+        </div>
+      </form> <!-- /decoding form -->
+    </div> <!-- /packet options -->
+
+    <!-- packets loading -->
+    <div v-if="!loading && loadingPackets"
+      class="mt-4 mb-4 large">
+      <span class="fa fa-spinner fa-spin">
+      </span>&nbsp;
+      Loading session packets&nbsp;
+      <!-- TODO cancel packets -->
+      <a @click="cancelPacketLoad()"
+        class="btn btn-warning btn-xs">
+        <span class="fa fa-ban">
+        </span>&nbsp;
+        cancel
+      </a>
+    </div> <!-- /packets loading -->
+
+    <!-- packets rendering -->
+    <div v-if="!loading && renderingPackets"
+      class="mt-4 mb-4 large">
+      <span class="fa fa-spinner fa-spin">
+      </span>&nbsp;
+      Rendering session packets
+    </div> <!-- /packets rendering -->
+
+    <!-- packets error -->
+    <div v-if="!error && errorPackets"
+      class="text-danger mt-4 mb-4 large">
+      <span class="fa fa-exclamation-triangle">
+      </span>&nbsp;
+      {{ errorPackets }}&nbsp;
+      <a @click="getPackets()"
+        class="btn btn-warning btn-xs">
+        <span class="fa fa-refresh">
+        </span>&nbsp;
+        retry
+      </a>
+    </div> <!-- /packets error -->
+
+    <!-- packets -->
+    <div class="inner packet-container"
+      v-html="packetHtml">
+    </div> <!-- packets -->
 
   </div> <!-- /session detail -->
 
@@ -30,6 +233,8 @@
 
 <script>
 import Vue from 'vue';
+import qs from 'qs';
+import sanitizeHtml from 'sanitize-html';
 import UserService from '../UserService';
 import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
@@ -39,6 +244,7 @@ import MolochDeleteSessions from '../sessions/Delete';
 import MolochScrubPcap from '../sessions/Scrub';
 import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
+import MolochToast from '../utils/Toast';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -59,6 +265,10 @@ export default {
       packetPromise: undefined,
       detailHtml: undefined,
       molochclusters: {},
+      packetHtml: undefined,
+      renderingPackets: false,
+      decodingForm: false,
+      decodings: {},
       params: {
         base: 'hex',
         line: false,
@@ -71,83 +281,95 @@ export default {
     };
   },
   computed: {
-    expression: {
-      get: function () {
-        return this.$store.state.expression;
-      },
-      set: function (newValue) {
-        this.$store.commit('setExpression', newValue);
-      }
+    // TODO test
+    cyberChefSrcUrl: function () {
+      return `${this.session.node}/session/${this.session.id}/cyberchef?type=src&recipe=[{"op":"From Hex","args":["None"]}]`;
     },
-    startTime: {
-      get: function () {
-        return this.$store.state.startTime;
-      },
-      set: function (newValue) {
-        this.$store.commit('setStartTime', newValue);
-      }
+    cyberChefDstUrl: function () {
+      return `${this.session.node}/session/${this.session.id}/cyberchef?type=dst&recipe=[{"op":"From Hex","args":["None"]}]`;
     }
   },
   created: function () {
-    console.log('session detail time!', this.session.id);
     this.getUserSettings();
     this.getDetailData();
-    // TODO get moloch molochClickables
-    // TODO get moloch fields
-    // TODO listen for open/close form container
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
-    // TODO openPermalink
+    toggleLineNumbers: function () {
+      // can only have line numbers in hex mode
+      if (!this.params.base === 'hex') { return; }
+      this.params.line = !this.params.line;
+      this.getPackets();
+    },
+    toggleCompression: function () {
+      this.params.gzip = !this.params.gzip;
+      this.getPackets();
+    },
+    toggleImages: function () {
+      this.params.image = !this.params.image;
+      this.getPackets();
+    },
+    toggleTimestamps: function () {
+      this.params.ts = !this.params.ts;
+      if (localStorage && this.userSettings.showTimestamps === 'last') {
+        // update browser saved ts if the user settings is set to last
+        localStorage['moloch-ts'] = this.params.ts;
+      }
+    },
     /**
-     * TODO test
-     * Adds a rootId expression
-     * @param {string} rootId The root id of the session
-     * @param {int} startTime The start time of the session
+     * Toggles a decoding on or off
+     * If a decoding needs more input, shows form
+     * @param {string} key Identifier of the decoding to toggle
      */
-    allSessions: function (rootId, startTime) {
-      let fullExpression = `rootId == "${rootId}"`;
+    toggleDecoding: function (key) {
+      let decoding = this.decodings[key];
 
-      this.expression = fullExpression;
+      decoding.active = !decoding.active;
 
-      if (this.$route.query.startTime) {
-        if (this.$route.query.startTime < startTime) {
-          startTime = this.$route.query.startTime;
-        }
+      if (decoding.fields && decoding.active) {
+        this.decodingForm = key;
+      } else {
+        this.decodingForm = false;
+        this.applyDecoding(key);
+      }
+    },
+    /**
+     * Closes the form for additional decoding input
+     * @param {bool} active The active state of the decoding
+     */
+    closeDecodingForm: function (active) {
+      if (this.decodingForm) {
+        this.decodings[this.decodingForm].active = active;
       }
 
-      this.startTime = startTime;
+      this.decodingForm = false;
     },
     /**
-     * Opens a new browser tab containing all the unique values for a given field
-     * @param {string} fieldID  The field id to display unique values for
-     * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+     * TODO test
+     * Sets the decode param, issues query, and closes form if necessary
+     * @param {key} key Identifier of the decoding to apply
      */
-    exportUnique: function (fieldID, counts) {
-      SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
-    },
-    /**
-     * Opens the spi graph page in a new browser tab
-     * @param {string} fieldID The field id (dbField) to display spi graph data for
-     */
-    openSpiGraph: function (fieldID) {
-      SessionsService.openSpiGraph(fieldID, this.$route.query);
-    },
-    /**
-     * Shows more items in a list of values
-     * @param {object} e The click event
-     */
-    showMoreItems: function (e) {
-      e.target.style.display = 'none';
-      e.target.previousSibling.style.display = 'inline-block';
-    },
-    /**
-     * Hides more items in a list of values
-     * @param {object} e The click event
-     */
-    showFewerItems: function (e) {
-      e.target.parentElement.style.display = 'none';
-      e.target.parentElement.nextElementSibling.style.display = 'inline-block';
+    applyDecoding: function (key) {
+      this.params.decode[key] = {};
+      let decoding = this.decodings[key];
+
+      if (decoding.active) {
+        if (decoding.fields) {
+          for (let i = 0, len = decoding.fields.length; i < len; ++i) {
+            let field = decoding.fields[i];
+            this.params.decode[key][field.key] = field.value;
+          }
+        }
+      } else {
+        this.params.decode[key] = null;
+        delete this.params.decode[key];
+      }
+
+      this.getPackets();
+      this.closeDecodingForm(decoding.active);
+
+      // update local storage
+      localStorage['moloch-decodings'] = JSON.stringify(this.params.decode);
     },
     /* helper functions ---------------------------------------------------- */
     /**
@@ -177,29 +399,46 @@ export default {
             propsData: {
               session: this.session,
               fields: responses[0],
-              molochclusters: responses[1],
-              exportUnique: this.exportUnique,
-              openSpiGraph: this.openSpiGraph,
-              showMoreItems: this.showMoreItems,
-              showFewerItems: this.showFewerItems
+              molochclusters: responses[1]
             },
-            props: [
-              // variables
-              'session', 'fields', 'molochclusters',
-              // functions
-              'exportUnique', 'openSpiGraph', 'showMoreItems', 'showFewerItems'
-            ],
+            props: [ 'session', 'fields', 'molochclusters' ],
             data: function () {
               return {
                 form: undefined,
-                cluster: undefined
+                cluster: undefined,
+                message: undefined,
+                messageType: undefined
               };
             },
+            computed: {
+              expression: {
+                get: function () {
+                  return this.$store.state.expression;
+                },
+                set: function (newValue) {
+                  this.$store.commit('setExpression', newValue);
+                }
+              },
+              startTime: {
+                get: function () {
+                  return this.$store.state.startTime;
+                },
+                set: function (newValue) {
+                  this.$store.commit('setStartTime', newValue);
+                }
+              }
+            },
             methods: {
-              // TODO display succes/error messages
-              // TODO test all actions
-              actionFormDone: function () {
+              actionFormDone: function (message, success, reload) {
+                if (message) {
+                  this.message = message;
+                  this.messageType = success ? 'success' : 'warning';
+                }
                 this.form = undefined;
+              },
+              messageDone: function () {
+                this.message = undefined;
+                this.messageType = undefined;
               },
               addTags: function () {
                 this.form = 'add:tags';
@@ -219,6 +458,69 @@ export default {
               sendSession: function (cluster) {
                 this.form = 'send:session';
                 this.cluster = cluster;
+              },
+              openPermalink: function () {
+                let params = {
+                  expression: `id == ${this.session.id}`,
+                  startTime: Math.floor(this.session.firstPacket / 1000),
+                  stopTime: Math.floor(this.session.lastPacket / 1000),
+                  openAll: 1
+                };
+
+                let url = `sessions?${qs.stringify(params)}`;
+
+                window.location = url;
+              },
+              /**
+               * Adds a rootId expression and applies a new start time
+               * @param {string} rootId The root id of the session
+               * @param {int} startTime The start time of the session
+               */
+              allSessions: function (rootId, startTime) {
+                startTime = Math.floor(startTime / 1000);
+
+                let fullExpression = `rootId == ${rootId}`;
+
+                this.expression = fullExpression;
+
+                if (this.$route.query.startTime) {
+                  if (this.$route.query.startTime < startTime) {
+                    startTime = this.$route.query.startTime;
+                  }
+                }
+
+                this.startTime = startTime;
+              },
+              /**
+               * Opens a new browser tab containing all the unique values for a given field
+               * @param {string} fieldID  The field id to display unique values for
+               * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+               */
+              exportUnique: function (fieldID, counts) {
+                SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
+              },
+              /**
+               * Opens the spi graph page in a new browser tab
+               * @param {string} fieldID The field id (dbField) to display spi graph data for
+               */
+              openSpiGraph: function (fieldID) {
+                SessionsService.openSpiGraph(fieldID, this.$route.query);
+              },
+              /**
+               * Shows more items in a list of values
+               * @param {object} e The click event
+               */
+              showMoreItems: function (e) {
+                e.target.style.display = 'none';
+                e.target.previousSibling.style.display = 'inline-block';
+              },
+              /**
+               * Hides more items in a list of values
+               * @param {object} e The click event
+               */
+              showFewerItems: function (e) {
+                e.target.parentElement.style.display = 'none';
+                e.target.parentElement.nextElementSibling.style.display = 'inline-block';
               }
             },
             components: {
@@ -226,10 +528,15 @@ export default {
               MolochDeleteSessions,
               MolochScrubPcap,
               MolochSendSessions,
-              MolochExportPcap
+              MolochExportPcap,
+              MolochToast
             }
           }).$mount(this.$refs.detailContainer);
-        }); // TODO catch
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.error = error;
+        });
     },
     getMolochClusters: function () {
       ConfigService.getMolochClusters()
@@ -308,7 +615,7 @@ export default {
             if (this.decodings.hasOwnProperty(key)) {
               if (this.params.decode[key]) {
                 this.decodings[key].active = true;
-                for (let field in this.$scope.params.decode[key]) {
+                for (let field in this.params.decode[key]) {
                   for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
                     if (this.decodings[key].fields[i].key === field) {
                       this.decodings[key].fields[i].value = this.params.decode[key][field];
@@ -350,14 +657,22 @@ export default {
       this.packetPromise.promise
         .then((response) => {
           this.loadingPackets = false;
+          this.renderingPackets = true;
           this.packetPromise = undefined;
 
-          // TODO
-          // console.log(response);
-          // this.packetHtml = this.$sce.trustAsHtml(response.data);
           // remove all un-whitelisted tokens from the html
-          // this.packetHtml = this.$sanitize(this.$scope.packetHtml);
-          // this.renderPackets();
+          this.packetHtml = sanitizeHtml(response, {
+            allowedClasses: {
+              'div': [ 'row', 'col-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
+              'span': [ 'pull-right', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle' ],
+              'em': [ 'ts-value' ],
+              'h5': [ 'text-theme-quaternary' ]
+            }
+          });
+
+          // TODO modify the packet timestamp values
+          // TODO add tooltips to display source/destination byte visualization
+          this.renderingPackets = false;
         })
         .catch((error) => {
           this.loadingPackets = false;
@@ -365,7 +680,7 @@ export default {
           this.packetPromise = undefined;
         });
     }
-  }
+  } // TODO on destroy cleanup
 };
 </script>
 
@@ -385,30 +700,34 @@ export default {
   border-top: 1px solid var(--color-gray);
 }
 
-.sessionDetail .packet-options .btn.active {
+.packet-options {
+  border-top: var(--color-gray) 1px solid;
+}
+
+.packet-options .btn.active {
   font-weight: bolder;
 }
 
-.sessionDetail .packet-container .tooltip .tooltip-inner {
+.packet-container .tooltip .tooltip-inner {
   max-width: 400px;
 }
 
-.sessionDetail .packet-container .file {
+.packet-container .file {
   display: inline-block;
   margin-bottom: 20px;
 }
 
 /* src/dst packet text colors */
-.sessionDetail .sessiondst {
+.packet-container .sessiondst {
   color: var(--color-dst, #0000FF) !important;
 }
 
-.sessionDetail .sessionsrc {
+.packet-container .sessionsrc {
   color: var(--color-src, #CA0404) !important;
 }
 
 /* timestamps */
-.sessionDetail .session-detail-ts {
+.packet-container .session-detail-ts {
   display: none;
   color: var(--color-foreground-accent);
   font-weight: bold;
@@ -418,16 +737,16 @@ export default {
   border-bottom: 1px solid var(--color-gray);
 }
 
-.sessionDetail .session-detail-ts + pre {
+.packet-container .session-detail-ts + pre {
   color: inherit;
   margin-top: -1px;
 }
 
-.sessionDetail .session-detail-ts + pre .sessionln {
+.packet-container .session-detail-ts + pre .sessionln {
   color: darkgreen;
 }
-
-.sessionDetail .sessionDetail.show-ts ~ .packet-container .session-detail-ts {
+/* TODO */
+.packet-container.show-ts ~ .packet-container .session-detail-ts {
   display: block;
 }
 
