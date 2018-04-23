@@ -1042,6 +1042,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
+    static int            currentPos[NUMBER_OF_STATS];
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
     int                   i;
@@ -1055,6 +1056,13 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
 
     if (lastPackets[n] == 0) {
         lastTime[n] = startTime;
+    }
+
+    // If within 1 second just increment currentPos, otherwise reset
+    if (currentTime.tv_sec - lastTime[n].tv_sec <= intervals[n]+1) {
+        currentPos[n] = (currentPos[n] + 1) % 1440;
+    } else {
+        currentPos[n] = (currentTime.tv_sec/intervals[n]) % 1440;
     }
 
     uint64_t overloadDropped = moloch_packet_dropped_overload();
@@ -1190,7 +1198,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         else
             moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
     } else {
-        key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
+        key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, currentPos[n], intervals[n]);
         moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
     }
 }
