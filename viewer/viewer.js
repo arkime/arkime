@@ -445,7 +445,7 @@ function createSessionDetailNew() {
     });
   }, function () {
     internals.sessionDetailNew = "include views/mixins.pug\n" +
-                                 "div.sessionDetail(sessionid=session.id)\n" +
+                                 "div.session-detail(sessionid=session.id)\n" +
                                  "  include views/sessionDetail\n";
     Object.keys(found).sort().forEach(function(k) {
       internals.sessionDetailNew += found[k];

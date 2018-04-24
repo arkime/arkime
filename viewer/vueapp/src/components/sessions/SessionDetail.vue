@@ -24,11 +24,11 @@
 
     <!-- packet options -->
     <div v-show="!loading"
-      class="packet-options">
+      class="packet-options mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
         <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
-          <div class="form-group mb-1">
-            <div class="input-group input-group-sm">
+          <div class="form-group">
+            <div class="input-group input-group-sm mb-1 mr-1">
               <span class="input-group-prepend cursor-help"
                 v-b-tooltip
                 title="Number of Packets">
@@ -47,12 +47,12 @@
                 <option value="2000">2,000</option>
               </select>
             </div>
-            <b-form-group class="ml-1">
+            <b-form-group class="mr-1 mb-1">
               <b-form-radio-group
                 size="sm"
                 buttons
                 v-model="params.base"
-                @change="getPackets">
+                @input="getPackets">
                 <b-radio value="natural"
                   class="btn-radio">
                   natural
@@ -71,9 +71,8 @@
                 </b-radio>
               </b-form-radio-group>
             </b-form-group>
-            <!-- TODO fix hover style -->
             <button type="button"
-              class="btn btn-checkbox btn-sm ml-1"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :disabled="params.base !== 'hex'"
               :class="{'active':params.line && params.base === 'hex'}"
               @click="toggleLineNumbers">
@@ -82,7 +81,7 @@
               Line Numbers
             </button>
             <button type="button"
-              class="btn btn-checkbox btn-sm ml-1"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.gzip}"
               @click="toggleCompression">
               <span class="fa fa-file-archive-o">
@@ -90,7 +89,7 @@
               Uncompress
             </button>
             <button type="button"
-              class="btn btn-checkbox btn-sm ml-1"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.image}"
               @click="toggleImages">
               <span class="fa fa-file-image-o">
@@ -98,32 +97,31 @@
               Show Image &amp; Files
             </button>
             <button type="button"
-              class="btn btn-checkbox btn-sm ml-1"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.ts}"
               @click="toggleTimestamps">
               <span class="fa fa-clock-o">
               </span>&nbsp;
               Show Timestamps
             </button>
-            <!-- TODO style -->
             <!-- decodings -->
-            <div class="btn-group ml-1"
+            <div class="btn-group mr-1 mb-1"
               role="group">
-              <label v-for="(value, key) in decodings"
+              <button v-for="(value, key) in decodings"
                 :key="key"
                 type="button"
-                class="btn btn-checkbox btn-sm"
+                class="btn btn-secondary btn-checkbox btn-sm"
                 v-b-tooltip.hover
                 :title="value.name + 'Decoding'"
                 :class="{'active':params.decode[key]}"
                 @click="toggleDecoding(key)">
                 {{ value.name }}
-              </label>
+              </button>
             </div> <!-- /decodings -->
             <!-- cyberchef -->
             <b-dropdown right
               size="sm"
-              class="pull-right ml-1"
+              class="pull-right mb-1"
               variant="theme-primary"
               text="CyberChef">
               <b-dropdown-item target="_blank"
@@ -140,49 +138,51 @@
           </div>
         </fieldset>
       </form>
-      <!-- TODO style and test -->
       <!-- decoding form -->
-      <form v-if="decodingForm"
-        class="form-inline well well-sm mt-1">
-        <span v-for="field in decodings[decodingForm].fields"
-          :key="field.name"
-          v-if="!field.disabled">
-          <div class="form-group mr-1">
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend">
-                <span class="input-group-text">
-                  {{ field.name }}
+      <div v-if="decodingForm">
+        <form class="form-inline well well-sm mt-1">
+          <span v-for="field in decodings[decodingForm].fields"
+            :key="field.name"
+            v-if="!field.disabled">
+            <div class="form-group mr-1 mt-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    {{ field.name }}
+                  </span>
                 </span>
-              </span>
-              <input v-model="field.value"
-                class="form-control"
-                type="field.type"
-              />
+                <input v-model="field.value"
+                  class="form-control"
+                  type="field.type"
+                />
+              </div>
             </div>
+          </span>
+          <div class="btn-group btn-group-sm pull-right mt-1 mb-1">
+            <button type="button"
+              class="btn btn-warning"
+              title="cancel"
+              v-b-tooltip.hover
+              @click="closeDecodingForm(false)">
+              <span class="fa fa-ban">
+              </span>
+            </button>
+            <button type="button"
+              class="btn btn-theme-primary"
+              title="apply"
+              v-b-tooltip.hover
+              @click="applyDecoding(decodingForm)">
+              <span class="fa fa-check">
+              </span>
+            </button>
           </div>
-        </span>
-        <div class="btn-group btn-group-sm pull-right">
-          <button type="button"
-            class="btn btn-warning"
-            title="cancel"
-            v-b-tooltip.hover
-            @click="closeDecodingForm(false)">
-            <span class="fa fa-ban">
-            </span>
-          </button>
-          <button type="button"
-            class="btn btn-theme-primary"
-            title="apply"
-            v-b-tooltip.hover
-            @click="applyDecoding(decodingForm)">
-            <span class="fa fa-check">
-            </span>
-          </button>
-        </div>
+        </form>
         <div class="help-block">
+          <span class="fa fa-info-circle">
+          </span>&nbsp;
           {{ decodings[decodingForm].title }}
         </div>
-      </form> <!-- /decoding form -->
+      </div> <!-- /decoding form -->
     </div> <!-- /packet options -->
 
     <!-- packets loading -->
@@ -191,13 +191,13 @@
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
       Loading session packets&nbsp;
-      <!-- TODO cancel packets -->
-      <a @click="cancelPacketLoad()"
+      <button type="button"
+        @click="cancelPacketLoad()"
         class="btn btn-warning btn-xs">
         <span class="fa fa-ban">
         </span>&nbsp;
         cancel
-      </a>
+      </button>
     </div> <!-- /packets loading -->
 
     <!-- packets rendering -->
@@ -210,22 +210,191 @@
 
     <!-- packets error -->
     <div v-if="!error && errorPackets"
-      class="text-danger mt-4 mb-4 large">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
-      {{ errorPackets }}&nbsp;
-      <a @click="getPackets()"
-        class="btn btn-warning btn-xs">
+      class="mt-4 mb-4 large">
+      <span class="text-danger">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        {{ errorPackets }}&nbsp;
+      </span>
+      <button type="button"
+        @click="getPackets()"
+        class="btn btn-success btn-xs">
         <span class="fa fa-refresh">
         </span>&nbsp;
         retry
-      </a>
+      </button>
     </div> <!-- /packets error -->
 
     <!-- packets -->
-    <div class="inner packet-container"
-      v-html="packetHtml">
+    <div v-if="!loadingPackets && !errorPackets"
+      class="inner packet-container mr-1 ml-1"
+      v-html="packetHtml"
+      ref="packetContainer"
+      :class="{'show-ts':params.ts === true}">
     </div> <!-- packets -->
+
+    <!-- packet options -->
+    <div v-show="!loading && !loadingPackets && !errorPackets"
+      class="mr-1 ml-1">
+      <form class="form-inline mb-2 pt-2">
+        <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
+          <div class="form-group">
+            <div class="input-group input-group-sm mb-1 mr-1">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip
+                title="Number of Packets">
+                <span class="input-group-text">
+                  Packets
+                </span>
+              </span>
+              <select class="form-control"
+                style="-webkit-appearance:none;"
+                v-model="params.packets"
+                @change="getPackets()">
+                <option value="50">50</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="2000">2,000</option>
+              </select>
+            </div>
+            <b-form-group class="mr-1 mb-1">
+              <b-form-radio-group
+                size="sm"
+                buttons
+                v-model="params.base"
+                @input="getPackets">
+                <b-radio value="natural"
+                  class="btn-radio">
+                  natural
+                </b-radio>
+                <b-radio value="ascii"
+                  class="btn-radio">
+                  ascii
+                </b-radio>
+                <b-radio value="utf8"
+                  class="btn-radio">
+                  utf8
+                </b-radio>
+                <b-radio value="hex"
+                  class="btn-radio">
+                  hex
+                </b-radio>
+              </b-form-radio-group>
+            </b-form-group>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :disabled="params.base !== 'hex'"
+              :class="{'active':params.line && params.base === 'hex'}"
+              @click="toggleLineNumbers">
+              <span class="fa fa-list-ol">
+              </span>&nbsp;
+              Line Numbers
+            </button>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :class="{'active':params.gzip}"
+              @click="toggleCompression">
+              <span class="fa fa-file-archive-o">
+              </span>&nbsp;
+              Uncompress
+            </button>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :class="{'active':params.image}"
+              @click="toggleImages">
+              <span class="fa fa-file-image-o">
+              </span>&nbsp;
+              Show Image &amp; Files
+            </button>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :class="{'active':params.ts}"
+              @click="toggleTimestamps">
+              <span class="fa fa-clock-o">
+              </span>&nbsp;
+              Show Timestamps
+            </button>
+            <!-- decodings -->
+            <div class="btn-group mr-1 mb-1"
+              role="group">
+              <button v-for="(value, key) in decodings"
+                :key="key"
+                type="button"
+                class="btn btn-secondary btn-checkbox btn-sm"
+                v-b-tooltip.hover
+                :title="value.name + 'Decoding'"
+                :class="{'active':params.decode[key]}"
+                @click="toggleDecoding(key)">
+                {{ value.name }}
+              </button>
+            </div> <!-- /decodings -->
+            <!-- cyberchef -->
+            <b-dropdown right
+              size="sm"
+              class="pull-right mb-1"
+              variant="theme-primary"
+              text="CyberChef">
+              <b-dropdown-item target="_blank"
+                :href="cyberChefSrcUrl">
+                <span class="fa fa-fw fa-file-o"></span>&nbsp;
+                Open src packets with CyberChef
+              </b-dropdown-item>
+              <b-dropdown-item target="_blank"
+                :href="cyberChefDstUrl">
+                <span class="fa fa-fw fa-file-o"></span>&nbsp;
+                Open dst packets with CyberChef
+              </b-dropdown-item>
+            </b-dropdown> <!-- cyberchef -->
+          </div>
+        </fieldset>
+      </form>
+      <!-- decoding form -->
+      <div v-if="decodingForm">
+        <form class="form-inline well well-sm mt-1">
+          <span v-for="field in decodings[decodingForm].fields"
+            :key="field.name"
+            v-if="!field.disabled">
+            <div class="form-group mr-1 mt-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    {{ field.name }}
+                  </span>
+                </span>
+                <input v-model="field.value"
+                  class="form-control"
+                  type="field.type"
+                />
+              </div>
+            </div>
+          </span>
+          <div class="btn-group btn-group-sm pull-right mt-1 mb-1">
+            <button type="button"
+              class="btn btn-warning"
+              title="cancel"
+              v-b-tooltip.hover
+              @click="closeDecodingForm(false)">
+              <span class="fa fa-ban">
+              </span>
+            </button>
+            <button type="button"
+              class="btn btn-theme-primary"
+              title="apply"
+              v-b-tooltip.hover
+              @click="applyDecoding(decodingForm)">
+              <span class="fa fa-check">
+              </span>
+            </button>
+          </div>
+        </form>
+        <div class="help-block">
+          <span class="fa fa-info-circle">
+          </span>&nbsp;
+          {{ decodings[decodingForm].title }}
+        </div>
+      </div> <!-- /decoding form -->
+    </div> <!-- /packet options -->
 
   </div> <!-- /session detail -->
 
@@ -281,7 +450,6 @@ export default {
     };
   },
   computed: {
-    // TODO test
     cyberChefSrcUrl: function () {
       return `${this.session.node}/session/${this.session.id}/cyberchef?type=src&recipe=[{"op":"From Hex","args":["None"]}]`;
     },
@@ -295,6 +463,15 @@ export default {
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
+    /* Cancels the packet loading request */
+    cancelPacketLoad: function () {
+      if (this.packetPromise) {
+        this.packetPromise.source.cancel();
+        this.packetPromise = null;
+        this.loadingPackets = false;
+        this.errorPackets = 'Request canceled';
+      }
+    },
     toggleLineNumbers: function () {
       // can only have line numbers in hex mode
       if (!this.params.base === 'hex') { return; }
@@ -345,7 +522,6 @@ export default {
       this.decodingForm = false;
     },
     /**
-     * TODO test
      * Sets the decode param, issues query, and closes form if necessary
      * @param {key} key Identifier of the decoding to apply
      */
@@ -387,7 +563,6 @@ export default {
         .then((responses) => {
           this.loading = false;
 
-          // TODO put this in own file?
           new Vue({
             // template string here
             template: responses[2].data,
@@ -662,17 +837,57 @@ export default {
 
           // remove all un-whitelisted tokens from the html
           this.packetHtml = sanitizeHtml(response, {
+            allowedTags: [ 'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img' ],
             allowedClasses: {
               'div': [ 'row', 'col-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
-              'span': [ 'pull-right', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle' ],
+              'span': [ 'pull-right', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip' ],
               'em': [ 'ts-value' ],
-              'h5': [ 'text-theme-quaternary' ]
+              'h5': [ 'text-theme-quaternary' ],
+              'a': [ 'imagetag', 'file' ]
+            },
+            allowedAttributes: {
+              'div': [ 'value' ],
+              'img': [ 'src' ],
+              'a': [ 'target', 'href' ]
             }
           });
 
-          // TODO modify the packet timestamp values
-          // TODO add tooltips to display source/destination byte visualization
-          this.renderingPackets = false;
+          setTimeout(() => { // wait until session packets are rendered
+            // tooltips for src/dst byte images
+            let tss = this.$refs.packetContainer.getElementsByClassName('session-detail-ts');
+            for (let i = 0; i < tss.length; ++i) {
+              let timeEl = tss[i];
+              let value = timeEl.getAttribute('value');
+              timeEl = timeEl.getElementsByClassName('ts-value');
+              if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
+                let time = this.$options.filters.timezoneDateString(
+                  Math.floor(value / 1000),
+                  this.userSettings.timezone,
+                  'YYYY/MM/DD HH:mm:ss.sss z'
+                );
+                timeEl[0].innerHTML = time;
+              }
+            }
+
+            // tooltips for linked images
+            let imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
+            for (let i = 0; i < imgs.length; ++i) {
+              let img = imgs[i];
+              let href = img.getAttribute('href');
+              href = href.replace('body', 'bodypng');
+
+              let tooltip = document.createElement('span');
+              tooltip.className = 'img-tip';
+              tooltip.innerHTML = `File Bytes:
+                <br>
+                <img src="${href}">
+              `;
+
+              img.appendChild(tooltip);
+            }
+
+            this.renderingPackets = false;
+          });
         })
         .catch((error) => {
           this.loadingPackets = false;
@@ -680,32 +895,29 @@ export default {
           this.packetPromise = undefined;
         });
     }
-  } // TODO on destroy cleanup
+  },
+  beforeDestroy: function () {
+    if (this.packetPromise) {
+      this.cancelPacketLoad();
+    }
+  }
 };
 </script>
 
 <style>
-.sessionDetail {
+.session-detail {
   display: block;
   margin-left: var(--px-md);
   margin-right: var(--px-md);
 }
 
-.sessionDetail hr {
-  border-color: var(--color-gray);
-}
-
-.sessionDetail h4.sessionDetailMeta {
+.session-detail h4.sessionDetailMeta {
   padding-top: 10px;
   border-top: 1px solid var(--color-gray);
 }
 
 .packet-options {
   border-top: var(--color-gray) 1px solid;
-}
-
-.packet-options .btn.active {
-  font-weight: bolder;
 }
 
 .packet-container .tooltip .tooltip-inner {
@@ -717,13 +929,47 @@ export default {
   margin-bottom: 20px;
 }
 
-/* src/dst packet text colors */
-.packet-container .sessiondst {
-  color: var(--color-dst, #0000FF) !important;
+/* image tooltips */
+.packet-container .srccol:hover,
+.packet-container .dstcol:hover,
+.packet-container .imagetag:hover {
+  position: relative;
 }
-
-.packet-container .sessionsrc {
-  color: var(--color-src, #CA0404) !important;
+.packet-container .srccol .src-col-tip,
+.packet-container .dstcol .dst-col-tip,
+.packet-container .imagetag .img-tip {
+  display: none;
+}
+.packet-container .srccol:hover .src-col-tip,
+.packet-container .dstcol:hover .dst-col-tip,
+.packet-container .imagetag:hover .img-tip {
+  font-size: 12px;
+  display: block;
+  position: absolute;
+  margin: 10px;
+  left: 0;
+  top: 20px;
+  padding: 4px 6px;
+  color: white;
+  text-align: center;
+  background-color: black;
+  border-radius: 5px;
+  line-height: 1.2;
+  z-index: 2;
+}
+.packet-container .srccol .src-col-tip:before,
+.packet-container .dstcol .dst-col-tip:before,
+.packet-container .imagetag .img-tip:before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid black;
+  top: -7px;
+  left: 8px;
 }
 
 /* timestamps */
@@ -732,26 +978,36 @@ export default {
   color: var(--color-foreground-accent);
   font-weight: bold;
   padding: 0 4px;
-  margin-left: 2px;
-  margin-right: 2px;
   border-bottom: 1px solid var(--color-gray);
 }
-
-.packet-container .session-detail-ts + pre {
-  color: inherit;
-  margin-top: -1px;
+.packet-container.show-ts .session-detail-ts {
+  display: block !important;
 }
 
-.packet-container .session-detail-ts + pre .sessionln {
+/* packets */
+.packet-container pre {
+  display: block;
+  padding: 3px;
+  font-size: 12px;
+  word-break: break-all;
+  word-wrap: break-word;
+  border-radius: 0 0 4px 4px;
+  margin-top: -1px;
+  color: inherit;
+}
+.packet-container pre .sessionln {
   color: darkgreen;
 }
-/* TODO */
-.packet-container.show-ts ~ .packet-container .session-detail-ts {
-  display: block;
+/* src/dst packet text colors */
+.packet-container .sessiondst {
+  color: var(--color-dst, #0000FF) !important;
+}
+.packet-container .sessionsrc {
+  color: var(--color-src, #CA0404) !important;
 }
 
 /* list values */
-.sessionDetail dt {
+.session-detail dt {
   float: left;
   clear: left;
   width: 160px;
@@ -760,12 +1016,12 @@ export default {
   line-height: 1.7;
 }
 
-.sessionDetail dd {
+.session-detail dd {
   margin-left: 165px;
 }
 
 /* more items link */
-.sessionDetail .show-more-items {
+.session-detail .show-more-items {
   margin-left: 6px;
   margin-right: 6px;
   font-size: 12px;
@@ -773,34 +1029,34 @@ export default {
 }
 
 /* top navigation links */
-.sessionDetail .nav-pills {
+.session-detail .nav-pills {
   border-bottom: 1px solid var(--color-gray);
   padding-bottom: 4px;
   padding-top: 4px;
 }
 
-.sessionDetail .nav-pills li.nav-item a,
-.sessionDetail .nav-pills div.nav-item button {
+.session-detail .nav-pills li.nav-item a,
+.session-detail .nav-pills div.nav-item button {
   color: var(--color-foreground);
   background-color: transparent;
   border: none;
 }
 
-.sessionDetail .nav-pills > li.nav-item > a:hover,
-.sessionDetail .nav-pills > li.nav-item.open > a,
-.sessionDetail .nav-pills > li.nav-item.open > a:hover,
-.sessionDetail .nav-pills > div.nav-item > button:hover,
-.sessionDetail .nav-pills > div.nav-item.open > button,
-.sessionDetail .nav-pills > div.nav-item.open > button:hover  {
+.session-detail .nav-pills > li.nav-item > a:hover,
+.session-detail .nav-pills > li.nav-item.open > a,
+.session-detail .nav-pills > li.nav-item.open > a:hover,
+.session-detail .nav-pills > div.nav-item > button:hover,
+.session-detail .nav-pills > div.nav-item.open > button,
+.session-detail .nav-pills > div.nav-item.open > button:hover  {
   background-color: var(--color-quaternary-lighter);
 }
 
 /* clickable labels */
-.sessionDetail .clickable-label {
+.session-detail .clickable-label {
   margin-top: -2px;
 }
 
-.sessionDetail .clickable-label button.btn {
+.session-detail .clickable-label button.btn {
   height: 23px;
   background-color: transparent;
   font-size: 12px;
@@ -808,18 +1064,18 @@ export default {
   padding: 1px 5px;
 }
 
-.sessionDetail .clickable-label button.btn:hover {
+.session-detail .clickable-label button.btn:hover {
   color: #333;
   background-color: var(--color-gray);
   border-color: var(--color-gray);
 }
 
-.sessionDetail .clickable-label .dropdown-menu {
+.session-detail .clickable-label .dropdown-menu {
   max-height: 280px;
   overflow-y: auto;
 }
 
-.sessionDetail .clickable-label .dropdown-menu .dropdown-item {
+.session-detail .clickable-label .dropdown-menu .dropdown-item {
   font-size: 12px;
 }
 </style>

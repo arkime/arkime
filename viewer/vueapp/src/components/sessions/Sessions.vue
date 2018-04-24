@@ -59,7 +59,8 @@
             <template v-for="session of sessions.data">
               <tr :key="session.id">
                 <td>
-                  <toggle-btn @toggle="toggleSessionDetail(session)">
+                  <toggle-btn class="mt-1"
+                    @toggle="toggleSessionDetail(session)">
                   </toggle-btn>
                   <moloch-session-field
                     :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
@@ -678,7 +679,7 @@ table.sessions-table thead tr th:first-child {
   border-right: none;
 }
 
-table.sessions-table thead tr th:first-child {
+table.sessions-table thead tr th:first-child{
   padding: 0;
   vertical-align: middle;
 }

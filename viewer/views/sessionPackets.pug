@@ -1,8 +1,8 @@
 if (session._err)
-  div.alert.alert-danger 
+  div.alert.alert-danger
     span.fa.fa-exclamation-triangle
     strong &nbsp; #{session._err}
-else 
+else
   if (session.totPackets[0] > reqPackets)
     h5.text-theme-quaternary
       span.fa.fa-info-circle.fa-lg
@@ -11,11 +11,16 @@ else
   div.row#textpacket
     div.col-md-6
       h4
-        span.srccol(title="Source Bytes:<br><img src='" + session.node + "/raw/" + session.id + ".png?type=src'>") Source
+        span.srccol Source
+          span.src-col-tip Source Bytes:
+            br
+            img(src=session.node + "/raw/" + session.id + ".png?type=src")
     div.col-md-6
       h4
-        span.dstcol(title="Destination Bytes:<br><img src='" + session.node + "/raw/" + session.id + ".png?type=dst'>") Destination
-
+        span.dstcol Destination
+          span.dst-col-tip Destination Bytes:
+            br
+            img(src=session.node + "/raw/" + session.id + ".png?type=dst")
   each item, i in data
     div.row
       if item.client == 0

@@ -205,21 +205,3 @@ pre {
   background-color: var(--color-gray-lighter);
   border-color    : var(--color-gray-light);
 }
-
-
-/* themed radio/checkbox buttons */
-label.btn-radio, button.btn-checkbox {
-  background-image: none;
-  background-color: transparent;
-  border-color    : var(--color-primary);
-  color           : var(--color-primary);
-}
-label.btn-radio:hover, button.btn-checkbox:hover {
-  color: var(--color-gray) !important;
-  background-color: var(--color-primary-dark);
-}
-label.btn-radio.active, button.btn-checkbox.active {
-  color           : var(--color-gray-light) !important;
-  border-color    : var(--color-primary) !important;
-  background-color: var(--color-primary) !important;
-}
