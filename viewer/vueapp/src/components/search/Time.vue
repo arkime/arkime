@@ -43,7 +43,7 @@
             Start
           </span>
         </span>
-        <flat-pickr v-model="startTime"
+        <flat-pickr v-model="time.startTime"
           @on-change="changeStartTime"
           @on-close="validateDate"
           :config="startTimeConfig"
@@ -73,7 +73,7 @@
             End
           </span>
         </span>
-        <flat-pickr v-model="stopTime"
+        <flat-pickr v-model="time.stopTime"
           @on-change="changeStopTime"
           @on-close="validateDate"
           :config="stopTimeConfig"
@@ -211,19 +211,16 @@ export default {
         this.$emit('timeChange');
       }
     },
-    // watch for other components to update the start time
-    'startTime': function (newVal, oldVal) {
-      if (newVal && oldVal && newVal !== oldVal) {
-        console.log('start time watcher');
-        dateChanged = true;
-        this.validateDate();
-      }
-    },
-    // watch for other components to update the stop time
-    'stopTime': function (newVal, oldVal) {
-      if (newVal && oldVal && newVal !== oldVal) {
-        dateChanged = true;
-        this.validateDate();
+    // watch for other components to update the start and stop time
+    'time': {
+      deep: true,
+      handler (newVal, oldVal) {
+        console.log('time watcher'); // TODO remove comments
+        if (newVal && oldVal) {
+          console.log('time changed');
+          dateChanged = true;
+          this.validateDate();
+        }
       }
     }
   },
@@ -245,20 +242,12 @@ export default {
     );
   },
   computed: {
-    startTime: {
+    time: {
       get: function () {
-        return this.$store.state.startTime;
+        return this.$store.state.time;
       },
       set: function (newValue) {
-        this.$store.commit('setStartTime', newValue);
-      }
-    },
-    stopTime: {
-      get: function () {
-        return this.$store.state.stopTime;
-      },
-      set: function (newValue) {
-        this.$store.commit('setStopTime', newValue);
+        this.$store.commit('setTime', newValue);
       }
     },
     timeRange: {
@@ -295,9 +284,9 @@ export default {
      * Notes that the date has changed so it can be validated
      */
     changeStartTime: function (selectedDates, dateStr, instance) {
-      if (this.startTime !== dateStr) {
+      if (this.time.startTime !== dateStr) {
         dateChanged = true;
-        this.startTime = dateStr;
+        this.time.startTime = dateStr;
       }
     },
     /**
@@ -305,9 +294,9 @@ export default {
      * Notes that the date has changed so it can be validated
      */
     changeStopTime: function (selectedDates, dateStr, instance) {
-      if (this.stopTime !== dateStr) {
+      if (this.time.stopTime !== dateStr) {
         dateChanged = true;
-        this.stopTime = dateStr;
+        this.time.stopTime = dateStr;
       }
     },
     /**
@@ -349,8 +338,8 @@ export default {
       this.timeError = '';
       this.timeRange = '0'; // custom time range
 
-      let stopSec = parseInt(this.stopTime, 10);
-      let startSec = parseInt(this.startTime, 10);
+      let stopSec = parseInt(this.time.stopTime, 10);
+      let startSec = parseInt(this.time.startTime, 10);
 
       // only continue if start and stop are valid numbers
       if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
@@ -370,8 +359,8 @@ export default {
         query: {
           ...this.$route.query,
           date: undefined,
-          stopTime: this.stopTime,
-          startTime: this.startTime
+          stopTime: this.time.stopTime,
+          startTime: this.time.startTime
         }
       });
     },
@@ -402,13 +391,13 @@ export default {
 
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time
-        this.stopTime = currentTimeSec.toString();
-        this.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+        this.time.stopTime = currentTimeSec.toString();
+        this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
       }
 
       if (parseInt(this.timeRange, 10) === -1) { // all time
-        this.startTime = (hourSec * 5).toString();
-        this.stopTime = (currentTimeSec).toString();
+        this.time.startTime = (hourSec * 5).toString();
+        this.time.stopTime = (currentTimeSec).toString();
       }
     },
     /**
@@ -421,11 +410,11 @@ export default {
       if (date) { // time range is available
         this.timeRange = date;
         if (parseInt(this.timeRange, 10) === -1) { // all time
-          this.startTime = (hourSec * 5).toString();
-          this.stopTime = currentTimeSec.toString();
+          this.time.startTime = (hourSec * 5).toString();
+          this.time.stopTime = currentTimeSec.toString();
         } else if (this.timeRange > 0) {
-          this.stopTime = currentTimeSec.toString();
-          this.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+          this.time.stopTime = currentTimeSec.toString();
+          this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
         }
       } else if (startTime && stopTime) {
         // start and stop times available
@@ -435,8 +424,8 @@ export default {
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
           // if we can parse start and stop time, set them
           this.timeRange = '0'; // custom time range
-          this.stopTime = stop;
-          this.startTime = start;
+          this.time.stopTime = stop;
+          this.time.startTime = start;
 
           stop = parseInt(stop, 10);
           start = parseInt(start, 10);
@@ -480,12 +469,12 @@ export default {
 
       if (newParams.stopTime && newParams.stopTime !== oldParams.stopTime) {
         change = true;
-        this.stopTime = newParams.stopTime;
+        this.time.stopTime = newParams.stopTime;
       }
 
       if (newParams.startTime && newParams.startTime !== oldParams.startTime) {
         change = true;
-        this.startTime = newParams.startTime;
+        this.time.startTime = newParams.startTime;
       }
 
       if (change) { this.$emit('timeChange'); }

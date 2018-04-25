@@ -25,7 +25,13 @@
     <div class="sessions-content ml-1 mr-2">
 
       <div class="sessions-vis">
-        sessions visualizations go here!
+        <moloch-visualizations
+          v-if="mapData && graphData"
+          :graph-data="graphData"
+          :map-data="mapData"
+          :primary="true"
+          :timezone="settings.settings.timezone">
+        </moloch-visualizations>
       </div>
 
       <div class="sessions-table">
@@ -58,6 +64,7 @@
             <!-- session + detail -->
             <template v-for="session of sessions.data">
               <tr :key="session.id">
+                <!-- toggle button and ip protocol -->
                 <td>
                   <toggle-btn class="mt-1"
                     @toggle="toggleSessionDetail(session)">
@@ -71,9 +78,11 @@
                     :parse="true">
                   </moloch-session-field>
                   &nbsp;
-                </td>
+                </td> <!-- /toggle button and ip protocol -->
+                <!-- field values -->
                 <td v-for="col in headers"
                   :key="col.dbField">
+                  <!-- field value is an array -->
                   <span v-if="Array.isArray(session[col.dbField])">
                     <span v-for="value in session[col.dbField]"
                       :key="value + col.dbField">
@@ -86,7 +95,8 @@
                         :timezone="settings.settings.timezone">
                       </moloch-session-field>
                     </span>
-                  </span>
+                  </span> <!-- /field value is an array -->
+                  <!-- field value a single value -->
                   <span v-else>
                     <moloch-session-field
                       :field="col"
@@ -96,19 +106,19 @@
                       :parse="true"
                       :timezone="settings.settings.timezone">
                     </moloch-session-field>
-                  </span>
-                </td>
+                  </span> <!-- /field value a single value -->
+                </td> <!-- /field values -->
               </tr>
+              <!-- session detail -->
               <tr :key="session.id + '-detail'"
                 v-if="session.expanded"
                 class="session-detail-row">
                 <td :colspan="headers.length + 1">
-                  <!-- TODO session detail component -->
                   <moloch-session-detail
                     :session="session">
                   </moloch-session-detail>
                 </td>
-              </tr>
+              </tr> <!-- /session detail -->
             </template> <!-- /session + detail -->
           </tbody>
         </table>
@@ -146,6 +156,7 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
+import MolochVisualizations from '../visualizations/Visualizations';
 
 const defaultTableState = {
   order: [['firstPacket', 'asc']],
@@ -166,7 +177,8 @@ export default {
     MolochError,
     MolochLoading,
     MolochNoResults,
-    MolochSessionDetail
+    MolochSessionDetail,
+    MolochVisualizations
   },
   data: function () {
     return {
@@ -178,7 +190,9 @@ export default {
       settings: {}, // user settings
       colWidths: {},
       colConfigError: '',
-      headers: []
+      headers: [],
+      graphData: undefined,
+      mapData: undefined
     };
   },
   created: function () {
@@ -194,8 +208,8 @@ export default {
         start: 0, // first item index
         facets: 1,
         date: this.$store.state.timeRange,
-        startTime: this.$store.state.startTime,
-        stopTime: this.$store.state.stopTime,
+        startTime: this.$store.state.time.startTime,
+        stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,

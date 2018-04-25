@@ -8,19 +8,23 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     timeRange: 1,
-    startTime: undefined,
-    stopTime: undefined,
-    expression: undefined
+    expression: undefined,
+    time: {
+      startTime: undefined,
+      stopTime: undefined
+    }
   },
   mutations: {
     setTimeRange (state, value) {
       state.timeRange = value.toString();
     },
-    setStartTime (state, value) {
-      state.startTime = value.toString();
-    },
-    setStopTime (state, value) {
-      state.stopTime = value.toString();
+    setTime (state, value) {
+      if (value.startTime) {
+        state.time.startTime = value.startTime.toString();
+      }
+      if (value.stopTime) {
+        state.time.stopTime = value.stopTime.toString();
+      }
     },
     setExpression (state, value) {
       this.state.expression = value;

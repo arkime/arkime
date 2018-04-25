@@ -251,9 +251,9 @@ export default {
     timeClick: function (field, value) {
       value = Math.floor(value / 1000); // seconds not milliseconds
       if (field === 'starttime') {
-        this.$store.commit('setStartTime', value);
+        this.$store.commit('setTime', { startTime: value });
       } else {
-        this.$store.commit('setStopTime', value);
+        this.$store.commit('setTime', { stopTime: value });
       }
     },
     /**

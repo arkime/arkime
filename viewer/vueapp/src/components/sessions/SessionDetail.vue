@@ -596,10 +596,10 @@ export default {
               },
               startTime: {
                 get: function () {
-                  return this.$store.state.startTime;
+                  return this.$store.state.time.startTime;
                 },
                 set: function (newValue) {
-                  this.$store.commit('setStartTime', newValue);
+                  this.$store.commit('setTime', { startTime: newValue });
                 }
               }
             },
