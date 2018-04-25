@@ -74,6 +74,8 @@ LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  MOLOCH_LOCK_DEFINE(frags);
 
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -750,7 +752,12 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     uint16_t type = 0;
     BSB_IMPORT_u16(bsb, type);
 
-    if (type != 0x0800) {
+    switch (type) {
+    case 0x0800:
+    case 0x86dd:
+    case 0x6559:
+        break;
+    default:
         if (config.logUnknownProtocols)
             LOG("Unknown GRE protocol 0x%04x(%d)", type, type);
         return MOLOCH_PACKET_UNKNOWN;
@@ -785,7 +792,17 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     if (BSB_IS_ERROR(bsb))
         return MOLOCH_PACKET_CORRUPT;
 
-    return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    switch (type) {
+    case 0x0800:
+        return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    case 0x86dd:
+        return moloch_packet_ip6(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    case 0x6559:
+        return moloch_packet_frame_relay(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    default:
+        return MOLOCH_PACKET_UNKNOWN;
+    }
+
 }
 /******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
@@ -1275,6 +1292,21 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
+LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 4)
+        return MOLOCH_PACKET_CORRUPT;
+
+    if (data[2] == 0x03 || data[3] == 0xcc)
+        return moloch_packet_ip4(batch, packet, data+4, len-4);
+    if (data[2] == 0x08 || data[3] == 0x00)
+        return moloch_packet_ip4(batch, packet, data+4, len-4);
+    if (data[2] == 0x86 || data[3] == 0xdd)
+        return moloch_packet_ip6(batch, packet, data+4, len-4);
+
+    return MOLOCH_PACKET_UNKNOWN;
+}
+/******************************************************************************/
 LOCAL int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
@@ -1510,7 +1542,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Too short %d", packet->pktlen);
 #endif
-            rc = 1;
+            rc = MOLOCH_PACKET_CORRUPT;
         }
         break;
     case 1: // Ether
@@ -1519,6 +1551,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     case 12: // LOOP
     case 101: // RAW
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case 107: // Frame Relay
+        rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 113: // SLL
         if (packet->pkt[0] == 0 && packet->pkt[1] <= 4)

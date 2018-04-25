@@ -2,13 +2,13 @@
 /* pcap.js -- represent a pcap file
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -402,7 +402,17 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
       bpos += len;
     }
   }
-  this.ip4(buffer.slice(bpos), obj, pos+bpos);
+  switch (type) {
+  case 0x0800:
+    this.ip4(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x86dd:
+    this.ip6(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x6559:
+    this.framerelay(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  }
 };
 
 Pcap.prototype.ip4 = function (buffer, obj, pos) {
@@ -567,6 +577,16 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.framerelay = function (buffer, obj, pos) {
+  if (buffer[2] == 0x03 || buffer[3] == 0xcc) {
+    this.ip4(buffer.slice(4), obj, pos + 4);
+  } else if (buffer[2] == 0x08 || buffer[3] == 0x00) {
+    this.ip4(buffer.slice(4), obj, pos + 4);
+  } else if (buffer[2] == 0x86 || buffer[3] == 0xdd) {
+    this.ip6(buffer.slice(4), obj, pos + 4);
+  }
+}
+
 
 Pcap.prototype.pcap = function (buffer, obj) {
   if (this.bigEndian) {
@@ -595,6 +615,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 12: // LOOP
   case 101: // RAW
     this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 107: // Frame Relay
+    this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL
     this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);

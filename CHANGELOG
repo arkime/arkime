@@ -26,6 +26,7 @@ NOTICE: Restart wiseService before capture when upgrading
               defaults to ".in-addr.arpa;.ip6.arpa"
   - wise - full ipv6 support
   - capture - basic sccp classify
+  - all - initial frame relay support (issue #838)
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now
