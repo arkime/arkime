@@ -76,6 +76,7 @@ LOCAL  MOLOCH_LOCK_DEFINE(frags);
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -698,21 +699,24 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 n += 4;
             }
 
-            switch(packet->vpnType) {
-            case MOLOCH_PACKET_VPNTYPE_GRE:
+            if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
                 ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
                 moloch_field_ip4_add(greIpField, session, ip4->ip_src.s_addr);
                 moloch_field_ip4_add(greIpField, session, ip4->ip_dst.s_addr);
                 moloch_session_add_protocol(session, "gre");
-                break;
-            case MOLOCH_PACKET_VPNTYPE_PPPOE:
-                moloch_session_add_protocol(session, "pppoe");
-                break;
-            case MOLOCH_PACKET_VPNTYPE_MPLS:
-                moloch_session_add_protocol(session, "mpls");
-                break;
             }
 
+            if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_PPPOE) {
+                moloch_session_add_protocol(session, "pppoe");
+            }
+
+            if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_PPP) {
+                moloch_session_add_protocol(session, "ppp");
+            }
+
+            if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_MPLS) {
+                moloch_session_add_protocol(session, "mpls");
+            }
         }
 
 
@@ -742,11 +746,11 @@ LOCAL void *moloch_packet_thread(void *threadp)
 LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
-
     if (unlikely(len) < 4 || unlikely(!data))
         return MOLOCH_PACKET_CORRUPT;
 
     BSB_INIT(bsb, data, len);
+
     uint16_t flags_version = 0;
     BSB_IMPORT_u16(bsb, flags_version);
     uint16_t type = 0;
@@ -756,6 +760,7 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     case 0x0800:
     case 0x86dd:
     case 0x6559:
+    case 0x880b:
         break;
     default:
         if (config.logUnknownProtocols)
@@ -789,6 +794,11 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
         }
     }
 
+    // ack number
+    if (flags_version & 0x0080) {
+        BSB_IMPORT_skip(bsb, 4);
+    }
+
     if (BSB_IS_ERROR(bsb))
         return MOLOCH_PACKET_CORRUPT;
 
@@ -799,6 +809,8 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
         return moloch_packet_ip6(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     case 0x6559:
         return moloch_packet_frame_relay(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    case 0x880b:
+        return moloch_packet_ppp(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     default:
         return MOLOCH_PACKET_UNKNOWN;
     }
@@ -1087,6 +1099,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     }
 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
+    packet->v6 = 0;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len;
 
@@ -1169,9 +1182,11 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->ses = SESSION_ICMP;
         break;
     case IPPROTO_GRE:
-        packet->vpnType = MOLOCH_PACKET_VPNTYPE_GRE;
+        packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
         return moloch_packet_gre4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
+    case IPPROTO_IPV6:
+        return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", ip4->ip_p);
@@ -1275,6 +1290,8 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             packet->ses = SESSION_ICMP;
             done = 1;
             break;
+        case IPPROTO_IPV4:
+            return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
             if (config.logUnknownProtocols)
                 LOG("Unknown protocol %d", ip6->ip6_nxt);
@@ -1321,7 +1338,7 @@ LOCAL int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * cons
     if (plen != len-6)
         return MOLOCH_PACKET_CORRUPT;
 
-    packet->vpnType = MOLOCH_PACKET_VPNTYPE_PPPOE;
+    packet->tunnel |= MOLOCH_PACKET_TUNNEL_PPPOE;
     switch (type) {
     case 0x21:
         return moloch_packet_ip4(batch, packet, data + 8, plen-2);
@@ -1330,6 +1347,29 @@ LOCAL int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * cons
     default:
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown pppoe type %d", type);
+#endif
+        return MOLOCH_PACKET_UNKNOWN;
+    }
+}
+/******************************************************************************/
+LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 4 || data[2] != 0x00) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Len or bytes %d %d %d", len, data[2], data[3]);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    packet->tunnel |= MOLOCH_PACKET_TUNNEL_PPP;
+    switch (data[3]) {
+    case 0x21:
+        return moloch_packet_ip4(batch, packet, data + 4, len-4);
+    case 0x57:
+        return moloch_packet_ip6(batch, packet, data + 4, len-4);
+    default:
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Unknown ppp type %d", data[3]);
 #endif
         return MOLOCH_PACKET_UNKNOWN;
     }
@@ -1351,7 +1391,7 @@ LOCAL int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const
         len -= 4;
 
         if (S) {
-            packet->vpnType = MOLOCH_PACKET_VPNTYPE_MPLS;
+            packet->tunnel |= MOLOCH_PACKET_TUNNEL_MPLS;
             switch (data[0] >> 4) {
             case 4:
                 return moloch_packet_ip4(batch, packet, data, len);

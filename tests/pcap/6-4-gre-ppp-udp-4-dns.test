@@ -1,0 +1,118 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dns" : {
+               "host" : [
+                  "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "AAAA"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NXDOMAIN"
+               ],
+               "statusCnt" : 1
+            },
+            "dstASN" : "AS15169 Google LLC",
+            "dstBytes" : 268,
+            "dstDataBytes" : 260,
+            "dstGEO" : "US",
+            "dstIp" : "8.8.8.8",
+            "dstMac" : [
+               "00:19:06:e6:82:c4",
+               "c5:00:00:00:82:c4"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "a62c818300010000",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1417577703821,
+            "greASN" : [
+               "AS71 Hewlett-Packard Company",
+               "AS8100 QuadraNet, Inc"
+            ],
+            "greGEO" : [
+               "US",
+               "US"
+            ],
+            "greIp" : [
+               "16.0.0.200",
+               "192.52.166.154"
+            ],
+            "greIpCnt" : 2,
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "ipProtocol" : 17,
+            "lastPacket" : 1417577704035,
+            "length" : 214,
+            "node" : "test",
+            "packetLen" : [
+               213,
+               284
+            ],
+            "packetPos" : [
+               24,
+               237
+            ],
+            "protocol" : [
+               "udp",
+               "ppp",
+               "dns",
+               "gre"
+            ],
+            "protocolCnt" : 4,
+            "segmentCnt" : 1,
+            "srcBytes" : 197,
+            "srcDataBytes" : 189,
+            "srcIp" : "172.16.44.3",
+            "srcMac" : [
+               "00:12:1e:f2:61:3d",
+               "0c:01:00:00:61:3d"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Juniper Networks"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "a62c010000010000",
+            "srcPort" : 40768,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 465,
+            "totDataBytes" : 449,
+            "totPackets" : 2,
+            "vlan" : [
+               100
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141203",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

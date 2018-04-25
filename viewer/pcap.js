@@ -402,6 +402,12 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
       bpos += len;
     }
   }
+
+  // ack number
+  if (obj.gre.flags_version & 0x0080) {
+    bpos += 4;
+  }
+
   switch (type) {
   case 0x0800:
     this.ip4(buffer.slice(bpos), obj, pos+bpos);
@@ -411,6 +417,9 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     break;
   case 0x6559:
     this.framerelay(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x880b:
+    this.ppp(buffer.slice(bpos), obj, pos+bpos);
     break;
   }
 };
@@ -440,6 +449,9 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     break;
   case 17:
     this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
+    break;
+  case 41: // IPPROTO_IPV6
+    this.ip6(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   case 47:
     this.gre(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
@@ -478,6 +490,9 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     case 58:
       this.icmp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
+    case 4: //IPPROTO_IPV4
+      this.ip4(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      break;
     case 6:
       this.tcp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
@@ -509,6 +524,24 @@ Pcap.prototype.pppoe = function (buffer, obj, pos) {
     return;
   default:
     console.log("Unknown pppoe.type", obj);
+    return;
+  }
+};
+
+Pcap.prototype.ppp = function (buffer, obj, pos) {
+  obj.pppoe = {
+    type:   buffer.readUInt16BE(2),
+  };
+
+  switch(obj.pppoe.type) {
+  case 0x21:
+    this.ip4(buffer.slice(4), obj, pos + 4);
+    return;
+  case 0x57:
+    this.ip6(buffer.slice(4), obj, pos + 4);
+    return;
+  default:
+    console.log("Unknown ppp.type", obj);
     return;
   }
 };

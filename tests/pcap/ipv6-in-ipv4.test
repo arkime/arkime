@@ -1,0 +1,83 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2001:0db8:0000:0001:0000:0000:0000:0002",
+            "dstMac" : [
+               "c2:00:42:02:00:00",
+               "c2:01:42:02:00:00"
+            ],
+            "dstMacCnt" : 2,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1214308747487,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  128,
+                  129
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1214308747559,
+            "length" : 72,
+            "node" : "test",
+            "packetLen" : [
+               150,
+               150,
+               150,
+               150,
+               150,
+               150,
+               150,
+               150,
+               150,
+               150
+            ],
+            "packetPos" : [
+               24,
+               174,
+               324,
+               474,
+               624,
+               774,
+               924,
+               1074,
+               1224,
+               1374
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1340,
+            "srcDataBytes" : 0,
+            "srcIp" : "2001:0db8:0000:0001:0000:0000:0000:0001",
+            "srcMac" : [
+               "c2:00:42:02:00:00",
+               "c2:01:42:02:00:00"
+            ],
+            "srcMacCnt" : 2,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1340,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-080624",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -47,8 +47,8 @@ delete $json->{data}->[0]->{first};
 eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"' . getcwd() . '/pcap/v6-http.pcap"}'));
 
 # filter 2
-$json = viewerGet("/file/list?sortField=name&desc=true&filter=v6");
-$mjson = multiGet("/file/list?sortField=name&desc=true&filter=v6");
+$json = viewerGet("/file/list?sortField=name&desc=true&filter=/v6");
+$mjson = multiGet("/file/list?sortField=name&desc=true&filter=/v6");
 eq_or_diff($mjson, $json, "single doesn't match multi", { context => 3 });
 
 cmp_ok ($json->{recordsTotal}, ">=", 108);

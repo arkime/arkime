@@ -27,6 +27,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - full ipv6 support
   - capture - basic sccp classify
   - all - initial frame relay support (issue #838)
+  - all - initial 4 over 6 and 6 over 4 support
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now
