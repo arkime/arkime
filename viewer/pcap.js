@@ -374,12 +374,10 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     flags_version: buffer.readUInt16BE(0),
     type:          buffer.readUInt16BE(2)
   };
+
   var bpos = 4;
-  var offset = 0;
   if (obj.gre.flags_version & (0x8000 | 0x4000)) {
-    bpos += 2;
-    offset = buffer.readUInt16BE(bpos);
-    bpos += 2;
+    bpos += 4;
   }
 
   // key
@@ -394,9 +392,10 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
 
   // routing
   if (obj.gre.flags_version & 0x4000) {
-    bpos += 3;
     while (1) {
+      bpos += 3;
       var len = buffer.readUInt16BE(bpos);
+      bpos++;
       if (len === 0)
         break;
       bpos += len;
@@ -408,7 +407,7 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     bpos += 4;
   }
 
-  switch (type) {
+  switch (obj.gre.type) {
   case 0x0800:
     this.ip4(buffer.slice(bpos), obj, pos+bpos);
     break;
@@ -421,6 +420,8 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
   case 0x880b:
     this.ppp(buffer.slice(bpos), obj, pos+bpos);
     break;
+  default:
+    console.log("gre Unknown type", obj.gre.type);
   }
 };
 
@@ -460,7 +461,7 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     this.sctp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
-    console.log("Unknown ip.p", obj);
+    console.log("v4 Unknown ip.p", obj);
   }
 };
 
@@ -492,18 +493,21 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
       return;
     case 4: //IPPROTO_IPV4
       this.ip4(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
-      break;
+      return;
     case 6:
       this.tcp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     case 17:
       this.udp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
+    case 47:
+      this.gre(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
     case 132:
       this.sctp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     default:
-      console.log("Unknown ip.p", obj);
+      console.log("v6 Unknown ip.p", obj);
       return;
     }
   }
