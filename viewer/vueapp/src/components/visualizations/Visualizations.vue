@@ -1,20 +1,89 @@
 <template>
 
-  <div>
+  <div class="pt-2"
+    ref="vizContainer">
 
-    <!-- map open button -->
-    <div class="map-btn"
-      v-if="!showMap && primary"
-      @click="toggleMap()"
-      v-b-tooltip.hover
-      title="View map"
-      placement="left">
-      <span class="fa fa-fw fa-globe">
-      </span>
-    </div> <!-- /map open button -->
+    <!-- map content -->
+    <div :class="{'expanded':mapExpanded}">
+
+      <!-- map open button -->
+      <div class="map-btn"
+        v-if="!showMap && primary"
+        @click="toggleMap()"
+        v-b-tooltip.hover
+        title="View map"
+        placement="left">
+        <span class="fa fa-fw fa-globe">
+        </span>
+      </div> <!-- /map open button -->
+
+      <div v-if="showMap"
+        class="inline-map">
+        <div v-if="mapData">
+          <div class="moloch-map-container">
+
+            <!-- map -->
+            <div ref="mapArea"
+              id="molochMap">
+            </div> <!-- /map -->
+
+            <!-- map buttons -->
+            <button type="button"
+              class="btn btn-xs btn-default btn-close-map btn-fw"
+               @click="toggleMap()"
+               v-b-tooltip.hover
+               title="Close map">
+              <span class="fa fa-close">
+              </span>
+            </button>
+            <button type="button"
+              class="btn btn-xs btn-default btn-expand-map btn-fw"
+              @click="toggleMapSize()"
+              title="Expand/Collapse Map">
+              <span class="fa"
+                :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
+              </span>
+            </button>
+            <div class="btn-group-vertical src-dst-btns btn-fw">
+              <button type="button"
+                class="btn btn-xs btn-default"
+                :class="{'active':src}"
+                @click="toggleSrcDst('src')"
+                v-b-tooltip.hover
+                title="Toggle source countries">
+                <strong>S</strong>
+              </button>
+              <button type="button"
+                class="btn btn-xs btn-default"
+                :class="{'active':dst}"
+                @click="toggleSrcDst('dst')"
+                v-b-tooltip.hover
+                title="Toggle destination countries">
+                <strong>D</strong>
+              </button>
+            </div> <!-- /map buttons -->
+
+            <!-- map legend -->
+            <div class="map-legend"
+              v-if="mapExpanded && legend.length">
+              <strong>Top 10</strong>&nbsp;
+              <span v-for="(item, key) in legend"
+                :key="key"
+                class="legend-item"
+                :style="{'background-color':item.color}">
+                {{item.name}}
+                ({{item.value | commaString}})
+              </span>
+            </div> <!-- map legend -->
+
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /map content -->
 
     <!-- graph content -->
-    <div class="graph-content pt-2">
+    <div>
 
       <!-- graph controls -->
       <div class="session-graph-btn-container"
@@ -109,23 +178,51 @@
 </template>
 
 <script>
+// map imports
+import '../../../../public/jquery-jvectormap-1.2.2.min.js';
+import '../../../../public/jquery-jvectormap-world-en.js';
+
+// graph imports
 import '../../../../public/flot-0.7/jquery.flot';
 import '../../../../public/flot-0.7/jquery.flot.selection';
 import '../../../../public/flot-0.7/jquery.flot.navigate';
 import '../../../../public/flot-0.7/jquery.flot.resize';
 import '../../../../public/flot-0.7/jquery.flot.stack';
 
-let basePath;
+// color vars
+let foregroundColor;
+let primaryColor;
+let srcColor;
+let dstColor;
+let highlightColor;
+let waterColor;
+let landColorDark;
+let landColorLight;
+
+// graph vars
 let plotArea;
 let plot;
+
+// map vars
+let map;
+let mapEl;
+let mapInitialized;
+
 let timeout;
+let basePath;
 
 export default {
   name: 'MolochVisualizations',
-  props: [ 'graphData', 'mapData', 'primary', 'open', 'timezone' ],
+  props: [ 'graphData', 'mapData', 'primary', 'timezone' ],
   data: function () {
     return {
+      // map vars
       showMap: false,
+      legend: [],
+      src: true,
+      dst: true,
+      mapExpanded: false,
+      // graph vars
       graph: undefined,
       graphOptions: {},
       graphType: this.$route.query.graphType || 'lpHisto',
@@ -135,84 +232,63 @@ export default {
   watch: {
     graphData: function (newVal, oldVal) {
       if (newVal && oldVal) {
-        this.setupGraph(); // setup this.graph and this.graphOptions
+        this.setupGraphData(); // setup this.graph and this.graphOptions
         plot = $.plot(plotArea, this.graph, this.graphOptions);
+      }
+    },
+    mapData: function (newVal, oldVal) {
+      if (newVal && oldVal) {
+        this.setupMapData(); // setup this.mapData
       }
     }
   },
   created: function () {
     // TODO watch for open/close map
     // TODO watch for change series/graph type from siblings
-    basePath = this.$route.path.split('/')[1];
+    // TODO watch for src/dst update from primary map sibling
+    // set styles for graph and map
+    const styles = window.getComputedStyle(document.body);
 
-    // set show map based on previous setting
-    if (this.open &&
-      localStorage && localStorage[`${basePath}-open-map`] &&
-      localStorage[`${basePath}-open-map`] !== 'false') {
-      this.showMap = true;
+    foregroundColor = styles.getPropertyValue('--color-foreground').trim();
+    primaryColor = styles.getPropertyValue('--color-primary').trim();
+    srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
+    dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
+    highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
+    waterColor = styles.getPropertyValue('--color-water').trim();
+    landColorDark = styles.getPropertyValue('--color-land-dark').trim();
+    landColorLight = styles.getPropertyValue('--color-land-light').trim();
+
+    if (!landColorDark || !landColorLight) {
+      landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
+      landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
     }
-
-    // setup the graph data and options
-    this.setupGraph();
   },
   mounted: function () {
+    basePath = this.$route.path.split('/')[1];
+
+    this.showMap = localStorage && localStorage[`${basePath}-open-map`] &&
+      localStorage[`${basePath}-open-map`] !== 'false';
+
+    // create map
+    if (this.showMap) {
+      // wait for the map element to be shown
+      setTimeout(() => {
+        // create jvectormap
+        this.setupMapElement();
+        // setup map data
+        this.setupMapData();
+      });
+    }
+
+    // create graph
+    // setup the graph data and options
+    this.setupGraphData();
     // create flot graph
-    plotArea = this.$refs.plotArea;
-    plot = $.plot(plotArea, this.graph, this.graphOptions);
-
-    // triggered when an area of the graph is selected
-    $(plotArea).on('plotselected', (event, ranges) => {
-      let result = {
-        startTime: (ranges.xaxis.from / 1000).toFixed(),
-        stopTime: (ranges.xaxis.to / 1000).toFixed()
-      };
-
-      if (result.startTime && result.stopTime) {
-        this.$store.commit('setTime', result);
-      }
-    });
-
-    let previousPoint;
-    // triggered when hovering over the graph
-    $(plotArea).on('plothover', (event, pos, item) => {
-      if (item) {
-        if (!previousPoint ||
-          previousPoint.dataIndex !== item.dataIndex ||
-          previousPoint.seriesIndex !== item.seriesIndex) {
-          $(document.body).find('#tooltip').remove();
-
-          previousPoint = {
-            dataIndex: item.dataIndex,
-            seriesIndex: item.seriesIndex
-          };
-
-          let type;
-          if (this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
-            type = item.seriesIndex === 0 ? 'Src' : 'Dst';
-          }
-
-          let val = this.$options.filters.commaString(Math.round(item.series.data[item.dataIndex][1] * 100) / 100);
-          let d = this.$options.filters.timezoneDateString(item.datapoint[0].toFixed(0) / 1000, this.timezone || 'local');
-
-          let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                              <strong>${type || ''}</strong>
-                              ${val} <strong>at</strong> ${d}
-                            </div>`;
-
-          $(tooltipHTML).css({
-            top: item.pageY - 30,
-            left: item.pageX - 8
-          }).appendTo(document.body);
-        }
-      } else {
-        $(document.body).find('#tooltip').remove();
-        previousPoint = null;
-      }
-    });
+    this.setupGraphElement();
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
-    /* MAP functions */
+    /* exposed MAP functions */
     toggleMap: function () {
       this.showMap = !this.showMap;
 
@@ -224,13 +300,37 @@ export default {
         if (localStorage) { localStorage[`${basePath}-open-map`] = false; }
       }
 
-      if (!this.showMap) {
-        // TODO hide map
+      if (this.showMap && !mapInitialized) {
+        // wait for the map element to be shown
+        setTimeout(() => {
+          this.setupMapElement();
+          this.setupMapData();
+        });
+      } else if (!this.showMap) {
+        // TODO do something here to fix weird <g> attribute error?
       }
     },
-    /* GRAPH functions */
+    toggleMapSize: function () {
+      this.mapExpanded = !this.mapExpanded;
+      if (this.mapExpanded) {
+        this.expandMapElement();
+        $(document).on('mouseup', this.isOutsideClick);
+      } else {
+        this.shrinkMapElement();
+        $(document).off('mouseup', this.isOutsideClick);
+      }
+    },
+    toggleSrcDst: function (type) {
+      this[type] = !this[type];
+      this.setupMapData(this.mapData);
+
+      if (this.primary) { // primary map sets all other map's src/dst
+        // TODO set sibling map's src/dst
+      }
+    },
+    /* exposed GRAPH functions */
     changeGraphType: function () {
-      this.setupGraph();
+      this.setupGraphData();
 
       plot.setData(this.graph);
       plot.setupGrid();
@@ -241,7 +341,7 @@ export default {
       }
     },
     changeSeriesType: function () {
-      this.setupGraph();
+      this.setupGraphData();
 
       plot = $.plot(plotArea, this.graph, this.graphOptions);
 
@@ -280,6 +380,7 @@ export default {
         func(funcParam);
       }, ms);
     },
+    /* helper GRAPH functions */
     updateResults: function (graph) {
       let xAxis = graph.getXAxes();
 
@@ -292,14 +393,61 @@ export default {
         this.$store.commit('setTime', result);
       }
     },
-    setupGraph: function () {
-      let styles = window.getComputedStyle(document.body);
-      let foregroundColor = styles.getPropertyValue('--color-foreground').trim();
-      let primaryColor = styles.getPropertyValue('--color-primary').trim();
-      let srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-      let dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-      let highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
+    setupGraphElement: function () {
+      plotArea = this.$refs.plotArea;
+      plot = $.plot(plotArea, this.graph, this.graphOptions);
 
+      // triggered when an area of the graph is selected
+      $(plotArea).on('plotselected', (event, ranges) => {
+        let result = {
+          startTime: (ranges.xaxis.from / 1000).toFixed(),
+          stopTime: (ranges.xaxis.to / 1000).toFixed()
+        };
+
+        if (result.startTime && result.stopTime) {
+          this.$store.commit('setTime', result);
+        }
+      });
+
+      let previousPoint;
+      // triggered when hovering over the graph
+      $(plotArea).on('plothover', (event, pos, item) => {
+        if (item) {
+          if (!previousPoint ||
+            previousPoint.dataIndex !== item.dataIndex ||
+            previousPoint.seriesIndex !== item.seriesIndex) {
+            $(document.body).find('#tooltip').remove();
+
+            previousPoint = {
+              dataIndex: item.dataIndex,
+              seriesIndex: item.seriesIndex
+            };
+
+            let type;
+            if (this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
+              type = item.seriesIndex === 0 ? 'Src' : 'Dst';
+            }
+
+            let val = this.$options.filters.commaString(Math.round(item.series.data[item.dataIndex][1] * 100) / 100);
+            let d = this.$options.filters.timezoneDateString(item.datapoint[0].toFixed(0) / 1000, this.timezone || 'local');
+
+            let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                                <strong>${type || ''}</strong>
+                                ${val} <strong>at</strong> ${d}
+                              </div>`;
+
+            $(tooltipHTML).css({
+              top: item.pageY - 30,
+              left: item.pageX - 8
+            }).appendTo(document.body);
+          }
+        } else {
+          $(document.body).find('#tooltip').remove();
+          previousPoint = null;
+        }
+      });
+    },
+    setupGraphData: function () {
       if (this.graphType === 'dbHisto') {
         this.graph = [
           { data: this.graphData.db1Histo, color: srcColor },
@@ -378,21 +526,233 @@ export default {
           frameRate: 20
         }
       };
+    },
+    /* helper MAP functions */
+    onMapResize: function () {
+      if (this.mapExpanded) {
+        $(mapEl).css({
+          position: 'fixed',
+          right: '8px',
+          'z-index': 5,
+          top: '158px',
+          width: $(window).width() * 0.95,
+          height: $(window).height() - 175
+        });
+      }
+    },
+    expandMapElement: function () {
+      // onMapResize function expandes the map
+      $(mapEl).resize();
+    },
+    shrinkMapElement: function () {
+      $(mapEl).css({
+        position: 'relative',
+        top: '0',
+        right: '0',
+        height: '150px',
+        width: '100%',
+        'z-index': 3,
+        'margin-bottom': '-25px'
+      });
+    },
+    isOutsideClick: function (e) {
+      let element = this.$refs.vizContainer;
+      if (!$(element).is(e.target) &&
+        $(element).has(e.target).length === 0) {
+        this.mapExpanded = false;
+        this.shrinkMapElement();
+      }
+    },
+    setupMapElement: function () {
+      mapEl = this.$refs.mapArea;
+
+      // watch for the window to resize to resize the expanded map
+      $(window).on('resize', this.onMapResize);
+      // watch for the map to resize to change its style
+      $(mapEl).on('resize', this.onMapResize);
+
+      $(mapEl).vectorMap({ // setup map
+        map: 'world_en',
+        backgroundColor: waterColor,
+        hoverColor: 'black',
+        hoverOpacity: 0.7,
+        series: {
+          regions: [{
+            scale: [ landColorLight, landColorDark ],
+            normalizeFunction: 'polynomial',
+            attribute: 'fill'
+          }]
+        },
+        onRegionLabelShow: (e, el, code) => {
+          el.html(el.html() + ' (' + code + ') - ' +
+            this.$options.filters.commaString(map.series.regions[0].values[code] || 0));
+        },
+        onRegionClick: (e, code) => {
+          this.$store.commit('addToExpression', {
+            expression: `country == ${code}`
+          });
+        }
+      });
+
+      // save reference to the map object to retrieve regions
+      map = $(mapEl).children('.jvectormap-container').data('mapObject');
+
+      mapInitialized = true;
+    },
+    setupMapData: function () {
+      map.series.regions[0].clear();
+      delete map.series.regions[0].params.min;
+      delete map.series.regions[0].params.max;
+
+      if (this.src && this.dst) {
+        if (!this.mapData.tot) {
+          this.mapData.tot = {};
+          let k;
+          for (k in this.mapData.src) {
+            this.mapData.tot[k] = this.mapData.src[k];
+          }
+
+          for (k in this.mapData.dst) {
+            if (this.mapData.tot[k]) {
+              this.mapData.tot[k] += this.mapData.dst[k];
+            } else {
+              this.mapData.tot[k] = this.mapData.dst[k];
+            }
+          }
+        }
+        map.series.regions[0].setValues(this.mapData.tot);
+      } else if (this.src) {
+        map.series.regions[0].setValues(this.mapData.src);
+      } else if (this.dst) {
+        map.series.regions[0].setValues(this.mapData.dst);
+      }
+
+      let region = map.series.regions[0];
+      this.legend = [];
+      for (var key in region.values) {
+        if (region.values.hasOwnProperty(key) &&
+           region.elements.hasOwnProperty(key)) {
+          this.legend.push({
+            name: key,
+            value: region.values[key],
+            color: region.elements[key].element.properties.fill
+          });
+        }
+      }
+
+      this.legend.sort((a, b) => {
+        return b.value - a.value;
+      });
+
+      this.legend = this.legend.slice(0, 10); // get top 10
     }
   },
   beforeDestroy: function () {
+    // turn of graph events
     $(plotArea).off('plothover');
     $(plotArea).off('plotselected');
 
     if (timeout) { clearTimeout(timeout); }
+
+    // turn off map events
+    $(document).off('mouseup', this.isOutsideClick);
+    $(window).off('resize', this.onMapResize);
+    $(mapEl).off('resize', this.onMapResize);
+    $(mapEl).remove();
   }
 };
 </script>
 
 <style>
+.inline-map .moloch-map-container > #molochMap {
+  z-index: 3;
+  height: 150px;
+  width: 100%;
+  margin-bottom: -25px;
+}
+/* map styles ---------------------- */
+.jvectormap-container {
+  border: 1px solid var(--color-gray-light);
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+}
+
+/* zoom buttons */
+.jvectormap-zoomin, .jvectormap-zoomout {
+  position: absolute;
+  left: 2px;
+  width: 18px;
+  height: 20px;
+  cursor: pointer;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 3px;
+  color: var(--color-gray-darker);
+  border-color: var(--color-gray);
+  background-color: var(--color-white);
+  font-weight: bolder;
+}
+.jvectormap-zoomin:hover, .jvectormap-zoomout:hover {
+  color: var(--color-gray-darker);
+  border-color: var(--color-gray-dark);
+  background-color: var(--color-gray-light);
+}
+.jvectormap-zoomin {
+  top: 2px;
+}
+.jvectormap-zoomout {
+  top: 24px;
+}
+
+/* labels added to body by jvectormap */
+.jvectormap-label {
+  z-index: 4;
+  position: absolute;
+  display: none;
+  border: solid 1px var(--color-gray-light);
+  background: var(--color-gray-darker);
+  color: var(--color-white);
+  font-size: smaller;
+  padding: var(--px-none) var(--px-sm);
+  border-radius: 3px;
+}
+
+/* legend (top 10) */
+.moloch-map-container .map-legend {
+  max-width: 94%;
+  margin-left: 4px;
+  font-size: .8rem;
+  position: fixed;
+  bottom: 22px;
+  right: 16px;
+  z-index: 5;
+  padding: 0 0 2px 4px;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.moloch-map-container .map-legend .legend-item {
+  display: inline-block;
+  margin-right: 4px;
+  margin-top: 2px;
+  border-radius: 2px;
+  padding: 2px 4px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #333,
+    -1px -1px 0 #333,
+    1px -1px 0 #333,
+    -1px 1px 0 #333,
+    1px 1px 3px rgba(0,0,0,0.65);
+}
+
+.moloch-map-container .map-legend strong {
+  color: #000;
+}
+
 /* display a tooltip above the bar in the session graph */
 .graph-tooltip {
-  z-index: 999;
+  z-index: 4;
   position: absolute;
   white-space: nowrap;
   color: var(--color-gray-lighter);
@@ -436,13 +796,13 @@ export default {
 .map-btn {
   display: block;
   position: absolute;
-  top: 157px;
-  right: 8px;
-  z-index: 997;
+  top: 150px;
+  right: 0;
+  z-index: 3;
   margin-top: 6px;
   overflow: hidden;
   padding: 2px 8px 3px 8px;;
-  border-radius: 4px;
+  border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: var(--color-primary);
   color: #FFFFFF;
@@ -450,51 +810,33 @@ export default {
 
 .btn-close-map {
   position: absolute;
-  top     : 2px;
-  right   : 2px;
-  z-index : 997;
+  top: 2px;
+  right: 2px;
+  z-index: 3;
 }
 
 .btn-expand-map {
   position: absolute;
-  top     : 26px;
-  right   : 2px;
-  z-index : 997;
+  top: 26px;
+  right: 2px;
+  z-index: 3;
 }
 
 .src-dst-btns {
   position: absolute;
-  top     : 54px;
-  right   : 2px;
-  z-index : 997;
+  top: 54px;
+  right: 2px;
+  z-index: 3;
 }
 
 /* show the buttons on top of the map */
 .expanded .src-dst-btns,
 .expanded .btn-close-map,
 .expanded .btn-expand-map {
-  z-index : 999;
-  position: fixed;
-}
-
-.expanded .btn-close-map {
-  top   : 168px;
-  right : 17px;
-}
-.expanded .btn-expand-map {
-  top   : 192px;
-  right : 17px;
-}
-.expanded .src-dst-btns {
-  top   : 220px;
-  right : 17px;
+  z-index : 6;
 }
 
 /* graph styles -------------------- */
-.graph-content {
-  overflow: hidden;
-}
-
 .inline-graph {
   position: relative;
   display: inline-block;
@@ -514,7 +856,8 @@ export default {
 .session-graph-btn-container > div {
   position: relative;
   left: -50%;
-  z-index: 9; /* above timeline */
+  /* z-index: 9; */
+  /* above timeline */
 }
 
 .session-graph-btn-container .btn-group-xs.btn-group-radios {
