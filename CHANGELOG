@@ -28,6 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - basic sccp classify
   - all - initial frame relay support (issue #838)
   - all - initial 4 over 6 and 6 over 4 support
+  - viewer - support fields=id for sessions.csv (issue #839)
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now

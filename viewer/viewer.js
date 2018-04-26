@@ -3562,6 +3562,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
 
   for (var j = 0, jlen = list.length; j < jlen; j++) {
     var sessionData = flattenFields(list[j]._source || list[j].fields);
+    sessionData.id = list[j]._id;
 
     if (!fields) { continue; }
 
