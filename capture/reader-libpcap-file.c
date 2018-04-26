@@ -441,6 +441,9 @@ LOCAL void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
 
+    if (config.flushBetween)
+        moloch_session_flush();
+
     moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap), pcap_snapshot(pcap));
 
     offlineFile = pcap_file(pcap);
@@ -456,9 +459,6 @@ LOCAL void reader_libpcapfile_opened()
             LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
     }
-
-    if (config.flushBetween)
-        moloch_session_flush();
 
     offlinePcapName = strdup(offlinePcapFilename);
 

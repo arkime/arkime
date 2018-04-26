@@ -407,9 +407,11 @@ typedef struct {
 
 
 /******************************************************************************/
-#define MOLOCH_PACKET_VPNTYPE_GRE    1
-#define MOLOCH_PACKET_VPNTYPE_PPPOE  2
-#define MOLOCH_PACKET_VPNTYPE_MPLS   3
+#define MOLOCH_PACKET_TUNNEL_GRE    0x1
+#define MOLOCH_PACKET_TUNNEL_PPPOE  0x2
+#define MOLOCH_PACKET_TUNNEL_MPLS   0x4
+#define MOLOCH_PACKET_TUNNEL_PPP    0x8
+
 typedef struct molochpacket_t
 {
     struct molochpacket_t   *packet_next, *packet_prev;
@@ -431,7 +433,7 @@ typedef struct molochpacket_t
     uint8_t        v6:1;           // v6 or not
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
-    uint8_t        vpnType:2;      // vpnType
+    uint8_t        tunnel:4;       // tunnel type
 } MolochPacket_t;
 
 typedef struct

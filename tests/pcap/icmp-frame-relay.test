@@ -1,0 +1,103 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 520,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstPackets" : 5,
+            "dstPort" : 0,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1213470754490,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  8,
+                  0
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1213470754604,
+            "length" : 113,
+            "node" : "test",
+            "packetLen" : [
+               120,
+               120,
+               120,
+               120,
+               120,
+               120,
+               120,
+               120,
+               120,
+               120
+            ],
+            "packetPos" : [
+               24,
+               144,
+               264,
+               384,
+               504,
+               624,
+               744,
+               864,
+               984,
+               1104
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 520,
+            "srcDataBytes" : 0,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcPackets" : 5,
+            "srcPort" : 0,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:0,33554442:0"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1040,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-080614",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -188,6 +188,8 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         }
         curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
+        curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
+        curl_easy_setopt(easy, CURLOPT_TIMEOUT, 60L);
     } else {
         easy = server->syncRequest.easy;
     }
@@ -789,6 +791,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     }
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
+    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, 60L);
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;

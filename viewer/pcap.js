@@ -2,13 +2,13 @@
 /* pcap.js -- represent a pcap file
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -374,12 +374,10 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     flags_version: buffer.readUInt16BE(0),
     type:          buffer.readUInt16BE(2)
   };
+
   var bpos = 4;
-  var offset = 0;
   if (obj.gre.flags_version & (0x8000 | 0x4000)) {
-    bpos += 2;
-    offset = buffer.readUInt16BE(bpos);
-    bpos += 2;
+    bpos += 4;
   }
 
   // key
@@ -394,15 +392,37 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
 
   // routing
   if (obj.gre.flags_version & 0x4000) {
-    bpos += 3;
     while (1) {
+      bpos += 3;
       var len = buffer.readUInt16BE(bpos);
+      bpos++;
       if (len === 0)
         break;
       bpos += len;
     }
   }
-  this.ip4(buffer.slice(bpos), obj, pos+bpos);
+
+  // ack number
+  if (obj.gre.flags_version & 0x0080) {
+    bpos += 4;
+  }
+
+  switch (obj.gre.type) {
+  case 0x0800:
+    this.ip4(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x86dd:
+    this.ip6(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x6559:
+    this.framerelay(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  case 0x880b:
+    this.ppp(buffer.slice(bpos), obj, pos+bpos);
+    break;
+  default:
+    console.log("gre Unknown type", obj.gre.type);
+  }
 };
 
 Pcap.prototype.ip4 = function (buffer, obj, pos) {
@@ -431,6 +451,9 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
   case 17:
     this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
+  case 41: // IPPROTO_IPV6
+    this.ip6(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
+    break;
   case 47:
     this.gre(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
@@ -438,7 +461,7 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     this.sctp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
-    console.log("Unknown ip.p", obj);
+    console.log("v4 Unknown ip.p", obj);
   }
 };
 
@@ -468,17 +491,23 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     case 58:
       this.icmp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
+    case 4: //IPPROTO_IPV4
+      this.ip4(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
     case 6:
       this.tcp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     case 17:
       this.udp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
+    case 47:
+      this.gre(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
     case 132:
       this.sctp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     default:
-      console.log("Unknown ip.p", obj);
+      console.log("v6 Unknown ip.p", obj);
       return;
     }
   }
@@ -499,6 +528,24 @@ Pcap.prototype.pppoe = function (buffer, obj, pos) {
     return;
   default:
     console.log("Unknown pppoe.type", obj);
+    return;
+  }
+};
+
+Pcap.prototype.ppp = function (buffer, obj, pos) {
+  obj.pppoe = {
+    type:   buffer.readUInt16BE(2),
+  };
+
+  switch(obj.pppoe.type) {
+  case 0x21:
+    this.ip4(buffer.slice(4), obj, pos + 4);
+    return;
+  case 0x57:
+    this.ip6(buffer.slice(4), obj, pos + 4);
+    return;
+  default:
+    console.log("Unknown ppp.type", obj);
     return;
   }
 };
@@ -567,6 +614,16 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.framerelay = function (buffer, obj, pos) {
+  if (buffer[2] == 0x03 || buffer[3] == 0xcc) {
+    this.ip4(buffer.slice(4), obj, pos + 4);
+  } else if (buffer[2] == 0x08 || buffer[3] == 0x00) {
+    this.ip4(buffer.slice(4), obj, pos + 4);
+  } else if (buffer[2] == 0x86 || buffer[3] == 0xdd) {
+    this.ip6(buffer.slice(4), obj, pos + 4);
+  }
+}
+
 
 Pcap.prototype.pcap = function (buffer, obj) {
   if (this.bigEndian) {
@@ -595,6 +652,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 12: // LOOP
   case 101: // RAW
     this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 107: // Frame Relay
+    this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL
     this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);

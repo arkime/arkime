@@ -93,9 +93,17 @@
                   :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
                   {{ item.shard }}
                   <span>
+                    <div>
+                      <span>Node:</span>
+                      {{ node }}
+                    </div>
                     <div v-if="item.ip">
                       <span>IP:</span>
                       {{ item.ip }}
+                    </div>
+                    <div>
+                      <span>Shard:</span>
+                      {{ item.shard }}
                     </div>
                     <div>
                       <span>State:</span>
