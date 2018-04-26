@@ -106,6 +106,10 @@ MolochFragsHead_t          fragsList;
 MolochDropHash_t          *packetDrop4[0x10000];
 MolochDropHash_t          *packetDrop6[0x10000];
 
+#ifndef IPPROTO_IPV4
+#define IPPROTO_IPV4            4
+#endif
+
 /******************************************************************************/
 LOCAL void moloch_packet_free(MolochPacket_t *packet)
 {
