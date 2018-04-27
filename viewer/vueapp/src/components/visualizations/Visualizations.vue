@@ -206,7 +206,6 @@ let plot;
 // map vars
 let map;
 let mapEl;
-let mapInitialized;
 
 let timeout;
 let basePath;
@@ -293,21 +292,19 @@ export default {
       this.showMap = !this.showMap;
 
       if (this.primary && this.showMap) {
-        // TODO display all maps
+        // TODO display all sibling maps
         if (localStorage) { localStorage[`${basePath}-open-map`] = true; }
       } else if (this.primary && !this.showMap) {
-        // TODO hide all maps
+        // TODO hide all sibling maps
         if (localStorage) { localStorage[`${basePath}-open-map`] = false; }
       }
 
-      if (this.showMap && !mapInitialized) {
+      if (this.showMap) {
         // wait for the map element to be shown
         setTimeout(() => {
           this.setupMapElement();
           this.setupMapData();
         });
-      } else if (!this.showMap) {
-        // TODO do something here to fix weird <g> attribute error?
       }
     },
     toggleMapSize: function () {
@@ -596,8 +593,6 @@ export default {
 
       // save reference to the map object to retrieve regions
       map = $(mapEl).children('.jvectormap-container').data('mapObject');
-
-      mapInitialized = true;
     },
     setupMapData: function () {
       map.series.regions[0].clear();
@@ -707,7 +702,7 @@ export default {
 
 /* labels added to body by jvectormap */
 .jvectormap-label {
-  z-index: 4;
+  z-index: 6;
   position: absolute;
   display: none;
   border: solid 1px var(--color-gray-light);
