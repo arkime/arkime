@@ -46,6 +46,7 @@ var internals = {
   sliceMax: 5,
   sliceNum: 0,
   scrollSize: 500,
+  scrollPause: 0,
   index: "sessions-*",
   stats: {},
   statsTime: {},
@@ -886,7 +887,7 @@ function reindex (item, index2, cb) {
         sendStats(false);
       }
 
-      Db.scroll({body: {scroll_id: result._scroll_id}, scroll: '1m'}, getMoreUntilDone);
+      Db.scroll({body: {scroll_id: result._scroll_id}, scroll: '2m'}, getMoreUntilDone);
     }
 
     if (err || result.error) {
@@ -900,7 +901,7 @@ function reindex (item, index2, cb) {
       return cb();
     }
 
-    doNext();
+    setTimeout(() => {doNext();}, internals.scrollPause);
     var body = [];
     var len = 0;
     for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
@@ -1088,6 +1089,7 @@ function mainMaster () {
       worker.send({sliceMax: internals.sliceMax,
                    sliceNum: i,
                    scrollSize: internals.scrollSize,
+                   scrollPause: internals.scrollPause,
                    sessions: newSessions,
                    fieldsMap: fieldsMap,
                    host: internals.elasticBase,
@@ -1111,6 +1113,10 @@ for (let i = 0; i < process.argv.length; i++) {
     i++;
     internals.scrollSize = +process.argv[i] || 500;
     break;
+  case "--pause":
+    i++;
+    internals.scrollPause = +process.argv[i] || 0;
+    break;
   case "--index":
     i++;
     internals.index = process.argv[i] || "sessions-*";
@@ -1123,8 +1129,9 @@ for (let i = 0; i < process.argv.length; i++) {
     break;
   case "--help":
     console.log("--config <file>                = moloch config.ini file");
-    console.log("--size <scroll size>           = batch size [500]");
-    console.log("--slices <parallel processes>  = number of parallel processes [5]");
+    console.log(`--size <scroll size>           = batch size, lower is slower and less load on ES [${internals.scrollSize}]`);
+    console.log(`--slices <parallel processes>  = number of parallel processes, lower is slower and less load on ES [${internals.sliceMax}]`);
+    console.log(`--pause <pause ms>             = Pause between each ES call, higher is slower and less load on ES [${internals.scrollPause}]`);
     console.log("--index <index pattern>        = indices to process [sessions-*]");
     console.log("--deleteExisting               = delete existing sessions2 indices before reindexing");
     console.log("--deleteOnDone                 = delete sessions index after reindexing");
@@ -1136,6 +1143,8 @@ if (internals.sliceMax <= 1) {internals.sliceMax = 2;}
 if (internals.sliceMax > 24) {internals.sliceMax = 24;}
 if (internals.scrollSize <= 50) {internals.scrollSize = 50;}
 if (internals.scrollSize > 2000) {internals.scrollSize = 2000;}
+if (internals.scrollPause < 0) {internals.scrollPause = 0;}
+if (internals.scrollPause > 5000) {internals.scrollPause = 5000;}
 
 if (cluster.isMaster) {
 // If master connect to DB and call mainMaster
@@ -1153,11 +1162,12 @@ if (cluster.isMaster) {
 } else {
 // If worker wait for msg from master and then connect to DB and call mainWorker
   process.on('message', function(msg) {
-    internals.sliceMax   = msg.sliceMax;
-    internals.sliceNum   = msg.sliceNum;
-    internals.scrollSize = msg.scrollSize;
-    internals.sessions   = msg.sessions;
-    fieldsMap            = msg.fieldsMap
+    internals.sliceMax    = msg.sliceMax;
+    internals.sliceNum    = msg.sliceNum;
+    internals.scrollSize  = msg.scrollSize;
+    internals.scrollPause = msg.scrollPause;
+    internals.sessions    = msg.sessions;
+    fieldsMap             = msg.fieldsMap
 
     Db.initialize({host: msg.host,
                    prefix: msg.prefix,
