@@ -34,30 +34,38 @@
         </moloch-visualizations>
       </div>
 
-      <div class="sessions-table">
-        <!-- TODO table width -->
+      <div>
         <table v-if="headers && headers.length"
           class="table-striped sessions-table"
+          style="{width: tableWidth + 'px'}"
           id="sessionsTable">
           <thead>
             <tr>
               <!-- table options -->
-              <th style="white-space:nowrap;width:85px!important;">
+              <th style="white-space: nowrap; width: 85px;">
                 &nbsp;
                 <!-- TODO col vis button -->
                 <!-- TODO col save button -->
               </th> <!-- /table options -->
               <!-- TODO drag n drop columns -->
-              <!-- TODO resize columns -->
               <!-- table headers -->
               <th v-for="header of headers"
                 :key="header.dbField"
                 class="moloch-col-header"
-                :style="{'width':header.width+'px'}"
+                :style="{'width': header.width + 'px'}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
                 {{ header.friendlyName }}
                 <!-- TODO column sort & dropdown -->
               </th> <!-- /table headers -->
+              <button type="button"
+                v-if="showFitButton && showSessions && !loading"
+                class="btn btn-xs btn-theme-quaternary fit-btn"
+                @click="fitTable()"
+                v-b-tooltip.hover
+                title="Fit the table to the current window size">
+                <span class="fa fa-arrows-h">
+                </span>
+              </button>
             </tr>
           </thead>
           <tbody class="small">
@@ -65,7 +73,7 @@
             <template v-for="session of sessions.data">
               <tr :key="session.id">
                 <!-- toggle button and ip protocol -->
-                <td>
+                <td style="width: 85px;">
                   <toggle-btn class="mt-1"
                     @toggle="toggleSessionDetail(session)">
                   </toggle-btn>
@@ -81,7 +89,8 @@
                 </td> <!-- /toggle button and ip protocol -->
                 <!-- field values -->
                 <td v-for="col in headers"
-                  :key="col.dbField">
+                  :key="col.dbField"
+                  :style="{'width': col.width + 'px'}">
                   <!-- field value is an array -->
                   <span v-if="Array.isArray(session[col.dbField])">
                     <span v-for="value in session[col.dbField]"
@@ -158,6 +167,8 @@ import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
 
+import '../../../../public/colResizable.js';
+
 const defaultTableState = {
   order: [['firstPacket', 'asc']],
   visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
@@ -167,6 +178,8 @@ let defaultInfoColWidth = 250;
 let componentInitialized = false;
 let holdingClick = false;
 let timeout;
+
+let colResizeInitialized;
 
 export default {
   name: 'Sessions',
@@ -391,6 +404,30 @@ export default {
     isVisible: function (id) {
       return this.tableState.visibleHeaders.indexOf(id);
     },
+    /* Fits the table to the width of the current window size */
+    fitTable: function () {
+      // disable resizable columns so it can be initialized after columns are resized
+      $('#sessionsTable').colResizable({ disable: true });
+      colResizeInitialized = false;
+
+      let windowWidth = window.innerWidth - 30; // account for right and left margins
+      let leftoverWidth = windowWidth - this.sumOfColWidths;
+      let percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
+
+      for (let i = 0, len = this.headers.length; i < len; ++i) {
+        let header = this.headers[i];
+        let newWidth = Math.floor(header.width * percentChange);
+        header.width = newWidth;
+        this.colWidths[header.dbField] = newWidth;
+      }
+
+      this.tableWidth = windowWidth;
+      this.showFitButton = false;
+
+      this.saveColumnWidths();
+
+      setTimeout(() => { this.initializeColResizable(); });
+    },
     // TODO organize and add functions: onDropComplete, toggleVisibility, loadColumnConfiguration, saveColumnConfiguration, deleteColumnConfiguration, openSpiGraph, exportUnique
     /* helper functions ---------------------------------------------------- */
     /* Gets the column widths of the table if they exist */
@@ -513,8 +550,7 @@ export default {
           }
 
           // initialize resizable columns now that there is data
-          // TODO
-          // if (!colResizeInitialized) { this.initializeColResizable(); }
+          if (!colResizeInitialized) { this.initializeColResizable(); }
         })
         .catch((error) => {
           this.sessions.data = undefined;
@@ -612,9 +648,7 @@ export default {
 
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
-      // TODO
-      // this.calculateInfoColumnWidth(defaultInfoColWidth);
-      // this.$scope.$broadcast('$$rebind::refreshHeaders');
+      this.calculateInfoColumnWidth(defaultInfoColWidth);
     },
     /* Opens up to 10 session details in the table */
     openAll: function () {
@@ -636,6 +670,63 @@ export default {
           openAll: undefined
         }
       });
+    },
+    /* Initializes resizable columns */
+    initializeColResizable: function () {
+      colResizeInitialized = true;
+      $('#sessionsTable').colResizable({
+        minWidth: 50,
+        headerOnly: true,
+        resizeMode: 'overflow',
+        disabledColumns: [0],
+        hoverCursor: 'col-resize',
+        onResize: (event, column, colIdx) => {
+          let header = this.headers[colIdx - 1];
+          if (header) {
+            header.width = column.w;
+            this.colWidths[header.dbField] = column.w;
+
+            this.saveColumnWidths();
+
+            this.mapHeadersToFields();
+          }
+        }
+      });
+    },
+    /* Saves the column widths */
+    saveColumnWidths: function () {
+      SessionsService.saveState(this.colWidths, 'sessionsColWidths')
+        .catch((error) => { this.error = error; });
+    },
+    /**
+     * Calculates the info column's width based on the width of the window
+     * If the info column is visible, it should take up whatever space is left
+     * Also determines whether the fit to window size button should be displayed
+     * @param infoColWidth
+     */
+    calculateInfoColumnWidth: function (infoColWidth) {
+      this.showFitButton = false;
+      if (!this.colWidths) { return; }
+      let windowWidth = window.innerWidth - 30; // account for right and left margins
+      if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
+        let fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        let newTableWidth = this.sumOfColWidths;
+        for (let i = 0, len = this.headers.length; i < len; ++i) {
+          if (this.headers[i].dbField === 'info') {
+            let newInfoColWidth = Math.max(fillWithInfoCol, infoColWidth);
+            this.headers[i].width = newInfoColWidth;
+            newTableWidth += newInfoColWidth;
+          }
+        }
+        this.tableWidth = newTableWidth;
+      } else {
+        this.tableWidth = this.sumOfColWidths;
+        // display a button to fit the table to the width of the window
+        // if the table is more than 10 pixels larger or smaller than the window
+        if (Math.abs(this.tableWidth - windowWidth) > 10) {
+          this.showFitButton = true;
+        }
+      }
     },
     /* event handlers ------------------------------------------------------ */
     /**
@@ -682,6 +773,8 @@ table.sessions-table {
   table-layout: fixed;
   border-top: var(--color-gray-light) solid 1px;
   margin-bottom: 20px;
+  border-spacing: 0;
+  border-collapse: collapse;
 }
 
 table.sessions-table thead tr th {
@@ -753,5 +846,12 @@ table.sessions-table tbody tr td {
 .moloch-col-header ul.dropdown-menu {
   max-height: 250px;
   overflow: auto;
+}
+
+/* table fit button -------------------------- */
+button.fit-btn {
+  position: absolute;
+  top: 310px;
+  left: 16px;
 }
 </style>

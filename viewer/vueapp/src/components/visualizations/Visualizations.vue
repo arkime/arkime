@@ -851,8 +851,7 @@ export default {
 .session-graph-btn-container > div {
   position: relative;
   left: -50%;
-  /* z-index: 9; */
-  /* above timeline */
+  z-index: 1; /* above timeline */
 }
 
 .session-graph-btn-container .btn-group-xs.btn-group-radios {
