@@ -159,19 +159,19 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   min-width: 12rem;
   z-index: 9;
 }
-.dropdown-menu > a.dropdown-item {
+.dropdown-menu a.dropdown-item {
   color: var(--color-foreground);
   padding: 2px 8px;
 }
 
-.dropdown-menu > a.dropdown-item:hover,
-.dropdown-menu > a.dropdown-item:focus {
+.dropdown-menu a.dropdown-item:hover,
+.dropdown-menu a.dropdown-item:focus {
   background-color: var(--color-gray-light);
   color: var(--color-foreground);
 }
-.dropdown-menu > a.dropdown-item.active,
-.dropdown-menu > a.dropdown-item.active:hover,
-.dropdown-menu > a.dropdown-item.active:focus {
+.dropdown-menu a.dropdown-item.active,
+.dropdown-menu a.dropdown-item.active:hover,
+.dropdown-menu a.dropdown-item.active:focus {
   background-color: var(--color-primary);
   color: var(--color-white);
 }

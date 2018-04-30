@@ -564,7 +564,7 @@ export default {
       mapEl = this.$refs.mapArea;
 
       // watch for the window to resize to resize the expanded map
-      $(window).on('resize', this.onMapResize);
+      window.addEventListener('resize', this.onMapResize, { passive: true });
       // watch for the map to resize to change its style
       $(mapEl).on('resize', this.onMapResize);
 
@@ -650,8 +650,8 @@ export default {
     if (timeout) { clearTimeout(timeout); }
 
     // turn off map events
+    window.removeEventListener('resize', this.onMapResize);
     $(document).off('mouseup', this.isOutsideClick);
-    $(window).off('resize', this.onMapResize);
     $(mapEl).off('resize', this.onMapResize);
     $(mapEl).remove();
   }

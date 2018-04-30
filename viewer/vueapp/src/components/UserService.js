@@ -171,6 +171,61 @@ export default {
     });
   },
 
+  /**
+   * Creates a specified custom column configuration for a user
+   * @param {Object} data       The data to pass to the server
+   *                            { name: 'namey', columns: ['field1', 'field2', ... , 'fieldN']}
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  createColumnConfig: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/columns/create',
+        method: 'POST',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Deletes a user's specified custom column configuration
+   * @param {string} name       The name of the column configuration to be removed
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  deleteColumnConfig: function (name, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/columns/delete',
+        method: 'POST',
+        data: { name: name }
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
   /* internal methods ---------------------------------------------------- */
   /**
    * Adds the name as a property on a view (instead of just key)

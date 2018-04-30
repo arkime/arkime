@@ -43,9 +43,103 @@
             <tr>
               <!-- table options -->
               <th style="white-space: nowrap; width: 85px;">
-                &nbsp;
-                <!-- TODO col vis button -->
-                <!-- TODO col save button -->
+                <!-- column visibility button -->
+                <b-dropdown
+                  size="sm"
+                  no-flip
+                  no-caret
+                  class="col-vis-menu"
+                  variant="theme-primary">
+                  <template slot="button-content">
+                    <span class="fa fa-th"
+                      v-b-tooltip.hover
+                      title="Toggle visible columns">
+                    </span>
+                  </template>
+                  <b-dropdown-header>
+                    <input type="text"
+                      v-model="colQuery"
+                      v-focus-input="true"
+                      class="form-control form-control-sm dropdown-typeahead"
+                      placeholder="Search for columns..."
+                    />
+                  </b-dropdown-header>
+                  <b-dropdown-divider>
+                  </b-dropdown-divider>
+                  <!-- TODO fix tooltip placement -->
+                  <b-dropdown-item
+                    v-for="(field, key) in filteredFields"
+                    :key="key"
+                    :class="{'active':isVisible(field.dbField) >= 0}"
+                    @click.stop.prevent="toggleVisibility(field.dbField)"
+                    v-b-tooltip.hover
+                    placement="right"
+                    :title="field.help">
+                    {{ field.friendlyName }}
+                  </b-dropdown-item>
+                </b-dropdown> <!-- /column visibility button -->
+                <!-- column save button -->
+                <b-dropdown
+                  size="sm"
+                  no-flip
+                  no-caret
+                  class="col-config-menu"
+                  variant="theme-secondary">
+                  <template slot="button-content">
+                    <span class="fa fa-columns"
+                      v-b-tooltip.hover
+                      title="Save or load custom column configuration">
+                    </span>
+                  </template>
+                  <b-dropdown-header>
+                    <div class="input-group input-group-sm">
+                      <input type="text"
+                        v-focus-input="true"
+                        maxlength="30"
+                        class="form-control"
+                        v-model="newColConfigName"
+                        placeholder="Enter new column configuration name"
+                        @keydown.enter="saveColumnConfiguration()"
+                      />
+                      <div class="input-group-append">
+                        <button type="button"
+                          class="btn btn-theme-secondary"
+                          :disabled="!newColConfigName"
+                          @click="saveColumnConfiguration()"
+                          v-b-tooltip.hover
+                          title="Save this custom column configuration">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </b-dropdown-header>
+                  <b-dropdown-divider>
+                  </b-dropdown-divider>
+                  <b-dropdown-item
+                    v-if="colConfigError"
+                    class="text-danger">
+                    {{ colConfigError }}
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    v-b-tooltip.hover
+                    @click.stop.prevent="loadColumnConfiguration()"
+                    title="Reset table to default columns">
+                    Moloch Default
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    v-for="(config, key) in colConfigs"
+                    :key="key"
+                    @click.self.stop.prevent="loadColumnConfiguration(key)">
+                    <button class="btn btn-xs btn-danger pull-right"
+                      type="button"
+                      @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </button>
+                    {{ config.name }}
+                  </b-dropdown-item>
+                </b-dropdown> <!-- /column save button -->
               </th> <!-- /table options -->
               <!-- TODO drag n drop columns -->
               <!-- table headers -->
@@ -54,8 +148,100 @@
                 class="moloch-col-header"
                 :style="{'width': header.width + 'px'}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
-                {{ header.friendlyName }}
-                <!-- TODO column sort & dropdown -->
+                <!-- column dropdown menu -->
+                <b-dropdown
+                  right
+                  no-flip
+                  size="sm"
+                  class="pull-right">
+                  <b-dropdown-item
+                    @click="toggleVisibility(header.dbField, header.sortBy)">
+                    Hide Column
+                  </b-dropdown-item>
+                  <!-- single field column -->
+                  <template v-if="!header.children && header.type !== 'seconds'">
+                    <b-dropdown-divider>
+                    </b-dropdown-divider>
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp, 0)">
+                      Export Unique {{ header.friendlyName }}
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp, 1)">
+                      Export Unique {{ header.friendlyName }} with counts
+                    </b-dropdown-item>
+                    <template v-if="header.portField">
+                      <b-dropdown-item
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
+                        Export Unique {{ header.friendlyName }}:Ports
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
+                        Export Unique {{ header.friendlyName }}:Ports with counts
+                      </b-dropdown-item>
+                    </template>
+                    <b-dropdown-item
+                      @click="openSpiGraph(header.dbField)">
+                      Open {{ header.friendlyName }} in SPI Graph
+                    </b-dropdown-item>
+                  </template> <!-- /single field column -->
+                  <!-- multiple field column -->
+                  <template v-else-if="header.children && header.type !== 'seconds'">
+                    <span v-for="child in header.children"
+                      :key="child.dbField">
+                      <b-dropdown-divider>
+                      </b-dropdown-divider>
+                      <b-dropdown-item
+                        @click="exportUnique(child.rawField || child.exp, 0)">
+                        Export Unique {{ child.friendlyName }}
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        @click="exportUnique(child.rawField || child.exp, 1)">
+                        Export Unique {{ child.friendlyName }} with counts
+                      </b-dropdown-item>
+                      <template v-if="child.portField">
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                          Export Unique {{ child.friendlyName }}:Ports
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                          Export Unique {{ child.friendlyName }}:Ports with counts
+                        </b-dropdown-item>
+                      </template>
+                      <b-dropdown-item
+                        @click="openSpiGraph(child.dbField)">
+                        Open {{ child.friendlyName }} in SPI Graph
+                      </b-dropdown-item>
+                    </span>
+                  </template> <!-- /multiple field column -->
+                </b-dropdown> <!-- /column dropdown menu -->
+                <!-- sortable column -->
+                <span v-if="(header.exp || header.sortBy) && !header.unsortable"
+                  @mousedown="mouseDown()"
+                  @mouseup="mouseUp()"
+                  @click="sortBy($event, header.sortBy || header.dbField)"
+                  class="cursor-pointer">
+                  <div class="header-sort">
+                    <span v-if="isSorted(header.sortBy || header.dbField) < 0"
+                      class="fa fa-sort text-muted-more">
+                    </span>
+                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                      class="fa fa-sort-asc">
+                    </span>
+                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                      class="fa fa-sort-desc">
+                    </span>
+                  </div>
+                  <div class="header-text">
+                    {{ header.friendlyName }}
+                  </div>
+                </span> <!-- /sortable column -->
+                <!-- non-sortable column -->
+                <div v-if="header.dbField === 'info'"
+                  class="cursor-pointer">
+                  {{ header.friendlyName }}
+                </div> <!-- /non-sortable column -->
               </th> <!-- /table headers -->
               <button type="button"
                 v-if="showFitButton && showSessions && !loading"
@@ -166,6 +352,7 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
+import FocusInput from '../utils/FocusInput';
 
 import '../../../../public/colResizable.js';
 
@@ -174,15 +361,20 @@ const defaultTableState = {
   visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
 };
 
-let defaultInfoColWidth = 250;
 let componentInitialized = false;
 let holdingClick = false;
 let timeout;
 
 let colResizeInitialized;
 
+// window/table resize variables
+let resizeTimeout;
+let windowResizeEvent;
+let defaultInfoColWidth = 250;
+
 export default {
   name: 'Sessions',
+  directives: { FocusInput },
   components: {
     MolochSearch,
     MolochPaging,
@@ -205,14 +397,27 @@ export default {
       colConfigError: '',
       headers: [],
       graphData: undefined,
-      mapData: undefined
+      mapData: undefined,
+      colQuery: '', // query for columns to toggle visibility
+      newColConfigName: '' // name of new custom column config
     };
   },
   created: function () {
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
-    // TODO LISTEN for add to search, change time, and window resize
+
+    // watch for window resizing and update the info column width
+    // this is only registered when the user has not set widths for any
+    // columns && the info column is visible
+    windowResizeEvent = () => {
+      if (resizeTimeout) { clearTimeout(resizeTimeout); }
+      resizeTimeout = setTimeout(() => {
+        this.mapHeadersToFields();
+      }, 300);
+    };
+
+    window.addEventListener('resize', windowResizeEvent, { passive: true });
   },
   computed: {
     query: function () {
@@ -228,6 +433,13 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$route.query.expression || undefined
       };
+    },
+    filteredFields: function () {
+      return this.fieldsArray.filter((field) => {
+        return field.friendlyName.toLowerCase().includes(
+          this.colQuery.toLowerCase()
+        );
+      });
     }
   },
   methods: {
@@ -247,6 +459,7 @@ export default {
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
     },
+
     /* TABLE SORTING */
     /**
      * Determines if the table is being sorted by specified column
@@ -396,6 +609,8 @@ export default {
         holdingClick = false;
       }, 500);
     },
+
+    /* TABLE COLUMNS */
     /**
      * Determines a column's visibility given its id
      * @param {string} id       The id of the column
@@ -403,6 +618,103 @@ export default {
      */
     isVisible: function (id) {
       return this.tableState.visibleHeaders.indexOf(id);
+    },
+    /**
+     * Toggles the visibility of a column given its id
+     * @param {string} id   The id of the column to show/hide (toggle)
+     * @param {string} sort Option sort id for columns that have sortBy
+     */
+    toggleVisibility: function (id, sort) {
+      this.loading = true;
+      let reloadData = false;
+
+      let index = this.isVisible(id);
+
+      if (index >= 0) { // it's visible
+        // remove it from the visible headers list
+        this.tableState.visibleHeaders.splice(index, 1);
+        reloadData = this.updateSort(sort || id);
+      } else { // it's hidden
+        reloadData = true; // requires a data reload
+        // add it to the visible headers list
+        this.tableState.visibleHeaders.push(id);
+      }
+
+      this.mapHeadersToFields();
+
+      if (reloadData) { // need data from the server
+        this.loadData(true);
+      } else { // have all the data, just need to reload the table
+        this.reloadTable();
+      }
+
+      this.saveTableState(true);
+    },
+    /* Saves a custom column configuration */
+    saveColumnConfiguration: function () {
+      if (!this.newColConfigName) {
+        this.colConfigError = 'You must name your new column configuration';
+        return;
+      }
+
+      let data = {
+        name: this.newColConfigName,
+        columns: this.tableState.visibleHeaders.slice(),
+        order: this.tableState.order.slice()
+      };
+
+      UserService.createColumnConfig(data)
+        .then((response) => {
+          data.name = response.name; // update column config name
+
+          this.colConfigs.push(data);
+
+          this.newColConfigName = null;
+          this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    },
+    /**
+     * Loads a previously saved custom column configuration and
+     * reloads table and table data
+     * If no index is given, loads the default columns
+     * @param {int} index The index in the array of the column config to load
+     */
+    loadColumnConfiguration: function (index) {
+      this.loading = true;
+
+      if (!index && index !== 0) {
+        this.tableState.visibleHeaders = defaultTableState.visibleHeaders.slice();
+        this.tableState.order = defaultTableState.order.slice();
+      } else {
+        this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
+        this.tableState.order = this.colConfigs[index].order.slice();
+      }
+
+      this.mapHeadersToFields();
+
+      this.query.sorts = this.tableState.order;
+
+      this.saveTableState();
+
+      this.loadData(true);
+    },
+    /**
+     * Deletes a previously saved custom column configuration
+     * @param {string} name The name of the column config to remove
+     * @param {int} index   The index in the array of the column config to remove
+     */
+    deleteColumnConfiguration: function (name, index) {
+      UserService.deleteColumnConfig(name)
+        .then((response) => {
+          this.colConfigs.splice(index, 1);
+          this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
     },
     /* Fits the table to the width of the current window size */
     fitTable: function () {
@@ -428,8 +740,32 @@ export default {
 
       setTimeout(() => { this.initializeColResizable(); });
     },
-    // TODO organize and add functions: onDropComplete, toggleVisibility, loadColumnConfiguration, saveColumnConfiguration, deleteColumnConfiguration, openSpiGraph, exportUnique
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
+    openSpiGraph: function (fieldID) {
+      SessionsService.openSpiGraph(fieldID, this.$route.query);
+    },
+    /**
+     * Open a page to view unique values for different fields
+     * @param {string} exp    The field to get unique values for
+     * @param {number} counts 1 or 0 whether to include counts of the values
+     */
+    exportUnique: function (exp, counts) {
+      SessionsService.exportUniqueValues(exp, counts, this.$route.query);
+    },
+
     /* helper functions ---------------------------------------------------- */
+    reloadTable: function () {
+      // disable resizable columns so it can be initialized after table reloads
+      $('#sessionsTable').colResizable({ disable: true });
+      colResizeInitialized = false;
+
+      setTimeout(() => {
+        this.initializeColResizable();
+      });
+    },
     /* Gets the column widths of the table if they exist */
     getColumnWidths: function () {
       SessionsService.getState('sessionsColWidths')
@@ -509,7 +845,6 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
-      console.log('load data', this.query); // TODO remove
       this.loading = true;
       this.error = '';
 
@@ -542,8 +877,7 @@ export default {
           this.mapData = response.data.map;
           this.graphData = response.data.graph;
 
-          // TODO this is unnecessary? because there are no one time bindings?
-          // if (updateTable) { this.reloadTable(); }
+          if (updateTable) { this.reloadTable(); }
 
           if (parseInt(this.$route.query.openAll) === 1) {
             this.openAll();
@@ -556,7 +890,6 @@ export default {
           this.sessions.data = undefined;
           this.error = error;
           this.loading = false;
-          // this.reloadTable(); // sets loading to false
         });
     },
     /**
@@ -728,6 +1061,7 @@ export default {
         }
       }
     },
+
     /* event handlers ------------------------------------------------------ */
     /**
      * fired when paging changes (from utils/Pagination)
@@ -743,10 +1077,42 @@ export default {
     }
   },
   beforeDestroy: function () {
-    // TODO
+    holdingClick = false;
+    componentInitialized = false;
+    colResizeInitialized = false;
+
+    if (timeout) { clearTimeout(timeout); }
+
+    $('#sessionsTable').colResizable({ disable: true });
+
+    window.removeEventListener('resize', windowResizeEvent);
   }
 };
 </script>
+
+<style>
+.col-config-menu > button.btn {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;;
+}
+.col-vis-menu > button.btn {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;;
+}
+.col-vis-menu .dropdown-menu {
+  max-height: 300px;
+  overflow: auto;
+}
+
+/* small dropdown buttons in column headers */
+.moloch-col-header .btn-group button.btn {
+  padding: 0 6px;
+}
+.moloch-col-header .dropdown-menu {
+  max-height: 250px;
+  overflow: auto;
+}
+</style>
 
 <style scoped>
 /* sessions page, navbar, and content styles - */
@@ -829,7 +1195,7 @@ table.sessions-table tbody tr td {
 
 .moloch-col-header .btn-group {
   visibility: hidden;
-  margin-left: -8px;
+  margin-left: -25px;
 }
 
 .moloch-col-header .header-text {
@@ -843,9 +1209,20 @@ table.sessions-table tbody tr td {
   vertical-align: top;
 }
 
-.moloch-col-header ul.dropdown-menu {
-  max-height: 250px;
-  overflow: auto;
+/* column visibility menu -------------------- */
+.col-vis-menu .dropdown-header {
+  padding: .25rem .5rem 0;
+}
+.col-vis-menu .dropdown-typeahead {
+  width: 200px;
+}
+
+/* custom column configurations menu --------- */
+.col-config-menu {
+  max-width: 280px;
+}
+.col-config-menu .dropdown-header {
+  padding: .25rem .5rem 0;
 }
 
 /* table fit button -------------------------- */
