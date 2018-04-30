@@ -511,22 +511,20 @@ typedef struct moloch_session {
 
     struct timeval         firstPacket;
     struct timeval         lastPacket;
+    struct in6_addr        addr1;
+    struct in6_addr        addr2;
     char                   firstBytes[2][8];
 
     uint64_t               bytes[2];
     uint64_t               databytes[2];
     uint64_t               totalDatabytes[2];
 
-
     uint32_t               lastFileNum;
     uint32_t               saveTime;
-    struct in6_addr        addr1;
-    struct in6_addr        addr2;
     uint32_t               packets[2];
 
     uint16_t               port1;
     uint16_t               port2;
-    uint16_t               offsets[2];
     uint16_t               outstandingQueries;
     uint16_t               segments;
     uint16_t               stopSaving;

@@ -15,7 +15,9 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.0.1 2018/04/XX
+1.2.0 2018/05/xx
+
+1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)
   - all - intial unencrypted 802.11 Data Frame support (issue #834)
   - db - new segments option to expire and optimize
@@ -30,6 +32,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - initial 4 over 6 and 6 over 4 support
   - viewer - support fields=id for sessions.csv (issue #839)
   - reindex2 - added --pause option
+  - viewer - more stats page fixes
 
 1.0.0 2018/04/05
   - db - always update stats/dstats indices for now
