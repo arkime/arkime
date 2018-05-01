@@ -18,11 +18,11 @@
 }
 
 
-/* dark input group addon */
-.input-group-addon {
-  color           : var(--color-foreground, #555);
-  background-color: var(--color-background, #EEE);
-  border-color    : var(--color-gray);
+/* themed input groups */
+.input-group-prepend > .input-group-text {
+  color           : var(--color-foreground, #555) !important;
+  background-color: var(--color-background, #EEE) !important;
+  border-color    : var(--color-gray) !important;
 }
 
 

@@ -128,8 +128,6 @@ export default {
     }
 
     this.getFields();
-    // TODO watch for issue search
-    // TODO watch for additions to typeahead
   },
   mounted: function () {
     // set the results element for keyup event handler

@@ -33,7 +33,7 @@
 
     <!-- start time -->
     <div class="form-group ml-1"
-      @keyup.esc="closeStartPicker">
+      @keydown.enter.esc="closeStartPicker">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
           placement="topright"
@@ -43,7 +43,7 @@
             Start
           </span>
         </span>
-        <flat-pickr v-model="time.startTime"
+        <flat-pickr v-model="localStartTime"
           @on-change="changeStartTime"
           @on-close="validateDate"
           :config="startTimeConfig"
@@ -63,7 +63,7 @@
 
     <!-- stop time -->
     <div class="form-group ml-1"
-      @keyup.esc="closeStopPicker">
+      @keydown.enter.esc="closeStopPicker">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
           placement="topright"
@@ -73,7 +73,7 @@
             End
           </span>
         </span>
-        <flat-pickr v-model="time.stopTime"
+        <flat-pickr v-model="localStopTime"
           @on-change="changeStopTime"
           @on-close="validateDate"
           :config="stopTimeConfig"
@@ -176,6 +176,10 @@ export default {
       timeError: '',
       timeBounding: this.$route.query.bounding || 'last',
       timeInterval: this.$route.query.interval || 'auto',
+      // use start/stop time localized to this component so that the time
+      // watcher can compare time values to local (unaffected) start/stop times
+      localStartTime: undefined,
+      localStopTime: undefined,
       // date configs must be separate
       startTimeConfig: {
         dateFormat: 'U', // seconds from Jan 1, 1970
@@ -215,9 +219,9 @@ export default {
     'time': {
       deep: true,
       handler (newVal, oldVal) {
-        console.log('time watcher'); // TODO remove comments
-        if (newVal && oldVal) {
-          console.log('time changed');
+        if (newVal && oldVal &&
+          (newVal.stopTime !== this.localStopTime ||
+          newVal.startTime !== this.localStartTime)) {
           dateChanged = true;
           this.validateDate();
         }
@@ -286,7 +290,7 @@ export default {
     changeStartTime: function (selectedDates, dateStr, instance) {
       if (this.time.startTime !== dateStr) {
         dateChanged = true;
-        this.time.startTime = dateStr;
+        this.time.startTime = this.localStartTime = dateStr;
       }
     },
     /**
@@ -296,7 +300,7 @@ export default {
     changeStopTime: function (selectedDates, dateStr, instance) {
       if (this.time.stopTime !== dateStr) {
         dateChanged = true;
-        this.time.stopTime = dateStr;
+        this.time.stopTime = this.localStopTime = dateStr;
       }
     },
     /**
@@ -354,7 +358,6 @@ export default {
       // update the displayed time range
       this.deltaTime = stopSec - startSec;
 
-      // update the url
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -368,7 +371,7 @@ export default {
       this.$refs.startTime.fp.close();
     },
     toggleStartPicker: function () {
-      this.$refs.startTime.fp.open();
+      this.$refs.startTime.fp.toggle();
     },
     closeStopPicker: function () {
       this.$refs.stopTime.fp.close();
@@ -391,13 +394,13 @@ export default {
 
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time
-        this.time.stopTime = currentTimeSec.toString();
-        this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+        this.time.stopTime = this.localStopTime = currentTimeSec.toString();
+        this.time.startTime = this.localStartTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
       }
 
       if (parseInt(this.timeRange, 10) === -1) { // all time
-        this.time.startTime = (hourSec * 5).toString();
-        this.time.stopTime = (currentTimeSec).toString();
+        this.time.startTime = this.localStartTime = (hourSec * 5).toString();
+        this.time.stopTime = this.localStopTime = (currentTimeSec).toString();
       }
     },
     /**
@@ -410,11 +413,11 @@ export default {
       if (date) { // time range is available
         this.timeRange = date;
         if (parseInt(this.timeRange, 10) === -1) { // all time
-          this.time.startTime = (hourSec * 5).toString();
-          this.time.stopTime = currentTimeSec.toString();
+          this.time.startTime = this.localStartTime = (hourSec * 5).toString();
+          this.time.stopTime = this.localStopTime = currentTimeSec.toString();
         } else if (this.timeRange > 0) {
-          this.time.stopTime = currentTimeSec.toString();
-          this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+          this.time.stopTime = this.localStopTime = currentTimeSec.toString();
+          this.time.startTime = this.localStartTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
         }
       } else if (startTime && stopTime) {
         // start and stop times available
@@ -424,8 +427,8 @@ export default {
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
           // if we can parse start and stop time, set them
           this.timeRange = '0'; // custom time range
-          this.time.stopTime = stop;
-          this.time.startTime = start;
+          this.time.stopTime = this.localStopTime = stop;
+          this.time.startTime = this.localStartTime = start;
 
           stop = parseInt(stop, 10);
           start = parseInt(start, 10);
@@ -469,12 +472,12 @@ export default {
 
       if (newParams.stopTime && newParams.stopTime !== oldParams.stopTime) {
         change = true;
-        this.time.stopTime = newParams.stopTime;
+        this.time.stopTime = this.localStopTime = newParams.stopTime;
       }
 
       if (newParams.startTime && newParams.startTime !== oldParams.startTime) {
         change = true;
-        this.time.startTime = newParams.startTime;
+        this.time.startTime = this.localStartTime = newParams.startTime;
       }
 
       if (change) { this.$emit('timeChange'); }

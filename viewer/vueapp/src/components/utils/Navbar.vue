@@ -46,7 +46,10 @@
 </template>
 
 <script>
+import qs from 'qs';
+
 import ESHealth from './ESHealth';
+
 export default {
   name: 'MolochNavbar',
   components: { ESHealth },
@@ -66,6 +69,12 @@ export default {
         stats: { title: 'Stats', link: 'stats' },
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
       };
+
+      // preserve url query parameters
+      for (let m in menu) {
+        let item = menu[m];
+        item.link = `${item.link}?${qs.stringify(this.$route.query)}`;
+      }
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };

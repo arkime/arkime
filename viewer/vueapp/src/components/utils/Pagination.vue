@@ -15,7 +15,7 @@
       v-model="currentPage"
       :limit="5"
       :per-page="length"
-      :total-rows="recordsTotal"
+      :total-rows="recordsFiltered"
       @input="notifyParent()">
     </b-pagination> <!-- paging -->
     <!-- page info -->

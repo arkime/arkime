@@ -22,6 +22,8 @@
       </div>
     </form>
 
+    <!-- TODO sticky sessions -->
+
     <div class="sessions-content ml-1 mr-2">
 
       <div class="sessions-vis">
@@ -59,7 +61,6 @@
                   <b-dropdown-header>
                     <input type="text"
                       v-model="colQuery"
-                      v-focus-input="true"
                       class="form-control form-control-sm dropdown-typeahead"
                       placeholder="Search for columns..."
                     />
@@ -94,7 +95,6 @@
                   <b-dropdown-header>
                     <div class="input-group input-group-sm">
                       <input type="text"
-                        v-focus-input="true"
                         maxlength="30"
                         class="form-control"
                         v-model="newColConfigName"
@@ -352,7 +352,6 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
-import FocusInput from '../utils/FocusInput';
 
 import '../../../../public/colResizable.js';
 
@@ -374,7 +373,6 @@ let defaultInfoColWidth = 250;
 
 export default {
   name: 'Sessions',
-  directives: { FocusInput },
   components: {
     MolochSearch,
     MolochPaging,

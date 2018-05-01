@@ -110,7 +110,6 @@
         <div class="row">
           <div v-if="showApplyButtons"
             class="col-md-3">
-            <!-- TODO fix titles -->
             <b-form-group>
               <b-form-radio-group
                 size="sm"
@@ -216,9 +215,6 @@ import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochExportCsv from '../sessions/ExportCsv';
 
-// TODO
-// let manualChange = false;
-
 export default {
   name: 'MolochSearch',
   components: {
@@ -285,7 +281,6 @@ export default {
   created: function () {
     this.getMolochClusters();
     this.getViews();
-    // TODO watch for shift time
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -305,8 +300,6 @@ export default {
       this.timeUpdate();
     },
     applyParams: function () {
-      // TODO is this necessary?
-      // manualChange = true;
       this.applyExpression();
       this.timeUpdate();
     },
@@ -349,7 +342,6 @@ export default {
         this.message = message;
         this.messageType = success ? 'success' : 'warning';
       }
-      // TODO reload data if necessary
     },
     /* updates the views list with the included new view */
     newView: function (views) {
@@ -417,8 +409,20 @@ export default {
       }, 1000);
     },
     /* event functions ------------------------------------------- */
-    timeChange: function (args) {
-      this.$emit('changeSearch');
+    /**
+     * Triggered when a time value is changed in the Time component
+     * If the expression has changed, but has not been applied to the
+     * url query parameters, apply it to url (this kicks off query by
+     * triggering changeExpression, then timeUpdate)
+     * If the expression has not changed, just tell the parent component
+     * that the time has changed, so it should issue a query
+     */
+    timeChange: function () {
+      if (this.$route.query.expression !== this.expression) {
+        this.applyExpression();
+      } else {
+        this.$emit('changeSearch');
+      }
     }
   }
 };
