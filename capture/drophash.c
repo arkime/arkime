@@ -131,7 +131,7 @@ void moloch_drophash_delete (MolochDropHash_t *hash, void *key)
         if (currentTime.tv_sec > hash->lastDelete.tv_sec + 10) {
             do {
                 item = hash->deleted;
-                hash->deleted = item->next;
+                hash->deleted = item->dnext;
                 MOLOCH_TYPE_FREE(MolochDropHashItem_t, item);
             } while (hash->deleted);
         }
