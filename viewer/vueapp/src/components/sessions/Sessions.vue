@@ -2,6 +2,7 @@
 
   <div class="sessions-page">
 
+    <!-- search navbar -->
     <moloch-search
       :open-sessions="stickySessions"
       :num-visible-sessions="query.length"
@@ -9,8 +10,9 @@
       :start="query.start"
       :timezone="settings.timezone"
       @changeSearch="loadData">
-    </moloch-search>
+    </moloch-search> <!-- /search navbar -->
 
+    <!-- paging navbar -->
     <form class="sessions-paging">
       <div class="form-inline">
         <moloch-paging
@@ -20,12 +22,11 @@
           @changePaging="changePaging">
         </moloch-paging>
       </div>
-    </form>
-
-    <!-- TODO sticky sessions -->
+    </form> <!-- /paging navbar -->
 
     <div class="sessions-content ml-1 mr-2">
 
+      <!-- session visualizations -->
       <div class="sessions-vis">
         <moloch-visualizations
           v-if="mapData && graphData"
@@ -34,304 +35,323 @@
           :primary="true"
           :timezone="settings.settings.timezone">
         </moloch-visualizations>
-      </div>
+      </div> <!-- /session visualizations -->
 
-      <div>
-        <table v-if="headers && headers.length"
-          class="table-striped sessions-table"
-          style="{width: tableWidth + 'px'}"
-          id="sessionsTable">
-          <thead>
-            <tr>
-              <!-- table options -->
-              <th style="white-space: nowrap; width: 85px;">
-                <!-- column visibility button -->
-                <b-dropdown
-                  size="sm"
-                  no-flip
-                  no-caret
-                  class="col-vis-menu"
-                  variant="theme-primary">
-                  <template slot="button-content">
-                    <span class="fa fa-th"
-                      v-b-tooltip.hover
-                      title="Toggle visible columns">
-                    </span>
-                  </template>
-                  <b-dropdown-header>
+      <!-- sticky (opened) sessions -->
+      <transition name="slide">
+        <moloch-sticky-sessions
+          class="sticky-sessions"
+          v-if="stickySessions.length"
+          :sessions="stickySessions"
+          :timezone="settings.settings.timezone"
+          @closeSession="closeSession"
+          @closeAllSessions="closeAllSessions">
+        </moloch-sticky-sessions>
+      </transition> <!-- /sticky (opened) sessions -->
+
+      <!-- sessions results -->
+      <table v-if="headers && headers.length"
+        class="table-striped sessions-table"
+        style="{width: tableWidth + 'px'}"
+        id="sessionsTable">
+        <thead>
+          <tr>
+            <!-- table options -->
+            <th style="white-space: nowrap; width: 85px;">
+              <!-- column visibility button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                class="col-vis-menu"
+                variant="theme-primary">
+                <template slot="button-content">
+                  <span class="fa fa-th"
+                    v-b-tooltip.hover
+                    title="Toggle visible columns">
+                  </span>
+                </template>
+                <b-dropdown-header>
+                  <input type="text"
+                    v-model="colQuery"
+                    class="form-control form-control-sm dropdown-typeahead"
+                    placeholder="Search for columns..."
+                  />
+                </b-dropdown-header>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <!-- TODO fix tooltip placement -->
+                <b-dropdown-item
+                  v-for="(field, key) in filteredFields"
+                  :key="key"
+                  :class="{'active':isVisible(field.dbField) >= 0}"
+                  @click.stop.prevent="toggleVisibility(field.dbField)"
+                  v-b-tooltip.hover
+                  placement="right"
+                  :title="field.help">
+                  {{ field.friendlyName }}
+                </b-dropdown-item>
+              </b-dropdown> <!-- /column visibility button -->
+              <!-- column save button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                class="col-config-menu"
+                variant="theme-secondary">
+                <template slot="button-content">
+                  <span class="fa fa-columns"
+                    v-b-tooltip.hover
+                    title="Save or load custom column configuration">
+                  </span>
+                </template>
+                <b-dropdown-header>
+                  <div class="input-group input-group-sm">
                     <input type="text"
-                      v-model="colQuery"
-                      class="form-control form-control-sm dropdown-typeahead"
-                      placeholder="Search for columns..."
+                      maxlength="30"
+                      class="form-control"
+                      v-model="newColConfigName"
+                      placeholder="Enter new column configuration name"
+                      @keydown.enter="saveColumnConfiguration()"
                     />
-                  </b-dropdown-header>
-                  <b-dropdown-divider>
-                  </b-dropdown-divider>
-                  <!-- TODO fix tooltip placement -->
-                  <b-dropdown-item
-                    v-for="(field, key) in filteredFields"
-                    :key="key"
-                    :class="{'active':isVisible(field.dbField) >= 0}"
-                    @click.stop.prevent="toggleVisibility(field.dbField)"
-                    v-b-tooltip.hover
-                    placement="right"
-                    :title="field.help">
-                    {{ field.friendlyName }}
-                  </b-dropdown-item>
-                </b-dropdown> <!-- /column visibility button -->
-                <!-- column save button -->
-                <b-dropdown
-                  size="sm"
-                  no-flip
-                  no-caret
-                  class="col-config-menu"
-                  variant="theme-secondary">
-                  <template slot="button-content">
-                    <span class="fa fa-columns"
-                      v-b-tooltip.hover
-                      title="Save or load custom column configuration">
-                    </span>
-                  </template>
-                  <b-dropdown-header>
-                    <div class="input-group input-group-sm">
-                      <input type="text"
-                        maxlength="30"
-                        class="form-control"
-                        v-model="newColConfigName"
-                        placeholder="Enter new column configuration name"
-                        @keydown.enter="saveColumnConfiguration()"
-                      />
-                      <div class="input-group-append">
-                        <button type="button"
-                          class="btn btn-theme-secondary"
-                          :disabled="!newColConfigName"
-                          @click="saveColumnConfiguration()"
-                          v-b-tooltip.hover
-                          title="Save this custom column configuration">
-                          <span class="fa fa-save">
-                          </span>
-                        </button>
-                      </div>
+                    <div class="input-group-append">
+                      <button type="button"
+                        class="btn btn-theme-secondary"
+                        :disabled="!newColConfigName"
+                        @click="saveColumnConfiguration()"
+                        v-b-tooltip.hover
+                        title="Save this custom column configuration">
+                        <span class="fa fa-save">
+                        </span>
+                      </button>
                     </div>
-                  </b-dropdown-header>
+                  </div>
+                </b-dropdown-header>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <b-dropdown-item
+                  v-if="colConfigError"
+                  class="text-danger">
+                  {{ colConfigError }}
+                </b-dropdown-item>
+                <b-dropdown-item
+                  v-b-tooltip.hover
+                  @click.stop.prevent="loadColumnConfiguration()"
+                  title="Reset table to default columns">
+                  Moloch Default
+                </b-dropdown-item>
+                <b-dropdown-item
+                  v-for="(config, key) in colConfigs"
+                  :key="key"
+                  @click.self.stop.prevent="loadColumnConfiguration(key)">
+                  <button class="btn btn-xs btn-danger pull-right"
+                    type="button"
+                    @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                    <span class="fa fa-trash-o">
+                    </span>
+                  </button>
+                  {{ config.name }}
+                </b-dropdown-item>
+              </b-dropdown> <!-- /column save button -->
+            </th> <!-- /table options -->
+            <!-- TODO drag n drop columns -->
+            <!-- table headers -->
+            <th v-for="header of headers"
+              :key="header.dbField"
+              class="moloch-col-header"
+              :style="{'width': header.width + 'px'}"
+              :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
+              <!-- column dropdown menu -->
+              <b-dropdown
+                right
+                no-flip
+                size="sm"
+                class="pull-right">
+                <b-dropdown-item
+                  @click="toggleVisibility(header.dbField, header.sortBy)">
+                  Hide Column
+                </b-dropdown-item>
+                <!-- single field column -->
+                <template v-if="!header.children && header.type !== 'seconds'">
                   <b-dropdown-divider>
                   </b-dropdown-divider>
                   <b-dropdown-item
-                    v-if="colConfigError"
-                    class="text-danger">
-                    {{ colConfigError }}
+                    @click="exportUnique(header.rawField || header.exp, 0)">
+                    Export Unique {{ header.friendlyName }}
                   </b-dropdown-item>
                   <b-dropdown-item
-                    v-b-tooltip.hover
-                    @click.stop.prevent="loadColumnConfiguration()"
-                    title="Reset table to default columns">
-                    Moloch Default
+                    @click="exportUnique(header.rawField || header.exp, 1)">
+                    Export Unique {{ header.friendlyName }} with counts
                   </b-dropdown-item>
+                  <template v-if="header.portField">
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
+                      Export Unique {{ header.friendlyName }}:Ports
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
+                      Export Unique {{ header.friendlyName }}:Ports with counts
+                    </b-dropdown-item>
+                  </template>
                   <b-dropdown-item
-                    v-for="(config, key) in colConfigs"
-                    :key="key"
-                    @click.self.stop.prevent="loadColumnConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right"
-                      type="button"
-                      @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                      <span class="fa fa-trash-o">
-                      </span>
-                    </button>
-                    {{ config.name }}
+                    @click="openSpiGraph(header.dbField)">
+                    Open {{ header.friendlyName }} in SPI Graph
                   </b-dropdown-item>
-                </b-dropdown> <!-- /column save button -->
-              </th> <!-- /table options -->
-              <!-- TODO drag n drop columns -->
-              <!-- table headers -->
-              <th v-for="header of headers"
-                :key="header.dbField"
-                class="moloch-col-header"
-                :style="{'width': header.width + 'px'}"
-                :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
-                <!-- column dropdown menu -->
-                <b-dropdown
-                  right
-                  no-flip
-                  size="sm"
-                  class="pull-right">
-                  <b-dropdown-item
-                    @click="toggleVisibility(header.dbField, header.sortBy)">
-                    Hide Column
-                  </b-dropdown-item>
-                  <!-- single field column -->
-                  <template v-if="!header.children && header.type !== 'seconds'">
+                </template> <!-- /single field column -->
+                <!-- multiple field column -->
+                <template v-else-if="header.children && header.type !== 'seconds'">
+                  <span v-for="child in header.children"
+                    :key="child.dbField">
                     <b-dropdown-divider>
                     </b-dropdown-divider>
                     <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp, 0)">
-                      Export Unique {{ header.friendlyName }}
+                      @click="exportUnique(child.rawField || child.exp, 0)">
+                      Export Unique {{ child.friendlyName }}
                     </b-dropdown-item>
                     <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp, 1)">
-                      Export Unique {{ header.friendlyName }} with counts
+                      @click="exportUnique(child.rawField || child.exp, 1)">
+                      Export Unique {{ child.friendlyName }} with counts
                     </b-dropdown-item>
-                    <template v-if="header.portField">
+                    <template v-if="child.portField">
                       <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                        Export Unique {{ header.friendlyName }}:Ports
+                        @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                        Export Unique {{ child.friendlyName }}:Ports
                       </b-dropdown-item>
                       <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                        Export Unique {{ header.friendlyName }}:Ports with counts
+                        @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                        Export Unique {{ child.friendlyName }}:Ports with counts
                       </b-dropdown-item>
                     </template>
                     <b-dropdown-item
-                      @click="openSpiGraph(header.dbField)">
-                      Open {{ header.friendlyName }} in SPI Graph
+                      @click="openSpiGraph(child.dbField)">
+                      Open {{ child.friendlyName }} in SPI Graph
                     </b-dropdown-item>
-                  </template> <!-- /single field column -->
-                  <!-- multiple field column -->
-                  <template v-else-if="header.children && header.type !== 'seconds'">
-                    <span v-for="child in header.children"
-                      :key="child.dbField">
-                      <b-dropdown-divider>
-                      </b-dropdown-divider>
-                      <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp, 0)">
-                        Export Unique {{ child.friendlyName }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp, 1)">
-                        Export Unique {{ child.friendlyName }} with counts
-                      </b-dropdown-item>
-                      <template v-if="child.portField">
-                        <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                          Export Unique {{ child.friendlyName }}:Ports
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                          Export Unique {{ child.friendlyName }}:Ports with counts
-                        </b-dropdown-item>
-                      </template>
-                      <b-dropdown-item
-                        @click="openSpiGraph(child.dbField)">
-                        Open {{ child.friendlyName }} in SPI Graph
-                      </b-dropdown-item>
-                    </span>
-                  </template> <!-- /multiple field column -->
-                </b-dropdown> <!-- /column dropdown menu -->
-                <!-- sortable column -->
-                <span v-if="(header.exp || header.sortBy) && !header.unsortable"
-                  @mousedown="mouseDown()"
-                  @mouseup="mouseUp()"
-                  @click="sortBy($event, header.sortBy || header.dbField)"
-                  class="cursor-pointer">
-                  <div class="header-sort">
-                    <span v-if="isSorted(header.sortBy || header.dbField) < 0"
-                      class="fa fa-sort text-muted-more">
-                    </span>
-                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                      class="fa fa-sort-asc">
-                    </span>
-                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                      class="fa fa-sort-desc">
-                    </span>
-                  </div>
-                  <div class="header-text">
-                    {{ header.friendlyName }}
-                  </div>
-                </span> <!-- /sortable column -->
-                <!-- non-sortable column -->
-                <div v-if="header.dbField === 'info'"
-                  class="cursor-pointer">
+                  </span>
+                </template> <!-- /multiple field column -->
+              </b-dropdown> <!-- /column dropdown menu -->
+              <!-- sortable column -->
+              <span v-if="(header.exp || header.sortBy) && !header.unsortable"
+                @mousedown="mouseDown()"
+                @mouseup="mouseUp()"
+                @click="sortBy($event, header.sortBy || header.dbField)"
+                class="cursor-pointer">
+                <div class="header-sort">
+                  <span v-if="isSorted(header.sortBy || header.dbField) < 0"
+                    class="fa fa-sort text-muted-more">
+                  </span>
+                  <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                    class="fa fa-sort-asc">
+                  </span>
+                  <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                    class="fa fa-sort-desc">
+                  </span>
+                </div>
+                <div class="header-text">
                   {{ header.friendlyName }}
-                </div> <!-- /non-sortable column -->
-              </th> <!-- /table headers -->
-              <button type="button"
-                v-if="showFitButton && showSessions && !loading"
-                class="btn btn-xs btn-theme-quaternary fit-btn"
-                @click="fitTable()"
-                v-b-tooltip.hover
-                title="Fit the table to the current window size">
-                <span class="fa fa-arrows-h">
-                </span>
-              </button>
-            </tr>
-          </thead>
-          <tbody class="small">
-            <!-- session + detail -->
-            <template v-for="session of sessions.data">
-              <tr :key="session.id">
-                <!-- toggle button and ip protocol -->
-                <td style="width: 85px;">
-                  <toggle-btn class="mt-1"
-                    @toggle="toggleSessionDetail(session)">
-                  </toggle-btn>
-                  <moloch-session-field
-                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                    :session="session"
-                    :expr="'ip.protocol'"
-                    :value="session.ipProtocol"
-                    :pull-left="true"
-                    :parse="true">
-                  </moloch-session-field>
-                  &nbsp;
-                </td> <!-- /toggle button and ip protocol -->
-                <!-- field values -->
-                <td v-for="col in headers"
-                  :key="col.dbField"
-                  :style="{'width': col.width + 'px'}">
-                  <!-- field value is an array -->
-                  <span v-if="Array.isArray(session[col.dbField])">
-                    <span v-for="value in session[col.dbField]"
-                      :key="value + col.dbField">
-                      <moloch-session-field
-                        :field="col"
-                        :session="session"
-                        :expr="col.exp"
-                        :value="value"
-                        :parse="true"
-                        :timezone="settings.settings.timezone">
-                      </moloch-session-field>
-                    </span>
-                  </span> <!-- /field value is an array -->
-                  <!-- field value a single value -->
-                  <span v-else>
+                </div>
+              </span> <!-- /sortable column -->
+              <!-- non-sortable column -->
+              <div v-if="header.dbField === 'info'"
+                class="cursor-pointer">
+                {{ header.friendlyName }}
+              </div> <!-- /non-sortable column -->
+            </th> <!-- /table headers -->
+            <button type="button"
+              v-if="showFitButton && showSessions && !loading"
+              class="btn btn-xs btn-theme-quaternary fit-btn"
+              @click="fitTable()"
+              v-b-tooltip.hover
+              title="Fit the table to the current window size">
+              <span class="fa fa-arrows-h">
+              </span>
+            </button>
+          </tr>
+        </thead>
+        <tbody class="small">
+          <!-- session + detail -->
+          <template v-for="session of sessions.data">
+            <tr :key="session.id"
+              :id="'session'+session.id">
+              <!-- toggle button and ip protocol -->
+              <td style="width: 85px;">
+                <toggle-btn class="mt-1"
+                  :opened="session.expanded"
+                  @toggle="toggleSessionDetail(session)">
+                </toggle-btn>
+                <moloch-session-field
+                  :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                  :session="session"
+                  :expr="'ip.protocol'"
+                  :value="session.ipProtocol"
+                  :pull-left="true"
+                  :parse="true">
+                </moloch-session-field>
+                &nbsp;
+              </td> <!-- /toggle button and ip protocol -->
+              <!-- field values -->
+              <td v-for="col in headers"
+                :key="col.dbField"
+                :style="{'width': col.width + 'px'}">
+                <!-- field value is an array -->
+                <span v-if="Array.isArray(session[col.dbField])">
+                  <span v-for="value in session[col.dbField]"
+                    :key="value + col.dbField">
                     <moloch-session-field
                       :field="col"
                       :session="session"
                       :expr="col.exp"
-                      :value="session[col.dbField]"
+                      :value="value"
                       :parse="true"
                       :timezone="settings.settings.timezone">
                     </moloch-session-field>
-                  </span> <!-- /field value a single value -->
-                </td> <!-- /field values -->
-              </tr>
-              <!-- session detail -->
-              <tr :key="session.id + '-detail'"
-                v-if="session.expanded"
-                class="session-detail-row">
-                <td :colspan="headers.length + 1">
-                  <moloch-session-detail
-                    :session="session">
-                  </moloch-session-detail>
-                </td>
-              </tr> <!-- /session detail -->
-            </template> <!-- /session + detail -->
-          </tbody>
-        </table>
-      </div>
+                  </span>
+                </span> <!-- /field value is an array -->
+                <!-- field value a single value -->
+                <span v-else>
+                  <moloch-session-field
+                    :field="col"
+                    :session="session"
+                    :expr="col.exp"
+                    :value="session[col.dbField]"
+                    :parse="true"
+                    :timezone="settings.settings.timezone">
+                  </moloch-session-field>
+                </span> <!-- /field value a single value -->
+              </td> <!-- /field values -->
+            </tr>
+            <!-- session detail -->
+            <tr :key="session.id + '-detail'"
+              v-if="session.expanded"
+              class="session-detail-row">
+              <td :colspan="headers.length + 1">
+                <moloch-session-detail
+                  :session="session">
+                </moloch-session-detail>
+              </td>
+            </tr> <!-- /session detail -->
+          </template> <!-- /session + detail -->
+        </tbody>
+      </table> <!-- /sessions results -->
 
-      <moloch-loading v-if="loading && !error">
-      </moloch-loading>
+      <!-- loading overlay -->
+      <moloch-loading
+        v-if="loading && !error">
+      </moloch-loading> <!-- /loading overlay -->
 
-      <moloch-error v-if="error"
+      <!-- page error -->
+      <moloch-error
+        v-if="error"
         :message="error"
         class="mt-5 mb-5">
-      </moloch-error>
+      </moloch-error> <!-- /page error -->
 
-      <moloch-no-results class="mt-5 mb-5"
+      <!-- no results -->
+      <moloch-no-results
         v-if="!error && !loading && !sessions.data.length"
+        class="mt-5 mb-5"
         :records-total="sessions.recordsTotal"
         :view="query.view">
-      </moloch-no-results>
+      </moloch-no-results> <!-- /no results -->
 
     </div>
 
@@ -352,6 +372,7 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
+import MolochStickySessions from './StickySessions';
 
 import '../../../../public/colResizable.js';
 
@@ -381,7 +402,8 @@ export default {
     MolochLoading,
     MolochNoResults,
     MolochSessionDetail,
-    MolochVisualizations
+    MolochVisualizations,
+    MolochStickySessions
   },
   data: function () {
     return {
@@ -456,6 +478,32 @@ export default {
         let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
+    },
+    /**
+     * Closes the session detail for a session
+     * Triggered by the sticky session component
+     * @param {string} sessionId The id of the session to close
+     */
+    closeSession: function (sessionId) {
+      for (let i in this.stickySessions) {
+        let session = this.stickySessions[i];
+        if (session.id === sessionId) {
+          session.expanded = false;
+          this.stickySessions.splice(i, 1);
+          return;
+        }
+      }
+    },
+    /**
+     * Closes all the open sessions
+     * Triggered by the sticky session component
+     */
+    closeAllSessions: function () {
+      for (let session of this.stickySessions) {
+        session.expanded = false;
+      }
+
+      this.stickySessions = [];
     },
 
     /* TABLE SORTING */
@@ -1119,13 +1167,17 @@ export default {
 }
 
 form.sessions-paging {
-  z-index: 2;
+  z-index: 4;
   position: fixed;
   top: 110px;
   left: 0;
   right: 0;
   height: 40px;
   background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
 }
 
 .sessions-content {
@@ -1139,6 +1191,7 @@ table.sessions-table {
   margin-bottom: 20px;
   border-spacing: 0;
   border-collapse: collapse;
+  overflow: hidden;
 }
 
 table.sessions-table thead tr th {
@@ -1228,5 +1281,21 @@ button.fit-btn {
   position: absolute;
   top: 310px;
   left: 16px;
+}
+
+/* animate sticky sessions enter/leave */
+.sticky-sessions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+}
+.slide-enter-active, .slide-leave-active {
+  transition: all 1s ease;
+}
+.slide-enter, .slide-leave-to {
+  transform: translateX(360px);
+  z-index: 4;
 }
 </style>

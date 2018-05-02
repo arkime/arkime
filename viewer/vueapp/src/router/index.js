@@ -9,6 +9,14 @@ Vue.use(Router);
 const router = new Router({
   mode: 'history',
   base: MOLOCH_PATH,
+  scrollBehavior: function (to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        selector: to.hash,
+        offset: { x: 0, y: 150 } // offset for navbars
+      };
+    }
+  },
   routes: [
     {
       path: '/stats',

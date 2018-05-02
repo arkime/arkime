@@ -122,8 +122,9 @@
                   <template v-for="stat of stats.data">
                     <tr :key="stat.id + 'data'">
                       <td>
-                        <toggle-btn v-on:toggle="toggleStatDetail(stat)"
-                          class="mr-2">
+                        <toggle-btn class="mr-2"
+                          :opened="expandedNodeStats[stat.id.replace(/[.:]/g, '\\$&')]"
+                          @toggle="toggleStatDetail(stat)">
                         </toggle-btn>
                       </td>
                       <td class="text-left">{{ stat.id }}</td>
@@ -144,7 +145,8 @@
                       :id="'statsGraphRow-' + stat.id"
                       style="display:none;">
                       <td :colspan="columns.length">
-                        <div :id="'statsGraph-' + stat.id" style="width: 1440px;">
+                        <div :id="'statsGraph-' + stat.id"
+                          style="width: 1440px;">
                         </div>
                       </td>
                     </tr>
@@ -152,7 +154,8 @@
                   <tr v-if="stats.data && !stats.data.length">
                     <td :colspan="columns.length"
                       class="text-danger text-center">
-                      <span class="fa fa-warning"></span>&nbsp;
+                      <span class="fa fa-warning">
+                      </span>&nbsp;
                       No results match your search
                     </td>
                   </tr>
@@ -473,7 +476,7 @@ export default {
         }
       });
     },
-    toggleStatDetail (stat) {
+    toggleStatDetail: function (stat) {
       var self = this;
       let id = stat.id.replace(/[.:]/g, '\\$&');
 

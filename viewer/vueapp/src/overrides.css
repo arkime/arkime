@@ -157,7 +157,7 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
-  z-index: 9;
+  /* z-index: 9; */
 }
 .dropdown-menu a.dropdown-item {
   color: var(--color-foreground);

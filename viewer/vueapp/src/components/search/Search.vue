@@ -6,7 +6,7 @@
       <!-- actions dropdown menu -->
       <b-dropdown right
         size="sm"
-        class="pull-right ml-1"
+        class="pull-right ml-1 action-menu-dropdown"
         variant="theme-primary">
         <b-dropdown-item @click="exportPCAP()">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
@@ -434,8 +434,12 @@ form {
   right: 0;
   left: 0;
   border: none;
-  z-index : 4;
+  z-index: 5;
   background-color: var(--color-secondary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
 }
 
 .action-form-separator {
