@@ -61,7 +61,7 @@ export default {
   computed: {
     menu: function () {
       let menu = {
-        sessions: { title: 'Sessions', link: 'sessions2' },
+        sessions: { title: 'Sessions', link: 'sessions' },
         spiview: { title: 'SPI View', link: 'spiview' },
         spigraph: { title: 'SPI Graph', link: 'spigraph' },
         connections: { title: 'Connections', link: 'connections' },

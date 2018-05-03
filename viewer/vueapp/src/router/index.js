@@ -24,7 +24,7 @@ const router = new Router({
       component: Stats
     },
     {
-      path: '/sessions2',
+      path: '/sessions',
       name: 'Sessions',
       component: Sessions
     }
@@ -34,7 +34,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
   // loads the angular app pages (for now, anything but the stats page)
-  if (!to.path.includes('stats') && !to.path.includes('sessions2') && to.path !== '/') {
+  if (!to.path.includes('stats') && !to.path.includes('sessions') && to.path !== '/') {
     location.reload();
   }
 
