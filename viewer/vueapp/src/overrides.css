@@ -18,11 +18,11 @@
 }
 
 
-/* dark input group addon */
-.input-group-addon {
-  color           : var(--color-foreground, #555);
-  background-color: var(--color-background, #EEE);
-  border-color    : var(--color-gray);
+/* themed input groups */
+.input-group-prepend > .input-group-text {
+  color           : var(--color-foreground, #555) !important;
+  background-color: var(--color-background, #EEE) !important;
+  border-color    : var(--color-gray) !important;
 }
 
 
@@ -156,20 +156,24 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   border-color: var(--color-gray-light);
   padding: 2px 0;
   font-size: .85rem;
+  min-width: 12rem;
+  /* z-index: 9; */
 }
-.dropdown-menu > .dropdown-item {
+.dropdown-menu a.dropdown-item {
   color: var(--color-foreground);
   padding: 2px 8px;
 }
 
-.dropdown-menu > a.dropdown-item:hover,
-.dropdown-menu > a.dropdown-item:focus {
+.dropdown-menu a.dropdown-item:hover,
+.dropdown-menu a.dropdown-item:focus {
   background-color: var(--color-gray-light);
+  color: var(--color-foreground);
 }
-.dropdown-menu > a.dropdown-item.active,
-.dropdown-menu > a.dropdown-item.active:hover,
-.dropdown-menu > a.dropdown-item.active:focus {
+.dropdown-menu a.dropdown-item.active,
+.dropdown-menu a.dropdown-item.active:hover,
+.dropdown-menu a.dropdown-item.active:focus {
   background-color: var(--color-primary);
+  color: var(--color-white);
 }
 .dropdown-menu li.active a,
 .dropdown-menu > li.active > a,

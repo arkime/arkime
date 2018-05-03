@@ -15,47 +15,47 @@ if (session.cert)
   each cert in session.cert
     dt Certificate
     dd
-      - if (cert.serial)
-        | Serial: 
-        a.moloch-right-click(href='#', molochexpr='cert.serial') #{cert.sn}
-      if (cert.hash)
-        |  [
-        a.moloch-right-click(href='#', molochexpr='cert.hash') #{cert.hash}
-        | ]
+      - if (cert.sn)
+        strong.medium.ml-1 Serial
+        moloch-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.sn+'"', :field="fields['cert.serial']", :pull-left="true")
+      - if (cert.hash)
+        | [
+        moloch-session-field.detail-field(:expr="'cert.hash'", :value='"'+cert.hash+'"', :field="fields['cert.hash']", :pull-left="true")
+        |]
       - if (cert.notBefore)
-        |  Not Before: 
-        a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
+        strong.medium.ml-1 Not Before
+        moloch-session-field.detail-field(:expr="'cert.notbefore'", :value='"'+cert.notBefore+'"', :field="fields['cert.notbefore']", :pull-left="true")
       - if (cert.notAfter)
-        |  Not After: 
-        a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notAfter});') #{cert.notAfter}
+        strong.medium.ml-1 Not After
+        moloch-session-field.detail-field(:expr="'cert.notafter'", :value='"'+cert.notAfter+'"', :field="fields['cert.notafter']", :pull-left="true")
       - if (cert.issueCN && Array.isArray(cert.issueCN))
-        |  Issuer Common: 
+        strong.medium.ml-1 Issuer Common
         each cn,i in cert.issueCN
           if (i > 0)
-            |, 
-          a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cn}
+            |,
+          moloch-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cn+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
       - else if (cert.issueCN)
-        |  Issuer Common: 
-        a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cert.issueCN}
+        strong.medium.ml-1 Issuer Common
+        moloch-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cert.issueCN+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
       - if (cert.issuerON)
-        |  Issuer Org: 
-        a.moloch-right-click(href='#', molochexpr='cert.issuer.on') #{cert.issuerON}
+        strong.medium.ml-1 Issuer Org
+        moloch-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+cert.issuerON+'"', :field="fields['cert.issuer.on']", :pull-left="true")
       - if (cert.subjectCN && Array.isArray(cert.subjectCN))
-        |  Subject Common: 
+        strong.medium.ml-1 Subject Common
         each cn,i in cert.subjectCN
           if (i > 0)
-            |, 
-          a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cn}
+            |,
+          moloch-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cn+'"', :field="fields['cert.subject.cn']", :pull-left="true")
       - else if (cert.subjectCN)
-        | Subject Common: 
-        a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cert.subjectCN}
+        strong.medium.ml-1 Subject Common
+        moloch-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cert.subjectCN+'"', :field="fields['cert.subject.cn']", :pull-left="true")
       - if (cert.subjectON)
-        |  Subject Org: 
-        a.moloch-right-click(href='#', molochexpr='cert.subject.on') #{cert.subjectON}
-      if (cert.alt)
-        |  [
+        strong.medium.ml-1 Subject Org
+        moloch-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+cert.subjectON+'"', :field="fields['cert.subject.on']", :pull-left="true")
+      - if (cert.alt)
+        | [
         each alt,i in cert.alt
           if (i > 0)
-            |, 
-          a.moloch-right-click(href='#', molochexpr='cert.alt') #{alt}
-        | ]
+            |,
+          moloch-session-field.detail-field(:expr="'cert.alt'", :value='"'+alt+'"', :field="fields['cert.alt']", :pull-left="true")
+        |]

@@ -1,30 +1,20 @@
 //- Display a clickable value
 mixin clickableValue(expr, value, parse)
-  session-field(expr=expr, value=value, parse=parse class="detail-field", timezone=user.settings.timezone, pull-left=true)
+  -
+    function defineField(field) {
+      return "fields['" + field + "']";
+    }
+  moloch-session-field.detail-field(:expr='"'+expr+'"', :value=value, :field=defineField(expr), timezone=user.settings.timezone, :pull-left="true")
 
-//- Standard method to print an array of values with commas
-mixin fieldsSelect(name,classname,simple,extra)
-  select(id=name,name=name,class=classname)
-    - var fields = fieldsArr
-    if (extra)
-      - fields = fields.concat(extra).sort(function(a,b) {return (a.exp > b.exp?1:-1);})
-    each value in fields
-      if (value.regex)
-        - continue
-
-      if (value.dbField !== null)
-        if (simple)
-          option(value="#{value.dbField}") #{value.exp}
-        else
-          if (value.type.match(/textfield$/))
-            if (value.dbField.match(/.snow$/))
-              - var tmp = value.dbField.replace(".snow", ".raw");
-              option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
-            else
-              option(value="raw#{value.dbField}", exp='#{value.exp}') #{value.exp}
-            option(value="#{value.dbField}", exp='#{value.exp}') #{value.exp} Tokens
-          else
-            option(value="#{value.dbField}", exp='#{value.exp}') #{value.exp}
+//- Method to add a menu to field labels
+mixin clickableLabel(field, title)
+  b-dropdown.clickable-label(size="sm", text=title, variant="default")
+    b-dropdown-item(@click="exportUnique('" + field  + "', 0)")
+      | Export Unique #{title}
+    b-dropdown-item(@click="exportUnique('" + field  + "', 1)")
+      | Export Unique #{title} with counts
+    b-dropdown-item(@click="openSpiGraph('" + field  + "')")
+      | Open #{title} SPI Graph
 
 mixin arrayPrint(container, field, expr)
   if ((container && container[field]))
@@ -32,7 +22,7 @@ mixin arrayPrint(container, field, expr)
       if (value.length == 0)
         span &lt;empty&gt;
       else
-        +clickableValue(expr, value)
+        moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
 
 //- Standard method to print an array of values
 mixin arrayList(container, field, title, expr, extra, max)
@@ -49,13 +39,13 @@ mixin arrayList(container, field, title, expr, extra, max)
           if (value.length == 0)
             span &lt;empty&gt;
           else
-            +clickableValue(expr, value)
+            moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
         if (container[field].length > max)
-          |<a class="cursor-pointer show-more-items" ng-click="$ctrl.showFewerItems($event)">less...</a></span>
-          a.cursor-pointer.show-more-items(ng-click="$ctrl.showMoreItems($event)") more...
+          |<a class="cursor-pointer show-more-items" @click="showFewerItems($event)">less...</a></span>
+          a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
       if (extra)
         |!{extra}
-      div(style="display:inline-block;margin-top:3px") &nbsp;
+      div(style="display:inline-block;") &nbsp;
 
 //- Standard method to print an array of values with commas
 mixin stringList(container, field, title, expr, extra)
@@ -68,131 +58,46 @@ mixin stringList(container, field, title, expr, extra)
         if (value.length == 0)
           span &lt;empty&gt;
         else
-          +clickableValue(expr, value)
+          moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
       if (extra)
         if (container && container[field] && container[field].length > 0)
-          |, 
+          |,
         |!{extra}
 
-//- Method to add a menu to field labels
-mixin clickableLabel(field, title)
-  div.btn-group.clickable-label(uib-dropdown="")
-    button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
-      strong #{title}&nbsp;
-      span.caret
-    ul.dropdown-menu(uib-dropdown-menu="")
-      li
-        a.cursor-pointer(ng-click="$ctrl.exportUnique('" + field  + "', 0)")
-          | Export Unique #{title}
-      li
-        a.cursor-pointer(ng-click="$ctrl.exportUnique('" + field + "', 1)")
-          | Export Unique #{title} with counts
-      li
-        a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + field + "')")
-          | Open #{title} SPI Graph
-
 //- Standard method to print ip, port, geo, asn, and rir info
-mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
+mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
   span
     if (full)
-      +clickableValue(expr, ipstr)
-    else if (v6)
-      +clickableValue('tipv6.' + expr, ipstr)
+      moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+ipstr+'"', :field="fields['"+expr+"']", :pull-left="true", :session="session")
     else
-      +clickableValue('ip.' + expr, ipstr)
-    - if (port)
+      moloch-session-field.detail-field(:expr='"ip.'+expr+'"', :value='"'+ipstr+'"', :field="fields['ip."+expr+"']", :pull-left="true", :session="session")
+    - if (port !== undefined)
       strong :
       if (full)
-        +clickableValue(expr + '.port', port)
+        moloch-session-field.detail-field(:expr='"'+expr+'.port"', :value='"'+port+'"', :field="fields['"+expr+".port']", :pull-left="true")
       else
-        +clickableValue('port.' + expr, port)
+        moloch-session-field.detail-field(:expr='"port.'+expr+'"', :value='"'+port+'"', :field="fields['port."+expr+"']", :pull-left="true")
     - if (geo)
       | (
       if (full)
-        +clickableValue(expr + '.country', geo)
+        moloch-session-field.detail-field(:expr='"'+expr+'.country"', :value='"'+geo+'"', :field="fields['"+expr+".country']", :pull-left="true")
       else
-        +clickableValue('country.' + expr, geo)
+        moloch-session-field.detail-field(:expr='"country.'+expr+'"', :value='"'+geo+'"', :field="fields['country."+expr+"']", :pull-left="true")
       |) &nbsp;
     - if (as)
       | [
       if (full)
-        +clickableValue(expr + '.asn', as)
+        moloch-session-field.detail-field(:expr='"'+expr+'.asn"', :value='"'+as+'"', :field="fields['"+expr+".asn']", :pull-left="true")
       else
-        +clickableValue('asn.' + expr, as)
+        moloch-session-field.detail-field(:expr='"asn.'+expr+'"', :value='"'+as+'"', :field="fields['asn."+expr+"']", :pull-left="true")
       |] &nbsp;
     - if (rir)
       | {
       if (full)
-        +clickableValue(expr + '.rir', rir)
+        moloch-session-field.detail-field(:expr='"'+expr+'.rir"', :value='"'+rir+'"', :field="fields['"+expr+".rir']", :pull-left="true")
       else
-        +clickableValue('rir.' + expr, rir)
+        moloch-session-field.detail-field(:expr='"rir.'+expr+'"', :value='"'+rir+'"', :field="fields['rir."+expr+"']", :pull-left="true")
       |}
-
-mixin ipPrint(ip,port,geo,as,rir,expr, full)
-  +ipPrintCommon(ip, port, geo, as, rir, expr, full, 0)
-
-mixin ipPrint6(ip,port,geo,as,rir,expr, full)
-  - var ipstr = ip.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
-  +ipPrintCommon("[" + ipstr + "]", port, geo, as, rir, expr, full, 1)
-
-//- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields
-mixin ipArrayListPre(session, field, title, expr, max)
-  if (!max)
-    - max = 25
-  if (session[field])
-    dt
-      div.btn-group.clickable-label(uib-dropdown="")
-        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
-          strong #{title}&nbsp;
-          span.caret
-        ul.dropdown-menu(uib-dropdown-menu="")
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('ip." + expr + "', 0)")
-              | Export Unique #{title}
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('ip." + expr + "', 1)")
-              | Export Unique #{title} with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('ip." + expr + "')")
-              | Open #{title} SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('country." + expr + "', 0)")
-              | Export Unique #{title} Country
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('country." + expr + "', 1)")
-              | Export Unique #{title} Country with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('country." + expr + "')")
-              | Open #{title} Country SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('asn." + expr + "', 0)")
-              | Export Unique #{title} ASN
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('asn." + expr + "', 1)")
-              | Export Unique #{title} ASN with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('asn." + expr + "')")
-              | Open #{title} ASN SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('rir." + expr + "', 0)")
-              | Export Unique #{title} RIR
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('rir." + expr + "', 1)")
-              | Export Unique #{title} RIR with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('rir." + expr + "')")
-              | Open #{title} RIR SPI Graph
-    dd
-      each ip,i in session[field]
-        if (i == max)
-          |<span style="display:none">
-        +ipPrint(session[field][i], undefined, (session["g" + field]?session["g" + field][i]:null), (session["as" + field]?session["as" + field][i]:null), (session["rir" + field]?session["rir" + field][i]:null), expr)
-      if (session[field].length > max)
-        |</span>
-        a.cursor-pointer.show-more-items &hellip;
 
 //- Standard method to print ip info with commas
 mixin ipArrayList(container, field, title, expr, max)
@@ -200,55 +105,40 @@ mixin ipArrayList(container, field, title, expr, max)
     - max = 25
   if (container[field])
     dt
-      div.btn-group.clickable-label(uib-dropdown="")
-        button.btn.btn-xs.btn-default(uib-dropdown-toggle="")
-          strong #{title}&nbsp;
-          span.caret
-        ul.dropdown-menu(uib-dropdown-menu="")
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + "', 0)")
-              | Export Unique #{title}
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + "', 1)")
-              | Export Unique #{title} with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + "')")
-              | Open #{title} SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".country', 0)")
-              | Export Unique #{title} Country
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".country', 1)")
-              | Export Unique #{title} Country with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".country')")
-              | Open #{title} Country SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".asn', 0)")
-              | Export Unique #{title} ASN
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".asn', 1)")
-              | Export Unique #{title} ASN with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".asn')")
-              | Open #{title} ASN SPI Graph
-          li.divider
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".rir', 0)")
-              | Export Unique #{title} RIR
-          li
-            a.cursor-pointer(ng-click="$ctrl.exportUnique('" + expr  + ".rir', 1)")
-              | Export Unique #{title} RIR with counts
-          li
-            a.cursor-pointer(ng-click="$ctrl.openSpiGraph('" + expr  + ".rir')")
-              | Open #{title} RIR SPI Graph
+      b-dropdown.clickable-label(text=title, size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 0)")
+          | Export Unique #{title}
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
+          | Export Unique #{title} with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + "')")
+          | Open #{title} SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 0)")
+          | Export Unique #{title} Country
+        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 1)")
+          | Export Unique #{title} Country with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".country')")
+          | Open #{title} Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 0)")
+          | Export Unique #{title} ASN
+        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 1)")
+          | Export Unique #{title} ASN with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".asn')")
+          | Open #{title} ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 0)")
+          | Export Unique #{title} RIR
+        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 1)")
+          | Export Unique #{title} RIR with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + ".rir')")
+          | Open #{title} RIR SPI Graph
+
     dd
       each ip,i in container[field]
         if (i == max)
           |<span style="display:none">
-        +ipPrint(container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
+        +ipPrint(container, container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
       if (container[field].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip;

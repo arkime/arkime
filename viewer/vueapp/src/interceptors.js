@@ -10,10 +10,19 @@ export default function setup () {
   axios.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
-    if (!error.response) {
-      error = error.message || 'Cannot connect to server: request timed out or canceled.';
-      return Promise.reject(error);
-    }
-    return Promise.reject(error.response.data);
+    return new Promise((resolve, reject) => {
+      if (axios.isCancel(error)) {
+        // don't modify the cancelled request or else axios.isCancel will
+        // not return true when being caught at the service or component level
+        reject(error);
+      }
+
+      if (!error.response) {
+        error = error.message || 'Cannot connect to server: request timed out or canceled.';
+        reject(error);
+      }
+
+      reject(error.response.data);
+    });
   });
 }

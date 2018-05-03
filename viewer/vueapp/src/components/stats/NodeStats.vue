@@ -91,12 +91,12 @@
                       <td class="text-left">Average</td>
                       <td>&nbsp;</td>
                       <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
-                      <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ averageValues.freeSpaceM*1000000 | humanReadableBytes }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
                       <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
-                      <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
+                      <td>{{ averageValues.memory | humanReadableBytes }} ({{ averageValues.memoryP | round(1) }}%)</td>
                       <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
                       <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                      <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ averageValues.deltaBytesPerSec | humanReadableBytes }}</td>
                       <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
                       <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
                       <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
@@ -107,12 +107,12 @@
                       <td class="text-left">Total</td>
                       <td>&nbsp;</td>
                       <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
-                      <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ totalValues.freeSpaceM*1000000 | humanReadableBytes }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
                       <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
-                      <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
+                      <td>{{ totalValues.memory | humanReadableBytes }} ({{ totalValues.memoryP | round(1) }}%)</td>
                       <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
                       <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                      <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ totalValues.deltaBytesPerSec | humanReadableBytes }}</td>
                       <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
                       <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
                       <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
@@ -122,19 +122,20 @@
                   <template v-for="stat of stats.data">
                     <tr :key="stat.id + 'data'">
                       <td>
-                        <toggle-btn v-on:toggle="toggleStatDetail(stat)"
-                          class="mr-2">
+                        <toggle-btn class="mr-2"
+                          :opened="expandedNodeStats[stat.id.replace(/[.:]/g, '\\$&')]"
+                          @toggle="toggleStatDetail(stat)">
                         </toggle-btn>
                       </td>
                       <td class="text-left">{{ stat.id }}</td>
                       <td>{{ stat.currentTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</td>
                       <td>{{ stat.monitoring | round(0) | commaString }}</td>
-                      <td>{{ stat.freeSpaceM*1000000 | humanReadable }} ({{ stat.freeSpaceP | round(1) }}%)</td>
+                      <td>{{ stat.freeSpaceM*1000000 | humanReadableBytes }} ({{ stat.freeSpaceP | round(1) }}%)</td>
                       <td>{{ stat.cpu/100.0 | round(1) }}%</td>
-                      <td>{{ stat.memory | humanReadable }} ({{ stat.memoryP | round(1) }}%)</td>
+                      <td>{{ stat.memory | humanReadableBytes }} ({{ stat.memoryP | round(1) }}%)</td>
                       <td>{{ stat.packetQueue | round(0) | commaString }}</td>
                       <td>{{ stat.deltaPacketsPerSec | round(0) | commaString }}</td>
-                      <td>{{ stat.deltaBytesPerSec | humanReadable }}</td>
+                      <td>{{ stat.deltaBytesPerSec | humanReadableBytes }}</td>
                       <td>{{ stat.deltaSessionsPerSec | round(0) | commaString }}</td>
                       <td>{{ stat.deltaDroppedPerSec | round(0) | commaString }}</td>
                       <td>{{ stat.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
@@ -144,7 +145,8 @@
                       :id="'statsGraphRow-' + stat.id"
                       style="display:none;">
                       <td :colspan="columns.length">
-                        <div :id="'statsGraph-' + stat.id" style="width: 1440px;">
+                        <div :id="'statsGraph-' + stat.id"
+                          style="width: 1440px;">
                         </div>
                       </td>
                     </tr>
@@ -152,7 +154,8 @@
                   <tr v-if="stats.data && !stats.data.length">
                     <td :colspan="columns.length"
                       class="text-danger text-center">
-                      <span class="fa fa-warning"></span>&nbsp;
+                      <span class="fa fa-warning">
+                      </span>&nbsp;
                       No results match your search
                     </td>
                   </tr>
@@ -163,12 +166,12 @@
                     <td class="text-left">Average</td>
                     <td>&nbsp;</td>
                     <td>{{ averageValues.monitoring | round(0) | commaString }}</td>
-                    <td>{{ averageValues.freeSpaceM*1000000 | humanReadable }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
+                    <td>{{ averageValues.freeSpaceM*1000000 | humanReadableBytes }} ({{ averageValues.freeSpaceP | round(1) }}%)</td>
                     <td>{{ averageValues.cpu/100.0 | round(1) }}%</td>
-                    <td>{{ averageValues.memory | humanReadable }} ({{ averageValues.memoryP | round(1) }}%)</td>
+                    <td>{{ averageValues.memory | humanReadableBytes }} ({{ averageValues.memoryP | round(1) }}%)</td>
                     <td>{{ averageValues.packetQueue | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                    <td>{{ averageValues.deltaBytesPerSec | humanReadable }}</td>
+                    <td>{{ averageValues.deltaBytesPerSec | humanReadableBytes }}</td>
                     <td>{{ averageValues.deltaSessionsPerSec | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaDroppedPerSec | round(0) | commaString }}</td>
                     <td>{{ averageValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
@@ -179,12 +182,12 @@
                     <td class="text-left">Total</td>
                     <td>&nbsp;</td>
                     <td>{{ totalValues.monitoring | round(0) | commaString }}</td>
-                    <td>{{ totalValues.freeSpaceM*1000000 | humanReadable }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
+                    <td>{{ totalValues.freeSpaceM*1000000 | humanReadableBytes }} ({{ totalValues.freeSpaceP | round(1) }}%)</td>
                     <td>{{ totalValues.cpu/100.0 | round(1) }}%</td>
-                    <td>{{ totalValues.memory | humanReadable }} ({{ totalValues.memoryP | round(1) }}%)</td>
+                    <td>{{ totalValues.memory | humanReadableBytes }} ({{ totalValues.memoryP | round(1) }}%)</td>
                     <td>{{ totalValues.packetQueue | round(0) | commaString }}</td>
                     <td>{{ totalValues.deltaPacketsPerSec | round(0) | commaString }}</td>
-                    <td>{{ totalValues.deltaBytesPerSec | humanReadable }}</td>
+                    <td>{{ totalValues.deltaBytesPerSec | humanReadableBytes }}</td>
                     <td>{{ totalValues.deltaSessionsPerSec | round(0) | commaString }}</td>
                     <td>{{ totalValues.deltaDroppedPerSec | round(0) | commaString }}</td>
                     <td>{{ totalValues.deltaOverloadDroppedPerSec | round(0) | commaString }}</td>
@@ -473,7 +476,7 @@ export default {
         }
       });
     },
-    toggleStatDetail (stat) {
+    toggleStatDetail: function (stat) {
       var self = this;
       let id = stat.id.replace(/[.:]/g, '\\$&');
 

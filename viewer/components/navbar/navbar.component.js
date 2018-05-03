@@ -84,7 +84,7 @@
         // must set the section of the help page to navigate to
         this.$location.hash(this.$location.path().split('/')[1]);
         this.$location.path(link);
-      } else if (link === 'stats') {
+      } else if (link === 'stats' || link === 'sessions') {
         // TODO update/remove as angular pages get replaced with vue pages
         // redirects to the new vue app stats page
         this.$location.path(link);

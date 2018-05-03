@@ -445,7 +445,7 @@ function createSessionDetailNew() {
     });
   }, function () {
     internals.sessionDetailNew = "include views/mixins.pug\n" +
-                                 "div.sessionDetail(sessionid=session.id)\n" +
+                                 "div.session-detail(sessionid=session.id)\n" +
                                  "  include views/sessionDetail\n";
     Object.keys(found).sort().forEach(function(k) {
       internals.sessionDetailNew += found[k];
@@ -5758,7 +5758,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get('/stats', (req, res) => {
+app.get(['/stats', '/sessions'], (req, res) => {
   let cookieOptions = { path: app.locals.basePath };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 

@@ -1,7 +1,7 @@
 if (session.dns)
   div.sessionDetailMeta.bold DNS
   dl.sessionDetailMeta(suffix="dns")
-    +ipArrayList(session.dns, "ip", "IPs", "dns")
+    +ipArrayList(session.dns, "ip", "IPs", "dns.ip")
     +arrayList(session.dns, 'host', "Hosts", "host.dns")
     +arrayList(session.dns, 'opcode', "Op Code", "dns.opcode")
     +arrayList(session.dns, 'status', "Status Code", "dns.status")

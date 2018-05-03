@@ -383,16 +383,16 @@ table.table td:hover::before {
   line-height: 1.2;
 }
 .badge > span:before {
-  content:'';
-  display:block;
-  width:0;
-  height:0;
-  position:absolute;
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-left:8px solid black;
-  right:-8px;
-  bottom:7px;
+  border-left: 8px solid black;
+  right: -8px;
+  bottom: 7px;
 }
 .badge > span span {
   color: #bbb;

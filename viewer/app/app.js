@@ -63,11 +63,6 @@
   .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider','Constants',
     function($routeProvider, $locationProvider, $httpProvider, $compileProvider, Constants) {
       $routeProvider
-        .when('/sessions', {
-          title         : 'Sessions',
-          template      : '<session></session>',
-          reloadOnSearch: false
-        })
         .when('/help', {
           title         : 'Help',
           template      : '<moloch-help></moloch-help>',

@@ -19,7 +19,9 @@ if (session.http)
     +arrayList(session.http, "bodyMagic", "libfile content type", "http.bodymagic")
     if (session.http.requestHeader)
       each value,i in session.http.requestHeader
-        +arrayList(session.http, "request-" + value, value + " Header", "http.request." + value)
+        if (session.http['request-' + value])
+          +arrayList(session.http, "request-" + value, value + " Header", "http." + value)
     if (session.http.responseHeader)
       each value,i in session.http.responseHeader
-        +arrayList(session.http, "response-" + value, value + " Header", "http.response." + value)
+        if (session.http['response-' + value])
+          +arrayList(session.http, "response-" + value, value + " Header", "http." + value)

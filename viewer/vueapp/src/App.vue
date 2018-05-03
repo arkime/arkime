@@ -139,17 +139,29 @@ a.no-decoration { text-decoration: none; }
 /* themed radio/checkbox buttons */
 label.btn-radio, button.btn-checkbox {
   background-image: none;
-  background-color: transparent;
-  border-color    : var(--color-primary);
+  background-color: var(--color-background, white) !important;
+  border-color    : var(--color-primary) !important;
   color           : var(--color-primary);
 }
-label.btn-radio:hover, button.btn-checkbox:hover {
-  color: var(--color-primary-dark);
+label.btn-radio.active:hover:not(:disabled),
+button.btn-checkbox.active:hover:not(:disabled) {
+  background-color: var(--color-primary-darker) !important;
 }
-label.btn-radio.active, button.btn-checkbox.active {
-  color           : var(--color-white);
-  border-color    : var(--color-primary);
-  background-color: var(--color-primary);
+label.btn-radio:hover:not(:disabled),
+button.btn-checkbox:hover:not(:disabled) {
+  color           : var(--color-primary);
+  background-color: var(--color-primary-lightest) !important;
+}
+label.btn-radio.active:not(:disabled),
+button.btn-checkbox.active:not(:disabled) {
+  border-color    : var(--color-primary) !important;
+  background-color: var(--color-primary) !important;
+}
+label.btn-radio:disabled, button.btn-checkbox:disabled {
+  background-color: var(--color-background, white);
+  color: var(--color-gray);
+  border-color: var(--color-gray) !important;
+  cursor: not-allowed;
 }
 
 /* themed labels */

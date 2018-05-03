@@ -46,23 +46,23 @@
             <tr class="bold average-row">
               <td class="text-left">Average</td>
               <td>{{ averageValues.docs | round(0) | commaString }}</td>
-              <td>{{ averageValues.storeSize | humanReadable }}</td>
-              <td>{{ averageValues.heapSize | humanReadable }}</td>
+              <td>{{ averageValues.storeSize | humanReadableBytes }}</td>
+              <td>{{ averageValues.heapSize | humanReadableBytes }}</td>
               <td>{{ averageValues.load | round(2) | commaString }}</td>
               <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
-              <td>{{ averageValues.read | humanReadable }}</td>
-              <td>{{ averageValues.write | humanReadable }}</td>
+              <td>{{ averageValues.read | humanReadableBytes }}</td>
+              <td>{{ averageValues.write | humanReadableBytes }}</td>
               <td>{{ averageValues.searches | round(0) | commaString }}</td>
             </tr>
             <tr class="border-bottom-bold bold total-row">
               <td class="text-left">Total</td>
               <td>{{ totalValues.docs | round(0) | commaString }}</td>
-              <td>{{ totalValues.storeSize | humanReadable }}</td>
-              <td>{{ totalValues.heapSize | humanReadable }}</td>
+              <td>{{ totalValues.storeSize | humanReadableBytes }}</td>
+              <td>{{ totalValues.heapSize | humanReadableBytes }}</td>
               <td>{{ totalValues.load | round(2) | commaString }}</td>
               <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
-              <td>{{ totalValues.read | humanReadable }}</td>
-              <td>{{ totalValues.write | humanReadable }}</td>
+              <td>{{ totalValues.read | humanReadableBytes }}</td>
+              <td>{{ totalValues.write | humanReadableBytes }}</td>
               <td>{{ totalValues.searches | round(0) | commaString }}</td>
             </tr>
           </template>
@@ -93,12 +93,12 @@
               </b-dropdown> <!-- /column dropdown menu -->
             </td>
             <td>{{ stat.docs | round(0) | commaString }}</td>
-            <td>{{ stat.storeSize | humanReadable }}</td>
-            <td>{{ stat.heapSize | humanReadable }}</td>
+            <td>{{ stat.storeSize | humanReadableBytes }}</td>
+            <td>{{ stat.heapSize | humanReadableBytes }}</td>
             <td>{{ stat.load | round(2) | commaString }}</td>
             <td>{{ stat.cpu | round(1) | commaString }}%</td>
-            <td>{{ stat.read | humanReadable }}</td>
-            <td>{{ stat.write | humanReadable }}</td>
+            <td>{{ stat.read | humanReadableBytes }}</td>
+            <td>{{ stat.write | humanReadableBytes }}</td>
             <td>{{ stat.searches | round(0) | commaString }}</td>
           </tr>
           <tr v-if="stats.data && !stats.data.length">
@@ -113,23 +113,23 @@
           <tr class="bold average-row">
             <td class="text-left">Average</td>
             <td>{{ averageValues.docs | round(0) | commaString }}</td>
-            <td>{{ averageValues.storeSize | humanReadable }}</td>
-            <td>{{ averageValues.heapSize | humanReadable }}</td>
+            <td>{{ averageValues.storeSize | humanReadableBytes }}</td>
+            <td>{{ averageValues.heapSize | humanReadableBytes }}</td>
             <td>{{ averageValues.load | round(2) | commaString }}</td>
             <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
-            <td>{{ averageValues.read | humanReadable }}</td>
-            <td>{{ averageValues.write | humanReadable }}</td>
+            <td>{{ averageValues.read | humanReadableBytes }}</td>
+            <td>{{ averageValues.write | humanReadableBytes }}</td>
             <td>{{ averageValues.searches | round(0) | commaString }}</td>
           </tr>
           <tr class="border-bottom-bold bold total-row">
             <td class="text-left">Total</td>
             <td>{{ totalValues.docs | round(0) | commaString }}</td>
-            <td>{{ totalValues.storeSize | humanReadable }}</td>
-            <td>{{ totalValues.heapSize | humanReadable }}</td>
+            <td>{{ totalValues.storeSize | humanReadableBytes }}</td>
+            <td>{{ totalValues.heapSize | humanReadableBytes }}</td>
             <td>{{ totalValues.load | round(2) | commaString }}</td>
             <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
-            <td>{{ totalValues.read | humanReadable }}</td>
-            <td>{{ totalValues.write | humanReadable }}</td>
+            <td>{{ totalValues.read | humanReadableBytes }}</td>
+            <td>{{ totalValues.write | humanReadableBytes }}</td>
             <td>{{ totalValues.searches | round(0) | commaString }}</td>
           </tr>
         </tfoot>
