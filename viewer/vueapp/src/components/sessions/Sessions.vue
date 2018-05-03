@@ -55,9 +55,10 @@
         style="{width: tableWidth + 'px'}"
         id="sessionsTable">
         <thead>
-          <tr>
+          <tr ref="draggableColumns">
             <!-- table options -->
-            <th style="white-space: nowrap; width: 85px;">
+            <th class="ignore-element"
+              style="white-space: nowrap; width: 85px;">
               <!-- column visibility button -->
               <b-dropdown
                 size="sm"
@@ -257,7 +258,7 @@
               </div> <!-- /non-sortable column -->
             </th> <!-- /table headers -->
             <button type="button"
-              v-if="showFitButton && showSessions && !loading"
+              v-if="showFitButton && !loading"
               class="btn btn-xs btn-theme-quaternary fit-btn"
               @click="fitTable()"
               v-b-tooltip.hover
@@ -374,6 +375,7 @@ import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
 
+import Sortable from 'sortablejs';
 import '../../../../public/colResizable.js';
 
 const defaultTableState = {
@@ -386,6 +388,8 @@ let holdingClick = false;
 let timeout;
 
 let colResizeInitialized;
+let colDragDropInitialized;
+let draggableColumns;
 
 // window/table resize variables
 let resizeTimeout;
@@ -768,7 +772,7 @@ export default {
       $('#sessionsTable').colResizable({ disable: true });
       colResizeInitialized = false;
 
-      let windowWidth = window.innerWidth - 30; // account for right and left margins
+      let windowWidth = window.innerWidth;
       let leftoverWidth = windowWidth - this.sumOfColWidths;
       let percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
 
@@ -931,6 +935,9 @@ export default {
 
           // initialize resizable columns now that there is data
           if (!colResizeInitialized) { this.initializeColResizable(); }
+
+          // initialize sortable table
+          if (!colDragDropInitialized) { this.initializeColDragDrop(); }
         })
         .catch((error) => {
           this.sessions.data = undefined;
@@ -1050,6 +1057,37 @@ export default {
         }
       });
     },
+    /* Initializes column drag and drop */
+    initializeColDragDrop: function () {
+      colDragDropInitialized = true;
+      draggableColumns = Sortable.create(this.$refs.draggableColumns, {
+        animation: 100,
+        filter: '.ignore-element',
+        preventOnFilter: false, // allow clicks within the ignored element
+        onMove: (event) => { // col header is being dragged
+          // don't allow a column to be dropped in the far left column
+          return !event.related.classList.contains('ignore-element');
+        },
+        onEnd: (event) => { // dragged col header was dropped
+          this.loading = true;
+
+          // update the headers to the new order
+          let oldIdx = event.oldIndex - 1;
+          let newIdx = event.newIndex - 1;
+          let element = this.tableState.visibleHeaders[oldIdx];
+          this.tableState.visibleHeaders.splice(oldIdx, 1);
+          this.tableState.visibleHeaders.splice(newIdx, 0, element);
+
+          this.mapHeadersToFields();
+          this.saveTableState();
+          this.reloadTable();
+
+          setTimeout(() => {
+            this.loading = false;
+          });
+        }
+      });
+    },
     /* Initializes resizable columns */
     initializeColResizable: function () {
       colResizeInitialized = true;
@@ -1060,15 +1098,20 @@ export default {
         disabledColumns: [0],
         hoverCursor: 'col-resize',
         onResize: (event, column, colIdx) => {
+          this.loading = true;
+
           let header = this.headers[colIdx - 1];
           if (header) {
             header.width = column.w;
             this.colWidths[header.dbField] = column.w;
 
             this.saveColumnWidths();
-
             this.mapHeadersToFields();
           }
+
+          setTimeout(() => {
+            this.loading = false;
+          });
         }
       });
     },
@@ -1086,7 +1129,7 @@ export default {
     calculateInfoColumnWidth: function (infoColWidth) {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
-      let windowWidth = window.innerWidth - 30; // account for right and left margins
+      let windowWidth = window.innerWidth; // account for right and left margins
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
         let fillWithInfoCol = windowWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
@@ -1126,10 +1169,13 @@ export default {
     holdingClick = false;
     componentInitialized = false;
     colResizeInitialized = false;
+    colDragDropInitialized = false;
 
     if (timeout) { clearTimeout(timeout); }
 
     $('#sessionsTable').colResizable({ disable: true });
+
+    draggableColumns.destroy();
 
     window.removeEventListener('resize', windowResizeEvent);
   }
@@ -1279,8 +1325,8 @@ table.sessions-table tbody tr td {
 /* table fit button -------------------------- */
 button.fit-btn {
   position: absolute;
-  top: 310px;
-  left: 16px;
+  top: 290px;
+  left: 5px;
 }
 
 /* animate sticky sessions enter/leave */
