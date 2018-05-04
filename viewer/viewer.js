@@ -513,15 +513,6 @@ function arrayZeroFill(n) {
   return a;
 }
 
-function sizeStringToInt(v) {
-  if (typeof(v) !== "string")              {return v;}
-  if (v.endsWith("kb") || v.endsWith("k")) {return Math.ceil(parseFloat(v, 10)*1024);}
-  if (v.endsWith("mb") || v.endsWith("m")) {return Math.ceil(parseFloat(v, 10)*1024*1024);}
-  if (v.endsWith("gb") || v.endsWith("g")) {return Math.ceil(parseFloat(v, 10)*1024*1024*1024);}
-  if (v.endsWith("tb") || v.endsWith("t")) {return Math.ceil(parseFloat(v, 10)*1024*1024*1024*1024);}
-  return parseInt(v, 10);
-}
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
 //////////////////////////////////////////////////////////////////////////////////
@@ -2309,11 +2300,6 @@ app.get('/esindices/list', function(req, res) {
       indices = findices;
     }
 
-    for (let i = 0, ilen = indices.length; i < ilen; i++) {
-      indices[i]['store.size'] = sizeStringToInt(indices[i]['store.size']);
-      indices[i]['pri.store.size'] = sizeStringToInt(indices[i]['pri.store.size']);
-    }
-
     // Implement sorting
     var sortField = req.query.sortField || "index";
     if (sortField === "index" || sortField === "status" || sortField === "health") {
@@ -2475,6 +2461,7 @@ app.get('/esshard/list', function(req, res) {
 
 app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, function(req, res) {
   if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+  if (Config.get("multiES", false)) { return res.molochError(401, "Not supported in multies"); }
 
   Db.getClusterSettings({flatSettings: true}, function(err, settings) {
     let exclude = [];
@@ -2507,6 +2494,7 @@ app.post('/esshard/exclude/:type/:value', logAction(), checkCookieToken, functio
 
 app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, function(req, res) {
   if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+  if (Config.get("multiES", false)) { return res.molochError(401, "Not supported in multies"); }
 
   Db.getClusterSettings({flatSettings: true}, function(err, settings) {
     let exclude = [];

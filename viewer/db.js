@@ -287,7 +287,7 @@ exports.health = function(cb) {
 };
 
 exports.indices = function(cb, index) {
-  return internals.elasticSearchClient.cat.indices({format: "json", index: fixIndex(index)}, cb);
+  return internals.elasticSearchClient.cat.indices({format: "json", index: fixIndex(index), bytes: "b", h: "health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal"}, cb);
 };
 
 exports.shards = function(cb) {

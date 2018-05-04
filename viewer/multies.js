@@ -287,6 +287,10 @@ app.get("/:index/:type/:id", function(req, res) {
   });
 });
 
+app.get("/_cluster/settings", function(req, res) {
+  res.send({persistent: {}, transient: {}});
+});
+
 
 app.head(/^\/$/, function(req, res) {
   res.send("");

@@ -1,9 +1,10 @@
-use Test::More tests => 27;
+use Test::More tests => 28;
 use Cwd;
 use URI::Escape;
 use MolochTest;
 use JSON;
 use Data::Dumper;
+use Test::Differences;
 use strict;
 
 my $json;
@@ -46,6 +47,10 @@ my $json;
     $json = mesGet("/_cluster/health");
     is ($json->{number_of_data_nodes}, 2, "Correct _cluster/health number of nodes");
     is ($json->{cluster_name}, "COMBINED", "Correct _cluster/health name");
+
+# _cluster/settings
+    $json = mesGet("/_cluster/settings");
+    eq_or_diff($json, from_json('{"persistent": {}, "transient": {}}'));
 
 # _nodes
 

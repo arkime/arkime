@@ -80,6 +80,7 @@ Vue.filter('protocol', (protocolCode) => {
  * @returns {string}            The <=4 char human readable number
  */
 Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
+  fileSizeInBytes = parseInt(fileSizeInBytes);
   let i = 0;
   let byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
   while (fileSizeInBytes >= 1000) {
