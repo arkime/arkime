@@ -79,17 +79,26 @@
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <!-- TODO fix tooltip placement -->
-                <b-dropdown-item
-                  v-for="(field, key) in filteredFields"
-                  :key="key"
-                  :class="{'active':isVisible(field.dbField) >= 0}"
-                  @click.stop.prevent="toggleVisibility(field.dbField)"
-                  v-b-tooltip.hover
-                  placement="right"
-                  :title="field.help">
-                  {{ field.friendlyName }}
-                </b-dropdown-item>
+                <template
+                  v-for="(group, key) in filteredFields">
+                  <b-dropdown-header
+                    :key="key"
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <!-- TODO fix tooltip placement -->
+                  <b-dropdown-item
+                    v-for="(field, k) in group"
+                    :key="key + k"
+                    :class="{'active':isVisible(field.dbField) >= 0}"
+                    @click.stop.prevent="toggleVisibility(field.dbField)"
+                    v-b-tooltip.hover
+                    placement="right"
+                    :title="field.help">
+                    {{ field.friendlyName }}
+                  </b-dropdown-item>
+                </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
               <b-dropdown
@@ -153,7 +162,6 @@
                 </b-dropdown-item>
               </b-dropdown> <!-- /column save button -->
             </th> <!-- /table options -->
-            <!-- TODO drag n drop columns -->
             <!-- table headers -->
             <th v-for="header of headers"
               :key="header.dbField"
@@ -457,11 +465,17 @@ export default {
       };
     },
     filteredFields: function () {
-      return this.fieldsArray.filter((field) => {
-        return field.friendlyName.toLowerCase().includes(
-          this.colQuery.toLowerCase()
-        );
-      });
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.groupedFields[group].filter((field) => {
+          return field.friendlyName.toLowerCase().includes(
+            this.colQuery.toLowerCase()
+          );
+        });
+      }
+
+      return filteredGroupedFields;
     }
   },
   methods: {
@@ -975,16 +989,19 @@ export default {
         }
       }
 
-      // convert fields map to array (for ng-repeat with filter and group)
+      // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
       let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
-      this.fieldsArray = [];
+      this.groupedFields = {};
       for (let f in this.fields) {
         if (this.fields.hasOwnProperty(f)) {
           let field = this.fields[f];
           if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
             existingFieldsLookup[field.exp] = field;
-            this.fieldsArray.push(field);
+            if (!this.groupedFields[field.group]) {
+              this.groupedFields[field.group] = [];
+            }
+            this.groupedFields[field.group].push(field);
           }
         }
       }
@@ -1304,6 +1321,13 @@ table.sessions-table tbody tr td {
 /* column visibility menu -------------------- */
 .col-vis-menu .dropdown-header {
   padding: .25rem .5rem 0;
+}
+.col-vis-menu .dropdown-header.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  font-size: 120%;
+  font-weight: bold;
 }
 .col-vis-menu .dropdown-typeahead {
   width: 200px;
