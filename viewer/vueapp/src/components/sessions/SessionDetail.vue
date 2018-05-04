@@ -742,10 +742,10 @@ export default {
           this.params.base = this.userSettings.detailFormat;
         }
 
-        if (this.userSettings.numPackets === 'last' && localStorage['moloch-packets']) {
-          this.params.packets = localStorage['moloch-packets'];
-        } else if (this.userSettings.numPackets) {
-          this.params.packets = this.userSettings.numPackets;
+        if (this.userSettings.numPackets === 'last') {
+          this.params.packets = localStorage['moloch-packets'] || 200;
+        } else {
+          this.params.packets = this.userSettings.numPackets || 200;
         }
 
         if (this.userSettings.showTimestamps === 'last' && localStorage['moloch-ts']) {
