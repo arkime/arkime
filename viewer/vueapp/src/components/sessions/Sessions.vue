@@ -24,18 +24,16 @@
       </div>
     </form> <!-- /paging navbar -->
 
-    <div class="sessions-content ml-1 mr-2">
+    <div class="sessions-content ml-2 mr-2">
 
       <!-- session visualizations -->
-      <div class="sessions-vis">
-        <moloch-visualizations
-          v-if="mapData && graphData"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="settings.settings.timezone">
-        </moloch-visualizations>
-      </div> <!-- /session visualizations -->
+      <moloch-visualizations
+        v-if="mapData && graphData"
+        :graph-data="graphData"
+        :map-data="mapData"
+        :primary="true"
+        :timezone="settings.settings.timezone">
+      </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
       <transition name="slide">
@@ -1153,16 +1151,13 @@ export default {
 
     /* event handlers ------------------------------------------------------ */
     /**
-     * fired when paging changes (from utils/Pagination)
-     * update start and length, then get data if one has changed
+     * Fired when paging changes (from utils/Pagination)
+     * Update start and length, then get data
      */
     changePaging: function (args) {
-      if (this.query.start !== args.start ||
-        this.query.length !== args.length) {
-        this.query.start = args.start;
-        this.query.length = args.length;
-        this.loadData(true);
-      }
+      this.query.start = args.start;
+      this.query.length = args.length;
+      this.loadData();
     }
   },
   beforeDestroy: function () {
@@ -1228,6 +1223,7 @@ form.sessions-paging {
 
 .sessions-content {
   padding-top: 115px;
+  overflow-x: hidden;
 }
 
 /* sessions table -------------------------- */
@@ -1237,7 +1233,6 @@ table.sessions-table {
   margin-bottom: 20px;
   border-spacing: 0;
   border-collapse: collapse;
-  overflow: hidden;
 }
 
 table.sessions-table thead tr th {

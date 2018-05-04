@@ -30,3 +30,9 @@ export default {
   props: [ 'recordsTotal', 'view' ]
 };
 </script>
+
+<style scoped>
+.info-area {
+  font-size: var(--px-xxlg);
+}
+</style>

@@ -104,7 +104,7 @@
         <!-- time value -->
         <span v-else
           class="field time-field cursor-pointer"
-          title="Click to apply time constraint"
+          :title="'Click to apply ' + field.friendlyName"
           v-b-tooltip.hover
           @click="timeClick(expr, pd.queryVal)">
           <a class="value">

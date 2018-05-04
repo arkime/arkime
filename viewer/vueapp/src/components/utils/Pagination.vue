@@ -13,7 +13,8 @@
     <!-- paging -->
     <b-pagination size="sm"
       v-model="currentPage"
-      :limit="5"
+      :limit="6"
+      hide-ellipsis
       :per-page="length"
       :total-rows="recordsFiltered"
       @input="notifyParent()">
@@ -22,7 +23,10 @@
     <div class="pagination-info cursor-help"
       v-b-tooltip.hover
       :title="pagingInfoTitle">
-      Showing {{ start + 1 }} - {{ start + length }}
+      Showing {{ start + 1 }}
+      <span v-if="recordsFiltered">
+        - {{ Math.min((start + length), recordsFiltered) }}
+      </span>
       of {{ recordsFiltered | commaString }} entries
     </div> <!-- /page info -->
   </div>

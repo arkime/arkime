@@ -53,7 +53,7 @@
             <select v-model="sortBy"
               @change="sort()"
               class="form-control form-control-sm pull-right sort-by-select">
-              <option value="">
+              <option disabled value="">
                 Sort by...
               </option>
               <option value="firstPacket">
@@ -114,7 +114,7 @@ export default {
   data: function () {
     return {
       open: false,
-      sortBy: undefined, // use the order sessions are opened
+      sortBy: '', // use the order sessions are opened
       sortOrder: 'desc'
     };
   },
