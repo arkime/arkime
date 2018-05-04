@@ -109,13 +109,29 @@
                       <span>State:</span>
                       {{ item.state }}
                     </div>
+                    <div v-if="item.ur">
+                      <span>Reason:</span>
+                      {{ item.ur }}
+                    </div>
+                    <div v-if="item.uf">
+                      <span>For:</span>
+                      {{ item.uf }}
+                    </div>
                     <div v-if="item.store">
                       <span>Size:</span>
-                      {{ item.store }}
+                      {{ item.store | humanReadableBytes}}
                     </div>
                     <div v-if="item.docs">
                       <span>Documents:</span>
-                      {{ item.docs }}
+                      {{ item.docs | round(0) | commaString}}
+                    </div>
+                    <div v-if="item.fm">
+                      <span>Field Memory:</span>
+                      {{ item.fm | humanReadableBytes}}
+                    </div>
+                    <div v-if="item.sm">
+                      <span>Segment Memory:</span>
+                      {{ item.sm | humanReadableBytes}}
                     </div>
                     <div>
                       <span>Shard Type:</span>
