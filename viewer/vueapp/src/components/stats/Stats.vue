@@ -70,7 +70,7 @@
 
         <!-- graph hide select -->
         <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 0">
+          v-if="tabIndex === 0 || tabIndex === 1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Hide rows">
@@ -89,12 +89,13 @@
         </div> <!-- /graph hide select -->
 
         <!-- table data interval select -->
-        <div class="input-group input-group-sm ml-1">
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex !== 0">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Data refresh interval for Node and Elasticsearch stats">
             <span class="input-group-text">
-              Refresh Node/ES Data Every
+              Refresh Data Every
             </span>
           </div>
           <select class="form-control input-sm"
@@ -132,38 +133,46 @@
         title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
       <b-tabs v-model="tabIndex">
-        <b-tab title="Node"
+        <b-tab title="Capture Graphs"
           @click="tabIndexChange()">
-          <node-stats v-if="user && tabIndex === 0"
+          <capture-graphs v-if="user && tabIndex === 0"
             :graph-type="graphType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
-            :data-interval="dataInterval"
-            :user="user"></node-stats>
+            :user="user">
+          </capture-graphs>
         </b-tab>
-        <b-tab title="ES Stats"
+        <b-tab title="Capture Stats"
           @click="tabIndexChange()">
-          <es-stats v-if="user && tabIndex === 1"
+          <capture-stats v-if="user && tabIndex === 1"
+            :graph-hide="graphHide"
+            :data-interval="dataInterval"
+            :user="user">
+          </capture-stats>
+        </b-tab>
+        <b-tab title="ES Nodes"
+          @click="tabIndexChange()">
+          <es-nodes v-if="user && tabIndex === 2"
             :data-interval="dataInterval">
-          </es-stats>
+          </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
-          <es-indices v-if="user && tabIndex === 2"
+          <es-indices v-if="user && tabIndex === 3"
             :data-interval="dataInterval"
             @errored="onError">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
           @click="tabIndexChange()">
-          <es-tasks v-if="user && tabIndex === 3"
+          <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :user="user">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
           @click="tabIndexChange()">
-          <shards v-if="user && tabIndex === 4"
+          <shards v-if="user && tabIndex === 5"
             :data-interval="dataInterval">
           </shards>
         </b-tab>
@@ -176,10 +185,11 @@
 
 <script>
 import Shards from './Shards';
-import EsStats from './EsStats';
+import EsNodes from './EsNodes';
 import EsTasks from './EsTasks';
 import EsIndices from './EsIndices';
-import NodeStats from './NodeStats';
+import CaptureGraphs from './CaptureGraphs';
+import CaptureStats from './CaptureStats';
 import UserService from '../UserService';
 export default {
   name: 'Stats',
@@ -195,7 +205,7 @@ export default {
     };
   },
   components: {
-    NodeStats, Shards, EsStats, EsIndices, EsTasks
+    CaptureGraphs, CaptureStats, Shards, EsNodes, EsIndices, EsTasks
   },
   created: function () {
     this.loadUser();

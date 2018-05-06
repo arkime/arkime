@@ -21,7 +21,7 @@
           class="form-control"
           v-model="query.filter"
           @keyup="searchForES()"
-          placeholder="Begin typing to search for ES stats (hint: this input accepts regex)">
+          placeholder="Begin typing to search for ES nodes (hint: this input accepts regex)">
       </div>
 
       <table class="table table-sm table-striped text-right small mt-3">
