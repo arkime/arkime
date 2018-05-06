@@ -32,8 +32,7 @@ else
           |!{item.html}
         div.col-md-6
       else
-        div.col-md-6
-        div.col-md-6.sessiondst
+        div.col-md-6.offset-md-6.sessiondst
           if (item.ts)
             div.session-detail-ts(value=item.ts)
               em.ts-value #{item.ts}

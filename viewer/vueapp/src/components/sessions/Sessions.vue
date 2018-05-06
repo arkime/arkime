@@ -24,18 +24,16 @@
       </div>
     </form> <!-- /paging navbar -->
 
-    <div class="sessions-content ml-1 mr-2">
+    <div class="sessions-content ml-2 mr-2">
 
       <!-- session visualizations -->
-      <div class="sessions-vis">
-        <moloch-visualizations
-          v-if="mapData && graphData"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="settings.settings.timezone">
-        </moloch-visualizations>
-      </div> <!-- /session visualizations -->
+      <moloch-visualizations
+        v-if="mapData && graphData"
+        :graph-data="graphData"
+        :map-data="mapData"
+        :primary="true"
+        :timezone="settings.settings.timezone">
+      </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
       <transition name="slide">
@@ -81,17 +79,26 @@
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <!-- TODO fix tooltip placement -->
-                <b-dropdown-item
-                  v-for="(field, key) in filteredFields"
-                  :key="key"
-                  :class="{'active':isVisible(field.dbField) >= 0}"
-                  @click.stop.prevent="toggleVisibility(field.dbField)"
-                  v-b-tooltip.hover
-                  placement="right"
-                  :title="field.help">
-                  {{ field.friendlyName }}
-                </b-dropdown-item>
+                <template
+                  v-for="(group, key) in filteredFields">
+                  <b-dropdown-header
+                    :key="key"
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <!-- TODO fix tooltip placement -->
+                  <b-dropdown-item
+                    v-for="(field, k) in group"
+                    :key="key + k"
+                    :class="{'active':isVisible(field.dbField) >= 0}"
+                    @click.stop.prevent="toggleVisibility(field.dbField)"
+                    v-b-tooltip.hover
+                    placement="right"
+                    :title="field.help">
+                    {{ field.friendlyName }}
+                  </b-dropdown-item>
+                </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
               <b-dropdown
@@ -155,7 +162,6 @@
                 </b-dropdown-item>
               </b-dropdown> <!-- /column save button -->
             </th> <!-- /table options -->
-            <!-- TODO drag n drop columns -->
             <!-- table headers -->
             <th v-for="header of headers"
               :key="header.dbField"
@@ -459,11 +465,17 @@ export default {
       };
     },
     filteredFields: function () {
-      return this.fieldsArray.filter((field) => {
-        return field.friendlyName.toLowerCase().includes(
-          this.colQuery.toLowerCase()
-        );
-      });
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.groupedFields[group].filter((field) => {
+          return field.friendlyName.toLowerCase().includes(
+            this.colQuery.toLowerCase()
+          );
+        });
+      }
+
+      return filteredGroupedFields;
     }
   },
   methods: {
@@ -977,16 +989,19 @@ export default {
         }
       }
 
-      // convert fields map to array (for ng-repeat with filter and group)
+      // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
       let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
-      this.fieldsArray = [];
+      this.groupedFields = {};
       for (let f in this.fields) {
         if (this.fields.hasOwnProperty(f)) {
           let field = this.fields[f];
           if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
             existingFieldsLookup[field.exp] = field;
-            this.fieldsArray.push(field);
+            if (!this.groupedFields[field.group]) {
+              this.groupedFields[field.group] = [];
+            }
+            this.groupedFields[field.group].push(field);
           }
         }
       }
@@ -1153,16 +1168,13 @@ export default {
 
     /* event handlers ------------------------------------------------------ */
     /**
-     * fired when paging changes (from utils/Pagination)
-     * update start and length, then get data if one has changed
+     * Fired when paging changes (from utils/Pagination)
+     * Update start and length, then get data
      */
     changePaging: function (args) {
-      if (this.query.start !== args.start ||
-        this.query.length !== args.length) {
-        this.query.start = args.start;
-        this.query.length = args.length;
-        this.loadData(true);
-      }
+      this.query.start = args.start;
+      this.query.length = args.length;
+      this.loadData();
     }
   },
   beforeDestroy: function () {
@@ -1228,6 +1240,7 @@ form.sessions-paging {
 
 .sessions-content {
   padding-top: 115px;
+  overflow-x: hidden;
 }
 
 /* sessions table -------------------------- */
@@ -1237,7 +1250,6 @@ table.sessions-table {
   margin-bottom: 20px;
   border-spacing: 0;
   border-collapse: collapse;
-  overflow: hidden;
 }
 
 table.sessions-table thead tr th {
@@ -1309,6 +1321,13 @@ table.sessions-table tbody tr td {
 /* column visibility menu -------------------- */
 .col-vis-menu .dropdown-header {
   padding: .25rem .5rem 0;
+}
+.col-vis-menu .dropdown-header.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  font-size: 120%;
+  font-weight: bold;
 }
 .col-vis-menu .dropdown-typeahead {
   width: 200px;

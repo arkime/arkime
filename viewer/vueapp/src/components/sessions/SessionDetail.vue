@@ -742,10 +742,10 @@ export default {
           this.params.base = this.userSettings.detailFormat;
         }
 
-        if (this.userSettings.numPackets === 'last' && localStorage['moloch-packets']) {
-          this.params.packets = localStorage['moloch-packets'];
-        } else if (this.userSettings.numPackets) {
-          this.params.packets = this.userSettings.numPackets;
+        if (this.userSettings.numPackets === 'last') {
+          this.params.packets = localStorage['moloch-packets'] || 200;
+        } else {
+          this.params.packets = this.userSettings.numPackets || 200;
         }
 
         if (this.userSettings.showTimestamps === 'last' && localStorage['moloch-ts']) {
@@ -839,7 +839,7 @@ export default {
           this.packetHtml = sanitizeHtml(response, {
             allowedTags: [ 'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img' ],
             allowedClasses: {
-              'div': [ 'row', 'col-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
+              'div': [ 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
               'span': [ 'pull-right', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip' ],
               'em': [ 'ts-value' ],
               'h5': [ 'text-theme-quaternary' ],
@@ -994,6 +994,8 @@ export default {
   border-radius: 0 0 4px 4px;
   margin-top: -1px;
   color: inherit;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
 .packet-container pre .sessionln {
   color: darkgreen;
@@ -1014,6 +1016,7 @@ export default {
   text-align: right;
   margin-right: 6px;
   line-height: 1.7;
+  font-weight: 600;
 }
 
 .session-detail dd {
@@ -1060,8 +1063,9 @@ export default {
   height: 23px;
   background-color: transparent;
   font-size: 12px;
+  font-weight: 600;
   line-height: 21px;
-  padding: 1px 5px;
+  padding: 0 5px 1px 5px;
 }
 
 .session-detail .clickable-label button.btn:hover {

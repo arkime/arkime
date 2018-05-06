@@ -49,7 +49,8 @@
           :config="startTimeConfig"
           class="form-control"
           name="startTime"
-          ref="startTime">
+          ref="startTime"
+          tabindex="4">
         </flat-pickr>
         <div class="input-group-append">
           <button class="btn btn-default"
@@ -79,7 +80,8 @@
           :config="stopTimeConfig"
           class="form-control"
           name="stopTime"
-          ref="stopTime">
+          ref="stopTime"
+          tabindex="5">
         </flat-pickr>
         <div class="input-group-append">
           <button class="btn btn-default"
