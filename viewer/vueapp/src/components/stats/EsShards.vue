@@ -164,7 +164,7 @@ let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
-  name: 'Shards',
+  name: 'EsShards',
   components: { MolochError, MolochLoading },
   props: [ 'dataInterval' ],
   data: function () {
