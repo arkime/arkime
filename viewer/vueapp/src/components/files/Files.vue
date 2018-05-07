@@ -1,7 +1,9 @@
 <template>
 
-  <div class="files-content">
+  <div class="container-fluid">
+
     <div class="sub-navbar">
+
       <span class="sub-navbar-title">
         <span class="fa-stack">
           <span class="fa fa-files-o fa-stack-1x"></span>
@@ -9,18 +11,8 @@
         </span>&nbsp;
         Files
       </span>
-    </div>
 
-    <moloch-loading v-if="loading && !error">
-    </moloch-loading>
-
-    <moloch-error v-if="error"
-      :message="error">
-    </moloch-error>
-
-    <div v-show="!error">
-
-      <div class="input-group input-group-sm node-search pull-right mt-1">
+      <div class="input-group input-group-sm node-search pull-right">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
@@ -30,47 +22,84 @@
           class="form-control"
           v-model="query.filter"
           @keyup="searchForFiles()"
-          placeholder="Begin typing to search for files by name">
+          placeholder="Begin typing to search for files by name"
+        />
       </div>
 
       <moloch-paging v-if="files"
-        class="mt-1"
+        class="inline-paging pull-right mr-2"
         :records-total="files.recordsTotal"
         :records-filtered="files.recordsFiltered"
         v-on:changePaging="changePaging">
       </moloch-paging>
 
-      <table class="table table-sm text-right small">
-        <thead>
-          <tr>
-            <th v-for="column of columns"
-              :key="column.name"
-              class="cursor-pointer"
-              :class="{'text-left':!column.doStats}"
-              @click="columnClick(column.sort)">
-              {{ column.name }}
-              <span v-if="column.sort !== undefined">
-                <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody v-if="files">
-          <template v-for="file of files.data">
-            <tr :key="file.id">
-              <td class="no-wrap">{{file.num}}</td>
-              <td class="no-wrap">{{file.node}}</td>
-              <td class="no-wrap">{{file.name}}</td>
-              <td class="no-wrap">{{file.locked === 1 ? 'True' : 'False'}}</td>
-              <td class="no-wrap"><span ng-if="::$ctrl.settings">{{file.first | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</span></td>
-              <td class="no-wrap">{{file.filesize}}</td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
     </div>
+
+    <div class="files-content">
+
+      <moloch-loading v-if="loading && !error">
+      </moloch-loading>
+
+      <moloch-error v-if="error"
+        :message="error">
+      </moloch-error>
+
+      <div v-show="!error">
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th v-for="column of columns"
+                :key="column.name"
+                class="cursor-pointer"
+                @click="columnClick(column.sort)">
+                {{ column.name }}
+                <span v-if="column.sort !== undefined">
+                  <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody v-if="files">
+            <template v-for="file of files.data">
+              <tr :key="file.id">
+                <td class="no-wrap">
+                  {{ file.num }}
+                </td>
+                <td class="no-wrap">
+                  {{ file.node }}
+                </td>
+                <td class="no-wrap">
+                  {{ file.name }}
+                </td>
+                <td class="no-wrap">
+                  {{ file.locked === 1 ? 'True' : 'False' }}
+                </td>
+                <td class="no-wrap">
+                  <span v-if="settings">
+                    {{ file.first | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                  </span>
+                </td>
+                <td class="no-wrap">
+                  {{ file.filesize }}
+                </td>
+              </tr>
+            </template>
+            <tr v-if="!files.data.length">
+              <td colspan="6"
+                class="text-danger text-center">
+                <span class="fa fa-warning">
+                </span>&nbsp;
+                No results match your search
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
   </div> <!-- /files content -->
 
 </template>
@@ -90,7 +119,7 @@ export default {
     return {
       error: '',
       loading: true,
-      user: null,
+      settings: null,
       files: null,
       query: {
         length: parseInt(this.$route.query.length) || 50,
@@ -137,9 +166,9 @@ export default {
     loadUser: function () {
       UserService.getCurrent()
         .then((response) => {
-          this.user = response;
+          this.settings = response.settings;
         }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
+          this.settings = { timezone: 'local' };
         });
     },
     loadData: function () {
@@ -159,8 +188,22 @@ export default {
   }
 };
 </script>
+
 <style scoped>
+.files-content {
+  margin-top: 90px;
+}
+
+.inline-paging {
+  display: inline-block;
+  margin-bottom: -13px;
+  margin-top: -4px;
+}
+
 .node-search {
   max-width: 50%;
+  margin-bottom: -13px;
+  margin-top: -4px;
+  max-width: 333px;
 }
 </style>

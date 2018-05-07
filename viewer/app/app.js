@@ -68,11 +68,6 @@
           template      : '<moloch-settings></moloch-settings>',
           reloadOnSearch: false
         })
-        .when('/files', {
-          title         : 'Files',
-          template      : '<moloch-files></moloch-files>',
-          reloadOnSearch: false
-        })
         .when('/users', {
           title         : 'Users',
           template      : '<moloch-users></moloch-users>',

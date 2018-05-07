@@ -238,4 +238,27 @@ label.btn-radio:disabled, button.btn-checkbox:disabled {
 .alert.alert-sm button.close {
   padding: 0 .5rem;
 }
+
+/* sub navbars */
+.sub-navbar {
+  position: fixed;
+  top: 36px;
+  left: 0;
+  right: 0;
+  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
+  background-color: var(--color-secondary-lightest);
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+.sub-navbar .sub-navbar-title {
+  font-size: 19px;
+  font-weight: bold;
+}
+.sub-navbar .sub-navbar-title .fa-stack {
+  margin-top: -14px;
+}
+.sub-navbar > .toast-container {
+  margin-top: -6px;
+}
 </style>
