@@ -12,9 +12,15 @@ const router = new Router({
   base: MOLOCH_PATH,
   scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
+      let yoffset = 150;
+
+      if (to.path === '/help') {
+        yoffset = 50;
+      }
+
       return {
         selector: to.hash,
-        offset: { x: 0, y: 150 } // offset for navbars
+        offset: { x: 0, y: yoffset }
       };
     }
   },

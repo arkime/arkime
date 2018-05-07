@@ -63,11 +63,6 @@
   .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider','Constants',
     function($routeProvider, $locationProvider, $httpProvider, $compileProvider, Constants) {
       $routeProvider
-        .when('/help', {
-          title         : 'Help',
-          template      : '<moloch-help></moloch-help>',
-          reloadOnSearch: false
-        })
         .when('/settings', {
           title         : 'Settings',
           template      : '<moloch-settings></moloch-settings>',

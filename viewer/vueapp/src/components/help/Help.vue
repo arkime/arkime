@@ -1,123 +1,118 @@
 <template>
 
   <div class="help-content">
-    <div class="container-fluid margined-for-main-and-sub-navbar">
-      <div class="row">
+    <div class="container-fluid">
+      <div class="row pl-2">
 
-        <div class="col-md-2 col-sm-4 margined-top-lg">
-          <ul class="nav nav-pills nav-stacked affix">
-            <li role="presentation">
-              <a href="#about">
-                <span class="fa fa-fw fa-question-circle"></span>&nbsp;
-                About
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#links">
-                <span class="fa fa-fw fa-link"></span>&nbsp;
-                Links
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#search">
-                <span class="fa fa-fw fa-search"></span>&nbsp;
-                Search Bar
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#stringSearch">
-                String
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#ipSearch">
-                IP
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#numericSearch">
-                Numeric
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#dateSearch">
-                Date
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#fieldExistsSearch">
-                Field Exists
-              </a>
-            </li>
-            <li role="presentation" class="nested">
-              <a href="#examples">
-                Examples
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#sessions">
-                <span class="fa fa-fw fa-exchange"></span>&nbsp;
-                Sessions
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#spiview">
-                <span class="fa fa-fw fa-eyedropper"></span>&nbsp;
-                SPI View
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#spigraph">
-                <span class="fa fa-fw fa-bar-chart"></span>&nbsp;
-                SPI Graph
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#connections">
-                <span class="fa fa-fw fa-sitemap"></span>&nbsp;
-                Connections
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#files">
-                <span class="fa fa-fw fa-files-o"></span>&nbsp;
-                Files
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#stats">
-                <span class="fa fa-fw fa-line-chart"></span>&nbsp;
-                Stats
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#history">
-                <span class="fa fa-fw fa-history"></span>&nbsp;
-                History
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#settings">
-                <span class="fa fa-fw fa-cog"></span>&nbsp;
-                Settings
-              </a>
-            </li>
-            <li role="presentation" has-permission="createEnabled">
-              <a href="#users">
-                <span class="fa fa-fw fa-users"></span>&nbsp;
-                Users
-              </a>
-            </li>
-            <li role="presentation">
-              <a href="#fields">
-                <span class="fa fa-fw fa-list"></span>&nbsp;
-                Fields
-              </a>
-            </li>
-          </ul>
+        <div class="nav nav-pills col-1"
+          role="tablist"
+          aria-orientation="vertical">
+          <a href="help#about"
+            class="nav-link">
+            <span class="fa fa-fw fa-question-circle">
+            </span>&nbsp;
+            About
+          </a>
+          <a href="help#links"
+            class="nav-link">
+            <span class="fa fa-fw fa-link">
+            </span>&nbsp;
+            Links
+          </a>
+          <a href="help#search"
+            class="nav-link">
+            <span class="fa fa-fw fa-search">
+            </span>&nbsp;
+            Search Bar
+          </a>
+          <a href="help#stringSearch"
+            class="nav-link nested">
+            String
+          </a>
+          <a href="help#ipSearch"
+            class="nav-link nested">
+            IP
+          </a>
+          <a href="help#numericSearch"
+            class="nav-link nested">
+            Numeric
+          </a>
+          <a href="help#dateSearch"
+            class="nav-link nested">
+            Date
+          </a>
+          <a href="help#fieldExistsSearch"
+            class="nav-link nested">
+            Field Exists
+          </a>
+          <a href="help#examples"
+            class="nav-link nested">
+            Examples
+          </a>
+          <a href="help#sessions"
+            class="nav-link">
+            <span class="fa fa-fw fa-exchange">
+            </span>&nbsp;
+            Sessions
+          </a>
+          <a href="help#spiview"
+            class="nav-link">
+            <span class="fa fa-fw fa-eyedropper">
+            </span>&nbsp;
+            SPI View
+          </a>
+          <a href="help#spigraph"
+            class="nav-link">
+            <span class="fa fa-fw fa-bar-chart">
+            </span>&nbsp;
+            SPI Graph
+          </a>
+          <a href="help#connections"
+            class="nav-link">
+            <span class="fa fa-fw fa-sitemap">
+            </span>&nbsp;
+            Connections
+          </a>
+          <a href="help#files"
+            class="nav-link">
+            <span class="fa fa-fw fa-files-o">
+            </span>&nbsp;
+            Files
+          </a>
+          <a href="help#stats"
+            class="nav-link">
+            <span class="fa fa-fw fa-line-chart">
+            </span>&nbsp;
+            Stats
+          </a>
+          <a href="help#history"
+            class="nav-link">
+            <span class="fa fa-fw fa-history">
+            </span>&nbsp;
+            History
+          </a>
+          <a href="help#settings"
+            class="nav-link">
+            <span class="fa fa-fw fa-cog">
+            </span>&nbsp;
+            Settings
+          </a>
+          <a href="help#users"
+            has-permission="createEnabled"
+            class="nav-link">
+            <span class="fa fa-fw fa-users">
+            </span>&nbsp;
+            Users
+          </a>
+          <a href="help#fields"
+            class="nav-link">
+            <span class="fa fa-fw fa-list">
+            </span>&nbsp;
+            Fields
+          </a>
         </div>
 
-        <div class="col-md-10 col-sm-8">
+        <div class="col mt-5">
 
           <h3 id="about">
             <span class="fa fa-question-circle"></span>&nbsp;
@@ -162,7 +157,7 @@
             Moloch uses a very simple query language for building expressions. It
             supports grouping using parenthesis as well as logical AND and OR statements using &amp;&amp; and
             || respectively. Fields can be accessed directly using the field names
-            and operators described in the <a href="#fields">table below</a>.
+            and operators described in the <a href="help#fields">table below</a>.
             Most fields also support a shorthand OR query using square brackets
             using CSV rules to list possible values (field==[item1,item2,item3]).
           </p>
@@ -174,15 +169,15 @@
           </p>
           <dl class="dl-horizontal small">
             <dt>First Packet</dt>
-            <dd class="margined-bottom">The timestamp of the first packet received for the session.</dd>
+            <dd>The timestamp of the first packet received for the session.</dd>
             <dt>Last Packet</dt>
-            <dd class="margined-bottom">The timestamp of the last packet received for the session.</dd>
+            <dd>The timestamp of the last packet received for the session.</dd>
             <dt>Bounded</dt>
-            <dd class="margined-bottom">Both the first and last packet timestamps for the session must be inside the time window.</dd>
+            <dd>Both the first and last packet timestamps for the session must be inside the time window.</dd>
             <dt>Session Overlaps</dt>
-            <dd class="margined-bottom">The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
+            <dd>The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
             <dt>Database</dt>
-            <dd class="margined-bottom">The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
+            <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
           </dl>
 
           <br>
@@ -191,12 +186,12 @@
           <p>
             In Moloch string fields are special since they can be searched in several different
             ways. When fields are indexed, their case may or may not be normalized,
-            which is documented in the <a href="#fields">fields table below</a>.
+            which is documented in the <a href="help#fields">fields table below</a>.
             The types of string searches are:
           </p>
           <dl class="dl-horizontal small">
             <dt>Wildcard</dt>
-            <dd class="margined-bottom">
+            <dd>
               If a <code>*</code> appears in a expression, it is assumed a wildcard
               match is being used. Supported wildcards are <code>*</code>, which
               matches any character sequence (including the empty one), and
@@ -207,7 +202,7 @@
               which contains either www.fork.com or www.frack.com.
             </dd>
             <dt>Regex</dt>
-            <dd class="margined-bottom">
+            <dd>
               A regex query must be surrounded by forward slashes and will always be
               anchored. This means you will almost always want to include a leading
               and trailing <code>.*.</code> within your regex query. The regex query
@@ -216,7 +211,7 @@
               Lucene regex implementation which doesn't support most PCRE features.
             </dd>
             <dt>Lists</dt>
-            <dd class="margined-bottom">
+            <dd>
               In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
               <code>protocols == [http, ssh]</code>. This query will search for any sessions containing either http OR ssh.
               Note: Currently a list containing wildcard or regex strings will be processed as normal strings instead
@@ -319,7 +314,7 @@
             Find all the sessions involving Russia (RU) or China (CN) that are
             using port 80 and also a hostname which contains "com":
             <pre>
-              <code>(country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com</code>
+              (country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com
             </pre>
           </p>
           <p>
@@ -443,53 +438,53 @@
           </p>
           <dl class="dl-horizontal small">
             <dt>Packets/Sec</dt>
-            <dd class="margined-bottom">The number of packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
+            <dd>The number of packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
             <dt>Bytes/Sec</dt>
-            <dd class="margined-bottom">The size of all the packets that we've received that aren't corrupt that we try add to a packetQ per second</dd>
+            <dd>The size of all the packets that we've received that aren't corrupt that we try add to a packetQ per second</dd>
             <dt>Bits/Sec</dt>
-            <dd class="margined-bottom">Same as Bytes/Sec but in bits per second</dd>
+            <dd>Same as Bytes/Sec but in bits per second</dd>
             <dt>Sessions/Sec</dt>
-            <dd class="margined-bottom">Number of sessions sent to elasticsearch per second</dd>
+            <dd>Number of sessions sent to elasticsearch per second</dd>
             <dt>Input Dropped/Sec</dt>
-            <dd class="margined-bottom">Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
+            <dd>Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
             <dt>Active Sessions</dt>
-            <dd class="margined-bottom">Number of sessions Moloch is currently monitoring</dd>
+            <dd>Number of sessions Moloch is currently monitoring</dd>
             <dt>Active TCP Sessions</dt>
-            <dd class="margined-bottom">Number of TCP sessions Moloch is currently monitoring</dd>
+            <dd>Number of TCP sessions Moloch is currently monitoring</dd>
             <dt>Active UDP Sessions</dt>
-            <dd class="margined-bottom">Number of UDP sessions Moloch is currently monitoring</dd>
+            <dd>Number of UDP sessions Moloch is currently monitoring</dd>
             <dt>Active ICMP Sessions</dt>
-            <dd class="margined-bottom">Number of ICMP sessions Moloch is currently monitoring</dd>
+            <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
             <dt>Free Space MB</dt>
-            <dd class="margined-bottom">Free space in MB across all configured disks</dd>
+            <dd>Free space in MB across all configured disks</dd>
             <dt>Free Space %</dt>
-            <dd class="margined-bottom">Percentage of free space across all configured disks</dd>
+            <dd>Percentage of free space across all configured disks</dd>
             <dt>Memory</dt>
-            <dd class="margined-bottom">Amount of memory that Moloch is using</dd>
+            <dd>Amount of memory that Moloch is using</dd>
             <dt>Memory %</dt>
-            <dd class="margined-bottom">Perentage of memory that Moloch is using</dd>
+            <dd>Perentage of memory that Moloch is using</dd>
             <dt>CPU</dt>
-            <dd class="margined-bottom">CPU percentage that Moloch is using</dd>
+            <dd>CPU percentage that Moloch is using</dd>
             <dt>Disk Queue</dt>
-            <dd class="margined-bottom">Number of blocks of data that are waiting to be written to disk</dd>
+            <dd>Number of blocks of data that are waiting to be written to disk</dd>
             <dt>ES Queue</dt>
-            <dd class="margined-bottom">Number of elasticsearch requests that are waiting to be sent</dd>
+            <dd>Number of elasticsearch requests that are waiting to be sent</dd>
             <dt>ES Dropped/Sec</dt>
-            <dd class="margined-bottom">Number of elasticsearch requests that were dropped because of queue overflow per second</dd>
+            <dd>Number of elasticsearch requests that were dropped because of queue overflow per second</dd>
             <dt>Packet Queue</dt>
-            <dd class="margined-bottom">Number of packets that are waiting to processed</dd>
+            <dd>Number of packets that are waiting to processed</dd>
             <dt>Closing Queue</dt>
-            <dd class="margined-bottom">Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
+            <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
             <dt>Waiting Queue</dt>
-            <dd class="margined-bottom">Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
+            <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
             <dt>Active Fragments</dt>
-            <dd class="margined-bottom">Number of packets that are waiting on remaining IP fragments to show up</dd>
+            <dd>Number of packets that are waiting on remaining IP fragments to show up</dd>
             <dt>Fragments Dropped/Sec</dt>
-            <dd class="margined-bottom">Number of packets that were dropped because frag overload or timeouts</dd>
+            <dd>Number of packets that were dropped because frag overload or timeouts</dd>
             <dt>Overload Dropped/Sec</dt>
-            <dd class="margined-bottom">Number of packets dropped because there was no packet queue that was free to process them on</dd>
+            <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
             <dt>Total Dropped/Sec</dt>
-            <dd class="margined-bottom">Sum of the inputs dropped and overload metrics</dd>
+            <dd>Sum of the inputs dropped and overload metrics</dd>
           </dl>
           <hr>
 
@@ -578,52 +573,84 @@
             <span class="fa fa-fw fa-list"></span>&nbsp;
             Fields
             <div class="input-group input-group-sm pull-right header-input">
-              <span class="input-group-addon">
-                <span class="fa fa-search"></span>
-              </span>
-              <input type="text" class="form-control" v-model="searchFields"
-                placeholder="Search for fields in the table below">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <span class="fa fa-search">
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                v-model="searchFields"
+                class="form-control"
+                placeholder="Search for fields in the table below"
+              />
             </div>
-            <input type="checkbox"
-                   class="btn btn-default btn-sm pull-right margined-right"
-                   v-model="showDBFields">
-            Display Database Fields
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm pull-right mr-1"
+              :class="{'active':showDBFields}"
+              @click="toggleDBFields">
+              Display Database Fields
+            </button>
           </h3>
-          <!--
-          <table class="table table-condensed table-striped margined-top-xxxlg"
-            ng-if="!$ctrl.error && $ctrl.fields">
+
+          <table v-if="!error && fields"
+            class="table table-sm table-striped">
             <thead>
               <tr>
-                <th>Name</th>
-                <th ng-if="$ctrl.showDBFields">Database Field</th>
-                <th>Operators</th>
-                <th>Data Type</th>
-                <th>What?</th>
+                <th>
+                  Name
+                </th>
+                <th v-if="showDBFields">
+                  Database Field
+                </th>
+                <th>
+                  Operators
+                </th>
+                <th>
+                  Data Type
+                </th>
+                <th>
+                  What?
+                </th>
               </tr>
             </thead>
-            <tbody>
-              <tr class="animate-repeat"
-                ng-repeat="field in $ctrl.filteredFields = ($ctrl.fields | filter:$ctrl.searchFields) track by field.exp">
-                <td class="no-wrap">{{field.exp}}</td>
-                <td class="no-wrap" ng-if="$ctrl.showDBFields">{{field.dbField}}</td>
-                <td class="no-wrap">{{$ctrl.info[field.type].operator}}</td>
-                <td class="no-wrap">{{$ctrl.info[field.type].type}}</td>
-                <td>{{field.help}}</td>
+            <transition-group name="list"
+              tag="tbody">
+              <tr v-for="field in filteredFields"
+                :key="field.exp">
+                <td class="no-wrap">
+                  {{ field.exp }}
+                </td>
+                <td class="no-wrap"
+                  v-if="showDBFields">
+                  {{ field.dbField }}
+                </td>
+                <td class="no-wrap">
+                  {{ fieldOperator(field) }}
+                </td>
+                <td class="no-wrap">
+                  {{ fieldType(field) }}
+                </td>
+                <td>
+                  {{ field.help }}
+                </td>
               </tr>
-            </tbody>
+            </transition-group>
           </table>
-          <div class="text-danger" ng-if="!$ctrl.filteredFields.length">
-            <span class="fa fa-warning"></span>&nbsp;
+          <div v-if="!filteredFields.length"
+            class="text-danger text-center">
+            <span class="fa fa-warning">
+            </span>&nbsp;
             No results match your search
           </div>
-          <div class="alert alert-warning margined-top-xxxlg" ng-if="$ctrl.error">
-            <span class="fa fa-warning"></span>&nbsp;
-            Error retrieving fields: {{::$ctrl.error}}
+          <div v-if="error"
+            class="alert alert-warning mt-3">
+            <span class="fa fa-warning">
+            </span>&nbsp;
+            Error retrieving fields:
+            {{ error }}
           </div>
 
-          <hr>
-
-          --->
         </div>
 
       </div>
@@ -633,64 +660,154 @@
 </template>
 
 <script>
-import UserService from '../UserService';
+import FieldService from '../search/FieldService';
+
+let info = {
+  ip: { operator: '==, !=', type: 'ip' },
+  lotermfield: { operator: '==, !=', type: 'lower case string' },
+  termfield: { operator: '==, !=', type: 'mixed case string' },
+  uptermfield: { operator: '==, !=', type: 'upper case string' },
+  integer: { operator: '<, <=, ==, >=, >, !=', type: 'integer' },
+  seconds: { operator: '<, <=, ==, >=, >, !=', type: 'date time' }
+};
+
 export default {
   name: 'Help',
   data: function () {
     return {
-      user: null,
+      error: '',
+      fields: [],
       searchFields: '',
       showDBFields: false
     };
   },
+  computed: {
+    filteredFields: function () {
+      return this.fields.filter((field) => {
+        return field.exp.toLowerCase().includes(
+          this.searchFields.toLowerCase()
+        ) ||
+        field.friendlyName.toLowerCase().includes(
+          this.searchFields.toLowerCase()
+        ) ||
+        field.help.toLowerCase().includes(
+          this.searchFields.toLowerCase()
+        ) ||
+        field.dbField.toLowerCase().includes(
+          this.searchFields.toLowerCase()
+        );
+      });
+    }
+  },
   created: function () {
-    this.loadUser();
+    this.loadFields();
   },
   methods: {
-    loadUser: function () {
-      UserService.getCurrent()
+    loadFields: function () {
+      FieldService.get(true)
         .then((response) => {
-          this.user = response;
+          this.fields = this.fixFields(response);
         }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
+          this.error = error;
         });
     },
-    updateParams: function () {
-      /* let queryParams = this.$route.query; */
+    fixFields: function (fields) {
+      fields.forEach((item) => {
+        if (item.regex) {
+          item.dbField = '';
+        } else if (item.rawField) {
+          item.dbField = item.dbField + ', ' + item.rawField;
+        } else if (item.dbField === 'ipall') {
+          item.dbField = '';
+        }
+      });
+
+      return fields;
     },
-    onError: function (message) {
-      this.childError = message;
+    toggleDBFields: function () {
+      this.showDBFields = !this.showDBFields;
+    },
+    fieldOperator: function (field) {
+      if (!info[field.type]) { return; }
+      return info[field.type].operator;
+    },
+    fieldType: function (field) {
+      if (!info[field.type]) { return; }
+      return info[field.type].type;
     }
   }
 };
 </script>
 <style scoped>
+/* description list styles */
+.help-content dl.dl-horizontal dt {
+  float: left;
+  width: 160px;
+  overflow: hidden;
+  clear: left;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.help-content dl.dl-horizontal dd {
+  margin-left: 180px;
+}
+
+/* make pre readable for dark and light themes */
+.help-content pre {
+  color: #333;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #ccc;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding-top: 16px;
+}
+
+/* help navigation */
+.help-content div.nav-pills {
+  min-width: 150px;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  position: sticky;
+  top: 40px;
+  height: calc(100vh - 50px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: nowrap;
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+.help-content .nav-pills .nav-link {
+  width: 100%;
+}
+
+.help-content div.nav-pills a {
+  padding: 5px 8px !important;
+}
+
+.help-content div.nav-pills a.nested {
+  margin-left: 2.4em;
+  font-size: 0.85em;
+  padding: 2px 5px !important;
+}
+
 .help-content .header-input {
   width: 70%;
 }
 
-/* help navigation */
-.help-content ul.nav-pills {
-  min-width     : 150px;
-  border        : 1px solid var(--color-gray);
-  border-radius : 4px;
-  padding       : 4px;
-
-  -webkit-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
-     -moz-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
-          box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+/* field table animation */
+.help-content .list-enter-active, .list-leave-active {
+  transition: all .5s;
 }
-
-.help-content ul li a {
-  padding: 5px 8px !important;
+.help-content .list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
-
-.help-content ul li.nested {
-  margin-left : 2.4em;
-  font-size   : 0.85em;
-}
-
-.help-content ul li.nested a {
-  padding: 2px 5px !important;
+.help-content .list-move {
+  transition: transform .5s;
 }
 </style>

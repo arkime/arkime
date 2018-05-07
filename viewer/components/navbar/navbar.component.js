@@ -80,11 +80,7 @@
       $event.preventDefault();
       $event.stopPropagation();
 
-      if (link === 'help') { // help link is special!
-        // must set the section of the help page to navigate to
-        this.$location.hash(this.$location.path().split('/')[1]);
-        this.$location.path(link);
-      } else if (link === 'stats' || link === 'sessions') {
+      if (link === 'stats' || link === 'sessions' || link === 'help') {
         // TODO update/remove as angular pages get replaced with vue pages
         // redirects to the new vue app stats page
         this.$location.path(link);

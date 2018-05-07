@@ -25,7 +25,7 @@
         <b-nav-item
           v-for="item of menu"
           :key="item.link"
-          :href="item.link"
+          :href="item.href"
           :active="isActive(item.link)"
           v-has-permission="item.permission">
           {{ item.title }}
@@ -70,16 +70,16 @@ export default {
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
       };
 
-      // preserve url query parameters
-      for (let m in menu) {
-        let item = menu[m];
-        item.link = `${item.link}?${qs.stringify(this.$route.query)}`;
-      }
-
       if (!this.$constants.MOLOCH_DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };
         menu.settings = { title: 'Settings', link: 'settings' };
         menu.users = { title: 'Users', link: 'users', permission: 'createEnabled' };
+      }
+
+      // preserve url query parameters
+      for (let m in menu) {
+        let item = menu[m];
+        item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
       }
 
       return menu;
