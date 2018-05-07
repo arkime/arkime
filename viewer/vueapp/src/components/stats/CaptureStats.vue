@@ -11,7 +11,7 @@
 
     <div v-show="!error">
 
-      <div class="input-group input-group-sm mt-1">
+      <div class="input-group input-group-sm node-search pull-right mt-1">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
