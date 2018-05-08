@@ -75,7 +75,7 @@
               :key="session.id">
               <div class="list-group-item-text">
                 <button class="btn btn-xs btn-link pull-right"
-                  @click="closeSessionDetail(session)">
+                  @click.stop="closeSessionDetail(session)">
                   <span class="fa fa-close fa-lg">
                   </span>
                 </button>
