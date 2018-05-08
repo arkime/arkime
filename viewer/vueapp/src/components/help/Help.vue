@@ -600,6 +600,9 @@
                 <th>
                   Name
                 </th>
+                <th>
+                  Exp
+                </th>
                 <th v-if="showDBFields">
                   Database Field
                 </th>
@@ -619,6 +622,9 @@
               <tr v-for="field in filteredFields"
                 :key="field.exp">
                 <td class="no-wrap">
+                  {{ field.friendlyName }}
+                </td>
+                <td class="no-wrap">
                   {{ field.exp }}
                 </td>
                 <td class="no-wrap"
@@ -637,7 +643,7 @@
               </tr>
             </transition-group>
           </table>
-          <div v-if="!filteredFields.length"
+          <div v-if="!filteredFields || !filteredFields.length"
             class="text-danger text-center">
             <span class="fa fa-warning">
             </span>&nbsp;
@@ -662,6 +668,7 @@
 <script>
 import FieldService from '../search/FieldService';
 
+let timeout;
 let info = {
   ip: { operator: '==, !=', type: 'ip' },
   lotermfield: { operator: '==, !=', type: 'lower case string' },
@@ -678,31 +685,57 @@ export default {
       error: '',
       fields: [],
       searchFields: '',
-      showDBFields: false
+      showDBFields: false,
+      filteredFields: []
     };
   },
-  computed: {
-    filteredFields: function () {
-      return this.fields.filter((field) => {
-        return field.exp.toLowerCase().includes(
-          this.searchFields.toLowerCase()
-        ) ||
-        field.friendlyName.toLowerCase().includes(
-          this.searchFields.toLowerCase()
-        ) ||
-        field.help.toLowerCase().includes(
-          this.searchFields.toLowerCase()
-        ) ||
-        field.dbField.toLowerCase().includes(
-          this.searchFields.toLowerCase()
-        );
-      });
+  watch: {
+    searchFields: function (newVal, oldVal) {
+      this.debounceGetFilteredFields();
     }
   },
   created: function () {
     this.loadFields();
+    this.debounceGetFilteredFields();
   },
   methods: {
+    /* exposed page functions ------------------------------------ */
+    debounceGetFilteredFields: function () {
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.filteredFields = this.fields.filter((field) => {
+          let hasMatch = field.exp.toLowerCase().includes(
+            this.searchFields.toLowerCase()
+          ) ||
+          field.friendlyName.toLowerCase().includes(
+            this.searchFields.toLowerCase()
+          );
+
+          if (this.showDBFields) {
+            hasMatch = hasMatch ||
+            field.dbField.toLowerCase().includes(
+              this.searchFields.toLowerCase()
+            );
+          }
+
+          return hasMatch;
+        });
+      }, 400);
+    },
+    toggleDBFields: function () {
+      this.showDBFields = !this.showDBFields;
+    },
+    fieldOperator: function (field) {
+      if (!info[field.type]) { return; }
+      return info[field.type].operator;
+    },
+    fieldType: function (field) {
+      if (!info[field.type]) { return; }
+      return info[field.type].type;
+    },
+    /* helper functions ------------------------------------------ */
     loadFields: function () {
       FieldService.get(true)
         .then((response) => {
@@ -723,21 +756,11 @@ export default {
       });
 
       return fields;
-    },
-    toggleDBFields: function () {
-      this.showDBFields = !this.showDBFields;
-    },
-    fieldOperator: function (field) {
-      if (!info[field.type]) { return; }
-      return info[field.type].operator;
-    },
-    fieldType: function (field) {
-      if (!info[field.type]) { return; }
-      return info[field.type].type;
     }
   }
 };
 </script>
+
 <style scoped>
 /* description list styles */
 .help-content dl.dl-horizontal dt {
