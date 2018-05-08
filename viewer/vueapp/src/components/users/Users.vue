@@ -130,7 +130,7 @@
                   @change="userChanged(user)"
                 />
             </td>
-            <td class="no-wrap">
+            <td class="no-wrap pull-right">
               <a class="btn btn-sm btn-theme-primary"
                 :href="`settings?userId=${user.userId}`"
                 v-b-tooltip.hover
@@ -159,13 +159,12 @@
       </table> <!-- /user table -->
 
       <!-- new user form -->
-      <div id="newUser"
-        class="row">
+      <div class="row new-user-form mr-1 ml-1 mt-4">
 
         <div class="col-sm-8">
           <div class="row mb-3">
             <div class="col-sm-9 offset-sm-3">
-              <h3>
+              <h3 class="mt-3">
                 New User
               </h3>
             </div>
@@ -244,7 +243,7 @@
         <div class="col-sm-4">
           <div class="row mb-3">
             <div class="col-sm-12">
-              <h3>&nbsp;</h3>
+              <h3 class="mt-2">&nbsp;</h3>
             </div>
           </div>
           <form>
@@ -489,9 +488,9 @@ export default {
 }
 
 .users-content form .form-group-sm .checkbox {
-  min-height    : 0;
-  padding-top   : 0;
-  margin-bottom : -8px;
+  min-height: 0;
+  padding-top: 0;
+  margin-bottom: -8px;
 }
 
 .toast-container {
@@ -500,8 +499,14 @@ export default {
 }
 
 /* condense the form */
-.form-group {
+.new-user-form .form-group {
   margin-bottom: .25rem;
+}
+.new-user-form {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 3px;
 }
 
 /* field table animation */

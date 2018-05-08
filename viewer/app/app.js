@@ -68,11 +68,6 @@
           template      : '<moloch-settings></moloch-settings>',
           reloadOnSearch: false
         })
-        .when('/users', {
-          title         : 'Users',
-          template      : '<moloch-users></moloch-users>',
-          reloadOnSearch: false
-        })
         .when('/spiview', {
           title         : 'SPI View',
           template      : '<moloch-spiview></moloch-spiview>',
