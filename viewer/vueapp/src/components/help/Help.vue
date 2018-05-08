@@ -98,7 +98,7 @@
             Settings
           </a>
           <a href="help#users"
-            has-permission="createEnabled"
+            v-has-permission="'createEnabled'"
             class="nav-link">
             <span class="fa fa-fw fa-users">
             </span>&nbsp;
@@ -556,18 +556,18 @@
 
           <hr>
 
-          <h3 id="users" has-permission="createEnabled">
+          <h3 id="users" v-has-permission="'createEnabled'">
             <span class="fa fa-fw fa-users"></span>&nbsp;
             Users
           </h3>
-          <p has-permission="createEnabled">
+          <p v-has-permission="'createEnabled'">
             The Users tab, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
             These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), An Account enabled toggle, An Admin toggle,
             if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
             This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users Settings tab. (see above)
           </p>
 
-          <hr has-permission="createEnabled">
+          <hr v-has-permission="'createEnabled'">
 
           <h3 id="fields">
             <span class="fa fa-fw fa-list"></span>&nbsp;
