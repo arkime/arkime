@@ -53,6 +53,8 @@ LOCAL int                    inProgress[MOLOCH_MAX_PACKET_THREADS];
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
 
+LOCAL int                    maxTcpOutOfOrderPackets;
+
 /******************************************************************************/
 
 #define MOLOCH_PACKET_SUCCESS          0
@@ -252,9 +254,6 @@ LOCAL void moloch_packet_process_udp(MolochSession_t * const session, MolochPack
 /******************************************************************************/
 LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    if (session->stopTCP)
-        return 1;
-
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
 
@@ -321,6 +320,8 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
         session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
     }
 
+    if (session->stopTCP)
+        return 1;
 
     // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
     if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
@@ -330,7 +331,7 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
 
     MolochTcpDataHead_t * const tcpData = &session->tcpData;
 
-    if (DLL_COUNT(td_, tcpData) > 256) {
+    if (DLL_COUNT(td_, tcpData) > maxTcpOutOfOrderPackets) {
         moloch_packet_tcp_free(session);
         moloch_session_add_tag(session, "incomplete-tcp");
         session->stopTCP = 1;
@@ -1772,6 +1773,7 @@ void moloch_packet_init()
 
     moloch_add_can_quit(moloch_packet_outstanding, "packet outstanding");
     moloch_add_can_quit(moloch_packet_frags_outstanding, "packet frags outstanding");
+    maxTcpOutOfOrderPackets = moloch_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
 }
 /******************************************************************************/
 uint64_t moloch_packet_dropped_packets()
