@@ -931,6 +931,8 @@ export default {
         }
       }
 
+      this.query.sorts = this.tableState.order || defaultTableState.order;
+
       SessionsService.get(this.query)
         .then((response) => {
           this.error = '';
