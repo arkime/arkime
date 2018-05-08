@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
+import Users from '@/components/users/Users';
 import Sessions from '@/components/sessions/Sessions';
 
 Vue.use(Router);
@@ -45,6 +46,11 @@ const router = new Router({
       path: '/files',
       name: 'Files',
       component: Files
+    },
+    {
+      path: '/users',
+      name: 'Users',
+      component: Users
     }
   ]
 });
@@ -52,7 +58,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
   // loads the angular app pages (for now, anything but the stats page)
-  if (!to.path.includes('files') && !to.path.includes('help') && !to.path.includes('stats') && !to.path.includes('sessions') && to.path !== '/') {
+  if (!to.path.includes('users') && !to.path.includes('files') && !to.path.includes('help') && !to.path.includes('stats') && !to.path.includes('sessions') && to.path !== '/') {
     location.reload();
   }
 

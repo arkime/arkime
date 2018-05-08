@@ -4682,6 +4682,10 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     return res.molochError(403, 'Need admin privileges');
   }
 
+  if (req.body.userId === undefined) {
+    return res.molochError(403, 'Missing userId');
+  }
+
   /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
     return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
   }*/
@@ -5746,7 +5750,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get(['/stats', '/sessions', '/help', '/files'], (req, res) => {
+app.get(['/stats', '/sessions', '/help', '/files', '/users'], (req, res) => {
   let cookieOptions = { path: app.locals.basePath };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 

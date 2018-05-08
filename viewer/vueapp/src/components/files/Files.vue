@@ -12,7 +12,7 @@
         Files
       </span>
 
-      <div class="input-group input-group-sm node-search pull-right">
+      <div class="input-group input-group-sm file-search pull-right">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
@@ -200,7 +200,7 @@ export default {
   margin-top: -4px;
 }
 
-.node-search {
+.file-search {
   max-width: 50%;
   margin-bottom: -13px;
   margin-top: -4px;
