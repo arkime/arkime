@@ -17,6 +17,8 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.2.0 2018/05/xx
   - viewer - sessions, help, users, history pages implemented in Vue instead of AngularJS
+  - viewer - split stats capture graphs/stats into 2 tabs
+  - viewer - stats now has sort option
   - capture - new maxTcpOutOfOrderPackets setting, default 256
   - capture - tcpflag are always counted (issue #849)
 

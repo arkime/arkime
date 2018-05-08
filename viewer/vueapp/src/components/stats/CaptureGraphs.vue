@@ -56,7 +56,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'NodeStats',
-  props: ['user', 'graphType', 'graphInterval', 'graphHide'],
+  props: ['user', 'graphType', 'graphInterval', 'graphHide', 'graphSort'],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
   data: function () {
     return {
@@ -68,7 +68,7 @@ export default {
         length: parseInt(this.$route.query.length) || 50,
         start: 0,
         filter: null,
-        desc: true,
+        desc: this.graphSort === 'desc',
         hide: this.graphHide || 'none'
       }
     };
@@ -85,6 +85,11 @@ export default {
     graphHide: function () {
       initialized = false;
       this.query.hide = this.graphHide;
+      this.loadData();
+    },
+    graphSort: function () {
+      initialized = false;
+      this.query.desc = this.graphSort === 'desc';
       this.loadData();
     }
   },
