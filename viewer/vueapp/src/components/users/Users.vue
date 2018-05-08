@@ -3,18 +3,22 @@
   <div class="container-fluid">
 
     <div class="sub-navbar">
+
       <span class="sub-navbar-title">
         <span class="fa-stack">
-          <span class="fa fa-users-o fa-stack-1x"></span>
-          <span class="fa fa-square-o fa-stack-2x"></span>
+          <span class="fa fa-users fa-stack-1x">
+          </span>
+          <span class="fa fa-square-o fa-stack-2x">
+          </span>
         </span>&nbsp;
         Users
       </span>
 
-      <div class="input-group input-group-sm user-search pull-right mt-1">
+      <div class="input-group input-group-sm user-search pull-right">
         <div class="input-group-prepend">
           <span class="input-group-text">
-            <span class="fa fa-search"></span>
+            <span class="fa fa-search">
+            </span>
           </span>
         </div>
         <input type="text"
@@ -31,6 +35,13 @@
         v-on:changePaging="changePaging">
       </moloch-paging>
 
+      <div class="toast-container pull-right mr-1">
+        <moloch-toast :message="msg"
+          :type="msgType"
+          :done="messageDone">
+        </moloch-toast>
+      </div>
+
     </div>
 
     <div class="users-content">
@@ -42,185 +53,265 @@
         :message="error">
       </moloch-error>
 
-      <div v-show="!error">
-        <table class="table table-sm text-right small">
-          <thead>
-            <tr>
-              <th v-for="column of columns"
-                :key="column.name"
-                class="cursor-pointer"
-                :class="{'text-left':!column.doStats}"
-                @click="columnClick(column.sort)">
-                {{ column.name }}
-                <span v-if="column.sort !== undefined">
-                  <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                  <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                  <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+      <!-- user table -->
+      <table v-if="users && !error"
+        class="table table-sm table-striped small">
+        <thead>
+          <tr>
+            <th v-for="column of columns"
+              :key="column.name"
+              class="cursor-pointer"
+              :class="{'no-wrap':column.nowrap}"
+              @click="columnClick(column.sort)">
+              {{ column.name }}
+              <span v-if="column.sort !== undefined">
+                <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+              </span>
+            </th>
+            <th>&nbsp;</th>
+          </tr>
+        </thead>
+        <transition-group name="list"
+          tag="tbody">
+          <tr v-for="(user, index) of users.data"
+            :key="user.id">
+            <td class="no-wrap">
+              {{ user.userId }}
+            </td>
+            <td class="no-wrap">
+              <input v-model="user.userName"
+                class="form-control form-control-sm"
+                type="text"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input v-model="user.expression"
+                class="form-control form-control-sm"
+                type="text"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                v-model="user.enabled"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                v-model="user.createEnabled"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                v-model="user.webEnabled"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                v-model="user.headerAuthEnabled"
+                @change="userChanged(user);"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                v-model="user.emailSearch"
+                @change="userChanged(user)"
+              />
+            </td>
+            <td class="no-wrap">
+              <input type="checkbox"
+                  v-model="user.removeEnabled"
+                  @change="userChanged(user)"
+                />
+            </td>
+            <td class="no-wrap">
+              <a class="btn btn-sm btn-theme-primary"
+                :href="`settings?userId=${user.userId}`"
+                v-b-tooltip.hover
+                :title="`Settings for ${user.userId}`">
+                <span class="fa fa-gear">
                 </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody v-if="users">
-            <!-- TODO: debounce:500 input fields -->
-            <template v-for="user of users.data">
-              <tr :key="user.id">
-                <td class="no-wrap">{{user.userId}}</td>
-                <td class="no-wrap">
-                  <input class="form-control input-sm" type="text" v-model="user.userName" @change="userChanged(user)">
-                </td>
-                <td class="no-wrap">
-                  <input class="form-control input-sm" type="text" v-model="user.expression" @change="userChanged(user);">
-                </td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.enabled" @change="userChanged(user);"></td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.createEnabled" @change="userChanged(user);"></td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.webEnabled" @change="userChanged(user);"></td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.headerAuthEnabled" @change="userChanged(user);"></td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.emailSearch" @change="userChanged(user);"></td>
-                <td class="no-wrap"><input type="checkbox" v-model="user.removeEnabled" @change="userChanged(user);"></td>
-                <td class="no-wrap">
-                  <a class="btn btn-sm btn-theme-primary"
-                    :href="`settings?userId=${user.userId}`"
-                    v-b-tooltip.hover :title="`Settings for ${user.userId}`">
-                    <span class="fa fa-gear"></span>
-                  </a>
-                  <a class="btn btn-sm btn-theme-secondary"
-                    :href="`history?userId=${user.userId}`"
-                    v-b-tooltip.hover :title="`History for ${user.userId}`">
-                    <span class="fa fa-history"></span>
-                  </a>
-                  <a class="btn btn-sm btn-danger"
-                    v-click="deleteUser(user)"
-                    v-b-tooltip.hover :title="`Delete ${user.userId}`">
-                    <span class="fa fa-trash-o"></span>
-                  </a>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div> <!-- /!error -->
+              </a>
+              <a class="btn btn-sm btn-theme-secondary"
+                :href="`history?userId=${user.userId}`"
+                v-b-tooltip.hover
+                :title="`History for ${user.userId}`">
+                <span class="fa fa-history">
+                </span>
+              </a>
+              <button type="button"
+                class="btn btn-sm btn-danger"
+                @click="deleteUser(user, index)"
+                v-b-tooltip.hover
+                :title="`Delete ${user.userId}`">
+                <span class="fa fa-trash-o">
+                </span>
+              </button>
+            </td>
+          </tr>
+        </transition-group>
+      </table> <!-- /user table -->
 
-      <div class="row" id="newUser"> <!-- new user form -->
+      <!-- new user form -->
+      <div id="newUser"
+        class="row">
 
         <div class="col-sm-8">
-          <div class="row margined-bottom-xlg">
-            <div class="col-sm-9 col-sm-offset-3">
-              <h3>New User</h3>
+          <div class="row mb-3">
+            <div class="col-sm-9 offset-sm-3">
+              <h3>
+                New User
+              </h3>
             </div>
           </div>
-          <form class="form-horizontal">
-            <div class="form-group">
-              <label for="userid" class="col-sm-3 control-label">User ID</label>
+          <form>
+            <div class="form-group row">
+              <label for="userid"
+                class="col-sm-3 col-form-label text-right">
+                User ID
+              </label>
               <div class="col-sm-9">
-                <input id="userid" class="form-control input-sm" type="text"
-                  v-model="newuser.userId" focus-input="focusInput">
+                <input id="userid"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="newuser.userId"
+                />
               </div>
             </div>
-            <div class="form-group">
-              <label for="username" class="col-sm-3 control-label">User Name</label>
+            <div class="form-group row">
+              <label for="username"
+                class="col-sm-3 col-form-label text-right">
+                User Name
+              </label>
               <div class="col-sm-9">
-                <input id="username" class="form-control input-sm" type="text"
-                  v-model="newuser.userName">
+                <input id="username"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="newuser.userName"
+                />
               </div>
             </div>
-            <div class="form-group">
-              <label for="expression" class="col-sm-3 control-label">Forced Expression</label>
+            <div class="form-group row">
+              <label for="expression"
+                class="col-sm-3 col-form-label text-right">
+                Forced Expression
+              </label>
               <div class="col-sm-9">
-                <input id="expression" class="form-control input-sm" type="text"
-                  v-model="newuser.expression">
+                <input id="expression"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="newuser.expression"
+                />
               </div>
             </div>
-            <div class="form-group">
-              <label for="password" class="col-sm-3 control-label">Password</label>
+            <div class="form-group row">
+              <label for="password"
+                class="col-sm-3 col-form-label text-right">
+                Password
+              </label>
               <div class="col-sm-9">
-                <input id="password" class="form-control input-sm" type="password"
-                  v-model="newuser.password">
+                <input id="password"
+                  type="password"
+                  class="form-control form-control-sm"
+                  v-model="newuser.password"
+                />
               </div>
             </div>
             <div>
-            <button class="btn btn-sm btn-theme-tertiary pull-right margined-top"
-              @click="createUser()">
-              <span class="fa fa-plus-circle"></span>&nbsp;
-              Create
-            </button>
-            <span v-if="createError"
-              class="pull-right alert alert-sm alert-danger margined-right-xxlg">
-              <span class="fa fa-exclamation-triangle"></span>&nbsp;
-              {{createError}}
-            </span>
+              <button type="button"
+                class="btn btn-sm btn-theme-tertiary pull-right mb-4"
+                @click="createUser()">
+                <span class="fa fa-plus-circle">
+                </span>&nbsp;
+                Create
+              </button>
+              <span v-if="createError"
+                class="pull-right alert alert-sm alert-danger mr-3">
+                <span class="fa fa-exclamation-triangle">
+                </span>&nbsp;
+                {{ createError }}
+              </span>
             </div>
           </form>
         </div>
 
         <div class="col-sm-4">
-          <div class="row margined-bottom-xlg">
-            <div class="col-sm-12"><h3>&nbsp;</h3></div>
+          <div class="row mb-3">
+            <div class="col-sm-12">
+              <h3>&nbsp;</h3>
+            </div>
           </div>
-          <form class="form-horizontal">
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Is the account currently enabled for anything?">
-                    <input type="checkbox" v-model="newuser.enabled">
-                    Enabled
-                  </label>
-                </div>
+          <form>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Is the account currently enabled for anything?">
+                  <input type="checkbox"
+                    v-model="newuser.enabled"
+                  />
+                  Enabled
+                </label>
               </div>
             </div>
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Can create new accounts and change the settings for other accounts">
-                    <input type="checkbox" v-model="newuser.createEnabled">
-                    Admin
-                  </label>
-                </div>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Can create new accounts and change the settings for other accounts">
+                  <input type="checkbox"
+                    v-model="newuser.createEnabled"
+                  />
+                  Admin
+                </label>
               </div>
             </div>
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Can access the web interface. When off only APIs can be used">
-                    <input type="checkbox" v-model="newuser.webEnabled">
-                    Web Interface
-                  </label>
-                </div>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Can access the web interface. When off only APIs can be used">
+                  <input type="checkbox"
+                    v-model="newuser.webEnabled"
+                  />
+                  Web Interface
+                </label>
               </div>
             </div>
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled">
-                    <input type="checkbox" v-model="newuser.headerAuthEnabled">
-                    Web Auth Header
-                  </label>
-                </div>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled">
+                  <input type="checkbox"
+                    v-model="newuser.headerAuthEnabled"
+                  />
+                  Web Auth Header
+                </label>
               </div>
             </div>
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Can perform email searches">
-                    <input type="checkbox" v-model="newuser.emailSearch">
-                    Email Search
-                  </label>
-                </div>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Can perform email searches">
+                  <input type="checkbox"
+                    v-model="newuser.emailSearch"
+                  />
+                  Email Search
+                </label>
               </div>
             </div>
-            <div class="form-group form-group-sm">
-              <div class="col-sm-offset-1 col-sm-11">
-                <div class="checkbox">
-                  <label tooltip-placement="left"
-                    v-b-tooltip.hover title="Can delete tags or delete/scrub pcap data">
-                    <input type="checkbox" v-model="newuser.removeEnabled">
-                    Can Remove Data
-                  </label>
-                </div>
+            <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+              <div class="checkbox">
+                <label v-b-tooltip.hover
+                  title="Can delete tags or delete/scrub pcap data">
+                  <input type="checkbox"
+                    v-model="newuser.removeEnabled"
+                  />
+                  Can Remove Data
+                </label>
               </div>
             </div>
           </form>
@@ -237,19 +328,23 @@ import UserService from '../UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import MolochToast from '../utils/Toast';
 
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'Users',
-  components: {MolochPaging, MolochError, MolochLoading},
+  components: { MolochPaging, MolochError, MolochLoading, MolochToast },
   data: function () {
     return {
       error: '',
       loading: true,
       user: null,
       users: null,
-      newuser: {enabled: true},
+      createError: '',
+      newuser: { enabled: true },
+      msg: '',
+      msgType: undefined,
       query: {
         length: parseInt(this.$route.query.length) || 50,
         start: 0,
@@ -295,42 +390,26 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
-        });
-    },
-    loadData: function () {
-      this.$http.post('user/list', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          this.users = response.data;
-        }, (error) => {
-          this.loading = false;
-          this.error = error;
-        });
-    },
-    onError: function (message) {
-      this.childError = message;
+    /* remove the message when user is done with it or duration ends */
+    messageDone: function () {
+      this.msg = null;
+      this.msgType = null;
     },
     userChanged: function (user) {
       this.$http.post('user/update', user)
         .then((response) => {
-          this.msg = response.text;
+          this.msg = response.data.text;
           this.msgType = 'success';
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';
         });
     },
-    deleteUser: function (user) {
-      this.$http.post('user/update', user)
+    deleteUser: function (user, index) {
+      this.$http.post('user/delete', user)
         .then((response) => {
-          this.msg = response.text;
+          this.users.data.splice(index, 1);
+          this.msg = response.data.text;
           this.msgType = 'success';
         }, (error) => {
           this.msg = error.text;
@@ -340,17 +419,17 @@ export default {
     createUser: function () {
       this.createError = '';
 
-      if (this.newuser.userId === '' || this.newuser.userId === undefined) {
+      if (!this.newuser.userId) {
         this.createError = 'User ID can not be empty';
         return;
       }
 
-      if (this.newuser.userName === '' || this.newuser.userName === undefined) {
+      if (!this.newuser.userName) {
         this.createError = 'User Name can not be empty';
         return;
       }
 
-      if (this.newuser.password === '' || this.newuser.password === undefined) {
+      if (!this.newuser.password) {
         this.createError = 'Password can not be empty';
         return;
       }
@@ -360,16 +439,37 @@ export default {
           this.newuser = { enabled: true };
           this.loadData();
 
-          this.msg = response.text;
+          this.msg = response.data.text;
           this.msgType = 'success';
         })
         .catch((error) => {
           this.createError = error.text;
         });
+    },
+    /* helper functions ------------------------------------------ */
+    loadUser: function () {
+      UserService.getCurrent()
+        .then((response) => {
+          this.user = response;
+        }, (error) => {
+          this.user = { settings: { timezone: 'local' } };
+        });
+    },
+    loadData: function () {
+      this.$http.post('user/list', this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          this.users = response.data;
+        }, (error) => {
+          this.loading = false;
+          this.error = error;
+        });
     }
   }
 };
 </script>
+
 <style scoped>
 .users-content {
   margin-top: 90px;
@@ -392,5 +492,27 @@ export default {
   min-height    : 0;
   padding-top   : 0;
   margin-bottom : -8px;
+}
+
+.toast-container {
+  margin-top: -2px;
+  display: inline-block;
+}
+
+/* condense the form */
+.form-group {
+  margin-bottom: .25rem;
+}
+
+/* field table animation */
+.list-enter-active, .list-leave-active {
+  transition: all .5s;
+}
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-move {
+  transition: transform .5s;
 }
 </style>
