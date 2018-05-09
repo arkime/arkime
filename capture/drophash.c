@@ -228,6 +228,10 @@ void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isI
         return;
 
     group->file = g_strdup(file);
+
+    if (!g_file_test(file, G_FILE_TEST_EXISTS))
+        return;
+
     struct timespec currentTime;
     clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
 
