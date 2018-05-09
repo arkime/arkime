@@ -16,7 +16,12 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 NOTICE: Restart wiseService before capture when upgrading
 
 1.2.0 2018/05/xx
-  - viewer - sessions page implemented in Vue instead of AngularJS
+  - viewer - sessions, help, users, history pages implemented in Vue instead of AngularJS
+  - viewer - split stats capture graphs/stats into 2 tabs
+  - viewer - stats now has sort option
+  - capture - new maxTcpOutOfOrderPackets setting, default 256
+  - capture - tcpflag are always counted (issue #849)
+  - capture - drophash supports v6 and saving
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)

@@ -3737,7 +3737,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     if (!opcap.isOpen()) {
       Db.fileIdToFile(fields.node, fileNum, function(file) {
         if (!file) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+          console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
           return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
         }
         if (file.kekId) {
@@ -5096,7 +5096,7 @@ function pcapScrub(req, res, id, entire, endCb) {
         Db.fileIdToFile(fields.node, fileNum, function(file) {
 
           if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.node + '-' + fileNum);
+            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
             return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
           }
 

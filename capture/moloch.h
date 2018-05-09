@@ -729,11 +729,27 @@ void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
  * drophash.c
  */
 
-typedef struct molochdrophash_t MolochDropHash_t;
+typedef struct molochdrophashitem_t  MolochDropHashItem_t;
+typedef struct molochdrophash_t      MolochDropHash_t;
+typedef struct molochdrophashgroup_t MolochDropHashGroup_t;
+struct molochdrophashgroup_t {
+    MolochDropHashItem_t *dhg_next, *dhg_prev;
+    int                   dhg_count;
+    int                   changed;
+    char                 *file;
+    char                  isIp4;
+    MolochDropHash_t     *drops[0x10000];
+    MOLOCH_LOCK_EXTERN(lock);
+};
+
+
 MolochDropHash_t *moloch_drophash_init (int num, char isIp4);
-int moloch_drophash_add (MolochDropHash_t *hash, const void *key, uint32_t value);
+int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t expire);
 uint32_t moloch_drophash_get (MolochDropHash_t *hash, void *key);
-void moloch_drophash_delete (MolochDropHash_t *hash, void *key);
+void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key);
+void moloch_drophashgroup_save(MolochDropHashGroup_t *group);
+
+void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isIp4);
 
 /******************************************************************************/
 /*

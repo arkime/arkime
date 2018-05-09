@@ -88,6 +88,23 @@
           </select>
         </div> <!-- /graph hide select -->
 
+        <!-- graph sort select -->
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex === 0">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Sort">
+           <span class="input-group-text">
+             Sort
+           </span>
+         </div>
+          <select class="form-control input-sm"
+                  v-model="graphSort">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div> <!-- /graph hide select -->
+
         <!-- table data interval select -->
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex !== 0">
@@ -139,6 +156,7 @@
             :graph-type="graphType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
+            :graph-sort="graphSort"
             :user="user">
           </capture-graphs>
         </b-tab>
@@ -200,6 +218,7 @@ export default {
       graphType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
+      graphSort: this.$route.query.sort || 'asc',
       dataInterval: this.$route.query.refreshInterval || '5000',
       childError: ''
     };
@@ -252,6 +271,9 @@ export default {
       }
       if (queryParams.graphHide) {
         this.graphHide = queryParams.graphHide;
+      }
+      if (queryParams.graphSort) {
+        this.graphSort = queryParams.graphSort;
       }
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
