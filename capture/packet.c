@@ -1695,7 +1695,7 @@ void moloch_packet_init()
     snprintf(filename, sizeof(filename), "/tmp/%s.drops.4", config.nodeName);
     moloch_drophashgroup_init(&packetDrop4, filename, TRUE);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.drops.4", config.nodeName);
+    snprintf(filename, sizeof(filename), "/tmp/%s.drops.6", config.nodeName);
     moloch_drophashgroup_init(&packetDrop6, filename, FALSE);
     g_timeout_add_seconds(10, moloch_packet_save_drophash, 0);
 
