@@ -19,7 +19,7 @@
           <input type="text"
             class="form-control"
             v-model="query.searchTerm"
-            @keyup="searchForHistory()"
+            @keyup="debounceSearch()"
             placeholder="Search for history in the table below"
           />
         </div>
@@ -45,7 +45,7 @@
       </div>
     </form> <!-- /paging navbar -->
 
-    <table class="table table-sm small">
+    <table class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="90px;">
@@ -60,40 +60,66 @@
           <th v-for="column of columns"
             :key="column.name"
             class="cursor-pointer"
-            :style="{'width': `${column.width}%`}"
-            @click="columnClick(column.sort)">
-
+            v-has-permission="column.permission"
+            :style="{'width': `${column.width}%`}">
             <input type="text"
               v-if="column.filter && showColFilters"
-              v-has-permission=column.permission
+              v-has-permission="column.permission"
               v-model="query[column.sort]"
               :placeholder="`Filter by ${column.name}`"
-              class="form-control input-sm input-filter"
-              @change="loadData()">
-
-            {{ column.name }}
-
-            <span v-if="column.sort !== undefined">
-              <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-              <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-              <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
-            </span>
+              class="form-control form-control-sm input-filter"
+              @keyup="debounceSearch()"
+              @click.stop
+            />
+            <div v-if="column.hasOwnProperty('exists')"
+              class="mr-1 header-div">
+              <input type="checkbox"
+                class="checkbox"
+                v-b-tooltip.hover
+                :title="column.name + ' EXISTS!'"
+                @change="loadData"
+                v-model="column.exists"
+              />
+            </div>
+            <div class="header-div"
+              @click="columnClick(column.sort)">
+              <span v-if="column.sort !== undefined">
+                <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+              </span>
+              {{ column.name }}
+            </div>
+            <a v-if="filters[column.sort]"
+              :title="'The history is being filtered by ' + column.name | '. Click to display the filter.'"
+              @click="showColFilters = true"
+              class="cursor-pointer ml-1">
+              <span class="fa fa-filter">
+              </span>
+            </a>
           </th>
         </tr>
       </thead>
-      <tbody v-if="history">
-        <!-- TODO: debounce:500 input fields -->
+      <tbody>
+        <!-- no results -->
+        <tr v-if="!history.data.length">
+          <td :colspan="colSpan"
+            class="text-danger text-center">
+            <span class="fa fa-warning">
+            </span>&nbsp;
+            <strong>
+              No history or none that matches your search
+            </strong>
+          </td>
+        </tr> <!-- /no results -->
         <template v-for="(item, index) of history.data">
+          <!-- history item -->
           <tr :key="item.id">
             <td class="nowrap">
-              <!-- TODO toggle btn -->
-              <button type="button"
-                class="btn btn-xs btn-toggle"
-                :class="{'collapsed':!item.expanded, 'btn-theme-tertiary':!item.expanded, 'btn-danger':item.expanded}"
-                @click="toggleLogDetail(item)">
-                <span class="fa fa-close">
-                </span>
-              </button>
+              <toggle-btn class="mt-1"
+                :opened="item.expanded"
+                @toggle="toggleLogDetail(item)">
+              </toggle-btn>
               <button type="button"
                 class="btn btn-xs btn-warning"
                 v-has-permission="'createEnabled,removeEnabled'"
@@ -101,15 +127,15 @@
                 <span class="fa fa-trash-o">
                 </span>
               </button>
-              <button type="button"
-                class="btn btn-xs btn-info"
+              <a class="btn btn-xs btn-info"
                 v-if="item.uiPage"
                 tooltip-placement="right"
-                v-b-tooltip.hover :title="`Open this query on the ${item.uiPage} page`"
+                v-b-tooltip.hover
+                :title="`Open this query on the ${item.uiPage} page`"
                 :href="`${item.uiPage}?${item.query}`">
                 <span class="fa fa-folder-open">
                 </span>
-              </button>
+              </a>
             </td>
             <td class="no-wrap">
               {{ item.timestamp | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
@@ -138,10 +164,97 @@
                 {{ item.view.expression }}
               </span>
             </td>
-          </tr>
+          </tr> <!-- /history item -->
+          <!-- history item info -->
+          <tr :key="item.id+'-detail'"
+            v-if="expandedLogs[item.id]">
+            <td :colspan="colSpan">
+              <dl class="dl-horizontal">
+                <!-- count info -->
+                <div v-if="item.recordsReturned !== undefined"
+                  class="mt-1">
+                  <dt><h5>
+                    Counts
+                  </h5></dt>
+                  <dd><h5>&nbsp;</h5></dd>
+                  <span v-if="item.recordsReturned !== undefined">
+                    <dt>Records Returned</dt>
+                    <dd>{{ item.recordsReturned }}</dd>
+                  </span>
+                  <span v-if="item.recordsFiltered !== undefined">
+                    <dt>Records Filtered</dt>
+                    <dd>{{ item.recordsFiltered }}</dd>
+                  </span>
+                  <span v-if="item.recordsTotal !== undefined">
+                    <dt>Records Total</dt>
+                    <dd>{{ item.recordsTotal }}</dd>
+                  </span>
+                </div> <!-- /count info -->
+                <!-- req body -->
+                <div v-if="item.body"
+                  class="mt-1">
+                  <dt><h5>
+                    Request Body
+                  </h5></dt>
+                  <dd><h5>&nbsp;</h5></dd>
+                  <span v-for="(value, key) in item.body"
+                    :key="key">
+                    <dt>{{ key }}</dt>
+                    <dd>{{ value }}</dd>
+                  </span>
+                </div> <!-- /req body -->
+                <!-- query params -->
+                <div v-if="item.query"
+                  class="mt-2">
+                  <dt><h5>
+                    Query parameters
+                    <sup>
+                      <span class="fa fa-info-circle text-theme-primary">
+                      </span>
+                    </sup>
+                  </h5></dt>
+                  <dd><h5>&nbsp;</h5></dd>
+                  <span v-for="(value, key) in item.queryObj"
+                    :key="key">
+                    <dt>{{ key }}</dt>
+                    <dd>
+                      {{ value }}
+                      <span v-if="key === 'view' && item.view && item.view.expression">
+                        ({{ item.view.expression }})
+                      </span>
+                    </dd>
+                  </span>
+                  <div class="mt-2">
+                    <em>
+                      <strong>
+                        <span class="fa fa-info-circle text-theme-primary">
+                        </span>&nbsp;
+                        Parsed from:
+                      </strong>
+                      <span style="word-break:break-all;">
+                        {{ item.api }}?{{ item.query }}
+                      </span>
+                    </em>
+                  </div>
+                </div> <!-- /query params -->
+              </dl>
+              <!-- no info -->
+              <div v-if="!item.query && !item.body && item.recordsReturned === undefined"
+                class="mb-w">
+                <span class="fa fa-frown-o fa-lg">
+                </span>&nbsp;
+                <em>Sorry! There is no more information to show.</em>
+              </div> <!-- no info -->
+            </td>
+          </tr> <!-- /history item info -->
         </template>
       </tbody>
     </table>
+
+    <!-- hack to make vue watch expanded logs -->
+    <div style="display:none;">
+      {{ expandedLogs }}
+    </div>
 
   </div>
 
@@ -152,19 +265,31 @@ import UserService from '../UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import ToggleBtn from '../utils/ToggleBtn';
 import MolochTime from '../search/Time';
 
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'History',
-  components: { MolochPaging, MolochError, MolochLoading, MolochTime },
+  components: {
+    MolochPaging,
+    MolochError,
+    MolochLoading,
+    MolochTime,
+    ToggleBtn
+  },
   data: function () {
     return {
       error: '',
       loading: true,
       user: null,
-      history: null,
+      history: {
+        data: [],
+        recordsTotal: undefined,
+        recordsFiltered: undefined
+      },
+      expandedLogs: { change: false },
       showColFilters: false,
       colSpan: 7,
       filters: {},
@@ -194,12 +319,19 @@ export default {
       };
     }
   },
+  watch: {
+    'expandedLogs': {
+      handler (newVal, oldVal) {
+        console.log('expandedLogs changed', oldVal.change, '->', newVal.change);
+      }
+    }
+  },
   created: function () {
     this.loadUser();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    searchForHistory () {
+    debounceSearch: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
@@ -207,19 +339,28 @@ export default {
         this.loadData();
       }, 400);
     },
-    columnClick (name) {
+    columnClick: function (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
       this.loadData();
     },
-    toggleLogDetail: function (item) {
-      item.expanded = !item.expanded;
+    toggleLogDetail: function (log) {
+      log.expanded = !log.expanded;
 
-      /* TODO
-      if (log.query) {
-        log.queryObj = this.$filter('parseParamString')(log.query);
+      this.expandedLogs.change = !this.expandedLogs.change;
+      this.expandedLogs[log.id] = !this.expandedLogs[log.id];
+
+      if (log.query && log.expanded && !log.queryObj) {
+        log.queryObj = {};
+
+        let a = (log.query[0] === '?' ? log.query.substr(1) : log.query).split('&');
+        for (let i = 0, len = a.length; i < len; i++) {
+          let b = a[i].split('=');
+          let value = b[1] || '';
+          if (b[0] === 'expression') { value = value.replace(/\+/g, ' '); }
+          log.queryObj[decodeURIComponent(b[0])] = decodeURIComponent(value);
+        }
       }
-      */
     },
     deleteLog: function (log, index) {
       this.HistoryService.delete(log.id, log.index)
@@ -246,6 +387,8 @@ export default {
         });
     },
     loadData: function () {
+      this.loading = true;
+
       let exists = [];
       for (let i = 0, len = this.columns.length; i < len; ++i) {
         let col = this.columns[i];
@@ -253,6 +396,8 @@ export default {
       }
       if (exists.length) {
         this.query.exists = exists.join();
+      } else {
+        this.query.exists = undefined;
       }
 
       if (this.filters && Object.keys(this.filters).length) {
@@ -274,7 +419,7 @@ export default {
         });
     },
     /* event functions ------------------------------------------- */
-    changePaging (pagingValues) {
+    changePaging: function (pagingValues) {
       this.query.length = pagingValues.length;
       this.query.start = pagingValues.start;
 
@@ -323,11 +468,36 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-/* table styles */
+/* table styles -------------------- */
 .history-page table {
   margin-top: 160px;
+  table-layout: fixed;
 }
-.history-page table .nowrap {
+.history-page table tbody tr td.nowrap {
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+/* super tiny input boxes for column filters */
+.history-page table thead tr th input.input-filter {
+  height: 24px;
+  padding: 2px 5px;
+  font-size: 12px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+}
+.history-page table thead tr th div.header-div {
+  display: inline-block;
+}
+.history-page table thead tr th div.header-div input.checkbox {
+  margin-bottom: -2px;
+}
+/* shrink the toggle button */
+.history-page table tbody tr td a.btn-toggle {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  margin-top: -2px !important;
 }
 </style>

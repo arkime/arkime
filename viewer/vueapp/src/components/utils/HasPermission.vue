@@ -6,13 +6,11 @@ export default {
   bind: function (el, binding, vnode) {
     if (!binding.value) { return; }
 
-    el.style.display = 'none'; // hide the element by default
+    $(el).hide();
 
     UserService.hasPermission(binding.value)
       .then((response) => {
-        if (response) {
-          el.style.display = 'inline-block';
-        }
+        if (response) { $(el).show(); }
       });
   }
 };
