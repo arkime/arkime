@@ -81,7 +81,7 @@
       $event.stopPropagation();
 
       if (link === 'stats' || link === 'sessions' || link === 'help' ||
-        link === 'files' || link === 'users') {
+        link === 'files' || link === 'users' || link === 'history') {
         // TODO update/remove as angular pages get replaced with vue pages
         // redirects to the new vue app stats page
         this.$location.path(link);

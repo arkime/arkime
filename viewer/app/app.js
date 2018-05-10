@@ -88,11 +88,6 @@
           template      : '<moloch-upload></moloch-upload>',
           reloadOnSearch: false
         })
-        .when('/history', {
-          title         : 'History',
-          template      : '<moloch-history></moloch-history>',
-          reloadOnSearch: false
-        })
         .otherwise({
           title    : 'Not Found',
           template : '<moloch-404></moloch-404>'

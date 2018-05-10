@@ -261,4 +261,20 @@ label.btn-radio:disabled, button.btn-checkbox:disabled {
 .sub-navbar > .toast-container {
   margin-top: -6px;
 }
+
+/* description list styles */
+dl.dl-horizontal dt {
+  float: left;
+  width: 190px;
+  overflow: hidden;
+  clear: left;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+dl.dl-horizontal dd {
+  margin-left: 205px;
+  margin-bottom: 0;
+}
 </style>

@@ -762,20 +762,6 @@ export default {
 </script>
 
 <style scoped>
-/* description list styles */
-.help-content dl.dl-horizontal dt {
-  float: left;
-  width: 160px;
-  overflow: hidden;
-  clear: left;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.help-content dl.dl-horizontal dd {
-  margin-left: 180px;
-}
-
 /* make pre readable for dark and light themes */
 .help-content pre {
   color: #333;
