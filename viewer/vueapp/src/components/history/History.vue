@@ -91,7 +91,8 @@
               {{ column.name }}
             </div>
             <a v-if="filters[column.sort]"
-              :title="'The history is being filtered by ' + column.name | '. Click to display the filter.'"
+              v-b-tooltip.hover
+              :title="'The history is being filtered by ' + column.name + '. Click to display the filter.'"
               @click="showColFilters = true"
               class="cursor-pointer ml-1">
               <span class="fa fa-filter">
