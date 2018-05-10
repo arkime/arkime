@@ -249,19 +249,35 @@ void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isI
         return;
     }
 
-    fread(&ver, 4, 1, fp);
+    if (!fread(&ver, 4, 1, fp)) {
+        fclose(fp);
+        LOG("ERROR - `%s` corrupt", group->file);
+        return;
+    }
+
     if (ver != 1) {
         fclose(fp);
         LOG("ERROR - Unknown save file version %d for `%s`", ver, group->file);
         return;
     }
 
-    fread(&cnt, 4, 1, fp);
+    if (!fread(&cnt, 4, 1, fp)) {
+        fclose(fp);
+        LOG("ERROR - `%s` corrupt", group->file);
+        return;
+    }
     for (i = 0; i < cnt; i++) {
-        fread(&port, 2, 1, fp);
-        fread(key, isIp4?4:16, 1, fp);
-        fread(&expire, 4, 1, fp);
-        fread(&flags, 2, 1, fp);
+        int read = 0;
+        read += fread(&port, 2, 1, fp);
+        read += fread(key, isIp4?4:16, 1, fp);
+        read += fread(&expire, 4, 1, fp);
+        read += fread(&flags, 2, 1, fp);
+
+        if (read != 4) {
+            LOG("ERROR - `%s` corrupt", group->file);
+            break;
+        }
+
         if (expire > currentTime.tv_sec)
             moloch_drophash_add(group, port, key, expire);
     }

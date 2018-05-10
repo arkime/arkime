@@ -1264,7 +1264,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
                 }
             }
 
-            if (packetDrop4.drops[tcphdr->th_dport]) {
+            if (packetDrop6.drops[tcphdr->th_dport]) {
                 uint32_t end = moloch_drophash_get(packetDrop6.drops[tcphdr->th_dport], &ip6->ip6_dst);
                 if (end) {
                     if (end > packet->ts.tv_sec) {
