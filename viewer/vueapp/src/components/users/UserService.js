@@ -226,6 +226,28 @@ export default {
     });
   },
 
+  /**
+   * Gets a user's custom spiview fields configurations
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getSpiviewFields: function (userId) {
+    return new Promise((resolve, reject) => {
+      let options = { url: 'user/spiview/fields', method: 'GET' };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
   /* internal methods ---------------------------------------------------- */
   /**
    * Adds the name as a property on a view (instead of just key)

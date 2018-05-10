@@ -202,7 +202,7 @@
 </template>
 
 <script>
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';

@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 import FocusInput from '../utils/FocusInput';
 
 export default {
