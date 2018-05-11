@@ -69,7 +69,208 @@
         class="mt-5 mb-5">
       </moloch-error> <!-- /page error -->
 
-      spiview goes HERE
+      <!-- spiview panels -->
+      <div role="tablist">
+        <b-card no-body
+          class="mb-1"
+          v-for="category in categoryList"
+          :key="category">
+          <b-card-header
+            header-tag="header"
+            class="pt-1 pb-1 pl-2 pr-2 cursor-pointer"
+            v-b-toggle="category"
+            @click="toggleCategory(category)">
+            <strong class="category-title">
+              {{ category }}
+            </strong>
+            <span class="when-opened mt-2 fa fa-minus pull-right">
+            </span>
+            <span class="when-closed mt-2 fa fa-plus pull-right">
+            </span>
+            <span v-if="categoryObjects[category].loading"
+              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 mr-1">
+            </span>
+            <span v-if="!categoryObjects[category].loading">
+              <button class="btn btn-theme-secondary btn-sm pull-right mr-1"
+                title="Load all of the values in this category"
+                @click.stop.prevent="toggleAllValues(category, true)">
+                Load All
+              </button>
+              <button class="btn btn-theme-primary btn-sm pull-right mr-1"
+                title="Unload all of the values in this category"
+                @click.stop.prevent="toggleAllValues(category, false)">
+                Unload All
+              </button>
+            </span>
+            <span v-if="categoryObjects[category].protocols"
+              class="pull-right">
+              <span v-for="(value, key) in categoryObjects[category].protocols"
+                :key="key"
+                @click.stop
+                class="protocol-value">
+                <strong>
+                  <moloch-session-field
+                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                    :expr="'ip.protocol'"
+                    :value="key"
+                    :pull-left="true"
+                    :parse="false"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </strong>
+                <sup>({{ value | round(0) }})</sup>
+              </span>
+            </span>
+          </b-card-header>
+          <!-- TODO save visible panels -->
+          <b-collapse :visible="categoryObjects[category].isopen"
+            :id="category">
+            <b-card-body>
+              <!-- toggle buttons -->
+              <div class="card-text btn-drawer mt-1 mr-1 ml-1"
+                :ref="category + '-btn-drawer'">
+                <div class="btn-container">
+                  <form class="form-inline">
+                    <!-- TODO debounce -->
+                    <input type="text"
+                      class="form-control form-control-sm mr-1 mb-1"
+                      v-model="categoryObjects[category].fieldSearch"
+                      placeholder="Search for fields in this category"
+                    />
+                    <!-- TODO use filtered fields -->
+                    <span class="small" v-if="!categoryObjects[category].fields.length">
+                      <span class="fa fa-fw fa-exclamation-circle">
+                      </span>&nbsp;
+                      No results match your query
+                    </span>
+                    <template v-if="categoryObjects[category].spi">
+                      <span v-for="field in categoryObjects[category].fields"
+                        :key="field.dbField">
+                        <b-dropdown split
+                          size="sm"
+                          variant="default"
+                          class="mr-1 mb-1"
+                          :text="field.friendlyName"
+                          v-b-tooltip.hover
+                          :title="field.help"
+                          boundary="viewport"
+                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                          <!-- TODO export unique func -->
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 0)">
+                            Export Unique {{ field.friendlyName }}
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 1)">
+                            Export Unique {{ field.friendlyName }} with counts
+                          </b-dropdown-item>
+                          <!-- TODO open spi graph function -->
+                          <b-dropdown-item
+                            @click="openSpiGraph(field.dbField)">
+                            Open {{ field.friendlyName }} SPI Graph
+                          </b-dropdown-item>
+                        </b-dropdown>
+                      </span>
+                    </template>
+                  </form>
+                </div>
+                <div class="text-center btn-drawer-toggle cursor-pointer"
+                  @click="toggleBtnDrawer(category + '-btn-drawer')">
+                  <span class="when-opened mt-2 fa fa-angle-double-up">
+                  </span>
+                  <span class="when-closed mt-2 fa fa-angle-double-down">
+                  </span>
+                </div>
+              </div> <!-- toggle buttons -->
+              <div v-if="categoryObjects[category].spi"
+                class="mt-3">
+                <!-- spiview field -->
+                <div v-for="(value, key) in categoryObjects[category].spi"
+                  :key="key"
+                  class="spi-buckets pr-1 pl-1"
+                  v-if="value.active">
+                  <!-- spiview field label button -->
+                  <b-dropdown
+                    size="sm"
+                    variant="default"
+                    :text="value.field.friendlyName">
+                    <!-- TODO toggleSpiData func -->
+                    <b-dropdown-item
+                      @click="toggleSpiData(value.field, true, true)">
+                      Hide {{ value.field.friendlyName }}
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="exportUnique(value.field.dbField, 0)">
+                      Export Unique {{ value.field.friendlyName }}
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="exportUnique(value.field.dbField, 1)">
+                      Export Unique {{ value.field.friendlyName }} with counts
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="openSpiGraph(value.field.dbField)">
+                      Open {{ value.field.friendlyName }} SPI Graph
+                    </b-dropdown-item>
+                  </b-dropdown> <!-- spiview field label button -->
+                  <!-- spiview field data -->
+                  <span v-if="value && value.value && value.value.buckets">
+                    <span v-for="bucket in value.value.buckets"
+                      :key="bucket.key">
+                      <span v-if="bucket.key || bucket.key === 0"
+                        class="small spi-bucket mr-1 no-wrap">
+                        <moloch-session-field
+                          :field="value.field"
+                          :value="bucket.key"
+                          :expr="value.field.exp"
+                          :parse="true"
+                          :pull-left="true"
+                          :session-btn="true"
+                          :timezone="settings.timezone">
+                        </moloch-session-field>
+                        <sup>({{ bucket.doc_count | round(0) }})</sup>
+                      </span>
+                    </span>
+                  </span>
+                  <!-- /spiview field data -->
+                  <!-- spiview no data -->
+                  <em class="small"
+                    v-if="!value.loading && !value.error && !value.value.buckets.length">
+                    No data for this field
+                    <span v-if="canceled && !value.value">
+                      (request was canceled)
+                    </span>
+                  </em> <!-- /spiview no data -->
+                  <!-- spiview field more/less values -->
+                  <!-- TODO show values func -->
+                  <a v-if="value.count && value.count > 100"
+                     @click="showValues(value, false)"
+                     class="btn btn-link btn-xs"
+                     style="text-decoration:none;">
+                    ...less
+                  </a>
+                  <a v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
+                    @click="showValues(value, true)"
+                    class="btn btn-link btn-xs"
+                    style="text-decoration:none;">
+                    more...
+                  </a> <!-- /spiview field more/less values -->
+                  <!-- spiview field loading -->
+                  <span v-if="value.loading"
+                    class="fa fa-spinner fa-spin">
+                  </span> <!-- /spiview field loading -->
+                  <!-- spiview field error -->
+                  <span v-if="value.error"
+                    class="text-danger ml-2">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ value.error }}
+                  </span> <!-- /spiview field error -->
+                </div> <!-- /spiview field -->
+              </div>
+            </b-card-body>
+          </b-collapse>
+        </b-card>
+      </div> <!-- /spiview panels -->
 
     </div>
 
@@ -120,14 +321,27 @@ export default {
       settings: {
         timezone: 'local'
       },
-      query: {
-        facets: 1,
-        spi: this.$route.query.spi
-      },
       fieldConfigs: [],
       graphData: undefined,
-      mapData: undefined
+      mapData: undefined,
+      categoryList: [],
+      categoryObjects: {}
     };
+  },
+  computed: {
+    query: function () {
+      return {
+        facets: 1,
+        spi: this.$route.query.spi,
+        date: this.$store.state.timeRange,
+        startTime: this.$store.state.time.startTime,
+        stopTime: this.$store.state.time.stopTime,
+        bounding: this.$route.query.bounding || 'last',
+        interval: this.$route.query.interval || 'auto',
+        view: this.$route.query.view || undefined,
+        expression: this.$route.query.expression || undefined
+      };
+    }
   },
   created: function () {
     if (!this.query.spi) {
@@ -173,6 +387,73 @@ export default {
           }
         }
       }
+    },
+    /**
+     * Saves the open categories to spiview-collapsible localStorage
+     * @param {string} name   The name of the category
+     * @param {bool} isclosed Whether the category is closed
+     */
+    /* TODO this doesn't work */
+    toggleCategory: function (name) {
+      console.log('toggle category', name);
+      // if (localStorage) {
+      //   if (localStorage['spiview-collapsible']) {
+      //     let visiblePanels = localStorage['spiview-collapsible'];
+      //     if (!this.categoryObjects[name].isopen) {
+      //       let split = visiblePanels.split(',');
+      //       for (let i = 0, len = split.length; i < len; ++i) {
+      //         if (split[i].contains(name)) {
+      //           split.splice(i, 1);
+      //           break;
+      //         }
+      //       }
+      //       visiblePanels = split.join(',');
+      //     } else {
+      //       if (!visiblePanels.contains(name)) {
+      //         if (visiblePanels !== '') { visiblePanels += ','; }
+      //         visiblePanels += `${name}`;
+      //       }
+      //     }
+      //     localStorage['spiview-collapsible'] = visiblePanels;
+      //   } else {
+      //     localStorage['spiview-collapsible'] = name;
+      //   }
+      // }
+    },
+    /**
+     * Show/hide all values for a category
+     * @param {string} categoryName The name of the category to toggle values for
+     * @param {bool} load           Whether to load (or unload) all values
+     * @param {object} $event       The click event that triggered this function
+     */
+    toggleAllValues: function (categoryName, load) {
+      // TODO
+      console.log('toggle all values');
+      // let query = '';
+      // let category = this.categoryObjects[categoryName];
+      //
+      // for (let i = 0, len = category.fields.length; i < len; ++i) {
+      //   let field = category.fields[i];
+      //   if (category.spi && category.spi[field.dbField]) {
+      //     let spiData = category.spi[field.dbField];
+      //     if ((spiData.active && !load) ||
+      //        (!spiData.active && load)) {
+      //       // the spi data for this field is already visible and we don't want
+      //       // it to be, or it's NOT visible and we want it to be
+      //       this.toggleSpiData(field);
+      //     }
+      //   } else if (load) { // spi data doesn't exist in the category
+      //     if (query) { query += ','; }
+      //     query += this.toggleSpiData(field);
+      //   }
+      // }
+      //
+      // if (load && query) { this.getSpiData(query); }
+      //
+      // this.saveFieldState();
+    },
+    toggleBtnDrawer: function (ref) {
+      $(this.$refs[ref]).toggleClass('expanded');
     },
     /* event functions ----------------------------------------------------- */
     changeSearch: function () {
@@ -319,6 +600,7 @@ export default {
         }
       }
 
+      // TODO fix this, it stops this function from continuing
       if (!openedCategories) { this.openCategories(); }
 
       if (tasks.length) {
@@ -435,8 +717,6 @@ export default {
      * @returns {promise} prevPromise The previously executed promise
      */
     serial: function (tasks) {
-      console.log('serial!');
-
       let prevPromise;
 
       for (let task of tasks) {
@@ -452,12 +732,15 @@ export default {
     /* opens categories that were opened in a previous session
        should only run once on page load */
     openCategories: function () {
+      // TODO localStorage has a value, this breaks
       openedCategories = true;
       for (let key in this.categoryObjects) {
         if (this.categoryObjects.hasOwnProperty(key)) {
           if (localStorage && localStorage['spiview-collapsible']) {
             if (localStorage['spiview-collapsible'].contains(key)) {
               this.categoryObjects[key].isopen = true;
+            } else {
+              continue;
             }
           }
         }
@@ -576,6 +859,24 @@ export default {
 };
 </script>
 
+<style>
+/* make field buttons tiny */
+.spiview-page .btn-group.dropdown > button {
+  padding: 0 5px;
+  font-size: .75rem;
+}
+/* show active button */
+.spiview-page .btn-group.dropdown.active > button:not(.dropdown-toggle) {
+  color: var(--color-foreground, #333);
+  background-color: var(--color-gray);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+/* bold field label dropdown buttons */
+.spiview-page .spi-buckets > div.btn-group.dropdown > button {
+  font-weight: 600;
+}
+</style>
+
 <style scoped>
 /* spiview page, navbar, and content styles - */
 .spiview-page {
@@ -615,5 +916,79 @@ export default {
 /* spiview content ----------------- */
 .spiview-page > .spiview-content {
   padding-top: 120px;
+}
+
+/* panels -------------------------- */
+.spiview-page .card-body {
+  padding: 0;
+}
+
+/* +/- button on panel header */
+.collapsed > .when-opened,
+:not(.collapsed) > .when-closed {
+  display: none;
+}
+
+.spiview-page .protocol-value {
+  margin-right: .75rem;
+  font-size: .9rem;
+}
+
+/* value counts */
+.spiview-page sup {
+  margin-left: -8px;
+}
+
+/* larger titles */
+.spiview-page strong.category-title {
+  font-size: 1.3rem;
+}
+
+/* btn drawer for toggling values -- */
+.spiview-page .btn-drawer-toggle {
+  background-color: var(--color-gray-lighter);
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.spiview-page .btn-drawer .form-control-sm {
+  height: 22px;
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  vertical-align: top;
+  width: 300px;
+}
+.spiview-page .btn-drawer .btn-container {
+  max-height: 22px;
+  overflow: hidden;
+}
+
+.spiview-page .btn-drawer.expanded .btn-container {
+  max-height: 999px;
+  overflow: visible;
+}
+/* expand drawer button icon */
+.spiview-page .btn-drawer.expanded .fa-angle-double-up {
+  display: block;
+}
+.spiview-page .btn-drawer:not(.expanded) .fa-angle-double-up {
+  display: none;
+}
+.spiview-page .btn-drawer.expanded .fa-angle-double-down {
+  display: none;
+}
+.spiview-page .btn-drawer:not(.expanded) .fa-angle-double-down {
+  display: block;
+}
+
+/* stripes! */
+.spiview-page .spi-buckets:nth-child(odd) {
+  background-color: var(--color-quaternary-lightest);
+}
+
+/* force wrapping */
+.spiview-page .spi-bucket {
+  display: inline-block;
 }
 </style>
