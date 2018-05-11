@@ -2114,7 +2114,7 @@ app.get('/history/list', function(req, res) {
       query.query.bool.must.push({
         query_string: {
           query : req.query.searchTerm,
-          _source: ['expression','userId','api','view.name','view.expression']
+          fields: ['expression','userId','api','view.name','view.expression']
         }
       });
     }
