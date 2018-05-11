@@ -3411,7 +3411,6 @@ function buildConnections(req, res, cb) {
     if (bsqErr) {
       return cb(bsqErr, 0, 0, 0);
     }
-
     query.query.bool.filter.push({exists: {field: req.query.srcField}});
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
@@ -3422,10 +3421,10 @@ function buildConnections(req, res, cb) {
       query._source.push("dstPort");
     }
 
-    console.log("buildConnections query", JSON.stringify(query));
+    //console.log("buildConnections query", JSON.stringify(query, null, 2));
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
-    //console.log("buildConnections result", JSON.stringify(graph));
+    //console.log("buildConnections result", JSON.stringify(graph, null, 2));
       if (err || graph.error) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);
@@ -5750,7 +5749,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history'], (req, res) => {
+app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/connections'], (req, res) => {
   let cookieOptions = { path: app.locals.basePath };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
