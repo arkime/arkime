@@ -2046,6 +2046,7 @@ void moloch_db_init()
         headers[0] = "Content-Type: application/json";
         headers[1] = NULL;
         moloch_http_set_headers(esServer, headers);
+        moloch_http_set_print_errors(esServer);
     }
     myPid = getpid();
     gettimeofday(&startTime, NULL);

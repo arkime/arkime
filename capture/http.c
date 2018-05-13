@@ -101,6 +101,7 @@ struct molochhttpserver_t {
     int                      namesCnt;
     int                      namesPos;
     char                     compress;
+    char                     printErrors;
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
@@ -254,14 +255,15 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     if (return_len)
         *return_len = server->syncRequest.used;
 
-    if (config.logESRequests) {
-        long   responseCode;
+    long responseCode;
+    curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responseCode);
+
+    if (config.logESRequests || (server->printErrors && responseCode/100 != 2)) {
         double totalTime;
         double connectTime;
         double uploadSize;
         double downloadSize;
 
-        curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responseCode);
         curl_easy_getinfo(easy, CURLINFO_TOTAL_TIME, &totalTime);
         curl_easy_getinfo(easy, CURLINFO_CONNECT_TIME, &connectTime);
         curl_easy_getinfo(easy, CURLINFO_SIZE_UPLOAD, &uploadSize);
@@ -276,8 +278,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
            connectTime*1000,
            totalTime*1000);
     }
+
     uint8_t *dataIn = server->syncRequest.dataIn;
     server->syncRequest.dataIn = 0;
+
     MOLOCH_UNLOCK(server->syncRequest);
     return dataIn;
 }
@@ -339,7 +343,7 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
             long   responseCode;
             curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responseCode);
 
-            if (config.logESRequests) {
+            if (config.logESRequests || (server->printErrors && responseCode/100 != 2)) {
                 double totalTime;
                 double connectTime;
                 double uploadSize;
@@ -377,6 +381,11 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
                 moloch_http_add_request(server, request, TRUE);
                 MOLOCH_UNLOCK(requests);
             } else {
+
+                if (server->printErrors && responseCode/100 != 2) {
+                    LOG("Response length=%d :>\n%.*s", request->used, MIN(request->used, 4000), request->dataIn);
+                }
+
                 if (request->func) {
                     if (request->dataIn)
                         request->dataIn[request->used] = 0;
@@ -879,6 +888,13 @@ void moloch_http_set_retries(void *serverV, uint16_t retries)
     MolochHttpServer_t        *server = serverV;
 
     server->maxRetries = retries;
+}
+/******************************************************************************/
+void moloch_http_set_print_errors(void *serverV)
+{
+    MolochHttpServer_t        *server = serverV;
+
+    server->printErrors = 1;
 }
 /******************************************************************************/
 gboolean moloch_http_is_moloch(uint32_t hash, char *key)
