@@ -6,6 +6,7 @@ import Files from '@/components/files/Files';
 import Users from '@/components/users/Users';
 import History from '@/components/history/History';
 import Sessions from '@/components/sessions/Sessions';
+import Spiview from '@/components/spiview/Spiview';
 
 Vue.use(Router);
 
@@ -57,14 +58,22 @@ const router = new Router({
       path: '/history',
       name: 'History',
       component: History
+    },
+    {
+      path: '/spiview',
+      name: 'Spiview',
+      component: Spiview
     }
   ]
 });
 
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
-  // loads the angular app pages (for now, anything but the stats page)
-  if (!to.path.includes('history') && !to.path.includes('users') && !to.path.includes('files') && !to.path.includes('help') && !to.path.includes('stats') && !to.path.includes('sessions') && to.path !== '/') {
+  // loads the angular app pages
+  if (!to.path.includes('history') && !to.path.includes('users') &&
+    !to.path.includes('files') && !to.path.includes('help') &&
+    !to.path.includes('stats') && !to.path.includes('sessions') &&
+    !to.path.includes('spiview') && to.path !== '/') {
     location.reload();
   }
 
