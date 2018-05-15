@@ -48,6 +48,7 @@
         size="sm"
         class="pull-right ml-1"
         no-caret
+        toggle-class="rounded"
         variant="theme-secondary">
         <template slot="button-content">
           <span class="fa fa-eye"></span>

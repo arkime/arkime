@@ -1,5 +1,6 @@
 <template>
 
+  <!-- TODO transitions for btn drawer, field toggles, field values, field config items -->
   <div class="spiview-page">
 
     <!-- search navbar -->
@@ -11,23 +12,83 @@
 
     <!-- info navbar -->
     <form class="info-nav">
-      <div v-if="dataLoading">
-        <!-- TODO config save btn -->
-        <div v-if="dataLoading"
-          class="info-nav-loading">
-          <span class="fa fa-spinner fa-lg fa-spin">
+      <div v-if="!dataLoading">
+        <!-- field config save button -->
+        <b-dropdown
+          size="sm"
+          no-caret
+          class="field-config-menu"
+          toggle-class="rounded"
+          variant="theme-secondary">
+          <template slot="button-content">
+            <span class="fa fa-columns"
+              v-b-tooltip.hover
+              title="Save or load custom visible field configurations">
+            </span>
+          </template>
+          <b-dropdown-header>
+            <div class="input-group input-group-sm">
+              <input type="text"
+                maxlength="30"
+                class="form-control"
+                v-model="newFieldConfigName"
+                placeholder="Enter new field configuration name"
+                @keydown.enter.stop.prevent="saveFieldConfiguration"
+              />
+              <div class="input-group-append">
+                <button type="button"
+                  class="btn btn-theme-secondary"
+                  :disabled="!newFieldConfigName"
+                  @click="saveFieldConfiguration"
+                  v-b-tooltip.hover
+                  title="Save this custom spiview field configuration">
+                  <span class="fa fa-save">
+                  </span>
+                </button>
+              </div>
+            </div>
+          </b-dropdown-header>
+          <b-dropdown-divider>
+          </b-dropdown-divider>
+          <b-dropdown-item
+            v-if="fieldConfigError"
+            class="text-danger">
+            {{ fieldConfigError }}
+          </b-dropdown-item>
+          <b-dropdown-item
+            v-b-tooltip.hover
+            @click.stop.prevent="loadFieldConfiguration()"
+            title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+            Moloch Default
+          </b-dropdown-item>
+          <b-dropdown-item
+            v-for="(config, key) in fieldConfigs"
+            :key="key"
+            @click.self.stop.prevent="loadFieldConfiguration(key)">
+            <button class="btn btn-xs btn-danger pull-right"
+              type="button"
+              @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+              <span class="fa fa-trash-o">
+              </span>
+            </button>
+            {{ config.name }}
+          </b-dropdown-item>
+        </b-dropdown> <!-- /field config save button -->
+      </div>
+      <div v-if="dataLoading"
+        class="info-nav-loading">
+        <span class="fa fa-spinner fa-lg fa-spin">
+        </span>&nbsp;
+        <em>
+          Loading SPI data
+        </em>
+        <button type="button"
+          class="btn btn-warning btn-sm pull-right"
+          @click="cancelLoading()">
+          <span class="fa fa-ban">
           </span>&nbsp;
-          <em>
-            Loading SPI data
-          </em>
-          <button type="button"
-            class="btn btn-warning btn-sm pull-right"
-            @click="cancelLoading()">
-            <span class="fa fa-ban">
-            </span>&nbsp;
-            cancel
-          </button>
-        </div>
+          cancel
+        </button>
       </div>
     </form> <!-- /info navbar -->
 
@@ -122,7 +183,6 @@
               </span>
             </span>
           </b-card-header>
-          <!-- TODO save visible panels -->
           <b-collapse :visible="categoryObjects[category].isopen"
             :id="category">
             <b-card-body>
@@ -131,31 +191,36 @@
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
                   <form class="form-inline">
-                    <!-- TODO debounce -->
                     <input type="text"
                       class="form-control form-control-sm mr-1 mb-1"
-                      v-model="categoryObjects[category].fieldSearch"
                       placeholder="Search for fields in this category"
+                      @input="updateFilteredFields(category, $event.target.value)"
                     />
-                    <!-- TODO use filtered fields -->
-                    <span class="small" v-if="!categoryObjects[category].fields.length">
+                    <span class="small"
+                      v-if="!categoryObjects[category].fields.length">
                       <span class="fa fa-fw fa-exclamation-circle">
                       </span>&nbsp;
                       No results match your query
                     </span>
                     <template v-if="categoryObjects[category].spi">
-                      <span v-for="field in categoryObjects[category].fields"
+                      <span class="small"
+                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
+                        <span class="fa fa-fw fa-exclamation-circle">
+                        </span>&nbsp;
+                        No fields match your query
+                      </span>
+                      <span v-for="field in categoryObjects[category].filteredFields"
                         :key="field.dbField">
                         <b-dropdown split
                           size="sm"
                           variant="default"
-                          class="mr-1 mb-1"
+                          class="mr-1 mb-1 field-dropdown"
                           :text="field.friendlyName"
                           v-b-tooltip.hover
                           :title="field.help"
                           boundary="viewport"
+                          @click="toggleSpiData(field, true, true)"
                           :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
-                          <!-- TODO export unique func -->
                           <b-dropdown-item
                             @click="exportUnique(field.dbField, 0)">
                             Export Unique {{ field.friendlyName }}
@@ -164,7 +229,6 @@
                             @click="exportUnique(field.dbField, 1)">
                             Export Unique {{ field.friendlyName }} with counts
                           </b-dropdown-item>
-                          <!-- TODO open spi graph function -->
                           <b-dropdown-item
                             @click="openSpiGraph(field.dbField)">
                             Open {{ field.friendlyName }} SPI Graph
@@ -193,8 +257,8 @@
                   <b-dropdown
                     size="sm"
                     variant="default"
+                    class="field-dropdown"
                     :text="value.field.friendlyName">
-                    <!-- TODO toggleSpiData func -->
                     <b-dropdown-item
                       @click="toggleSpiData(value.field, true, true)">
                       Hide {{ value.field.friendlyName }}
@@ -234,14 +298,13 @@
                   <!-- /spiview field data -->
                   <!-- spiview no data -->
                   <em class="small"
-                    v-if="!value.loading && !value.error && !value.value.buckets.length">
+                    v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)">
                     No data for this field
                     <span v-if="canceled && !value.value">
                       (request was canceled)
                     </span>
                   </em> <!-- /spiview no data -->
                   <!-- spiview field more/less values -->
-                  <!-- TODO show values func -->
                   <a v-if="value.count && value.count > 100"
                      @click="showValues(value, false)"
                      class="btn btn-link btn-xs"
@@ -301,6 +364,7 @@ let categoryLoadingCounts = {};
 let pendingPromise;
 
 let timeout;
+let inputTimeout;
 
 export default {
   name: 'Spiview',
@@ -316,7 +380,7 @@ export default {
       loading: true,
       dataLoading: true,
       loadingVisualizations: true,
-      staleData: undefined, // TODO,
+      staleData: undefined,
       filtered: 0,
       settings: {
         timezone: 'local'
@@ -325,34 +389,37 @@ export default {
       graphData: undefined,
       mapData: undefined,
       categoryList: [],
-      categoryObjects: {}
+      categoryObjects: {},
+      spiQuery: this.$route.query.spi,
+      // field config vars
+      newFieldConfigName: '',
+      fieldConfigError: ''
     };
   },
   computed: {
     query: function () {
       return {
         facets: 1,
-        spi: this.$route.query.spi,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$route.query.expression || undefined
+        expression: this.$store.state.expression || undefined
       };
     }
   },
-  created: function () {
-    if (!this.query.spi) {
+  mounted: function () {
+    if (!this.spiQuery) {
       // get what's saved in the db
       SessionsService.getState('spiview')
         .then((response) => {
-          this.query.spi = response.data.visibleFields || defaultSpi;
+          this.spiQuery = response.data.visibleFields || defaultSpi;
           this.issueQueries();
         })
         .catch((error) => {
-          this.query.spi = defaultSpi;
+          this.spiQuery = defaultSpi;
           this.issueQueries();
         });
     } else {
@@ -361,9 +428,85 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /**
+     * Filters field butttons by the search filter
+     * @param {string} categoryName The name (key) of the category to filter fields
+     * @param {string} searchFilter The string to search for in fields
+     */
+    updateFilteredFields: function (categoryName, searchFilter) {
+      if (inputTimeout) { clearTimeout(inputTimeout); }
+
+      inputTimeout = setTimeout(() => {
+        let category = this.categoryObjects[categoryName];
+        let fields = category.fields;
+
+        fields = fields.filter((field) => {
+          return field.friendlyName.toLowerCase().includes(
+            searchFilter.toLowerCase()
+          );
+        });
+
+        fields = this.sortFields(fields);
+
+        Vue.set(this.categoryObjects[categoryName], 'filteredFields', fields);
+      }, 400);
+    },
+    /**
+     * Toggles the view of field spi data by updating the active state
+     * or fetching new spi data as necessary
+     * Also updates the spi query parameter in the url
+     * @param {object} field      The field to get spi data for
+     * @param {bool} issueQuery   Whether to issue query for the data
+     * @param {bool} saveFields   Whether to save the visible fields
+     * @returns {string} spiQuery The query string for the toggled on fields
+     *                            e.g. 'lp:200,fp:100'
+     */
+    toggleSpiData: function (field, issueQuery, saveFields) {
+      Vue.set(field, 'active', !field.active);
+
+      let spiData;
+      if (this.categoryObjects[field.group].spi) {
+        spiData = this.categoryObjects[field.group].spi[field.dbField];
+      }
+
+      let addToQuery = false;
+      let spiQuery = '';
+
+      if (spiData) { // spi data exists, so we need to toggle active state
+        Vue.set(spiData, 'active', !spiData.active);
+        addToQuery = spiData.active;
+        // if spiData was not populated with a value and it's now active
+        // we need to show get the spi data from the server
+        if (!spiData.value && spiData.active) { this.getSingleSpiData(field); }
+      } else { // spi data doesn't exist, so fetch it
+        addToQuery = true;
+        if (issueQuery) { this.getSingleSpiData(field); }
+      }
+
+      // update spi query parameter by adding or removing field id
+      if (addToQuery) {
+        if (this.spiQuery && this.spiQuery !== '') {
+          this.spiQuery += ',';
+        }
+        this.spiQuery += spiQuery += `${field.dbField}:100`;
+      } else {
+        let spiParamsArray = this.spiQuery.split(',');
+        for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+          if (spiParamsArray[i].includes(field.dbField)) {
+            spiParamsArray.splice(i, 1);
+            break;
+          }
+        }
+        this.spiQuery = spiParamsArray.join(',');
+      }
+
+      // save field state if method was invoked from field button click
+      if (saveFields) { this.saveFieldState(); }
+
+      return spiQuery;
+    },
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
-      // TODO test if it works
       if (pendingPromise) {
         pendingPromise.source.cancel();
         pendingPromise = null;
@@ -390,70 +533,170 @@ export default {
     },
     /**
      * Saves the open categories to spiview-collapsible localStorage
-     * @param {string} name   The name of the category
-     * @param {bool} isclosed Whether the category is closed
+     * @param {string} name The name of the category
      */
-    /* TODO this doesn't work */
     toggleCategory: function (name) {
-      console.log('toggle category', name);
-      // if (localStorage) {
-      //   if (localStorage['spiview-collapsible']) {
-      //     let visiblePanels = localStorage['spiview-collapsible'];
-      //     if (!this.categoryObjects[name].isopen) {
-      //       let split = visiblePanels.split(',');
-      //       for (let i = 0, len = split.length; i < len; ++i) {
-      //         if (split[i].contains(name)) {
-      //           split.splice(i, 1);
-      //           break;
-      //         }
-      //       }
-      //       visiblePanels = split.join(',');
-      //     } else {
-      //       if (!visiblePanels.contains(name)) {
-      //         if (visiblePanels !== '') { visiblePanels += ','; }
-      //         visiblePanels += `${name}`;
-      //       }
-      //     }
-      //     localStorage['spiview-collapsible'] = visiblePanels;
-      //   } else {
-      //     localStorage['spiview-collapsible'] = name;
-      //   }
-      // }
+      this.categoryObjects[name].isopen = !this.categoryObjects[name].isopen;
+
+      if (localStorage) {
+        if (localStorage['spiview-collapsible']) {
+          let visiblePanels = localStorage['spiview-collapsible'];
+          if (!this.categoryObjects[name].isopen) {
+            let split = visiblePanels.split(',');
+            for (let i = 0, len = split.length; i < len; ++i) {
+              if (split[i].includes(name)) {
+                split.splice(i, 1);
+                break;
+              }
+            }
+            visiblePanels = split.join(',');
+          } else if (!visiblePanels.includes(name)) {
+            if (visiblePanels !== '') { visiblePanels += ','; }
+            visiblePanels += `${name}`;
+          }
+
+          localStorage['spiview-collapsible'] = visiblePanels;
+        } else {
+          localStorage['spiview-collapsible'] = name;
+        }
+      }
+    },
+    /**
+     * Shows more values for a specific field
+     * @param {object} field  The field to get more spi data for
+     * @param {bool} more     Whether to display more or less values
+     */
+    showValues: function (value, more) {
+      let count;
+      let field = value.field;
+      if (this.spiQuery.includes(field.dbField)) {
+        // make sure field is in the spi query parameter
+        let spiParamsArray = this.spiQuery.split(',');
+        for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+          if (spiParamsArray[i].includes(field.dbField)) {
+            let spiParam = spiParamsArray[i].split(':');
+            if (more) {
+              count = spiParam[1] = parseInt(spiParam[1]) + 100;
+            } else {
+              count = spiParam[1] = parseInt(spiParam[1]) - 100;
+              count = Math.max(count, 0);
+            }
+            spiParamsArray[i] = spiParam.join(':');
+            break;
+          }
+        }
+        this.spiQuery = spiParamsArray.join(',');
+      }
+
+      value.count = count;
+
+      this.saveFieldState();
+
+      this.getSingleSpiData(field, count);
     },
     /**
      * Show/hide all values for a category
      * @param {string} categoryName The name of the category to toggle values for
      * @param {bool} load           Whether to load (or unload) all values
-     * @param {object} $event       The click event that triggered this function
      */
     toggleAllValues: function (categoryName, load) {
-      // TODO
-      console.log('toggle all values');
-      // let query = '';
-      // let category = this.categoryObjects[categoryName];
-      //
-      // for (let i = 0, len = category.fields.length; i < len; ++i) {
-      //   let field = category.fields[i];
-      //   if (category.spi && category.spi[field.dbField]) {
-      //     let spiData = category.spi[field.dbField];
-      //     if ((spiData.active && !load) ||
-      //        (!spiData.active && load)) {
-      //       // the spi data for this field is already visible and we don't want
-      //       // it to be, or it's NOT visible and we want it to be
-      //       this.toggleSpiData(field);
-      //     }
-      //   } else if (load) { // spi data doesn't exist in the category
-      //     if (query) { query += ','; }
-      //     query += this.toggleSpiData(field);
-      //   }
-      // }
-      //
-      // if (load && query) { this.getSpiData(query); }
-      //
-      // this.saveFieldState();
+      let query = '';
+      let category = this.categoryObjects[categoryName];
+
+      for (let i = 0, len = category.fields.length; i < len; ++i) {
+        let field = category.fields[i];
+        if (category.spi && category.spi[field.dbField]) {
+          let spiData = category.spi[field.dbField];
+          if ((spiData.active && !load) ||
+             (!spiData.active && load)) {
+            // the spi data for this field is already visible and we don't want
+            // it to be, or it's NOT visible and we want it to be
+            this.toggleSpiData(field);
+          }
+        } else if (load) { // spi data doesn't exist in the category
+          if (query) { query += ','; }
+          query += this.toggleSpiData(field);
+        }
+      }
+
+      if (load && query) { this.getSpiData(query); }
+
+      this.saveFieldState();
     },
     toggleBtnDrawer: function (ref) {
       $(this.$refs[ref]).toggleClass('expanded');
+    },
+    /**
+     * Opens a new browser tab containing all the unique values for a given field
+     * @param {string} exp  The field id to display unique values for
+     * @param {int} counts  Whether to display the unique values with counts (1 or 0)
+     */
+    exportUnique: function (exp, counts) {
+      SessionsService.exportUniqueValues(exp, counts, this.$route.query);
+    },
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
+    openSpiGraph: function (fieldID) {
+      SessionsService.openSpiGraph(fieldID, this.$route.query);
+    },
+    /* Saves a custom spiview fields configuration */
+    saveFieldConfiguration: function () {
+      if (!this.newFieldConfigName) {
+        this.fieldConfigError = 'You must name your new spiview field configuration';
+        return;
+      }
+
+      let data = {
+        name: this.newFieldConfigName,
+        fields: this.spiQuery
+      };
+
+      UserService.createSpiviewFieldConfig(data)
+        .then((response) => {
+          data.name = response.name; // update column config name
+
+          this.fieldConfigs.push(data);
+
+          this.newFieldConfigName = null;
+          this.fieldConfigsOpen = false;
+          this.fieldConfigError = false;
+        })
+        .catch((error) => {
+          this.fieldConfigError = error.text;
+        });
+    },
+    /**
+     * Loads a previously saved custom spiview fields configuration and
+     * reloads the fields
+     * If no index is given, loads the default spiview fields
+     * @param {int} index The index in the array of the spiview fields configs to load
+     */
+    loadFieldConfiguration: function (index) {
+      if (!index && index !== 0) {
+        this.spiQuery = defaultSpi;
+      } else {
+        this.spiQuery = this.fieldConfigs[index].fields;
+      }
+
+      this.saveFieldState();
+      this.restart();
+    },
+    /**
+     * Deletes a previously saved custom spiview fields configuration
+     * @param {string} name The name of the spiview fields config to remove
+     * @param {int} index   The index in the array of the spiview fields config to remove
+     */
+    deleteFieldConfiguration: function (name, index) {
+      UserService.deleteSpiviewFieldConfig(name)
+        .then(() => {
+          this.fieldConfigs.splice(index, 1);
+          this.fieldConfigError = false;
+        })
+        .catch((error) => {
+          this.fieldConfigError = error.text;
+        });
     },
     /* event functions ----------------------------------------------------- */
     changeSearch: function () {
@@ -462,10 +705,10 @@ export default {
       if (pendingPromise) { // if there's already a req (or series of reqs)
         this.cancelLoading(); // cancel any current requests
         timeout = setTimeout(() => { // wait for promise abort to complete
-          this.getSpiData(this.query.spi);
+          this.getSpiData(this.spiQuery);
         }, 100);
       } else {
-        this.getSpiData(this.query.spi);
+        this.getSpiData(this.spiQuery);
       }
     },
     /* helper functions ---------------------------------------------------- */
@@ -507,7 +750,6 @@ export default {
           this.categoryObjects = {};
 
           for (let i = 0, len = this.fields.length; i < len; ++i) {
-            let newField;
             let field = this.fields[i];
 
             field.active = false;
@@ -518,13 +760,10 @@ export default {
               // already created, just add a new field
               this.categoryObjects[field.group].fields.push(field);
             } else { // create it
-              this.categoryObjects[field.group] = { fields: [ field ] };
-            }
-
-            if (newField) {
-              newField.active = false;
-              this.categoryObjects[field.group].fields.push(newField);
-              this.fields.push(newField);
+              Vue.set(this.categoryObjects, field.group, {
+                fields: [ field ],
+                spi: {}
+              });
             }
           }
 
@@ -533,7 +772,7 @@ export default {
           this.categoryList.splice(this.categoryList.indexOf('general'), 1);
           this.categoryList.unshift('general');
 
-          this.getSpiData(this.query.spi); // IMPORTANT: queries for spi data!
+          this.getSpiData(this.spiQuery); // IMPORTANT: queries for spi data!
         })
         .catch((error) => {
           this.loading = false;
@@ -584,12 +823,11 @@ export default {
 
           let spiData = category.spi[field.dbField];
 
-          field.active = true;
-          spiData.active = true;
-          spiData.loading = true;
-          spiData.error = false;
+          Vue.set(field, 'active', true);
+          Vue.set(spiData, 'active', true);
+          Vue.set(spiData, 'error', false);
+          Vue.set(spiData, 'loading', true);
 
-          // TODO if cancelled
           let promise = () => {
             return new Promise((resolve, reject) => {
               resolve(this.getSingleSpiData(field, count).promise);
@@ -600,7 +838,6 @@ export default {
         }
       }
 
-      // TODO fix this, it stops this function from continuing
       if (!openedCategories) { this.openCategories(); }
 
       if (tasks.length) {
@@ -638,9 +875,9 @@ export default {
 
       if (!count) { count = 100; } // default amount of spi data to retrieve
 
-      spiData.active = true;
-      spiData.loading = true;
-      spiData.error = false;
+      Vue.set(spiData, 'active', true);
+      Vue.set(spiData, 'loading', true);
+      Vue.set(spiData, 'error', false);
 
       let query = {
         facets: 1,
@@ -663,9 +900,9 @@ export default {
           if (response.bsqErr) { spiData.error = response.bsqErr; }
 
           // only update the requested spi data
-          spiData.loading = false;
-          spiData.value = response.spi[field.dbField];
-          spiData.count = count;
+          Vue.set(spiData, 'loading', false);
+          Vue.set(spiData, 'value', response.spi[field.dbField]);
+          Vue.set(spiData, 'count', count);
 
           if (newQuery) { // this data comes back with every request
             // we should show it in the view ASAP (on first request)
@@ -729,20 +966,38 @@ export default {
 
       return prevPromise;
     },
+    /**
+     * Adds and sorts filtered fields for a category
+     * Sorts them by active state then friendlyName
+     * @param {array} fields The array of fields to sort
+     */
+    sortFields: function (fields) {
+      return fields.sort((a, b) => {
+        let bool = (a.active === b.active) ? 0 : a.active ? -1 : 1;
+        let str = a.friendlyName.localeCompare(b.friendlyName);
+
+        return bool || str;
+      });
+    },
     /* opens categories that were opened in a previous session
        should only run once on page load */
     openCategories: function () {
-      // TODO localStorage has a value, this breaks
       openedCategories = true;
       for (let key in this.categoryObjects) {
         if (this.categoryObjects.hasOwnProperty(key)) {
+          let category = this.categoryObjects[key];
+
           if (localStorage && localStorage['spiview-collapsible']) {
-            if (localStorage['spiview-collapsible'].contains(key)) {
-              this.categoryObjects[key].isopen = true;
+            if (localStorage['spiview-collapsible'].includes(key)) {
+              category.isopen = true;
             } else {
               continue;
             }
           }
+
+          let fields = category.fields;
+          fields = this.sortFields(category.fields);
+          Vue.set(category, 'filteredFields', fields);
         }
       }
     },
@@ -777,9 +1032,27 @@ export default {
         }
       }
     },
+    /* restarts the page with a new query by deactivating unnecessary spi data,
+       canceling any pending promises/timeouts, and issuing a new query */
+    restart: function () {
+      newQuery = true;
+      openedCategories = false;
+      categoryLoadingCounts = {};
+
+      this.deactivateSpiData(); // hide any removed fields from spi url param
+
+      if (pendingPromise) { // if there's already a req (or series of reqs)
+        this.cancelLoading(); // cancel any current requests
+        timeout = setTimeout(() => { // wait for promise abort to complete
+          this.getSpiData(this.spiQuery);
+        }, 100);
+      } else {
+        this.getSpiData(this.spiQuery);
+      }
+    },
     /* deactivate spi data that is no longer in url params */
     deactivateSpiData: function () {
-      let spiParamsArray = this.query.spi.split(',');
+      let spiParamsArray = this.spiQuery.split(',');
       for (let key in this.categoryObjects) {
         if (this.categoryObjects.hasOwnProperty(key)) {
           let category = this.categoryObjects[key];
@@ -815,7 +1088,7 @@ export default {
       if (!category.spi) { category.spi = {}; }
 
       if (!category.spi[field.dbField]) {
-        category.spi[field.dbField] = { field: field };
+        Vue.set(category.spi, field.dbField, { field: field });
       }
 
       return category;
@@ -841,6 +1114,10 @@ export default {
           category.loading = false;
         }
       }
+    },
+    /* saves the visible fields */
+    saveFieldState: function () {
+      SessionsService.saveState({ visibleFields: this.spiQuery }, 'spiview');
     }
   },
   beforeDestroy: function () {
@@ -861,7 +1138,7 @@ export default {
 
 <style>
 /* make field buttons tiny */
-.spiview-page .btn-group.dropdown > button {
+.spiview-page .btn-group.dropdown.field-dropdown > button {
   padding: 0 5px;
   font-size: .75rem;
 }
@@ -874,6 +1151,11 @@ export default {
 /* bold field label dropdown buttons */
 .spiview-page .spi-buckets > div.btn-group.dropdown > button {
   font-weight: 600;
+}
+/* wide field config dropdown */
+.spiview-page form.info-nav .field-config-menu .dropdown-menu {
+  min-width: 300px;
+  max-width: 400px;
 }
 </style>
 
@@ -903,14 +1185,11 @@ export default {
 .spiview-page form.info-nav .field-config-btn {
   margin-top: -3px;
 }
-
-.spiview-page form.info-nav .field-config-menu {
-  min-width: 300px;
-  max-width: 400px;
+.spiview-page form.info-nav .field-config-menu .dropdown-header {
+  padding: 0 2px;
 }
-
 .spiview-page form.info-nav .field-config-menu .input-group {
-  width: 105%;
+  /* width: 105%; */
 }
 
 /* spiview content ----------------- */
