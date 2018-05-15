@@ -252,9 +252,6 @@ LOCAL void moloch_packet_process_udp(MolochSession_t * const session, MolochPack
 /******************************************************************************/
 LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    if (session->stopTCP)
-        return 1;
-
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
 
@@ -321,6 +318,8 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
         session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
     }
 
+    if (session->stopTCP)
+        return 1;
 
     // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
     if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {

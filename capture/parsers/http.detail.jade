@@ -2,7 +2,7 @@ if (session.http)
   div.sessionDetailMeta.bold HTTP
   dl.sessionDetailMeta(suffix="http")
     +arrayList(session.http, "method", "Method", "http.method")
-    +arrayList(session.http, "statusCode", "Status code", "http.statuscode")
+    +arrayList(session.http, "statuscode", "Status code", "http.statuscode")
     +arrayList(session.http, "host", "Hosts", "host.http")
     +arrayList(session.http, "useragent", "User Agents", "http.user-agent")
     +ipArrayList(session.http, "xffIp", "XFFs", "xff")
