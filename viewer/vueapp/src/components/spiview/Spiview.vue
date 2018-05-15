@@ -1163,6 +1163,7 @@ export default {
 /* spiview page, navbar, and content styles - */
 .spiview-page {
   margin-top: 36px;
+  overflow-x: hidden;
 }
 
 /* info navbar --------------------- */

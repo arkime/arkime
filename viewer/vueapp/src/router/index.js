@@ -69,7 +69,7 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
-  // loads the angular app pages (for now, anything but the stats page)
+  // loads the angular app pages
   if (!to.path.includes('history') && !to.path.includes('users') &&
     !to.path.includes('files') && !to.path.includes('help') &&
     !to.path.includes('stats') && !to.path.includes('sessions') &&

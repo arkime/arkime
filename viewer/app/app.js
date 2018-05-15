@@ -68,11 +68,6 @@
           template      : '<moloch-settings></moloch-settings>',
           reloadOnSearch: false
         })
-        .when('/spiview', {
-          title         : 'SPI View',
-          template      : '<moloch-spiview></moloch-spiview>',
-          reloadOnSearch: false
-        })
         .when('/connections', {
           title         : 'Connections',
           template      : '<moloch-connections></moloch-connections>',
