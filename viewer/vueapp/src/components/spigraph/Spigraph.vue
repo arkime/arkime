@@ -9,76 +9,58 @@
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
-    <!-- info navbar -->
-    <form class="info-nav">
-      <div v-if="dataLoading">
-        <!-- TODO config save btn -->
-        <div v-if="dataLoading"
-          class="info-nav-loading">
-          <span class="fa fa-spinner fa-lg fa-spin">
-          </span>&nbsp;
-          <em>
-            Loading SPI data
-          </em>
-          <button type="button"
-            class="btn btn-warning btn-sm pull-right"
-            @click="cancelLoading()">
-            <span class="fa fa-ban">
-            </span>&nbsp;
-            cancel
-          </button>
-        </div>
-      </div>
-    </form> <!-- /info navbar -->
-
-    <!-- warning navbar -->
-    <form v-if="staleData && !dataLoading"
-      class="loading-nav">
-      <div class="form-inline text-theme-accent">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        <strong>Warning:</strong>
-        much of the data below does not match your query
-        because the request was canceled.
-        <em>
-          Click search to reissue your query.
-        </em>
-        <span class="fa fa-close pull-right cursor-pointer"
-          @click="staleData = false">
-        </span>
-      </div>
-    </form> <!-- /warning navbar -->
-
     <!-- spigraph sub navbar -->
     <form class="spigraph-form">
-      <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
         <!-- field select -->
-        <div class="form-group margined-bottom">
-          <div class="input-group input-group-sm" ng-if="$ctrl.fields">
-            <span class="input-group-addon cursor-help"
-              tooltip-placement="bottom-left"
+        <div class="form-group">
+          <div v-if="fields"
+            class="input-group input-group-sm">
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
               title="SPI Graph Field">
-              SPI Graph:
+              <span class="input-group-text">
+                SPI Graph:
+              </span>
             </span>
-            <input type="text" v-model="query.field"
-              class="form-control field-typeahead"
-              typeahead-min-length="0"
-              typeahead-on-select="$ctrl.changeField()"
-              typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
+            <input type="text"
+              v-model="query.field"
+              @focus="showDropdown = true"
+              @blur="closeTypeaheadResults"
+              @input="filterFields($event.target.value)"
+              @keydown.enter.stop.prevent
+              class="form-control"
+            />
+            <div class="dropdown-menu field-typeahead"
+              :class="{'show':showDropdown}">
+              <a v-for="field in fields"
+                :key="field.exp"
+                class="dropdown-item cursor-pointer"
+                @click.stop="changeField(field)">
+                {{ field.friendlyName }}
+                <small>({{ field.exp }})</small>
+              </a>
+              <a v-if="!fields || !fields.length"
+                class="dropdown-item">
+                No results
+              </a>
+            </div>
           </div>
         </div> <!-- /field select -->
 
         <!-- maxElements select -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon cursor-help"
-              tooltip-placement="bottom"
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
               title="Max Elements Shown">
-              Max Elements:
+              <span class="input-group-text">
+                Max Elements:
+              </span>
             </span>
-            <select class="form-control" convert-to-number
-              v-model="query.size" @change="changeMaxElements()">
+            <select class="form-control"
+              v-model="query.size"
+              @change="changeMaxElements()">
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -87,18 +69,21 @@
               <option value="500">500</option>
             </select>
           </div>
-        </div> <!-- /min connections select -->
+        </div> <!-- /maxElements select -->
 
         <!-- sort select -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon cursor-help"
-              tooltip-placement="bottom"
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
               title="Sort results by">
-              Sort by:
+              <span class="input-group-text">
+                Sort by:
+              </span>
             </span>
             <select class="form-control"
-              v-model="query.sortBy" @change="changeSortBy()">
+              v-model="query.sortBy"
+              @change="changeSortBy()">
               <option value="name">name</option>
               <option value="graph">graph</option>
             </select>
@@ -106,15 +91,18 @@
         </div> <!-- /sort select -->
 
         <!-- refresh input -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon cursor-help"
-              tooltip-placement="bottom"
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
               title="Refresh page every X seconds">
-              Refresh every:
+              <span class="input-group-text">
+                Refresh every:
+              </span>
             </span>
-            <select class="form-control" convert-to-number
-              v-model="refresh" @change="changeRefreshInterval()">
+            <select class="form-control"
+              v-model="refresh"
+              @change="changeRefreshInterval()">
               <option value="0">0</option>
               <option value="5">5</option>
               <option value="10">10</option>
@@ -123,48 +111,60 @@
               <option value="45">45</option>
               <option value="60">60</option>
             </select>
-            <span class="input-group-addon">
-              seconds
+            <span class="input-group-append">
+              <span class="input-group-text">
+                seconds
+              </span>
             </span>
           </div>
         </div> <!-- /refresh input-->
 
-        <strong class="small margined-top margined-left-lg text-theme-accent"
-          v-if="!error && recordsFiltered !== undefined">
-          Showing {{recordsFiltered}} entries filtered from
-          {{recordsTotal}} total entries
-        </strong>
+        <small>
+          <strong class="ml-2 text-theme-accent"
+            v-if="!error && recordsFiltered !== undefined">
+            Showing {{ recordsFiltered }} entries filtered from
+            {{ recordsTotal }} total entries
+          </strong>
+        </small>
       </div>
     </form>
 
-    <div class="spigraph-content ml-2 mr-2">
+    <div class="spigraph-content ml-2 mr-2"
+      v-if="fieldObj">
 
-    <!-- session visualizations -->
+      <!-- main visualization -->
       <moloch-visualizations
         v-if="mapData && graphData"
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
         :timezone="settings.timezone">
-      </moloch-visualizations>
+      </moloch-visualizations> <!-- /main visualization -->
 
-      <div v-for="item in items" :key="item.name">
-        class="margined-top-lg margined-bottom spi-graph-item padded-top">
+      <!-- values -->
+      <div v-for="item in items"
+        :key="item.name"
+        class="spi-graph-item">
+        <!-- field value -->
         <div class="row">
           <div class="col-md-12">
-            <div class="spi-bucket margined-left-xxlg">
-              <moloch-session-field
-                :value="item.name"
-                :expr="exp"
-                parse="true"
-                pull-left="true"
-                session-btn="true">
-              </moloch-session-field>
-              <sup>({{item.count}})</sup>
+            <div class="spi-bucket">
+              <strong>
+                <moloch-session-field
+                  :field="fieldObj"
+                  :value="item.name"
+                  :expr="fieldObj.exp"
+                  :parse="true"
+                  :pull-left="true"
+                  :session-btn="true">
+                </moloch-session-field>
+              </strong>
+              <sup>({{ item.count }})</sup>
             </div>
           </div>
-        </div>
-        <div class="row padded-bottom-lg">
+        </div> <!-- /field value -->
+        <!-- field visualization -->
+        <div class="row">
           <div class="col-md-12">
             <moloch-visualizations
               v-if="mapData && graphData"
@@ -174,8 +174,13 @@
               :timezone="settings.timezone">
             </moloch-visualizations>
           </div>
-        </div>
-      </div>
+        </div> <!-- /field visualization -->
+      </div> <!-- /values -->
+
+      <!-- loading overlay -->
+      <moloch-loading
+        v-if="loading && !error">
+      </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
       <moloch-error
@@ -183,7 +188,17 @@
         :message="error"
         class="mt-5 mb-5">
       </moloch-error> <!-- /page error -->
+
+      <!-- no results -->
+      <moloch-no-results
+        v-if="!error && !loading && !recordsFiltered"
+        class="mt-5 mb-5"
+        :records-total="recordsTotal"
+        :view="query.view">
+      </moloch-no-results> <!-- /no results -->
+
     </div>
+
   </div>
 
 </template>
@@ -196,43 +211,45 @@ import UserService from '../UserService';
 
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
+import MolochLoading from '../utils/Loading';
+import MolochNoResults from '../utils/NoResults';
 import MolochVisualizations from '../visualizations/Visualizations';
+
+let inputTimeout;
+let oldFieldObj;
 
 export default {
   name: 'Spigraph',
   components: {
     MolochError,
     MolochSearch,
+    MolochLoading,
+    MolochNoResults,
     MolochVisualizations
   },
   data: function () {
     return {
       error: '',
-      canceled: false,
+      fields: [],
       loading: true,
-      dataLoading: true,
-      staleData: undefined, // TODO,
       filtered: 0,
       settings: {
         timezone: 'local'
       },
-      fieldConfigs: [],
       graphData: undefined,
       mapData: undefined,
-      categoryList: [],
-      categoryObjects: {},
       refresh: 0,
       recordsTotal: 0,
       recordsFiltered: 0,
       items: [],
-      exp: 'ip.src'
+      showDropdown: false
     };
   },
   computed: {
     query: function () {
       return {
         date: this.$store.state.timeRange,
-        field: this.$route.query.field || 'srcIp',
+        field: this.$route.query.field || 'node',
         sortBy: this.$route.query.sortBy || 'graph',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
@@ -242,11 +259,20 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$route.query.expression || undefined
       };
+    },
+    fieldObj: function () {
+      for (let field of this.fields) {
+        if (field.dbField === this.query.field) {
+          oldFieldObj = field;
+          return field;
+        }
+      }
+      return oldFieldObj;
     }
   },
   created: function () {
     this.getUserSettings();
-    FieldService.get()
+    FieldService.get(true)
       .then((result) => {
         this.fields = result;
       }).catch((error) => {
@@ -258,6 +284,24 @@ export default {
     this.loadData();
   },
   methods: {
+    // TODO
+    filterFields: function (searchFilter) {
+      if (inputTimeout) { clearTimeout(inputTimeout); }
+
+      inputTimeout = setTimeout(() => {
+        this.fields = this.fields.filter((field) => {
+          return field.friendlyName.toLowerCase().includes(
+            searchFilter.toLowerCase()
+          ) || field.exp.toLowerCase().includes(
+            searchFilter.toLowerCase()
+          );
+        });
+      }, 400);
+    },
+    /* wait for changeField click event before closing results */
+    closeTypeaheadResults: function () {
+      setTimeout(() => { this.showDropdown = false; }, 250);
+    },
     /* event functions ----------------------------------------------------- */
     getUserSettings: function () {
       UserService.getCurrent()
@@ -306,7 +350,9 @@ export default {
 
       return undefined;
     },
-    changeField: function () {
+    changeField: function (field) {
+      console.log('change field', field);
+      this.query.field = field.exp;
       this.$router.push({ query: { ...this.$route.query, field: this.query.field } });
       this.loadData();
     },
@@ -330,38 +376,33 @@ export default {
   margin-top: 36px;
 }
 .spigraph-page form.spigraph-form {
-  position: relative;
-  top     : 79px;
-  left    : 0;
-  right   : 0;
-  height  : 42px;
+  z-index: 4;
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
   background-color: var(--color-quaternary-lightest);
 
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
 }
-.spigraph-page form.spigraph-form .form-inline {
-  margin-top: -3px;
-}
-
-.spigraph-page form.spigraph-form .input-group-addon.legend {
-  font-weight : 700;
-  color       : white;
+.spigraph-page form.spigraph-form select.form-control {
+  -webkit-appearance: none;
 }
 
-.spigraph-page .dl-horizontal {
-  margin-bottom: var(--px-md);
-}
-.spigraph-page .dl-horizontal dt {
-  width     : 80px;
-  text-align: left;
-}
-.spigraph-page .dl-horizontal dd {
-  margin-left: 85px;
-}
-.spigraph-content {
+.spigraph-page .spigraph-content {
   padding-top: 115px;
   overflow-x: hidden;
+}
+
+.spigraph-page .spi-graph-item .spi-bucket sup {
+  margin-left: -12px;
+}
+
+/* field typeahead */
+.spigraph-page .spigraph-form .field-typeahead {
+  max-height: 300px;
+  overflow-y: auto;
 }
 </style>
