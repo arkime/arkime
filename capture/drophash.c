@@ -174,19 +174,19 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
     for (item = hash->heads[h]; item; item = item->hnext) {
         if (memcmp(key, item->key, hash->isIp4?4:16) == 0) {
 
-            // Same time as last time
+            // Same time as last time, drop
             if (likely(item->last == current))
-                return 0;
+                return 1;
 
-            // Check if within the window
+            // Check if within the window, drop
             if (item->last + item->goodFor >= current) {
                 item->last = current;
-                return 0;
+                return 1;
             }
 
-            // Outside the window, need to remove and drop
+            // Outside the window, need to remove, don't drop
             moloch_drophash_delete(group, port, key);
-            return 1;
+            return 0;
         }
     }
     return 0;
