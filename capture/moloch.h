@@ -743,13 +743,11 @@ struct molochdrophashgroup_t {
 };
 
 
-MolochDropHash_t *moloch_drophash_init (int num, char isIp4);
-int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t expire);
-uint32_t moloch_drophash_get (MolochDropHash_t *hash, void *key);
+void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4);
+int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t seconds);
+int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *key, uint32_t current);
 void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key);
-void moloch_drophashgroup_save(MolochDropHashGroup_t *group);
-
-void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isIp4);
+void moloch_drophash_save(MolochDropHashGroup_t *group);
 
 /******************************************************************************/
 /*

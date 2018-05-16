@@ -28,7 +28,8 @@ struct molochdrophashitem_t {
     MolochDropHashItem_t *dhg_next, *dhg_prev;
     MolochDropHashItem_t *hnext, *dnext;
     uint8_t               key[16];
-    uint32_t              expire;
+    uint32_t              last;
+    uint32_t              goodFor;
     uint16_t              port;
     uint16_t              flags;
 };
@@ -45,21 +46,7 @@ struct molochdrophash_t {
 };
 
 /******************************************************************************/
-MolochDropHash_t *moloch_drophash_init (int num, char isIp4)
-{
-    MolochDropHash_t *hash;
-    hash           = MOLOCH_TYPE_ALLOC(MolochDropHash_t);
-    hash->num     = num;
-    hash->isIp4   = isIp4;
-    hash->heads   = MOLOCH_SIZE_ALLOC0("heads", num * sizeof(MolochDropHashItem_t *));
-    hash->deleted = NULL;
-    hash->cnt     = 0;
-    MOLOCH_LOCK_INIT(hash->lock);
-    return hash;
-}
-
-/******************************************************************************/
-static inline uint32_t moloch_drophash_hash6 (const void *key)
+LOCAL inline uint32_t moloch_drophash_hash6 (const void *key)
 {
     uint32_t  h = 0;
     uint32_t *p = (uint32_t *)key;
@@ -109,12 +96,22 @@ LOCAL void moloch_drophash_make(MolochDropHashGroup_t *group, int port)
     MOLOCH_LOCK(group->lock);
     if (group->drops[port])
         goto done;
-    group->drops[port] = moloch_drophash_init(size, group->isIp4);
+
+    MolochDropHash_t *hash;
+
+    hash          = MOLOCH_TYPE_ALLOC(MolochDropHash_t);
+    hash->num     = size;
+    hash->isIp4   = group->isIp4;
+    hash->heads   = MOLOCH_SIZE_ALLOC0("heads", size * sizeof(MolochDropHashItem_t *));
+    hash->deleted = NULL;
+    hash->cnt     = 0;
+    MOLOCH_LOCK_INIT(hash->lock);
+    group->drops[port] = hash;
 done:
     MOLOCH_UNLOCK(group->lock);
 }
 /******************************************************************************/
-int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t expire)
+int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor)
 {
     if (!group->drops[port]) {
         moloch_drophash_make(group, port);
@@ -146,7 +143,8 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
     item->flags    = 0;
     item->port     = port;
     memcpy(item->key, key, hash->isIp4?4:16);
-    item->expire   = expire;
+    item->last     = current;
+    item->goodFor  = goodFor;
     hash->heads[h] = item;
     hash->cnt++;
 
@@ -159,8 +157,10 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
 }
 
 /******************************************************************************/
-uint32_t moloch_drophash_get (MolochDropHash_t *hash, void *key)
+int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *key, uint32_t current)
 {
+    MolochDropHash_t *hash = group->drops[port];
+
     uint32_t              h;
     if (hash->isIp4)
         h = (*(uint32_t *)key) % hash->num;
@@ -173,7 +173,20 @@ uint32_t moloch_drophash_get (MolochDropHash_t *hash, void *key)
     MolochDropHashItem_t *item;
     for (item = hash->heads[h]; item; item = item->hnext) {
         if (memcmp(key, item->key, hash->isIp4?4:16) == 0) {
-            return item->expire;
+
+            // Same time as last time
+            if (likely(item->last == current))
+                return 0;
+
+            // Check if within the window
+            if (item->last + item->goodFor >= current) {
+                item->last = current;
+                return 0;
+            }
+
+            // Outside the window, need to remove and drop
+            moloch_drophash_delete(group, port, key);
+            return 1;
         }
     }
     return 0;
@@ -219,7 +232,7 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 }
 
 /******************************************************************************/
-void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isIp4)
+void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
 {
     group->isIp4 = isIp4;
     DLL_INIT(dhg_, group);
@@ -238,8 +251,10 @@ void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isI
     int      i;
     int      cnt;
     int      ver;
+    char     fisIp4;
     char     key[16];
-    uint32_t expire;
+    uint32_t last;
+    uint32_t goodFor;
     uint16_t flags;
     uint16_t port;
 
@@ -255,9 +270,21 @@ void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isI
         return;
     }
 
-    if (ver != 1) {
+    if (ver != 2) {
         fclose(fp);
         LOG("ERROR - Unknown save file version %d for `%s`", ver, group->file);
+        return;
+    }
+
+    if (!fread(&fisIp4, 1, 1, fp)) {
+        fclose(fp);
+        LOG("ERROR - `%s` corrupt", group->file);
+        return;
+    }
+
+    if (fisIp4 != isIp4) {
+        fclose(fp);
+        LOG("ERROR - isIp4 mismatch %d != %d", fisIp4, isIp4);
         return;
     }
 
@@ -270,23 +297,24 @@ void moloch_drophashgroup_init(MolochDropHashGroup_t *group, char *file, int isI
         int read = 0;
         read += fread(&port, 2, 1, fp);
         read += fread(key, isIp4?4:16, 1, fp);
-        read += fread(&expire, 4, 1, fp);
+        read += fread(&last, 4, 1, fp);
+        read += fread(&goodFor, 4, 1, fp);
         read += fread(&flags, 2, 1, fp);
 
-        if (read != 4) {
+        if (read != 5) {
             LOG("ERROR - `%s` corrupt", group->file);
             break;
         }
 
-        if (expire > currentTime.tv_sec)
-            moloch_drophash_add(group, port, key, expire);
+        if (last + goodFor >= currentTime.tv_sec)
+            moloch_drophash_add(group, port, key, last, goodFor);
     }
     group->changed = 0; // Reset changes so we don't save right away
     fclose(fp);
 }
 
 /******************************************************************************/
-void moloch_drophashgroup_save(MolochDropHashGroup_t *group)
+void moloch_drophash_save(MolochDropHashGroup_t *group)
 {
     FILE *fp;
     MolochDropHashItem_t *item;
@@ -300,14 +328,16 @@ void moloch_drophashgroup_save(MolochDropHashGroup_t *group)
     }
     MOLOCH_LOCK(group->lock);
     group->changed = 0;
-    int ver = 1;
+    int ver = 2;
 
     fwrite(&ver, 4, 1, fp);
+    fwrite(&group->isIp4, 1, 1, fp);
     fwrite(&group->dhg_count, 4, 1, fp);
     DLL_FOREACH(dhg_, group, item) {
         fwrite(&item->port, 2, 1, fp);
         fwrite(item->key, group->isIp4?4:16, 1, fp);
-        fwrite(&item->expire, 4, 1, fp);
+        fwrite(&item->last, 4, 1, fp);
+        fwrite(&item->goodFor, 4, 1, fp);
         fwrite(&item->flags, 2, 1, fp);
     }
     MOLOCH_UNLOCK(group->lock);

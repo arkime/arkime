@@ -1129,24 +1129,16 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
 
         tcphdr = (struct tcphdr *)((char*)ip4 + ip_hdr_len);
 
-        if (packetDrop4.drops[tcphdr->th_sport]) {
-            uint32_t end = moloch_drophash_get(packetDrop4.drops[tcphdr->th_sport], &ip4->ip_src.s_addr);
-            if (end) {
-                if (end > packet->ts.tv_sec)
-                    return MOLOCH_PACKET_IPPORT_DROPPED;
-                else
-                    moloch_drophash_delete(&packetDrop4, tcphdr->th_sport, &ip4->ip_src.s_addr);
-            }
+        if (packetDrop4.drops[tcphdr->th_sport] &&
+            moloch_drophash_should_drop(&packetDrop4, tcphdr->th_sport, &ip4->ip_src.s_addr, packet->ts.tv_sec)) {
+
+            return MOLOCH_PACKET_IPPORT_DROPPED;
         }
 
-        if (packetDrop4.drops[tcphdr->th_dport]) {
-            uint32_t end = moloch_drophash_get(packetDrop4.drops[tcphdr->th_dport], &ip4->ip_dst.s_addr);
-            if (end) {
-                if (end > packet->ts.tv_sec) {
-                    return MOLOCH_PACKET_IPPORT_DROPPED;
-                } else
-                    moloch_drophash_delete(&packetDrop4, tcphdr->th_dport, &ip4->ip_src.s_addr);
-            }
+        if (packetDrop4.drops[tcphdr->th_dport] &&
+            moloch_drophash_should_drop(&packetDrop4, tcphdr->th_dport, &ip4->ip_dst.s_addr, packet->ts.tv_sec)) {
+
+            return MOLOCH_PACKET_IPPORT_DROPPED;
         }
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
@@ -1254,24 +1246,17 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
             tcphdr = (struct tcphdr *)(data + ip_hdr_len);
 
-            if (packetDrop6.drops[tcphdr->th_sport]) {
-                uint32_t end = moloch_drophash_get(packetDrop6.drops[tcphdr->th_sport], &ip6->ip6_src);
-                if (end) {
-                    if (end > packet->ts.tv_sec)
-                        return MOLOCH_PACKET_IPPORT_DROPPED;
-                    else
-                        moloch_drophash_delete(&packetDrop6, tcphdr->th_sport, &ip6->ip6_src);
-                }
+
+            if (packetDrop6.drops[tcphdr->th_sport] &&
+                moloch_drophash_should_drop(&packetDrop6, tcphdr->th_sport, &ip6->ip6_src, packet->ts.tv_sec)) {
+
+                return MOLOCH_PACKET_IPPORT_DROPPED;
             }
 
-            if (packetDrop6.drops[tcphdr->th_dport]) {
-                uint32_t end = moloch_drophash_get(packetDrop6.drops[tcphdr->th_dport], &ip6->ip6_dst);
-                if (end) {
-                    if (end > packet->ts.tv_sec) {
-                        return MOLOCH_PACKET_IPPORT_DROPPED;
-                    } else
-                        moloch_drophash_delete(&packetDrop6, tcphdr->th_dport, &ip6->ip6_src);
-                }
+            if (packetDrop6.drops[tcphdr->th_dport] &&
+                moloch_drophash_should_drop(&packetDrop6, tcphdr->th_dport, &ip6->ip6_dst, packet->ts.tv_sec)) {
+
+                return MOLOCH_PACKET_IPPORT_DROPPED;
             }
 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
@@ -1674,10 +1659,10 @@ LOCAL int moloch_packet_frag_cmp(const void *keyv, const void *elementv)
 LOCAL gboolean moloch_packet_save_drophash(gpointer UNUSED(user_data))
 {
     if (packetDrop4.changed)
-        moloch_drophashgroup_save(&packetDrop4);
+        moloch_drophash_save(&packetDrop4);
 
     if (packetDrop6.changed)
-        moloch_drophashgroup_save(&packetDrop6);
+        moloch_drophash_save(&packetDrop6);
 
     return TRUE;
 }
@@ -1692,11 +1677,11 @@ void moloch_packet_init()
     pcapFileHeader.sigfigs = 0;
 
     char filename[PATH_MAX];
-    snprintf(filename, sizeof(filename), "/tmp/%s.drops.4", config.nodeName);
-    moloch_drophashgroup_init(&packetDrop4, filename, TRUE);
+    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
+    moloch_drophash_init(&packetDrop4, filename, TRUE);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.drops.6", config.nodeName);
-    moloch_drophashgroup_init(&packetDrop6, filename, FALSE);
+    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6", config.nodeName);
+    moloch_drophash_init(&packetDrop6, filename, FALSE);
     g_timeout_add_seconds(10, moloch_packet_save_drophash, 0);
 
     mac1Field = moloch_field_define("general", "lotermfield",
@@ -1885,15 +1870,15 @@ void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)
 
     if (MOLOCH_SESSION_v6(session)) {
         if (which == 0) {
-            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec + min*60);
+            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec, min*60);
         } else {
-            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec + min*60);
+            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec, min*60);
         }
     } else {
         if (which == 0) {
-            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec + min*60);
+            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec, min*60);
         } else {
-            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec + min*60);
+            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min*60);
         }
     }
 }
