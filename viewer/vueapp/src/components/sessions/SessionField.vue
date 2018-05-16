@@ -541,6 +541,7 @@ export default {
  * class as it is specific to bootstraps dropdown implementation
  * this class is the same as dropdown-menu, but LESS whitespace */
 .session-field-dropdown {
+  font-size: 12px;
   position: absolute;
   opacity: 0;
   visibility: hidden;

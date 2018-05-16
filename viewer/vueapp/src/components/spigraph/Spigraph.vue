@@ -23,8 +23,9 @@
                 SPI Graph:
               </span>
             </span>
+            <!-- TODO up/down arrow keys -->
             <input type="text"
-              v-model="query.field"
+              v-model="fieldTypeahead"
               @focus="showDropdown = true"
               @blur="closeTypeaheadResults"
               @input="filterFields($event.target.value)"
@@ -32,17 +33,13 @@
               class="form-control"
             />
             <div class="dropdown-menu field-typeahead"
-              :class="{'show':showDropdown}">
-              <a v-for="field in fields"
+              :class="{'show':showDropdown && filteredFields && filteredFields.length}">
+              <a v-for="field in filteredFields"
                 :key="field.exp"
                 class="dropdown-item cursor-pointer"
                 @click.stop="changeField(field)">
                 {{ field.friendlyName }}
-                <small>({{ field.exp }})</small>
-              </a>
-              <a v-if="!fields || !fields.length"
-                class="dropdown-item">
-                No results
+                <small>({{ field.dbField }})</small>
               </a>
             </div>
           </div>
@@ -82,7 +79,7 @@
               </span>
             </span>
             <select class="form-control"
-              v-model="query.sortBy"
+              v-model="query.sort"
               @change="changeSortBy()">
               <option value="name">name</option>
               <option value="graph">graph</option>
@@ -129,22 +126,25 @@
       </div>
     </form>
 
-    <div class="spigraph-content ml-2 mr-2"
-      v-if="fieldObj">
+    <div class="spigraph-content">
 
       <!-- main visualization -->
-      <moloch-visualizations
-        v-if="mapData && graphData"
-        :graph-data="graphData"
-        :map-data="mapData"
-        :primary="true"
-        :timezone="settings.timezone">
-      </moloch-visualizations> <!-- /main visualization -->
+      <div v-if="mapData && graphData"
+        class="well well-sm mb-3 ml-2 mr-2">
+        <moloch-visualizations
+          id="primary"
+          :graph-data="graphData"
+          :map-data="mapData"
+          :primary="true"
+          :timezone="settings.timezone">
+        </moloch-visualizations>
+      </div> <!-- /main visualization -->
 
       <!-- values -->
-      <div v-for="item in items"
+      <div v-if="fieldObj"
+        v-for="(item, index) in items"
         :key="item.name"
-        class="spi-graph-item">
+        class="spi-graph-item pl-3 pr-3 pt-1">
         <!-- field value -->
         <div class="row">
           <div class="col-md-12">
@@ -167,7 +167,7 @@
         <div class="row">
           <div class="col-md-12">
             <moloch-visualizations
-              v-if="mapData && graphData"
+              :id="index.toString()"
               :graph-data="item.graph"
               :map-data="item.map"
               :primary="false"
@@ -191,7 +191,7 @@
 
       <!-- no results -->
       <moloch-no-results
-        v-if="!error && !loading && !recordsFiltered"
+        v-if="!error && !loading && !items.length"
         class="mt-5 mb-5"
         :records-total="recordsTotal"
         :view="query.view">
@@ -204,8 +204,6 @@
 </template>
 
 <script>
-// import Vue from 'vue';
-
 import FieldService from '../search/FieldService';
 import UserService from '../UserService';
 
@@ -217,6 +215,7 @@ import MolochVisualizations from '../visualizations/Visualizations';
 
 let inputTimeout;
 let oldFieldObj;
+let refreshInterval;
 
 export default {
   name: 'Spigraph',
@@ -231,6 +230,7 @@ export default {
     return {
       error: '',
       fields: [],
+      filteredFields: [],
       loading: true,
       filtered: 0,
       settings: {
@@ -242,7 +242,8 @@ export default {
       recordsTotal: 0,
       recordsFiltered: 0,
       items: [],
-      showDropdown: false
+      showDropdown: false,
+      fieldTypeahead: 'Node'
     };
   },
   computed: {
@@ -250,7 +251,7 @@ export default {
       return {
         date: this.$store.state.timeRange,
         field: this.$route.query.field || 'node',
-        sortBy: this.$route.query.sortBy || 'graph',
+        sort: this.$route.query.sort || 'graph',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -262,7 +263,8 @@ export default {
     },
     fieldObj: function () {
       for (let field of this.fields) {
-        if (field.dbField === this.query.field) {
+        if (field.dbField === this.query.field ||
+          field.exp === this.query.field) {
           oldFieldObj = field;
           return field;
         }
@@ -275,6 +277,11 @@ export default {
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
+        for (let field of this.fields) {
+          if (field.dbField === this.query.field) {
+            this.fieldTypeahead = field.friendlyName;
+          }
+        }
       }).catch((error) => {
         this.loading = false;
         this.error = error;
@@ -284,15 +291,15 @@ export default {
     this.loadData();
   },
   methods: {
-    // TODO
     filterFields: function (searchFilter) {
       if (inputTimeout) { clearTimeout(inputTimeout); }
 
       inputTimeout = setTimeout(() => {
-        this.fields = this.fields.filter((field) => {
+        if (!searchFilter) { this.filteredFields = this.fields; }
+        this.filteredFields = this.fields.filter((field) => {
           return field.friendlyName.toLowerCase().includes(
             searchFilter.toLowerCase()
-          ) || field.exp.toLowerCase().includes(
+          ) || field.dbField.toLowerCase().includes(
             searchFilter.toLowerCase()
           );
         });
@@ -323,6 +330,8 @@ export default {
           this.processData(response.data);
           this.recordsTotal = response.data.recordsTotal;
           this.recordsFiltered = response.data.recordsFiltered;
+
+          this.changeRefreshInterval();
         }, (error) => {
           this.loading = false;
           this.error = error;
@@ -351,8 +360,8 @@ export default {
       return undefined;
     },
     changeField: function (field) {
-      console.log('change field', field);
-      this.query.field = field.exp;
+      this.fieldTypeahead = field.friendlyName;
+      this.query.field = field.dbField;
       this.$router.push({ query: { ...this.$route.query, field: this.query.field } });
       this.loadData();
     },
@@ -361,17 +370,25 @@ export default {
       this.loadData();
     },
     changeSortBy: function () {
-      // ALW - Fix
+      this.$router.push({ query: { ...this.$route.query, sort: this.query.sort } });
       this.loadData();
     },
     changeRefreshInterval: function () {
-      // ECR - Fix
+      if (refreshInterval) { clearInterval(refreshInterval); }
+
+      if (this.refresh && this.refresh > 0) {
+        this.loadData();
+        refreshInterval = setInterval(() => {
+          this.loadData();
+        }, this.refresh * 1000);
+      }
     }
   }
 };
 </script>
+
 <style scoped>
-/* spigraph page, navbar, and content styles - */
+/* spigraph page and navbar styles ---------- */
 .spigraph-page {
   margin-top: 36px;
 }
@@ -391,18 +408,30 @@ export default {
   -webkit-appearance: none;
 }
 
+/* field typeahead */
+.spigraph-page form .spigraph-form .field-typeahead {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* spigraph content styles ------------------- */
 .spigraph-page .spigraph-content {
-  padding-top: 115px;
-  overflow-x: hidden;
+  padding-top: 120px;
 }
 
 .spigraph-page .spi-graph-item .spi-bucket sup {
   margin-left: -12px;
 }
 
-/* field typeahead */
-.spigraph-page .spigraph-form .field-typeahead {
-  max-height: 300px;
-  overflow-y: auto;
+/* main graph/map */
+.spigraph-page .spigraph-content .well {
+  -webkit-box-shadow: 0 4px 16px -2px black;
+     -moz-box-shadow: 0 4px 16px -2px black;
+          box-shadow: 0 4px 16px -2px black;
+}
+
+/* stripes */
+.spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
+  background-color: var(--color-quaternary-lightest);
 }
 </style>

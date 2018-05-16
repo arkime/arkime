@@ -1,7 +1,8 @@
-<template>
+this.plot<template>
 
   <div class="pt-2"
-    ref="vizContainer">
+    ref="vizContainer"
+    :id="'vizContainer' + id">
 
     <!-- map content -->
     <div :class="{'expanded':mapExpanded}">
@@ -24,7 +25,8 @@
 
             <!-- map -->
             <div ref="mapArea"
-              id="molochMap">
+              style="z-index: 3; height: 150px; width: 100%; margin-bottom: -25px;"
+              :id="'molochMap' + id">
             </div> <!-- /map -->
 
             <!-- map buttons -->
@@ -166,7 +168,7 @@
       <div v-if="graphData"
         :class="{'inline-graph':showMap,'whole-graph':!showMap}">
         <div class="plot-area"
-          ref="plotArea"
+          :id="'plotArea' + id"
           style="width:100%;height:150px;">
         </div>
       </div><!-- /graph -->
@@ -199,29 +201,37 @@ let waterColor;
 let landColorDark;
 let landColorLight;
 
-// graph vars
-let plotArea;
-let plot;
-
-// map vars
-let map;
-let mapEl;
-
 let timeout;
 let basePath;
 
 export default {
   name: 'MolochVisualizations',
-  props: [ 'graphData', 'mapData', 'primary', 'timezone' ],
+  props: {
+    graphData: Object,
+    mapData: Object,
+    primary: Boolean,
+    timezone: {
+      type: String,
+      default: 'local'
+    },
+    id: {
+      type: String,
+      default: 'primary'
+    }
+  },
   data: function () {
     return {
       // map vars
+      map: undefined,
+      mapEl: undefined,
       showMap: false,
       legend: [],
       src: true,
       dst: true,
       mapExpanded: false,
       // graph vars
+      plot: undefined,
+      plotArea: undefined,
       graph: undefined,
       graphOptions: {},
       graphType: this.$route.query.graphType || 'lpHisto',
@@ -232,7 +242,7 @@ export default {
     graphData: function (newVal, oldVal) {
       if (newVal && oldVal) {
         this.setupGraphData(); // setup this.graph and this.graphOptions
-        plot = $.plot(plotArea, this.graph, this.graphOptions);
+        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
       }
     },
     mapData: function (newVal, oldVal) {
@@ -305,6 +315,8 @@ export default {
           this.setupMapElement();
           this.setupMapData();
         });
+      } else if (this.mapExpanded) {
+        this.toggleMapSize();
       }
     },
     toggleMapSize: function () {
@@ -329,9 +341,9 @@ export default {
     changeGraphType: function () {
       this.setupGraphData();
 
-      plot.setData(this.graph);
-      plot.setupGrid();
-      plot.draw();
+      this.plot.setData(this.graph);
+      this.plot.setupGrid();
+      this.plot.draw();
 
       if (this.primary) { // primary graph sets all graph's histo type
         // TODO notify sibling graphs to change graph type
@@ -340,7 +352,7 @@ export default {
     changeSeriesType: function () {
       this.setupGraphData();
 
-      plot = $.plot(plotArea, this.graph, this.graphOptions);
+      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
 
       this.$router.push({
         query: {
@@ -354,20 +366,20 @@ export default {
       }
     },
     zoomOut: function () {
-      plot.zoomOut();
-      this.debounce(this.updateResults, plot, 400);
+      this.plot.zoomOut();
+      this.debounce(this.updateResults, this.plot, 400);
     },
     zoomIn: function () {
-      plot.zoom();
-      this.debounce(this.updateResults, plot, 400);
+      this.plot.zoom();
+      this.debounce(this.updateResults, this.plot, 400);
     },
     panLeft: function () {
-      plot.pan({left: -100});
-      this.debounce(this.updateResults, plot, 400);
+      this.plot.pan({left: -100});
+      this.debounce(this.updateResults, this.plot, 400);
     },
     panRight: function () {
-      plot.pan({left: 100});
-      this.debounce(this.updateResults, plot, 400);
+      this.plot.pan({left: 100});
+      this.debounce(this.updateResults, this.plot, 400);
     },
     /* helper functions ---------------------------------------------------- */
     debounce: function (func, funcParam, ms) {
@@ -391,11 +403,11 @@ export default {
       }
     },
     setupGraphElement: function () {
-      plotArea = this.$refs.plotArea;
-      plot = $.plot(plotArea, this.graph, this.graphOptions);
+      this.plotArea = $('#plotArea' + this.id);
+      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
 
       // triggered when an area of the graph is selected
-      $(plotArea).on('plotselected', (event, ranges) => {
+      $(this.plotArea).on('plotselected', (event, ranges) => {
         let result = {
           startTime: (ranges.xaxis.from / 1000).toFixed(),
           stopTime: (ranges.xaxis.to / 1000).toFixed()
@@ -408,7 +420,7 @@ export default {
 
       let previousPoint;
       // triggered when hovering over the graph
-      $(plotArea).on('plothover', (event, pos, item) => {
+      $(this.plotArea).on('plothover', (event, pos, item) => {
         if (item) {
           if (!previousPoint ||
             previousPoint.dataIndex !== item.dataIndex ||
@@ -527,7 +539,7 @@ export default {
     /* helper MAP functions */
     onMapResize: function () {
       if (this.mapExpanded) {
-        $(mapEl).css({
+        $(this.mapEl).css({
           position: 'fixed',
           right: '8px',
           'z-index': 5,
@@ -539,10 +551,10 @@ export default {
     },
     expandMapElement: function () {
       // onMapResize function expandes the map
-      $(mapEl).resize();
+      $(this.mapEl).resize();
     },
     shrinkMapElement: function () {
-      $(mapEl).css({
+      $(this.mapEl).css({
         position: 'relative',
         top: '0',
         right: '0',
@@ -553,7 +565,7 @@ export default {
       });
     },
     isOutsideClick: function (e) {
-      let element = this.$refs.vizContainer;
+      let element = $('#vizContainer' + this.id);
       if (!$(element).is(e.target) &&
         $(element).has(e.target).length === 0) {
         this.mapExpanded = false;
@@ -561,14 +573,14 @@ export default {
       }
     },
     setupMapElement: function () {
-      mapEl = this.$refs.mapArea;
+      this.mapEl = $('#molochMap' + this.id);
 
-      // watch for the window to resize to resize the expanded map
-      window.addEventListener('resize', this.onMapResize, { passive: true });
+      // TODO watch for the window to resize to resize the expanded map
+      // window.addEventListener('resize', this.onMapResize, { passive: true });
       // watch for the map to resize to change its style
-      $(mapEl).on('resize', this.onMapResize);
+      $(this.mapEl).on('resize', this.onMapResize);
 
-      $(mapEl).vectorMap({ // setup map
+      $(this.mapEl).vectorMap({ // setup map
         map: 'world_en',
         backgroundColor: waterColor,
         hoverColor: 'black',
@@ -582,7 +594,7 @@ export default {
         },
         onRegionLabelShow: (e, el, code) => {
           el.html(el.html() + ' (' + code + ') - ' +
-            this.$options.filters.commaString(map.series.regions[0].values[code] || 0));
+            this.$options.filters.commaString(this.map.series.regions[0].values[code] || 0));
         },
         onRegionClick: (e, code) => {
           this.$store.commit('addToExpression', {
@@ -592,12 +604,12 @@ export default {
       });
 
       // save reference to the map object to retrieve regions
-      map = $(mapEl).children('.jvectormap-container').data('mapObject');
+      this.map = $(this.mapEl).children('.jvectormap-container').data('mapObject');
     },
     setupMapData: function () {
-      map.series.regions[0].clear();
-      delete map.series.regions[0].params.min;
-      delete map.series.regions[0].params.max;
+      this.map.series.regions[0].clear();
+      delete this.map.series.regions[0].params.min;
+      delete this.map.series.regions[0].params.max;
 
       if (this.src && this.dst) {
         if (!this.mapData.tot) {
@@ -615,14 +627,14 @@ export default {
             }
           }
         }
-        map.series.regions[0].setValues(this.mapData.tot);
+        this.map.series.regions[0].setValues(this.mapData.tot);
       } else if (this.src) {
-        map.series.regions[0].setValues(this.mapData.src);
+        this.map.series.regions[0].setValues(this.mapData.src);
       } else if (this.dst) {
-        map.series.regions[0].setValues(this.mapData.dst);
+        this.map.series.regions[0].setValues(this.mapData.dst);
       }
 
-      let region = map.series.regions[0];
+      let region = this.map.series.regions[0];
       this.legend = [];
       for (var key in region.values) {
         if (region.values.hasOwnProperty(key) &&
@@ -644,22 +656,22 @@ export default {
   },
   beforeDestroy: function () {
     // turn of graph events
-    $(plotArea).off('plothover');
-    $(plotArea).off('plotselected');
+    $(this.plotArea).off('plothover');
+    $(this.plotArea).off('plotselected');
 
     if (timeout) { clearTimeout(timeout); }
 
     // turn off map events
     window.removeEventListener('resize', this.onMapResize);
     $(document).off('mouseup', this.isOutsideClick);
-    $(mapEl).off('resize', this.onMapResize);
-    $(mapEl).remove();
+    $(this.mapEl).off('resize', this.onMapResize);
+    $(this.mapEl).remove();
   }
 };
 </script>
 
 <style>
-.inline-map .moloch-map-container > #molochMap {
+.inline-map .moloch-map-container > .moloch-map {
   z-index: 3;
   height: 150px;
   width: 100%;
