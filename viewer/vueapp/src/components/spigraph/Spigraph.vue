@@ -205,7 +205,7 @@
 
 <script>
 import FieldService from '../search/FieldService';
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';

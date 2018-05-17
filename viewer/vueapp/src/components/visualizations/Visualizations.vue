@@ -1,4 +1,4 @@
-this.plot<template>
+<template>
 
   <div class="pt-2"
     ref="vizContainer"
@@ -24,7 +24,7 @@ this.plot<template>
           <div class="moloch-map-container">
 
             <!-- map -->
-            <div style="z-index: 3; height: 150px; width: 100%; margin-bottom: -25px;"
+            <div class="moloch-map"
               :id="'molochMap' + id">
             </div> <!-- /map -->
 
@@ -170,8 +170,7 @@ this.plot<template>
       <div v-if="graphData"
         :class="{'inline-graph':showMap,'whole-graph':!showMap}">
         <div class="plot-area"
-          :id="'plotArea' + id"
-          style="width:100%;height:150px;">
+          :id="'plotArea' + id">
         </div>
       </div><!-- /graph -->
 
@@ -720,13 +719,14 @@ export default {
 </script>
 
 <style>
+/* map styles ---------------------- */
 .inline-map .moloch-map-container > .moloch-map {
   z-index: 3;
   height: 150px;
   width: 100%;
   margin-bottom: -25px;
 }
-/* map styles ---------------------- */
+
 .jvectormap-container {
   border: 1px solid var(--color-gray-light);
   border-radius: 4px;
@@ -893,6 +893,11 @@ export default {
 }
 
 /* graph styles -------------------- */
+.plot-area {
+  width: 100%;
+  height: 150px;
+}
+
 .inline-graph {
   position: relative;
   display: inline-block;

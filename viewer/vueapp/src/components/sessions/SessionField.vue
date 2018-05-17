@@ -41,7 +41,7 @@
               <strong>or not</strong>
               {{ pd.value }}
             </b-dropdown-item>
-            <span v-if="field.portField && session[field.portField] !== undefined">
+            <span v-if="session && field.portField && session[field.portField] !== undefined">
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '==', '&&')"
                 :title="'&& ' + expr + ' == ' + pd.value">

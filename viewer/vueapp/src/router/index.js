@@ -6,6 +6,7 @@ import Files from '@/components/files/Files';
 import Users from '@/components/users/Users';
 import History from '@/components/history/History';
 import Sessions from '@/components/sessions/Sessions';
+import Spiview from '@/components/spiview/Spiview';
 import Spigraph from '@/components/spigraph/Spigraph';
 
 Vue.use(Router);
@@ -60,6 +61,11 @@ const router = new Router({
       component: History
     },
     {
+      path: '/spiview',
+      name: 'Spiview',
+      component: Spiview
+    },
+    {
       path: '/spigraph',
       name: 'Spigraph',
       component: Spigraph
@@ -69,8 +75,12 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
-  // loads the angular app pages (for now, anything but the stats page)
-  if (!to.path.includes('history') && !to.path.includes('users') && !to.path.includes('files') && !to.path.includes('help') && !to.path.includes('stats') && !to.path.includes('sessions') && !to.path.includes('spigraph') && to.path !== '/') {
+  // loads the angular app pages
+  if (!to.path.includes('history') && !to.path.includes('users') &&
+    !to.path.includes('files') && !to.path.includes('help') &&
+    !to.path.includes('stats') && !to.path.includes('sessions') &&
+    !to.path.includes('spiview') && !to.path.includes('spigraph') &&
+    to.path !== '/') {
     location.reload();
   }
 

@@ -2,8 +2,12 @@ import Vue from 'vue';
 
 import countries from './countries.json';
 
-let _fieldsCache;
-let queryInProgress;
+let _fieldsMapCache;
+let _fieldsArrayCache;
+let queryInProgress = {
+  array: false,
+  promise: undefined
+};
 
 export default {
 
@@ -14,26 +18,36 @@ export default {
    *                            or rejection of the request.
    */
   get (array) {
-    if (queryInProgress) { return queryInProgress; }
+    if (queryInProgress && queryInProgress.array === array) {
+      return queryInProgress.promise;
+    }
 
-    queryInProgress = new Promise((resolve, reject) => {
-      if (_fieldsCache) { resolve(_fieldsCache); }
+    queryInProgress.promise = new Promise((resolve, reject) => {
+      if (array && _fieldsArrayCache) {
+        resolve(_fieldsArrayCache);
+      } else if (!array && _fieldsMapCache) {
+        resolve(_fieldsMapCache);
+      }
 
       let url = 'fields';
       if (array) { url += '?array=true'; }
 
       Vue.axios.get(url)
         .then((response) => {
-          queryInProgress = undefined;
-          _fieldsCache = response.data;
+          queryInProgress.promise = undefined;
+          if (array) {
+            _fieldsArrayCache = response.data;
+          } else {
+            _fieldsMapCache = response.data;
+          }
           resolve(response.data);
         }, (error) => {
-          queryInProgress = undefined;
+          queryInProgress.promise = undefined;
           reject(error);
         });
     });
 
-    return queryInProgress;
+    return queryInProgress.promise;
   },
 
   /**

@@ -323,7 +323,7 @@
 </template>
 
 <script>
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
