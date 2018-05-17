@@ -987,6 +987,10 @@ export default {
         if (this.categoryObjects.hasOwnProperty(key)) {
           let category = this.categoryObjects[key];
 
+          let fields = category.fields;
+          fields = this.sortFields(category.fields);
+          Vue.set(category, 'filteredFields', fields);
+
           if (localStorage && localStorage['spiview-collapsible']) {
             if (localStorage['spiview-collapsible'].includes(key)) {
               category.isopen = true;
@@ -994,10 +998,6 @@ export default {
               continue;
             }
           }
-
-          let fields = category.fields;
-          fields = this.sortFields(category.fields);
-          Vue.set(category, 'filteredFields', fields);
         }
       }
     },
