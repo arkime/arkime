@@ -39,7 +39,7 @@
                 class="dropdown-item cursor-pointer"
                 @click.stop="changeField(field)">
                 {{ field.friendlyName }}
-                <small>({{ field.dbField }})</small>
+                <small>({{ field.exp }})</small>
               </a>
             </div>
           </div>
@@ -297,18 +297,10 @@ export default {
       inputTimeout = setTimeout(() => {
         if (!searchFilter) { this.filteredFields = this.fields; }
         this.filteredFields = this.fields.filter((field) => {
-          let inName = field.friendlyName.toLowerCase().includes(
-            searchFilter.toLowerCase()
-          );
-
-          let inDbField = false;
-          if (field.dbField) {
-            inDbField = field.dbField.toLowerCase().includes(
-              searchFilter.toLowerCase()
-            );
-          }
-
-          return inName || inDbField;
+          let sfl = searchFilter.toLowerCase();
+          return field.friendlyName.toLowerCase().includes(sfl) ||
+            field.exp.toLowerCase().includes(sfl) ||
+            (field.aliases && field.aliases.some(item => { return item.toLowerCase().includes(sfl); }));
         });
       }, 400);
     },
