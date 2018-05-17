@@ -3,8 +3,6 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
-// TODO add: view, bounding, interval
-
 const store = new Vuex.Store({
   state: {
     timeRange: 1,
@@ -12,7 +10,12 @@ const store = new Vuex.Store({
     time: {
       startTime: undefined,
       stopTime: undefined
-    }
+    },
+    showMaps: true,
+    mapSrc: true,
+    mapDst: true,
+    graphType: undefined,
+    seriesType: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -48,6 +51,21 @@ const store = new Vuex.Store({
     },
     clearExpression (state) {
       this.state.expression = undefined;
+    },
+    toggleMaps (state, value) {
+      this.state.showMaps = value;
+    },
+    toggleMapSrc (state, value) {
+      this.state.mapSrc = value;
+    },
+    toggleMapDst (state, value) {
+      this.state.mapDst = value;
+    },
+    updateGraphType (state, value) {
+      this.state.graphType = value;
+    },
+    updateSeriesType (state, value) {
+      this.state.seriesType = value;
     }
   }
 });

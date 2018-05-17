@@ -73,11 +73,6 @@
           template      : '<moloch-connections></moloch-connections>',
           reloadOnSearch: false
         })
-        .when('/spigraph', {
-          title         : 'SPIGraph',
-          template      : '<moloch-spigraph></moloch-spigraph>',
-          reloadOnSearch: false
-        })
         .when('/upload', {
           title         : 'Upload',
           template      : '<moloch-upload></moloch-upload>',
