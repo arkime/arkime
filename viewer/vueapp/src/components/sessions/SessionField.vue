@@ -301,6 +301,7 @@ export default {
       this.fieldClick(field, value, op, null);
 
       this.$router.push({
+        path: '/sessions',
         query: {
           ...this.$route.query,
           expression: this.expression

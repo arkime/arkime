@@ -424,6 +424,7 @@ export default {
       stickySessions: [],
       settings: {}, // user settings
       colWidths: {},
+      colConfigs: [],
       colConfigError: '',
       headers: [],
       graphData: undefined,
