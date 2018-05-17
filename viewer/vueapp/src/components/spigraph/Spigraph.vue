@@ -297,11 +297,18 @@ export default {
       inputTimeout = setTimeout(() => {
         if (!searchFilter) { this.filteredFields = this.fields; }
         this.filteredFields = this.fields.filter((field) => {
-          return field.friendlyName.toLowerCase().includes(
-            searchFilter.toLowerCase()
-          ) || field.dbField.toLowerCase().includes(
+          let inName = field.friendlyName.toLowerCase().includes(
             searchFilter.toLowerCase()
           );
+
+          let inDbField = false;
+          if (field.dbField) {
+            inDbField = field.dbField.toLowerCase().includes(
+              searchFilter.toLowerCase()
+            );
+          }
+
+          return inName || inDbField;
         });
       }, 400);
     },
@@ -411,7 +418,7 @@ export default {
 }
 
 /* field typeahead */
-.spigraph-page form .spigraph-form .field-typeahead {
+.spigraph-page form.spigraph-form .field-typeahead {
   max-height: 300px;
   overflow-y: auto;
 }
