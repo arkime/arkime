@@ -17,7 +17,7 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:1.2.0
+        image: andywick/moloch-build-6:0.50.1
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh"
@@ -39,7 +39,7 @@ jobs:
 # Centos 7 is the only build to have test-ui because installing chrome dependancies sucks
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.2.0
+        image: andywick/moloch-build-7:0.50.1
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
@@ -62,7 +62,7 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:1.2.0
+        image: andywick/moloch-build-14:0.50.1
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
@@ -83,7 +83,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.2.0
+        image: andywick/moloch-build-16:0.50.1
         steps:
             - ln -s /thirdparty .
             - apt-get update
@@ -113,7 +113,7 @@ jobs:
 
 #    ubuntu-18:
 #        requires: [~pr, ~commit]
-#        image: andywick/moloch-build-18:1.2.0
+#        image: andywick/moloch-build-18:0.50.1
 #        steps:
 #            - apt-get update
 #            - ln -s /thirdparty .
