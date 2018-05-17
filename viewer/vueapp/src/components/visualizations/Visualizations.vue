@@ -302,7 +302,6 @@ export default {
     },
     seriesType: function (newVal, oldVal) {
       this.setupGraphData();
-
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
     graphData: function (newVal, oldVal) {

@@ -323,6 +323,8 @@ export default {
       this.loading = true;
       this.error = false;
 
+      this.items = []; // clear items
+
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {
           this.error = '';
