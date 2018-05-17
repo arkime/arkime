@@ -65,7 +65,7 @@
             <input type="text"
               v-if="column.filter && showColFilters"
               v-has-permission="column.permission"
-              v-model="query[column.sort]"
+              v-model="filters[column.sort]"
               :placeholder="`Filter by ${column.name}`"
               class="form-control form-control-sm input-filter"
               @keyup="debounceSearch()"
@@ -318,13 +318,6 @@ export default {
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime
       };
-    }
-  },
-  watch: {
-    'expandedLogs': {
-      handler (newVal, oldVal) {
-        console.log('expandedLogs changed', oldVal.change, '->', newVal.change);
-      }
     }
   },
   created: function () {
