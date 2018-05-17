@@ -36,7 +36,8 @@
         </div> <!-- /query size select -->
 
         <!-- src select -->
-        <div class="form-group ml-1">
+        <div class="form-group ml-1"
+          v-if="fields && query.srcField">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
@@ -46,17 +47,17 @@
                 Src:
               </span>
             </span>
-            <input type="text" v-model="query.srcField"
-              class="form-control field-typeahead"
-              typeahead-min-length="0"
-              typeahead-on-select="$ctrl.changeSrcField()"
-              typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
+            <moloch-field-typeahead
+              :fields="fields"
+              :initial-value="query.srcField"
+              @fieldSelected="changeSrcField">
+            </moloch-field-typeahead>
           </div>
         </div> <!-- /src select -->
 
         <!-- dst select -->
-        <div class="form-group ml-1">
+        <div class="form-group ml-1"
+          v-if="fields && query.dstField">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
@@ -66,12 +67,11 @@
                 Dst:
               </span>
             </span>
-            <input type="text" v-model="query.dstField"
-              class="form-control field-typeahead"
-              typeahead-min-length="0"
-              typeahead-on-select="$ctrl.changeSrcField()"
-              typeahead-input-formatter="$ctrl.formatField($model)"
-              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
+            <moloch-field-typeahead
+              :fields="fields"
+              :initial-value="query.dstField"
+              @fieldSelected="changeDstField">
+            </moloch-field-typeahead>
           </div>
         </div> <!-- /dst select -->
 
@@ -185,6 +185,8 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
+import MolochFieldTypeahead from '../utils/fieldTypeahead';
+
 import d3 from '../../../../public/d3.min.js';
 
 // save frequently accessed elements
@@ -203,7 +205,8 @@ export default {
     ToggleBtn,
     MolochError,
     MolochLoading,
-    MolochNoResults
+    MolochNoResults,
+    MolochFieldTypeahead
   },
   data: function () {
     return {
@@ -215,7 +218,8 @@ export default {
       styles: null,
       primaryColor: null,
       secondaryColor: null,
-      tertiaryColor: null
+      tertiaryColor: null,
+      fields: []
     };
   },
   computed: {
@@ -237,9 +241,26 @@ export default {
       };
     }
   },
+  watch: {
+    '$route.query.length': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.minConn': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.nodeDist': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.srcField': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.dstField': function (newVal, oldVal) {
+      this.loadData();
+    }
+  },
   created: function () {
     this.loadUser();
-    FieldService.get()
+    FieldService.get(true)
       .then((result) => {
         this.fields = result;
       }).catch((error) => {
@@ -263,6 +284,58 @@ export default {
     $('.footer').show();
   },
   methods: {
+    /* exposed page functions ---------------------------------------------- */
+    changeLength: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          length: this.query.length
+        }
+      });
+    },
+    changeMinConn: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          minConn: this.query.minConn
+        }
+      });
+    },
+    changeNodeDist: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          nodeDist: this.query.nodeDist
+        }
+      });
+    },
+    unlock: function () {
+      this.svg.selectAll('.node circle').each(function (d) { d.fixed = 0; });
+      force.resume();
+    },
+    closePopups: function () {
+      $('.connections-popup').hide();
+    },
+    /* event functions ----------------------------------------------------- */
+    changeSrcField: function (field) {
+      this.query.srcField = field.dbField;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          srcField: this.query.srcField
+        }
+      });
+    },
+    changeDstField: function (field) {
+      this.query.dstField = field.dbField;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          dstField: this.query.dstField
+        }
+      });
+    },
+    /* helper functions ---------------------------------------------------- */
     loadUser: function () {
       UserService.getCurrent()
         .then((response) => {
@@ -270,19 +343,6 @@ export default {
         }, (error) => {
           this.user = { settings: { timezone: 'local' } };
         });
-    },
-    /* exposed page functions ---------------------------------------------- */
-    changeLength: function () {
-      this.$router.push({ query: { ...this.$route.query, length: this.query.length } });
-      this.loadData();
-    },
-    changeMinConn: function () {
-      this.$router.push({ query: { ...this.$route.query, minConn: this.query.minConn } });
-      this.loadData();
-    },
-    changeNodeDist: function () {
-      this.$router.push({ query: { ...this.$route.query, nodeDist: this.query.nodeDist } });
-      this.loadData();
     },
     loadData: function () {
       this.loading = true;
@@ -301,10 +361,6 @@ export default {
           this.loading = false;
           this.error = error;
         });
-    },
-    unlock: function () {
-      this.svg.selectAll('.node circle').each(function (d) { d.fixed = 0; });
-      force.resume();
     },
     dbField2Type: function (dbField) {
       for (let k in this.fields) {
@@ -511,9 +567,6 @@ export default {
         }
       });
     },
-    closePopups: function () {
-      $('.connections-popup').hide();
-    },
     showNodePopup: function (that, node, mouse) {
       if (node.type === 2) {
         node.exp = that.dbField2Exp(that.query.dstField);
@@ -675,7 +728,6 @@ export default {
 
       that.positionPopup('.link-popup', mouse[0], mouse[1]);
     },
-
     /**
      * Positions and displays a popup on the connections graph within the view
      * @param {num} px      The x coordinate of the mouse/node
@@ -694,26 +746,13 @@ export default {
         top: this.trans[1] + (py * this.scale) - 20
       }).show();
     },
-
-    /**
-     * Displays the field.exp instead of field.dbField in the field typeahead
-     * @param {string} value The dbField of the field
-     */
-    formatField: function (value) {
-      for (let i = 0, len = this.fields.length; i < len; i++) {
-        if (value === this.fields[i].dbField) {
-          return this.fields[i].exp;
-        }
-      }
-    },
-
     startD3: function () {
       let self = this;
 
       self.trans = [0, 0];
       self.scale = 1;
       self.width = $(window).width() - 10;
-      self.height = $(window).height() - 173;
+      self.height = $(window).height() - 158;
       self.popupTimer = null;
       networkElem = $('#network');
 
@@ -757,7 +796,6 @@ export default {
 
       d3.select(window).on('resize', this.resize);
     },
-
     /* resizes the graph by setting new width and height */
     resize: function () {
       let width = $(window).width();
@@ -766,7 +804,6 @@ export default {
       svgMain.attr('width', width).attr('height', height);
       force.size([width, height]).resume();
     },
-
     endD3: function () {
       // d3 doesn't have .off function to remove listeners, so use .on('listener', null)
       // http://stackoverflow.com/questions/20269384/how-do-you-remove-a-handler-using-a-d3-js-selector
@@ -804,20 +841,23 @@ export default {
       this.svg.remove();
       this.svg = null;
     }
-
   }
 };
 </script>
+
 <style>
 .connections-page .connections-popup {
   position: absolute;
   display: none;
   font-size: smaller;
   padding: 4px 8px;
-  width: 170px;
+  width: 200px;
   z-index: 9999;
   border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   -webkit-border-radius: var(--px-sm);
      -moz-border-radius: var(--px-sm);
@@ -870,10 +910,10 @@ export default {
 /* apply theme colors */
 .connections-page rect {
   stroke: var(--color-background, #FFF);
-  fill  : var(--color-background, #FFF);
+  fill: var(--color-background, #FFF);
 }
 .connections-page svg {
-  fill  : var(--color-foreground, #333);
+  fill: var(--color-foreground, #333);
 }
 
 .connections-page .connections-content {

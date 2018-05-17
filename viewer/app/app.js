@@ -68,11 +68,6 @@
           template      : '<moloch-settings></moloch-settings>',
           reloadOnSearch: false
         })
-        .when('/connections', {
-          title         : 'Connections',
-          template      : '<moloch-connections></moloch-connections>',
-          reloadOnSearch: false
-        })
         .when('/upload', {
           title         : 'Upload',
           template      : '<moloch-upload></moloch-upload>',
