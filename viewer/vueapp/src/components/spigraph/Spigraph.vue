@@ -243,7 +243,7 @@ export default {
       recordsFiltered: 0,
       items: [],
       showDropdown: false,
-      fieldTypeahead: 'Node'
+      fieldTypeahead: 'Moloch Node'
     };
   },
   computed: {

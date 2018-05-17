@@ -18,35 +18,37 @@ this.plot<template>
         </span>
       </div> <!-- /map open button -->
 
-      <div v-if="showMap"
+      <div v-show="showMap"
         class="inline-map">
         <div v-if="mapData">
           <div class="moloch-map-container">
 
             <!-- map -->
-            <div ref="mapArea"
-              style="z-index: 3; height: 150px; width: 100%; margin-bottom: -25px;"
+            <div style="z-index: 3; height: 150px; width: 100%; margin-bottom: -25px;"
               :id="'molochMap' + id">
             </div> <!-- /map -->
 
             <!-- map buttons -->
             <button type="button"
+              v-if="primary"
               class="btn btn-xs btn-default btn-close-map btn-fw"
-               @click="toggleMap()"
-               v-b-tooltip.hover
-               title="Close map">
+              @click="toggleMap()"
+              v-b-tooltip.hover
+              title="Close map">
               <span class="fa fa-close">
               </span>
             </button>
             <button type="button"
-              class="btn btn-xs btn-default btn-expand-map btn-fw"
+              class="btn btn-xs btn-default btn-fw"
+              :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
               @click="toggleMapSize()"
               title="Expand/Collapse Map">
               <span class="fa"
                 :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
               </span>
             </button>
-            <div class="btn-group-vertical src-dst-btns btn-fw">
+            <div v-if="primary"
+              class="btn-group-vertical src-dst-btns btn-fw">
               <button type="button"
                 class="btn btn-xs btn-default"
                 :class="{'active':src}"
@@ -73,8 +75,8 @@ this.plot<template>
                 :key="key"
                 class="legend-item"
                 :style="{'background-color':item.color}">
-                {{item.name}}
-                ({{item.value | commaString}})
+                {{ item.name }}
+                ({{ item.value | commaString }})
               </span>
             </div> <!-- map legend -->
 
@@ -224,21 +226,86 @@ export default {
       // map vars
       map: undefined,
       mapEl: undefined,
-      showMap: false,
       legend: [],
-      src: true,
-      dst: true,
       mapExpanded: false,
       // graph vars
       plot: undefined,
       plotArea: undefined,
       graph: undefined,
-      graphOptions: {},
-      graphType: this.$route.query.graphType || 'lpHisto',
-      seriesType: this.$route.query.seriesType || 'bars'
+      graphOptions: {}
     };
   },
+  computed: {
+    showMap: {
+      get: function (value) {
+        return this.$store.state.showMaps;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('toggleMaps', newValue);
+          localStorage[`${basePath}-open-map`] = newValue;
+        }
+      }
+    },
+    src: {
+      get: function (value) {
+        return this.$store.state.mapSrc;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('toggleMapSrc', newValue);
+        }
+      }
+    },
+    dst: {
+      get: function (value) {
+        return this.$store.state.mapDst;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('toggleMapDst', newValue);
+        }
+      }
+    },
+    graphType: {
+      get: function (value) {
+        return this.$store.state.graphType;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('updateGraphType', newValue);
+        }
+      }
+    },
+    seriesType: {
+      get: function (value) {
+        return this.$store.state.seriesType;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('updateSeriesType', newValue);
+        }
+      }
+    }
+  },
   watch: {
+    src: function (newVal, oldVal) {
+      this.setupMapData(this.mapData);
+    },
+    dst: function (newVal, oldVal) {
+      this.setupMapData(this.mapData);
+    },
+    graphType: function (newVal, oldVal) {
+      this.setupGraphData();
+      this.plot.setData(this.graph);
+      this.plot.setupGrid();
+      this.plot.draw();
+    },
+    seriesType: function (newVal, oldVal) {
+      this.setupGraphData();
+
+      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+    },
     graphData: function (newVal, oldVal) {
       if (newVal && oldVal) {
         this.setupGraphData(); // setup this.graph and this.graphOptions
@@ -252,9 +319,6 @@ export default {
     }
   },
   created: function () {
-    // TODO watch for open/close map
-    // TODO watch for change series/graph type from siblings
-    // TODO watch for src/dst update from primary map sibling
     // set styles for graph and map
     const styles = window.getComputedStyle(document.body);
 
@@ -275,19 +339,22 @@ export default {
   mounted: function () {
     basePath = this.$route.path.split('/')[1];
 
-    this.showMap = localStorage && localStorage[`${basePath}-open-map`] &&
+    let showMap = localStorage && localStorage[`${basePath}-open-map`] &&
       localStorage[`${basePath}-open-map`] !== 'false';
 
-    // create map
-    if (this.showMap) {
-      // wait for the map element to be shown
-      setTimeout(() => {
-        // create jvectormap
-        this.setupMapElement();
-        // setup map data
-        this.setupMapData();
-      });
+    if (this.primary) {
+      this.showMap = showMap;
+      this.$store.commit('toggleMaps', showMap);
+
+      this.graphType = this.$route.query.graphType || 'lpHisto';
+      this.$store.commit('updateGraphType', this.graphType);
+
+      this.seriesType = this.$route.query.seriesType || 'bars';
+      this.$store.commit('updateSeriesType', this.seriesType);
     }
+
+    // create map
+    this.displayMap();
 
     // create graph
     // setup the graph data and options
@@ -299,24 +366,8 @@ export default {
     /* exposed functions --------------------------------------------------- */
     /* exposed MAP functions */
     toggleMap: function () {
-      this.showMap = !this.showMap;
-
-      if (this.primary && this.showMap) {
-        // TODO display all sibling maps
-        if (localStorage) { localStorage[`${basePath}-open-map`] = true; }
-      } else if (this.primary && !this.showMap) {
-        // TODO hide all sibling maps
-        if (localStorage) { localStorage[`${basePath}-open-map`] = false; }
-      }
-
-      if (this.showMap) {
-        // wait for the map element to be shown
-        setTimeout(() => {
-          this.setupMapElement();
-          this.setupMapData();
-        });
-      } else if (this.mapExpanded) {
-        this.toggleMapSize();
+      if (this.primary) {
+        this.showMap = !this.showMap;
       }
     },
     toggleMapSize: function () {
@@ -330,39 +381,31 @@ export default {
       }
     },
     toggleSrcDst: function (type) {
-      this[type] = !this[type];
-      this.setupMapData(this.mapData);
-
       if (this.primary) { // primary map sets all other map's src/dst
-        // TODO set sibling map's src/dst
+        this[type] = !this[type];
       }
     },
     /* exposed GRAPH functions */
     changeGraphType: function () {
-      this.setupGraphData();
-
-      this.plot.setData(this.graph);
-      this.plot.setupGrid();
-      this.plot.draw();
-
       if (this.primary) { // primary graph sets all graph's histo type
-        // TODO notify sibling graphs to change graph type
+        this.$store.commit('updateGraphType', this.graphType);
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            graphType: this.graphType
+          }
+        });
       }
     },
     changeSeriesType: function () {
-      this.setupGraphData();
-
-      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          seriesType: this.seriesType
-        }
-      });
-
       if (this.primary) { // primary graph sets all graph's series type
-        // TODO notify sibling graphs to change series type
+        this.$store.commit('updateSeriesType', this.seriesType);
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            seriesType: this.seriesType
+          }
+        });
       }
     },
     zoomOut: function () {
@@ -572,11 +615,17 @@ export default {
         this.shrinkMapElement();
       }
     },
+    displayMap: function () {
+      // create jvectormap
+      this.setupMapElement();
+      // setup map data
+      this.setupMapData();
+    },
     setupMapElement: function () {
       this.mapEl = $('#molochMap' + this.id);
 
-      // TODO watch for the window to resize to resize the expanded map
-      // window.addEventListener('resize', this.onMapResize, { passive: true });
+      // watch for the window to resize to resize the expanded map
+      window.addEventListener('resize', this.onMapResize, { passive: true });
       // watch for the map to resize to change its style
       $(this.mapEl).on('resize', this.onMapResize);
 
