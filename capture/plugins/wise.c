@@ -715,6 +715,7 @@ void moloch_plugin_init()
     tcpTuple = moloch_config_boolean(NULL, "wiseTcpTupleLookups", FALSE);
     udpTuple = moloch_config_boolean(NULL, "wiseUdpTupleLookups", FALSE);
 
+    char *url  = moloch_config_str(NULL, "wiseURL", NULL);
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
@@ -745,9 +746,13 @@ void moloch_plugin_init()
         emailSha256Field = moloch_field_by_db("email.sha256");
     }
 
-    char hoststr[200];
-    snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);
-    wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
+    if (url) {
+        wiseService = moloch_http_create_server(url, maxConns, maxRequests, 0);
+    } else {
+        char hoststr[200];
+        snprintf(hoststr, sizeof(hoststr), "http://%s:%d", host, port);
+        wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
+    }
     moloch_http_set_retries(wiseService, 1);
     g_free(host);
 

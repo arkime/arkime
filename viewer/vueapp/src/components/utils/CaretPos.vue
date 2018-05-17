@@ -23,11 +23,15 @@ export default {
     // register listeners
     el.addEventListener('click', setCaretPos);
     el.addEventListener('keydown', setCaretPos);
+
+    el.destroy = () => {
+      el.removeEventListener('click', setCaretPos);
+      el.removeEventListener('keydown', setCaretPos);
+    };
   },
   unbind: function (el, binding, vnode) {
     // cleanup listeners
-    el.removeEventListener('click');
-    el.removeEventListener('keydown');
+    el.destroy();
   }
 };
 </script>

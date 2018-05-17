@@ -367,7 +367,7 @@
 </template>
 
 <script>
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 import MolochSearch from '../search/Search';
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
@@ -424,6 +424,7 @@ export default {
       stickySessions: [],
       settings: {}, // user settings
       colWidths: {},
+      colConfigs: [],
       colConfigError: '',
       headers: [],
       graphData: undefined,

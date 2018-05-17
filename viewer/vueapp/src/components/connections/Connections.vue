@@ -177,7 +177,7 @@
 
 <script>
 import Vue from 'vue';
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 import MolochSearch from '../search/Search';
 import FieldService from '../search/FieldService';
 import MolochPaging from '../utils/Pagination';

@@ -208,7 +208,7 @@ import EsTasks from './EsTasks';
 import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 export default {
   name: 'Stats',
   data: function () {

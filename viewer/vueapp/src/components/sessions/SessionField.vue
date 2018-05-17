@@ -41,7 +41,7 @@
               <strong>or not</strong>
               {{ pd.value }}
             </b-dropdown-item>
-            <span v-if="field.portField && session[field.portField] !== undefined">
+            <span v-if="session && field.portField && session[field.portField] !== undefined">
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '==', '&&')"
                 :title="'&& ' + expr + ' == ' + pd.value">
@@ -301,6 +301,7 @@ export default {
       this.fieldClick(field, value, op, null);
 
       this.$router.push({
+        path: '/sessions',
         query: {
           ...this.$route.query,
           expression: this.expression
@@ -541,6 +542,7 @@ export default {
  * class as it is specific to bootstraps dropdown implementation
  * this class is the same as dropdown-menu, but LESS whitespace */
 .session-field-dropdown {
+  font-size: 12px;
   position: absolute;
   opacity: 0;
   visibility: hidden;

@@ -22,6 +22,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new maxTcpOutOfOrderPackets setting, default 256
   - capture - tcpflag are always counted (issue #849)
   - capture - drophash supports v6 and saving
+  - wise - support talking to wise over https, use wiseURL
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)

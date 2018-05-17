@@ -1,5 +1,5 @@
 <script>
-import UserService from '../UserService';
+import UserService from '../users/UserService';
 
 export default {
   name: 'HasPermission',
