@@ -699,7 +699,17 @@ function main() {
   loadExcludes();
   loadSources();
   setInterval(printStats, 60*1000);
-  var server = http.createServer(app);
+
+  var server;
+  if (getConfig("wiseService", "keyFile") && getConfig("wiseService", "certFile")) {
+    var keyFileData = fs.readFileSync(getConfig("wiseService", "keyFile"));
+    var certFileData = fs.readFileSync(getConfig("wiseService", "certFile"));
+
+    server = https.createServer({key: keyFileData, cert: certFileData, secureOptions: require('constants').SSL_OP_NO_TLSv1}, app);
+  } else {
+    server = http.createServer(app);
+  }
+
   server
     .on('error', (e) => {
       console.log("ERROR - couldn't listen on port", getConfig("wiseService", "port", 8081), "is wiseService already running?");
