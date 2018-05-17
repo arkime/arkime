@@ -11,7 +11,7 @@
 
     <!-- connections sub navbar -->
     <form class="connections-form">
-      <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
 
         <!-- query size select -->
         <div class="input-group input-group-sm">
@@ -33,18 +33,18 @@
             <option value="50000">50,000</option>
             <option value="100000">100,000</option>
           </select>
-        </div>
-        <!-- /query size select -->
+        </div> <!-- /query size select -->
 
         <!-- src select -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon legend cursor-help"
-              tooltip-placement="bottom"
-              :style="{'background-color': primaryColor}"
+            <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
               title="Select a field for the source nodes">
-              Src:
+              <span class="input-group-text"
+                :style="{'background-color': primaryColor + '!important'}">
+                Src:
+              </span>
             </span>
             <input type="text" v-model="query.srcField"
               class="form-control field-typeahead"
@@ -53,18 +53,18 @@
               typeahead-input-formatter="$ctrl.formatField($model)"
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
           </div>
-        </div>
-        <!-- /src select -->
+        </div> <!-- /src select -->
 
         <!-- dst select -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon legend cursor-help"
-              tooltip-placement="bottom"
-              :style="{'background-color': tertiaryColor}"
+            <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
               title="Select a field for the source nodes">
-              Dst:
+              <span class="input-group-text"
+                :style="{'background-color': tertiaryColor + '!important'}">
+                Dst:
+              </span>
             </span>
             <input type="text" v-model="query.dstField"
               class="form-control field-typeahead"
@@ -73,27 +73,25 @@
               typeahead-input-formatter="$ctrl.formatField($model)"
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:{exp:$viewValue}">
           </div>
-        </div>
-        <!-- /dst select -->
+        </div> <!-- /dst select -->
 
         <!-- src & dst color -->
-        <div class="form-group margined-bottom">
+        <div class="form-group ml-1">
           <div class="input-group input-group-sm">
-            <span class="input-group-addon legend cursor-help"
-              tooltip-placement="bottom"
-              tooltip-append-to-body="true"
-              style="border-radius:4px;"
-              :style="{'background-color': secondaryColor}"
+            <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
               title="This is the color of a node that is both a source and destination node">
-              Src & Dst
+              <span class="input-group-text"
+                style="border-radius: 4px"
+                :style="{'background-color': secondaryColor + '!important'}">
+                Src & Dst
+              </span>
             </span>
           </div>
-        </div>
-        <!-- /src & dst color -->
+        </div> <!-- /src & dst color -->
 
         <!-- min connections select -->
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Min connections">
@@ -110,11 +108,10 @@
             <option value="4">4</option>
             <option value="5">5</option>
           </select>
-        </div>
-        <!-- /min connections select -->
+        </div> <!-- /min connections select -->
 
         <!-- node dist select -->
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Node distance in pixels">
@@ -132,16 +129,14 @@
             <option value="200">200</option>
             <option value="250">250</option>
           </select>
-        </div>
-        <!-- /node dist select -->
+        </div> <!-- /node dist select -->
 
         <!-- unlock button-->
-        <button class="btn btn-default btn-sm"
+        <button class="btn btn-default btn-sm ml-1"
           @click.stop.prevent="unlock()">
           <span class="fa fa-unlock"></span>&nbsp;
           Unlock
-        </button>
-        <!-- /unlock button-->
+        </button> <!-- /unlock button-->
       </div>
     </form>
 
@@ -555,15 +550,23 @@ export default {
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
-                    @click="addExpression('&&')">AND</a>&nbsp;
+                    href="#"
+                    @click.stop.prevent="addExpression('&&')">
+                    AND
+                  </a>&nbsp;
                   <a class="cursor-pointer no-decoration"
-                    @click="addExpression('||')">OR</a>
+                    href="#"
+                    @click.stop.prevent="addExpression('||')">
+                    OR
+                  </a>
                 </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
-                @click="hideNode()">
-                <span class="fa fa-eye-slash"></span>&nbsp;
+                href="#"
+                @click.stop.prevent="hideNode()">
+                <span class="fa fa-eye-slash">
+                </span>&nbsp;
                 Hide Node
               </a>
             </div>
@@ -709,8 +712,8 @@ export default {
 
       self.trans = [0, 0];
       self.scale = 1;
-      self.width = $(window).width();
-      self.height = $(window).height() - 166;
+      self.width = $(window).width() - 10;
+      self.height = $(window).height() - 173;
       self.popupTimer = null;
       networkElem = $('#network');
 
@@ -742,8 +745,8 @@ export default {
         .attr('height', networkElem.height() + 1000)
         .attr('fill', 'white')
         .attr('id', 'zoomCanvas')
-        .on('mousedown', function () {
-          this.$parent.closePopups();
+        .on('mousedown', () => {
+          this.closePopups();
         });
 
       force = d3.layout.force()
@@ -807,13 +810,13 @@ export default {
 </script>
 <style>
 .connections-page .connections-popup {
-  position  : absolute;
-  display   : none;
-  font-size : smaller;
-  padding   : 4px 8px;
-  width     : 270px;
-  z-index   : 9999;
-  border    : solid 1px var(--color-gray);
+  position: absolute;
+  display: none;
+  font-size: smaller;
+  padding: 4px 8px;
+  width: 170px;
+  z-index: 9999;
+  border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
 
   -webkit-border-radius: var(--px-sm);
@@ -824,14 +827,21 @@ export default {
      -moz-box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
           box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
 }
+.connections-page .connections-popup .dl-horizontal {
+  margin-bottom: var(--px-md) !important;
+}
+.connections-page .connections-popup .dl-horizontal dt {
+  width: 80px !important;
+  text-align: left;
+}
+.connections-page .connections-popup .dl-horizontal dd {
+  margin-left: 85px !important;
+}
 </style>
+
 <style scoped>
 .connections-page select {
   -webkit-appearance: none;
-}
-
-.connections-page .network-container {
-  margin-top: 80px;
 }
 
 .connections-page {
@@ -839,34 +849,22 @@ export default {
 }
 .connections-page form.connections-form {
   position: relative;
-  top     : 79px;
-  left    : 0;
-  right   : 0;
-  height  : 42px;
+  top: 79px;
+  left: 0;
+  right: 0;
   background-color: var(--color-quaternary-lightest);
 
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
-          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -webkit-box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
+     -moz-box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
+          box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
 }
 .connections-page form.connections-form .form-inline {
   margin-top: -3px;
 }
 
-.connections-page form.connections-form .input-group-addon.legend {
-  font-weight : 700;
-  color       : white;
-}
-
-.connections-page .dl-horizontal {
-  margin-bottom: var(--px-md);
-}
-.connections-page .dl-horizontal dt {
-  width     : 80px;
-  text-align: left;
-}
-.connections-page .dl-horizontal dd {
-  margin-left: 85px;
+.connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
+  font-weight: 700;
+  color: white !important;
 }
 
 /* apply theme colors */
@@ -876,5 +874,9 @@ export default {
 }
 .connections-page svg {
   fill  : var(--color-foreground, #333);
+}
+
+.connections-page .connections-content {
+  margin-top: 80px;
 }
 </style>
