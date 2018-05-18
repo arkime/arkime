@@ -288,7 +288,7 @@ function issueAlert(cluster, issue) {
 
   for (let n in internals.notifiers) {
     // quit before sending the alert if the notifier is off
-    if (!parliament.settings.notifiers[n].on) {
+    if (!parliament.settings.notifiers || !parliament.settings.notifiers[n] || !parliament.settings.notifiers[n].on) {
       continue;
     }
 
@@ -471,7 +471,7 @@ function getStats(cluster) {
 
       // Look for issues
       for (let stat of stats.data) {
-        if ((Date.now()/1000 - stat.currentTime) > 30) {
+        if ((Date.now()/1000 - stat.currentTime) > 45) {
           setIssue(cluster, {
             type  : 'outOfDate',
             node  : stat.nodeName,

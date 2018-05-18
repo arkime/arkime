@@ -17,11 +17,12 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:0.50.1
+        image: andywick/moloch-build-6:1.2.0
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh"
             - export PATH=/data/moloch/bin:$PATH
+            - npm -g config set user root
             - installing: scl enable devtoolset-3 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -39,11 +40,12 @@ jobs:
 # Centos 7 is the only build to have test-ui because installing chrome dependancies sucks
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:0.50.1
+        image: andywick/moloch-build-7:1.2.0
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
+            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -62,11 +64,12 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:0.50.1
+        image: andywick/moloch-build-14:1.2.0
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
+            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -83,7 +86,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:0.50.1
+        image: andywick/moloch-build-16:1.2.0
         steps:
             - ln -s /thirdparty .
             - apt-get update
@@ -95,6 +98,7 @@ jobs:
 #                sleep 1
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
+            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -113,12 +117,13 @@ jobs:
 
 #    ubuntu-18:
 #        requires: [~pr, ~commit]
-#        image: andywick/moloch-build-18:0.50.1
+#        image: andywick/moloch-build-18:1.2.0
 #        steps:
 #            - apt-get update
 #            - ln -s /thirdparty .
 #            - build: ./easybutton-build.sh
 #            - export PATH=/data/moloch/bin:$PATH
+#            - npm -g config set user root
 #            - installing: make install
 #            - cp -r capture/plugins/lua/samples /data/moloch/lua
 ## Doesn't seem to work on ubuntu-18 currently
