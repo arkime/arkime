@@ -14,7 +14,7 @@
       <div class="form-inline pr-1 pl-1 pt-1 pb-1">
         <!-- field select -->
         <div class="form-group">
-          <div v-if="fields"
+          <div v-if="fields && fieldTypeahead"
             class="input-group input-group-sm">
             <span class="input-group-prepend cursor-help"
               v-b-tooltip.hover
@@ -23,25 +23,11 @@
                 SPI Graph:
               </span>
             </span>
-            <!-- TODO up/down arrow keys -->
-            <input type="text"
-              v-model="fieldTypeahead"
-              @focus="showDropdown = true"
-              @blur="closeTypeaheadResults"
-              @input="filterFields($event.target.value)"
-              @keydown.enter.stop.prevent
-              class="form-control"
-            />
-            <div class="dropdown-menu field-typeahead"
-              :class="{'show':showDropdown && filteredFields && filteredFields.length}">
-              <a v-for="field in filteredFields"
-                :key="field.exp"
-                class="dropdown-item cursor-pointer"
-                @click.stop="changeField(field)">
-                {{ field.friendlyName }}
-                <small>({{ field.exp }})</small>
-              </a>
-            </div>
+            <moloch-field-typeahead
+              :fields="fields"
+              :initial-value="fieldTypeahead"
+              @fieldSelected="changeField">
+            </moloch-field-typeahead>
           </div>
         </div> <!-- /field select -->
 
@@ -211,9 +197,9 @@ import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
+import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
 
-let inputTimeout;
 let oldFieldObj;
 let refreshInterval;
 
@@ -224,6 +210,7 @@ export default {
     MolochSearch,
     MolochLoading,
     MolochNoResults,
+    MolochFieldTypeahead,
     MolochVisualizations
   },
   data: function () {
@@ -291,24 +278,33 @@ export default {
     this.loadData();
   },
   methods: {
-    filterFields: function (searchFilter) {
-      if (inputTimeout) { clearTimeout(inputTimeout); }
-
-      inputTimeout = setTimeout(() => {
-        if (!searchFilter) { this.filteredFields = this.fields; }
-        this.filteredFields = this.fields.filter((field) => {
-          let sfl = searchFilter.toLowerCase();
-          return field.friendlyName.toLowerCase().includes(sfl) ||
-            field.exp.toLowerCase().includes(sfl) ||
-            (field.aliases && field.aliases.some(item => { return item.toLowerCase().includes(sfl); }));
-        });
-      }, 400);
+    /* exposed page functions ---------------------------------------------- */
+    changeMaxElements: function () {
+      this.$router.push({ query: { ...this.$route.query, size: this.query.size } });
+      this.loadData();
     },
-    /* wait for changeField click event before closing results */
-    closeTypeaheadResults: function () {
-      setTimeout(() => { this.showDropdown = false; }, 250);
+    changeSortBy: function () {
+      this.$router.push({ query: { ...this.$route.query, sort: this.query.sort } });
+      this.loadData();
+    },
+    changeRefreshInterval: function () {
+      if (refreshInterval) { clearInterval(refreshInterval); }
+
+      if (this.refresh && this.refresh > 0) {
+        this.loadData();
+        refreshInterval = setInterval(() => {
+          this.loadData();
+        }, this.refresh * 1000);
+      }
     },
     /* event functions ----------------------------------------------------- */
+    changeField: function (field) {
+      this.fieldTypeahead = field.friendlyName;
+      this.query.field = field.dbField;
+      this.$router.push({ query: { ...this.$route.query, field: this.query.field } });
+      this.loadData();
+    },
+    /* helper functions ---------------------------------------------------- */
     getUserSettings: function () {
       UserService.getCurrent()
         .then((response) => {
@@ -359,30 +355,6 @@ export default {
       }
 
       return undefined;
-    },
-    changeField: function (field) {
-      this.fieldTypeahead = field.friendlyName;
-      this.query.field = field.dbField;
-      this.$router.push({ query: { ...this.$route.query, field: this.query.field } });
-      this.loadData();
-    },
-    changeMaxElements: function () {
-      this.$router.push({ query: { ...this.$route.query, size: this.query.size } });
-      this.loadData();
-    },
-    changeSortBy: function () {
-      this.$router.push({ query: { ...this.$route.query, sort: this.query.sort } });
-      this.loadData();
-    },
-    changeRefreshInterval: function () {
-      if (refreshInterval) { clearInterval(refreshInterval); }
-
-      if (this.refresh && this.refresh > 0) {
-        this.loadData();
-        refreshInterval = setInterval(() => {
-          this.loadData();
-        }, this.refresh * 1000);
-      }
     }
   }
 };

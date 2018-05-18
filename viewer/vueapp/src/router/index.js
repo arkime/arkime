@@ -8,6 +8,7 @@ import History from '@/components/history/History';
 import Sessions from '@/components/sessions/Sessions';
 import Spiview from '@/components/spiview/Spiview';
 import Spigraph from '@/components/spigraph/Spigraph';
+import Connections from '@/components/connections/Connections';
 
 Vue.use(Router);
 
@@ -69,6 +70,11 @@ const router = new Router({
       path: '/spigraph',
       name: 'Spigraph',
       component: Spigraph
+    },
+    {
+      path: '/connections',
+      name: 'Connections',
+      component: Connections
     }
   ]
 });
@@ -80,7 +86,7 @@ router.beforeEach((to, from, next) => {
     !to.path.includes('files') && !to.path.includes('help') &&
     !to.path.includes('stats') && !to.path.includes('sessions') &&
     !to.path.includes('spiview') && !to.path.includes('spigraph') &&
-    to.path !== '/') {
+    !to.path.includes('connections') && to.path !== '/') {
     location.reload();
   }
 
