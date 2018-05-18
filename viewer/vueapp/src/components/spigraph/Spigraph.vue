@@ -10,12 +10,13 @@
     </moloch-search> <!-- /search navbar -->
 
     <!-- spigraph sub navbar -->
-    <form class="spigraph-form">
+    <form class="spigraph-form"
+      @submit.prevent>
       <div class="form-inline pr-1 pl-1 pt-1 pb-1">
         <!-- field select -->
-        <div class="form-group">
-          <div v-if="fields && fieldTypeahead"
-            class="input-group input-group-sm">
+        <div class="form-group"
+          v-if="fields && fields.length && fieldTypeahead">
+          <div class="input-group input-group-sm">
             <span class="input-group-prepend cursor-help"
               v-b-tooltip.hover
               title="SPI Graph Field">
@@ -217,7 +218,6 @@ export default {
     return {
       error: '',
       fields: [],
-      filteredFields: [],
       loading: true,
       filtered: 0,
       settings: {

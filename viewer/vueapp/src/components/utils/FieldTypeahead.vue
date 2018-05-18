@@ -5,12 +5,12 @@
       type="text"
       ref="typeahead"
       v-model="value"
-      @click="showDropdown = true"
+      @click="openTypeaheadResults"
       @blur="closeTypeaheadResults"
       @input="filterFields($event.target.value)"
-      @keyup="keyup($event)"
-      @keydown.down="down"
-      @keydown.up="up"
+      @keyup.stop="keyup($event)"
+      @keydown.down.stop="down"
+      @keydown.up.stop="up"
       @keyup.enter.stop="enterClick"
       @keyup.esc.stop="closeTypeaheadResults"
       class="form-control form-control-sm"
@@ -41,7 +41,10 @@ let inputTimeout;
 export default {
   name: 'MolochFieldTypeahead',
   props: {
-    fields: Array,
+    fields: {
+      type: Array,
+      required: true
+    },
     initialValue: String
   },
   data: function () {
@@ -59,6 +62,9 @@ export default {
         this.current = 0; // reset
         this.showDropdown = false;
       }, 250);
+    },
+    openTypeaheadResults: function () {
+      this.showDropdown = true;
     },
     filterFields: function (searchFilter) {
       if (inputTimeout) { clearTimeout(inputTimeout); }
