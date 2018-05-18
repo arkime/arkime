@@ -25,10 +25,10 @@
         <b-nav-item
           v-for="item of menu"
           :key="item.link"
-          :href="item.href"
-          :active="isActive(item.link)"
           v-has-permission="item.permission">
-          {{ item.title }}
+          <router-link :to="item.href">
+            {{ item.title }}
+          </router-link>
         </b-nav-item>
       </b-navbar-nav>
 
@@ -114,6 +114,17 @@ nav.navbar {
 }
 ul.navbar-nav {
   margin-left: 20px;
+}
+
+a.nav-link > a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.5);
+}
+a.nav-link:hover > a {
+  color: rgba(255, 255, 255, 0.75);
+}
+a.nav-link > a.router-link-active {
+  color: #fff;
 }
 
 /* apply theme colors to navbar */
