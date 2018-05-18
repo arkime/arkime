@@ -185,7 +185,7 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
-import MolochFieldTypeahead from '../utils/fieldTypeahead';
+import MolochFieldTypeahead from '../utils/FieldTypeahead';
 
 import d3 from '../../../../public/d3.min.js';
 
