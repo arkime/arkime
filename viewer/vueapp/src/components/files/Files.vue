@@ -1,38 +1,28 @@
 <template>
 
-  <div class="container-fluid">
+  <div>
 
-    <div class="sub-navbar">
-
-      <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-files-o fa-stack-1x"></span>
-          <span class="fa fa-square-o fa-stack-2x"></span>
-        </span>&nbsp;
-        Files
-      </span>
-
-      <div class="input-group input-group-sm file-search pull-right">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            <span class="fa fa-search"></span>
-          </span>
+    <div class="files-search">
+      <div class="mr-1 ml-1 mt-1 mb-1">
+        <div class="input-group input-group-sm pull-right" style="max-width:50%;">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              <span class="fa fa-search"></span>
+            </span>
+          </div>
+          <input type="text"
+            class="form-control"
+            v-model="query.filter"
+            @keyup="searchForFiles()"
+            placeholder="Begin typing to search for files by name"
+          />
         </div>
-        <input type="text"
-          class="form-control"
-          v-model="query.filter"
-          @keyup="searchForFiles()"
-          placeholder="Begin typing to search for files by name"
-        />
+        <moloch-paging v-if="files"
+          :records-total="files.recordsTotal"
+          :records-filtered="files.recordsFiltered"
+          v-on:changePaging="changePaging">
+        </moloch-paging>
       </div>
-
-      <moloch-paging v-if="files"
-        class="inline-paging pull-right mr-2"
-        :records-total="files.recordsTotal"
-        :records-filtered="files.recordsFiltered"
-        v-on:changePaging="changePaging">
-      </moloch-paging>
-
     </div>
 
     <div class="files-content">
@@ -189,21 +179,30 @@ export default {
 };
 </script>
 
+<style>
+.files-search ul.pagination {
+  margin-bottom: 0;
+}
+</style>
+
 <style scoped>
+/* search navbar */
+.files-search {
+  z-index: 5;
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 36px;
+  border: none;
+  background-color: var(--color-secondary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+/* page content */
 .files-content {
   margin-top: 90px;
-}
-
-.inline-paging {
-  display: inline-block;
-  margin-bottom: -13px;
-  margin-top: -4px;
-}
-
-.file-search {
-  max-width: 50%;
-  margin-bottom: -13px;
-  margin-top: -4px;
-  max-width: 333px;
 }
 </style>

@@ -1,47 +1,40 @@
 <template>
 
-  <div class="container-fluid">
+  <div>
 
-    <div class="sub-navbar">
-
-      <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-users fa-stack-1x">
-          </span>
-          <span class="fa fa-square-o fa-stack-2x">
-          </span>
-        </span>&nbsp;
-        Users
-      </span>
-
-      <div class="input-group input-group-sm user-search pull-right">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            <span class="fa fa-search">
+    <div class="users-search">
+      <div class="mr-1 ml-1 mt-1 mb-1">
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              <span class="fa fa-search">
+              </span>
             </span>
-          </span>
+          </div>
+          <input type="text"
+            class="form-control"
+            v-model="query.filter"
+            @keyup="searchForUsers()"
+            placeholder="Begin typing to search for users by name">
         </div>
-        <input type="text"
-          class="form-control"
-          v-model="query.filter"
-          @keyup="searchForUsers()"
-          placeholder="Begin typing to search for users by name">
       </div>
+    </div>
 
-      <moloch-paging v-if="users"
-        class="inline-paging pull-right mr-2"
-        :records-total="users.recordsTotal"
-        :records-filtered="users.recordsFiltered"
-        v-on:changePaging="changePaging">
-      </moloch-paging>
-
-      <div class="toast-container pull-right mr-1">
-        <moloch-toast :message="msg"
+    <div class="users-paging">
+      <div class="ml-1 mt-1 pull-right">
+        <moloch-toast
+          class="mr-1"
+          :message="msg"
           :type="msgType"
           :done="messageDone">
         </moloch-toast>
       </div>
-
+      <moloch-paging v-if="users"
+        class="mt-1 ml-1"
+        :records-total="users.recordsTotal"
+        :records-filtered="users.recordsFiltered"
+        v-on:changePaging="changePaging">
+      </moloch-paging>
     </div>
 
     <div class="users-content">
@@ -470,32 +463,45 @@ export default {
 </script>
 
 <style scoped>
+/* search navbar */
+.users-search {
+  z-index: 5;
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 36px;
+  border: none;
+  background-color: var(--color-secondary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+/* paging/toast navbar */
+.users-paging {
+  z-index: 4;
+  position: fixed;
+  top: 75px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+/* page content */
 .users-content {
-  margin-top: 90px;
-}
-
-.inline-paging {
-  display: inline-block;
-  margin-bottom: -13px;
-  margin-top: -4px;
-}
-
-.user-search {
-  max-width: 50%;
-  margin-bottom: -13px;
-  margin-top: -4px;
-  max-width: 333px;
+  margin-top: 125px;
 }
 
 .users-content form .form-group-sm .checkbox {
   min-height: 0;
   padding-top: 0;
   margin-bottom: -8px;
-}
-
-.toast-container {
-  margin-top: -2px;
-  display: inline-block;
 }
 
 /* condense the form */
