@@ -65,7 +65,7 @@ export default {
       }, 400);
     },
     changeField: function (field) {
-      this.value = field.dbField;
+      this.value = field.friendlyName;
       this.$refs.typeahead.value = this.value;
       this.$emit('fieldSelected', field);
     }

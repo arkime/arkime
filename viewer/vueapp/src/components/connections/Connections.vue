@@ -37,7 +37,7 @@
 
         <!-- src select -->
         <div class="form-group ml-1"
-          v-if="fields && query.srcField">
+          v-if="fields && srcFieldTypeahead">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
@@ -49,7 +49,7 @@
             </span>
             <moloch-field-typeahead
               :fields="fields"
-              :initial-value="query.srcField"
+              :initial-value="srcFieldTypeahead"
               @fieldSelected="changeSrcField">
             </moloch-field-typeahead>
           </div>
@@ -57,7 +57,7 @@
 
         <!-- dst select -->
         <div class="form-group ml-1"
-          v-if="fields && query.dstField">
+          v-if="fields && dstFieldTypeahead">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
@@ -69,7 +69,7 @@
             </span>
             <moloch-field-typeahead
               :fields="fields"
-              :initial-value="query.dstField"
+              :initial-value="dstFieldTypeahead"
               @fieldSelected="changeDstField">
             </moloch-field-typeahead>
           </div>
@@ -219,7 +219,9 @@ export default {
       primaryColor: null,
       secondaryColor: null,
       tertiaryColor: null,
-      fields: []
+      fields: [],
+      srcFieldTypeahead: undefined,
+      dstFieldTypeahead: undefined
     };
   },
   computed: {
@@ -263,6 +265,14 @@ export default {
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
+        for (let field of this.fields) {
+          if (field.dbField === this.query.srcField) {
+            this.srcFieldTypeahead = field.friendlyName;
+          }
+          if (field.dbField === this.query.dstField) {
+            this.dstFieldTypeahead = field.friendlyName;
+          }
+        }
       }).catch((error) => {
         this.loading = false;
         this.error = error;
@@ -318,6 +328,7 @@ export default {
     },
     /* event functions ----------------------------------------------------- */
     changeSrcField: function (field) {
+      this.srcFieldTypeahead = field.friendlyName;
       this.query.srcField = field.dbField;
       this.$router.push({
         query: {
@@ -327,6 +338,7 @@ export default {
       });
     },
     changeDstField: function (field) {
+      this.dstFieldTypeahead = field.friendlyName;
       this.query.dstField = field.dbField;
       this.$router.push({
         query: {
