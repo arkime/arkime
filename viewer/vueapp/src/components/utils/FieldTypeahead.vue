@@ -8,18 +8,24 @@
       @focus="showDropdown = true"
       @blur="closeTypeaheadResults"
       @input="filterFields($event.target.value)"
-      @keydown.enter.stop.prevent
+      @keyup="keyup($event)"
+      @keyup.enter.stop="enterClick"
+      @keyup.esc.stop="closeTypeaheadResults"
       class="form-control form-control-sm"
       placeholder="Begin typing to search for fields"
     />
     <div class="dropdown-menu field-typeahead"
-      :class="{'show':showDropdown && filteredFields && filteredFields.length}">
+      :class="{'show':showDropdown}">
       <a v-for="field in filteredFields"
         :key="field.exp"
         class="dropdown-item cursor-pointer"
         @click.stop="changeField(field)">
         {{ field.friendlyName }}
         <small>({{ field.exp }})</small>
+      </a>
+      <a v-if="!filteredFields || !filteredFields.length"
+        class="dropdown-item">
+        No fields match your query
       </a>
     </div>
   </span>
@@ -44,7 +50,6 @@ export default {
   },
   methods: {
     // TODO up/down arrows should navigate typeahead results
-    // TODO enter should select typeahead result
     /* wait for changeField click event before closing results */
     closeTypeaheadResults: function () {
       setTimeout(() => { this.showDropdown = false; }, 250);
@@ -62,12 +67,29 @@ export default {
               return item.toLowerCase().includes(sfl);
             }));
         });
-      }, 400);
+      }, 250);
     },
     changeField: function (field) {
       this.value = field.friendlyName;
       this.$refs.typeahead.value = this.value;
       this.$emit('fieldSelected', field);
+    },
+    /**
+     * selects the first field in the dropdown if it exists
+     * then closes the dropdown
+     */
+    enterClick: function () {
+      if (this.showDropdown && this.filteredFields.length) {
+        this.changeField(this.filteredFields[0]);
+      }
+      this.closeTypeaheadResults();
+    },
+    /* shows the dropdown results if the user is typing (except enter/esc) */
+    keyup: function (event) {
+      if (event.keyCode === 13 || event.keyCode === 27) {
+        return;
+      }
+      this.showDropdown = true;
     }
   }
 };
