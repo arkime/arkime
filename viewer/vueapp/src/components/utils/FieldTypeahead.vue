@@ -5,10 +5,12 @@
       type="text"
       ref="typeahead"
       v-model="value"
-      @focus="showDropdown = true"
+      @click="showDropdown = true"
       @blur="closeTypeaheadResults"
       @input="filterFields($event.target.value)"
       @keyup="keyup($event)"
+      @keydown.down="down"
+      @keydown.up="up"
       @keyup.enter.stop="enterClick"
       @keyup.esc.stop="closeTypeaheadResults"
       class="form-control form-control-sm"
@@ -16,8 +18,9 @@
     />
     <div class="dropdown-menu field-typeahead"
       :class="{'show':showDropdown}">
-      <a v-for="field in filteredFields"
+      <a v-for="(field, index) in filteredFields"
         :key="field.exp"
+        :class="{'active': index === current}"
         class="dropdown-item cursor-pointer"
         @click.stop="changeField(field)">
         {{ field.friendlyName }}
@@ -45,14 +48,17 @@ export default {
     return {
       showDropdown: false,
       filteredFields: this.fields,
-      value: this.initialValue
+      value: this.initialValue,
+      current: 0 // select first field
     };
   },
   methods: {
-    // TODO up/down arrows should navigate typeahead results
     /* wait for changeField click event before closing results */
     closeTypeaheadResults: function () {
-      setTimeout(() => { this.showDropdown = false; }, 250);
+      setTimeout(() => {
+        this.current = 0; // reset
+        this.showDropdown = false;
+      }, 250);
     },
     filterFields: function (searchFilter) {
       if (inputTimeout) { clearTimeout(inputTimeout); }
@@ -75,12 +81,12 @@ export default {
       this.$emit('fieldSelected', field);
     },
     /**
-     * selects the first field in the dropdown if it exists
+     * selects the active field in the dropdown if it exists
      * then closes the dropdown
      */
     enterClick: function () {
       if (this.showDropdown && this.filteredFields.length) {
-        this.changeField(this.filteredFields[0]);
+        this.changeField(this.filteredFields[this.current]);
       }
       this.closeTypeaheadResults();
     },
@@ -90,6 +96,24 @@ export default {
         return;
       }
       this.showDropdown = true;
+    },
+    /* navigates up through field results */
+    up: function () {
+      if (this.current > 0) {
+        this.current--;
+      } else if (this.current === -1) {
+        this.current = this.filteredFields.length - 1;
+      } else {
+        this.current = -1;
+      }
+    },
+    /* navigates down through field results */
+    down: function () {
+      if (this.current < this.filteredFields.length - 1) {
+        this.current++;
+      } else {
+        this.current = -1;
+      }
     }
   }
 };
