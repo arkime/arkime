@@ -26,6 +26,7 @@
             </span>
             <moloch-field-typeahead
               :fields="fields"
+              query-param="field"
               :initial-value="fieldTypeahead"
               @fieldSelected="changeField">
             </moloch-field-typeahead>
@@ -230,7 +231,7 @@ export default {
       recordsFiltered: 0,
       items: [],
       showDropdown: false,
-      fieldTypeahead: 'Moloch Node'
+      fieldTypeahead: undefined
     };
   },
   computed: {
@@ -259,6 +260,17 @@ export default {
       return oldFieldObj;
     }
   },
+  watch: {
+    '$route.query.size': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.sort': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.field': function (newVal, oldVal) {
+      this.loadData();
+    }
+  },
   created: function () {
     this.getUserSettings();
     FieldService.get(true)
@@ -280,12 +292,20 @@ export default {
   methods: {
     /* exposed page functions ---------------------------------------------- */
     changeMaxElements: function () {
-      this.$router.push({ query: { ...this.$route.query, size: this.query.size } });
-      this.loadData();
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          size: this.query.size
+        }
+      });
     },
     changeSortBy: function () {
-      this.$router.push({ query: { ...this.$route.query, sort: this.query.sort } });
-      this.loadData();
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          sort: this.query.sort
+        }
+      });
     },
     changeRefreshInterval: function () {
       if (refreshInterval) { clearInterval(refreshInterval); }
@@ -301,8 +321,12 @@ export default {
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
       this.query.field = field.dbField;
-      this.$router.push({ query: { ...this.$route.query, field: this.query.field } });
-      this.loadData();
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          field: this.query.field
+        }
+      });
     },
     /* helper functions ---------------------------------------------------- */
     getUserSettings: function () {

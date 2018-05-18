@@ -37,7 +37,7 @@
 
         <!-- src select -->
         <div class="form-group ml-1"
-          v-if="fields && srcFieldTypeahead">
+          v-if="fields && fields.length && srcFieldTypeahead">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
@@ -49,6 +49,7 @@
             </span>
             <moloch-field-typeahead
               :fields="fields"
+              query-param="srcField"
               :initial-value="srcFieldTypeahead"
               @fieldSelected="changeSrcField">
             </moloch-field-typeahead>
@@ -69,6 +70,7 @@
             </span>
             <moloch-field-typeahead
               :fields="fields"
+              query-param="dstField"
               :initial-value="dstFieldTypeahead"
               @fieldSelected="changeDstField">
             </moloch-field-typeahead>

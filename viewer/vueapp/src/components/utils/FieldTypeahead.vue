@@ -1,7 +1,7 @@
 <template>
 
   <span>
-    <input v-once
+    <input
       type="text"
       ref="typeahead"
       v-model="value"
@@ -45,7 +45,8 @@ export default {
       type: Array,
       required: true
     },
-    initialValue: String
+    initialValue: String,
+    queryParam: String
   },
   data: function () {
     return {
@@ -54,6 +55,29 @@ export default {
       value: this.initialValue,
       current: 0 // select first field
     };
+  },
+  watch: {
+    // update the value when the url query param
+    'routeParams': function (newVal, oldVal) {
+      if (!newVal) { this.value = this.constantInitialVal; }
+      for (let field of this.fields) {
+        if (field.dbField === newVal) {
+          this.value = field.friendlyName;
+          continue;
+        }
+      }
+    }
+  },
+  computed: {
+    // compute the route param becuase watcher only accepts dot-delimited paths
+    routeParams: function () {
+      return this.$route.query[this.queryParam];
+    }
+  },
+  created: function () {
+    // save initial value for later use (specifically if the route param
+    // is undefined and we need to fill the input with the initial value)
+    this.constantInitialVal = this.initialValue;
   },
   methods: {
     /* wait for changeField click event before closing results */
@@ -83,7 +107,6 @@ export default {
     },
     changeField: function (field) {
       this.value = field.friendlyName;
-      this.$refs.typeahead.value = this.value;
       this.$emit('fieldSelected', field);
     },
     /**
