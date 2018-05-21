@@ -17,8 +17,8 @@
             </span>
           </div>
           <select class="form-control input-sm"
-            v-model="graphType"
-            v-on:change="graphTypeChange()">
+            v-model="statsType"
+            v-on:change="statsTypeChange()">
             <option value="deltaPacketsPerSec">Packets/Sec</option>
             <option value="deltaBytesPerSec">Bytes/Sec</option>
             <option value="deltaBitsPerSec">Bits/Sec</option>
@@ -153,7 +153,7 @@
         <b-tab title="Capture Graphs"
           @click="tabIndexChange()">
           <capture-graphs v-if="user && tabIndex === 0"
-            :graph-type="graphType"
+            :graph-type="statsType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
             :graph-sort="graphSort"
@@ -215,7 +215,7 @@ export default {
     return {
       user: null,
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
-      graphType: this.$route.query.type || 'deltaPacketsPerSec',
+      statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
@@ -242,8 +242,8 @@ export default {
           this.user = { settings: { timezone: 'local' } };
         });
     },
-    graphTypeChange: function () {
-      this.$router.push({ query: { ...this.$route.query, type: this.graphType } });
+    statsTypeChange: function () {
+      this.$router.push({ query: { ...this.$route.query, type: this.statsType } });
     },
     graphIntervalChange: function () {
       this.$router.push({ query: { ...this.$route.query, gtime: this.graphInterval } });
@@ -263,8 +263,8 @@ export default {
       if (queryParams.statsTab) {
         this.tabIndex = parseInt(queryParams.statsTab, 10);
       }
-      if (queryParams.graphType) {
-        this.graphType = queryParams.graphType;
+      if (queryParams.type) {
+        this.statsType = queryParams.type;
       }
       if (queryParams.graphInterval) {
         this.graphInterval = queryParams.gtime;
