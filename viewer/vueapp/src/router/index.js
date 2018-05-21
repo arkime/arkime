@@ -98,19 +98,17 @@ router.beforeEach((to, from, next) => {
 
   document.title = title;
 
-  next(); // complete route change
-});
-
-router.afterEach((to, from, next) => {
-  // make sure to apply the expression if the route changes and there
-  // is an expression in the store  but a search has not been issued
-  if (store.state.expression !== to.query.expression) {
-    router.replace({
+  if (store.state.expression &&
+    store.state.expression !== to.query.expression) {
+    next({ // complete route change with addition of expression
+      path: to.path,
       query: {
         ...to.query,
         expression: store.state.expression
       }
     });
+  } else {
+    next(); // complete route change
   }
 });
 
