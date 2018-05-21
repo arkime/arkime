@@ -74,6 +74,13 @@
             {{ config.name }}
           </b-dropdown-item>
         </b-dropdown> <!-- /field config save button -->
+        <small>
+          <strong class="ml-2 text-theme-accent"
+            v-if="!error && filtered !== undefined">
+            Showing {{ filtered | commaString }} entries filtered from
+            {{ total }} total entries
+          </strong>
+        </small>
       </div>
       <div v-if="dataLoading"
         class="info-nav-loading">
@@ -1145,8 +1152,8 @@ export default {
 /* show active button */
 .spiview-page .btn-group.dropdown.active > button:not(.dropdown-toggle) {
   color: var(--color-foreground, #333);
-  background-color: var(--color-gray);
-  box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+  background-color: var(--color-gray-light);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, .25);
 }
 /* bold field label dropdown buttons */
 .spiview-page .spi-buckets > div.btn-group.dropdown > button {
@@ -1182,15 +1189,12 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-.spiview-page form.info-nav .info-nav-loading,
-.spiview-page form.info-nav .field-config-btn {
-  margin-top: -3px;
+.spiview-page form.info-nav button,
+.spiview-page form.info-nav .field-config-menu {
+  margin-top: -2px;
 }
 .spiview-page form.info-nav .field-config-menu .dropdown-header {
   padding: 0 2px;
-}
-.spiview-page form.info-nav .field-config-menu .input-group {
-  /* width: 105%; */
 }
 
 /* spiview content ----------------- */

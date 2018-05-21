@@ -107,7 +107,7 @@
         <small>
           <strong class="ml-2 text-theme-accent"
             v-if="!error && recordsFiltered !== undefined">
-            Showing {{ recordsFiltered }} entries filtered from
+            Showing {{ recordsFiltered | commaString }} entries filtered from
             {{ recordsTotal }} total entries
           </strong>
         </small>

@@ -13,7 +13,7 @@
     <!-- paging -->
     <b-pagination size="sm"
       v-model="currentPage"
-      :limit="6"
+      :limit="5"
       hide-ellipsis
       :per-page="length"
       :total-rows="recordsFiltered"
