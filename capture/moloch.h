@@ -685,6 +685,7 @@ void moloch_quit();
 /*
  * config.c
  */
+
 void moloch_config_init();
 void moloch_config_load_local_ips();
 void moloch_config_load_packet_ips();
@@ -701,9 +702,9 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
 typedef void (*MolochFileChange_cb)(char *name);
+typedef void (*MolochFilesChange_cb)(char **names);
 void moloch_config_monitor_file(char *desc, char *name, MolochFileChange_cb cb);
-
-
+void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb cb);
 
 /******************************************************************************/
 /*
