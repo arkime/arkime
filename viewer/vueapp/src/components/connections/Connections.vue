@@ -253,7 +253,7 @@ export default {
       this.loadData();
     },
     '$route.query.nodeDist': function (newVal, oldVal) {
-      this.loadData();
+      force.distance(this.query.nodeDist).start();
     },
     '$route.query.srcField': function (newVal, oldVal) {
       this.loadData();
