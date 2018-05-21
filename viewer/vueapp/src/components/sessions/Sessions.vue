@@ -462,7 +462,7 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$route.query.expression || undefined
+        expression: this.$store.state.expression || undefined
       };
     },
     filteredFields: function () {

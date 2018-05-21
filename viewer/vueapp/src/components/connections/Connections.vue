@@ -241,7 +241,7 @@ export default {
         minConn: this.$route.query.minConn || 1,
         nodeDist: this.$route.query.nodeDist || 125,
         view: this.$route.query.view || undefined,
-        expression: this.$route.query.expression || undefined
+        expression: this.$store.state.expression || undefined
       };
     }
   },

@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import store from '@/store';
 import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
@@ -98,6 +99,19 @@ router.beforeEach((to, from, next) => {
   document.title = title;
 
   next(); // complete route change
+});
+
+router.afterEach((to, from, next) => {
+  // make sure to apply the expression if the route changes and there
+  // is an expression in the store  but a search has not been issued
+  if (store.state.expression !== to.query.expression) {
+    router.replace({
+      query: {
+        ...to.query,
+        expression: store.state.expression
+      }
+    });
+  }
 });
 
 export default router;
