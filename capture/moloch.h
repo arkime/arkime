@@ -243,6 +243,10 @@ typedef struct {
 #define MOLOCH_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
 #define MOLOCH_THREAD_INCR_NUM(var, num) __sync_fetch_and_add(&var, num);
 
+/* You are probably looking here because you think 24 is too low, really it isn't.
+ * Instead, increase the number of threads used for reading packets.
+ * https://github.com/aol/moloch/wiki/FAQ#why-am-i-dropping-packets
+ */
 #define MOLOCH_MAX_PACKET_THREADS 24
 
 #define MAX_INTERFACES 32

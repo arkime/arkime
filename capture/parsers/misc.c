@@ -243,6 +243,55 @@ LOCAL void sccp_classify(MolochSession_t *session, const unsigned char *data, in
     }
 }
 /******************************************************************************/
+LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 30 || memcmp("MQ", data+4, 2) != 0)
+        return;
+
+    moloch_session_add_protocol(session, "mqtt");
+
+    BSB bsb;
+
+    BSB_INIT(bsb, data, len);
+    BSB_IMPORT_skip(bsb, 2);
+
+    int nameLen = 0;
+    BSB_IMPORT_u16(bsb, nameLen);
+    BSB_IMPORT_skip(bsb, nameLen);
+
+    BSB_IMPORT_skip(bsb, 1); // version
+
+    int flags = 0;
+    BSB_IMPORT_u08(bsb, flags);
+
+    BSB_IMPORT_skip(bsb, 2); // keep alive
+
+    int idLen = 0;
+    BSB_IMPORT_u16(bsb, idLen);
+    BSB_IMPORT_skip(bsb, idLen);
+
+    if (flags & 0x04) { // will
+        int skiplen = 0;
+
+        BSB_IMPORT_u16(bsb, skiplen);
+        BSB_IMPORT_skip(bsb, skiplen);
+
+        BSB_IMPORT_u16(bsb, skiplen);
+        BSB_IMPORT_skip(bsb, skiplen);
+    }
+
+    if (flags & 0x80) {
+        int            userLen = 0;
+        unsigned char *user = 0;
+        BSB_IMPORT_u16(bsb, userLen);
+        BSB_IMPORT_ptr(bsb, user, userLen);
+
+        if (BSB_NOT_ERROR(bsb)) {
+            moloch_field_string_add_lower(userField, session, (char *)user, userLen);
+        }
+    }
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -384,6 +433,9 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00gets ", 7, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_port("sccp",  NULL, 2000, MOLOCH_PARSERS_PORT_TCP_DST, sccp_classify);
+
+    moloch_parsers_classifier_register_tcp("mqtt", NULL, 0, (unsigned char*)"\x10", 1, mqtt_classify);
+
 
     userField = moloch_field_by_db("user");
 }
