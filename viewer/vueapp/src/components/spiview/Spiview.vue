@@ -78,7 +78,7 @@
           <strong class="ml-2 text-theme-accent"
             v-if="!error && filtered !== undefined">
             Showing {{ filtered | commaString }} entries filtered from
-            {{ total }} total entries
+            {{ total | commaString }} total entries
           </strong>
         </small>
       </div>
