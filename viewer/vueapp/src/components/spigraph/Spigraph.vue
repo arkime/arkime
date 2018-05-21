@@ -67,7 +67,7 @@
               </span>
             </span>
             <select class="form-control"
-              v-model="query.sort"
+              v-model="sortBy"
               @change="changeSortBy()">
               <option value="name">name</option>
               <option value="graph">graph</option>
@@ -231,15 +231,23 @@ export default {
       recordsFiltered: 0,
       items: [],
       showDropdown: false,
-      fieldTypeahead: undefined
+      fieldTypeahead: undefined,
+      sortBy: this.$route.query.sort || 'graph'
     };
   },
   computed: {
+    graphType: function () {
+      return this.$store.state.graphType;
+    },
     query: function () {
+      let sort = 'name';
+      if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
+        sort = this.$route.query.graphType || 'lpHisto';
+      }
       return {
+        sort: sort,
         date: this.$store.state.timeRange,
         field: this.$route.query.field || 'node',
-        sort: this.$route.query.sort || 'graph',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -269,6 +277,13 @@ export default {
     },
     '$route.query.field': function (newVal, oldVal) {
       this.loadData();
+    },
+    // watch graph type and update sort
+    'graphType': function (newVal, oldVal) {
+      if (newVal && this.sortBy === 'graph') {
+        this.query.sort = newVal;
+        if (oldVal) { this.loadData(); }
+      }
     }
   },
   created: function () {
@@ -300,10 +315,15 @@ export default {
       });
     },
     changeSortBy: function () {
+      if (this.sortBy === 'graph') {
+        this.query.sort = this.graphType;
+      } else {
+        this.query.sort = this.sortBy;
+      }
       this.$router.push({
         query: {
           ...this.$route.query,
-          sort: this.query.sort
+          sort: this.sortBy
         }
       });
     },

@@ -72,10 +72,6 @@
           title         : 'Upload',
           template      : '<moloch-upload></moloch-upload>',
           reloadOnSearch: false
-        })
-        .otherwise({
-          title    : 'Not Found',
-          template : '<moloch-404></moloch-404>'
         });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode

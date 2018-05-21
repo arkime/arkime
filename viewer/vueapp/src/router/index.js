@@ -82,11 +82,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // TODO update/remove as angular pages go away
   // loads the angular app pages
-  if (!to.path.includes('history') && !to.path.includes('users') &&
-    !to.path.includes('files') && !to.path.includes('help') &&
-    !to.path.includes('stats') && !to.path.includes('sessions') &&
-    !to.path.includes('spiview') && !to.path.includes('spigraph') &&
-    !to.path.includes('connections') && to.path !== '/') {
+  if (to.path.includes('/settings') || to.path.includes('/upload')) {
     location.reload();
   }
 
