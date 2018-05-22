@@ -123,6 +123,7 @@ export default {
   },
   created: function () {
     // set the expression if it is in route params
+    // TODO maybe have a display value and query value here
     if (this.$route.query.expression) {
       this.expression = this.$route.query.expression;
     }

@@ -26,7 +26,7 @@
           v-for="item of menu"
           :key="item.link"
           v-has-permission="item.permission">
-          <router-link :to="item.href">
+          <router-link :to="{ path: item.link, query: item.query }">
             {{ item.title }}
           </router-link>
         </b-nav-item>
@@ -46,8 +46,6 @@
 </template>
 
 <script>
-import qs from 'qs';
-
 import ESHealth from './ESHealth';
 
 export default {
@@ -79,7 +77,12 @@ export default {
       // preserve url query parameters
       for (let m in menu) {
         let item = menu[m];
-        item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
+        // if the expression doesn't match the url query param, make sure the
+        // stored expression is part of the url for each nav item
+        if (this.$store.state.expression !== this.$route.query.expression) {
+          this.updateRouteQuery(this.$store.state.expression);
+        }
+        item.query = this.$route.query;
       }
 
       return menu;
@@ -96,6 +99,9 @@ export default {
   methods: {
     isActive: function (link) {
       return link === this.$route.path.split('/')[1];
+    },
+    updateRouteQuery: function (expression) {
+      this.$route.query.expression = this.$store.state.expression;
     }
   }
 };

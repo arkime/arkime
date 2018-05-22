@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import store from '@/store';
+// import store from '@/store';  // TODO
 import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
@@ -87,6 +87,12 @@ router.beforeEach((to, from, next) => {
     location.reload();
   }
 
+  // TODO
+  // always use the expression url query parameter
+  // if (!to.params.nav && store.state.expression !== to.query.expression) {
+  //   store.commit('setExpression', to.query.expression);
+  // }
+
   let page = to.name || 'Moloch - ';
   let view = to.query.view ? ` - ${to.query.view}` : '';
   let expression = to.query.expression ? ` - ${to.query.expression}` : '';
@@ -98,18 +104,7 @@ router.beforeEach((to, from, next) => {
 
   document.title = title;
 
-  if (store.state.expression &&
-    store.state.expression !== to.query.expression) {
-    next({ // complete route change with addition of expression
-      path: to.path,
-      query: {
-        ...to.query,
-        expression: store.state.expression
-      }
-    });
-  } else {
-    next(); // complete route change
-  }
+  next();
 });
 
 export default router;
