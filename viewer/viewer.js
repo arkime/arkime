@@ -4625,7 +4625,7 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
     return res.molochError(403, 'Missing/Empty required fields');
   }
 
-  if (req.body.userId.match(/[^\w.-]/)) {
+  if (req.body.userId.match(/[^@\w.-]/)) {
     return res.molochError(403, 'User ID must be word characters');
   }
 
