@@ -86,7 +86,8 @@ sub showHelp($)
     print "  --prefix <prefix>            - Prefix for table names\n";
     print "  -n                           - Make no db changes\n";
     print "\n";
-    print "Commands:\n";
+    print "General Commands:\n";
+    print "  info                         - Information about the database\n";
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
@@ -94,17 +95,6 @@ sub showHelp($)
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
-    print "  info                         - Information about the database\n";
-    print "  users-export <fn>            - Save the users info to <fn>\n";
-    print "  users-import <fn>            - Load the users info from <fn>\n";
-    print "  optimize                     - Optimize all indices in ES\n";
-    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
-    print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
-    print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
-    print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
-    print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
-    print "  add-missing <node> <dir>     - Add to db any MISSING file on THIS machine for named node and directory\n";
-    print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING file on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -112,8 +102,28 @@ sub showHelp($)
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
+    print "  optimize                     - Optimize all indices in ES\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
+    print "\n";
+    print "User Commands:\n";
+    print "  users-export <fn>            - Save the users info to <fn>\n";
+    print "  users-import <fn>            - Load the users info from <fn>\n";
+    print "\n";
+    print "File Commands:\n";
+    print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
+    print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
+    print "  rm-missing <node>            - Remove from db any MISSING files on THIS machine for the named node\n";
+    print "  add-missing <node> <dir>     - Add to db any MISSING files on THIS machine for named node and directory\n";
+    print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
+    print "\n";
+    print "Field Commands:\n";
     print "  field disable <exp>          - disable a field from being indexed\n";
     print "  field enable <exp>           - enable a field from being indexed\n";
+    print "\n";
+    print "Node Commands:\n";
+    print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
+    print "  hide-node <node>             - Hide node in stats display\n";
+    print "  unhide-node <node>           - Unhide node in stats display\n";
     exit 1;
 }
 ################################################################################
@@ -1522,8 +1532,8 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node|hide-?node|unhide-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-files)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
@@ -1703,6 +1713,8 @@ if ($ARGV[1] =~ /^users-?import$/) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/(scalar(keys %{$nodes->{nodes}})*scalar(@historys)))),
                                                        commify(int($historysBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@historys))));
     }
+    printIndex($status, "stats_v3");
+    printIndex($status, "stats_v2");
     printIndex($status, "files_v5");
     printIndex($status, "files_v4");
     printIndex($status, "users_v5");
@@ -1761,6 +1773,16 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
     }
+    exit 0;
+} elsif ($ARGV[1] =~ /^hide-?node$/) {
+    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    die "Node $ARGV[2] not found" if (!$results->{found});
+    esPost("/${PREFIX}stats/stat/$ARGV[2]/_update", '{"doc": {"hide": true}}');
+    exit 0;
+} elsif ($ARGV[1] =~ /^unhide-?node$/) {
+    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    die "Node $ARGV[2] not found" if (!$results->{found});
+    esPost("/${PREFIX}stats/stat/$ARGV[2]/_update", '{"script" : "ctx._source.remove(\"hide\")"}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];
