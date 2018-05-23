@@ -26,7 +26,7 @@
           v-for="item of menu"
           :key="item.link"
           v-has-permission="item.permission">
-          <router-link :to="{ path: item.link, query: item.query }">
+          <router-link :to="{ path: item.link, query: item.query, params: { nav: true } }">
             {{ item.title }}
           </router-link>
         </b-nav-item>

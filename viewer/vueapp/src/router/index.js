@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-// import store from '@/store';  // TODO
+import store from '@/store';
 import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
@@ -87,11 +87,11 @@ router.beforeEach((to, from, next) => {
     location.reload();
   }
 
-  // TODO
-  // always use the expression url query parameter
-  // if (!to.params.nav && store.state.expression !== to.query.expression) {
-  //   store.commit('setExpression', to.query.expression);
-  // }
+  // always use the expression in the url query parameter if the navigation
+  // was initiated from the back/forward browser btn
+  if (!to.params.nav && store.state.expression !== to.query.expression) {
+    store.commit('setExpression', to.query.expression);
+  }
 
   let page = to.name || 'Moloch - ';
   let view = to.query.view ? ` - ${to.query.view}` : '';
