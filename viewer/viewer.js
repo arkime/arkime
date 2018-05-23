@@ -2639,12 +2639,22 @@ app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
   var query = {from: +req.query.start || 0,
-               size: Math.min(10000, +req.query.length || 500)
+               size: Math.min(10000, +req.query.length || 500),
+               query: {
+                 bool: {
+                   must: [
+                   ],
+                   should: [
+                   ],
+                   must_not: [
+                     {term: {hide: true}}
+                   ]
+                 }
+               }
               };
 
   if (req.query.filter !== undefined && req.query.filter !== '') {
     let names = req.query.filter.split(',');
-    query.query = { bool: { should: [] } };
     for (let i = 0, len = names.length; i < len; ++i) {
       let name = names[i].trim();
       if (name !== '') {
@@ -2656,12 +2666,6 @@ app.get('/stats.json', function(req, res) {
   }
 
   if (req.query.hide !== undefined && req.query.hide !== "none") {
-    if (query.query === undefined) {
-      query.query = { bool: { must: [] } };
-    } else {
-      query.query.bool = {must: [{bool: query.query.bool}]};
-    }
-
     if (req.query.hide === "old" || req.query.hide === "both") {
       query.query.bool.must.push({range: {currentTime: {gte: "now-5m"}}});
     }
