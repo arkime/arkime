@@ -122,6 +122,7 @@ sub showHelp($)
     print "\n";
     print "Node Commands:\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
+    print "  add-alias <node> <hostname>  - Adds a hidden node that points to hostname\n";
     print "  hide-node <node>             - Hide node in stats display\n";
     print "  unhide-node <node>           - Unhide node in stats display\n";
     exit 1;
@@ -1532,9 +1533,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node|hide-?node|unhide-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-files)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -1783,6 +1784,11 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
     esPost("/${PREFIX}stats/stat/$ARGV[2]/_update", '{"script" : "ctx._source.remove(\"hide\")"}');
+    exit 0;
+} elsif ($ARGV[1] =~ /^add-?alias$/) {
+    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    die "Node $ARGV[2] already exists, must remove first" if ($results->{found});
+    esPost("/${PREFIX}stats/stat/$ARGV[2]", '{"nodeName": "' . $ARGV[2] . '", "hostname": "' . $ARGV[3] . '", "hide": true}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];
