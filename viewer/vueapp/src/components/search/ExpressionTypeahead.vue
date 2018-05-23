@@ -122,6 +122,9 @@ export default {
     }
   },
   created: function () {
+    if (this.$route.query.expression) {
+      this.expression = this.$route.query.expression;
+    }
     this.getFields();
   },
   mounted: function () {

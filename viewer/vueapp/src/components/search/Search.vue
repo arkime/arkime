@@ -294,7 +294,8 @@ export default {
         query: {
           ...this.$route.query,
           expression: this.expression
-        }
+        },
+        params: { nav: true }
       });
     },
     changeExpression: function () {

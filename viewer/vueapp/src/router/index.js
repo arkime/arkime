@@ -88,7 +88,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // always use the expression in the url query parameter if the navigation
-  // was initiated from the back/forward browser btn
+  // was initiated from anything not in the moloch UI (browser forward/back btns)
   if (!to.params.nav && store.state.expression !== to.query.expression) {
     store.commit('setExpression', to.query.expression);
   }

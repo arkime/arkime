@@ -25,8 +25,10 @@
         <b-nav-item
           v-for="item of menu"
           :key="item.link"
+          class="cursor-pointer"
           v-has-permission="item.permission">
-          <router-link :to="{ path: item.link, query: item.query, params: { nav: true } }">
+          <router-link :to="{ path: item.link, query: item.query, params: { nav: true } }"
+            :class="{'router-link-active': $route.path === `/${item.link}`}">
             {{ item.title }}
           </router-link>
         </b-nav-item>
@@ -77,12 +79,11 @@ export default {
       // preserve url query parameters
       for (let m in menu) {
         let item = menu[m];
-        // if the expression doesn't match the url query param, make sure the
-        // stored expression is part of the url for each nav item
-        if (this.$store.state.expression !== this.$route.query.expression) {
-          this.updateRouteQuery(this.$store.state.expression);
-        }
-        item.query = this.$route.query;
+        // make sure the stored expression is part of the query
+        item.query = {
+          ...this.$route.query,
+          expression: this.$store.state.expression
+        };
       }
 
       return menu;
@@ -99,9 +100,6 @@ export default {
   methods: {
     isActive: function (link) {
       return link === this.$route.path.split('/')[1];
-    },
-    updateRouteQuery: function (expression) {
-      this.$route.query.expression = this.$store.state.expression;
     }
   }
 };
