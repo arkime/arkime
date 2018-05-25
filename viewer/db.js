@@ -676,9 +676,7 @@ exports.loadFields = function(cb) {
   return exports.search("fields", "field", {size:1000}, cb);
 };
 
-exports.getIndices = function(startTime, stopTime, rotateIndex, bounding, cb) {
-  if (bounding !== "last") {return cb("sessions2-*");}
-
+exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   var indices = [];
   exports.getAliasesCache("sessions2-*", (err, aliases) => {
 

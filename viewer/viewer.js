@@ -1956,11 +1956,13 @@ function buildSessionQuery(req, buildCb) {
   }
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
-    if (req.query.date && req.query.date === '-1') {
-      return buildCb(err || lerr, query, "sessions2-*");
+    if (req.query.date === '-1' ||                       // An all query
+        (req.query.bounding || "last") !== "last" ||     // Not a last bounded query
+        Config.get("multiES", false)) {                  // We are multi viewer
+      return buildCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), req.query.bounding || "last", function(indices) {
+    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
       return buildCb(err || lerr, query, indices);
     });
   });
@@ -3016,7 +3018,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
     }
 
     if (Config.debug) {
-      console.log("sessions.json query", JSON.stringify(query, null, 1));
+      console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
 
     Promise.all([Db.searchPrimary(indices, 'session', query),
