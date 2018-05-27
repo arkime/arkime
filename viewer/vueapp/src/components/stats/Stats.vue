@@ -42,7 +42,7 @@
             <option value="needSave">Waiting Queue</option>
             <option value="frags">Active Fragments</option>
             <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
-            <option value="deltaOverloadDroppedPerS>c">Overload Dropped/Sec</option>
+            <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
             <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
             <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
             <option value="sessionSizePerSec">ES Session Size/Sec</option>
