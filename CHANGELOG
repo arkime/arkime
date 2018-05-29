@@ -28,6 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - rules reload without restarting
   - viewer/db - new hide-node/unhide-node commands to hide commands in capture stats
   - multiviewer - no longer need to have the same rotateIndex everywhere
+  - capture - initial saveUnknownPackets support
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)

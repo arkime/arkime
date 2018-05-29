@@ -306,6 +306,9 @@ typedef struct moloch_config {
     gboolean  noLoadTags;
     gint      pktsToRead;
 
+    uint64_t  ipSavePcap[4];
+    uint64_t  etherSavePcap[1024];
+
     enum MolochRotate rotate;
 
     int       writeMethod;
@@ -409,6 +412,16 @@ typedef struct {
 
 } MolochParserInfo_t;
 
+/******************************************************************************/
+struct moloch_pcap_timeval {
+    int32_t tv_sec;		   /* seconds */
+    int32_t tv_usec;	   	   /* microseconds */
+};
+struct moloch_pcap_sf_pkthdr {
+    struct moloch_pcap_timeval ts; /* time stamp */
+    uint32_t caplen;		   /* length of portion present */
+    uint32_t pktlen;		   /* length this packet (off wire) */
+};
 
 /******************************************************************************/
 #define MOLOCH_PACKET_TUNNEL_GRE    0x1

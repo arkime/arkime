@@ -355,7 +355,7 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
     if (tcphdr->th_flags & TH_ACK) {
         if (session->haveTcpSession && (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&
             (moloch_packet_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) {
-                static char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
+                static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
                 moloch_session_add_tag(session, tags[packet->direction]);
                 session->ackedUnseenSegment |= (1 << packet->direction);
         }
@@ -426,7 +426,7 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
         }
 
         if (session->haveTcpSession && (session->outOfOrder & (1 << packet->direction)) == 0) {
-            static char *tags[2] = {"out-of-order-src", "out-of-order-dst"};
+            static const char *tags[2] = {"out-of-order-src", "out-of-order-dst"};
             moloch_session_add_tag(session, tags[packet->direction]);
             session->outOfOrder |= (1 << packet->direction);
         }
@@ -748,6 +748,32 @@ LOCAL void *moloch_packet_thread(void *threadp)
 }
 
 /******************************************************************************/
+static FILE *unknownPacketFile[2];
+LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const packet)
+{
+    static const char *names[] = {"unknown.ether", "unknown.ip"};
+    static MOLOCH_LOCK_DEFINE(lock);
+
+    struct moloch_pcap_sf_pkthdr hdr;
+    hdr.ts.tv_sec  = packet->ts.tv_sec;
+    hdr.ts.tv_usec = packet->ts.tv_usec;
+    hdr.caplen     = packet->pktlen;
+    hdr.pktlen     = packet->pktlen;
+
+    MOLOCH_LOCK(lock);
+    if (!unknownPacketFile[type]) {
+        char str[PATH_MAX];
+        snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
+        unknownPacketFile[type] = fopen(str, "w");
+        fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
+    }
+
+    fwrite(&hdr, 16, 1, unknownPacketFile[type]);
+    fwrite(packet->pkt, packet->pktlen, 1, unknownPacketFile[type]);
+    MOLOCH_UNLOCK(lock);
+}
+
+/******************************************************************************/
 LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
@@ -770,6 +796,8 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     default:
         if (config.logUnknownProtocols)
             LOG("Unknown GRE protocol 0x%04x(%d)", type, type);
+        if (BIT_ISSET(type, config.etherSavePcap))
+            moloch_packet_save_unknown_packet(0, packet);
         return MOLOCH_PACKET_UNKNOWN;
     }
 
@@ -1187,6 +1215,8 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     default:
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", ip4->ip_p);
+        if (BIT_ISSET(ip4->ip_p, config.ipSavePcap))
+            moloch_packet_save_unknown_packet(1, packet);
         return MOLOCH_PACKET_UNKNOWN;
     }
     packet->protocol = ip4->ip_p;
@@ -1238,7 +1268,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             break;
         case IPPROTO_FRAGMENT:
             LOG("ERROR - Don't support ip6 fragements yet!");
-            return MOLOCH_PACKET_CORRUPT;
+            return MOLOCH_PACKET_UNKNOWN;
         case IPPROTO_TCP:
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
@@ -1302,9 +1332,13 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             break;
         case IPPROTO_IPV4:
             return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
+        case IPPROTO_IPV6:
+            return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
             if (config.logUnknownProtocols)
-                LOG("Unknown protocol %d", ip6->ip6_nxt);
+                LOG("Unknown protocol %d %d", ip6->ip6_nxt, nxt);
+            if (BIT_ISSET(nxt, config.ipSavePcap))
+                moloch_packet_save_unknown_packet(1, packet);
             return MOLOCH_PACKET_UNKNOWN;
         }
         if (ip_hdr_len > len) {
@@ -1446,6 +1480,8 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Unknown ethertype %x", ethertype);
 #endif
+            if (BIT_ISSET(ethertype, config.etherSavePcap))
+                moloch_packet_save_unknown_packet(0, packet);
             return MOLOCH_PACKET_UNKNOWN;
         } // switch
     }
@@ -1478,6 +1514,8 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown ethertype %x", ethertype);
 #endif
+        if (BIT_ISSET(ethertype, config.etherSavePcap))
+            moloch_packet_save_unknown_packet(0, packet);
         return MOLOCH_PACKET_UNKNOWN;
     } // switch
     return MOLOCH_PACKET_CORRUPT;
@@ -1895,4 +1933,8 @@ void moloch_packet_exit()
         ipTree6 = 0;
     }
     moloch_packet_log(SESSION_TCP);
+    if (unknownPacketFile[0])
+        fclose(unknownPacketFile[0]);
+    if (unknownPacketFile[1])
+        fclose(unknownPacketFile[1]);
 }

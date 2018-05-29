@@ -956,7 +956,6 @@ void moloch_http_init()
     curl_global_init(CURL_GLOBAL_SSL);
 
     HASH_INIT(h_, connections, moloch_session_hash, moloch_http_conn_cmp);
-    memset(&connectionsSet, 0, sizeof(connectionsSet));
     DLL_INIT(rqt_, &requests);
 }
 /******************************************************************************/

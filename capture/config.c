@@ -453,6 +453,45 @@ void moloch_config_load()
     config.maxStreams[SESSION_SCTP] = maxStreams/config.packetThreads/20;
     config.maxStreams[SESSION_ICMP] = maxStreams/config.packetThreads/200;
 
+
+    gchar **saveUnknownPackets     = moloch_config_str_list(keyfile, "saveUnknownPackets", NULL);
+    if (saveUnknownPackets) {
+        for (i = 0; saveUnknownPackets[i]; i++) {
+            char *s = saveUnknownPackets[i];
+
+            if (strcmp(s, "all") == 0) {
+                memset(&config.etherSavePcap, 0xff, 1024);
+                memset(&config.ipSavePcap, 0xff, 4);
+            } else if (strcmp(s, "ip:all") == 0) {
+                memset(&config.ipSavePcap, 0xff, 4);
+            } else if (strcmp(s, "ether:all") == 0) {
+                memset(&config.etherSavePcap, 0xff, 1024);
+            } else if (strncmp(s, "ip:", 3) == 0) {
+                int n = atoi(s+3);
+                if (n < 0 || n > 0xff)
+                    LOGEXIT("Bad value: %s", s);
+                BIT_SET(n, config.ipSavePcap);
+            } else if (strncmp(s, "-ip:", 4) == 0) {
+                int n = atoi(s+4);
+                if (n < 0 || n > 0xff)
+                    LOGEXIT("Bad value: %s", s);
+                BIT_CLR(n, config.ipSavePcap);
+            } else if (strncmp(s, "ether:", 6) == 0) {
+                int n = atoi(s+6);
+                if (n < 0 || n > 0xffff)
+                    LOGEXIT("Bad value: %s", s);
+                BIT_SET(n, config.etherSavePcap);
+            } else if (strncmp(s, "-ether:", 7) == 0) {
+                int n = atoi(s+7);
+                if (n < 0 || n > 0xffff)
+                    LOGEXIT("Bad value: %s", s);
+                BIT_CLR(n, config.etherSavePcap);
+            } else {
+                LOGEXIT("Not sure what %s is", s);
+            }
+        }
+    }
+
 }
 /******************************************************************************/
 void moloch_config_load_local_ips()
