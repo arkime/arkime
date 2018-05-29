@@ -473,7 +473,7 @@ function getStats(cluster) {
 
       // Look for issues
       for (let stat of stats.data) {
-        if ((now - stat.currentTime) > 45) {
+        if ((now - stat.currentTime) > 70) {
           setIssue(cluster, {
             type  : 'outOfDate',
             node  : stat.nodeName,
