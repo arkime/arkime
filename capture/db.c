@@ -1406,7 +1406,7 @@ LOCAL void moloch_db_mkpath(char *path)
     }
 }
 /******************************************************************************/
-char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id, ...)
+char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     char               key[100];
     int                key_len;
@@ -1556,12 +1556,12 @@ char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, 
     *id = num;
 
     if (name)
-        return name;
+        return (char *)name;
 
     return g_strdup(filename);
 }
 /******************************************************************************/
-char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id)
+char *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id)
 {
     return moloch_db_create_file_full(firstPacket, name, size, locked, id, NULL);
 }

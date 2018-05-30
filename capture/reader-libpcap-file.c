@@ -33,12 +33,13 @@ extern void                 *esServer;
 LOCAL  MolochStringHead_t    monitorQ;
 
 LOCAL  char                  offlinePcapFilename[PATH_MAX+1];
-LOCAL  char                 *offlinePcapName;
 LOCAL  int                   pktsToRead;
 
 LOCAL void reader_libpcapfile_opened();
 
 LOCAL MolochPacketBatch_t   batch;
+LOCAL uint8_t               readerPos;
+extern char                *readerFileName[256];
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -378,7 +379,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->pkt           = (u_char *)bytes;
     packet->ts            = h->ts;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
-    packet->readerName    = offlinePcapName;
+    packet->readerPos     = readerPos;
     moloch_packet_batch(&batch, packet);
 }
 /******************************************************************************/
@@ -460,7 +461,10 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    offlinePcapName = strdup(offlinePcapFilename);
+    readerPos++;
+    if (readerFileName[readerPos])
+        g_free(readerFileName[readerPos]);
+    readerFileName[readerPos] = g_strdup(offlinePcapFilename);
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {

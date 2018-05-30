@@ -28,8 +28,10 @@
 extern MolochConfig_t        config;
 
 
-LOCAL GHashTable           *filePtr2Id;
 LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
+
+char                       *readerFileName[256];
+LOCAL uint8_t               outputIds[256];
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
@@ -44,13 +46,14 @@ LOCAL void writer_inplace_exit()
 LOCAL long writer_inplace_create(MolochPacket_t * const packet)
 {
     struct stat st;
+    const char *readerName = readerFileName[packet->readerPos];
 
-    stat(packet->readerName, &st);
+    stat(readerName, &st);
 
     uint32_t outputId;
-    char *filename = moloch_db_create_file(packet->ts.tv_sec, packet->readerName, st.st_size, 1, &outputId);
+    char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, 1, &outputId);
     g_free(filename);
-    g_hash_table_insert(filePtr2Id, packet->readerName, (gpointer)(long)outputId);
+    outputIds[packet->readerPos] = outputId;
     return outputId;
 }
 
@@ -58,7 +61,7 @@ LOCAL long writer_inplace_create(MolochPacket_t * const packet)
 LOCAL void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     MOLOCH_LOCK(filePtr2Id);
-    long outputId = (long)g_hash_table_lookup(filePtr2Id, packet->readerName);
+    long outputId = outputIds[packet->readerPos];
     if (!outputId)
         outputId = writer_inplace_create(packet);
     MOLOCH_UNLOCK(filePtr2Id);
@@ -80,6 +83,4 @@ void writer_inplace_init(char *UNUSED(name))
         moloch_writer_write    = writer_inplace_write_dryrun;
     else
         moloch_writer_write    = writer_inplace_write;
-
-    filePtr2Id = g_hash_table_new(g_direct_hash, g_direct_equal);
 }

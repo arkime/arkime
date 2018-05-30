@@ -436,7 +436,6 @@ typedef struct molochpacket_t
     uint8_t       *pkt;            // full packet
     uint64_t       writerFilePos;  // where in output file
     uint64_t       readerFilePos;  // where in input file
-    char          *readerName;     // file name reader used
     uint32_t       writerFileNum;  // file number in db
     uint32_t       hash;           // Saved hash
     uint16_t       pktlen;         // length of packet
@@ -445,6 +444,7 @@ typedef struct molochpacket_t
     uint8_t        ipOffset;       // offset to ip header from start
     uint8_t        vpnIpOffset;    // offset to vpn ip header from start
     uint8_t        protocol;       // ip protocol
+    uint8_t        readerPos;      // position for filename/ops
     uint8_t        direction:1;    // direction of packet
     uint8_t        ses:3;          // type of session
     uint8_t        v6:1;           // v6 or not
@@ -465,6 +465,7 @@ typedef struct
 {
     MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
     int                   count;
+    uint8_t               readerPos;
 } MolochPacketBatch_t;
 /******************************************************************************/
 typedef struct moloch_tcp_data {
@@ -711,6 +712,7 @@ gchar **moloch_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys
 
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
+gchar **moloch_config_raw_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
@@ -725,8 +727,8 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
  */
 
 void     moloch_db_init();
-char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id);
-char    *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id, ...);
+char    *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
+char    *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);

@@ -55,6 +55,8 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 
 LOCAL int                    maxTcpOutOfOrderPackets;
 
+extern MolochFieldOps_t      readerFieldOps[256];
+
 /******************************************************************************/
 
 #define MOLOCH_PACKET_SUCCESS          0
@@ -568,6 +570,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
             session->thread = thread;
 
             moloch_parsers_initial_tag(session);
+
+            if (readerFieldOps[packet->readerPos].num)
+                moloch_field_ops_run(session, &readerFieldOps[packet->readerPos]);
 
             switch (session->protocol) {
             case IPPROTO_TCP:

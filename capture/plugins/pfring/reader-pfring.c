@@ -56,18 +56,21 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
     packet->pkt           = (u_char *)p;
     packet->ts            = h->ts;
     packet->pktlen        = h->len;
+    packet->readerPos     = batch->readerPos;
 
     moloch_packet_batch(batch, packet);
     if (batch->count > 10000)
         moloch_packet_batch_flush(batch);
 }
 /******************************************************************************/
-LOCAL void *reader_pfring_thread(void *ringv)
+LOCAL void *reader_pfring_thread(void *posv)
 {
-    pfring                *ring = ringv;
+    long                   pos = (long)posv;
+    pfring                *ring = rings[pos];
 
     MolochPacketBatch_t batch;
     moloch_packet_batch_init(&batch);
+    batch.readerPos = pos;
     pfring_enable_ring(ring);
     while (1) {
         int r = pfring_loop(ring, reader_pfring_packet_cb, (u_char *)&batch, -1);
@@ -93,7 +96,7 @@ void reader_pfring_start() {
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         char name[100];
         snprintf(name, sizeof(name), "moloch-pfring%d", i);
-        g_thread_new(name, &reader_pfring_thread, rings[i]);
+        g_thread_new(name, &reader_pfring_thread, (gpointer)(long)i);
     }
 }
 /******************************************************************************/

@@ -58,15 +58,20 @@ DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8
     packet->pkt           = (u_char *)data;
     packet->ts            = h->ts;
     packet->pktlen        = h->pktlen;
+    packet->readerPos     = ((MolochPacketBatch_t *)batch)->readerPos;
 
     moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
     return DAQ_VERDICT_PASS;
 }
 /******************************************************************************/
-LOCAL void *reader_daq_thread(gpointer handle)
+LOCAL void *reader_daq_thread(gpointer posv)
 {
+    long pos = (long)posv;
+    gpointer handle = handles[pos]
+
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
+    batch.readerPos = pos;
     while (1) {
         int r = daq_acquire(module, handle, 10000, reader_daq_packet_cb, &batch);
         moloch_packet_batch_flush(&batch);

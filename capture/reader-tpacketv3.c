@@ -153,6 +153,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->pktlen        = th->tp_len;
             packet->ts.tv_sec     = th->tp_sec;
             packet->ts.tv_usec    = th->tp_nsec/1000;
+            packet->readerPos     = info;
 
             moloch_packet_batch(&batch, packet);
 

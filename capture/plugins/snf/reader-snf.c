@@ -54,9 +54,13 @@ int reader_snf_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-LOCAL void *reader_snf_thread(gpointer ring)
+LOCAL void *reader_snf_thread(gpointer posv)
 {
+    long full = (long)posv;
+    long pos = full & 0xff;
+    gpointer ring = rings[pos][(full >> 8) & 0xff];
     struct snf_recv_req req;
+
 
     MolochPacketBatch_t batch;
     moloch_packet_batch_init(&batch);
@@ -76,6 +80,7 @@ LOCAL void *reader_snf_thread(gpointer ring)
         packet->ts.tv_sec     = req.timestamp / 1000000000;
         packet->ts.tv_usec    = req.timestamp % 1000000000000;
         packet->pktlen        = req.length;
+        packet->readerPos     = pos;
 
         moloch_packet_batch(&batch, packet);
 
@@ -94,7 +99,7 @@ void reader_snf_start() {
         for (r = 0; r < snfNumRings; r++) {
             char name[100];
             snprintf(name, sizeof(name), "moloch-snf%d-%d", i, r);
-            g_thread_new(name, &reader_snf_thread, rings[i][r]);
+            g_thread_new(name, &reader_snf_thread, (i | r << 8));
         }
         snf_start(handles[i]);
     }

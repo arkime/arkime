@@ -59,18 +59,21 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
     packet->pkt           = (u_char *)bytes;
     packet->ts            = h->ts;
     packet->pktlen        = h->len;
+    packet->readerPos     = ((MolochPacketBatch_t *)batch)->readerPos;
 
     moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
 }
 /******************************************************************************/
-LOCAL void *reader_libpcap_thread(gpointer pcapv)
+LOCAL void *reader_libpcap_thread(gpointer posv)
 {
-    pcap_t *pcap = pcapv;
+    long    pos = (long)posv;
+    pcap_t *pcap = pcaps[pos];
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
 
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
+    batch.readerPos = pos;
     while (1) {
         int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char*)&batch);
         moloch_packet_batch_flush(&batch);
@@ -109,7 +112,7 @@ void reader_libpcap_start() {
 
         char name[100];
         snprintf(name, sizeof(name), "moloch-pcap%d", i);
-        g_thread_new(name, &reader_libpcap_thread, (gpointer)pcaps[i]);
+        g_thread_new(name, &reader_libpcap_thread, (gpointer)(long)i);
     }
 }
 /******************************************************************************/

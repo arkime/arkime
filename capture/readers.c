@@ -30,6 +30,9 @@ MolochReaderStart  moloch_reader_start;
 MolochReaderStats  moloch_reader_stats;
 MolochReaderStop   moloch_reader_stop;
 
+char              *readerFileName[256];
+MolochFieldOps_t   readerFieldOps[256];
+
 
 /******************************************************************************/
 void moloch_readers_set(char *name) {
@@ -56,6 +59,37 @@ void moloch_readers_init()
     moloch_readers_add("libpcap-file", reader_libpcapfile_init);
     moloch_readers_add("libpcap", reader_libpcap_init);
     moloch_readers_add("tpacketv3", reader_tpacketv3_init);
+
+    char **interfaceOps;
+    interfaceOps = moloch_config_raw_str_list(NULL, "interfaceOps", "");
+
+    int i, j;
+    for (i = 0; interfaceOps[i]; i++) {
+        if (!interfaceOps[i][0])
+            continue;
+
+        char **opsstr = g_strsplit(interfaceOps[i], ",", 0);
+        for (j = 0; opsstr[j]; j++) { }
+
+        moloch_field_ops_init(&readerFieldOps[i], j, 0);
+
+        for (j = 0; opsstr[j]; j++) {
+            char *equal = strchr(opsstr[j], '=');
+            if (!equal) {
+                LOGEXIT("Must be FieldExpr=value, missing equal '%s'", opsstr[j]);
+            }
+            int len = strlen(equal+1);
+            if (!len) {
+                LOGEXIT("Must be FieldExpr=value, empty value for '%s'", opsstr[j]);
+            }
+            *equal = 0;
+            int fieldPos = moloch_field_by_exp(opsstr[j]);
+            if (fieldPos == -1) {
+                LOGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", opsstr[j]);
+            }
+            moloch_field_ops_add(&readerFieldOps[i], fieldPos, equal+1, len);
+        }
+    }
 }
 /******************************************************************************/
 void moloch_readers_exit()
