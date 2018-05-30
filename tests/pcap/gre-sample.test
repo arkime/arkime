@@ -96,6 +96,10 @@
             "srcPackets" : 4,
             "srcPort" : 0,
             "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1230,
             "totDataBytes" : 0,
@@ -182,6 +186,10 @@
             "srcPayload8" : "230b06ef00000000",
             "srcPort" : 123,
             "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
             "totDataBytes" : 212,
@@ -317,6 +325,10 @@
                ],
                "versionCnt" : 2
             },
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 10,
                "dstZero" : 0,
@@ -429,6 +441,10 @@
             "srcPayload8" : "bdaa010000010000",
             "srcPort" : 37675,
             "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 198,
             "totDataBytes" : 182,
@@ -515,6 +531,10 @@
             "srcPayload8" : "230b06ef00000000",
             "srcPort" : 123,
             "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
             "totDataBytes" : 212,
@@ -601,6 +621,10 @@
             "srcPayload8" : "230b06ef00000000",
             "srcPort" : 123,
             "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-sample"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
             "totDataBytes" : 212,

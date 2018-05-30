@@ -81,9 +81,10 @@
             "srcPort" : 56329,
             "tags" : [
                "dstip",
+               "error-dns",
                "srcip"
             ],
-            "tagsCnt" : 2,
+            "tagsCnt" : 3,
             "test" : {
                "ASN" : [
                   "AS0000 This is neat"

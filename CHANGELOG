@@ -30,6 +30,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - multiviewer - no longer need to have the same rotateIndex everywhere
   - capture - initial saveUnknownPackets support
   - capture - new interfaceOps for ops per interface
+  - capture - new filenameOps for ops per filename (issue #857)
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)

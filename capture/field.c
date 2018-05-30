@@ -1266,6 +1266,8 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case  MOLOCH_FIELD_TYPE_STR_GHASH:
         case  MOLOCH_FIELD_TYPE_IP:
         case  MOLOCH_FIELD_TYPE_IP_GHASH:
+            if (valuelen == -1)
+                valuelen = strlen(value);
             if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)
                 op->str = g_strndup(value, valuelen);
             else

@@ -71,7 +71,7 @@ void moloch_readers_init()
         char **opsstr = g_strsplit(interfaceOps[i], ",", 0);
         for (j = 0; opsstr[j]; j++) { }
 
-        moloch_field_ops_init(&readerFieldOps[i], j, 0);
+        moloch_field_ops_init(&readerFieldOps[i], j, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
         for (j = 0; opsstr[j]; j++) {
             char *equal = strchr(opsstr[j], '=');
@@ -89,7 +89,9 @@ void moloch_readers_init()
             }
             moloch_field_ops_add(&readerFieldOps[i], fieldPos, equal+1, len);
         }
+        g_strfreev(opsstr);
     }
+    g_strfreev(interfaceOps);
 }
 /******************************************************************************/
 void moloch_readers_exit()
