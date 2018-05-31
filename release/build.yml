@@ -23,6 +23,10 @@
 # Tasks before roles install software
   pre_tasks:
     - block:
+        - name: libselinux-python
+          yum: name=libselinux-python state=installed
+          when: ansible_distribution_major_version == "6"
+
         - name: ntop repo
           get_url: url=http://packages.ntop.org/centos-stable/ntop.repo dest=/etc/yum.repos.d/ntop.repo
 
@@ -129,7 +133,7 @@
 # Actually build
     - block:
       - name: git clone
-        git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes version=v1.0.0-rc1
+        git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
 
       - name: build centos 6
         shell: cd {{moloch_name}}; make clean; scl enable devtoolset-3 python27 "./easybutton-build.sh -d /data/{{moloch_name}} --daq"
@@ -140,15 +144,17 @@
         when: ansible_distribution_major_version != "6"
 
       - name: install centos 6
-        shell: npm -g config set user root; cd {{moloch_name}}; scl enable devtoolset-3 "make install"
+        shell: unset SUDO_USER SUDO_UID; npm config set user root; npm config set unsafe-perm true; cd {{moloch_name}}; scl enable devtoolset-3 "make install"
         environment:
           PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
+          HOME: "/root"
         when: ansible_distribution_major_version == "6"
 
       - name: install not centos 6
-        shell: npm -g config set user root; cd {{moloch_name}}; make install
+        shell: unset SUDO_USER SUDO_UID; npm config set user root; npm config set unsafe-perm true; cd {{moloch_name}}; make install
         environment:
           PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
+          HOME: "/root"
         when: ansible_distribution_major_version != "6"
 
       # Block End
