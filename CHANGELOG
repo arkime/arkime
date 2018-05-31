@@ -15,13 +15,12 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.2.0 2018/05/xx
+1.2.0 2018/06/xx
   - viewer - sessions, spiview, spigraph, connections, help, users, history pages implemented
              in Vue instead of AngularJS
   - viewer - split stats capture graphs/stats into 2 tabs
   - viewer - stats now has sort option
   - capture - new maxTcpOutOfOrderPackets setting, default 256
-  - capture - tcpflag are always counted (issue #849)
   - capture - drophash supports v6 and saving
   - wise - support talking to wise over https, use wiseURL
   - capture - basic mqtt parsing
@@ -31,7 +30,12 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - initial saveUnknownPackets support
   - capture - new interfaceOps for ops per interface
   - capture - new filenameOps for ops per filename (issue #857)
-  - capture - fix 10k sessions.json failure
+
+1.1.1 2018/05/31
+  - all - fix http.statuscode
+  - capture - fix _dropByDst/_dropBySrc crash
+  - capture - tcpflag are always counted (issue #849)
+  - viewer - fix 10k sessions.json failure
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)
