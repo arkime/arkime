@@ -15,7 +15,7 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.1.1 2018/05/xx
+1.1.1 2018/05/31
   - all - fix http.statuscode
   - capture - fix _dropByDst/_dropBySrc crash
   - capture - tcpflag are always counted (issue #849)
