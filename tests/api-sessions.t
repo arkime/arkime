@@ -10,7 +10,7 @@ use strict;
 my $pwd = "*/pcap";
 
 # bigendian pcap file tests
-    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = viewerGet("/sessions.json?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/raw/" . $json->{data}->[0]->{id} . "?type=src");
     is (unpack("H*", $response->content), "4fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "Correct bigendian tcpdump data");

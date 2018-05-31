@@ -31,6 +31,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - initial saveUnknownPackets support
   - capture - new interfaceOps for ops per interface
   - capture - new filenameOps for ops per filename (issue #857)
+  - capture - fix 10k sessions.json failure
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)
