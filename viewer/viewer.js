@@ -1956,9 +1956,9 @@ function buildSessionQuery(req, buildCb) {
   }
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
-    if (req.query.date === '-1' ||                       // An all query
-        (req.query.bounding || "last") !== "last" ||     // Not a last bounded query
-        Config.get("multiES", false)) {                  // We are multi viewer
+    if (req.query.date === '-1' ||                                      // An all query
+        (req.query.bounding || "last") !== "last" ||                    // Not a last bounded query
+        Config.get("queryAllIndices", Config.get("multiES", false))) {  // queryAllIndices (default: multiES)
       return buildCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 

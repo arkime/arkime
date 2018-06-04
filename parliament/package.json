@@ -14,7 +14,7 @@
     "jslint": "jshint parliament.js notifiers"
   },
   "dependencies": {
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^2.0.0",
     "jsonwebtoken": "^8.1.0",
     "notifme-sdk": "^1.6.0",
     "serve-favicon": "^2.4.5"

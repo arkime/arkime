@@ -65,11 +65,11 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
 
   // Get first pcap header
   var header, pcap, s3;
-  Db.fileIdToFile(fields.no, fields.ps[0] * -1, function(info) {
+  Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function(info) {
     var parts = splitRemain(info.name,'/', 4);
 
     // Make s3 for this request, all will be in same region
-    s3 = makeS3(fields.no, parts[2]);
+    s3 = makeS3(fields.node, parts[2]);
 
     var params = {
       Bucket: parts[3],
@@ -107,11 +107,11 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
       });
     }
 
-    async.eachLimit(Object.keys(fields.ps), limit || 1, function(p, nextCb) {
-      var pos = fields.ps[p];
+    async.eachLimit(Object.keys(fields.packetPos), limit || 1, function(p, nextCb) {
+      var pos = fields.packetPos[p];
 
       if (pos < 0) {
-        Db.fileIdToFile(fields.no, pos * -1, function(info) {
+        Db.fileIdToFile(fields.node, pos * -1, function(info) {
           saveInfo = info;
           var parts = splitRemain(info.name,'/', 4);
           params = {
@@ -123,7 +123,7 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
         return;
       }
 
-      var len = fields.psl[p];
+      var len = fields.packetLen[p];
       params.Range = "bytes=" + pos + "-" + (pos+len-1);
       process(itemPos++, nextCb);
     },

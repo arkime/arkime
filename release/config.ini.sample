@@ -15,8 +15,9 @@
 
 [default]
 # Comma seperated list of elasticsearch host:port combinations.  If not using a
-# elasticsearch VIP, a different elasticsearch node in the cluster can be specified
-# for each Moloch node to help spread load on high volume clusters
+# Elasticsearch load balancer, a different elasticsearch node in the cluster can be specified
+# for each Moloch node to help spread load on high volume clusters.  For user/password
+# use http://user:pass@host:port
 elasticsearch=MOLOCH_ELASTICSEARCH
 
 # How often to create a new elasticsearch index. hourly,hourly6,daily,weekly,monthly

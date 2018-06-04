@@ -64,6 +64,8 @@ my $HISTORY = 13;
 my $SEGMENTS = 4;
 my $NOOPTIMIZE = 0;
 
+#use LWP::ConsoleLogger::Everywhere ();
+
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
 sub MAX ($$) { $_[$_[0] < $_[1]] }
@@ -96,7 +98,7 @@ sub showHelp($)
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
-    print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
+    print "       type                    - Same as rotateIndex in ini file = hourly,hourly6,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
@@ -1293,6 +1295,10 @@ my($type, $prefix, $t) = @_;
     my @t = gmtime($t);
     if ($type eq "hourly") {
         return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+    }
+
+    if ($type eq "hourly6") {
+        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/6)*6);
     }
 
     if ($type eq "daily") {
