@@ -25,7 +25,7 @@
      * '{{session.ipProtocol | ipProtocol}}'
      */
     .filter('ipProtocol', () => {
-      let lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 58:'icmp6', 132:'sctp' };
+      let lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 50:'esp', 58:'icmp6', 132:'sctp' };
 
       return (input) => {
         let result = lookup[input];

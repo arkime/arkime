@@ -571,6 +571,7 @@ var protocols = {
     icmp:   1,
     tcp:    6,
     udp:    17,
+    esp:    50,
     icmp6:  58,
     icmpv6: 58,
     sctp:   132,

@@ -1,0 +1,1445 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.2",
+            "dstMac" : [
+               "00:00:00:00:00:12"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435037629,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435046628,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               166
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1500,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1500,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.3",
+            "dstMac" : [
+               "00:00:00:00:00:13"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435056630,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435065672,
+            "length" : 9041,
+            "node" : "test",
+            "packetLen" : [
+               150
+            ],
+            "packetPos" : [
+               1684
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1340,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1340,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.4",
+            "dstMac" : [
+               "00:00:00:00:00:14"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435075674,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435084674,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               150
+            ],
+            "packetPos" : [
+               3184
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1340,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1340,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.5",
+            "dstMac" : [
+               "00:00:00:00:00:15"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435094676,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435103675,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               138
+            ],
+            "packetPos" : [
+               4684
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1220,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1220,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.12",
+            "dstMac" : [
+               "00:00:00:00:00:12"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435199683,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435208683,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               166
+            ],
+            "packetPos" : [
+               6064
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1500,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1500,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.13",
+            "dstMac" : [
+               "00:00:00:00:00:13"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435218685,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435227733,
+            "length" : 9048,
+            "node" : "test",
+            "packetLen" : [
+               150
+            ],
+            "packetPos" : [
+               7724
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1340,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1340,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.14",
+            "dstMac" : [
+               "00:00:00:00:00:14"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435237736,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435246755,
+            "length" : 9019,
+            "node" : "test",
+            "packetLen" : [
+               150
+            ],
+            "packetPos" : [
+               9224
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1340,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1340,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.15",
+            "dstMac" : [
+               "00:00:00:00:00:15"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435256758,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435265757,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               138
+            ],
+            "packetPos" : [
+               10724
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1220,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1220,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.22",
+            "dstMac" : [
+               "00:00:00:00:00:12"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435361771,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435370891,
+            "length" : 9120,
+            "node" : "test",
+            "packetLen" : [
+               154
+            ],
+            "packetPos" : [
+               12104
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1380,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1380,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.23",
+            "dstMac" : [
+               "00:00:00:00:00:13"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435380893,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435389893,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               138
+            ],
+            "packetPos" : [
+               13644
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1220,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1220,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.24",
+            "dstMac" : [
+               "00:00:00:00:00:14"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435399895,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435408894,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               138
+            ],
+            "packetPos" : [
+               15024
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1220,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1220,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CO",
+            "dstIp" : "190.0.0.25",
+            "dstMac" : [
+               "00:00:00:00:00:15"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "LACNIC",
+            "fileId" : [],
+            "firstPacket" : 1140435418897,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435427896,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               126
+            ],
+            "packetPos" : [
+               16404
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+            "srcBytes" : 1100,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CO",
+            "srcIp" : "190.0.0.1",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "srcRIR" : "LACNIC",
+            "timestamp" : "SET",
+            "totBytes" : 1100,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0002",
+            "dstMac" : [
+               "00:00:00:00:00:02"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435683595,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435692635,
+            "length" : 9040,
+            "node" : "test",
+            "packetLen" : [
+               186
+            ],
+            "packetPos" : [
+               17664
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1700,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1700,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0003",
+            "dstMac" : [
+               "00:00:00:00:00:03"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435702637,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435711701,
+            "length" : 9064,
+            "node" : "test",
+            "packetLen" : [
+               170
+            ],
+            "packetPos" : [
+               19524
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1540,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1540,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0004",
+            "dstMac" : [
+               "00:00:00:00:00:04"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435721711,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435730710,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               170
+            ],
+            "packetPos" : [
+               21224
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1540,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1540,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0005",
+            "dstMac" : [
+               "00:00:00:00:00:05"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435740713,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435749712,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               158
+            ],
+            "packetPos" : [
+               22924
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1420,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1420,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0012",
+            "dstMac" : [
+               "00:00:00:00:00:02"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435845816,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435854815,
+            "length" : 8999,
+            "node" : "test",
+            "packetLen" : [
+               186
+            ],
+            "packetPos" : [
+               24504
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1700,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1700,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0013",
+            "dstMac" : [
+               "00:00:00:00:00:03"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435864818,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435873836,
+            "length" : 9018,
+            "node" : "test",
+            "packetLen" : [
+               170
+            ],
+            "packetPos" : [
+               26364
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1540,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1540,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0014",
+            "dstMac" : [
+               "00:00:00:00:00:04"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435883839,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435892838,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               170
+            ],
+            "packetPos" : [
+               28064
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1540,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1540,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0015",
+            "dstMac" : [
+               "00:00:00:00:00:05"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140435902840,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140435911877,
+            "length" : 9036,
+            "node" : "test",
+            "packetLen" : [
+               158
+            ],
+            "packetPos" : [
+               29764
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1420,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1420,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0022",
+            "dstMac" : [
+               "00:00:00:00:00:02"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140436007955,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140436016956,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               174
+            ],
+            "packetPos" : [
+               31344
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1580,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1580,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0023",
+            "dstMac" : [
+               "00:00:00:00:00:03"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140436026969,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140436035972,
+            "length" : 9002,
+            "node" : "test",
+            "packetLen" : [
+               158
+            ],
+            "packetPos" : [
+               33084
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1420,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1420,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0024",
+            "dstMac" : [
+               "00:00:00:00:00:04"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140436045975,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140436054974,
+            "length" : 9000,
+            "node" : "test",
+            "packetLen" : [
+               158
+            ],
+            "packetPos" : [
+               34664
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1420,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1420,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0025",
+            "dstMac" : [
+               "00:00:00:00:00:05"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Officially Xerox, but 0:0:0:0:0:0 is more common"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1140436064977,
+            "ipProtocol" : 50,
+            "lastPacket" : 1140436074108,
+            "length" : 9132,
+            "node" : "test",
+            "packetLen" : [
+               146
+            ],
+            "packetPos" : [
+               36244
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 1300,
+            "srcDataBytes" : 0,
+            "srcIp" : "3ffe:0000:0000:0000:0000:0000:0000:0001",
+            "srcMac" : [
+               "00:11:43:4a:d7:0a"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Dell Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 10,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 1300,
+            "totDataBytes" : 0,
+            "totPackets" : 10
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060220",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

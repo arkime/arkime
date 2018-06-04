@@ -413,6 +413,7 @@ void moloch_config_load()
     config.timeouts[SESSION_UDP] = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
     config.timeouts[SESSION_TCP] = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
     config.timeouts[SESSION_SCTP]= moloch_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
+    config.timeouts[SESSION_ESP] = moloch_config_int(keyfile, "espTimeout", 60*10, 10, 0xffff);
     config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
     int maxStreams               = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
@@ -447,11 +448,13 @@ void moloch_config_load()
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
+    config.trackESP              = moloch_config_boolean(keyfile, "trackESP", FALSE);
 
     config.maxStreams[SESSION_TCP] = maxStreams/config.packetThreads*1.25;
     config.maxStreams[SESSION_UDP] = maxStreams/config.packetThreads/20;
     config.maxStreams[SESSION_SCTP] = maxStreams/config.packetThreads/20;
     config.maxStreams[SESSION_ICMP] = maxStreams/config.packetThreads/200;
+    config.maxStreams[SESSION_ESP] = maxStreams/config.packetThreads/200;
 
 
     gchar **saveUnknownPackets     = moloch_config_str_list(keyfile, "saveUnknownPackets", NULL);

@@ -33,6 +33,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new filenameOps for ops per filename (issue #857)
   - s3 - use 1.0 field names
   - viewer - fix a case when decoding failed
+  - all - ESP now has first packet capture if trackESP is set
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

@@ -2700,7 +2700,7 @@ app.get('/stats.json', function(req, res) {
       fields.id        = stats.hits.hits[i]._id;
 
       for (const key of ["totalPackets", "totalK", "totalSessions",
-       "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions",
+       "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions", "espSessions",
        "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
        "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
        "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
@@ -4130,6 +4130,11 @@ function localSessionDetail(req, res) {
       });
     } else if (packets[0].ip.p === 132) {
       Pcap.reassemble_sctp(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets[0].ip.p === 50) {
+      Pcap.reassemble_esp(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });

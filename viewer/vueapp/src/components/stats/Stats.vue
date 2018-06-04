@@ -29,6 +29,7 @@
             <option value="udpSessions">Active UDP Sessions</option>
             <option value="icmpSessions">Active ICMP Sessions</option>
             <option value="sctpSessions">Active SCTP Sessions</option>
+            <option value="espSessions">Active ESP Sessions</option>
             <option value="freeSpaceM">Free Space MB</option>
             <option value="freeSpaceP">Free Space %</option>
             <option value="memory">Memory</option>

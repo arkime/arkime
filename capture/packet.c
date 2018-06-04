@@ -523,6 +523,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
                                   ip4->ip_dst.s_addr, udphdr->uh_dport);
             }
             break;
+        case IPPROTO_ESP:
         case IPPROTO_ICMP:
             if (packet->v6) {
                 moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
@@ -606,6 +607,10 @@ LOCAL void *moloch_packet_thread(void *threadp)
             case IPPROTO_SCTP:
                 session->port1 = ntohs(udphdr->uh_sport);
                 session->port2 = ntohs(udphdr->uh_dport);
+                break;
+            case IPPROTO_ESP:
+                session->stopSaving = 2;
+                break;
             case IPPROTO_ICMP:
                 break;
             }
@@ -650,6 +655,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             session->tcp_flags |= tcphdr->th_flags;
             break;
         case IPPROTO_ICMP:
+        case IPPROTO_ESP:
             packet->direction = (dir)?0:1;
             break;
         }
@@ -1206,6 +1212,13 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
         packet->ses = SESSION_SCTP;
         break;
+    case IPPROTO_ESP:
+        if (!config.trackESP)
+            return MOLOCH_PACKET_UNKNOWN;
+        moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
+                          ip4->ip_dst.s_addr, 0);
+        packet->ses = SESSION_ESP;
+        break;
     case IPPROTO_ICMP:
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
                           ip4->ip_dst.s_addr, 0);
@@ -1322,6 +1335,14 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport);
             packet->ses = SESSION_SCTP;
+            break;
+        case IPPROTO_ESP:
+            if (!config.trackESP)
+                return MOLOCH_PACKET_UNKNOWN;
+            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
+                               ip6->ip6_dst.s6_addr, 0);
+            packet->ses = SESSION_ESP;
+            done = 1;
             break;
         case IPPROTO_ICMP:
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,

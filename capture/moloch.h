@@ -265,7 +265,8 @@ typedef struct {
 #define SESSION_UDP   1
 #define SESSION_ICMP  2
 #define SESSION_SCTP  3
-#define SESSION_MAX   4
+#define SESSION_ESP   4
+#define SESSION_MAX   5
 
 /******************************************************************************/
 /*
@@ -304,6 +305,7 @@ typedef struct moloch_config {
     gboolean  pcapSkip;
     gboolean  flushBetween;
     gboolean  noLoadTags;
+    gboolean  trackESP;
     gint      pktsToRead;
 
     uint64_t  ipSavePcap[4];

@@ -61,7 +61,7 @@ Vue.filter('extractIPv6String', (ipv6) => {
  * @returns {string}          The human understandable protocol string
  */
 Vue.filter('protocol', (protocolCode) => {
-  let lookup = { 1: 'icmp', 6: 'tcp', 17: 'udp', 47: 'gre', 58: 'icmp6' };
+  let lookup = { 1: 'icmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 132: 'sctp' };
 
   let result = lookup[protocolCode];
   if (!result) { result = protocolCode; }
