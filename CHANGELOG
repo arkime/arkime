@@ -32,6 +32,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new interfaceOps for ops per interface
   - capture - new filenameOps for ops per filename (issue #857)
   - s3 - use 1.0 field names
+  - viewer - fix a case when decoding failed
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

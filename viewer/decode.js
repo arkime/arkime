@@ -1,5 +1,7 @@
 /* decode.js  -- The pcap decoding code.
  *
+ * To fix bugs you can just do `node decode.js [OPTIONS] [FILE]`
+ *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +31,8 @@ var sprintf    = require('./public/sprintf.js');
 var async      = require('async');
 
 var internals  = {registry: {},
-                  settings: {}};
+                  settings: {},
+                  debug: 0};
 
 ////////////////////////////////////////////////////////////////////////////////
 function mkname (stream, name) {
@@ -51,6 +54,10 @@ function ItemTransform(options) {
 }
 util.inherits(ItemTransform, Transform);
 ItemTransform.prototype._transform = function (item, encoding, callback) {
+  if (!item) {
+    return callback();
+  }
+
   var self = this;
   switch (self._itemTransform.state) {
   case 0:
@@ -302,6 +309,10 @@ ItemSMTPStream.prototype._process = function(item, callback) {
   var bodyType = "file";
   var bodyName = "unknown";
   var boundary;
+
+  if (internals.debug > 0) {
+    console.log("ItemSMTPStream._process", item);
+  }
 
   function addBuffer(newState, mimeData) {
 
@@ -819,6 +830,8 @@ if(require.main === module) {
       base = "ITEM-NATURAL";
     } else if (process.argv[aa] === "--utf8") {
       base = "ITEM-UTF8";
+    } else if (process.argv[aa] === "--debug") {
+      internals.debug++;
     } else if (process.argv[aa] === "--line") {
       options["ITEM-HEX"] = {showOffsets: true};
     } else if (process.argv[aa] === "--uncompress") {
@@ -885,6 +898,4 @@ if(require.main === module) {
     var data   = require("./" + filename);
     exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
   }
-
-
 }
