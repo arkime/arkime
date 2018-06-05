@@ -61,7 +61,7 @@ my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
 my $HISTORY = 13;
-my $SEGMENTS = 4;
+my $SEGMENTS = 1;
 my $NOOPTIMIZE = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
@@ -103,9 +103,9 @@ sub showHelp($)
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
-    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize                     - Optimize all indices in ES\n";
-    print "    --segments <num>           - Number of segments to optimize sessions to, default 4\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "\n";
     print "User Commands:\n";
     print "  users-export <fn>            - Save the users info to <fn>\n";
