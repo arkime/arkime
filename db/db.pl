@@ -227,7 +227,7 @@ sub esCopy
 {
     my ($srci, $dsti) = @_;
 
-    $main::userAgent->timeout(3600);
+    $main::userAgent->timeout(7200);
 
     my $status = esGet("/_stats/docs", 1);
     print "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
@@ -1613,7 +1613,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     dbESVersion();
-    $main::userAgent->timeout(3600);
+    $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
@@ -1663,7 +1663,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
     dbESVersion();
-    $main::userAgent->timeout(3600);
+    $main::userAgent->timeout(7200);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
