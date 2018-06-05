@@ -669,6 +669,15 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->port2);
                 break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->packets[0]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->packets[1]);
+                break;
             }
             continue;
         }
@@ -842,7 +851,7 @@ void moloch_rules_run_after_classify(MolochSession_t *session)
 void moloch_rules_run_before_save(MolochSession_t *session, int final)
 {
     int r;
-    final = 1 >> final;
+    final = 1 << final;
     MolochRule_t *rule;
     for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r]); r++) {
         if ((rule->saveFlags & final) == 0) {

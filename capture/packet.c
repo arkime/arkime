@@ -1846,6 +1846,18 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         NULL);
 
+    moloch_field_define("general", "integer",
+        "packets.src", "Src Packets", "srcPackets",
+        "Total number of packets sent by source in a session",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "packets.dst", "Dst Packets", "dstPackets",
+        "Total number of packets sent by destination in a session",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         char name[100];

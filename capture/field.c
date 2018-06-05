@@ -1161,6 +1161,9 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_EXSPECIAL_SRC_PORT:
             case MOLOCH_FIELD_EXSPECIAL_DST_IP:
             case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+            case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
+            case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
                 break;
             }
             continue;
@@ -1250,6 +1253,13 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
             LOG("Warning - not allow to set src/dst ip/port: %s", op->str);
             break;
+        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+            LOG("Warning - not allow to set tcpflags: %s", op->str);
+            break;
+        case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
+        case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
+            LOG("Warning - not allow to set num packets: %s", op->str);
+            break;
         }
     } else {
         switch (config.fields[fieldPos]->type) {
@@ -1299,6 +1309,9 @@ void moloch_field_init()
     moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_exspecial("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
     moloch_field_by_exp_add_exspecial("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_exspecial("tcpflags.syn", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_exspecial("packets.src", MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_exspecial("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
 }
 /******************************************************************************/
 void moloch_field_exit()
