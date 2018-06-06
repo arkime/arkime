@@ -33,7 +33,7 @@ extern unsigned char         moloch_char_to_hexstr[256][3];
 
 int    userField;
 
-enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MIXED, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
+enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_BOTH, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
 
 LOCAL enum MolochMagicMode magicMode;
 
@@ -313,7 +313,7 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
     case MOLOCH_MAGICMODE_BASIC:
         return moloch_parsers_magic_basic(session, field, data, len);
 
-    case MOLOCH_MAGICMODE_MIXED:
+    case MOLOCH_MAGICMODE_BOTH:
         m = moloch_parsers_magic_basic(session, field, data, len);
         if (m)
             return m;
@@ -535,7 +535,7 @@ void moloch_parsers_init()
 
     int flags = MAGIC_MIME;
 
-    char *strMagicMode = moloch_config_str(NULL, "magicMode", "mixed");
+    char *strMagicMode = moloch_config_str(NULL, "magicMode", "both");
 
     if (strcmp(strMagicMode, "libmagic") == 0) {
         magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
@@ -543,12 +543,12 @@ void moloch_parsers_init()
         magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
         flags |= MAGIC_NO_CHECK_TEXT;
     } else if (strcmp(strMagicMode, "molochmagic") == 0) {
-        LOG("WARNING - magicMode of molochmagic no longer supported, switching to mixed");
-        magicMode = MOLOCH_MAGICMODE_MIXED;
+        LOG("WARNING - magicMode of `molochmagic` no longer supported, switching to `both`");
+        magicMode = MOLOCH_MAGICMODE_BOTH;
     } else if (strcmp(strMagicMode, "basic") == 0) {
         magicMode = MOLOCH_MAGICMODE_BASIC;
-    } else if (strcmp(strMagicMode, "mixed") == 0) {
-        magicMode = MOLOCH_MAGICMODE_MIXED;
+    } else if (strcmp(strMagicMode, "both") == 0) {
+        magicMode = MOLOCH_MAGICMODE_BOTH;
     } else if (strcmp(strMagicMode, "none") == 0) {
         magicMode = MOLOCH_MAGICMODE_NONE;
     } else {
@@ -566,7 +566,7 @@ void moloch_parsers_init()
     flags |= MAGIC_NO_CHECK_CDF;
 #endif
 
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || MOLOCH_MAGICMODE_BOTH) {
         int t;
         for (t = 0; t < config.packetThreads; t++) {
             cookie[t] = magic_open(flags);
@@ -707,7 +707,7 @@ void moloch_parsers_init()
 }
 /******************************************************************************/
 void moloch_parsers_exit() {
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
         int t;
         for (t = 0; t < config.packetThreads; t++) {
             magic_close(cookie[t]);
