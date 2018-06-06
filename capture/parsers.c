@@ -33,103 +33,9 @@ extern unsigned char         moloch_char_to_hexstr[256][3];
 
 int    userField;
 
-enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MOLOCHMAGIC, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
+enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MIXED, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
 
 LOCAL enum MolochMagicMode magicMode;
-/*############################## molochmagic ##############################*/
-
-typedef struct {
-    uint8_t *match;
-    char    *mime;
-    short    matchlen;
-    short    mimelen;
-    uint8_t  ignoreCase;
-} MolochMagic_t;
-
-#define MOLOCH_MAGIC_MAX_SEARCH 100
-#define MOLOCH_MAGIC_MAX_OFFSET 15
-
-LOCAL MolochMagic_t magicSearch[MOLOCH_MAGIC_MAX_SEARCH];
-LOCAL int           magicSearchLen;
-
-typedef struct {
-    MolochMagic_t **magic;
-    uint8_t         num;
-    uint8_t         size;
-} MolochMagicList_t;
-LOCAL MolochMagicList_t magicMatch[MOLOCH_MAGIC_MAX_OFFSET][256][256];
-
-int magicOffset[MOLOCH_MAGIC_MAX_OFFSET];
-int magicOffsetNum;
-
-/******************************************************************************/
-void moloch_parsers_molochmagic_add_list(MolochMagicList_t *list, MolochMagic_t *magic)
-{
-    if (list->size == 0) {
-        list->size = 3;
-        list->magic = malloc(list->size * sizeof(MolochMagic_t *));
-    } else if (list->size == list->num) {
-        list->size *= 1.5;
-        list->magic = realloc(list->magic, list->size * sizeof(MolochMagic_t *));
-    }
-
-    list->magic[list->num] = magic;
-    list->num++;
-}
-/******************************************************************************/
-void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime, int ignoreCase)
-{
-    int offsetPos;
-    for (offsetPos = 0; offsetPos < magicOffsetNum; offsetPos++) {
-        if (magicOffset[offsetPos] == offset) {
-            break;
-        }
-    }
-
-    if (offsetPos == MOLOCH_MAGIC_MAX_OFFSET) {
-        LOG("Too many offsets, can't add %d %s", offset, mime);
-        return;
-    }
-
-    if (offsetPos == magicOffsetNum) {
-        magicOffset[magicOffsetNum] = offset;
-        magicOffsetNum++;
-    }
-
-
-    MolochMagic_t *magic = MOLOCH_TYPE_ALLOC(MolochMagic_t);
-
-    magic->match = match;
-    magic->matchlen = matchlen;
-    magic->mime = mime;
-    magic->mimelen = strlen(mime);
-    magicSearch[magicSearchLen].ignoreCase = ignoreCase;
-
-    if (ignoreCase) {
-        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][tolower(match[0])][tolower(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][tolower(match[0])][toupper(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][toupper(match[0])][tolower(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][toupper(match[0])][toupper(match[1])], magic);
-    } else {
-        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][match[0]][match[1]], magic);
-    }
-}
-
-/******************************************************************************/
-void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime, int ignoreCase)
-{
-    if (magicSearchLen >= MOLOCH_MAGIC_MAX_SEARCH) {
-        LOG("Too many searches, can't add %s", mime);
-        return;
-    }
-    magicSearch[magicSearchLen].match = match;
-    magicSearch[magicSearchLen].matchlen = matchlen;
-    magicSearch[magicSearchLen].mime = mime;
-    magicSearch[magicSearchLen].mimelen = strlen(mime);
-    magicSearch[magicSearchLen].ignoreCase = ignoreCase;
-
-    magicSearchLen++;
-}
 
 /******************************************************************************/
 #define MOLOCH_MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE)
@@ -194,6 +100,15 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
 #endif
     case '#':
         if (data[1] == '!') {
+            if (moloch_memstr(data+3, len-3, "node", 4)) {
+                return MOLOCH_MAGIC_RESULT("application/javascript");
+            } else if (moloch_memstr(data+3, len-3, "perl", 4)) {
+                return MOLOCH_MAGIC_RESULT("text/x-perl");
+            } else if (moloch_memstr(data+3, len-3, "ruby", 4)) {
+                return MOLOCH_MAGIC_RESULT("text/x-ruby");
+            } else if (moloch_memstr(data+3, len-3, "python", 6)) {
+                return MOLOCH_MAGIC_RESULT("text/x-python");
+            }
             return MOLOCH_MAGIC_RESULT("text/x-shellscript");
         }
         break;
@@ -218,6 +133,10 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
                     return MOLOCH_MAGIC_RESULT("image/svg+xml");
                 }
                 return MOLOCH_MAGIC_RESULT("text/xml");
+            }
+            if (strncasecmp(data+2, "php", 3) == 0 ||
+                strncasecmp(data+2, " php", 4) == 0) {
+                return MOLOCH_MAGIC_RESULT("text/x-php");
             }
             break;
         case 'B':
@@ -384,58 +303,22 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
     return NULL;
 }
 /******************************************************************************/
-const char *moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const char *data, int len)
-{
-    int i, offset, offsetPos;
-    uint8_t *udata = (uint8_t *)data;
-    for (offsetPos = 0; offsetPos < magicOffsetNum; offsetPos++) {
-        offset = magicOffset[offsetPos];
-
-        if (offset + 1 >= len)
-            continue;
-
-        //LOG("offset: %d len: %d udata: %.*s %02x %02x", offset, len, len-offset, udata+offset, udata[offset], udata[offset+1]);
-
-        MolochMagicList_t *list = &magicMatch[offsetPos][(int)(udata[offset])][(int)(udata[offset+1])];
-
-        for (i = 0; i < list->num; i++) {
-            //LOG("offset: %d i: %d len: %d matchlen: %d", offset, i, len, list->magic[i]->matchlen);
-            if (len <= list->magic[i]->matchlen + offset)
-                continue;
-            if (list->magic[i]->ignoreCase) {
-                if (strncasecmp((const char *)udata+offset, (const char *)list->magic[i]->match, list->magic[i]->matchlen) == 0) {
-                    return moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
-                }
-            } else {
-                if (memcmp(udata+offset, list->magic[i]->match, list->magic[i]->matchlen) == 0) {
-                    return moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
-                }
-            }
-        }
-    }
-
-    for (i = 0; i < magicSearchLen; i++) {
-        if (magicSearch[i].ignoreCase) {
-            if (moloch_memcasestr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
-                return moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
-            }
-        } else {
-            if (moloch_memstr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
-                return moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
-            }
-        }
-    }
-
-    return NULL;
-}
-/******************************************************************************/
 const char *moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
 {
     const char *m;
-    if (len < 5 || magicMode == MOLOCH_MAGICMODE_NONE)
+    if (len < 5)
         return NULL;
 
     switch (magicMode) {
+    case MOLOCH_MAGICMODE_BASIC:
+        return moloch_parsers_magic_basic(session, field, data, len);
+
+    case MOLOCH_MAGICMODE_MIXED:
+        m = moloch_parsers_magic_basic(session, field, data, len);
+        if (m)
+            return m;
+
+        // Fall thru
     case MOLOCH_MAGICMODE_LIBMAGIC:
         m = magic_buffer(cookie[session->thread], data, MIN(len,50));
         if (m) {
@@ -449,10 +332,7 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
             return moloch_field_string_add(field, session, m, len, TRUE);
         }
         return NULL;
-    case MOLOCH_MAGICMODE_BASIC:
-        return moloch_parsers_magic_basic(session, field, data, len);
-    case MOLOCH_MAGICMODE_MOLOCHMAGIC:
-        return moloch_parsers_magic_molochmagic(session, field, data, len);
+    case MOLOCH_MAGICMODE_NONE:
     default:
         return NULL;
     }
@@ -655,7 +535,7 @@ void moloch_parsers_init()
 
     int flags = MAGIC_MIME;
 
-    char *strMagicMode = moloch_config_str(NULL, "magicMode", "libmagic");
+    char *strMagicMode = moloch_config_str(NULL, "magicMode", "mixed");
 
     if (strcmp(strMagicMode, "libmagic") == 0) {
         magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
@@ -663,11 +543,12 @@ void moloch_parsers_init()
         magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
         flags |= MAGIC_NO_CHECK_TEXT;
     } else if (strcmp(strMagicMode, "molochmagic") == 0) {
-        magicMode = MOLOCH_MAGICMODE_MOLOCHMAGIC;
-        void molochmagic_load();
-        molochmagic_load();
+        LOG("WARNING - magicMode of molochmagic no longer supported, switching to mixed");
+        magicMode = MOLOCH_MAGICMODE_MIXED;
     } else if (strcmp(strMagicMode, "basic") == 0) {
         magicMode = MOLOCH_MAGICMODE_BASIC;
+    } else if (strcmp(strMagicMode, "mixed") == 0) {
+        magicMode = MOLOCH_MAGICMODE_MIXED;
     } else if (strcmp(strMagicMode, "none") == 0) {
         magicMode = MOLOCH_MAGICMODE_NONE;
     } else {

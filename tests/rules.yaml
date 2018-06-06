@@ -9,7 +9,7 @@
 #     fieldSet         - check when a field is set
 #     beforeMiddleSave - before doing a mid save
 #     beforeFinalSave  - before doing a final save
-#     beforBothSave    - before either a mid or final save
+#     beforeBothSave    - before either a mid or final save
 #
 #One of the following 2:
 #   bpf:               - A bpf expression
@@ -64,3 +64,12 @@ rules:
         - 5353
     ops:
       "protocols": "iprulztest"
+
+  - name: "only syn"
+    when: "beforeFinalSave"
+    fields:
+      tcpflags.syn: 2
+      packets.src: 1
+      packets.dst: 0
+    ops:
+      _dontSaveSPI: 1

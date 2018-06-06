@@ -34,6 +34,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - s3 - use 1.0 field names
   - viewer - fix a case when decoding failed
   - all - ESP now has first packet capture if trackESP is set
+  - capture - magicMode remove molochmagic and added mixed mode
 
 1.1.1 2018/05/31
   - all - fix http.statuscode
