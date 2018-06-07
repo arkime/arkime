@@ -96,6 +96,10 @@ export default {
       inputTimeout = setTimeout(() => {
         if (!searchFilter) { this.filteredFields = this.fields; }
         this.filteredFields = this.fields.filter((field) => {
+          if (field.regex !== undefined || field.noFacet === 'true') {
+            return false;
+          }
+
           let sfl = searchFilter.toLowerCase();
           return field.friendlyName.toLowerCase().includes(sfl) ||
             field.exp.toLowerCase().includes(sfl) ||

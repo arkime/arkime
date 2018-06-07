@@ -97,6 +97,7 @@
                     placement="right"
                     :title="field.help">
                     {{ field.friendlyName }}
+                    <small>({{ field.exp }})</small>
                   </b-dropdown-item>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
@@ -470,9 +471,9 @@ export default {
 
       for (let group in this.groupedFields) {
         filteredGroupedFields[group] = this.groupedFields[group].filter((field) => {
-          return field.friendlyName.toLowerCase().includes(
-            this.colQuery.toLowerCase()
-          );
+          return field.regex === undefined &&
+                 field.noFacet !== 'true' &&
+                 field.friendlyName.toLowerCase().includes(this.colQuery.toLowerCase());
         });
       }
 
