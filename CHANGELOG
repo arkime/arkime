@@ -35,6 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - fix a case when decoding failed
   - all - ESP now has first packet capture if trackESP is set
   - capture - magicMode remove molochmagic and added both mode
+  - wise - initial splunk source
 
 1.1.1 2018/05/31
   - all - fix http.statuscode
