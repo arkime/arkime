@@ -1963,7 +1963,11 @@ function buildSessionQuery(req, buildCb) {
     }
 
     Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
-      return buildCb(err || lerr, query, indices);
+      if (indices.length > 3000) { // Will url be too long
+        return buildCb(err || lerr, query, "sessions2-*");
+      } else {
+        return buildCb(err || lerr, query, indices);
+      }
     });
   });
 }
