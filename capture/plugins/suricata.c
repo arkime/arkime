@@ -87,6 +87,16 @@ SuricataHead_t alerts;
 /******************************************************************************/
 LOCAL void suricata_item_free(SuricataItem_t *item);
 /******************************************************************************/
+#ifdef NEEDPRINT
+LOCAL void suricata_print(SuricataItem_t *item)
+{
+    char buf[100];
+    moloch_session_id_string(item->sessionId, buf);
+
+    printf("sessionId: %s hash: %u ses: %d timestamp: %ld\n", buf, item->hash, item->ses, item->timestamp);
+}
+#endif
+/******************************************************************************/
 LOCAL void suricata_alerts_init()
 {
     alerts.num = 7919;
@@ -251,7 +261,7 @@ LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
     return 1;
 }
 /******************************************************************************/
-#define MATCH(str) out[i+1] == sizeof(str) - 1 && memcmp(str, line + out[i], sizeof(str) - 1) == 0
+#define MATCH(_d, _str) out[i+1] == sizeof(_str) - 1 && memcmp(_str, _d + out[i], sizeof(_str) - 1) == 0
 /******************************************************************************/
 LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
 {
@@ -269,22 +279,26 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
         if (config.debug > 2)
             LOG("  KEY %.*s DATA %.*s", out[i+1], data + out[i], out[i+3], data + out[i+2]);
 
-        if (MATCH("action")) {
+        if (MATCH(data, "action")) {
             item->action = g_strndup(data + out[i+2], out[i+3]);
             item->action_len = out[i+3];
-        } else if (MATCH("gid")) {
+        } else if (MATCH(data, "gid")) {
             item->gid = atoi(data + out[i+2]);
-        } else if (MATCH("signature_id")) {
+        } else if (MATCH(data, "signature_id")) {
             item->signature_id = atoi(data + out[i+2]);
-        } else if (MATCH("rev")) {
+        } else if (MATCH(data, "rev")) {
             item->rev = atoi(data + out[i+2]);
-        } else if (MATCH("signature")) {
+        } else if (MATCH(data, "signature")) {
             item->signature = g_strndup(data + out[i+2], out[i+3]);
             item->signature_len = out[i+3];
-        } else if (MATCH("category")) {
+        } else if (MATCH(data, "category")) {
             item->category = g_strndup(data + out[i+2], out[i+3]);
             item->category_len = out[i+3];
         }
+    }
+
+    if (config.debug && !item->signature) {
+        LOG("Missing signature >%.*s<", len, data);
     }
 }
 /******************************************************************************/
@@ -317,7 +331,7 @@ LOCAL void suricata_process()
         if (config.debug > 2)
             LOG("KEY %.*s DATA %.*s", out[i+1], line + out[i], out[i+3], line + out[i+2]);
 
-        if (MATCH("timestamp")) {
+        if (MATCH(line, "timestamp")) {
             struct tm tm;
             strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
             item->timestamp = mktime(&tm);
@@ -326,23 +340,23 @@ LOCAL void suricata_process()
                 suricata_item_free(item);
                 return;
             }
-        } else if (MATCH("event_type")) {
+        } else if (MATCH(line, "event_type")) {
             if (strncmp("alert", line + out[i+2], 5) != 0) {
                 suricata_item_free(item);
                 return;
             }
-        } else if (MATCH("src_ip")) {
+        } else if (MATCH(line, "src_ip")) {
             suricata_parse_ip(line + out[i+2], out[i+3], &srcIp);
-        } else if (MATCH("src_port")) {
+        } else if (MATCH(line, "src_port")) {
             srcPort = atoi(line + out[i+2]);
-        } else if (MATCH("dest_ip")) {
+        } else if (MATCH(line, "dest_ip")) {
             suricata_parse_ip(line + out[i+2], out[i+3], &dstIp);
-        } else if (MATCH("dest_port")) {
+        } else if (MATCH(line, "dest_port")) {
             dstPort = atoi(line + out[i+2]);
-        } else if (MATCH("flow_id")) {
+        } else if (MATCH(line, "flow_id")) {
             item->flow_id = g_strndup(line + out[i+2], out[i+3]);
             item->flow_id_len = out[i+3];
-        } else if (MATCH("proto")) {
+        } else if (MATCH(line, "proto")) {
             if (strncmp("TCP", line + out[i+2], 3) == 0)
                 item->ses = SESSION_TCP;
             else if (strncmp("UDP", line + out[i+2], 3) == 0)
@@ -353,19 +367,20 @@ LOCAL void suricata_process()
                 suricata_item_free(item);
                 return;
             }
-        } else if (MATCH("alert")) {
+        } else if (MATCH(line, "alert")) {
             suricata_process_alert(line + out[i+2], out[i+3], item);
         }
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&srcIp)) {
-        moloch_session_id(item->sessionId, MOLOCH_V6_TO_V4(srcIp), srcPort, MOLOCH_V6_TO_V4(dstIp), dstPort);
+        moloch_session_id(item->sessionId, MOLOCH_V6_TO_V4(srcIp), htons(srcPort), MOLOCH_V6_TO_V4(dstIp), htons(dstPort));
     } else {
-        moloch_session_id6(item->sessionId, srcIp.s6_addr, srcPort, dstIp.s6_addr, dstPort);
+        moloch_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
     }
 
-    if (!suricata_alerts_add(item))
+    if (!suricata_alerts_add(item)) {
         suricata_item_free(item);
+    }
 }
 /******************************************************************************/
 LOCAL void suricata_read()
