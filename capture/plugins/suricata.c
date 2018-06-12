@@ -398,7 +398,17 @@ LOCAL void suricata_read()
 /******************************************************************************/
 LOCAL void suricata_open(struct stat *sb)
 {
+    static int printedError;
+
     file = fopen(suricataAlertFile, "r");
+    if (!file) {
+        if (!printedError) {
+            LOG("ERROR - Permissions problem, can't open suricataAlertFile '%s'", suricataAlertFile);
+            printedError = 1;
+        }
+        return;
+    }
+    printedError = 0;
     fileInode = sb->st_ino;
     suricata_read();
     lineLen = 0;
