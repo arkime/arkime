@@ -146,6 +146,8 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
     int h = item->hash % alerts.num;
 
     MOLOCH_LOCK(alerts.lock);
+    suricata_alerts_clean();
+
     // Dup is same hash, signature_id, timestamp, and sessionId
     for (check = alerts.items[h]; check; parent = check, check = check->items_next) {
         if (check != item) {
@@ -173,7 +175,7 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
     int h = session->h_hash % alerts.num;
 
     for (item = alerts.items[h]; item; item = item->items_next) {
-        if (item->timestamp < session->firstPacket.tv_sec + 60*60) {
+        if (item->timestamp < session->firstPacket.tv_sec - 60*60) {
             suricata_alerts_del(item);
             continue;
         }
@@ -300,6 +302,9 @@ LOCAL void suricata_process()
         return;
     }
 
+    struct timespec currentTime;
+    clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
+
     SuricataItem_t *item = MOLOCH_TYPE_ALLOC0(SuricataItem_t);
 
     struct in6_addr srcIp;
@@ -316,6 +321,11 @@ LOCAL void suricata_process()
             struct tm tm;
             strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
             item->timestamp = mktime(&tm);
+
+            if (item->timestamp < currentTime.tv_sec - 60*60) {
+                suricata_item_free(item);
+                return;
+            }
         } else if (MATCH("event_type")) {
             if (strncmp("alert", line + out[i+2], 5) != 0) {
                 suricata_item_free(item);
