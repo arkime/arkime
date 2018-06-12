@@ -1,0 +1,10 @@
+if (session.suricata)
+  div.sessionDetailMeta.bold Suricata
+  dl.sessionDetailMeta
+    +arrayList(session.suricata, "signature", "Signature", "suricata.signature")
+    +arrayList(session.suricata, "category", "Category", "suricata.category")
+    +arrayList(session.suricata, "flowId", "Flow Id", "suricata.flowId")
+    +arrayList(session.suricata, "action", "Action", "suricata.action")
+    +arrayList(session.suricata, "gid", "Gid", "suricata.gid")
+    +arrayList(session.suricata, "severity", "Severity", "suricata.severity")
+    +arrayList(session.suricata, "signatureId", "Signature id", "suricata.signatureId")
