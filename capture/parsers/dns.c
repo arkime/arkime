@@ -21,6 +21,7 @@ LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "N
 
 LOCAL  int                   ipField;
 LOCAL  int                   hostField;
+LOCAL  int                   punyField;
 LOCAL  int                   queryTypeField;
 LOCAL  int                   queryClassField;
 LOCAL  int                   statusField;
@@ -122,6 +123,14 @@ LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb
     return name;
 }
 /******************************************************************************/
+LOCAL void dns_add_host(MolochSession_t *session, char *string, int len)
+{
+    moloch_field_string_add_host(hostField, session, string, len);
+    if (moloch_memstr((const char *)string, len, "xn--", 4)) {
+        moloch_field_string_add_lower(punyField, session, string, len);
+    }
+}
+/******************************************************************************/
 LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
 {
 
@@ -176,7 +185,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         }
 
         if (namelen > 0)
-            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+            dns_add_host(session, (char *)name, namelen);
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     switch(kind) {
@@ -235,7 +244,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             moloch_field_ip4_add(ipField, session, in.s_addr);
 
             if (opcode == 5) {
-                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+                dns_add_host(session, (char *)name, namelen);
             }
             break;
         }
@@ -249,7 +258,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+            dns_add_host(session, (char *)name, namelen);
             break;
         }
         case 15: {
@@ -263,7 +272,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
-            moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+            dns_add_host(session, (char *)name, namelen);
         }
         case 28: {
             if (rdlength != 16)
@@ -273,7 +282,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             moloch_field_ip6_add(ipField, session, ptr);
 
             if (opcode == 5) {
-                moloch_field_string_add_lower(hostField, session, (char *)name, namelen);
+                dns_add_host(session, (char *)name, namelen);
             }
             break;
         }
@@ -368,10 +377,16 @@ void moloch_parser_init()
 
     hostField = moloch_field_define("dns", "lotermfield",
         "host.dns", "Host", "dns.host",
-        "DNS host looked up",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "DNS lookup hostname",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "aliases", "[\"dns.host\"]",
         "category", "host",
+        NULL);
+
+    punyField = moloch_field_define("dns", "lotermfield",
+        "dns.puny", "Puny", "dns.puny",
+        "DNS lookup punycode",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",

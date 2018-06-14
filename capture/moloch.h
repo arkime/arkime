@@ -1049,6 +1049,7 @@ int  moloch_field_by_db(const char *dbField);
 int  moloch_field_by_exp(const char *exp);
 const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 gboolean moloch_field_string_add_lower(int pos, MolochSession_t *session, const char *string, int len);
+gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *string, int len);
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);

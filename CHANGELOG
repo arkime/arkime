@@ -38,6 +38,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - initial splunk source
   - capture - new suricata plugin
   - wise - [right-click] with no colon now loads directly from wise.ini
+  - capture - decode dns punycode into dns.host, dns.puny has original
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

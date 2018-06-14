@@ -540,6 +540,30 @@ gboolean moloch_field_string_add_lower(int pos, MolochSession_t *session, const 
     return TRUE;
 }
 /******************************************************************************/
+gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *string, int len)
+{
+    char *host;
+
+    if (len == -1 ) {
+        len = strlen(string);
+    }
+
+    if (string[len] == 0)
+        host = g_hostname_to_unicode(string);
+    else {
+        char ch = string[len];
+        string[len] = 0;
+        host = g_hostname_to_unicode(string);
+        string[len] = ch;
+    }
+
+    if (!moloch_field_string_add(pos, session, host, -1, FALSE)) {
+        g_free(host);
+        return FALSE;
+    }
+    return TRUE;
+}
+/******************************************************************************/
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy)
 {
     MolochField_t         *field;

@@ -1,0 +1,93 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dns" : {
+               "host" : [
+                  "уаноо.қаз"
+               ],
+               "hostCnt" : 1,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "puny" : [
+                  "xn--80a0adav.xn--80ao21a"
+               ],
+               "punyCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "SOA"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 429,
+            "dstDataBytes" : 421,
+            "dstIp" : "10.3.4.5",
+            "dstMac" : [
+               "00:10:db:ff:10:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "8bf4840000010001",
+            "dstPort" : 53,
+            "fileId" : [],
+            "firstPacket" : 1528986536421,
+            "ipProtocol" : 17,
+            "lastPacket" : 1528986536466,
+            "length" : 44,
+            "node" : "test",
+            "packetLen" : [
+               111,
+               445
+            ],
+            "packetPos" : [
+               24,
+               135
+            ],
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 95,
+            "srcDataBytes" : 87,
+            "srcIp" : "10.5.4.3",
+            "srcMac" : [
+               "52:54:00:67:a8:e6"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Realtek (UpTech? also reported)"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "8bf4000000010000",
+            "srcPort" : 48297,
+            "timestamp" : "SET",
+            "totBytes" : 524,
+            "totDataBytes" : 508,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-180614",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
