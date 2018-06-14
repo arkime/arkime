@@ -110,7 +110,7 @@ LOCAL void suricata_alerts_clean ()
     if (alerts.deleted) {
         struct timespec currentTime;
         clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
-        if (currentTime.tv_sec > alerts.lastDelete.tv_sec + 10) {
+        if (currentTime.tv_sec > alerts.lastDelete.tv_sec + 5) {
             do {
                 item = alerts.deleted;
                 alerts.deleted = item->deleted_next;
@@ -342,6 +342,11 @@ LOCAL void suricata_process()
             }
         } else if (MATCH(line, "event_type")) {
             if (strncmp("alert", line + out[i+2], 5) != 0) {
+                suricata_item_free(item);
+                return;
+            }
+        } else if (MATCH(line, "event_type")) {
+            if (out[i+3] != 5 || strncmp("alert", line + out[i+2], 5) != 0) {
                 suricata_item_free(item);
                 return;
             }
