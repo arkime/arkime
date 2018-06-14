@@ -123,8 +123,13 @@ function getConfig(section, name, d) {
   }
   return internals.config[section][name] || d;
 }
+
 function getConfigSections() {
   return Object.keys(internals.config);
+}
+
+function getConfigSection(section) {
+  return internals.config[section];
 }
 
 // Explicit sigint handler for running under docker
@@ -180,6 +185,7 @@ function addField(field) {
 internals.sourceApi = {
   getConfig: getConfig,
   getConfigSections: getConfigSections,
+  getConfigSection: getConfigSection,
   addField: addField,
   addView: function (name, view) {
     internals.views[name] = view;

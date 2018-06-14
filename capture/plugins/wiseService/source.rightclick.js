@@ -27,6 +27,11 @@ var fs             = require('fs')
 function RightClickSource (api, section) {
   RightClickSource.super_.call(this, api, section);
 
+  if (section === "right-click") {
+    this.process(api.getConfigSection(section));
+    return;
+  }
+
   this.file    = api.getConfig(section, "file");
 
   if (this.file === undefined) {
@@ -71,6 +76,10 @@ RightClickSource.prototype.load = function() {
   var config = ini.parseSync(this.file);
   var data = config["right-click"] || config;
 
+  this.process(data);
+};
+//////////////////////////////////////////////////////////////////////////////////
+RightClickSource.prototype.process = function(data) {
   var keys = Object.keys(data);
   if (!keys) {return;}
 
@@ -103,6 +112,7 @@ RightClickSource.prototype.load = function() {
     this.api.addRightClick(key, obj);
   });
 };
+
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/(^right-click$|^right-click:)/);});

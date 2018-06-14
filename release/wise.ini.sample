@@ -57,7 +57,11 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 
 
 ############## Right Clicks ##############
+# Can either be [right-click] followed by items
 [right-click]
 VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
 VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
 VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url
+# or right-click:NAME with just a file setting, the file contains the right clicks and will auto reload on changes
+# [right-click:NAME]
+#file=/data/moloch/etc/rightclick-filename.ini

@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 44;
+use Test::More tests => 65;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -101,20 +101,8 @@ eq_or_diff($wise, '[{field: "email.dst", len: 11, value: "wiseadded1"},
 {field: "tags", len: 10, value: "emailwise"}]
 ', "ALL 12345678\@aol.com");
 
-if (0) {
-# Zeus Query
-$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/url:zeus.domain")->content;
-$wise =~ /key: "(.*)"/;
-my $domain = $1;
-$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/url:zeus.domain/domain/$domain")->content;
-eq_or_diff($wise, '[{field: "tags", len: 12, value: "zeustracker"},
-{field: "tags", len: 7, value: "botnet"}]
-', "Zeus $domain");
-
-$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/url:zeus.domain/domain/aol.com")->content;
-eq_or_diff($wise, 'Not found', "Zeus aol.com");
-}
-
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/rightClicks")->content;
+eq_or_diff(from_json($wise), from_json('{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'), "right clicks");
 
 my $pwd = "*/pcap";
 
@@ -122,7 +110,6 @@ my $pwd = "*/pcap";
 
     
     #UDP Issues
-    if (0) {
     countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&host=cluster5.us.messagelabs.com"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=wisebyhost1&&irc.channel=wisebyhost1channel&&email.x-priority=777"));
@@ -134,7 +121,6 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=wisebyip1&&irc.channel=wisebyip1channel&&email.x-priority=999"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&ip=192.168.177.160"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=wisebyip2&&mysql.ver=wisebyip2mysqlversion&&test.ip=21.21.21.21"));
-    }
 
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=md5wise"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=wisebymd51&&mysql.ver=wisebymd51mysqlversion&&test.ip=144.144.144.144"));
