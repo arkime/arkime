@@ -112,23 +112,22 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             MOLOCH_UNLOCK(infos[info].lock);
         }
 
-        if (config.debug > 1) {
+        struct tpacket_block_desc *tbd = infos[info].rd[pos].iov_base;
+        if (config.debug > 2) {
             int i;
             int cnt = 0;
             int waiting = 0;
 
             for (i = 0; i < (int)infos[info].req.tp_block_nr; i++) {
-                struct tpacket_block_desc *tbd = infos[info].rd[i].iov_base;
-                if (tbd->hdr.bh1.block_status & TP_STATUS_USER) {
+                struct tpacket_block_desc *stbd = infos[info].rd[i].iov_base;
+                if (stbd->hdr.bh1.block_status & TP_STATUS_USER) {
                     cnt++;
-                    waiting += tbd->hdr.bh1.num_pkts;
+                    waiting += stbd->hdr.bh1.num_pkts;
                 }
             }
 
-            LOG("Stats pos:%d info:%ld cnt:%d waiting:%d", pos, info, cnt, waiting);
+            LOG("Stats pos:%d info:%ld status:%x waiting:%d total cnt:%d total waiting:%d", pos, info, tbd->hdr.bh1.block_status, tbd->hdr.bh1.num_pkts, cnt, waiting);
         }
-
-        struct tpacket_block_desc *tbd = infos[info].rd[pos].iov_base;
 
         // Wait until the block is owned by moloch
         if ((tbd->hdr.bh1.block_status & TP_STATUS_USER) == 0) {

@@ -53,7 +53,7 @@ var Config         = require('./config.js'),
 
 try {
   var Png = require('png').Png;
-} catch (e) {console.log("WARNING - No png support, maybe need to 'npm update'", e);}
+} catch (e) {console.log("WARNING - No png support, maybe need to 'npm update' or unsupported on your platform", e);}
 
 if (typeof express !== "function") {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -6132,6 +6132,25 @@ function main () {
     })
     .listen(Config.get("viewPort", "8005"), viewHost);
 }
+//////////////////////////////////////////////////////////////////////////////////
+//// Command Line Parsing
+//////////////////////////////////////////////////////////////////////////////////
+function processArgs(argv) {
+  for (var i = 0, ilen = argv.length; i < ilen; i++) {
+    if (argv[i] === "--help") {
+      console.log("node.js [<options>]");
+      console.log("");
+      console.log("Options:");
+      console.log("  -c <config file>      Config file to use");
+      console.log("  -host <host name>     Host name to use, default os hostname");
+      console.log("  -n <node name>        Node name section to use in config file, default first part of hostname");
+      console.log("  --debug               Increase debug level, multiple are supported");
+
+      process.exit(0);
+    }
+  }
+}
+processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////

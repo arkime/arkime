@@ -89,6 +89,14 @@ function processArgs(argv) {
     } else if (argv[i] === "--workers") {
       i++;
       internals.workers = +argv[i];
+    } else if (argv[i] === "--help") {
+      console.log("wiseService.js [<options>]");
+      console.log("");
+      console.log("Options:");
+      console.log("  --debug               Increase debug level, multiple are supported");
+      console.log("  --workers <b>         Number of worker processes to create");
+
+      process.exit(0);
     }
   }
 }
@@ -702,6 +710,9 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 //////////////////////////////////////////////////////////////////////////////////
 function main() {
   internals.cache = wiseCache.createCache({getConfig: getConfig});
+
+  addField("field:tags"); // Always add tags field so we have at least 1 field
+
   loadExcludes();
   loadSources();
   setInterval(printStats, 60*1000);
