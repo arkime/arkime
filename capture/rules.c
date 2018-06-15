@@ -52,7 +52,7 @@ typedef struct {
 } YamlNode_t;
 
 typedef struct {
-    uint8_t             *fields;
+    uint16_t            *fields;
     char                *filename;
     char                *bpf;
     struct bpf_program   bpfp;

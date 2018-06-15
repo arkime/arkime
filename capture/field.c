@@ -259,7 +259,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     if ((flags & MOLOCH_FIELD_FLAG_FAKE) == 0) {
         if (minfo->pos == -1) {
             minfo->pos = MOLOCH_THREAD_INCROLD(config.maxField);
-            if (config.maxField > 255) {
+            if (config.maxField >= MOLOCH_FIELDS_DB_MAX) {
                 LOGEXIT("ERROR - Max Fields is too large %d", config.maxField);
             }
         }

@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 101
+#define MOLOCH_API_VERSION 102
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -274,15 +274,16 @@ typedef struct {
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_HOURLY6, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 
-#define MOLOCH_FIELDS_MAX 256
-#define MOLOCH_FIELD_EXSPECIAL_SRC_IP       (MOLOCH_FIELDS_MAX-1)
-#define MOLOCH_FIELD_EXSPECIAL_SRC_PORT     (MOLOCH_FIELDS_MAX-2)
-#define MOLOCH_FIELD_EXSPECIAL_DST_IP       (MOLOCH_FIELDS_MAX-3)
-#define MOLOCH_FIELD_EXSPECIAL_DST_PORT     (MOLOCH_FIELDS_MAX-4)
-#define MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN (MOLOCH_FIELDS_MAX-5)
-#define MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC  (MOLOCH_FIELDS_MAX-6)
-#define MOLOCH_FIELD_EXSPECIAL_PACKETS_DST  (MOLOCH_FIELDS_MAX-7)
-#define MOLOCH_FIELD_EXSPECIAL_START        (MOLOCH_FIELDS_MAX-7)
+#define MOLOCH_FIELDS_DB_MAX 512
+#define MOLOCH_FIELD_EXSPECIAL_SRC_IP       (MOLOCH_FIELDS_DB_MAX)
+#define MOLOCH_FIELD_EXSPECIAL_SRC_PORT     (MOLOCH_FIELDS_DB_MAX+1)
+#define MOLOCH_FIELD_EXSPECIAL_DST_IP       (MOLOCH_FIELDS_DB_MAX+2)
+#define MOLOCH_FIELD_EXSPECIAL_DST_PORT     (MOLOCH_FIELDS_DB_MAX+3)
+#define MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN (MOLOCH_FIELDS_DB_MAX+4)
+#define MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC  (MOLOCH_FIELDS_DB_MAX+5)
+#define MOLOCH_FIELD_EXSPECIAL_PACKETS_DST  (MOLOCH_FIELDS_DB_MAX+6)
+#define MOLOCH_FIELD_EXSPECIAL_START        (MOLOCH_FIELDS_DB_MAX+7)
+#define MOLOCH_FIELDS_MAX                   (MOLOCH_FIELDS_DB_MAX+8)
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -552,6 +553,7 @@ typedef struct moloch_session {
     uint16_t               segments;
     uint16_t               stopSaving;
     uint16_t               tcpFlagCnt[MOLOCH_TCPFLAG_MAX];
+    uint16_t               maxFields;
 
     uint8_t                consumed[2];
     uint8_t                protocol;
@@ -561,7 +563,6 @@ typedef struct moloch_session {
     uint8_t                parserLen;
     uint8_t                parserNum;
     uint8_t                minSaving;
-    uint8_t                maxFields;
     uint8_t                thread;
 
     uint16_t               haveTcpSession:1;
