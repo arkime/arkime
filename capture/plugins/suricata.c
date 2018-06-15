@@ -69,7 +69,7 @@ typedef struct suricatahead_t {
 
 LOCAL char                  *suricataAlertFile;
 LOCAL FILE                  *file;
-LOCAL char                   line[0xffff];
+LOCAL char                   line[0xfffff];
 LOCAL int                    lineLen;
 LOCAL ino_t                  fileInode;
 LOCAL off_t                  fileSize;
@@ -390,7 +390,7 @@ LOCAL void suricata_process()
 /******************************************************************************/
 LOCAL void suricata_read()
 {
-    while (fgets(line + lineLen, 0xffff - lineLen, file)) {
+    while (fgets(line + lineLen, 0xffffe - lineLen, file)) {
         lineLen = strlen(line);
         if (line[lineLen-1] == '\n') {
             suricata_process();
@@ -413,6 +413,13 @@ LOCAL void suricata_open(struct stat *sb)
         }
         return;
     }
+
+    // Change to non blocking
+    int fd = fileno(file);
+    int flags = fcntl(fd, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(fd, F_SETFL, flags);
+
     printedError = 0;
     fileInode = sb->st_ino;
     suricata_read();
