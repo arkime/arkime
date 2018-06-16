@@ -49,7 +49,7 @@ LOCAL int                   protocolField;
 LOCAL int                   ja3Field;
 
 LOCAL uint32_t              fieldsTS;
-LOCAL int                   fieldsMap[256];
+LOCAL int                   fieldsMap[MOLOCH_FIELDS_DB_MAX];
 
 LOCAL uint32_t              inflight;
 
@@ -164,7 +164,7 @@ LOCAL void wise_load_fields()
 
     memset(fieldsMap, -1, sizeof(fieldsMap));
 
-    key_len = snprintf(key, sizeof(key), "/fields");
+    key_len = snprintf(key, sizeof(key), "/fields?ver=1");
     size_t         data_len;
     unsigned char *data = moloch_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len);;
 
@@ -174,9 +174,8 @@ LOCAL void wise_load_fields()
     int ver = -1, cnt = 0;
     BSB_IMPORT_u32(bsb, fieldsTS);
     BSB_IMPORT_u32(bsb, ver);
-    BSB_IMPORT_u08(bsb, cnt);
 
-    if (ver != 0) {
+    if (ver < 0 || ver > 1) {
         if (wiseURL) {
             LOGEXIT("Verify wiseURL value of `%s` version: %d - %s",
                     wiseURL, ver,
@@ -188,6 +187,16 @@ LOCAL void wise_load_fields()
         }
     }
 
+    if (ver == 0) {
+        BSB_IMPORT_u08(bsb, cnt);
+    } else if (ver == 1) {
+        BSB_IMPORT_u16(bsb, cnt);
+    }
+
+    if (cnt > MOLOCH_FIELDS_DB_MAX) {
+        LOGEXIT("Wise server is returning too many fields %d > %d", cnt, MOLOCH_FIELDS_DB_MAX);
+    }
+
     int i;
     for (i = 0; i < cnt; i++) {
         int len = 0;
@@ -196,7 +205,7 @@ LOCAL void wise_load_fields()
         if (fieldsMap[i] == -1)
             fieldsTS = 0;
         if (config.debug)
-            LOG("%d %d %s", i, fieldsMap[i], BSB_WORK_PTR(bsb));
+            LOG("Couldn't define field - %d %d %s", i, fieldsMap[i], BSB_WORK_PTR(bsb));
         BSB_IMPORT_skip(bsb, len);
     }
     free(data);

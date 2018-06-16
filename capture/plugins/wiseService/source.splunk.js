@@ -97,7 +97,8 @@ function SplunkSource (api, section) {
 
   this.service.login((err, success) => {
     if (err) {
-      throw err;
+      console.log("ERROR - Couldn't login to splunk - ", err);
+      return;
     }
     if (this.periodic) {
       this.periodicRefresh();

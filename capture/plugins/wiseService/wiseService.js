@@ -172,18 +172,33 @@ function addField(field) {
   internals.fields.push(field);
   internals.fieldsSize += field.length + 10;
 
-  internals.fieldsBuf = new Buffer(internals.fieldsSize + 9);
-  internals.fieldsBuf.writeUInt32BE(internals.fieldsTS, 0);
-  internals.fieldsBuf.writeUInt32BE(0, 4);
-  internals.fieldsBuf.writeUInt8(internals.fields.length, 8);
+  // Create version 0 of fields buf
+  internals.fieldsBuf0 = new Buffer(internals.fieldsSize + 9);
+  internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
+  internals.fieldsBuf0.writeUInt32BE(0, 4);
+  internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
   var offset = 9;
   for (var i = 0; i < internals.fields.length; i++) {
-    var len = internals.fieldsBuf.write(internals.fields[i], offset+2);
-    internals.fieldsBuf.writeUInt16BE(len+1, offset);
-    internals.fieldsBuf.writeUInt8(0, offset+2+len);
+    var len = internals.fieldsBuf0.write(internals.fields[i], offset+2);
+    internals.fieldsBuf0.writeUInt16BE(len+1, offset);
+    internals.fieldsBuf0.writeUInt8(0, offset+2+len);
     offset += 3 + len;
   }
-  internals.fieldsBuf = internals.fieldsBuf.slice(0, offset);
+  internals.fieldsBuf0 = internals.fieldsBuf0.slice(0, offset);
+
+  // Create version 1 of fields buf
+  internals.fieldsBuf1 = new Buffer(internals.fieldsSize + 9);
+  internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
+  internals.fieldsBuf1.writeUInt32BE(1, 4);
+  internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
+  var offset = 10;
+  for (var i = 0; i < internals.fields.length; i++) {
+    var len = internals.fieldsBuf1.write(internals.fields[i], offset+2);
+    internals.fieldsBuf1.writeUInt16BE(len+1, offset);
+    internals.fieldsBuf1.writeUInt8(0, offset+2+len);
+    offset += 3 + len;
+  }
+  internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
 
   wiseSource.pos2Field[pos] = name;
   wiseSource.field2Pos[name] = pos;
@@ -245,7 +260,11 @@ function loadSources() {
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/fields", function(req, res) {
-  res.send(internals.fieldsBuf);
+  if (req.query.ver === undefined || req.query.ver === "0") {
+    res.send(internals.fieldsBuf0);
+  } else {
+    res.send(internals.fieldsBuf1);
+  }
 });
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/views", function(req, res) {
