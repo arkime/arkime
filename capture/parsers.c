@@ -38,38 +38,42 @@ enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_BOTH, MOLOCH_
 LOCAL enum MolochMagicMode magicMode;
 
 /******************************************************************************/
-#define MOLOCH_MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE)
+#define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
+#define MAGIC_MEMSTR(offset, needle) moloch_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
+#define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
+
+#define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE)
 const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {
     case 0:
-        if (len > 10 && memcmp(data+4, "ftyp", 4) == 0) {
-            if (memcmp(data+8, "qt", 2) == 0) {
-                return MOLOCH_MAGIC_RESULT("video/quicktime");
+        if (len > 10 && MAGIC_MATCH(4, "ftyp")) {
+            if (MAGIC_MATCH(8, "qt")) {
+                return MAGIC_RESULT("video/quicktime");
             }
-            if (memcmp(data+8, "3g", 2) == 0) {
-                return MOLOCH_MAGIC_RESULT("video/3gpp");
+            if (MAGIC_MATCH(8, "3g") == 0) {
+                return MAGIC_RESULT("video/3gpp");
             }
-        } else if (memcmp(data, "\000\001\000\000\000", 5) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-font-ttf");
+        } else if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
+            return MAGIC_RESULT("application/x-font-ttf");
         }
         break;
     case '\032':
-        if (memcmp(data, "\x1a\x45\xdf\xa3", 4) == 0) {
-            if (moloch_memstr(data+4, len-4, "webm", 4)) {
-                return MOLOCH_MAGIC_RESULT("video/webm");
+        if (MAGIC_MATCH(0, "\x1a\x45\xdf\xa3")) {
+            if (MAGIC_MEMSTR(4, "webm")) {
+                return MAGIC_RESULT("video/webm");
             }
-            if (moloch_memstr(data+4, len-4, "matroska", 8)) {
-                return MOLOCH_MAGIC_RESULT("video/x-matroska");
+            if (MAGIC_MEMSTR(4, "matroska")) {
+                return MAGIC_RESULT("video/x-matroska");
             }
         }
         break;
     case '\037':
         if (data[1] == '\213') {
-            return MOLOCH_MAGIC_RESULT("application/x-gzip");
+            return MAGIC_RESULT("application/x-gzip");
         }
         if (data[1] == '\235') {
-            return MOLOCH_MAGIC_RESULT("application/x-compress");
+            return MAGIC_RESULT("application/x-compress");
         }
         break;
 #ifdef OID_DECODE_SOMEDAY
@@ -91,7 +95,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
                     moloch_parsers_asn_decode_oid(oid, sizeof(oid), ivalue, ilen);
                     printf("%s ", oid);
                     moloch_print_hex_string(ivalue, ilen);
-                    if (ilen == 9 && memcmp(ivalue, "\x2a\x86\x48\x86\xf7\x0d\x01\x01\x05", 9) == 0) {
+                    if (ilen == 9 && MAGIC_MATCH(ivalue, "\x2a\x86\x48\x86\xf7\x0d\x01\x01\x05")) {
                     }
                 }
             }
@@ -100,205 +104,209 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
 #endif
     case '#':
         if (data[1] == '!') {
-            if (moloch_memstr(data+3, len-3, "node", 4)) {
-                return MOLOCH_MAGIC_RESULT("application/javascript");
-            } else if (moloch_memstr(data+3, len-3, "perl", 4)) {
-                return MOLOCH_MAGIC_RESULT("text/x-perl");
-            } else if (moloch_memstr(data+3, len-3, "ruby", 4)) {
-                return MOLOCH_MAGIC_RESULT("text/x-ruby");
-            } else if (moloch_memstr(data+3, len-3, "python", 6)) {
-                return MOLOCH_MAGIC_RESULT("text/x-python");
+            if (MAGIC_MEMSTR(3, "node")) {
+                return MAGIC_RESULT("application/javascript");
+            } else if (MAGIC_MEMSTR(3, "perl")) {
+                return MAGIC_RESULT("text/x-perl");
+            } else if (MAGIC_MEMSTR(3, "ruby")) {
+                return MAGIC_RESULT("text/x-ruby");
+            } else if (MAGIC_MEMSTR(3, "python")) {
+                return MAGIC_RESULT("text/x-python");
             }
-            return MOLOCH_MAGIC_RESULT("text/x-shellscript");
+            return MAGIC_RESULT("text/x-shellscript");
         }
         break;
     case '%':
-        if (memcmp(data, "%PDF-", 5) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/pdf");
+        if (MAGIC_MATCH(0, "%PDF-")) {
+            return MAGIC_RESULT("application/pdf");
         }
         break;
     case '<':
         switch(data[1]) {
         case '!':
-            if (len > 14 && strncasecmp(data, "<!doctype html", 14) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/html");
+            if (len > 14 && MAGIC_STRCASE(0, "<!doctype html")) {
+                return MAGIC_RESULT("text/html");
             }
-            if (len > 13 && strncasecmp(data, "<!doctype svg", 13) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/svg+xml");
+            if (len > 13 && MAGIC_STRCASE(0, "<!doctype svg")) {
+                return MAGIC_RESULT("text/svg+xml");
             }
             break;
         case '?':
-            if (strncasecmp(data, "<?xml", 5) == 0) {
-                if (moloch_memstr(data+5, len-5, "<svg", 4)) {
-                    return MOLOCH_MAGIC_RESULT("image/svg+xml");
+            if (MAGIC_STRCASE(0, "<?xml")) {
+                if (MAGIC_MEMSTR(5, "<svg")) {
+                    return MAGIC_RESULT("image/svg+xml");
                 }
-                return MOLOCH_MAGIC_RESULT("text/xml");
+                return MAGIC_RESULT("text/xml");
             }
-            if (strncasecmp(data+2, "php", 3) == 0 ||
-                strncasecmp(data+2, " php", 4) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/x-php");
+            if (MAGIC_STRCASE(2, "php") || MAGIC_STRCASE(2, " php")) {
+                return MAGIC_RESULT("text/x-php");
             }
             break;
         case 'B':
         case 'b':
-            if (strncasecmp(data, "<body", 5) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/html");
+            if (MAGIC_STRCASE(0, "<body")) {
+                return MAGIC_RESULT("text/html");
             }
             break;
         case 'H':
         case 'h':
-            if (strncasecmp(data, "<head", 5) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/html");
+            if (MAGIC_STRCASE(0, "<head")) {
+                return MAGIC_RESULT("text/html");
             }
-            if (strncasecmp(data, "<html", 5) == 0) {
-                return MOLOCH_MAGIC_RESULT("text/html");
+            if (MAGIC_STRCASE(0, "<html")) {
+                return MAGIC_RESULT("text/html");
             }
             break;
         case 's':
         case 'S':
-            if (strncasecmp(data, "<svg", 4) == 0) {
-                return MOLOCH_MAGIC_RESULT("image/svg");
+            if (MAGIC_STRCASE(0, "<svg")) {
+                return MAGIC_RESULT("image/svg");
             }
             break;
         }
         break;
     case '{':
         if (data[1] == '"' && isalpha(data[2])) {
-            return MOLOCH_MAGIC_RESULT("application/json");
+            return MAGIC_RESULT("application/json");
         }
         break;
     case '8':
-        if (memcmp(data, "8BPS", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("image/vnd.adobe.photoshop");
+        if (MAGIC_MATCH(0, "8BPS")) {
+            return MAGIC_RESULT("image/vnd.adobe.photoshop");
         }
         break;
     case 'B':
         if (data[1] == 'M') {
-            return MOLOCH_MAGIC_RESULT("application/x-ms-bmp");
+            return MAGIC_RESULT("application/x-ms-bmp");
         }
 
-        if (memcmp(data, "BZh", 3) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-bzip2");
+        if (MAGIC_MATCH(0, "BZh")) {
+            return MAGIC_RESULT("application/x-bzip2");
         }
         break;
     case 'C':
-        if (memcmp(data, "CWS", 3) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-shockwave-flash");
+        if (MAGIC_MATCH(0, "CWS")) {
+            return MAGIC_RESULT("application/x-shockwave-flash");
         }
         break;
     case 'F':
-        if (memcmp(data, "FLV\001", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("video/x-flv");
+        if (MAGIC_MATCH(0, "FLV\001")) {
+            return MAGIC_RESULT("video/x-flv");
         }
         break;
     case 'G':
-        if (memcmp(data, "GIF8", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("image/gif");
+        if (MAGIC_MATCH(0, "GIF8")) {
+            return MAGIC_RESULT("image/gif");
+        }
+        break;
+    case 'i':
+        if (MAGIC_MATCH(0, "icns")) {
+            return MAGIC_RESULT("image/x-icns");
         }
         break;
     case 'I':
-        if (memcmp(data, "ID3", 3) == 0) {
-            return MOLOCH_MAGIC_RESULT("audio/mpeg");
+        if (MAGIC_MATCH(0, "ID3")) {
+            return MAGIC_RESULT("audio/mpeg");
         }
         break;
     case 'M':
         if (data[1] == 'Z') {
-            return MOLOCH_MAGIC_RESULT("application/x-dosexec");
+            return MAGIC_RESULT("application/x-dosexec");
         }
-        if (memcmp(data, "MSCF\000\000", 6) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/vnd.ms-cab-compressed");
+        if (MAGIC_MATCH(0, "MSCF\000\000")) {
+            return MAGIC_RESULT("application/vnd.ms-cab-compressed");
         }
         break;
     case 'O':
-        if (len > 40 && memcmp(data, "OggS", 4) == 0) {
+        if (len > 40 && MAGIC_MATCH(0, "OggS")) {
             // https://speex.org/docs/manual/speex-manual/node8.html
-            if (memcmp(data+28, "Speex   ", 8) == 0) {
-                return MOLOCH_MAGIC_RESULT("audio/ogg");
+            if (MAGIC_MATCH(28, "Speex   ")) {
+                return MAGIC_RESULT("audio/ogg");
             }
 
             // https://xiph.org/flac/ogg_mapping.html
-            if (memcmp(data+29, "FLAC", 4) == 0) {
-                return MOLOCH_MAGIC_RESULT("audio/ogg");
+            if (MAGIC_MATCH(29, "FLAC")) {
+                return MAGIC_RESULT("audio/ogg");
             }
 
             // https://xiph.org/vorbis/doc/Vorbis_I_spec.html
-            if (memcmp(data+28, "\001vorbis", 7) == 0) {
-                return MOLOCH_MAGIC_RESULT("audio/ogg");
+            if (MAGIC_MATCH(28, "\001vorbis")) {
+                return MAGIC_RESULT("audio/ogg");
             }
 
             // https://www.theora.org/doc/Theora.pdf
-            if (memcmp(data+28, "\x80theora", 7) == 0) {
-                return MOLOCH_MAGIC_RESULT("video/ogg");
+            if (MAGIC_MATCH(28, "\x80theora")) {
+                return MAGIC_RESULT("video/ogg");
             }
-        } else if (memcmp(data, "OTTO", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/vnd.ms-opentype");
+        } else if (MAGIC_MATCH(0, "OTTO")) {
+            return MAGIC_RESULT("application/vnd.ms-opentype");
         }
         break;
     case 'P':
-        if (memcmp(data, "PK\003\004", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/zip");
+        if (MAGIC_MATCH(0, "PK\003\004")) {
+            return MAGIC_RESULT("application/zip");
         }
-        if (memcmp(data, "PK\005\006", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/zip");
+        if (MAGIC_MATCH(0, "PK\005\006")) {
+            return MAGIC_RESULT("application/zip");
         }
-        if (memcmp(data, "PK\007\008PK", 6) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/zip");
+        if (MAGIC_MATCH(0, "PK\007\008PK")) {
+            return MAGIC_RESULT("application/zip");
         }
         break;
     case 'R':
-        if (memcmp(data, "RIFF", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("audio/x-wav");
+        if (MAGIC_MATCH(0, "RIFF")) {
+            return MAGIC_RESULT("audio/x-wav");
         }
-        if (memcmp(data, "Rar!\x1a", 5) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-rar");
+        if (MAGIC_MATCH(0, "Rar!\x1a")) {
+            return MAGIC_RESULT("application/x-rar");
         }
         break;
     case 'W':
-        if (memcmp(data, "WAVE", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("audio/x-wav");
+        if (MAGIC_MATCH(0, "WAVE")) {
+            return MAGIC_RESULT("audio/x-wav");
         }
         break;
     case 'd':
-        if (len > 20 && memcmp(data, "d8:announce", 11) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-bittorrent");
+        if (len > 20 && MAGIC_MATCH(0, "d8:announce")) {
+            return MAGIC_RESULT("application/x-bittorrent");
         }
         break;
     case 'w':
-        if (memcmp(data, "wOFF", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/font-woff");
+        if (MAGIC_MATCH(0, "wOFF")) {
+            return MAGIC_RESULT("application/font-woff");
         }
-        if (memcmp(data, "wOF2", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/font-woff2");
+        if (MAGIC_MATCH(0, "wOF2")) {
+            return MAGIC_RESULT("application/font-woff2");
         }
         break;
     case '\x89':
-        if (memcmp(data, "\x89PNG", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("image/png");
+        if (MAGIC_MATCH(0, "\x89PNG")) {
+            return MAGIC_RESULT("image/png");
         }
         break;
     case '\375':
-        if (memcmp(data, "\3757zXZ", 5) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-xz");
+        if (MAGIC_MATCH(0, "\3757zXZ")) {
+            return MAGIC_RESULT("application/x-xz");
         }
         break;
     case '\377':
-        if (len > 10 && memcmp(data, "\377\330\377", 3) == 0) {
-            return MOLOCH_MAGIC_RESULT("image/jpeg");
+        if (len > 10 && MAGIC_MATCH(0, "\377\330\377")) {
+            return MAGIC_RESULT("image/jpeg");
         }
         break;
     case '\xed':
-        if (len > 10 && memcmp(data, "\xed\xab\xee\xdb", 4) == 0) {
-            return MOLOCH_MAGIC_RESULT("application/x-rpm");
+        if (len > 10 && MAGIC_MATCH(0, "\xed\xab\xee\xdb")) {
+            return MAGIC_RESULT("application/x-rpm");
         }
         break;
     } /* switch */
 
-    if (len > 257+5 && memcmp(data+257, "ustar", 5) == 0) {
-        return MOLOCH_MAGIC_RESULT("application/x-tar");
+    if (len > 257+5 && MAGIC_MATCH(257, "ustar")) {
+        return MAGIC_RESULT("application/x-tar");
     }
-    if (moloch_memstr(data, len, "document.write", 14) ||
-        moloch_memstr(data, len, "'use strict'", 12)) {
-        return MOLOCH_MAGIC_RESULT("text/javascript");
+    if (MAGIC_MEMSTR(0, "document.write") ||
+        MAGIC_MEMSTR(0, "'use strict'")) {
+        return MAGIC_RESULT("text/javascript");
     }
     return NULL;
 }
