@@ -560,6 +560,7 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
     // If g_hostname_to_unicode fails, just use the input
     if (!host) {
         host = g_strndup(string, len);
+        moloch_session_add_tag(session, "bad-punycode");
     }
 
     if (!moloch_field_string_add(pos, session, host, -1, FALSE)) {
