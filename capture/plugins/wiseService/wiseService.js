@@ -163,6 +163,14 @@ function addField(field) {
   var match = field.match(/field:([^;]+)/);
   var name = match[1];
 
+  if ((match = field.match(/db:([^;]+)/))) {
+    var db = match[1];
+  }
+
+  if ((match = field.match(/friendly:([^;]+)/))) {
+    var friendly = match[1];
+  }
+
   if (wiseSource.field2Pos[name] !== undefined) {
     return wiseSource.field2Pos[name];
   }
@@ -173,18 +181,20 @@ function addField(field) {
   internals.fieldsSize += field.length + 10;
 
   // Create version 0 of fields buf
-  internals.fieldsBuf0 = new Buffer(internals.fieldsSize + 9);
-  internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
-  internals.fieldsBuf0.writeUInt32BE(0, 4);
-  internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
-  var offset = 9;
-  for (var i = 0; i < internals.fields.length; i++) {
-    var len = internals.fieldsBuf0.write(internals.fields[i], offset+2);
-    internals.fieldsBuf0.writeUInt16BE(len+1, offset);
-    internals.fieldsBuf0.writeUInt8(0, offset+2+len);
-    offset += 3 + len;
+  if (internals.fields.length < 256) {
+    internals.fieldsBuf0 = new Buffer(internals.fieldsSize + 9);
+    internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
+    internals.fieldsBuf0.writeUInt32BE(0, 4);
+    internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
+    var offset = 9;
+    for (var i = 0; i < internals.fields.length; i++) {
+      var len = internals.fieldsBuf0.write(internals.fields[i], offset+2);
+      internals.fieldsBuf0.writeUInt16BE(len+1, offset);
+      internals.fieldsBuf0.writeUInt8(0, offset+2+len);
+      offset += 3 + len;
+    }
+    internals.fieldsBuf0 = internals.fieldsBuf0.slice(0, offset);
   }
-  internals.fieldsBuf0 = internals.fieldsBuf0.slice(0, offset);
 
   // Create version 1 of fields buf
   internals.fieldsBuf1 = new Buffer(internals.fieldsSize + 9);
@@ -202,7 +212,19 @@ function addField(field) {
 
   wiseSource.pos2Field[pos] = name;
   wiseSource.field2Pos[name] = pos;
+  wiseSource.field2Info[name] = {pos: pos, friendly: friendly, db: db};
   return pos;
+}
+//////////////////////////////////////////////////////////////////////////////////
+//https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain(str, separator, limit) {
+    str = str.split(separator);
+    if(str.length <= limit) {return str;}
+
+    var ret = str.splice(0, limit);
+    ret.push(str.join(separator));
+
+    return ret;
 }
 //////////////////////////////////////////////////////////////////////////////////
 internals.sourceApi = {
@@ -211,6 +233,27 @@ internals.sourceApi = {
   getConfigSection: getConfigSection,
   addField: addField,
   addView: function (name, view) {
+    if (view.includes("require:")) {
+      var match = view.match(/require:([^;]+)/);
+      var require = match[1];
+      match = view.match(/title:([^;]+)/);
+      var title = match[1];
+      match = view.match(/fields:([^;]+)/);
+      var fields = match[1];
+
+      var view = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      for (let field of fields.split(",")) {
+        let info = wiseSource.field2Info[field];
+        if (!info)
+          continue;
+        var parts = splitRemain(info.db, '.', 1);
+        if (parts.length == 1) {
+          view += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+        } else {
+          view += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+        }
+      }
+    }
     internals.views[name] = view;
   },
   addRightClick: function (name, rightClick) {
@@ -261,7 +304,12 @@ function loadSources() {
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/fields", function(req, res) {
   if (req.query.ver === undefined || req.query.ver === "0") {
-    res.send(internals.fieldsBuf0);
+    if (internals.fields.length < 256) {
+      res.send(internals.fieldsBuf0);
+    } else {
+      console.log("ERROR - This wise server has more then 255 fields, it can't be used with older moloch");
+      return res.status(404).end();
+    }
   } else {
     res.send(internals.fieldsBuf1);
   }

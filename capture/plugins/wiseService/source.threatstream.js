@@ -111,17 +111,7 @@ function ThreatStreamSource (api, section) {
   this.importIdField = this.api.addField("field:threatstream.importId;db:threatstream.importId;kind:integer;friendly:Import Id;help:Threatstream Import Id;count:true");
 
   this.api.addView("threatstream",
-    "if (session.threatstream)\n" +
-    "  div.sessionDetailMeta.bold Threatstream\n" +
-    "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.threatstream, 'severity', 'Severity', 'threatstream.severity')\n" +
-    "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
-    "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
-    "    +arrayList(session.threatstream, 'importId', 'Import Id', 'threatstream.importId')\n" +
-    "    +arrayList(session.threatstream, 'type', 'Type', 'threatstream.type')\n" +
-    "    +arrayList(session.threatstream, 'maltype', 'Malware Type', 'threatstream.maltype')\n" +
-    "    +arrayList(session.threatstream, 'source', 'Source', 'threatstream.source')\n"
-  );
+    "require:threatstream;title:Threatstream;fields:threatstream.severity,threatstream.confidence,threatstream.id,threatstream.importId,threatstream.type,threatstream.maltype,threatstream.source");
 
   this.api.addRightClick("threatstreamip", {name:"Threatstream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
   this.api.addRightClick("threatstreamhost", {name:"Threatstream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});

@@ -95,6 +95,7 @@ module.exports = WISESource;
 
 WISESource.emptyResult = {num: 0, buffer: new Buffer(0)};
 WISESource.field2Pos = {};
+WISESource.field2Info = {};
 WISESource.pos2Field = {};
 
 //////////////////////////////////////////////////////////////////////////////////
