@@ -390,7 +390,7 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
 
     if (fields) {
         int i;
-        rule->fields = malloc((int)fields->len);
+        rule->fields = malloc((int)fields->len * 2);
         for (i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
             int pos = moloch_field_by_exp(node->key);

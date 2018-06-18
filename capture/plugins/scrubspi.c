@@ -112,10 +112,11 @@ LOCAL void scrubspi_add_entry(char *key, char *value)
         }
         ss[ssLen].pos     = pos;
         ss[ssLen].search  = search;
-        ss[ssLen].replace = values[1];
+        ss[ssLen].replace = g_strdup(values[1]);
         ssLen++;
     }
     g_strfreev(keys);
+    g_strfreev(values);
 }
 /******************************************************************************/
 void moloch_plugin_init()

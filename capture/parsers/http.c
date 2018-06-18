@@ -516,7 +516,8 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                     truncated = TRUE;
                     g_string_truncate(http->urlString, MAX_URL_LENGTH);
                 }
-                moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
+                if (!moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
+                    g_free(http->urlString->str);
                 g_string_free(http->urlString, FALSE);
                 g_string_free(http->hostString, TRUE);
             } else {
@@ -528,7 +529,9 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                     truncated = TRUE;
                     g_string_truncate(http->hostString, MAX_URL_LENGTH);
                 }
-                moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
+                if (!moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
+                    g_free(http->hostString->str);
+
                 g_string_free(http->urlString, TRUE);
                 g_string_free(http->hostString, FALSE);
             }
@@ -540,7 +543,8 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                 truncated = TRUE;
                 g_string_truncate(http->hostString, MAX_URL_LENGTH);
             }
-            moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
+            if (!moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
+                g_free(http->hostString->str);
             g_string_free(http->urlString, TRUE);
             g_string_free(http->hostString, FALSE);
         }
@@ -553,7 +557,8 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
             truncated = TRUE;
             g_string_truncate(http->urlString, MAX_URL_LENGTH);
         }
-        moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
+        if (!moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
+                g_free(http->urlString->str);
         g_string_free(http->urlString, FALSE);
 
         http->urlString = NULL;

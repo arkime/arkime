@@ -559,6 +559,7 @@ LOCAL void reader_libpcapfile_start() {
         filenameOps[filenameOpsNum].field = fieldPos;
         filenameOpsNum++;
     }
+    g_strfreev(filenameOpsStr);
 
     // Now actually start
     reader_libpcapfile_next();

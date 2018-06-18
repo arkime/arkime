@@ -706,6 +706,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":\"%s\",", config.fields[pos]->dbField, ipsrc);
+
+            if (freeField) {
+                g_free(session->fields[pos]->ip);
+            }
             }
             break;
         case MOLOCH_FIELD_TYPE_IP_GHASH: {

@@ -51,7 +51,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
             if (MAGIC_MATCH(8, "qt")) {
                 return MAGIC_RESULT("video/quicktime");
             }
-            if (MAGIC_MATCH(8, "3g") == 0) {
+            if (MAGIC_MATCH(8, "3g")) {
                 return MAGIC_RESULT("video/3gpp");
             }
         } else if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
