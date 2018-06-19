@@ -873,6 +873,8 @@ void moloch_http_free_server(void *serverV)
     g_strfreev(server->names);
     free(server->snames);
 
+    g_hash_table_destroy(server->fd2ev);
+
     MOLOCH_TYPE_FREE(MolochHttpServer_t, server);
 }
 /******************************************************************************/

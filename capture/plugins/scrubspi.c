@@ -150,6 +150,7 @@ void moloch_plugin_init()
             LOGEXIT("No value for %s in section [scrubspi]", keys[i]);
 
         scrubspi_add_entry(keys[i], value);
+        g_free(value);
     }
     g_strfreev(keys);
 #else

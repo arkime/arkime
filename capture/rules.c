@@ -495,6 +495,7 @@ void moloch_rules_load_complete()
             }
             g_match_info_free(match_info);
         }
+        g_strfreev(bpfs);
     }
 
     bpfs = moloch_config_str_list(NULL, "minPacketsSaveBPFs", NULL);
@@ -518,6 +519,7 @@ void moloch_rules_load_complete()
             }
             g_match_info_free(match_info);
         }
+        g_strfreev(bpfs);
     }
     g_regex_unref(regex);
 
@@ -886,9 +888,10 @@ void moloch_rules_init()
 {
     char **rulesFiles = moloch_config_str_list(NULL, "rulesFiles", NULL);
 
-    if (rulesFiles)
+    if (rulesFiles) {
         moloch_config_monitor_files("rules files", rulesFiles, moloch_rules_load);
-    else
+        g_strfreev(rulesFiles);
+    } else
         moloch_rules_load_complete();
 }
 /******************************************************************************/

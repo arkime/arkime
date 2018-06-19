@@ -84,6 +84,10 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
         g_free(ii->asn);
     if (ii->rir)
         g_free(ii->rir);
+
+    int i;
+    for (i = 0; i < ii->numtags; i++)
+        g_free(ii->tagsStr[i]);
     MOLOCH_TYPE_FREE(MolochIpInfo_t, ii);
 }
 /******************************************************************************/
@@ -1191,10 +1195,14 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     lastUsage[n]           = usage;
 
     if (n == 0) {
-        if (sync)
-            moloch_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
-        else
+        if (sync) {
+            unsigned char *data = moloch_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
+            if (data)
+                free(data);
+            moloch_http_free_buffer(json);
+        } else {
             moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
+        }
     } else {
         key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
         moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
@@ -1782,7 +1790,7 @@ LOCAL void moloch_db_load_oui(char *name)
 
         // Break into pieces
         gchar **parts = g_strsplit(line, "\t", 0);
-        char *str;
+        char *str = NULL;
         if (parts[2]) {
             if (parts[2][0])
                 str = parts[2];

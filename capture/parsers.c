@@ -563,6 +563,8 @@ void moloch_parsers_init()
         LOGEXIT("Unknown magicMode '%s'", strMagicMode);
     }
 
+    g_free(strMagicMode);
+
 #ifdef MAGIC_NO_CHECK_COMPRESS
     flags |= MAGIC_NO_CHECK_COMPRESS |
              MAGIC_NO_CHECK_TAR      |

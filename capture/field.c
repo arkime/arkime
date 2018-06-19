@@ -58,13 +58,21 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     info->expression = g_strndup((char*)expression, expression_len);
     for (i = 0; out[i]; i += 4) {
         if (strncmp("group", (char*)data + out[i], 5) == 0) {
+            if (info->group)
+                g_free(info->group);
             info->group = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("dbField2", (char*)data + out[i], 7) == 0) {
+            if (info->dbFieldFull)
+                g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen  = out[i+3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
+            if (info->kind)
+                g_free(info->kind);
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
+            if (info->category)
+                g_free(info->category);
             info->category = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
