@@ -788,10 +788,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
             goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
-
-            if (!g_hash_table_add(field->ghash, v)) {
-                g_free(v);
-            }
+            g_hash_table_add(field->ghash, v);
             goto added;
         default:
             LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
@@ -847,10 +844,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
             goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
-
-            if (!g_hash_table_add(field->ghash, v)) {
-                g_free(v);
-            }
+            g_hash_table_add(field->ghash, v);
             goto added;
         default:
             LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
@@ -901,10 +895,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
             goto added;
         case MOLOCH_FIELD_TYPE_IP_GHASH:
             field->ghash = g_hash_table_new_full(moloch_field_ip_hash, moloch_field_ip_equal, g_free, NULL);
-
-            if (!g_hash_table_add(field->ghash, v)) {
-                g_free(v);
-            }
+            g_hash_table_add(field->ghash, v);
             goto added;
         default:
             LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
