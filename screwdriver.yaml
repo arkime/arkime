@@ -22,7 +22,7 @@ jobs:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh"
             - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root
+            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: scl enable devtoolset-3 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -45,7 +45,7 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root
+            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -69,7 +69,7 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root
+            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
@@ -98,7 +98,7 @@ jobs:
 #                sleep 1
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root
+            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - test-capture: (cd tests ; ./tests.pl)
