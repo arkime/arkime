@@ -132,6 +132,8 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     int i;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         prefix.family = AF_INET;
         prefix.bitlen = 32;
@@ -186,6 +188,7 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             }
         }
     }
+#pragma GCC diagnostic pop
 
     MolochString_t *hstring;
     if (httpHostField != -1 && session->fields[httpHostField]) {

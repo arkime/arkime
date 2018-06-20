@@ -553,6 +553,8 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         iRequest->numItems = 0;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     //IPs
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         wise_lookup_ip4(session, iRequest, MOLOCH_V6_TO_V4(session->addr1));
@@ -566,6 +568,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         wise_lookup_ip6(session, iRequest, &session->addr2);
     }
 
+#pragma GCC diagnostic pop
 
     //Domains
     if (session->fields[httpHostField]) {

@@ -115,9 +115,12 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         netflow_send(thread);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (!IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         return;
     }
+#pragma GCC diagnostic pop
 
     if ((lastTime[thread].tv_sec < session->lastPacket.tv_sec) || (lastTime[thread].tv_sec == session->lastPacket.tv_sec && lastTime[thread].tv_usec < session->lastPacket.tv_usec)) {
         lastTime[thread] = session->lastPacket;

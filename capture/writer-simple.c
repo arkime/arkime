@@ -326,7 +326,8 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             }
         }
         if (info->closing) {
-            ftruncate(info->file->fd, info->file->pos);
+            if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
+                LOG("Truncate failed");
             close(info->file->fd);
             moloch_db_update_filesize(info->file->id, info->file->pos);
         }

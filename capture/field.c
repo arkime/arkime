@@ -751,8 +751,7 @@ void *moloch_field_parse_ip(const char *str) {
             return NULL;
         }
 
-        ((uint32_t *)v->s6_addr)[0] = 0;
-        ((uint32_t *)v->s6_addr)[1] = 0;
+        memset(v->s6_addr, 0, 8);
         ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
         ((uint32_t *)v->s6_addr)[3] = addr.s_addr;
     } else {
@@ -829,8 +828,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
 
-    ((uint32_t *)v->s6_addr)[0] = 0;
-    ((uint32_t *)v->s6_addr)[1] = 0;
+    memset(v->s6_addr, 0, 8);
     ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
     ((uint32_t *)v->s6_addr)[3] = i;
 

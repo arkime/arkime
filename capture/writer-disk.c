@@ -177,7 +177,8 @@ LOCAL gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointe
     // The last write for this fd
     if (out->close) {
         if (filelen) {
-            (void)ftruncate(outputFd, filelen);
+            if (ftruncate(outputFd, filelen) < 0 && config.debug)
+                LOG("Truncate failed");
         } else {
             filelen = lseek(outputFd, 0, SEEK_CUR);
         }

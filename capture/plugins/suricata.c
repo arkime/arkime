@@ -247,8 +247,7 @@ LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
             return 0;
         }
 
-        ((uint32_t *)v->s6_addr)[0] = 0;
-        ((uint32_t *)v->s6_addr)[1] = 0;
+        memset(v->s6_addr, 0, 8);
         ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
         ((uint32_t *)v->s6_addr)[3] = addr.s_addr;
     } else {
@@ -377,11 +376,14 @@ LOCAL void suricata_process()
         }
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (IN6_IS_ADDR_V4MAPPED(&srcIp)) {
         moloch_session_id(item->sessionId, MOLOCH_V6_TO_V4(srcIp), htons(srcPort), MOLOCH_V6_TO_V4(dstIp), htons(dstPort));
     } else {
         moloch_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
     }
+#pragma GCC diagnostic pop
 
     if (!suricata_alerts_add(item)) {
         suricata_item_free(item);

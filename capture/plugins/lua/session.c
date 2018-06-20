@@ -275,7 +275,7 @@ LOCAL int MS_add_string(lua_State *L)
         pos = moloch_field_by_exp(lua_tostring(L, 2));
     }
     gboolean result;
-    result = moloch_field_string_add(pos, session, string, len, TRUE);
+    result = moloch_field_string_add(pos, session, string, len, TRUE) != NULL;
     lua_pushboolean(L, result);
 
     return 1;

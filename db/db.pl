@@ -93,10 +93,10 @@ sub showHelp($)
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourly6,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
