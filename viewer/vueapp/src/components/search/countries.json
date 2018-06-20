@@ -1,898 +1,898 @@
 [
   {
-    "exp": "AGO",
-    "friendlyName": "Angola"
-  },
-  {
-    "exp": "DZA",
-    "friendlyName": "Algeria"
-  },
-  {
-    "exp": "EGY",
-    "friendlyName": "Egypt"
-  },
-  {
-    "exp": "BGD",
-    "friendlyName": "Bangladesh"
-  },
-  {
-    "exp": "LIE",
-    "friendlyName": "Liechtenstein"
-  },
-  {
-    "exp": "SOM",
-    "friendlyName": "Somalia"
-  },
-  {
-    "exp": "NAM",
-    "friendlyName": "Namibia"
-  },
-  {
-    "exp": "BGR",
-    "friendlyName": "Bulgaria"
-  },
-  {
-    "exp": "BOL",
-    "friendlyName": "Bolivia"
-  },
-  {
-    "exp": "GHA",
-    "friendlyName": "Ghana"
-  },
-  {
-    "exp": "PAK",
-    "friendlyName": "Pakistan"
-  },
-  {
-    "exp": "CPV",
-    "friendlyName": "Cape Verde"
-  },
-  {
-    "exp": "JOR",
-    "friendlyName": "Jordan"
-  },
-  {
-    "exp": "LBR",
-    "friendlyName": "Liberia"
-  },
-  {
-    "exp": "LBY",
-    "friendlyName": "Libya"
-  },
-  {
-    "exp": "MYS",
-    "friendlyName": "Malaysia"
-  },
-  {
-    "exp": "PRI",
-    "friendlyName": "Puerto Rico"
-  },
-  {
-    "exp": "PRK",
-    "friendlyName": "Dem. Rep. Korea"
-  },
-  {
-    "exp": "TZA",
-    "friendlyName": "Tanzania"
-  },
-  {
-    "exp": "BWA",
-    "friendlyName": "Botswana"
-  },
-  {
-    "exp": "KHM",
-    "friendlyName": "Cambodia"
-  },
-  {
-    "exp": "PRY",
-    "friendlyName": "Paraguay"
-  },
-  {
-    "exp": "HKG",
-    "friendlyName": "Hong Kong"
-  },
-  {
-    "exp": "SAU",
-    "friendlyName": "Saudi Arabia"
-  },
-  {
-    "exp": "LBN",
-    "friendlyName": "Lebanon"
-  },
-  {
-    "exp": "SVN",
-    "friendlyName": "Slovenia"
-  },
-  {
-    "exp": "BFA",
-    "friendlyName": "Burkina Faso"
-  },
-  {
-    "exp": "CHE",
-    "friendlyName": "Switzerland"
-  },
-  {
-    "exp": "MRT",
-    "friendlyName": "Mauritania"
-  },
-  {
-    "exp": "HRV",
-    "friendlyName": "Croatia"
-  },
-  {
-    "exp": "CHL",
-    "friendlyName": "Chile"
-  },
-  {
-    "exp": "CHN",
-    "friendlyName": "China"
-  },
-  {
-    "exp": "KNA",
-    "friendlyName": "St. Kitts and Nevis"
-  },
-  {
-    "exp": "JAM",
-    "friendlyName": "Jamaica"
-  },
-  {
-    "exp": "DJI",
-    "friendlyName": "Djibouti"
-  },
-  {
-    "exp": "GIN",
-    "friendlyName": "Guinea"
-  },
-  {
-    "exp": "FIN",
-    "friendlyName": "Finland"
-  },
-  {
-    "exp": "URY",
-    "friendlyName": "Uruguay"
-  },
-  {
-    "exp": "THA",
-    "friendlyName": "Thailand"
-  },
-  {
-    "exp": "SYC",
-    "friendlyName": "Seychelles"
-  },
-  {
-    "exp": "NPL",
-    "friendlyName": "Nepal"
-  },
-  {
-    "exp": "MAR",
-    "friendlyName": "Morocco"
-  },
-  {
-    "exp": "YEM",
-    "friendlyName": "Yemen"
-  },
-  {
-    "exp": "PHL",
-    "friendlyName": "Philippines"
-  },
-  {
-    "exp": "ZAF",
-    "friendlyName": "South Africa"
-  },
-  {
-    "exp": "NIC",
-    "friendlyName": "Nicaragua"
-  },
-  {
-    "exp": "_5",
-    "friendlyName": "Somaliland"
-  },
-  {
-    "exp": "_4",
-    "friendlyName": "Kosovo"
-  },
-  {
-    "exp": "_3",
-    "friendlyName": "Siachen Glacier"
+    "exp": "_1",
+    "friendlyName": "N. Cyprus"
   },
   {
     "exp": "_2",
     "friendlyName": "Indian Ocean Ter."
   },
   {
-    "exp": "_1",
-    "friendlyName": "N. Cyprus"
+    "exp": "_3",
+    "friendlyName": "Siachen Glacier"
   },
   {
-    "exp": "MNE",
-    "friendlyName": "Montenegro"
+    "exp": "_4",
+    "friendlyName": "Kosovo"
   },
   {
-    "exp": "VIR",
-    "friendlyName": "U.S. Virgin Is."
+    "exp": "_5",
+    "friendlyName": "Somaliland"
   },
   {
-    "exp": "SYR",
-    "friendlyName": "Syria"
-  },
-  {
-    "exp": "KIR",
-    "friendlyName": "Kiribati"
-  },
-  {
-    "exp": "KAZ",
-    "friendlyName": "Kazakhstan"
-  },
-  {
-    "exp": "COK",
-    "friendlyName": "Cook Is."
-  },
-  {
-    "exp": "MNG",
-    "friendlyName": "Mongolia"
-  },
-  {
-    "exp": "PYF",
-    "friendlyName": "Fr. Polynesia"
-  },
-  {
-    "exp": "NIU",
-    "friendlyName": "Niue"
-  },
-  {
-    "exp": "IRL",
-    "friendlyName": "Ireland"
-  },
-  {
-    "exp": "DMA",
-    "friendlyName": "Dominica"
-  },
-  {
-    "exp": "BEN",
-    "friendlyName": "Benin"
-  },
-  {
-    "exp": "NGA",
-    "friendlyName": "Nigeria"
-  },
-  {
-    "exp": "BEL",
-    "friendlyName": "Belgium"
-  },
-  {
-    "exp": "DEU",
-    "friendlyName": "Germany"
-  },
-  {
-    "exp": "GUM",
-    "friendlyName": "Guam"
-  },
-  {
-    "exp": "LKA",
-    "friendlyName": "Sri Lanka"
-  },
-  {
-    "exp": "FLK",
-    "friendlyName": "Falkland Is."
-  },
-  {
-    "exp": "GBR",
-    "friendlyName": "United Kingdom"
-  },
-  {
-    "exp": "GUY",
-    "friendlyName": "Guyana"
-  },
-  {
-    "exp": "CRI",
-    "friendlyName": "Costa Rica"
-  },
-  {
-    "exp": "CMR",
-    "friendlyName": "Cameroon"
-  },
-  {
-    "exp": "MNP",
-    "friendlyName": "N. Mariana Is."
-  },
-  {
-    "exp": "LSO",
-    "friendlyName": "Lesotho"
-  },
-  {
-    "exp": "HUN",
-    "friendlyName": "Hungary"
-  },
-  {
-    "exp": "TKM",
-    "friendlyName": "Turkmenistan"
-  },
-  {
-    "exp": "TTO",
-    "friendlyName": "Trinidad and Tobago"
-  },
-  {
-    "exp": "NLD",
-    "friendlyName": "Netherlands"
-  },
-  {
-    "exp": "COM",
-    "friendlyName": "Comoros"
-  },
-  {
-    "exp": "HMD",
-    "friendlyName": "Heard I. and McDonald Is."
-  },
-  {
-    "exp": "TCD",
-    "friendlyName": "Chad"
-  },
-  {
-    "exp": "GEO",
-    "friendlyName": "Georgia"
-  },
-  {
-    "exp": "ROU",
-    "friendlyName": "Romania"
-  },
-  {
-    "exp": "TCA",
-    "friendlyName": "Turks and Caicos Is."
-  },
-  {
-    "exp": "BLZ",
-    "friendlyName": "Belize"
-  },
-  {
-    "exp": "SWE",
-    "friendlyName": "Sweden"
-  },
-  {
-    "exp": "AFG",
-    "friendlyName": "Afghanistan"
-  },
-  {
-    "exp": "BDI",
-    "friendlyName": "Burundi"
-  },
-  {
-    "exp": "BLR",
-    "friendlyName": "Belarus"
-  },
-  {
-    "exp": "GRD",
-    "friendlyName": "Grenada"
-  },
-  {
-    "exp": "ALA",
-    "friendlyName": "Aland"
-  },
-  {
-    "exp": "GRC",
-    "friendlyName": "Greece"
-  },
-  {
-    "exp": "GRL",
-    "friendlyName": "Greenland"
-  },
-  {
-    "exp": "SHN",
-    "friendlyName": "Saint Helena"
-  },
-  {
-    "exp": "AND",
+    "exp": "AD",
     "friendlyName": "Andorra"
   },
   {
-    "exp": "MOZ",
-    "friendlyName": "Mozambique"
-  },
-  {
-    "exp": "TJK",
-    "friendlyName": "Tajikistan"
-  },
-  {
-    "exp": "HTI",
-    "friendlyName": "Haiti"
-  },
-  {
-    "exp": "PSE",
-    "friendlyName": "Palestine"
-  },
-  {
-    "exp": "LCA",
-    "friendlyName": "Saint Lucia"
-  },
-  {
-    "exp": "IND",
-    "friendlyName": "India"
-  },
-  {
-    "exp": "SSD",
-    "friendlyName": "S. Sudan"
-  },
-  {
-    "exp": "BTN",
-    "friendlyName": "Bhutan"
-  },
-  {
-    "exp": "VCT",
-    "friendlyName": "St. Vin. and Gren."
-  },
-  {
-    "exp": "VNM",
-    "friendlyName": "Vietnam"
-  },
-  {
-    "exp": "NOR",
-    "friendlyName": "Norway"
-  },
-  {
-    "exp": "CZE",
-    "friendlyName": "Czech Rep."
-  },
-  {
-    "exp": "ATF",
-    "friendlyName": "Fr. S. Antarctic Lands"
-  },
-  {
-    "exp": "ATG",
-    "friendlyName": "Antigua and Barb."
-  },
-  {
-    "exp": "FJI",
-    "friendlyName": "Fiji"
-  },
-  {
-    "exp": "HND",
-    "friendlyName": "Honduras"
-  },
-  {
-    "exp": "MUS",
-    "friendlyName": "Mauritius"
-  },
-  {
-    "exp": "DOM",
-    "friendlyName": "Dominican Rep."
-  },
-  {
-    "exp": "LUX",
-    "friendlyName": "Luxembourg"
-  },
-  {
-    "exp": "ISR",
-    "friendlyName": "Israel"
-  },
-  {
-    "exp": "SMR",
-    "friendlyName": "San Marino"
-  },
-  {
-    "exp": "PER",
-    "friendlyName": "Peru"
-  },
-  {
-    "exp": "IDN",
-    "friendlyName": "Indonesia"
-  },
-  {
-    "exp": "VUT",
-    "friendlyName": "Vanuatu"
-  },
-  {
-    "exp": "GNQ",
-    "friendlyName": "Eq. Guinea"
-  },
-  {
-    "exp": "SUR",
-    "friendlyName": "Suriname"
-  },
-  {
-    "exp": "COG",
-    "friendlyName": "Congo"
-  },
-  {
-    "exp": "ISL",
-    "friendlyName": "Iceland"
-  },
-  {
-    "exp": "GAB",
-    "friendlyName": "Gabon"
-  },
-  {
-    "exp": "ETH",
-    "friendlyName": "Ethiopia"
-  },
-  {
-    "exp": "NER",
-    "friendlyName": "Niger"
-  },
-  {
-    "exp": "COL",
-    "friendlyName": "Colombia"
-  },
-  {
-    "exp": "PRT",
-    "friendlyName": "Portugal"
-  },
-  {
-    "exp": "MDA",
-    "friendlyName": "Moldova"
-  },
-  {
-    "exp": "GGY",
-    "friendlyName": "Guernsey"
-  },
-  {
-    "exp": "MDG",
-    "friendlyName": "Madagascar"
-  },
-  {
-    "exp": "ECU",
-    "friendlyName": "Ecuador"
-  },
-  {
-    "exp": "SEN",
-    "friendlyName": "Senegal"
-  },
-  {
-    "exp": "NZL",
-    "friendlyName": "New Zealand"
-  },
-  {
-    "exp": "ASM",
-    "friendlyName": "American Samoa"
-  },
-  {
-    "exp": "SPM",
-    "friendlyName": "St. Pierre and Miquelon"
-  },
-  {
-    "exp": "TLS",
-    "friendlyName": "Timor-Leste"
-  },
-  {
-    "exp": "FRA",
-    "friendlyName": "France"
-  },
-  {
-    "exp": "LTU",
-    "friendlyName": "Lithuania"
-  },
-  {
-    "exp": "RWA",
-    "friendlyName": "Rwanda"
-  },
-  {
-    "exp": "ZMB",
-    "friendlyName": "Zambia"
-  },
-  {
-    "exp": "TWN",
-    "friendlyName": "Taiwan"
-  },
-  {
-    "exp": "WLF",
-    "friendlyName": "Wallis and Futuna Is."
-  },
-  {
-    "exp": "JEY",
-    "friendlyName": "Jersey"
-  },
-  {
-    "exp": "FRO",
-    "friendlyName": "Faeroe Is."
-  },
-  {
-    "exp": "GTM",
-    "friendlyName": "Guatemala"
-  },
-  {
-    "exp": "DNK",
-    "friendlyName": "Denmark"
-  },
-  {
-    "exp": "ZWE",
-    "friendlyName": "Zimbabwe"
-  },
-  {
-    "exp": "AUS",
-    "friendlyName": "Australia"
-  },
-  {
-    "exp": "AUT",
-    "friendlyName": "Austria"
-  },
-  {
-    "exp": "VEN",
-    "friendlyName": "Venezuela"
-  },
-  {
-    "exp": "IRN",
-    "friendlyName": "Iran"
-  },
-  {
-    "exp": "PLW",
-    "friendlyName": "Palau"
-  },
-  {
-    "exp": "KEN",
-    "friendlyName": "Kenya"
-  },
-  {
-    "exp": "LAO",
-    "friendlyName": "Lao PDR"
-  },
-  {
-    "exp": "WSM",
-    "friendlyName": "Samoa"
-  },
-  {
-    "exp": "TUR",
-    "friendlyName": "Turkey"
-  },
-  {
-    "exp": "JPN",
-    "friendlyName": "Japan"
-  },
-  {
-    "exp": "ALB",
-    "friendlyName": "Albania"
-  },
-  {
-    "exp": "OMN",
-    "friendlyName": "Oman"
-  },
-  {
-    "exp": "MMR",
-    "friendlyName": "Myanmar"
-  },
-  {
-    "exp": "BRN",
-    "friendlyName": "Brunei"
-  },
-  {
-    "exp": "TUN",
-    "friendlyName": "Tunisia"
-  },
-  {
-    "exp": "RUS",
-    "friendlyName": "Russia"
-  },
-  {
-    "exp": "MEX",
-    "friendlyName": "Mexico"
-  },
-  {
-    "exp": "BRA",
-    "friendlyName": "Brazil"
-  },
-  {
-    "exp": "CAN",
-    "friendlyName": "Canada"
-  },
-  {
-    "exp": "CUW",
-    "friendlyName": "CuraÃ§ao"
-  },
-  {
-    "exp": "MKD",
-    "friendlyName": "Macedonia"
-  },
-  {
-    "exp": "USA",
-    "friendlyName": "United States"
-  },
-  {
-    "exp": "QAT",
-    "friendlyName": "Qatar"
-  },
-  {
-    "exp": "LVA",
-    "friendlyName": "Latvia"
-  },
-  {
-    "exp": "MSR",
-    "friendlyName": "Montserrat"
-  },
-  {
-    "exp": "GNB",
-    "friendlyName": "Guinea-Bissau"
-  },
-  {
-    "exp": "SWZ",
-    "friendlyName": "Swaziland"
-  },
-  {
-    "exp": "TON",
-    "friendlyName": "Tonga"
-  },
-  {
-    "exp": "CIV",
-    "friendlyName": "CÃ´te d'Ivoire"
-  },
-  {
-    "exp": "UKR",
-    "friendlyName": "Ukraine"
-  },
-  {
-    "exp": "KOR",
-    "friendlyName": "Korea"
-  },
-  {
-    "exp": "CAF",
-    "friendlyName": "Central African Rep."
-  },
-  {
-    "exp": "SVK",
-    "friendlyName": "Slovakia"
-  },
-  {
-    "exp": "CYP",
-    "friendlyName": "Cyprus"
-  },
-  {
-    "exp": "BIH",
-    "friendlyName": "Bosnia and Herz."
-  },
-  {
-    "exp": "SGP",
-    "friendlyName": "Singapore"
-  },
-  {
-    "exp": "SGS",
-    "friendlyName": "S. Geo. and S. Sandw. Is."
-  },
-  {
-    "exp": "AZE",
-    "friendlyName": "Azerbaijan"
-  },
-  {
-    "exp": "UZB",
-    "friendlyName": "Uzbekistan"
-  },
-  {
-    "exp": "ERI",
-    "friendlyName": "Eritrea"
-  },
-  {
-    "exp": "SRB",
-    "friendlyName": "Serbia"
-  },
-  {
-    "exp": "POL",
-    "friendlyName": "Poland"
-  },
-  {
-    "exp": "KWT",
-    "friendlyName": "Kuwait"
-  },
-  {
-    "exp": "GMB",
-    "friendlyName": "Gambia"
-  },
-  {
-    "exp": "NCL",
-    "friendlyName": "New Caledonia"
-  },
-  {
-    "exp": "TGO",
-    "friendlyName": "Togo"
-  },
-  {
-    "exp": "CYM",
-    "friendlyName": "Cayman Is."
-  },
-  {
-    "exp": "EST",
-    "friendlyName": "Estonia"
-  },
-  {
-    "exp": "MWI",
-    "friendlyName": "Malawi"
-  },
-  {
-    "exp": "ESP",
-    "friendlyName": "Spain"
-  },
-  {
-    "exp": "IRQ",
-    "friendlyName": "Iraq"
-  },
-  {
-    "exp": "SLV",
-    "friendlyName": "El Salvador"
-  },
-  {
-    "exp": "MLI",
-    "friendlyName": "Mali"
-  },
-  {
-    "exp": "STP",
-    "friendlyName": "SÃ£o TomÃ© and Principe"
-  },
-  {
-    "exp": "MLT",
-    "friendlyName": "Malta"
-  },
-  {
-    "exp": "ABW",
-    "friendlyName": "Aruba"
-  },
-  {
-    "exp": "SLE",
-    "friendlyName": "Sierra Leone"
-  },
-  {
-    "exp": "IMN",
-    "friendlyName": "Isle of Man"
-  },
-  {
-    "exp": "PAN",
-    "friendlyName": "Panama"
-  },
-  {
-    "exp": "BHS",
-    "friendlyName": "Bahamas"
-  },
-  {
-    "exp": "SLB",
-    "friendlyName": "Solomon Is."
-  },
-  {
-    "exp": "ESH",
-    "friendlyName": "W. Sahara"
-  },
-  {
-    "exp": "ITA",
-    "friendlyName": "Italy"
-  },
-  {
-    "exp": "COD",
-    "friendlyName": "Dem. Rep. Congo"
-  },
-  {
-    "exp": "BRB",
-    "friendlyName": "Barbados"
-  },
-  {
-    "exp": "KGZ",
-    "friendlyName": "Kyrgyzstan"
-  },
-  {
-    "exp": "ARM",
-    "friendlyName": "Armenia"
-  },
-  {
-    "exp": "FSM",
-    "friendlyName": "Micronesia"
-  },
-  {
-    "exp": "ARE",
+    "exp": "AE",
     "friendlyName": "United Arab Emirates"
   },
   {
-    "exp": "ARG",
+    "exp": "AF",
+    "friendlyName": "Afghanistan"
+  },
+  {
+    "exp": "AG",
+    "friendlyName": "Antigua and Barb."
+  },
+  {
+    "exp": "AL",
+    "friendlyName": "Albania"
+  },
+  {
+    "exp": "AM",
+    "friendlyName": "Armenia"
+  },
+  {
+    "exp": "AO",
+    "friendlyName": "Angola"
+  },
+  {
+    "exp": "AR",
     "friendlyName": "Argentina"
   },
   {
-    "exp": "SDN",
-    "friendlyName": "Sudan"
+    "exp": "AS",
+    "friendlyName": "American Samoa"
   },
   {
-    "exp": "BHR",
+    "exp": "AT",
+    "friendlyName": "Austria"
+  },
+  {
+    "exp": "AU",
+    "friendlyName": "Australia"
+  },
+  {
+    "exp": "AW",
+    "friendlyName": "Aruba"
+  },
+  {
+    "exp": "AX",
+    "friendlyName": "Aland"
+  },
+  {
+    "exp": "AZ",
+    "friendlyName": "Azerbaijan"
+  },
+  {
+    "exp": "BA",
+    "friendlyName": "Bosnia and Herz."
+  },
+  {
+    "exp": "BB",
+    "friendlyName": "Barbados"
+  },
+  {
+    "exp": "BD",
+    "friendlyName": "Bangladesh"
+  },
+  {
+    "exp": "BE",
+    "friendlyName": "Belgium"
+  },
+  {
+    "exp": "BF",
+    "friendlyName": "Burkina Faso"
+  },
+  {
+    "exp": "BG",
+    "friendlyName": "Bulgaria"
+  },
+  {
+    "exp": "BH",
     "friendlyName": "Bahrain"
   },
   {
-    "exp": "UGA",
-    "friendlyName": "Uganda"
+    "exp": "BI",
+    "friendlyName": "Burundi"
   },
   {
-    "exp": "PNG",
+    "exp": "BJ",
+    "friendlyName": "Benin"
+  },
+  {
+    "exp": "BN",
+    "friendlyName": "Brunei"
+  },
+  {
+    "exp": "BO",
+    "friendlyName": "Bolivia"
+  },
+  {
+    "exp": "BR",
+    "friendlyName": "Brazil"
+  },
+  {
+    "exp": "BS",
+    "friendlyName": "Bahamas"
+  },
+  {
+    "exp": "BT",
+    "friendlyName": "Bhutan"
+  },
+  {
+    "exp": "BW",
+    "friendlyName": "Botswana"
+  },
+  {
+    "exp": "BY",
+    "friendlyName": "Belarus"
+  },
+  {
+    "exp": "BZ",
+    "friendlyName": "Belize"
+  },
+  {
+    "exp": "CA",
+    "friendlyName": "Canada"
+  },
+  {
+    "exp": "CD",
+    "friendlyName": "Dem. Rep. Congo"
+  },
+  {
+    "exp": "CF",
+    "friendlyName": "Central African Rep."
+  },
+  {
+    "exp": "CG",
+    "friendlyName": "Congo"
+  },
+  {
+    "exp": "CH",
+    "friendlyName": "Switzerland"
+  },
+  {
+    "exp": "CI",
+    "friendlyName": "CÃ´te d'Ivoire"
+  },
+  {
+    "exp": "CK",
+    "friendlyName": "Cook Is."
+  },
+  {
+    "exp": "CL",
+    "friendlyName": "Chile"
+  },
+  {
+    "exp": "CM",
+    "friendlyName": "Cameroon"
+  },
+  {
+    "exp": "CN",
+    "friendlyName": "China"
+  },
+  {
+    "exp": "CO",
+    "friendlyName": "Colombia"
+  },
+  {
+    "exp": "CR",
+    "friendlyName": "Costa Rica"
+  },
+  {
+    "exp": "CU",
+    "friendlyName": "Cuba"
+  },
+  {
+    "exp": "CV",
+    "friendlyName": "Cape Verde"
+  },
+  {
+    "exp": "CW",
+    "friendlyName": "CuraÃ§ao"
+  },
+  {
+    "exp": "CY",
+    "friendlyName": "Cyprus"
+  },
+  {
+    "exp": "CZ",
+    "friendlyName": "Czech Rep."
+  },
+  {
+    "exp": "DE",
+    "friendlyName": "Germany"
+  },
+  {
+    "exp": "DJ",
+    "friendlyName": "Djibouti"
+  },
+  {
+    "exp": "DK",
+    "friendlyName": "Denmark"
+  },
+  {
+    "exp": "DM",
+    "friendlyName": "Dominica"
+  },
+  {
+    "exp": "DO",
+    "friendlyName": "Dominican Rep."
+  },
+  {
+    "exp": "DZ",
+    "friendlyName": "Algeria"
+  },
+  {
+    "exp": "EC",
+    "friendlyName": "Ecuador"
+  },
+  {
+    "exp": "EE",
+    "friendlyName": "Estonia"
+  },
+  {
+    "exp": "EG",
+    "friendlyName": "Egypt"
+  },
+  {
+    "exp": "EH",
+    "friendlyName": "W. Sahara"
+  },
+  {
+    "exp": "ER",
+    "friendlyName": "Eritrea"
+  },
+  {
+    "exp": "ES",
+    "friendlyName": "Spain"
+  },
+  {
+    "exp": "ET",
+    "friendlyName": "Ethiopia"
+  },
+  {
+    "exp": "FI",
+    "friendlyName": "Finland"
+  },
+  {
+    "exp": "FJ",
+    "friendlyName": "Fiji"
+  },
+  {
+    "exp": "FK",
+    "friendlyName": "Falkland Is."
+  },
+  {
+    "exp": "FM",
+    "friendlyName": "Micronesia"
+  },
+  {
+    "exp": "FO",
+    "friendlyName": "Faeroe Is."
+  },
+  {
+    "exp": "FR",
+    "friendlyName": "France"
+  },
+  {
+    "exp": "GA",
+    "friendlyName": "Gabon"
+  },
+  {
+    "exp": "GB",
+    "friendlyName": "United Kingdom"
+  },
+  {
+    "exp": "GD",
+    "friendlyName": "Grenada"
+  },
+  {
+    "exp": "GE",
+    "friendlyName": "Georgia"
+  },
+  {
+    "exp": "GG",
+    "friendlyName": "Guernsey"
+  },
+  {
+    "exp": "GH",
+    "friendlyName": "Ghana"
+  },
+  {
+    "exp": "GL",
+    "friendlyName": "Greenland"
+  },
+  {
+    "exp": "GM",
+    "friendlyName": "Gambia"
+  },
+  {
+    "exp": "GN",
+    "friendlyName": "Guinea"
+  },
+  {
+    "exp": "GQ",
+    "friendlyName": "Eq. Guinea"
+  },
+  {
+    "exp": "GR",
+    "friendlyName": "Greece"
+  },
+  {
+    "exp": "GS",
+    "friendlyName": "S. Geo. and S. Sandw. Is."
+  },
+  {
+    "exp": "GT",
+    "friendlyName": "Guatemala"
+  },
+  {
+    "exp": "GU",
+    "friendlyName": "Guam"
+  },
+  {
+    "exp": "GW",
+    "friendlyName": "Guinea-Bissau"
+  },
+  {
+    "exp": "GY",
+    "friendlyName": "Guyana"
+  },
+  {
+    "exp": "HK",
+    "friendlyName": "Hong Kong"
+  },
+  {
+    "exp": "HM",
+    "friendlyName": "Heard I. and McDonald Is."
+  },
+  {
+    "exp": "HN",
+    "friendlyName": "Honduras"
+  },
+  {
+    "exp": "HR",
+    "friendlyName": "Croatia"
+  },
+  {
+    "exp": "HT",
+    "friendlyName": "Haiti"
+  },
+  {
+    "exp": "HU",
+    "friendlyName": "Hungary"
+  },
+  {
+    "exp": "ID",
+    "friendlyName": "Indonesia"
+  },
+  {
+    "exp": "IE",
+    "friendlyName": "Ireland"
+  },
+  {
+    "exp": "IL",
+    "friendlyName": "Israel"
+  },
+  {
+    "exp": "IM",
+    "friendlyName": "Isle of Man"
+  },
+  {
+    "exp": "IN",
+    "friendlyName": "India"
+  },
+  {
+    "exp": "IQ",
+    "friendlyName": "Iraq"
+  },
+  {
+    "exp": "IR",
+    "friendlyName": "Iran"
+  },
+  {
+    "exp": "IS",
+    "friendlyName": "Iceland"
+  },
+  {
+    "exp": "IT",
+    "friendlyName": "Italy"
+  },
+  {
+    "exp": "JE",
+    "friendlyName": "Jersey"
+  },
+  {
+    "exp": "JM",
+    "friendlyName": "Jamaica"
+  },
+  {
+    "exp": "JO",
+    "friendlyName": "Jordan"
+  },
+  {
+    "exp": "JP",
+    "friendlyName": "Japan"
+  },
+  {
+    "exp": "KE",
+    "friendlyName": "Kenya"
+  },
+  {
+    "exp": "KG",
+    "friendlyName": "Kyrgyzstan"
+  },
+  {
+    "exp": "KH",
+    "friendlyName": "Cambodia"
+  },
+  {
+    "exp": "KI",
+    "friendlyName": "Kiribati"
+  },
+  {
+    "exp": "KM",
+    "friendlyName": "Comoros"
+  },
+  {
+    "exp": "KN",
+    "friendlyName": "St. Kitts and Nevis"
+  },
+  {
+    "exp": "KP",
+    "friendlyName": "Dem. Rep. Korea"
+  },
+  {
+    "exp": "KR",
+    "friendlyName": "Korea"
+  },
+  {
+    "exp": "KW",
+    "friendlyName": "Kuwait"
+  },
+  {
+    "exp": "KY",
+    "friendlyName": "Cayman Is."
+  },
+  {
+    "exp": "KZ",
+    "friendlyName": "Kazakhstan"
+  },
+  {
+    "exp": "LA",
+    "friendlyName": "Lao PDR"
+  },
+  {
+    "exp": "LB",
+    "friendlyName": "Lebanon"
+  },
+  {
+    "exp": "LC",
+    "friendlyName": "Saint Lucia"
+  },
+  {
+    "exp": "LI",
+    "friendlyName": "Liechtenstein"
+  },
+  {
+    "exp": "LK",
+    "friendlyName": "Sri Lanka"
+  },
+  {
+    "exp": "LR",
+    "friendlyName": "Liberia"
+  },
+  {
+    "exp": "LS",
+    "friendlyName": "Lesotho"
+  },
+  {
+    "exp": "LT",
+    "friendlyName": "Lithuania"
+  },
+  {
+    "exp": "LU",
+    "friendlyName": "Luxembourg"
+  },
+  {
+    "exp": "LV",
+    "friendlyName": "Latvia"
+  },
+  {
+    "exp": "LY",
+    "friendlyName": "Libya"
+  },
+  {
+    "exp": "MA",
+    "friendlyName": "Morocco"
+  },
+  {
+    "exp": "MD",
+    "friendlyName": "Moldova"
+  },
+  {
+    "exp": "ME",
+    "friendlyName": "Montenegro"
+  },
+  {
+    "exp": "MG",
+    "friendlyName": "Madagascar"
+  },
+  {
+    "exp": "MK",
+    "friendlyName": "Macedonia"
+  },
+  {
+    "exp": "ML",
+    "friendlyName": "Mali"
+  },
+  {
+    "exp": "MM",
+    "friendlyName": "Myanmar"
+  },
+  {
+    "exp": "MN",
+    "friendlyName": "Mongolia"
+  },
+  {
+    "exp": "MP",
+    "friendlyName": "N. Mariana Is."
+  },
+  {
+    "exp": "MR",
+    "friendlyName": "Mauritania"
+  },
+  {
+    "exp": "MS",
+    "friendlyName": "Montserrat"
+  },
+  {
+    "exp": "MT",
+    "friendlyName": "Malta"
+  },
+  {
+    "exp": "MU",
+    "friendlyName": "Mauritius"
+  },
+  {
+    "exp": "MW",
+    "friendlyName": "Malawi"
+  },
+  {
+    "exp": "MX",
+    "friendlyName": "Mexico"
+  },
+  {
+    "exp": "MY",
+    "friendlyName": "Malaysia"
+  },
+  {
+    "exp": "MZ",
+    "friendlyName": "Mozambique"
+  },
+  {
+    "exp": "NA",
+    "friendlyName": "Namibia"
+  },
+  {
+    "exp": "NC",
+    "friendlyName": "New Caledonia"
+  },
+  {
+    "exp": "NE",
+    "friendlyName": "Niger"
+  },
+  {
+    "exp": "NG",
+    "friendlyName": "Nigeria"
+  },
+  {
+    "exp": "NI",
+    "friendlyName": "Nicaragua"
+  },
+  {
+    "exp": "NL",
+    "friendlyName": "Netherlands"
+  },
+  {
+    "exp": "NO",
+    "friendlyName": "Norway"
+  },
+  {
+    "exp": "NP",
+    "friendlyName": "Nepal"
+  },
+  {
+    "exp": "NU",
+    "friendlyName": "Niue"
+  },
+  {
+    "exp": "NZ",
+    "friendlyName": "New Zealand"
+  },
+  {
+    "exp": "OM",
+    "friendlyName": "Oman"
+  },
+  {
+    "exp": "PA",
+    "friendlyName": "Panama"
+  },
+  {
+    "exp": "PE",
+    "friendlyName": "Peru"
+  },
+  {
+    "exp": "PF",
+    "friendlyName": "Fr. Polynesia"
+  },
+  {
+    "exp": "PG",
     "friendlyName": "Papua New Guinea"
   },
   {
-    "exp": "CUB",
-    "friendlyName": "Cuba"
+    "exp": "PH",
+    "friendlyName": "Philippines"
+  },
+  {
+    "exp": "PK",
+    "friendlyName": "Pakistan"
+  },
+  {
+    "exp": "PL",
+    "friendlyName": "Poland"
+  },
+  {
+    "exp": "PM",
+    "friendlyName": "St. Pierre and Miquelon"
+  },
+  {
+    "exp": "PR",
+    "friendlyName": "Puerto Rico"
+  },
+  {
+    "exp": "PS",
+    "friendlyName": "Palestine"
+  },
+  {
+    "exp": "PT",
+    "friendlyName": "Portugal"
+  },
+  {
+    "exp": "PW",
+    "friendlyName": "Palau"
+  },
+  {
+    "exp": "PY",
+    "friendlyName": "Paraguay"
+  },
+  {
+    "exp": "QA",
+    "friendlyName": "Qatar"
+  },
+  {
+    "exp": "RO",
+    "friendlyName": "Romania"
+  },
+  {
+    "exp": "RS",
+    "friendlyName": "Serbia"
+  },
+  {
+    "exp": "RU",
+    "friendlyName": "Russia"
+  },
+  {
+    "exp": "RW",
+    "friendlyName": "Rwanda"
+  },
+  {
+    "exp": "SA",
+    "friendlyName": "Saudi Arabia"
+  },
+  {
+    "exp": "SB",
+    "friendlyName": "Solomon Is."
+  },
+  {
+    "exp": "SC",
+    "friendlyName": "Seychelles"
+  },
+  {
+    "exp": "SD",
+    "friendlyName": "Sudan"
+  },
+  {
+    "exp": "SE",
+    "friendlyName": "Sweden"
+  },
+  {
+    "exp": "SG",
+    "friendlyName": "Singapore"
+  },
+  {
+    "exp": "SH",
+    "friendlyName": "Saint Helena"
+  },
+  {
+    "exp": "SI",
+    "friendlyName": "Slovenia"
+  },
+  {
+    "exp": "SK",
+    "friendlyName": "Slovakia"
+  },
+  {
+    "exp": "SL",
+    "friendlyName": "Sierra Leone"
+  },
+  {
+    "exp": "SM",
+    "friendlyName": "San Marino"
+  },
+  {
+    "exp": "SN",
+    "friendlyName": "Senegal"
+  },
+  {
+    "exp": "SO",
+    "friendlyName": "Somalia"
+  },
+  {
+    "exp": "SR",
+    "friendlyName": "Suriname"
+  },
+  {
+    "exp": "SS",
+    "friendlyName": "S. Sudan"
+  },
+  {
+    "exp": "ST",
+    "friendlyName": "SÃ£o TomÃ© and Principe"
+  },
+  {
+    "exp": "SV",
+    "friendlyName": "El Salvador"
+  },
+  {
+    "exp": "SY",
+    "friendlyName": "Syria"
+  },
+  {
+    "exp": "SZ",
+    "friendlyName": "Swaziland"
+  },
+  {
+    "exp": "TC",
+    "friendlyName": "Turks and Caicos Is."
+  },
+  {
+    "exp": "TD",
+    "friendlyName": "Chad"
+  },
+  {
+    "exp": "TF",
+    "friendlyName": "Fr. S. Antarctic Lands"
+  },
+  {
+    "exp": "TG",
+    "friendlyName": "Togo"
+  },
+  {
+    "exp": "TH",
+    "friendlyName": "Thailand"
+  },
+  {
+    "exp": "TJ",
+    "friendlyName": "Tajikistan"
+  },
+  {
+    "exp": "TL",
+    "friendlyName": "Timor-Leste"
+  },
+  {
+    "exp": "TM",
+    "friendlyName": "Turkmenistan"
+  },
+  {
+    "exp": "TN",
+    "friendlyName": "Tunisia"
+  },
+  {
+    "exp": "TO",
+    "friendlyName": "Tonga"
+  },
+  {
+    "exp": "TR",
+    "friendlyName": "Turkey"
+  },
+  {
+    "exp": "TT",
+    "friendlyName": "Trinidad and Tobago"
+  },
+  {
+    "exp": "TW",
+    "friendlyName": "Taiwan"
+  },
+  {
+    "exp": "TZ",
+    "friendlyName": "Tanzania"
+  },
+  {
+    "exp": "UA",
+    "friendlyName": "Ukraine"
+  },
+  {
+    "exp": "UG",
+    "friendlyName": "Uganda"
+  },
+  {
+    "exp": "US",
+    "friendlyName": "United States"
+  },
+  {
+    "exp": "UY",
+    "friendlyName": "Uruguay"
+  },
+  {
+    "exp": "UZ",
+    "friendlyName": "Uzbekistan"
+  },
+  {
+    "exp": "VC",
+    "friendlyName": "St. Vin. and Gren."
+  },
+  {
+    "exp": "VE",
+    "friendlyName": "Venezuela"
+  },
+  {
+    "exp": "VI",
+    "friendlyName": "U.S. Virgin Is."
+  },
+  {
+    "exp": "VN",
+    "friendlyName": "Vietnam"
+  },
+  {
+    "exp": "VU",
+    "friendlyName": "Vanuatu"
+  },
+  {
+    "exp": "WF",
+    "friendlyName": "Wallis and Futuna Is."
+  },
+  {
+    "exp": "WS",
+    "friendlyName": "Samoa"
+  },
+  {
+    "exp": "YE",
+    "friendlyName": "Yemen"
+  },
+  {
+    "exp": "ZA",
+    "friendlyName": "South Africa"
+  },
+  {
+    "exp": "ZM",
+    "friendlyName": "Zambia"
+  },
+  {
+    "exp": "ZW",
+    "friendlyName": "Zimbabwe"
   }
 ]
