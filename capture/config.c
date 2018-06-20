@@ -449,6 +449,7 @@ void moloch_config_load()
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
     config.trackESP              = moloch_config_boolean(keyfile, "trackESP", FALSE);
+    config.yaraEveryPacket       = moloch_config_boolean(keyfile, "yaraEveryPacket", TRUE);
 
     config.maxStreams[SESSION_TCP] = maxStreams/config.packetThreads*1.25;
     config.maxStreams[SESSION_UDP] = maxStreams/config.packetThreads/20;

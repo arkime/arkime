@@ -45,10 +45,9 @@ char *moloch_yara_version() {
 // Yara 3
 LOCAL  YR_COMPILER *yCompiler = 0;
 LOCAL  YR_COMPILER *yEmailCompiler = 0;
-LOCAL  YR_RULES *yRules = 0;
-LOCAL  YR_RULES *yEmailRules = 0;
-
-
+LOCAL  YR_RULES    *yRules = 0;
+LOCAL  YR_RULES    *yEmailRules = 0;
+LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
 void moloch_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message, void* UNUSED(user_data))
@@ -130,6 +129,9 @@ void moloch_yara_load_email(char *name)
 /******************************************************************************/
 void moloch_yara_init()
 {
+    if (moloch_config_boolean(NULL, "yaraFastMode", TRUE))
+        yFlags |= SCAN_FLAGS_FAST_MODE;
+
     yr_initialize();
 
     if (config.yara)
@@ -161,13 +163,13 @@ int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
 /******************************************************************************/
 void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
-    yr_rules_scan_mem(yRules, (uint8_t *)data, len, 0, (YR_CALLBACK_FUNC)moloch_yara_callback, session, 0);
+    yr_rules_scan_mem(yRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)moloch_yara_callback, session, 0);
     return;
 }
 /******************************************************************************/
 void  moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
-    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, 0, (YR_CALLBACK_FUNC)moloch_yara_callback, session, 0);
+    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)moloch_yara_callback, session, 0);
     return;
 }
 /******************************************************************************/

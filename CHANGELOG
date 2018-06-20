@@ -39,6 +39,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new suricata plugin
   - wise - [right-click] with no colon now loads directly from wise.ini
   - capture - decode dns punycode into dns.host, dns.puny has original
+  - capture - yaraEveryPacket (default true) when false only does first packets
+  - capture - yaraFastMode (default true) when false turns off fast mode
 
 1.1.1 2018/05/31
   - all - fix http.statuscode
