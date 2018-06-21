@@ -1245,6 +1245,42 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
     return TRUE;
 }
 /******************************************************************************/
+LOCAL struct timespec startHealthCheck;
+LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+{
+    uint32_t           status_len;
+    unsigned char     *status;
+    struct timespec    stopHealthCheck;
+    uint64_t           ms;
+
+    clock_gettime(CLOCK_MONOTONIC, &stopHealthCheck);
+
+    ms = (stopHealthCheck.tv_sec - startHealthCheck.tv_sec)*1000 +
+         (stopHealthCheck.tv_nsec - startHealthCheck.tv_nsec)/1000000L;
+
+    if (*data == '[')
+        status = moloch_js0n_get(data+1, data_len-2, "status", &status_len);
+    else
+        status = moloch_js0n_get(data, data_len, "status", &status_len);
+
+    if (code != 200) {
+        LOG("WARNING - Couldn't perform Elasticsearch health check");
+    } else if ( ms > 30000) {
+        LOG("WARNING - Elasticsearch health check took more then 30 seconds %lldms", ms);
+    } else if ((status[0] == 'y' && uw == (gpointer)1L) || (status[0] == 'r')) {
+        LOG("WARNING - Elasticsearch is %.*s and took %llums to query health, this may cause issues.  See FAQ.", status_len, status, ms);
+    }
+}
+/******************************************************************************/
+
+// Runs on main thread
+LOCAL gboolean moloch_db_health_check (gpointer user_data )
+{
+    moloch_http_send(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, TRUE, moloch_db_health_check_cb, user_data);
+    clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
+    return TRUE;
+}
+/******************************************************************************/
 typedef struct moloch_seq_request {
     char               *name;
     MolochSeqNum_cb     func;
@@ -2061,6 +2097,7 @@ void moloch_db_init()
         headers[1] = NULL;
         moloch_http_set_headers(esServer, headers);
         moloch_http_set_print_errors(esServer);
+        moloch_db_health_check((gpointer)1L);
     }
     myPid = getpid();
     gettimeofday(&startTime, NULL);
@@ -2086,6 +2123,7 @@ void moloch_db_init()
         timers[2] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
         timers[3] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
         timers[4] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
+        timers[5] = g_timeout_add_seconds( 60, moloch_db_health_check, 0);
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {

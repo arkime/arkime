@@ -157,7 +157,7 @@ LOCAL size_t moloch_http_curl_write_callback(void *contents, size_t size, size_t
     return sz;
 }
 /******************************************************************************/
-unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len)
+unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len)
 {
     MolochHttpServer_t        *server = serverV;
     struct curl_slist         *headerList = NULL;
@@ -212,6 +212,9 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     if (headerList) {
         curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
     }
+
+    if (key_len == -1)
+        key_len = strlen(key);
 
     memcpy(server->syncRequest.key, key, key_len);
     server->syncRequest.key[key_len] = 0;
@@ -697,9 +700,12 @@ LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-gboolean moloch_http_send(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
+gboolean moloch_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
 {
     MolochHttpServer_t        *server = serverV;
+
+    if (key_len == -1)
+        key_len = strlen(key);
 
     if (key_len > 1000) {
         LOGEXIT("Url too long %.*s", key_len, key);
