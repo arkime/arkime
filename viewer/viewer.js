@@ -44,16 +44,13 @@ var Config         = require('./config.js'),
     pug            = require('pug'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
+    PNG            = require('pngjs').PNG,
     decode         = require('./decode.js');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
   throw new Error("Exiting");
 }
-
-try {
-  var Png = require('png').Png;
-} catch (e) {console.log("WARNING - No png support, maybe need to 'npm update' or unsupported on your platform", e);}
 
 if (typeof express !== "function") {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -4278,19 +4275,15 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
 });
 
 app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest, function(req, res) {
-  if (!Png) {
-    return res.send (internals.emptyPNG);
-  }
   reqGetRawBody(req, function (err, data) {
     if (err || data === null || data.length === 0) {
       return res.send (internals.emptyPNG);
     }
     res.setHeader("Content-Type", "image/png");
 
-    var png = new Png(data, internals.PNG_LINE_WIDTH, Math.ceil(data.length/internals.PNG_LINE_WIDTH), 'gray');
-    var png_image = png.encodeSync();
-
-    res.send(png_image);
+    var png = new PNG({width: internals.PNG_LINE_WIDTH, height: Math.ceil(data.length/internals.PNG_LINE_WIDTH)});
+    png.data = data;
+    res.send(PNG.sync.write(png, {inputColorType:0, colorType: 0, bitDepth:8, inputHasAlpha:false}));
   });
 });
 
@@ -4419,10 +4412,6 @@ app.get('/:nodeName/pcap/:id.pcap', checkProxyRequest, function(req, res) {
 app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
   noCache(req, res, "image/png");
 
-  if (!Png) {
-    return res.send (internals.emptyPNG);
-  }
-
   processSessionIdAndDecode(req.params.id, 1000, function(err, session, results) {
     if (err) {
       return res.send (internals.emptyPNG);
@@ -4432,7 +4421,7 @@ app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
     for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
       size += results[i].data.length + 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
     }
-    var buffer = Buffer.alloc(size);
+    var buffer = Buffer.alloc(size, 0);
     var pos = 0;
     if (size === 0) {
       return res.send (internals.emptyPNG);
@@ -4445,10 +4434,9 @@ app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
       buffer.fill(0xff, fillpos, pos);
     }
 
-    var png = new Png(buffer, internals.PNG_LINE_WIDTH, (size/internals.PNG_LINE_WIDTH)-1, 'gray');
-    var png_image = png.encodeSync();
-
-    res.send(png_image);
+    var png = new PNG({width: internals.PNG_LINE_WIDTH, height: (size/internals.PNG_LINE_WIDTH)-1});
+    png.data = buffer;
+    res.send(PNG.sync.write(png, {inputColorType:0, colorType: 0, bitDepth:8, inputHasAlpha:false}));
   });
 });
 
