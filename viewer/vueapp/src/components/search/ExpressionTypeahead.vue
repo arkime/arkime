@@ -340,7 +340,7 @@ export default {
       // autocomplete country values
       if (/^(country)/.test(token)) {
         this.loadingValues = true;
-        this.FieldService.getCountryCodes()
+        FieldService.getCountryCodes()
           .then((result) => {
             this.loadingValues = false;
             this.results = this.findMatch(lastToken, result);
