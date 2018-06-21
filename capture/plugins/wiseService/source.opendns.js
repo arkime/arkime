@@ -40,7 +40,7 @@ function OpenDNSSource (api, section) {
   setInterval(this.getCategories.bind(this), 10*60*1000);
   setInterval(this.performQuery.bind(this), 500);
 
-  this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.statusdmstatus;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
+  this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.status;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
   this.scField = this.api.addField("field:opendns.domain.security;db:opendns.securityCategory;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
   this.ccField = this.api.addField("field:opendns.domain.content;db:opendns.contentCategory;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
 
