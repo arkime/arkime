@@ -57,6 +57,9 @@ extern unsigned char    moloch_hex_to_char[256][256];
 LOCAL uint32_t          nextFileNum;
 LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
 
+LOCAL struct timespec startHealthCheck;
+LOCAL uint64_t        esHealthMS;
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -1144,6 +1147,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaFragsDropped\": %" PRIu64 ", "
         "\"deltaOverloadDropped\": %" PRIu64 ", "
         "\"deltaESDropped\": %" PRIu64 ", "
+        "\"esHealthMS\": %" PRIu64 ", "
         "\"deltaMS\": %" PRIu64
         "}",
         VERSION,
@@ -1181,6 +1185,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
+        esHealthMS,
         diffms);
 
     lastTime[n]            = currentTime;
@@ -1245,18 +1250,16 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
     return TRUE;
 }
 /******************************************************************************/
-LOCAL struct timespec startHealthCheck;
 LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     uint32_t           status_len;
     unsigned char     *status;
     struct timespec    stopHealthCheck;
-    uint64_t           ms;
 
     clock_gettime(CLOCK_MONOTONIC, &stopHealthCheck);
 
-    ms = (stopHealthCheck.tv_sec - startHealthCheck.tv_sec)*1000 +
-         (stopHealthCheck.tv_nsec - startHealthCheck.tv_nsec)/1000000L;
+    esHealthMS = (stopHealthCheck.tv_sec - startHealthCheck.tv_sec)*1000 +
+                 (stopHealthCheck.tv_nsec - startHealthCheck.tv_nsec)/1000000L;
 
     if (*data == '[')
         status = moloch_js0n_get(data+1, data_len-2, "status", &status_len);
@@ -1265,10 +1268,10 @@ LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int 
 
     if (code != 200) {
         LOG("WARNING - Couldn't perform Elasticsearch health check");
-    } else if ( ms > 30000) {
-        LOG("WARNING - Elasticsearch health check took more then 30 seconds %lldms", ms);
+    } else if ( esHealthMS > 20000) {
+        LOG("WARNING - Elasticsearch health check took more then 20 seconds %llums", esHealthMS);
     } else if ((status[0] == 'y' && uw == (gpointer)1L) || (status[0] == 'r')) {
-        LOG("WARNING - Elasticsearch is %.*s and took %llums to query health, this may cause issues.  See FAQ.", status_len, status, ms);
+        LOG("WARNING - Elasticsearch is %.*s and took %llums to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
     }
 }
 /******************************************************************************/
@@ -2123,7 +2126,7 @@ void moloch_db_init()
         timers[2] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
         timers[3] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
         timers[4] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
-        timers[5] = g_timeout_add_seconds( 60, moloch_db_health_check, 0);
+        timers[5] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {

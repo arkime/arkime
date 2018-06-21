@@ -2705,7 +2705,7 @@ app.get('/stats.json', function(req, res) {
 
       for (const key of ["totalPackets", "totalK", "totalSessions",
        "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions", "espSessions",
-       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
+       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu", "esHealthMS",
        "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
        "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
       ]) {

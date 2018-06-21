@@ -38,6 +38,7 @@
             <option value="diskQueue">Disk Queue</option>
             <option value="esQueue">ES Queue</option>
             <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
+            <option value="esHealthMS">ES Health Response MS</option>
             <option value="packetQueue">Packet Queue</option>
             <option value="closeQueue">Closing Queue</option>
             <option value="needSave">Waiting Queue</option>
