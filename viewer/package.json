@@ -18,7 +18,8 @@
     "passport-http": "^0.3.0",
     "peek-stream": "^1.1.1",
     "serve-favicon": "^2.3.0",
-    "through2": "^2.0.1"
+    "through2": "^2.0.1",
+    "pngjs": "^3.3.3"
   },
   "scripts": {
     "addtestuser": "node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin",
@@ -71,7 +72,6 @@
     "moment-timezone": "^0.5.14",
     "ngclipboard": "^1.1.1",
     "ngdraggable": "^0.1.10",
-    "pngjs": "^3.3.3",
     "puppeteer": "^0.12.0",
     "qs": "^6.5.1",
     "sanitize-html": "^1.18.2",
