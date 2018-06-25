@@ -886,6 +886,17 @@ export default {
               img.appendChild(tooltip);
             }
 
+            // add listeners to fetch the src/dst bytes images on mouse enter
+            let srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+            if (srcBytes && srcBytes.length) {
+              srcBytes[0].addEventListener('mouseenter', this.showSrcBytesImg);
+            }
+
+            let dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+            if (dstBytes && dstBytes.length) {
+              dstBytes[0].addEventListener('mouseenter', this.showDstBytesImg);
+            }
+
             this.renderingPackets = false;
           });
         })
@@ -894,11 +905,37 @@ export default {
           this.errorPackets = error;
           this.packetPromise = undefined;
         });
+    },
+    showSrcBytesImg: function () {
+      this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
+        <br>
+        <img src="${this.session.node}/raw/${this.session.id}.png?type=src">
+      `;
+      this.$refs.packetContainer.getElementsByClassName('srccol')[0].removeEventListener('mouseenter', this.showSrcBytesImg);
+    },
+    showDstBytesImg: function () {
+      this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
+        <br>
+        <img src="${this.session.node}/raw/${this.session.id}.png?type=dst">
+      `;
+      this.$refs.packetContainer.getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', this.showDstBytesImg);
     }
   },
   beforeDestroy: function () {
     if (this.packetPromise) {
       this.cancelPacketLoad();
+    }
+
+    if (this.$refs.packetContainer) {
+      let srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+      if (srcBytes && srcBytes.length) {
+        srcBytes[0].removeEventListener('mouseenter', this.showSrcBytesImg);
+      }
+
+      let dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+      if (dstBytes && dstBytes.length) {
+        dstBytes[0].removeEventListener('mouseenter', this.showDstBytesImg);
+      }
     }
   }
 };

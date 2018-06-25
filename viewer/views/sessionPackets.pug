@@ -12,15 +12,11 @@ else
     div.col-md-6
       h4
         span.srccol Source
-          span.src-col-tip Source Bytes:
-            br
-            img(src=session.node + "/raw/" + session.id + ".png?type=src")
+          span.src-col-tip
     div.col-md-6
       h4
         span.dstcol Destination
-          span.dst-col-tip Destination Bytes:
-            br
-            img(src=session.node + "/raw/" + session.id + ".png?type=dst")
+          span.dst-col-tip
   each item, i in data
     div.row
       if item.client == 0
