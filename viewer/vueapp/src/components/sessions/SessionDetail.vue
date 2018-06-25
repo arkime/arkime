@@ -638,7 +638,7 @@ export default {
                 let params = {
                   expression: `id == ${this.session.id}`,
                   startTime: Math.floor(this.session.firstPacket / 1000),
-                  stopTime: Math.floor(this.session.lastPacket / 1000),
+                  stopTime: Math.ceil(this.session.lastPacket / 1000),
                   openAll: 1
                 };
 

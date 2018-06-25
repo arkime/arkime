@@ -249,10 +249,11 @@ export default {
      * @param {string} value The value of the field
      */
     timeClick: function (field, value) {
-      value = Math.floor(value / 1000); // seconds not milliseconds
       if (field === 'starttime') {
+        value = Math.floor(value / 1000); // seconds not milliseconds
         this.$store.commit('setTime', { startTime: value });
       } else {
+        value = Math.ceil(value / 1000); // seconds not milliseconds
         this.$store.commit('setTime', { stopTime: value });
       }
     },
