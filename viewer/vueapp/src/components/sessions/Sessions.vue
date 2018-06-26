@@ -36,7 +36,7 @@
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
-      <transition name="slide">
+      <transition name="leave">
         <moloch-sticky-sessions
           class="sticky-sessions"
           v-if="stickySessions.length"
@@ -1245,6 +1245,7 @@ form.sessions-paging {
 .sessions-content {
   padding-top: 115px;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* sessions table -------------------------- */
@@ -1360,11 +1361,14 @@ button.fit-btn {
   bottom: 0;
   width: 360px;
 }
-.slide-enter-active, .slide-leave-active {
-  transition: all 1s ease;
+.leave-enter-active, .leave-leave-active {
+  transition: all 0.5s ease;
 }
-.slide-enter, .slide-leave-to {
-  transform: translateX(360px);
+.leave-enter, .leave-leave-to {
   z-index: 4;
+}
+.leave-leave-to {
+  transform: translateY(1000px);
+  opacity: 0;
 }
 </style>

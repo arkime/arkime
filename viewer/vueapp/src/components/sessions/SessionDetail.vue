@@ -187,7 +187,7 @@
 
     <!-- packets loading -->
     <div v-if="!loading && loadingPackets"
-      class="mt-4 mb-4 large">
+      class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
       Loading session packets&nbsp;
@@ -202,7 +202,7 @@
 
     <!-- packets rendering -->
     <div v-if="!loading && renderingPackets"
-      class="mt-4 mb-4 large">
+      class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
       Rendering session packets
@@ -210,7 +210,7 @@
 
     <!-- packets error -->
     <div v-if="!error && errorPackets"
-      class="mt-4 mb-4 large">
+      class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="text-danger">
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
