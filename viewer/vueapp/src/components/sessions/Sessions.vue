@@ -957,7 +957,7 @@ export default {
         })
         .catch((error) => {
           this.sessions.data = undefined;
-          this.error = error.text;
+          this.error = error.text || error;
           this.loading = false;
         });
     },
