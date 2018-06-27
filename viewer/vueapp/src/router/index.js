@@ -81,12 +81,6 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  // TODO update/remove as angular pages go away
-  // loads the angular app pages
-  if (to.path.includes('/settings') || to.path.includes('/upload')) {
-    location.reload();
-  }
-
   // always use the expression in the url query parameter if the navigation
   // was initiated from anything not in the moloch UI (browser forward/back btns)
   if (!to.params.nav && store.state.expression !== to.query.expression) {

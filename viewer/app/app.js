@@ -98,6 +98,8 @@
     });
 
     $rootScope.$on('$routeChangeSuccess', function (event, current) {
+      if (!current) { location.reload(); }
+
       if (current && current.$$route && current.$$route.title) {
         // update title with page
         ConfigService.setTitle(current.$$route.title, '', '');

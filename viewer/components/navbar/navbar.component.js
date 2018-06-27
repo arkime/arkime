@@ -84,8 +84,6 @@
         // TODO update/remove as angular pages get replaced with vue pages
         // redirects to the new vue app stats page
         this.$location.path(link);
-        // must be reloaded to fetch vue app from the server
-        location.reload();
       } else {
         if (this.$rootScope.expression !== this.$routeParams.expression) {
           // if the expression input doesn't match the expression url parameter,
