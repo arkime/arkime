@@ -18,7 +18,7 @@
         </span>
       </div> <!-- /map open button -->
 
-      <div v-show="showMap"
+      <div :class="{'hide-map':!showMap}"
         class="inline-map">
         <div v-if="mapData">
           <div class="moloch-map-container">
@@ -841,6 +841,11 @@ export default {
   width: 400px;
   float: right;
   position: relative;
+}
+
+.hide-map {
+  visibility: hidden;
+  width: 5px !important;
 }
 
 /* fixed width buttons are the same width regardless of content */
