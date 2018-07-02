@@ -209,6 +209,7 @@
                 <!-- multiple field column -->
                 <template v-else-if="header.children && header.type !== 'seconds'">
                   <span v-for="child in header.children"
+                    v-if="child"
                     :key="child.dbField">
                     <b-dropdown-divider>
                     </b-dropdown-divider>

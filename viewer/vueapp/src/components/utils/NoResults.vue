@@ -2,7 +2,7 @@
 
   <div class="info-area vertical-horizontal-center">
 
-    <div v-if="recordsTotal === '0'">
+    <div v-if="parseInt(recordsTotal) === 0">
       <span class="fa fa-3x text-muted-more fa-exclamation-triangle">
       </span>&nbsp;
       Oh no, Moloch is empty! There is no data to search.
