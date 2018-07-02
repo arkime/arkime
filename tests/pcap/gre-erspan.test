@@ -1,0 +1,107 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS16625 Akamai Technologies, Inc.",
+            "dstBytes" : 328,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "23.0.0.3",
+            "dstMac" : [
+               "64:00:f1:e2:01:01",
+               "64:00:f1:e2:01:12"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 2,
+            "dstPort" : 0,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1402723255667,
+            "greASN" : [
+               "AS3215 Orange",
+               "AS13335 Cloudflare Inc"
+            ],
+            "greGEO" : [
+               "FR",
+               "AU"
+            ],
+            "greIp" : [
+               "2.2.2.2",
+               "1.1.1.1"
+            ],
+            "greIpCnt" : 2,
+            "greRIR" : [
+               "RIPE",
+               "APNIC"
+            ],
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  8,
+                  0
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1402723255669,
+            "length" : 1,
+            "node" : "test",
+            "packetLen" : [
+               180,
+               180,
+               180,
+               180
+            ],
+            "packetPos" : [
+               959,
+               1139,
+               1319,
+               1499
+            ],
+            "protocol" : [
+               "icmp",
+               "gre"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS16625 Akamai Technologies, Inc.",
+            "srcBytes" : 328,
+            "srcDataBytes" : 0,
+            "srcGEO" : "US",
+            "srcIp" : "23.0.0.2",
+            "srcMac" : [
+               "64:00:f1:e2:01:01",
+               "64:00:f1:e2:01:12"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 2,
+            "srcPort" : 0,
+            "srcRIR" : "ARIN",
+            "tags" : [
+               "gretest-erspan"
+            ],
+            "tagsCnt" : 1,
+            "timestamp" : "SET",
+            "totBytes" : 656,
+            "totDataBytes" : 0,
+            "totPackets" : 4
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140614",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

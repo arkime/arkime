@@ -42,6 +42,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - yaraEveryPacket (default true) when false only does first packets
   - capture - yaraFastMode (default true) when false turns off fast mode
   - viewer - switch to javascript png implementation
+  - all - added some GRE erspan support
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

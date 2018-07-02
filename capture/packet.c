@@ -81,6 +81,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const 
 LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -785,6 +786,22 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 }
 
 /******************************************************************************/
+LOCAL int moloch_packet_erspan(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (unlikely(len) < 8 || unlikely(!data))
+        return MOLOCH_PACKET_CORRUPT;
+
+    if ((*data >> 4) == 1)
+        return moloch_packet_ether(batch, packet, data + 8, len - 8);
+
+
+    if (config.logUnknownProtocols)
+        LOG("Unknown ERSPAN protocol %d", *data >> 4);
+    if (BIT_ISSET(0x88be, config.etherSavePcap))
+        moloch_packet_save_unknown_packet(0, packet);
+    return MOLOCH_PACKET_UNKNOWN;
+}
+/******************************************************************************/
 LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
@@ -803,6 +820,7 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     case 0x86dd:
     case 0x6559:
     case 0x880b:
+    case 0x88be:
         break;
     default:
         if (config.logUnknownProtocols)
@@ -855,6 +873,8 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
         return moloch_packet_frame_relay(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     case 0x880b:
         return moloch_packet_ppp(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    case 0x88be:
+        return moloch_packet_erspan(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     default:
         return MOLOCH_PACKET_UNKNOWN;
     }

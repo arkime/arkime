@@ -664,9 +664,9 @@ extern MOLOCH_LOCK_EXTERN(LOG);
 /******************************************************************************/
 /* Simple bit macros, assuming uint64_t */
 
-#define BIT_ISSET(bit, bits) ((bits[bit/64] & (1 << (bit & 0x3f))) != 0)
-#define BIT_SET(bit, bits) bits[bit/64] |= (1 << (bit & 0x3f))
-#define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit & 0x3f))
+#define BIT_ISSET(bit, bits) ((bits[bit/64] & (1ULL << (bit & 0x3f))) != 0)
+#define BIT_SET(bit, bits) bits[bit/64] |= (1ULL << (bit & 0x3f))
+#define BIT_CLR(bit, bits) bits[bit/64] &= ~(1ULL << (bit & 0x3f))
 
 /******************************************************************************/
 /*
