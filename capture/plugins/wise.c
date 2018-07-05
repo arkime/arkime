@@ -298,7 +298,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
 
         wi->loadTime = currentTime.tv_sec;
 
-        MOLOCH_LOCK(item);
+        // Schedule updates on waiting sessions
         int s;
         for (s = 0; s < wi->numSessions; s++) {
             moloch_session_add_cmd(wi->sessions[s], MOLOCH_SES_CMD_FUNC, wi, NULL, wise_session_cmd_cb);
@@ -307,6 +307,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         wi->sessions = 0;
         wi->numSessions = 0;
 
+        MOLOCH_LOCK(item);
         DLL_PUSH_HEAD(wil_, &itemList[(int)wi->type], wi);
         // Cache needs to be reduced
         if (itemList[(int)wi->type].wil_count > maxCache) {
@@ -327,8 +328,6 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
     if (request->numItems >= 256)
         return;
 
-    MOLOCH_LOCK(item);
-
     static int lookups = 0;
     WiseItem_t *wi;
 
@@ -338,6 +337,10 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
 
     stats[type][INTEL_STAT_LOOKUP]++;
 
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+
+    MOLOCH_LOCK(item);
     HASH_FIND(wih_, itemHash[type], value, wi);
 
     if (wi) {
@@ -357,9 +360,6 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
             stats[type][INTEL_STAT_INPROGRESS]++;
             goto cleanup;
         }
-
-        struct timeval currentTime;
-        gettimeofday(&currentTime, NULL);
 
         if (wi->loadTime + cacheSecs > currentTime.tv_sec) {
             moloch_field_ops_run(session, &wi->ops);

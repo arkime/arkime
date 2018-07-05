@@ -695,7 +695,6 @@ typedef struct {
     MolochFilesChange_cb  cbs;
     off_t                 size[MOLOCH_CONFIG_FILES];
     int64_t               modify[MOLOCH_CONFIG_FILES];
-    char                  freeOld;
 } MolochFileChange_t;
 
 LOCAL int                numFiles;
@@ -754,16 +753,6 @@ gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
     struct stat     sb[MOLOCH_CONFIG_FILES];
 
     for (i = 0; i < numFiles; i++) {
-        if (files[i].freeOld) {
-            if (config.debug)
-                LOG("Free old %s %s %d", files[i].desc, files[i].name[0], files[i].num);
-            if (files[i].cbs)
-                files[i].cbs(NULL);
-            else
-                files[i].cb(NULL);
-            files[i].freeOld = 0;
-        }
-
         int changed = 0;
         for (f = 0; f < files[i].num; f++) {
             if (stat(files[i].name[f], &sb[f]) != 0) {
@@ -796,7 +785,6 @@ gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
             else
                 files[i].cb(files[i].name[0]);
 
-            files[i].freeOld = 1;
             for (f = 0; f < files[i].num; f++) {
                 files[i].size[f] = 0;
                 files[i].modify[f] = sb[f].st_mtime;

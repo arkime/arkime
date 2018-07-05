@@ -697,6 +697,8 @@ int moloch_int_cmp(const void *keyv, const void *elementv);
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
 
+void moloch_free_later(void *ptr, GDestroyNotify cb);
+
 void moloch_add_can_quit(MolochCanQuitFunc func, const char *name);
 
 void moloch_quit();

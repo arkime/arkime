@@ -79,7 +79,6 @@ typedef struct {
 
 LOCAL MolochRulesInfo_t current;
 LOCAL MolochRulesInfo_t loading;
-LOCAL MolochRulesInfo_t freeing;
 
 LOCAL pcap_t                *deadPcap;
 extern MolochPcapFileHdr_t   pcapFileHeader;
@@ -527,53 +526,58 @@ void moloch_rules_load_complete()
     memset(&loading, 0, sizeof(loading));
 }
 /******************************************************************************/
-void moloch_rules_load(char **names)
+void moloch_rules_free(MolochRulesInfo_t *freeing)
 {
     int    i, t, r;
 
-    if (!names) {
-        for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
-            if (freeing.fieldsHash[i]) {
-                g_hash_table_destroy(freeing.fieldsHash[i]);
-            }
-            if (freeing.fieldsTree4[i]) {
-                Destroy_Patricia(freeing.fieldsTree4[i], moloch_rules_free_array);
-            }
-            if (freeing.fieldsTree6[i]) {
-                Destroy_Patricia(freeing.fieldsTree6[i], moloch_rules_free_array);
-            }
+    for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
+        if (freeing->fieldsHash[i]) {
+            g_hash_table_destroy(freeing->fieldsHash[i]);
         }
-
-        for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
-            for (r = 0; r < freeing.rulesLen[t]; r++) {
-                MolochRule_t *rule = freeing.rules[t][r];
-
-                if (rule->bpf)
-                    g_free(rule->bpf);
-
-                for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
-                    if (rule->hash[i]) {
-                        g_hash_table_destroy(rule->hash[i]);
-                    }
-                    if (rule->tree4[i]) {
-                        Destroy_Patricia(rule->tree4[i], moloch_rules_free_array);
-                    }
-                    if (rule->tree6[i]) {
-                        Destroy_Patricia(rule->tree6[i], moloch_rules_free_array);
-                    }
-                }
-
-                moloch_field_ops_free(&rule->ops);
-                MOLOCH_TYPE_FREE(MolochRule_t, rule);
-            }
+        if (freeing->fieldsTree4[i]) {
+            Destroy_Patricia(freeing->fieldsTree4[i], moloch_rules_free_array);
         }
-
-        memset(&freeing, 0, sizeof(loading));
-        return;
+        if (freeing->fieldsTree6[i]) {
+            Destroy_Patricia(freeing->fieldsTree6[i], moloch_rules_free_array);
+        }
     }
 
+    for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
+        for (r = 0; r < freeing->rulesLen[t]; r++) {
+            MolochRule_t *rule = freeing->rules[t][r];
+
+            if (rule->bpf)
+                g_free(rule->bpf);
+
+            for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
+                if (rule->hash[i]) {
+                    g_hash_table_destroy(rule->hash[i]);
+                }
+                if (rule->tree4[i]) {
+                    Destroy_Patricia(rule->tree4[i], moloch_rules_free_array);
+                }
+                if (rule->tree6[i]) {
+                    Destroy_Patricia(rule->tree6[i], moloch_rules_free_array);
+                }
+            }
+
+            moloch_field_ops_free(&rule->ops);
+            MOLOCH_TYPE_FREE(MolochRule_t, rule);
+        }
+    }
+
+    MOLOCH_TYPE_FREE(MolochRulesInfo_t, freeing);
+}
+/******************************************************************************/
+void moloch_rules_load(char **names)
+{
+    int    i;
+
     // Make a copy of current items to free later
-    memcpy(&freeing, &current, sizeof(loading));
+
+    MolochRulesInfo_t *freeing = MOLOCH_TYPE_ALLOC0(MolochRulesInfo_t);
+    memcpy(freeing, &current, sizeof(current));
+    moloch_free_later(freeing, (GDestroyNotify) moloch_rules_free);
 
     // Load all the rule files
     for (i = 0; names[i]; i++) {

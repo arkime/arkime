@@ -26,7 +26,7 @@ extern MolochConfig_t        config;
 typedef struct molochdrophashitem_t MolochDropHashItem_t;
 struct molochdrophashitem_t {
     MolochDropHashItem_t *dhg_next, *dhg_prev;
-    MolochDropHashItem_t *hnext, *dnext;
+    MolochDropHashItem_t *hnext;
     uint8_t               key[16];
     uint32_t              last;
     uint32_t              goodFor;
@@ -37,12 +37,8 @@ struct molochdrophashitem_t {
 typedef struct molochdrophash_t MolochDropHash_t;
 struct molochdrophash_t {
     MolochDropHashItem_t **heads;
-    MolochDropHashItem_t  *deleted;
-    MOLOCH_LOCK_EXTERN(lock);
-    struct timespec        lastDelete;
     uint32_t               cnt;
     uint16_t               num;
-    char                   isIp4;
 };
 
 /******************************************************************************/
@@ -57,24 +53,6 @@ LOCAL inline uint32_t moloch_drophash_hash6 (const void *key)
         p += 1;
     }
     return h;
-}
-
-/******************************************************************************/
-LOCAL void moloch_drophash_clean_locked (MolochDropHash_t *hash)
-{
-    MolochDropHashItem_t *item;
-    // Cleanup items waiting to be freed
-    if (hash->deleted) {
-        struct timespec currentTime;
-        clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
-        if (currentTime.tv_sec > hash->lastDelete.tv_sec + 10) {
-            do {
-                item = hash->deleted;
-                hash->deleted = item->dnext;
-                MOLOCH_TYPE_FREE(MolochDropHashItem_t, item);
-            } while (hash->deleted);
-        }
-    }
 }
 
 /******************************************************************************/
@@ -101,11 +79,8 @@ LOCAL void moloch_drophash_make(MolochDropHashGroup_t *group, int port)
 
     hash          = MOLOCH_TYPE_ALLOC(MolochDropHash_t);
     hash->num     = size;
-    hash->isIp4   = group->isIp4;
     hash->heads   = MOLOCH_SIZE_ALLOC0("heads", size * sizeof(MolochDropHashItem_t *));
-    hash->deleted = NULL;
     hash->cnt     = 0;
-    MOLOCH_LOCK_INIT(hash->lock);
     group->drops[port] = hash;
 done:
     MOLOCH_UNLOCK(group->lock);
@@ -121,17 +96,16 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
 
     MolochDropHashItem_t *item;
     uint32_t              h;
-    if (hash->isIp4)
+    if (group->isIp4)
         h = (*(uint32_t *)key) % hash->num;
     else
         h = moloch_drophash_hash6(key) % hash->num;
 
-    MOLOCH_LOCK(hash->lock);
-    moloch_drophash_clean_locked(hash);
+    MOLOCH_LOCK(group->lock);
     if (hash->heads[h]) {
         for (item = hash->heads[h]; item; item = item->hnext) {
-            if (memcmp(key, item->key, hash->isIp4?4:16) == 0) {
-                MOLOCH_UNLOCK(hash->lock);
+            if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
+                MOLOCH_UNLOCK(group->lock);
                 return 0;
             }
         }
@@ -139,20 +113,17 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
 
     item           = MOLOCH_TYPE_ALLOC(MolochDropHashItem_t);
     item->hnext    = hash->heads[h];
-    item->dnext    = NULL;
     item->flags    = 0;
     item->port     = port;
-    memcpy(item->key, key, hash->isIp4?4:16);
+    memcpy(item->key, key, group->isIp4?4:16);
     item->last     = current;
     item->goodFor  = goodFor;
     hash->heads[h] = item;
     hash->cnt++;
 
-    MOLOCH_LOCK(group->lock);
     DLL_PUSH_TAIL(dhg_, group, item);
     group->changed++;
     MOLOCH_UNLOCK(group->lock);
-    MOLOCH_UNLOCK(hash->lock);
     return 1;
 }
 
@@ -162,7 +133,7 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
     MolochDropHash_t *hash = group->drops[port];
 
     uint32_t              h;
-    if (hash->isIp4)
+    if (group->isIp4)
         h = (*(uint32_t *)key) % hash->num;
     else
         h = moloch_drophash_hash6(key) % hash->num;
@@ -172,7 +143,7 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
 
     MolochDropHashItem_t *item;
     for (item = hash->heads[h]; item; item = item->hnext) {
-        if (memcmp(key, item->key, hash->isIp4?4:16) == 0) {
+        if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
 
             // Same time as last time, drop
             if (likely(item->last == current))
@@ -191,7 +162,11 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
     }
     return 0;
 }
-
+/******************************************************************************/
+void moloch_drophash_free(void *ptr)
+{
+    MOLOCH_TYPE_FREE(MolochDropHashItem_t, ptr);
+}
 /******************************************************************************/
 void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 {
@@ -199,7 +174,7 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 
     MolochDropHashItem_t *item, *parent = NULL;
     uint32_t              h;
-    if (hash->isIp4)
+    if (group->isIp4)
         h = (*(uint32_t *)key) % hash->num;
     else
         h = moloch_drophash_hash6(key) % hash->num;
@@ -207,28 +182,22 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
     if (!hash->heads[h])
         return;
 
-    MOLOCH_LOCK(hash->lock);
-    moloch_drophash_clean_locked(hash);
-
+    MOLOCH_LOCK(group->lock);
     for (item = hash->heads[h]; item; parent = item, item = item->hnext) {
-        if (memcmp(key, item->key, hash->isIp4?4:16) == 0) {
+        if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
             hash->cnt--;
             if (parent) {
                 parent->hnext = item->hnext;
             } else {
                 hash->heads[h] = item->hnext;
             }
-            item->dnext = hash->deleted;
-            hash->deleted = item;
-            clock_gettime(CLOCK_REALTIME_COARSE, &hash->lastDelete);
-            MOLOCH_LOCK(group->lock);
             DLL_REMOVE(dhg_, group, item);
+            moloch_free_later(item, moloch_drophash_free);
             group->changed++;
-            MOLOCH_UNLOCK(group->lock);
             break;
         }
     }
-    MOLOCH_UNLOCK(hash->lock);
+    MOLOCH_UNLOCK(group->lock);
 }
 
 /******************************************************************************/

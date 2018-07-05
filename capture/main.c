@@ -49,6 +49,17 @@ MOLOCH_LOCK_DEFINE(LOG);
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
 
+typedef struct molochfreelater_t MolochFreeLater_t;
+struct molochfreelater_t {
+    MolochFreeLater_t *fl_next, *fl_prev;
+    void              *ptr;
+    GDestroyNotify     cb;
+    uint32_t           sec;
+    uint32_t           fl_count;
+};
+MolochFreeLater_t freeLaterList;
+MOLOCH_LOCK_DEFINE(freeLaterList);
+
 /******************************************************************************/
 gboolean moloch_debug_flag()
 {
@@ -202,6 +213,44 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 }
+/******************************************************************************/
+void moloch_free_later(void *ptr, GDestroyNotify cb)
+{
+    struct timespec currentTime;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
+
+    MolochFreeLater_t *fl = MOLOCH_TYPE_ALLOC(MolochFreeLater_t);
+    fl->sec = currentTime.tv_sec + 2;
+    fl->ptr = ptr;
+    fl->cb  = cb;
+    MOLOCH_LOCK(freeLaterList);
+    DLL_PUSH_TAIL(fl_, &freeLaterList, fl);
+    MOLOCH_UNLOCK(freeLaterList);
+}
+/******************************************************************************/
+LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
+{
+    if (freeLaterList.fl_count == 0)
+        return TRUE;
+
+    struct timespec currentTime;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
+    MOLOCH_LOCK(freeLaterList);
+    while (freeLaterList.fl_count > 0 &&
+           freeLaterList.fl_next->sec < currentTime.tv_sec) {
+        MolochFreeLater_t *fl;
+        DLL_POP_HEAD(fl_, &freeLaterList, fl);
+    }
+    MOLOCH_UNLOCK(freeLaterList);
+    return TRUE;
+}
+/******************************************************************************/
+LOCAL void moloch_free_later_init()
+{
+    DLL_INIT(fl_, &freeLaterList);
+    g_timeout_add_seconds(1, moloch_free_later_check, 0);
+}
+
 /******************************************************************************/
 void *moloch_size_alloc(int size, int zero)
 {
@@ -621,6 +670,7 @@ int main(int argc, char **argv)
     if (config.insecure)
         LOG("\n\nDON'T DO IT!!!! `--insecure` is a bad idea\n\n");
 
+    moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
     moloch_writers_init();

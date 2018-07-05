@@ -37,7 +37,7 @@ extern MolochConfig_t        config;
 
 typedef struct suricataitem_t SuricataItem_t;
 typedef struct suricataitem_t {
-    SuricataItem_t *items_next, *deleted_next;
+    SuricataItem_t *items_next;
     char            sessionId[MOLOCH_SESSIONID_LEN];
     time_t          timestamp;
     char           *flow_id;
@@ -56,12 +56,12 @@ typedef struct suricataitem_t {
     char            category_len;
 } SuricataItem_t;
 
+#define SURICATA_HASH_SIZE 7919
+
 typedef struct suricatahead_t SuricataHead_t;
 typedef struct suricatahead_t {
-    SuricataItem_t  *items[7919];
-    SuricataItem_t  *deleted;
+    SuricataItem_t  *items[SURICATA_HASH_SIZE];
     MOLOCH_LOCK_EXTERN(lock);
-    struct timespec  lastDelete;
     uint32_t         cnt;
     uint16_t         num;
 } SuricataHead_t;
@@ -99,25 +99,8 @@ LOCAL void suricata_print(SuricataItem_t *item)
 /******************************************************************************/
 LOCAL void suricata_alerts_init()
 {
-    alerts.num = 7919;
+    alerts.num = SURICATA_HASH_SIZE;
     MOLOCH_LOCK_INIT(alerts.lock);
-}
-/******************************************************************************/
-LOCAL void suricata_alerts_clean ()
-{
-    SuricataItem_t *item;
-    // Cleanup items waiting to be freed
-    if (alerts.deleted) {
-        struct timespec currentTime;
-        clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
-        if (currentTime.tv_sec > alerts.lastDelete.tv_sec + 5) {
-            do {
-                item = alerts.deleted;
-                alerts.deleted = item->deleted_next;
-                suricata_item_free(item);
-            } while (alerts.deleted);
-        }
-    }
 }
 /******************************************************************************/
 LOCAL int suricata_alerts_add(SuricataItem_t *item)
@@ -127,7 +110,6 @@ LOCAL int suricata_alerts_add(SuricataItem_t *item)
     item->hash = moloch_session_hash(item->sessionId);
     int h = item->hash % alerts.num;
     MOLOCH_LOCK(alerts.lock);
-    suricata_alerts_clean();
 
     // Dup is same hash, signature_id, timestamp, ses, and sessionId
     for (check = alerts.items[h]; check; check = check->items_next) {
@@ -156,9 +138,7 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
     int h = item->hash % alerts.num;
 
     MOLOCH_LOCK(alerts.lock);
-    suricata_alerts_clean();
 
-    // Dup is same hash, signature_id, timestamp, and sessionId
     for (check = alerts.items[h]; check; parent = check, check = check->items_next) {
         if (check != item) {
             continue;
@@ -168,8 +148,8 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
         } else {
             alerts.items[h] = check->items_next;
         }
-        clock_gettime(CLOCK_REALTIME_COARSE, &alerts.lastDelete);
-        alerts.deleted = check;
+
+        moloch_free_later(check, (GDestroyNotify)suricata_item_free);
         alerts.cnt--;
         break;
     }

@@ -823,6 +823,7 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
     for (i = 0; i < ch->cnt; i++) {
         if (ch->arr[i]->offset == c->offset &&
             ch->arr[i]->func == c->func &&
+            c->matchlen == ch->arr[i]->matchlen &&
             strcmp(ch->arr[i]->name, c->name) == 0 &&
             memcmp(ch->arr[i]->match, c->match, c->matchlen) == 0) {
 

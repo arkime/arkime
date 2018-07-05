@@ -1680,18 +1680,14 @@ LOCAL void moloch_db_check()
 }
 
 /******************************************************************************/
+LOCAL void moloch_db_free_mmdb(MMDB_s *geo)
+{
+    MMDB_close(geo);
+    g_free(geo);
+}
+/******************************************************************************/
 LOCAL void moloch_db_load_geo_country(char *name)
 {
-    static MMDB_s  *countryOld;
-
-    // Reload country
-    if (!name) {
-        MMDB_close(countryOld);
-        g_free(countryOld);
-        countryOld = NULL;
-        return;
-    }
-
     MMDB_s  *country = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, country);
     if (MMDB_SUCCESS != status) {
@@ -1701,22 +1697,13 @@ LOCAL void moloch_db_load_geo_country(char *name)
     if (geoCountry)
         LOG("Loading new version of country file");
 
-    countryOld = geoCountry;
+    if (geoCountry)
+        moloch_free_later(geoCountry, (GDestroyNotify) moloch_db_free_mmdb);
     geoCountry = country;
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_geo_asn(char *name)
 {
-    static MMDB_s  *asnOld;
-
-    // Reload asn
-    if (!name) {
-        MMDB_close(asnOld);
-        g_free(asnOld);
-        asnOld = NULL;
-        return;
-    }
-
     MMDB_s  *asn = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, asn);
     if (MMDB_SUCCESS != status) {
@@ -1726,25 +1713,13 @@ LOCAL void moloch_db_load_geo_asn(char *name)
     if (geoASN)
         LOG("Loading new version of asn file");
 
-    asnOld = geoASN;
+    if (geoASN)
+        moloch_free_later(geoASN, (GDestroyNotify) moloch_db_free_mmdb);
     geoASN = asn;
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_rir(char *name)
 {
-    static char *oldRirs[256];
-
-    if (!name) {
-        int i;
-        for (i = 0; i < 256; i++) {
-            if (oldRirs[i]) {
-                g_free(oldRirs[i]);
-                oldRirs[i] = NULL;
-            }
-        }
-        return;
-    }
-
     FILE *fp;
     char line[1000];
     if (!(fp = fopen(name, "r"))) {
@@ -1774,7 +1749,8 @@ LOCAL void moloch_db_load_rir(char *name)
             } else if (*start && cnt == 3) {
                 gchar **parts = g_strsplit(start, ".", 0);
                 if (parts[1] && *parts[1]) {
-                    oldRirs[num] = rirs[num];
+                    if (rirs[num])
+                        moloch_free_later(rirs[num], g_free);
                     rirs[num] = g_ascii_strup(parts[1], -1);
                 }
                 g_strfreev(parts);
@@ -1789,20 +1765,13 @@ LOCAL void moloch_db_load_rir(char *name)
     fclose(fp);
 }
 /******************************************************************************/
-/* Only called in main thread.  Check if the file changed, if so reload.
- * Don't free old version until called again incase other threads are using.
- */
+LOCAL void moloch_db_free_oui(patricia_tree_t *oui)
+{
+    Destroy_Patricia(oui, g_free);
+}
+/******************************************************************************/
 LOCAL void moloch_db_load_oui(char *name)
 {
-    static patricia_tree_t   *ouiOld;
-
-    // Clean up old elements
-    if (!name) {
-        Destroy_Patricia(ouiOld, g_free);
-        ouiOld = NULL;
-        return;
-    }
-
     if (ouiTree)
         LOG("Loading new version of oui file");
 
@@ -1810,8 +1779,8 @@ LOCAL void moloch_db_load_oui(char *name)
     patricia_tree_t *oui = New_Patricia(48); // 48 - Ethernet Size
     FILE *fp;
     char line[2000];
-    if (!(fp = fopen(config.ouiFile, "r"))) {
-        printf("Couldn't open OUI from %s", config.ouiFile);
+    if (!(fp = fopen(name, "r"))) {
+        printf("Couldn't open OUI from %s", name);
         exit(1);
     }
 
@@ -1875,7 +1844,8 @@ LOCAL void moloch_db_load_oui(char *name)
     fclose(fp);
 
     // Save old tree to free later and flip to new tree
-    ouiOld  = ouiTree;
+    if (ouiTree)
+        moloch_free_later(ouiTree, (GDestroyNotify) moloch_db_free_oui);
     ouiTree = oui;
 }
 /******************************************************************************/
