@@ -1,7 +1,7 @@
 <template>
 
   <div class="pt-2"
-    ref="vizContainer"
+    :class="{'map-visible':showMap,'map-invisible':!showMap}"
     :id="'vizContainer' + id">
 
     <!-- map content -->
@@ -18,8 +18,7 @@
         </span>
       </div> <!-- /map open button -->
 
-      <div :class="{'hide-map':!showMap}"
-        class="inline-map">
+      <div class="inline-map">
         <div v-if="mapData">
           <div class="moloch-map-container">
 
@@ -168,11 +167,11 @@
 
       <!-- graph -->
       <div v-if="graphData"
-        :class="{'inline-graph':showMap,'whole-graph':!showMap}">
+        class="plot-container">
         <div class="plot-area"
           :id="'plotArea' + id">
         </div>
-      </div><!-- /graph -->
+      </div> <!-- /graph -->
 
     </div> <!-- /graph content -->
 
@@ -843,7 +842,7 @@ export default {
   position: relative;
 }
 
-.hide-map {
+.map-invisible .inline-map {
   visibility: hidden;
   width: 5px !important;
 }
@@ -902,12 +901,12 @@ export default {
   height: 150px;
 }
 
-.inline-graph {
+.map-visible .plot-container {
   position: relative;
   display: inline-block;
   width: calc(100% - 425px);
 }
-.whole-graph {
+.map-invisible .plot-container {
   position: relative;
   width: 99%;
 }
@@ -917,11 +916,20 @@ export default {
   position: absolute;
   left: 50%;
   white-space: nowrap;
+  z-index: 1;
 }
+
 .session-graph-btn-container > div {
   position: relative;
   left: -50%;
-  z-index: 1; /* above timeline */
+}
+
+/* center timeline buttons on timeline graph if the map is collapsed */
+.map-visible .session-graph-btn-container {
+  left: calc(50% - 425px);
+}
+.map-visible .session-graph-btn-container > div {
+  left: 0;
 }
 
 .session-graph-btn-container .btn-group-xs.btn-group-radios {

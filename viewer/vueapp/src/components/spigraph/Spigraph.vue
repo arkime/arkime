@@ -104,13 +104,13 @@
           </div>
         </div> <!-- /refresh input-->
 
-        <small>
-          <strong class="ml-2 text-theme-accent"
+        <div class="ml-1 records-display">
+          <strong class="text-theme-accent"
             v-if="!error && recordsFiltered !== undefined">
             Showing {{ recordsFiltered | commaString }} entries filtered from
             {{ recordsTotal }} total entries
           </strong>
-        </small>
+        </div>
       </div>
     </form>
 
@@ -421,8 +421,16 @@ export default {
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
+.spigraph-page form.spigraph-form .form-inline {
+  flex-flow: row nowrap;
+}
 .spigraph-page form.spigraph-form select.form-control {
   -webkit-appearance: none;
+}
+.spigraph-page form.spigraph-form .form-inline .records-display  {
+  line-height: 0.95;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 /* field typeahead */

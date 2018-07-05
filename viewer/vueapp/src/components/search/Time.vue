@@ -1,6 +1,6 @@
 <template>
 
-  <div class="form-inline">
+  <div class="form-inline time-form">
 
     <!-- time range select -->
     <div class="form-group">
@@ -144,10 +144,13 @@
     </div> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="ml-2 display-inline">
-      <strong class="small text-theme-accent no-wrap">
-        <span v-if="deltaTime && !timeError">
-          Time Range: {{ deltaTime * 1000 | readableTime }}
+    <div class="ml-1 time-range-display">
+      <strong class="text-theme-accent">
+        <span v-if="deltaTime && !timeError"
+          class="help-cursor"
+          v-b-tooltip.hover
+          title="Query time range">
+          {{ deltaTime * 1000 | readableTime }}
         </span>
         <span v-if="timeError">
           <span class="fa fa-exclamation-triangle"></span>&nbsp;
@@ -491,10 +494,21 @@ export default {
 <style>
 input.form-control.flatpickr-input {
   font-size: var(--px-lg);
+  max-width: 130px;
 }
 </style>
 
 <style scoped>
+.time-form {
+  flex-flow: row nowrap;
+  max-height: 33px;
+}
+
+.time-range-display {
+  line-height: 0.95;
+  font-size: 12px;
+}
+
 select.form-control {
   font-size: var(--px-lg);
 }

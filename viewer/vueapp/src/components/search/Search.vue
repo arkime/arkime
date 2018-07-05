@@ -91,12 +91,10 @@
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
-      <div class="form-inline">
-        <moloch-time :timezone="timezone"
-          @timeChange="timeChange"
-          :updateTime="updateTime">
-        </moloch-time>
-      </div> <!-- /time inputs -->
+      <moloch-time :timezone="timezone"
+        @timeChange="timeChange"
+        :updateTime="updateTime">
+      </moloch-time> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">
