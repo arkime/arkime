@@ -523,7 +523,14 @@ function formatQuery(yy, field, op, value)
       return parseIpPort(yy, field, value);
     if (op === "ne")
       return {bool: {must_not: parseIpPort(yy, field, value)}};
-    throw "Invalid operator '" + op + "' for ip";
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = value;
+    return obj;
   case "integer":
     if (value[0] === "/")
       throw value + " - Regex queries not supported for integer queries";

@@ -1,4 +1,4 @@
-use Test::More tests => 593;
+use Test::More tests => 602;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -114,6 +114,11 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.1/32]"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0.2:"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src!=10.0.0.2:"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src>=10.0.0.2"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src<10.0.0.2"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src>10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src<=10.0.0.2"));
+    errTest("date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src>[10.0.0.2]"));
 
 # ipv6 tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip.dst=2001:6f8:900:7c0::2"));
