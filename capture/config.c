@@ -28,6 +28,74 @@ extern MolochConfig_t        config;
 LOCAL GKeyFile             *molochKeyFile;
 
 /******************************************************************************/
+gchar **moloch_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
+{
+    gchar **result;
+
+    if (!keyfile)
+        keyfile = molochKeyFile;
+
+    if (g_key_file_has_key(keyfile, section, key, NULL)) {
+        result = g_key_file_get_string_list(keyfile, section, key, NULL, NULL);
+    } else if (d) {
+        result = g_strsplit(d, ";", 0);
+    } else {
+        result = NULL;
+    }
+
+    return result;
+}
+
+/******************************************************************************/
+gchar **moloch_config_section_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
+{
+    gchar **strs = moloch_config_section_raw_str_list(keyfile, section, key, d);
+    if (!strs) {
+        if (config.debug) {
+            LOG("%s=(null)", key);
+        }
+        return strs;
+    }
+
+    int i, j;
+    for (i = j = 0; strs[i]; i++) {
+        char *str = strs[i];
+
+        /* Remove leading and trailing spaces */
+        while (isspace(*str))
+            str++;
+        g_strchomp(str);
+
+        /* Empty string */
+        if (*str == 0) {
+            g_free(strs[i]);
+            continue;
+        }
+
+        /* Moved front of string, need to realloc so g_strfreev doesn't blow */
+        if (str != strs[i]) {
+            str = g_strdup(str);
+            g_free(strs[i]);
+        }
+
+        /* Save string back */
+        strs[j] = str;
+        j++;
+    }
+
+    /* NULL anything at the end that was moved forward */
+    for (; j < i; j++)
+        strs[j] = NULL;
+
+    if (config.debug) {
+        gchar *str = g_strjoinv(";", strs);
+        LOG("%s=%s", key, str);
+        g_free(str);
+    }
+    return strs;
+}
+
+/******************************************************************************/
 gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d)
 {
     char *result;

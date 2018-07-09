@@ -58,7 +58,7 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
              * 12 == BER_UNI_TAG_UTF8String
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC(MolochString_t);
+                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
                     element->str = g_utf8_strdown((char*)value, alen);

@@ -44,6 +44,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - switch to javascript png implementation
   - all - added some GRE erspan support
   - viewer - support gt/lt queries for ip
+  - capture/wise - can now configure what fields map to what wise queries and
+                   send almost any field (issue #840)
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

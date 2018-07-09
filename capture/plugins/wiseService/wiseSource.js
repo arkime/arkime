@@ -34,6 +34,7 @@ function WISESource (api, section) {
   this.cacheRefreshStat = 0;
   this.cacheDroppedStat = 0;
   this.average100MS = 0;
+  this.srcInProgress = {};
 
   // Domain and Email wildcards to exclude from source
   ["excludeDomains", "excludeEmails", "excludeURLs"].forEach((type) => {

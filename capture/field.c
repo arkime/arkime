@@ -464,6 +464,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->str = (char*)string;
             hstring->len = len;
             hstring->utf8 = 0;
+            hstring->uw = 0;
             HASH_ADD(s_, *hash, hstring->str, hstring);
             goto added;
         case MOLOCH_FIELD_TYPE_STR_GHASH:
@@ -513,6 +514,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             hstring->len = len;
             hstring->utf8 = 0;
         }
+        hstring->uw = 0;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
         goto added;
     case MOLOCH_FIELD_TYPE_STR_GHASH:

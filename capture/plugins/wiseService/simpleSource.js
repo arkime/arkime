@@ -77,8 +77,7 @@ SimpleSource.prototype.initSimple = function() {
     return false;
 
 
-  switch (this.type) {
-  case "domain":
+  if (this.type === 'domain') {
     this.getDomain = function(domain, cb) {
       if (this.cache.get(domain)) {
         return this.sendResult(domain, cb);
@@ -86,31 +85,8 @@ SimpleSource.prototype.initSimple = function() {
       domain = domain.substring(domain.indexOf(".")+1);
       return this.sendResult(domain, cb);
     };
-    break;
-  case "ip":
-    this.getIp = this.sendResult;
-    break;
-  case "md5":
-    this.getMd5 = this.sendResult;
-    break;
-  case "email":
-    this.getEmail = this.sendResult;
-    break;
-  case "url":
-    this.getURL = this.sendResult;
-    break;
-  case "tuple":
-    this.getTuple = this.sendResult;
-    break;
-  case "ja3":
-    this.getJa3 = this.sendResult;
-    break;
-  case "sha256":
-    this.getSha256 = this.sendResult;
-    break;
-  default:
-    console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
-    return false;
+  } else {
+    this[this.api.funcName(this.type)] = this.sendResult;
   }
 
   this.api.addSource(this.section, this);

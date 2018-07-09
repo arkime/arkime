@@ -647,7 +647,6 @@ void moloch_parsers_init()
                 g_free (path);
                 continue;
             }
-            g_free (path);
 
             MolochPluginInitFunc parser_init;
 
@@ -661,6 +660,7 @@ void moloch_parsers_init()
                 LOG("Loaded %s", path);
             }
 
+            g_free (path);
 
             parser_init();
 

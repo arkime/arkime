@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 65;
+use Test::More tests => 74;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -41,7 +41,6 @@ eq_or_diff($wise, '[]
 ', "All 10.0.0.1");
 
 # IP File Dump
-
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content . "]";
 my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
 eq_or_diff(\@wise, 
@@ -142,3 +141,32 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&wise.int=1"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.referer=added1wise&&tags=firstmatchwise"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.user-agent=added2wise&&tags=secondmatchwise"));
+
+#MAC
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=macwise"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=wisebymac1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=wisebymac2"));
+
+$wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:mac")->content . "]";
+my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+eq_or_diff(\@wise, 
+from_json('[
+{key: "00:12:1e:f2:61:3d", ops:
+[{field: "tags", len: 8, value: "macwise"},
+{field: "tags", len: 11, value: "wisebymac1"}]
+},
+{key: "00:19:06:e6:82:c4", ops:
+[{field: "tags", len: 8, value: "macwise"},
+{field: "tags", len: 11, value: "wisebymac2"}]
+}
+]', {relaxed=>1, allow_barekey=>1}), "file:mac dump");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/mac/00:12:1e:f2:61:3d")->content;
+eq_or_diff($wise, '[{field: "tags", len: 11, value: "wisebymac1"},
+{field: "tags", len: 8, value: "macwise"}]
+', "mac query");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:mac/mac/00:12:1e:f2:61:3d")->content;
+eq_or_diff($wise, '[{field: "tags", len: 11, value: "wisebymac1"},
+{field: "tags", len: 8, value: "macwise"}]
+', "file:mac query");
