@@ -277,7 +277,7 @@ internals.type2Name = ["ip", "domain", "md5", "email", "url", "tuple", "ja3", "s
 //////////////////////////////////////////////////////////////////////////////////
 function globalAllowed (value) {
   for(var i = 0; i < this.excludes.length; i++) {
-    if (value.match(internals.excludes[i])) {
+    if (value.match(this.excludes[i])) {
       if (internals.debug > 0) {
         console.log(`Found in Global ${this.name} Exclude`, value);
       }
@@ -663,12 +663,12 @@ function printStats()
 
   for (var key of keys) {
     let typeInfo = internals.types[key];
-    lines[0] += sprintf(" %10s", key);
-    lines[1] += sprintf(" %10d", typeInfo.requestStats);
-    lines[2] += sprintf(" %10d", typeInfo.foundStats);
-    lines[3] += sprintf(" %10d", typeInfo.cacheHitStats);
-    lines[4] += sprintf(" %10d", typeInfo.cacheSrcHitStats);
-    lines[5] += sprintf(" %10d", typeInfo.cacheSrcRefreshStats);
+    lines[0] += sprintf(" %11s", key);
+    lines[1] += sprintf(" %11d", typeInfo.requestStats);
+    lines[2] += sprintf(" %11d", typeInfo.foundStats);
+    lines[3] += sprintf(" %11d", typeInfo.cacheHitStats);
+    lines[4] += sprintf(" %11d", typeInfo.cacheSrcHitStats);
+    lines[5] += sprintf(" %11d", typeInfo.cacheSrcRefreshStats);
   }
 
   for (var i = 0; i < lines.length; i++) {
