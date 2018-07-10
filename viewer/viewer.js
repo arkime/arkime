@@ -2702,7 +2702,7 @@ app.get('/stats.json', function(req, res) {
 
       for (const key of ["totalPackets", "totalK", "totalSessions",
        "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions", "espSessions",
-       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu", "esHealthMS",
+       "usedSpaceM", "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu", "esHealthMS",
        "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
        "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
       ]) {
@@ -2792,7 +2792,7 @@ app.get('/dstats.json', function(req, res) {
     var num = (req.query.stop - req.query.start)/req.query.step;
 
     var mult = 1;
-    if (req.query.name === "freeSpaceM") {
+    if (req.query.name === "freeSpaceM" || req.query.name === "usedSpaceM") {
       mult = 1000000;
     }
 

@@ -46,6 +46,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - support gt/lt queries for ip
   - capture/wise - can now configure what fields map to what wise queries and
                    send almost any field (issue #840)
+  - all - added used space stat
+  - all - changed free space stat to use 1000 based units
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

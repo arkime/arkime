@@ -1040,6 +1040,51 @@ LOCAL uint64_t moloch_db_memory_max()
 }
 
 /******************************************************************************/
+LOCAL uint64_t moloch_db_used_space()
+{
+    if (config.pcapDirTemplate)
+        return 0;
+
+    uint64_t   spaceM = 0;
+    static int nodeNameLen = 0;
+
+    if (nodeNameLen == 0) {
+        nodeNameLen = strlen(config.nodeName);
+    }
+
+    int i;
+    for (i = 0; config.pcapDir[i]; i++) {
+        GError   *error = NULL;
+        GDir     *dir = g_dir_open(config.pcapDir[i], 0, &error);
+        if (!dir || error) {
+            g_free(error);
+            continue;
+        }
+
+        const gchar *filename;
+        while ((filename = g_dir_read_name(dir))) {
+            // Skip hidden files/directories
+            if (filename[0] == '.')
+                continue;
+            int len = strlen(filename);
+            if (len < nodeNameLen + 21 ||
+                filename[nodeNameLen] != '-' ||
+                memcmp(filename, config.nodeName, nodeNameLen) != 0 ||
+                memcmp(filename+nodeNameLen+16, ".pcap", 5) != 0) {
+                continue;
+            }
+
+            gchar *fullfilename = g_build_filename (config.pcapDir[i], filename, NULL);
+            struct stat sb;
+            if (stat(fullfilename, &sb) == 0) {
+                spaceM += sb.st_size;
+            }
+            g_free(fullfilename);
+        }
+    }
+    return spaceM/(1000*1000);
+}
+/******************************************************************************/
 LOCAL void moloch_db_update_stats(int n, gboolean sync)
 {
     static uint64_t       lastPackets[NUMBER_OF_STATS];
@@ -1053,6 +1098,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
+    static uint64_t       lastUsedSpaceM = 0;
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
     int                   i;
@@ -1068,6 +1114,10 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         lastTime[n] = startTime;
     }
 
+    if (n == 0) {
+        lastUsedSpaceM = moloch_db_used_space();
+    }
+
     uint64_t overloadDropped = moloch_packet_dropped_overload();
     uint64_t totalDropped    = moloch_packet_dropped_packets();
     uint64_t fragsDropped    = moloch_packet_dropped_frags();
@@ -1077,8 +1127,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     for (i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
         statvfs(config.pcapDir[i], &vfs);
-        freeSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0);
-        totalSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_blocks/1024.0);
+        freeSpaceM += (uint64_t)(vfs.f_frsize/1000.0*vfs.f_bavail/1000.0);
+        totalSpaceM += (uint64_t)(vfs.f_frsize/1000.0*vfs.f_blocks/1000.0);
     }
 
     const uint64_t cursec = currentTime.tv_sec;
@@ -1097,7 +1147,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     dbTotalPackets[n] += (totalPackets - lastPackets[n]);
     dbTotalSessions[n] += (totalSessions - lastSessions[n]);
     dbTotalDropped[n] += (totalDropped - lastDropped[n]);
-    dbTotalK[n] += (totalBytes - lastBytes[n])/1024;
+    dbTotalK[n] += (totalBytes - lastBytes[n])/1000;
 
     uint64_t mem = moloch_db_memory_size();
     double   memMax = moloch_db_memory_max();
@@ -1117,6 +1167,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"hostname\": \"%s\", "
         "\"interval\": %d, "
         "\"currentTime\": %" PRIu64 ", "
+        "\"usedSpaceM\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"freeSpaceP\": %.2f, "
         "\"monitoring\": %u, "
@@ -1155,6 +1206,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         config.hostName,
         intervals[n],
         cursec,
+        lastUsedSpaceM,
         freeSpaceM,
         freeSpaceM*100.0/totalSpaceM,
         moloch_session_monitoring(),
@@ -1547,7 +1599,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             for (i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
                 statvfs(config.pcapDir[i], &vfs);
-                LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / 1024 / 1024);
+                LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / (1000 * 1000));
                 if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes)
                 {
                     maxFreeSpaceBytes = (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
