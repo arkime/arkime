@@ -86,24 +86,19 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.2.0
+        image: andywick/moloch-build-16:1.2.1
         steps:
+            #- useradd -u 2000 elasticsearch
             - ln -s /thirdparty .
-            - apt-get update
-#            - docker: |
-#                apt-get install -y docker.io
-#                service docker start
-#                sleep 1
-#                docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:5.5.3 &
-#                sleep 1
             - build: ./easybutton-build.sh
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
-#            - test-viewer: (cd tests ; ./tests.pl --viewer)
+            - test-viewer: (cd tests ; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then

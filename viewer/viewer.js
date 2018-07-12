@@ -221,19 +221,23 @@ if (Config.get("passwordSecret")) {
     }
 
     // Header auth
-    if (internals.userNameHeader !== undefined && req.headers[internals.userNameHeader] !== undefined) {
-      var userName = req.headers[internals.userNameHeader];
-      Db.getUserCache(userName, function(err, suser) {
-        if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
-        if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
-        if (!suser._source.enabled) {return res.send(userName + " not enabled");}
-        if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+    if (internals.userNameHeader !== undefined) {
+      if (req.headers[internals.userNameHeader] !== undefined) {
+        var userName = req.headers[internals.userNameHeader];
+        Db.getUserCache(userName, function(err, suser) {
+          if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
+          if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
+          if (!suser._source.enabled) {return res.send(userName + " not enabled");}
+          if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
 
-        userCleanup(suser._source);
-        req.user = suser._source;
-        return next();
-      });
-      return;
+          userCleanup(suser._source);
+          req.user = suser._source;
+          return next();
+        });
+        return;
+      } else if (Config.debug) {
+        console.log("DEBUG - Couldn't find userNameHeader of", internals.userNameHeader, "in", req.headers, "for", req.url);
+      }
     }
 
     // Browser auth

@@ -471,7 +471,7 @@ LOCAL void reader_libpcapfile_opened()
 
     readerPos++;
     if (readerFileName[readerPos])
-        g_free(readerFileName[readerPos]);
+        moloch_free_later(readerFileName[readerPos], g_free);
     readerFileName[readerPos] = g_strdup(offlinePcapFilename);
 
     int fd = pcap_fileno(pcap);
