@@ -95,6 +95,7 @@ jobs:
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - install-for-tests: (cd viewer; npm install ; cd ../capture/plugins/wiseService; npm install)
             - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
