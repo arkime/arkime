@@ -6,8 +6,11 @@ apt-get install -y ruby-dev make python-pip git libtest-differences-perl sudo op
 gem install --no-ri --no-rdoc fpm; \
 pip install awscli; \
 useradd -u 2000 elasticsearch; \
-wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-6.3.1.tar.gz; \
-su elasticsearch -c "tar xf elasticsearch-oss-6.3.1.tar.gz"; \
-rm -f elasticsearch-oss-6.3.1.tar.gz; \
+(cd / ; \
+ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-6.3.1.tar.gz; \
+ tar xf elasticsearch-oss-6.3.1.tar.gz; \
+ chown -R elasticsearch elasticsearch-6.3.1; \
+ rm -f elasticsearch-oss-6.3.1.tar.gz \
+); \
 git clone https://github.com/aol/moloch; (cd moloch ; ./easybutton-build.sh); mv moloch/thirdparty /; rm -rf moloch; \
 rm -rf /var/lib/apt/lists/*
