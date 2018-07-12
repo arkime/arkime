@@ -2,8 +2,14 @@
 
   <div class="info-area vertical-center">
     <div class="text-danger">
-      <span class="fa fa-2x fa-warning"></span>
-      <span v-if="message">{{ message }}</span>
+      <span class="fa fa-2x fa-warning">
+      </span>
+      <span v-if="message">
+        {{ message }}
+      </span>
+      <span v-else-if="messageHtml"
+        v-html="messageHtml">
+      </span>
     </div>
   </div>
 
@@ -12,7 +18,7 @@
 <script>
 export default {
   name: 'MolochError',
-  props: [ 'message' ]
+  props: [ 'message', 'messageHtml' ]
 };
 </script>
 

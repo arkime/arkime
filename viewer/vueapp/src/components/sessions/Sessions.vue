@@ -32,7 +32,7 @@
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
-        :timezone="settings.settings.timezone">
+        :timezone="settings.timezone">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -41,7 +41,7 @@
           class="sticky-sessions"
           v-if="stickySessions.length"
           :sessions="stickySessions"
-          :timezone="settings.settings.timezone"
+          :timezone="settings.timezone"
           @closeSession="closeSession"
           @closeAllSessions="closeAllSessions">
         </moloch-sticky-sessions>
@@ -311,7 +311,7 @@
                       :expr="col.exp"
                       :value="value"
                       :parse="true"
-                      :timezone="settings.settings.timezone">
+                      :timezone="settings.timezone">
                     </moloch-session-field>
                   </span>
                 </span> <!-- /field value is an array -->
@@ -323,7 +323,7 @@
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :timezone="settings.settings.timezone">
+                    :timezone="settings.timezone">
                   </moloch-session-field>
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
@@ -880,7 +880,7 @@ export default {
     getUserSettings: function () {
       UserService.getCurrent()
         .then((response) => {
-          this.settings = response;
+          this.settings = response.settings;
 
           // if settings has custom sort field and the custom sort field
           // exists in the table headers, apply it
@@ -891,7 +891,7 @@ export default {
           }
 
           // IMPORTANT: kicks off the initial search query
-          if (!this.settings.manualQuery || componentInitialized) {
+          if (!JSON.parse(this.settings.manualQuery) || componentInitialized) {
             this.loadData();
           } else {
             this.loading = false;
@@ -1192,7 +1192,7 @@ export default {
 
     $('#sessionsTable').colResizable({ disable: true });
 
-    draggableColumns.destroy();
+    if (draggableColumns) { draggableColumns.destroy(); }
 
     window.removeEventListener('resize', windowResizeEvent);
   }

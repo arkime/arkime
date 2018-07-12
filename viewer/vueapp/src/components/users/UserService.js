@@ -84,6 +84,36 @@ export default {
   },
 
   /**
+   * Updates a user's settings
+   * @param {object} settings   The object containing user settings
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  saveSettings: function (settings, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/settings/update',
+        method: 'POST',
+        data: settings
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      // update cache
+      _userCache.settings = settings;
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
    * Gets a user's views
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
@@ -142,6 +172,137 @@ export default {
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.post(url, { view: view })
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Updates a specified view for a user
+   * @param {Object} data       The view data to pass to the server
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateView: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/views/update',
+        method: 'POST',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          response.data.views = this.parseViews(response.data.views);
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Gets a user's cron queries
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getCronQueries: function (userId) {
+    return new Promise((resolve, reject) => {
+      let options = { url: 'user/cron', method: 'GET' };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Creates a specified cron query for a user
+   * @param {Object} data       The cron query data to pass to the server
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  createCronQuery: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/cron/create',
+        method: 'POST',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Deletes a user's specified cron query
+   * @param {string} key        The key of the cron query to be removed
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  deleteCronQuery: function (key, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/cron/delete',
+        method: 'POST',
+        data: { key: key }
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Updates a specified cron query for a user
+   * @param {Object} data       The cron query data to pass to the server
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateCronQuery: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/cron/update',
+        method: 'POST',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
@@ -299,6 +460,36 @@ export default {
           resolve(response.data);
         }, (error) => {
           reject(error.data);
+        });
+    });
+  },
+
+  /**
+   * Changes current user's password
+   * @param {object} data       The data to send to the server
+   *                            { userId, currentPassword, newPassword }
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  changePassword: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: 'user/password/change',
+        method: 'POST'
+      };
+
+      if (userId) {
+        options.url += `?userId=${userId}`;
+        options.data = { newPassword: data.newPassword };
+      } else { options.data = data; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
         });
     });
   },

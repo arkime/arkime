@@ -262,24 +262,6 @@ export default {
       this.loadData();
     }
   },
-  created: function () {
-    this.loadUser();
-    FieldService.get(true)
-      .then((result) => {
-        this.fields = result;
-        for (let field of this.fields) {
-          if (field.dbField === this.query.srcField) {
-            this.srcFieldTypeahead = field.friendlyName;
-          }
-          if (field.dbField === this.query.dstField) {
-            this.dstFieldTypeahead = field.friendlyName;
-          }
-        }
-      }).catch((error) => {
-        this.loading = false;
-        this.error = error;
-      });
-  },
   mounted: function () {
     let styles = window.getComputedStyle(document.body);
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
@@ -288,7 +270,9 @@ export default {
     this.colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.startD3();
-    this.loadData();
+    // IMPORTANT: kicks off the initial search query
+    this.loadUser();
+
     $('.footer').hide();
   },
   beforeDestroy: function () {
@@ -354,6 +338,8 @@ export default {
       UserService.getCurrent()
         .then((response) => {
           this.user = response;
+          // IMPORTANT: kicks off the initial search query
+          this.loadData();
         }, (error) => {
           this.user = { settings: { timezone: 'local' } };
         });
@@ -365,13 +351,46 @@ export default {
       this.svg.selectAll('.link').remove();
       this.svg.selectAll('.node').remove();
 
+      if (!this.$route.query.srcField) {
+        this.query.srcField = this.user.settings.connSrcField;
+      }
+      if (!this.$route.query.dstField) {
+        this.query.dstField = this.user.settings.connDstField;
+      }
+
       this.$http.get('connections.json', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
+          this.getFields();
           this.processData(response.data);
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
+          this.loading = false;
+          this.error = error;
+        });
+    },
+    getFields: function () {
+      FieldService.get(true)
+        .then((result) => {
+          this.fields = result;
+          this.fields.push({
+            dbField: 'ip.dst:port',
+            exp: 'ip.dst:port',
+            help: 'Destination IP:Destination Port',
+            group: 'general',
+            friendlyName: 'Dst IP:Dst Port'
+          });
+
+          for (let field of this.fields) {
+            if (field.dbField === this.query.srcField) {
+              this.srcFieldTypeahead = field.friendlyName;
+            }
+            if (field.dbField === this.query.dstField) {
+              this.dstFieldTypeahead = field.friendlyName;
+            }
+          }
+        }).catch((error) => {
           this.loading = false;
           this.error = error;
         });

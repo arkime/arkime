@@ -80,6 +80,7 @@
     "uglifyjs-webpack-plugin": "^1.1.4",
     "vue-axios": "^2.0.2",
     "vue-clipboard2": "^0.1.0",
+    "vue-color": "^2.4.6",
     "vue-moment": "^3.2.0",
     "vuex": "^3.0.1",
     "webpack": "~3.11.0"

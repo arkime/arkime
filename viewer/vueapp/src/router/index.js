@@ -10,6 +10,7 @@ import Sessions from '@/components/sessions/Sessions';
 import Spiview from '@/components/spiview/Spiview';
 import Spigraph from '@/components/spigraph/Spigraph';
 import Connections from '@/components/connections/Connections';
+import Settings from '@/components/settings/Settings';
 
 Vue.use(Router);
 
@@ -76,6 +77,11 @@ const router = new Router({
       path: '/connections',
       name: 'Connections',
       component: Connections
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: Settings
     }
   ]
 });

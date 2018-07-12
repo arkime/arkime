@@ -80,7 +80,7 @@
       $event.preventDefault();
       $event.stopPropagation();
 
-      if (link !== 'settings' || link !== 'upload') {
+      if (link !== 'upload') {
         // TODO update/remove as angular pages get replaced with vue pages
         // redirects to the new vue app stats page
         this.$location.path(link);

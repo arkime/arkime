@@ -5756,7 +5756,15 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spiview', '/spigraph', '/connections'], (req, res) => {
+app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spiview', '/spigraph', '/connections', '/settings'], (req, res) => {
+  if (req.path === '/users' && !req.user.createEnabled) {
+    return res.status(403).send('Permission denied');
+  }
+
+  if (req.path === '/settings' && Config.get('demoMode', false)) {
+    return res.status(403).send('Permission denied');
+  }
+
   let cookieOptions = { path: app.locals.basePath };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 

@@ -217,7 +217,7 @@ label.btn-radio:disabled, button.btn-checkbox:disabled {
   color     : var(--color-gray-dark);
 }
 
-.info-area div {
+.info-area > div {
   padding         : var(--px-xxxlg);
   border-radius   : var(--px-sm);
   background-color: var(--color-gray-light);

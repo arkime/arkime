@@ -85,7 +85,7 @@ export default {
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };
-        menu.settings = { title: 'Settings', link: 'settings', oldPage: true };
+        menu.settings = { title: 'Settings', link: 'settings' };
         menu.users = { title: 'Users', link: 'users', permission: 'createEnabled' };
       }
 

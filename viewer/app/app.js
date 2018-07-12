@@ -63,11 +63,6 @@
   .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider','Constants',
     function($routeProvider, $locationProvider, $httpProvider, $compileProvider, Constants) {
       $routeProvider
-        .when('/settings', {
-          title         : 'Settings',
-          template      : '<moloch-settings></moloch-settings>',
-          reloadOnSearch: false
-        })
         .when('/upload', {
           title         : 'Upload',
           template      : '<moloch-upload></moloch-upload>',

@@ -287,10 +287,18 @@ export default {
     }
   },
   created: function () {
+    // IMPORTANT: kicks off the initial search query
     this.getUserSettings();
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
+        this.fields.push({
+          dbField: 'ip.dst:port',
+          exp: 'ip.dst:port',
+          help: 'Destination IP:Destination Port',
+          group: 'general',
+          friendlyName: 'Dst IP:Dst Port'
+        });
         for (let field of this.fields) {
           if (field.dbField === this.query.field) {
             this.fieldTypeahead = field.friendlyName;
@@ -300,9 +308,6 @@ export default {
         this.loading = false;
         this.error = error;
       });
-  },
-  mounted: function () {
-    this.loadData();
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -352,7 +357,9 @@ export default {
     getUserSettings: function () {
       UserService.getCurrent()
         .then((response) => {
-          this.settings = response;
+          this.settings = response.settings;
+          // IMPORTANT: kicks off the initial search query
+          this.loadData();
         }, (error) => {
           this.settings = { timezone: 'local' };
           this.error = error;
@@ -363,6 +370,10 @@ export default {
       this.error = false;
 
       this.items = []; // clear items
+
+      if (!this.$route.query.field) {
+        this.query.field = this.settings.spiGraph;
+      }
 
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {
