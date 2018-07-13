@@ -5,7 +5,7 @@ use Cwd;
 use URI::Escape;
 use Data::Dumper;
 use Test::Differences;
-use JSON;
+use JSON -support_by_pp;
 use strict;
 
 

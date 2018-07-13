@@ -139,7 +139,7 @@ chmod 0700 $MOLOCH_INSTALL_DIR/raw
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
-    ES_VERSION=5.6.7
+    ES_VERSION=6.3.1
     mkdir $MOLOCH_INSTALL_DIR/data
     chown nobody $MOLOCH_INSTALL_DIR/data
     if [ -f "/etc/redhat-release" ]; then
@@ -148,7 +148,6 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
         wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.deb
         dpkg -i elasticsearch-${ES_VERSION}.deb
     fi
-    sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.demo.yml > /etc/elaticsearch/elasticsearch.yml
 fi
 
 ################################################################################

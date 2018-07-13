@@ -86,7 +86,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.2.2
+        image: andywick/moloch-build-16:1.2.3
         steps:
             #- useradd -u 2000 elasticsearch
             - ln -s /thirdparty .
