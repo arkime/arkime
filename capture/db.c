@@ -1057,7 +1057,10 @@ LOCAL uint64_t moloch_db_used_space()
         GError   *error = NULL;
         GDir     *dir = g_dir_open(config.pcapDir[i], 0, &error);
         if (!dir || error) {
-            g_free(error);
+            if (dir)
+                g_dir_close(dir);
+            if (error)
+                g_free(error);
             continue;
         }
 
@@ -1081,6 +1084,7 @@ LOCAL uint64_t moloch_db_used_space()
             }
             g_free(fullfilename);
         }
+        g_dir_close(dir);
     }
     return spaceM/(1000*1000);
 }

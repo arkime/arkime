@@ -67,7 +67,9 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_JA3     6
 #define INTEL_TYPE_SHA256  7
 #define INTEL_TYPE_NUM_PRE 8
-#define INTEL_TYPE_SIZE    20
+#define INTEL_TYPE_SIZE    32
+
+#define INTEL_TYPE_MAX_FIELDS  32
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -115,7 +117,7 @@ struct {
     char           *name;
     WiseItemHash_t  itemHash;
     WiseItemHead_t  itemList;
-    int             fields[32];
+    int             fields[INTEL_TYPE_MAX_FIELDS];
     char            fieldsLen;
     char            nameLen;
 } types[INTEL_TYPE_SIZE];
@@ -755,14 +757,23 @@ LOCAL void wise_load_config()
         else if (strcmp(keys[i], "ja3") == 0)
             type = INTEL_TYPE_JA3;
         else {
+            if (numTypes == INTEL_TYPE_SIZE) {
+                LOGEXIT("Too many wise-types, can only have %d custom types", INTEL_TYPE_SIZE - INTEL_TYPE_NUM_PRE);
+            }
             type = numTypes++;
             types[type].nameLen = strlen(keys[i]);
             types[type].name = g_ascii_strdown(keys[i], types[type].nameLen);
+
+            if (types[type].nameLen > 12)
+                LOGEXIT("wise-types '%s' too long, max 12 chars", keys[i]);
         }
 
         types[type].fieldsLen = 0;
         int v;
         for (v = 0; values[v]; v++) {
+            if (types[type].fieldsLen == INTEL_TYPE_MAX_FIELDS)
+                LOGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
+
             int pos;
             if (strncmp("db:", values[v], 3) == 0)
                 pos = moloch_field_by_db(values[v] + 3);

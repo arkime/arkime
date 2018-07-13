@@ -26,7 +26,7 @@ my $test1Token = getTokenCookie("test1");
     }
 
     foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
-        cmp_ok ($stats->{data}->[0]->{$i}, '>', 0, "stats.json $i > 0");
+        cmp_ok ($stats->{data}->[0]->{$i}, '>=', 0, "stats.json $i >= 0");
     }
 
     foreach my $i ("deltaPackets", "deltaBytes", "deltaBytesPerSec", "deltaPacketsPerSec", "deltaSessions", "deltaSessionsPerSec") {
