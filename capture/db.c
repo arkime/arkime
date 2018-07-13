@@ -1304,6 +1304,11 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
 /******************************************************************************/
 LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
+    if (code != 200) {
+        LOG("WARNING - Couldn't perform Elasticsearch health check");
+        return;
+    }
+
     uint32_t           status_len;
     unsigned char     *status;
     struct timespec    stopHealthCheck;
@@ -1318,9 +1323,7 @@ LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int 
     else
         status = moloch_js0n_get(data, data_len, "status", &status_len);
 
-    if (code != 200) {
-        LOG("WARNING - Couldn't perform Elasticsearch health check");
-    } else if ( esHealthMS > 20000) {
+    if ( esHealthMS > 20000) {
         LOG("WARNING - Elasticsearch health check took more then 20 seconds %llums", esHealthMS);
     } else if ((status[0] == 'y' && uw == (gpointer)1L) || (status[0] == 'r')) {
         LOG("WARNING - Elasticsearch is %.*s and took %llums to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
