@@ -102,7 +102,7 @@ typedef struct wiseitem_head {
     uint32_t              wil_count;
 } WiseItemHead_t;
 
-#define WISE_MAX_REQUEST_ITEMS 256
+#define WISE_MAX_REQUEST_ITEMS 512
 typedef struct wiserequest {
     BSB          bsb;
     WiseItem_t  *items[WISE_MAX_REQUEST_ITEMS];

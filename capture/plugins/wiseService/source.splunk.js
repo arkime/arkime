@@ -49,48 +49,10 @@ function SplunkSource (api, section) {
 
   if (this.periodic) {
     this.cacheTimeout = -1; // Don't cache
-    switch (this.type) {
-    case "domain":
-      this.getDomain = this.sendResultPeriodic;
-      break;
-    case "ip":
-      this.getIp = this.sendResultPeriodic;
-      break;
-    case "md5":
-      this.getMd5 = this.sendResultPeriodic;
-      break;
-    case "email":
-      this.getEmail = this.sendResultPeriodic;
-      break;
-    case "url":
-      this.getURL = this.sendResultPeriodic;
-      break;
-    default:
-      console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
-      return false;
-    }
+    this[this.api.funcName(this.type)] = this.sendResultPeriodic;
     setInterval(this.periodicRefresh.bind(this), 1000 * this.periodic);
   } else {
-    switch (this.type) {
-    case "domain":
-      this.getDomain = this.sendResult;
-      break;
-    case "ip":
-      this.getIp = this.sendResult;
-      break;
-    case "md5":
-      this.getMd5 = this.sendResult;
-      break;
-    case "email":
-      this.getEmail = this.sendResult;
-      break;
-    case "url":
-      this.getURL = this.sendResult;
-      break;
-    default:
-      console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
-      return false;
-    }
+    this[this.api.funcName(this.type)] = this.sendResult;
   }
 
   this.service = new splunkjs.Service({username: this.username, password: this.password, host: this.host, port: this.port, version: this.version});
@@ -127,7 +89,7 @@ SplunkSource.prototype.periodicRefresh = function() {
 
     var cache;
     if (this.type === "ip") {
-      cache = new iptrie.IPTrie();
+      cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
     } else {
       cache = new HashTable();
     }
@@ -151,7 +113,8 @@ SplunkSource.prototype.periodicRefresh = function() {
 
       if (this.type === "ip") {
         var parts = key.split("/");
-        cache.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), newitem);
+        cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), newitem);
+        cache.items.put(key, newitem);
       } else {
         cache.put(key, newitem);
       }
@@ -161,12 +124,26 @@ SplunkSource.prototype.periodicRefresh = function() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+SplunkSource.prototype.dump = function(res) {
+  if (this.cache === undefined) {
+    return res.end();
+  }
+
+  var cache = this.type === "ip"?this.cache.items:this.cache;
+  cache.forEach((key, value) => {
+    var str = `{key: "${key}", ops:\n` +
+      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + "},\n";
+    res.write(str);
+  });
+  res.end();
+};
+//////////////////////////////////////////////////////////////////////////////////
 SplunkSource.prototype.sendResultPeriodic = function(key, cb) {
   if (!this.cache) {
     return cb(null, undefined);
   }
 
-  var result = this.type === "ip"?this.cache.find(key):this.cache.get(key);
+  var result = this.type === "ip"?this.cache.trie.find(key):this.cache.get(key);
 
   // Not found, or found but no extra values to add
   if (!result) {
