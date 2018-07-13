@@ -14,7 +14,7 @@ install:
 	npm install
 	(cd vueapp ; npm install)
 	npm run bundle:min
-	$(CP) -pr views public bundle $(VIEWERDIR)
+	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
 	(cd $(VIEWERDIR) ; npm install --production)
 
