@@ -11,6 +11,7 @@ import Spiview from '@/components/spiview/Spiview';
 import Spigraph from '@/components/spigraph/Spigraph';
 import Connections from '@/components/connections/Connections';
 import Settings from '@/components/settings/Settings';
+import Upload from '@/components/upload/Upload';
 
 Vue.use(Router);
 
@@ -82,6 +83,11 @@ const router = new Router({
       path: '/settings',
       name: 'Settings',
       component: Settings
+    },
+    {
+      path: '/upload',
+      name: 'Upload',
+      component: Upload
     }
   ]
 });

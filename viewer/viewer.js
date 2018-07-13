@@ -5672,30 +5672,34 @@ app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
   var exec = require('child_process').exec,
      child;
 
-  var tags = "";
+  var tags = '';
   if (req.body.tag) {
-    var t = req.body.tag.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+    var t = req.body.tag.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     t.forEach(function(tag) {
       if (tag.length > 0) {
-        tags += " --tag " + tag;
+        tags += ' --tag ' + tag;
       }
     });
   }
 
-  var cmd = Config.get("uploadCommand")
-     .replace("{TAGS}", tags)
-     .replace("{NODE}", Config.nodeName())
-     .replace("{TMPFILE}", req.file.path)
-     .replace("{CONFIG}", Config.getConfigFile());
-  console.log("upload command: ", cmd);
+  var cmd = Config.get('uploadCommand')
+     .replace('{TAGS}', tags)
+     .replace('{NODE}', Config.nodeName())
+     .replace('{TMPFILE}', req.file.path)
+     .replace('{CONFIG}', Config.getConfigFile());
+
+  console.log('upload command: ', cmd);
   child = exec(cmd, function (error, stdout, stderr) {
-    res.write("<b>" + cmd + "</b><br>");
-    res.write("<pre>");
-    res.write(stdout);
-    res.end("</pre>");
     if (error !== null) {
-      console.log("exec error: " + error);
+      console.log('<b>exec error: ' + error);
+      res.status(500);
+      res.write('<b>Upload command failed:</b><br>');
     }
+    res.write(cmd);
+    res.write('<br>');
+    res.write('<pre>');
+    res.write(stdout);
+    res.end('</pre>');
     fs.unlink(req.file.path);
   });
 });
@@ -5756,7 +5760,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spiview', '/spigraph', '/connections', '/settings'], (req, res) => {
+app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spiview', '/spigraph', '/connections', '/settings', '/upload'], (req, res) => {
   if (req.path === '/users' && !req.user.createEnabled) {
     return res.status(403).send('Permission denied');
   }
