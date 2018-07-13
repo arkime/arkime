@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN apt-get update; \
-apt-get install -y ruby-dev make python-pip git libtest-differences-perl sudo openjdk-8-jre-headless wget; \
+apt-get install -y ruby-dev make python-pip git libtest-differences-perl sudo openjdk-8-jre-headless wget libjson-pp-perl tzdata; \
 gem install --no-ri --no-rdoc fpm; \
 pip install awscli; \
 useradd -u 2000 elasticsearch; \
