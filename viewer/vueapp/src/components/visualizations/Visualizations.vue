@@ -386,7 +386,7 @@ export default {
     changeGraphType: function () {
       if (this.primary) { // primary graph sets all graph's histo type
         this.$store.commit('updateGraphType', this.graphType);
-        this.$router.push({
+        this.$router.replace({
           query: {
             ...this.$route.query,
             graphType: this.graphType
@@ -397,7 +397,7 @@ export default {
     changeSeriesType: function () {
       if (this.primary) { // primary graph sets all graph's series type
         this.$store.commit('updateSeriesType', this.seriesType);
-        this.$router.push({
+        this.$router.replace({
           query: {
             ...this.$route.query,
             seriesType: this.seriesType

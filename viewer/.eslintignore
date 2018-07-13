@@ -1,0 +1,4 @@
+/vueapp/build/
+/vueapp/config/
+/vueapp/dist/
+/vueapp/*.js

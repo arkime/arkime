@@ -891,7 +891,9 @@ export default {
           }
 
           // IMPORTANT: kicks off the initial search query
-          if (!JSON.parse(this.settings.manualQuery) || componentInitialized) {
+          if (!this.settings.manualQuery ||
+            !JSON.parse(this.settings.manualQuery) ||
+            componentInitialized) {
             this.loadData();
           } else {
             this.loading = false;

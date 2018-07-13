@@ -48,6 +48,7 @@ NOTICE: Restart wiseService before capture when upgrading
                    send almost any field (issue #840)
   - all - added used space stat
   - all - changed free space stat to use 1000 based units
+  - viewer - removed AngularJS, all pages implemented in Vue
 
 1.1.1 2018/05/31
   - all - fix http.statuscode

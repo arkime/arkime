@@ -827,22 +827,6 @@ app.get('/molochclusters', function(req, res) {
   return res.send(clustersClone);
 });
 
-// angular app bundles
-app.get('/app.bundle.js', function(req, res) {
-  res.sendFile(__dirname + '/bundle/app.bundle.js');
-});
-app.get('/vendor.bundle.js', function(req, res) {
-  res.sendFile(__dirname + '/bundle/vendor.bundle.js');
-});
-
-// source maps
-app.get('/app.bundle.js.map', function(req, res) {
-  res.sendFile(__dirname + '/bundle/app.bundle.js.map');
-});
-app.get('/vendor.bundle.js.map', function(req, res) {
-  res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
-});
-
 // custom user css
 app.get('/user.css', function(req, res) {
   fs.readFile("./views/user.styl", 'utf8', function(err, str) {
@@ -3229,7 +3213,7 @@ app.get('/spiview.json', logAction('spiview'), function(req, res) {
     });
     query.size = 0;
 
-    console.log("spiview.json query", JSON.stringify(query), "indices", indices);
+    // console.log("spiview.json query", JSON.stringify(query), "indices", indices);
 
     var graph;
     var map;
@@ -5760,7 +5744,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spiview', '/spigraph', '/connections', '/settings', '/upload'], (req, res) => {
+app.use((req, res) => {
   if (req.path === '/users' && !req.user.createEnabled) {
     return res.status(403).send('Permission denied');
   }
@@ -5817,42 +5801,6 @@ app.get(['/stats', '/sessions', '/help', '/files', '/users', '/history', '/spivi
     }
 
     res.send(html);
-  });
-});
-
-
-//////////////////////////////////////////////////////////////////////////////////
-// Angular app
-//////////////////////////////////////////////////////////////////////////////////
-app.use(express.static(__dirname + '/views'));
-app.use(express.static(__dirname + '/bundle'));
-app.use(function (req, res) {
-  if (req.path === '/users' && !req.user.createEnabled) {
-    return res.status(403).send('Permission denied');
-  }
-
-  if (req.path === '/settings' && Config.get('demoMode', false)) {
-    return res.status(403).send('Permission denied');
-  }
-
-  var cookieOptions = { path: app.locals.basePath };
-  if (Config.isHTTPS()) { cookieOptions.secure = true; }
-
-  // send cookie for basic, non admin functions
-  res.cookie(
-     'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-     cookieOptions
-  );
-
-  var theme = req.user.settings.theme || 'default-theme';
-  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
-
-  res.render('app.pug', {
-    theme   : theme,
-    demoMode: Config.get('demoMode', false),
-    devMode : Config.get('devMode', false),
-    version : app.locals.molochversion
   });
 });
 
