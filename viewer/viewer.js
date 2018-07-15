@@ -611,7 +611,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(err);
       }
       console.log("ERROR - getViewUrl - node:", req.params.nodeName, "err:", err);
-      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + Config.hostName());
+      res.send(`Can't find view url for '${req.params.nodeName}' check viewer logs on '${Config.hostName()}'`);
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -636,7 +636,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(e);
       }
       console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
-      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + Config.hostName());
+      res.send(`Error talking to node '${req.params.nodeName}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
     });
     preq.end();
   });
@@ -4181,19 +4181,13 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
  */
 app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
   isLocalView(req.params.nodeName, function () {
-     noCache(req, res);
-     req.packetsOnly = true;
-     localSessionDetail(req, res);
-   },
-   function () {
-     return proxyRequest(req, res, function (err) {
-       Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
-         var fields = session._source || session.fields;
-         fields._err = "Couldn't connect to remote viewer to fetch packets";
-         localSessionDetailReturnFull(req, res, fields, []);
-       });
-     });
-   });
+    noCache(req, res);
+    req.packetsOnly = true;
+    localSessionDetail(req, res);
+  },
+  function () {
+    return proxyRequest(req, res);
+  });
 });
 
 function reqGetRawBody(req, cb) {

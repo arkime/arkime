@@ -519,11 +519,11 @@ void moloch_config_load()
     config.trackESP              = moloch_config_boolean(keyfile, "trackESP", FALSE);
     config.yaraEveryPacket       = moloch_config_boolean(keyfile, "yaraEveryPacket", TRUE);
 
-    config.maxStreams[SESSION_TCP] = maxStreams/config.packetThreads*1.25;
-    config.maxStreams[SESSION_UDP] = maxStreams/config.packetThreads/20;
-    config.maxStreams[SESSION_SCTP] = maxStreams/config.packetThreads/20;
-    config.maxStreams[SESSION_ICMP] = maxStreams/config.packetThreads/200;
-    config.maxStreams[SESSION_ESP] = maxStreams/config.packetThreads/200;
+    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads*1.25);
+    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads/20);
+    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads/20);
+    config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams/config.packetThreads/200);
+    config.maxStreams[SESSION_ESP] = MAX(100, maxStreams/config.packetThreads/200);
 
 
     gchar **saveUnknownPackets     = moloch_config_str_list(keyfile, "saveUnknownPackets", NULL);

@@ -21,11 +21,11 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh"
+            - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: scl enable devtoolset-3 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - test-capture: (cd tests ; ./tests.pl)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -43,11 +43,11 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
+            - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
@@ -66,11 +66,11 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
+            - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - test-capture: (cd tests ; ./tests.pl)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -94,7 +94,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - install-for-tests: (cd viewer; npm install ; cd ../capture/plugins/wiseService; npm install)
-            - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "bin/elasticsearch" > /tmp/es &)
+            - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms512m -Xmx512m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; ./tests.pl --viewer)

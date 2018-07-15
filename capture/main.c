@@ -510,7 +510,7 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 /******************************************************************************/
 /*
  * Don't actually end main loop until all tags are loaded
- * TRUE - call again in 100ms
+ * TRUE - call again
  * FALSE - don't call again
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
@@ -558,7 +558,7 @@ LOCAL gboolean writerExit   = TRUE;
 void moloch_quit()
 {
     config.quitting = TRUE;
-    g_timeout_add(100, moloch_quit_gfunc, 0);
+    g_timeout_add(config.tests?10:100, moloch_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*

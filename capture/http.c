@@ -55,7 +55,7 @@ typedef struct molochhttprequest_t {
     char                 *dataOut;
     uint32_t              dataOutLen;
     uint16_t              namePos;
-    uint16_t              retries;
+    int16_t               retries;
 } MolochHttpRequest_t;
 
 typedef struct {
@@ -218,7 +218,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     memcpy(server->syncRequest.key, key, key_len);
     server->syncRequest.key[key_len] = 0;
-    server->syncRequest.retries = 0;
+    server->syncRequest.retries = server->maxRetries;
 
     while (1) {
         MOLOCH_LOCK(requests);
@@ -229,12 +229,12 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         int res = curl_easy_perform(easy);
 
         if (res != CURLE_OK) {
-            if (server->syncRequest.retries < server->maxRetries) {
+            if (server->syncRequest.retries >= 0) {
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 server->snames[server->syncRequest.namePos].allowedAtSeconds = now.tv_sec + 30;
                 LOG("Retry %s error '%s'", server->syncRequest.url, curl_easy_strerror(res));
-                server->syncRequest.retries++;
+                server->syncRequest.retries--;
                 continue;
             }
             LOG("libcurl failure %s error '%s'", server->syncRequest.url, curl_easy_strerror(res));
@@ -372,10 +372,10 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
             LOG("HTTPDEBUG DECR %p %d %s", request, server->outstanding, request->url);
 #endif
 
-            if (responseCode == 0 && request->retries < server->maxRetries) {
+            if (responseCode == 0 && request->retries >= 0) {
                 curl_multi_remove_handle(server->multi, easy);
 
-                request->retries++;
+                request->retries--;
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 MOLOCH_LOCK(requests);
@@ -730,6 +730,11 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
             request->headerList = curl_slist_append(request->headerList, headers[i]);
         }
     }
+
+    if (dropable)
+        request->retries = 0;
+    else
+        request->retries = server->maxRetries;
 
     if (server->defaultHeaders) {
         int i;

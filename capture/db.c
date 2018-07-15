@@ -252,7 +252,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
 /******************************************************************************/
 LOCAL void moloch_db_send_bulk(char *json, int len)
 {
-    moloch_http_set(esServer, "/_bulk", 6, json, len, NULL, NULL);
+    moloch_http_send(esServer, "POST", "/_bulk", 6, json, len, NULL, FALSE, NULL, NULL);
 }
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
 /******************************************************************************/
@@ -1262,11 +1262,11 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
                 free(data);
             moloch_http_free_buffer(json);
         } else {
-            moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
+            moloch_http_send(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, TRUE, NULL, NULL);
         }
     } else {
         key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
-        moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+        moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
     }
 }
 /******************************************************************************/
@@ -1380,7 +1380,7 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
 
     key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{}");
-    moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_get_sequence_number_cb, r);
+    moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, FALSE, moloch_db_get_sequence_number_cb, r);
 }
 /******************************************************************************/
 uint32_t moloch_db_get_sequence_number_sync(char *name)
@@ -1659,6 +1659,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     BSB_EXPORT_u08(jbsb, '}');
 
     moloch_http_set(esServer, key, key_len, json, BSB_LENGTH(jbsb), NULL, NULL);
+    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, FALSE, NULL, NULL);
 
     MOLOCH_UNLOCK(nextFileNum);
 
