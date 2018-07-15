@@ -1658,7 +1658,6 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
     BSB_EXPORT_u08(jbsb, '}');
 
-    moloch_http_set(esServer, key, key_len, json, BSB_LENGTH(jbsb), NULL, NULL);
     moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, FALSE, NULL, NULL);
 
     MOLOCH_UNLOCK(nextFileNum);
