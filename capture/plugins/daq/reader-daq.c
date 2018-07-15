@@ -67,7 +67,7 @@ DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8
 LOCAL void *reader_daq_thread(gpointer posv)
 {
     long pos = (long)posv;
-    gpointer handle = handles[pos]
+    gpointer handle = handles[pos];
 
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
