@@ -292,6 +292,17 @@ LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, in
     }
 }
 /******************************************************************************/
+LOCAL void hsrp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (session->port1 != session->port2 || len < 3)
+        return;
+
+    if (data[0] == 0 && data[1] == 3)
+        moloch_session_add_protocol(session, "hsrp");
+    else if (data[0] == 1 && data[1] == 40 && data[2] == 2)
+        moloch_session_add_protocol(session, "hsrpv2");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -435,6 +446,9 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("sccp",  NULL, 2000, MOLOCH_PARSERS_PORT_TCP_DST, sccp_classify);
 
     moloch_parsers_classifier_register_tcp("mqtt", NULL, 0, (unsigned char*)"\x10", 1, mqtt_classify);
+
+    moloch_parsers_classifier_register_port("hsrp",  NULL, 1985, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
+    moloch_parsers_classifier_register_port("hsrp",  NULL, 2029, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
 
 
     userField = moloch_field_by_db("user");

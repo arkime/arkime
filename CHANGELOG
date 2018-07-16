@@ -1,21 +1,20 @@
-NOTICE: Upgrading from version prior to 1.0.0 read https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_Moloch_1
+NOTICE: Please see https://github.com/aol/moloch/wiki/FAQ#upgrading-moloch for upgrading info
 
 ES Versions:
-  * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x
-  * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x
-  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x
+  * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
+  * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
+  * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
+  * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
   * Moloch >= 1.0.0 requires NodeJS 8.x
   * Moloch >= 0.20.0 requires NodeJS 6.x
   * Moloch >= 0.18.1 requires NodeJS 4.x
 
-NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
-        outage for db.pl upgrade see: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_5x
-
 NOTICE: Restart wiseService before capture when upgrading
 
-1.2.0 2018/06/xx
+1.5.0 2018/07/16
+  - BREAKING: wiseCache redis name changes
   - viewer - sessions, spiview, spigraph, connections, help, users, history pages implemented
              in Vue instead of AngularJS
   - viewer - split stats capture graphs/stats into 2 tabs
@@ -49,6 +48,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - added used space stat
   - all - changed free space stat to use 1000 based units
   - viewer - removed AngularJS, all pages implemented in Vue
+  - capture - hsrp classify
 
 1.1.1 2018/05/31
   - all - fix http.statuscode
