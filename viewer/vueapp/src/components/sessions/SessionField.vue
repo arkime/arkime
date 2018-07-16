@@ -327,6 +327,7 @@ export default {
       newExpression += appendExpression;
 
       let routeData = this.$router.resolve({
+        path: '/sessions',
         query: {
           ...this.$route.query,
           expression: newExpression
