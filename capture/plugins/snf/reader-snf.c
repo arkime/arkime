@@ -139,7 +139,7 @@ void reader_snf_init(char *UNUSED(name))
         }
 
         int err;
-        err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, 0, &handles[i]);
+        err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, -1, &handles[i]);
         if (err != 0) {
             LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
