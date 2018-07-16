@@ -17,7 +17,7 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:1.2.6
+        image: andywick/moloch-build-6:1.2.7
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-3 "./easybutton-build.sh --daq --pfring"
