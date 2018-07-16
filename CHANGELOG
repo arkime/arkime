@@ -13,6 +13,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.5.1 2018/07/XX
+  - capture: fix ipv6 sctp hang
+
 1.5.0 2018/07/16
   - BREAKING: wiseCache redis name changes
   - viewer - sessions, spiview, spigraph, connections, help, users, history pages implemented

@@ -1355,6 +1355,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport);
             packet->ses = SESSION_SCTP;
+            done = 1;
             break;
         case IPPROTO_ESP:
             if (!config.trackESP)
