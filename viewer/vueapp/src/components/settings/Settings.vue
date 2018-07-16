@@ -303,7 +303,7 @@
                 <option value="last">Last Used</option>
                 <option v-for="field in columns"
                   :key="field.dbField"
-                  v-if="!field.unsortable"
+                  v-if="field && !field.unsortable"
                   :value="field.dbField">
                   {{ field.friendlyName }}
                 </option>
@@ -766,6 +766,7 @@
                     v-b-tooltip.hover
                     :title="fieldsMap[col].help"
                     v-for="col in defaultColConfig.columns"
+                    v-if="col && fieldsMap[col]"
                     :key="col">
                     {{ fieldsMap[col].friendlyName }}
                   </label>
@@ -775,6 +776,7 @@
                     :key="order[0]">
                     <label class="badge badge-secondary mr-1 help-cursor"
                       :title="fieldsMap[order[0]].help"
+                      v-if="fieldsMap[order[0]]"
                       v-b-tooltip.hover>
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
@@ -795,6 +797,7 @@
                     :title="fieldsMap[col].help"
                     v-b-tooltip.hover
                     v-for="col in config.columns"
+                    v-if="col && fieldsMap[col]"
                     :key="col">
                     {{ fieldsMap[col].friendlyName }}
                   </label>
@@ -804,6 +807,7 @@
                     :key="order[0]">
                     <label class="badge badge-secondary mr-1 help-cursor"
                       :title="fieldsMap[order[0]].help"
+                      v-if="fieldsMap[order[0]]"
                       v-b-tooltip.hover>
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
@@ -1679,7 +1683,7 @@ export default {
     // get fields from field service then get sessionsNew state
     FieldService.get(true)
       .then((response) => {
-        this.fields = response;
+        this.fields = JSON.parse(JSON.stringify(response));
         this.fieldsPlus = JSON.parse(JSON.stringify(response));
         this.fieldsPlus.push({
           dbField: 'ip.dst:port',

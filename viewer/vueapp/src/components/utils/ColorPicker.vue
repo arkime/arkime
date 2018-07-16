@@ -97,6 +97,9 @@ export default {
         this.hidePicker();
       }
     }
+  },
+  beforeDestroy: function () {
+    document.removeEventListener('click', this.documentClick);
   }
 };
 </script>
