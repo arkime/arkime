@@ -17,10 +17,10 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:1.2.0
+        image: andywick/moloch-build-6:1.2.6
         steps:
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-3 "./easybutton-build.sh"
+            - build: scl enable devtoolset-3 "./easybutton-build.sh --daq --pfring"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -39,10 +39,10 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.2.0
+        image: andywick/moloch-build-7:1.2.6
         steps:
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
+            - build: ./easybutton-build.sh --daq --pfring
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -62,10 +62,10 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:1.2.0
+        image: andywick/moloch-build-14:1.2.6
         steps:
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
+            - build: ./easybutton-build.sh --daq --pfring
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -84,11 +84,11 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.2.3
+        image: andywick/moloch-build-16:1.2.6
         steps:
             #- useradd -u 2000 elasticsearch
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
+            - build: ./easybutton-build.sh --daq --pfring
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -111,11 +111,11 @@ jobs:
 
 #    ubuntu-18:
 #        requires: [~pr, ~commit]
-#        image: andywick/moloch-build-18:1.2.0
+#        image: andywick/moloch-build-18:1.2.6
 #        steps:
 #            - apt-get update
 #            - ln -s /thirdparty .
-#            - build: ./easybutton-build.sh
+#            - build: ./easybutton-build.sh --daq --pfring
 #            - export PATH=/data/moloch/bin:$PATH
 #            - npm -g config set user root
 #            - installing: make install
