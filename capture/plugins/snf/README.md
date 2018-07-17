@@ -3,7 +3,7 @@ The snf reader plugin now works directly with Myricom SNF
 Optional settings
 * ```snfNumRings``` number of rings and threads to use per interface
 * ```snfDataRingSize``` SNF_DATARING_SIZE
-
+* ```snfFlags``` Variable that controls process-sharing (1), port aggregation (2), and packet duplication (3), see SNF documentation for more details.  
 
 To use:
 * install the snf package on the build hosts and all hosts that will run moloch-capture
