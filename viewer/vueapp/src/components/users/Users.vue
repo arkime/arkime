@@ -57,6 +57,8 @@
                 :key="column.name"
                 class="cursor-pointer"
                 :class="{'no-wrap':column.nowrap}"
+                :title="column.help"
+                v-b-tooltip.hover
                 @click="columnClick(column.sort)">
                 {{ column.name }}
                 <span v-if="column.sort !== undefined">
@@ -245,7 +247,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Is the account currently enabled for anything?">
+                    :title="columns[3].help">
                     <input type="checkbox"
                       v-model="newuser.enabled"
                     />
@@ -256,7 +258,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Can create new accounts and change the settings for other accounts">
+                    :title="columns[4].help">
                     <input type="checkbox"
                       v-model="newuser.createEnabled"
                     />
@@ -267,7 +269,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Can access the web interface. When off only APIs can be used">
+                    :title="columns[5].help">
                     <input type="checkbox"
                       v-model="newuser.webEnabled"
                     />
@@ -278,7 +280,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled">
+                    :title="columns[6].help">
                     <input type="checkbox"
                       v-model="newuser.headerAuthEnabled"
                     />
@@ -289,7 +291,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Can perform email searches">
+                    :title="columns[7].help">
                     <input type="checkbox"
                       v-model="newuser.emailSearch"
                     />
@@ -300,7 +302,7 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    title="Can delete tags or delete/scrub pcap data">
+                    :title="columns[8].help">
                     <input type="checkbox"
                       v-model="newuser.removeEnabled"
                     />

@@ -40,7 +40,9 @@
             <tr>
               <th v-for="column of columns"
                 :key="column.name"
-                class="cursor-pointer"
+                :class="`cursor-pointer ${column.classes}`"
+                v-b-tooltip.hover
+                :title="column.help"
                 @click="columnClick(column.sort)">
                 {{ column.name }}
                 <span v-if="column.sort !== undefined">
@@ -71,8 +73,8 @@
                     {{ file.first | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
                   </span>
                 </td>
-                <td class="no-wrap">
-                  {{ file.filesize }}
+                <td class="no-wrap text-right">
+                  {{ file.filesize | commaString }}
                 </td>
               </tr>
             </template>
@@ -119,12 +121,12 @@ export default {
         desc: false
       },
       columns: [ // node stats table columns
-        { name: 'File Number', sort: 'num' },
-        { name: 'Node', sort: 'node' },
-        { name: 'Name', sort: 'name' },
-        { name: 'Locked', sort: 'locked' },
-        { name: 'First Date', sort: 'first' },
-        { name: 'File Size', sort: 'filesize' }
+        { name: 'File Number', sort: 'num', help: 'Internal file number, unique per node' },
+        { name: 'Node', sort: 'node', help: 'What moloch capture node this file lives on' },
+        { name: 'Name', sort: 'name', help: 'The complete file path for the file' },
+        { name: 'Locked', sort: 'locked', help: 'If locked Moloch viewer won\'t delete this file to free space' },
+        { name: 'First Date', sort: 'first', help: 'Timestamp of the first packet in the file' },
+        { name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to' }
       ]
     };
   },

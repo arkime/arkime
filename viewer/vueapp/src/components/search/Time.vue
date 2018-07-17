@@ -100,7 +100,7 @@
         <span class="input-group-prepend cursor-help"
           placement="topright"
           v-b-tooltip.hover
-          title="Time Bounding">
+          title="Which time field to use for selected time window">
           <span class="input-group-text">
             Bounding
           </span>
@@ -125,7 +125,7 @@
         <span class="input-group-prepend cursor-help"
           tooltip-placement="topright"
           v-b-tooltip.hover
-          title="Time Interval">
+          title="Time interval bucket size for graph">
           <span class="input-group-text">
             Interval
           </span>
