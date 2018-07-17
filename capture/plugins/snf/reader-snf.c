@@ -111,6 +111,7 @@ void reader_snf_init(char *UNUSED(name))
 
     snfNumRings = moloch_config_int(NULL, "snfNumRings", 1, 1, MAX_RINGS);
     int snfDataRingSize = moloch_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
+    int snfFlags = moloch_config_int(NULL, "snfFlags", -1, 0, -1);
 
     int err;
     if ( (err = snf_init(SNF_VERSION_API)) != 0) {
@@ -139,7 +140,7 @@ void reader_snf_init(char *UNUSED(name))
         }
 
         int err;
-        err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, -1, &handles[i]);
+        err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, snfFlags, &handles[i]);
         if (err != 0) {
             LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
