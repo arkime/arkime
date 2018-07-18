@@ -14,7 +14,10 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.5.1 2018/07/XX
-  - capture: fix ipv6 sctp hang
+  - capture - fix ipv6 sctp hang
+  - viewer - added back many tooltips
+  - viewer - fix crash when node doesn't exist
+  - snf - new config snfFlags
 
 1.5.0 2018/07/16
   - BREAKING: wiseCache redis name changes
