@@ -23,10 +23,10 @@
     </div> <!-- /detail -->
 
     <!-- packet options -->
-    <div v-show="!loading"
+    <div v-show="!loading && !hidePackets"
       class="packet-options mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
-        <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
+        <fieldset :disabled="hidePackets || loading || loadingPackets || errorPackets || renderingPackets">
           <div class="form-group">
             <div class="input-group input-group-sm mb-1 mr-1">
               <span class="input-group-prepend cursor-help"
@@ -186,7 +186,7 @@
     </div> <!-- /packet options -->
 
     <!-- packets loading -->
-    <div v-if="!loading && loadingPackets"
+    <div v-if="!loading && loadingPackets && !hidePackets"
       class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
@@ -201,7 +201,7 @@
     </div> <!-- /packets loading -->
 
     <!-- packets rendering -->
-    <div v-if="!loading && renderingPackets"
+    <div v-if="!loading && renderingPackets && !hidePackets"
       class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
@@ -226,7 +226,7 @@
     </div> <!-- /packets error -->
 
     <!-- packets -->
-    <div v-if="!loadingPackets && !errorPackets"
+    <div v-if="!loadingPackets && !errorPackets && !hidePackets"
       class="inner packet-container mr-1 ml-1"
       v-html="packetHtml"
       ref="packetContainer"
@@ -234,7 +234,7 @@
     </div> <!-- packets -->
 
     <!-- packet options -->
-    <div v-show="!loading && !loadingPackets && !errorPackets"
+    <div v-show="!loading && !loadingPackets && !errorPackets && !hidePackets"
       class="mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
         <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
@@ -428,6 +428,7 @@ export default {
     return {
       error: '',
       loading: true,
+      hidePackets: true,
       errorPackets: '',
       loadingPackets: false,
       userSettings: {},
@@ -562,6 +563,11 @@ export default {
       Promise.all([p1, p2, p3])
         .then((responses) => {
           this.loading = false;
+
+          this.hidePackets = responses[2].data.includes('hidePackets="true"');
+          if (!this.hidePackets) {
+            this.getDecodings(); // IMPORTANT: kicks of packet request
+          }
 
           new Vue({
             // template string here
@@ -725,12 +731,10 @@ export default {
           this.userSettings = response;
 
           this.setUserParams();
-          this.getDecodings(); // IMPORTANT: kicks of packet request
         })
         .catch((error) => {
           // can't get user, so use defaults
           this.userSettings = defaultUserSettings;
-          this.getDecodings(); // IMPORTANT: kicks of packet request
         });
     },
     /* sets some of the session detail query parameters based on user settings */
