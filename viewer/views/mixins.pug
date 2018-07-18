@@ -33,13 +33,14 @@ mixin arrayList(container, field, title, expr, extra, max)
       +clickableLabel(expr, title)
     dd
       if (container && container[field])
+        - if (!Array.isArray(container[field])) { container[field] = [container[field]]; }
         each value,i in container[field]
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
             span &lt;empty&gt;
           else
-            moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
+            moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"'] || '" + expr + "'", :pull-left="true")
         if (container[field].length > max)
           |<a class="cursor-pointer show-more-items" @click="showFewerItems($event)">less...</a></span>
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
