@@ -3071,6 +3071,11 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
                map: {},
                health: Db.healthCache(),
                data:[]};
+      if (typeof err === "string") {
+        r.error = err;
+      } else if (err && typeof err.message === "string") {
+        r.error = err.message;
+      }
       res.send(r);
     });
   });
