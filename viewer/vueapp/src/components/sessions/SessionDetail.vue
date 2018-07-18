@@ -810,7 +810,7 @@ export default {
     /* Gets the packets for the session from the server */
     getPackets: function () {
       // already loading, don't load again!
-      if (this.loadingPackets) { return; }
+      if (this.loadingPackets || this.hidePackets) { return; }
 
       this.loadingPackets = true;
       this.errorPackets = false;
