@@ -446,7 +446,7 @@ function createSessionDetailNew() {
     });
   }, function () {
     internals.sessionDetailNew = "include views/mixins.pug\n" +
-                                 "div.session-detail(sessionid=session.id)\n" +
+                                 "div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n" +
                                  "  include views/sessionDetail\n";
     Object.keys(found).sort().forEach(function(k) {
       internals.sessionDetailNew += found[k];
@@ -4162,6 +4162,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
         session     : session,
         query       : req.query,
         basedir     : "/",
+        hidePackets : (session.fileId === undefined || session.fileId.length === 0)?"true":"false",
         reqFields   : Config.headers("headers-http-request"),
         resFields   : Config.headers("headers-http-response"),
         emailFields : Config.headers("headers-email")

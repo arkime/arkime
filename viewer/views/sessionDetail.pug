@@ -1,4 +1,4 @@
-ul.nav.nav-pills.mb-3
+ul.nav.nav-pills.mb-3(showPackets=false)
   if (session.rootId)
     li.nav-item
       a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
