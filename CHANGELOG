@@ -18,6 +18,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - added back many tooltips
   - viewer - fix crash when node doesn't exist
   - snf - new config snfFlags
+  - viewer - fix sorting by a column that isn't in all indices
 
 1.5.0 2018/07/16
   - BREAKING: wiseCache redis name changes

@@ -1636,7 +1636,7 @@ function expireCheckAll () {
 //////////////////////////////////////////////////////////////////////////////////
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
-function addSortToQuery(query, info, d, missing) {
+function addSortToQuery(query, info, d) {
 
   function addSortDefault() {
     if (d) {
@@ -1645,9 +1645,7 @@ function addSortToQuery(query, info, d, missing) {
       }
       var obj = {};
       obj[d] = {order: "asc"};
-      if (missing && missing[d] !== undefined) {
-        obj[d].missing = missing[d];
-      }
+      obj[d].missing = '_last';
       query.sort.push(obj);
     }
   }
@@ -1681,9 +1679,16 @@ function addSortToQuery(query, info, d, missing) {
         obj[field] = {order: parts[1]};
       }
 
-      if (missing && missing[field] !== undefined) {
-        obj[field].missing = missing[field];
+      obj[field].unmapped_type = "string";
+      var fieldInfo  = Config.getDBFieldsMap()[field];
+      if (fieldInfo) {
+        if (fieldInfo.type === "ip") {
+          obj[field].unmapped_type = "ip";
+        } else if (fieldInfo.type === "integer") {
+          obj[field].unmapped_type = "long";
+        }
       }
+      obj[field].missing = (parts[1] === 'asc'?'_last':'_first');
       query.sort.push(obj);
     });
     return;
@@ -1707,9 +1712,6 @@ function addSortToQuery(query, info, d, missing) {
     var obj = {};
     var field = info["mDataProp_" + info["iSortCol_" + i]];
     obj[field] = {order: info["sSortDir_" + i]};
-    if (missing && missing[field] !== undefined) {
-      obj[field].missing = missing[field];
-    }
     query.sort.push(obj);
 
     if (field === "firstPacket") {
