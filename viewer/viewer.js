@@ -4157,14 +4157,15 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
 
     sortFields(session);
 
-    fixFields(session, function() {
+    let hidePackets = (session.fileId === undefined || session.fileId.length === 0)?"true":"false";
+    fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename    : "sessionDetail",
         user        : req.user,
         session     : session,
         query       : req.query,
         basedir     : "/",
-        hidePackets : (session.fileId === undefined || session.fileId.length === 0)?"true":"false",
+        hidePackets : hidePackets,
         reqFields   : Config.headers("headers-http-request"),
         resFields   : Config.headers("headers-http-response"),
         emailFields : Config.headers("headers-email")
