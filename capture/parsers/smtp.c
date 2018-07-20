@@ -164,6 +164,7 @@ LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
                 continue;
             }
             str[opos] = str[ipos];
+            break;
         default:
             str[opos] = str[ipos];
         }

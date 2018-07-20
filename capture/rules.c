@@ -873,14 +873,18 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
 void moloch_rules_session_create(MolochSession_t *session)
 {
     switch (session->protocol) {
+    case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
             moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
             moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
-        // NO BREAK because TCP/UDP have ip also
+        // NO BREAK because TCP/UDP/SCTP have ip also
+        // fall through
+    case IPPROTO_ESP:
     case IPPROTO_ICMP:
+    case IPPROTO_ICMPV6:
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
             moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)

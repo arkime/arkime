@@ -559,7 +559,7 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 
 void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 {
-    MolochString_t *hstring;
+    MolochString_t *hstring = NULL;
 
     MOLOCH_LOCK(iRequest);
     if (!iRequest) {

@@ -2023,6 +2023,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($main::versionNumber < 51) {
         dbCheckForActivity();
+        esPost("/_flush/synced", "", 1);
         sequenceUpgrade();
         createNewAliasesFromOld("fields", "fields_v2", "fields_v1", \&fieldsCreate);
         createNewAliasesFromOld("queries", "queries_v2", "queries_v1", \&queriesCreate);
