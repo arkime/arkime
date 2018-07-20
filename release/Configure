@@ -187,8 +187,13 @@ EOF
 fi
 
 ################################################################################
-echo "Moloch - Downloading GEO files"
-$MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+echo "Do you want to update GEO files yes/no"
+read -r MOLOCH_INET
+if [ "$MOLOCH_INET" == "yes" ]; then
+    echo "Moloch - Downloading GEO files"
+    $MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+else echo "No internet connection NOT updating GEO files"
+fi
 
 ################################################################################
 echo ""
