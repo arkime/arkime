@@ -321,6 +321,7 @@ sub sequenceUpdate
 ################################################################################
 sub sequenceUpgrade
 {
+    $main::userAgent->timeout(7200);
     sequenceCreate();
     esAlias("remove", "sequence_v1", "sequence");
     my $results = esGet("/${PREFIX}sequence_v1/_search?version=true&size=10000", 0);
@@ -333,6 +334,7 @@ sub sequenceUpgrade
         esPost("/${PREFIX}sequence_v2/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
     }
     esDelete("/${PREFIX}sequence_v1");
+    $main::userAgent->timeout(30);
 }
 ################################################################################
 sub filesCreate
