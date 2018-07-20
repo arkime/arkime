@@ -187,8 +187,20 @@ EOF
 fi
 
 ################################################################################
-echo "Moloch - Downloading GEO files"
-$MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+
+MOLOCH_INET=not-set
+until [ "$MOLOCH_INET" == "yes" ] || [ "$MOLOCH_INET" == "no" ] || [ "$MOLOCH_INET" == "" ]; do
+    echo -n "Download GEO files? (yes or no) [yes] "
+    read -r MOLOCH_INET
+done
+
+if [ "$MOLOCH_INET" != "no" ]; then
+    echo "Moloch - Downloading GEO files"
+    $MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+else
+    echo "Moloch - NOT downloading GEO files"
+fi
+
 
 ################################################################################
 echo ""
