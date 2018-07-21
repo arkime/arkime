@@ -1032,7 +1032,6 @@ void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiFiel
 void moloch_field_free(MolochSession_t *session)
 {
     int                       pos;
-    MolochField_t            *field;
     MolochString_t           *hstring;
     MolochStringHashStd_t    *shash;
     MolochInt_t              *hint;
@@ -1041,6 +1040,8 @@ void moloch_field_free(MolochSession_t *session)
     MolochCertsInfoHashStd_t *cihash;
 
     for (pos = 0; pos < session->maxFields; pos++) {
+        MolochField_t        *field;
+
         if (!(field = session->fields[pos]))
             continue;
 

@@ -239,7 +239,6 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         unsigned char flags = 0;
         if (BSB_REMAINING(*bsb) < 32) {
             return 1;
-            break;
         }
         BSB_IMPORT_skip(*bsb, 4);
         BSB_IMPORT_u08(*bsb, cmd);
@@ -375,7 +374,6 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
 
         if (BSB_REMAINING(*bsb) < 64) {
             return 1;
-            break;
         }
         BSB_IMPORT_skip(*bsb, 12);
         BSB_LIMPORT_u16(*bsb, cmd);

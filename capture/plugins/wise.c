@@ -471,7 +471,7 @@ void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, struct in6
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
         uint32_t ip = MOLOCH_V6_TO_V4(*ip6);
-        snprintf(ipstr, sizeof(ipstr), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
     } else {
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
@@ -503,7 +503,7 @@ void wise_lookup_tuple(MolochSession_t *session, WiseRequest_t *request)
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     );
 
-    BSB_EXPORT_sprintf(bsb, ";%d.%d.%d.%d;%d;%d.%d.%d.%d;%d",
+    BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
                        ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
                        session->port1,
                        ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
@@ -599,7 +599,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                 ghash = session->fields[pos]->ghash;
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                    snprintf(buf, sizeof(buf), "%u", (int)(long)ikey);
+                    snprintf(buf, sizeof(buf), "%d", (int)(long)ikey);
                     wise_lookup(session, iRequest, buf, type);
                 }
                 break;

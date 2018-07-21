@@ -312,7 +312,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (!EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total))
                 LOGEXIT("Encrypting data failed");
             if ((int)total != outl)
-                LOGEXIT("Encryption in (%d) and out (%d) didn't match", total, outl);
+                LOGEXIT("Encryption in (%u) and out (%d) didn't match", total, outl);
             break;
         }
         }

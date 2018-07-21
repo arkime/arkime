@@ -348,12 +348,11 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
 /******************************************************************************/
 void moloch_parsers_initial_tag(MolochSession_t *session)
 {
-    int i;
-
     if (config.nodeClass)
         moloch_session_add_tag(session, classTag);
 
     if (config.extraTags) {
+        int i;
         for (i = 0; config.extraTags[i]; i++) {
             moloch_session_add_tag(session, config.extraTags[i]);
         }
@@ -850,11 +849,11 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
 void moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
@@ -879,11 +878,11 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);

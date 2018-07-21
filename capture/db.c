@@ -242,7 +242,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
 
             if (status == MMDB_SUCCESS) {
                 char buf[1000];
-                sprintf(buf, "AS%d %.*s", num.uint32, org.data_size, org.utf8_string);
+                sprintf(buf, "AS%u %.*s", num.uint32, org.data_size, org.utf8_string);
                 *as = g_strdup(buf);
                 *asFree = 1;
             }
@@ -449,9 +449,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     char ipdst[INET6_ADDRSTRLEN];
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         uint32_t ip = MOLOCH_V6_TO_V4(session->addr1);
-        snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
         ip = MOLOCH_V6_TO_V4(session->addr2);
-        snprintf(ipdst, sizeof(ipdst), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        snprintf(ipdst, sizeof(ipdst), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
     } else {
         inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
         inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
@@ -591,7 +591,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             for(i = 0; i < session->fields[pos]->sarray->len; i++) {
@@ -629,7 +629,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %d,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
@@ -666,12 +666,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %d,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                BSB_EXPORT_sprintf(jbsb, "%u", (int)(long)ikey);
+                BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
                 BSB_EXPORT_u08(jbsb, ',');
             }
 
@@ -708,7 +708,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                 uint32_t ip = MOLOCH_V6_TO_V4(*(struct in6_addr *)ikey);
-                snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
             } else {
                 inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
             }
@@ -722,7 +722,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_IP_GHASH: {
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
 
             char                 *as[MAX_IPS];
@@ -742,7 +742,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                     uint32_t ip = MOLOCH_V6_TO_V4(*(struct in6_addr *)ikey);
-                    snprintf(ipsrc, sizeof(ipsrc), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                    snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
                 } else {
                     inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
                 }
@@ -907,7 +907,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_cstr(jbsb, "}\n");
 
     if (BSB_IS_ERROR(jbsb)) {
-        LOG("ERROR - Ran out of memory creating DB record supposed to be %d", jsonSize);
+        LOG("ERROR - Ran out of memory creating DB record supposed to be %u", jsonSize);
         goto cleanup;
     }
 
@@ -936,7 +936,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
-        LOG("WARNING - %s BIGGER then expected json %d %d\n", id, jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
+        LOG("WARNING - %s BIGGER then expected json %u %d\n", id, jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
@@ -1158,7 +1158,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     float    memUse = mem/memMax*100.0;
 
     if (memUse > config.maxMemPercentage) {
-        LOG("Aborting, max memory percentage reached: %.2f > %d", memUse, config.maxMemPercentage);
+        LOG("Aborting, max memory percentage reached: %.2f > %u", memUse, config.maxMemPercentage);
         fflush(stdout);
         fflush(stderr);
         kill(getpid(), SIGSEGV);
@@ -1328,9 +1328,9 @@ LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int 
         status = moloch_js0n_get(data, data_len, "status", &status_len);
 
     if ( esHealthMS > 20000) {
-        LOG("WARNING - Elasticsearch health check took more then 20 seconds %llums", esHealthMS);
+        LOG("WARNING - Elasticsearch health check took more then 20 seconds %" PRIu64 "ms", esHealthMS);
     } else if ((status[0] == 'y' && uw == (gpointer)1L) || (status[0] == 'r')) {
-        LOG("WARNING - Elasticsearch is %.*s and took %llums to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
+        LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
     }
 }
 /******************************************************************************/
@@ -1556,14 +1556,14 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
         }
         char numstr[100];
-        snprintf(numstr, sizeof(numstr), "%d", num);
+        snprintf(numstr, sizeof(numstr), "%u", num);
 
         char *name1 = g_regex_replace_literal(numRegex, name, -1, 0, numstr, 0, NULL);
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)moloch_char_to_hexstr[num%256], 0, NULL);
         g_free(name1);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
-        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u?refresh=true", config.prefix, config.nodeName,num);
     } else {
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
@@ -1630,10 +1630,10 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             moloch_db_mkpath(filename);
         }
 
-        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
+        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
-        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
     char    *field, *value;
@@ -1663,7 +1663,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     MOLOCH_UNLOCK(nextFileNum);
 
     if (config.logFileCreation)
-        LOG("Creating file %d with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
+        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
 
     *id = num;
 
@@ -2053,7 +2053,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
 
     char                  *json = moloch_http_get_buffer(1000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d/_update", config.prefix, config.nodeName, fileid);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u/_update", config.prefix, config.nodeName, fileid);
 
     json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %" PRIu64 "}}", filesize);
 

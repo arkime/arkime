@@ -432,7 +432,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
         char buf[100];
-        LOG("Large number of chains: %s %u %u %u %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+        LOG("Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
@@ -628,7 +628,7 @@ void moloch_session_flush()
 /******************************************************************************/
 void moloch_session_exit()
 {
-    int counts[SESSION_MAX] = {0, 0, 0, 0};
+    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0};
 
     int t, s;
 
@@ -638,7 +638,7 @@ void moloch_session_exit()
         }
     }
 
-    LOG("sessions: %d tcp: %d udp: %d icmp: %d sctp: %d esp: %d",
+    LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],

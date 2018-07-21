@@ -153,7 +153,7 @@ void parse_args(int argc, char **argv)
         glib_minor_version !=  GLIB_MINOR_VERSION ||
         glib_micro_version !=  GLIB_MICRO_VERSION) {
 
-        LOG("WARNING - gilb compiled %d.%d.%d vs linked %d.%d.%d",
+        LOG("WARNING - gilb compiled %d.%d.%d vs linked %u.%u.%u",
                 GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
                 glib_major_version, glib_minor_version, glib_micro_version);
     }
@@ -220,7 +220,7 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 
     MolochFreeLater_t *fl = MOLOCH_TYPE_ALLOC(MolochFreeLater_t);
-    fl->sec = currentTime.tv_sec + 2;
+    fl->sec = currentTime.tv_sec + 5;
     fl->ptr = ptr;
     fl->cb  = cb;
     MOLOCH_LOCK(freeLaterList);
@@ -240,6 +240,8 @@ LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
            freeLaterList.fl_next->sec < currentTime.tv_sec) {
         MolochFreeLater_t *fl;
         DLL_POP_HEAD(fl_, &freeLaterList, fl);
+        fl->cb(fl->ptr);
+        MOLOCH_TYPE_FREE(MolochFreeLater_t, fl);
     }
     MOLOCH_UNLOCK(freeLaterList);
     return TRUE;
@@ -257,13 +259,13 @@ void *moloch_size_alloc(int size, int zero)
     size += 8;
     void *mem = (zero?g_slice_alloc0(size):g_slice_alloc(size));
     memcpy(mem, &size, 4);
-    return mem + 8;
+    return (char *)mem + 8;
 }
 /******************************************************************************/
 int moloch_size_free(void *mem)
 {
     int size;
-    mem -= 8;
+    (char *)mem -= 8;
 
     memcpy(&size, mem, 4);
     g_slice_free1(size, mem);

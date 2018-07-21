@@ -86,7 +86,7 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
                 moloch_field_string_add(authTypeField, session, "ntlmsspAuth", 11, TRUE); // from wireshark
                 break;
             default:
-                snprintf(str, sizeof(str), "%d", itag);
+                snprintf(str, sizeof(str), "%d", (int)itag);
                 moloch_field_string_add(authTypeField, session, str, -1, TRUE);
 
             }

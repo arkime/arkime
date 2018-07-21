@@ -261,7 +261,7 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
     }
 
     if (config.debug) {
-        LOG("%s=%d", key, value);
+        LOG("%s=%u", key, value);
     }
 
     return value;
@@ -798,7 +798,7 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
     if (numFiles >= MOLOCH_CONFIG_FILES)
         LOGEXIT("Couldn't monitor anymore files %s %s", desc, names[0]);
 
-    for (i = 0; names[i] && i < MOLOCH_CONFIG_FILES; i++) {
+    for (i = 0; i < MOLOCH_CONFIG_FILES && names[i]; i++) {
         if (stat(names[i], &sb) != 0) {
             LOGEXIT("Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
         }
