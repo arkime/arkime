@@ -487,7 +487,7 @@ LOCAL void reader_libpcapfile_opened()
         if (readerFieldOps[readerPos].size > 0)
             moloch_field_ops_free(&readerFieldOps[readerPos]);
 
-        moloch_field_ops_init(&readerFieldOps[readerPos], filenameOpsNum, 0);
+        moloch_field_ops_init(&readerFieldOps[readerPos], filenameOpsNum, MOLOCH_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
         int i;
@@ -501,8 +501,10 @@ LOCAL void reader_libpcapfile_opened()
                     LOG("Error expanding '%s' with '%s' - %s", offlinePcapFilename, filenameOps[i].expand, error->message);
                     g_error_free(error);
                 }
-                if (expand)
+                if (expand) {
                     moloch_field_ops_add(&readerFieldOps[readerPos], filenameOps[i].field, expand, -1);
+                    g_free(expand);
+                }
             }
             g_match_info_free(match_info);
         }

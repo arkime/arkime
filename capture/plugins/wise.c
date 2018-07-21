@@ -782,6 +782,7 @@ LOCAL void wise_load_config()
             types[type].fields[(int)types[type].fieldsLen] = pos;
             types[type].fieldsLen++;
         }
+        g_strfreev(values);
     }
 
     g_strfreev(keys);

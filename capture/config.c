@@ -532,12 +532,12 @@ void moloch_config_load()
             char *s = saveUnknownPackets[i];
 
             if (strcmp(s, "all") == 0) {
-                memset(&config.etherSavePcap, 0xff, 1024);
-                memset(&config.ipSavePcap, 0xff, 4);
+                memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
+                memset(&config.ipSavePcap, 0xff, sizeof(config.ipSavePcap));
             } else if (strcmp(s, "ip:all") == 0) {
-                memset(&config.ipSavePcap, 0xff, 4);
+                memset(&config.ipSavePcap, 0xff, sizeof(config.ipSavePcap));
             } else if (strcmp(s, "ether:all") == 0) {
-                memset(&config.etherSavePcap, 0xff, 1024);
+                memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
             } else if (strncmp(s, "ip:", 3) == 0) {
                 int n = atoi(s+3);
                 if (n < 0 || n > 0xff)
