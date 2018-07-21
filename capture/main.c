@@ -265,7 +265,7 @@ void *moloch_size_alloc(int size, int zero)
 int moloch_size_free(void *mem)
 {
     int size;
-    (char *)mem -= 8;
+    mem = (char *)mem - 8;
 
     memcpy(&size, mem, 4);
     g_slice_free1(size, mem);
