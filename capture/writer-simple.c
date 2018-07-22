@@ -200,11 +200,12 @@ LOCAL void writer_simple_encrypt_key(uint8_t *inkey, int inkeylen, char *outkeyh
 /******************************************************************************/
 LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    char    dekhex[1024];
     int thread = session->thread;
-    char *name = 0;
 
     if (!currentInfo[thread]) {
+        char  dekhex[1024];
+        char *name = 0;
+
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:

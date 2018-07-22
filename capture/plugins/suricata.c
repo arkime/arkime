@@ -82,6 +82,8 @@ LOCAL int                    gidField;
 LOCAL int                    signatureIdField;
 LOCAL int                    severityField;
 
+LOCAL int                    suricataExpireSeconds;
+
 SuricataHead_t alerts;
 
 /******************************************************************************/
@@ -315,7 +317,7 @@ LOCAL void suricata_process()
             strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
             item->timestamp = mktime(&tm);
 
-            if (item->timestamp < currentTime.tv_sec - 60*60) {
+            if (item->timestamp < currentTime.tv_sec - suricataExpireSeconds) {
                 suricata_item_free(item);
                 return;
             }
@@ -460,7 +462,8 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
  */
 void moloch_plugin_init()
 {
-    suricataAlertFile    = moloch_config_str(NULL, "suricataAlertFile", NULL);
+    suricataAlertFile     = moloch_config_str(NULL, "suricataAlertFile", NULL);
+    suricataExpireSeconds = moloch_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
 
     suricata_alerts_init();
 

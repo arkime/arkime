@@ -763,7 +763,6 @@ LOCAL void *moloch_packet_thread(void *threadp)
 static FILE *unknownPacketFile[2];
 LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const packet)
 {
-    static const char *names[] = {"unknown.ether", "unknown.ip"};
     static MOLOCH_LOCK_DEFINE(lock);
 
     struct moloch_pcap_sf_pkthdr hdr;
@@ -774,7 +773,9 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 
     MOLOCH_LOCK(lock);
     if (!unknownPacketFile[type]) {
-        char str[PATH_MAX];
+        char               str[PATH_MAX];
+        static const char *names[] = {"unknown.ether", "unknown.ip"};
+
         snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
         unknownPacketFile[type] = fopen(str, "w");
         fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
@@ -954,12 +955,11 @@ LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 
     int off = 0;
     struct ip *fip4;
-    uint16_t fip_off;
 
     int payloadLen = 0;
     DLL_FOREACH(packet_, &frags->packets, fpacket) {
         fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
-        fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
+        uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
         if (fip_off != off)
             break;
         off += fpacket->payloadLen/8;

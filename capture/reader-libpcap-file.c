@@ -238,9 +238,8 @@ filesDone:
                 LOGEXIT("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
             }
         }
-        const gchar *filename;
         while (1) {
-            filename = g_dir_read_name(pcapGDir[pcapGDirLevel]);
+            const gchar *filename = g_dir_read_name(pcapGDir[pcapGDirLevel]);
 
             // No more files, stop processing this directory
             if (!filename) {

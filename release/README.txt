@@ -6,9 +6,7 @@ Basic Moloch Installation steps:
  2) Install package
  3) Configure basic moloch items by running the Configure script (this needs to be done only once)
      /data/moloch/bin/Configure
- 4a) If NOT using the demo Elasticsearch, download, install, start elasticsearch, > 5.4.x recommended
-      https://www.elastic.co/downloads/past-releases
- 4b) If using the demo Elasticsearch, these won't work with real Elasticsearch installs
+ 4) The Configure script can install elasticsearch for you or you can install yourself
       /sbin/start elasticsearch # for upstart/Centos 6/Ubuntu 14.04
       systemctl start elasticsearch.service # for systemd/Centos 7/Ubuntu 16.04
  5) Initialize/Upgrade Elasticsearch Moloch configuration
@@ -28,10 +26,12 @@ Basic Moloch Installation steps:
  8) Look at log files for errors
       /data/moloch/logs/viewer.log
       /data/moloch/logs/capture.log
- 9) Visit http://molochhost:8005 with your favorite browser.
+ 9) Visit http://MOLOCHHOST:8005 with your favorite browser.
       user: admin
-      password: password from step #6
+      password: THEPASSWORD from step #6
 
+Any configuration changes can be made to /data/moloch/etc/config.ini
+See https://github.com/aol/moloch/wiki/FAQ#moloch-is-not-working for issues
 
 Additional information can be found at:
   * https://github.com/aol/moloch/wiki/FAQ

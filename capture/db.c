@@ -1106,8 +1106,6 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
     int                   i;
-    char                  key[200];
-    int                   key_len = 0;
 
     char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -1265,7 +1263,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
             moloch_http_send(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, TRUE, NULL, NULL);
         }
     } else {
-        key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
+        char key[200];
+        int key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
         moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
     }
 }
@@ -1385,18 +1384,16 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
 /******************************************************************************/
 uint32_t moloch_db_get_sequence_number_sync(char *name)
 {
-    char                key[100];
-    int                 key_len;
-    unsigned char      *data;
-    size_t              data_len;
-    unsigned char      *version;
-    uint32_t            version_len;
 
     while (1) {
-        key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
+        char key[100];
+        int key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
 
-        data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
-        version = moloch_js0n_get(data, data_len, "_version", &version_len);
+        size_t data_len;
+        uint8_t *data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
+
+        uint32_t version_len;
+        uint8_t *version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
         if (!version_len || !version) {
             LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
@@ -1524,7 +1521,6 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     int                key_len;
     uint32_t           num;
     char               filename[1024];
-    struct tm         *tmp;
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     BSB                jbsb;
     const uint64_t     fp = firstPacket;
@@ -1573,7 +1569,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         strcpy(filename, config.pcapDir[config.pcapDirPos]);
 
-        tmp = localtime(&firstPacket);
+        struct tm *tmp = localtime(&firstPacket);
 
         if (config.pcapDirTemplate) {
             int tlen;
@@ -1636,15 +1632,14 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
-    char    *field, *value;
     va_list  args;
     va_start(args, id);
     while (1) {
-        field = va_arg(args, char *);
+        char *field = va_arg(args, char *);
         if (!field)
             break;
 
-        value = va_arg(args, char *);
+        char *value = va_arg(args, char *);
         if (!value)
             break;
 
@@ -1977,7 +1972,6 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     char                   key[100];
     int                    key_len;
     BSB                    bsb;
-    char                  *field, *value;
 
     if (config.dryRun)
         return;
@@ -1997,11 +1991,11 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
 
     if (haveap) {
         while (1) {
-            field = va_arg(ap, char *);
+            char *field = va_arg(ap, char *);
             if (!field)
                 break;
 
-            value = va_arg(ap, char *);
+            char *value = va_arg(ap, char *);
             if (!value)
                 break;
 
