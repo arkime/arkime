@@ -232,8 +232,6 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     unsigned char *start = BSB_WORK_PTR(*bsb);
     unsigned char cmd    = 0;
 
-    int          offset;
-
     switch (*state) {
     case SMB_SMBHEADER: {
         unsigned char flags = 0;
@@ -330,7 +328,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
             BSB_IMPORT_skip(*bsb, securitylen);
 
-            offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
@@ -346,7 +344,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
             BSB_IMPORT_skip(*bsb, 10 + ansipw + upw);
 
-            offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
@@ -488,7 +486,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
         }
 
         if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
-            LOG("ERROR - Not enough room for SMB packet %d", *remlen);
+            LOG("ERROR - Not enough room for SMB packet %u", *remlen);
             moloch_parsers_unregister(session, smb);
             return 0;
         }

@@ -13,10 +13,11 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.5.1 2018/07/XX
+1.5.1 2018/07/23
   - capture - fix ipv6 sctp hang
   - viewer - added back many tooltips
   - viewer - fix crash when node doesn't exist
+  - viewer - fixed some fields not showing up
   - snf - new config snfFlags
   - viewer - fix sorting by a column that isn't in all indices
   - capture - memory leak fix

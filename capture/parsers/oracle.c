@@ -25,11 +25,10 @@ extern MolochConfig_t        config;
 LOCAL char *oracle_get_item(const char *data, char *needle, int needle_len, int *len)
 {
     const char *start = data + data[27];
-    char *item, *paren;
 
-    item = g_strstr_len((char *)start, data[25], (gchar *)needle);
+    char *item = g_strstr_len((char *)start, data[25], (gchar *)needle);
     if (item) {
-        paren = g_strstr_len(item, data[25] - (item - start), ")");
+        char *paren = g_strstr_len(item, data[25] - (item - start), ")");
         if (paren) {
             *len = (paren-item)-needle_len;
             if (*len == 0)
