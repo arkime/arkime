@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -I.
 
 use strict;
 use HTTP::Request::Common;
