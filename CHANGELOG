@@ -13,6 +13,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.5.2 2018/07/XX
+  - capture - new custom-fields section
+
 1.5.1 2018/07/23
   - capture - fix ipv6 sctp hang
   - viewer - added back many tooltips

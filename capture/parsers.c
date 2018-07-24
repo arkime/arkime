@@ -689,6 +689,17 @@ void moloch_parsers_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
+    gsize keys_len;
+    gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);
+
+    int i;
+    for (i = 0; i < (int)keys_len; i++) {
+        char *value = moloch_config_section_str(NULL, "custom-fields", keys[i], NULL);
+        moloch_field_define_text_full(keys[i], value, NULL);
+        g_free(value);
+    }
+    g_strfreev(keys);
+
 
     if (config.extraOps) {
         int i;
