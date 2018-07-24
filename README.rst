@@ -2,8 +2,6 @@
     :local:
     :depth: 2
     
-**Current Moloch users, please fill out the** `Moloch User Survey <https://docs.google.com/forms/d/1weLp8P18IUgVBSJ5saU3ee5cJhXksRg6XYtDxMQLirY/viewform>`_.
-
 What is Moloch?
 ===============
 
