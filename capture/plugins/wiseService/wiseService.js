@@ -205,29 +205,29 @@ internals.sourceApi = {
   getConfigSections: getConfigSections,
   getConfigSection: getConfigSection,
   addField: addField,
-  addView: function (name, view) {
-    if (view.includes("require:")) {
-      var match = view.match(/require:([^;]+)/);
+  addView: function (name, input) {
+    if (input.includes("require:")) {
+      var match = input.match(/require:([^;]+)/);
       var require = match[1];
-      match = view.match(/title:([^;]+)/);
+      match = input.match(/title:([^;]+)/);
       var title = match[1];
-      match = view.match(/fields:([^;]+)/);
+      match = input.match(/fields:([^;]+)/);
       var fields = match[1];
 
-      var view = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      var output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (let field of fields.split(",")) {
         let info = wiseSource.field2Info[field];
         if (!info)
           continue;
         var parts = splitRemain(info.db, '.', 1);
         if (parts.length == 1) {
-          view += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+          output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
         } else {
-          view += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+          output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
         }
       }
     }
-    internals.views[name] = view;
+    internals.views[name] = output;
   },
   addRightClick: function (name, rightClick) {
     internals.rightClicks[name] = rightClick;

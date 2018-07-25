@@ -328,6 +328,7 @@ function loadFields() {
     Config.loadFields(data);
     app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
     app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+    createSessionDetail();
   });
 }
 
@@ -411,7 +412,45 @@ function dot2value(obj, str) {
       return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
-function createSessionDetailNew() {
+function parseCustomView(key, input) {
+  var fieldsMap = Config.getFieldsMap();
+
+  var match = input.match(/require:([^;]+)/);
+  if (!match) {
+    console.log(`custom-view ${key} missing require section`);
+    process.exit(1);
+  }
+  var require = match[1];
+
+  match = input.match(/title:([^;]+)/);
+  var title = match[1] || key;
+
+  match = input.match(/fields:([^;]+)/);
+  if (!match) {
+    console.log(`custom-view ${key} missing fields section`);
+    process.exit(1);
+  }
+  var fields = match[1];
+
+  var output = `  if (session.${require})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+
+  for (let field of fields.split(",")) {
+    let info = fieldsMap[field];
+    if (!info) {
+      continue;
+    }
+    var parts = splitRemain(info.dbField, '.', 1);
+    if (parts.length == 1) {
+      output += `      +arrayList(session, '${parts[0]}', '${info.friendlyName}', '${field}')\n`;
+    } else {
+      output += `      +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendlyName}', '${field}')\n`;
+    }
+  }
+
+  return output;
+}
+
+function createSessionDetail() {
   var found = {};
   var dirs = [];
 
@@ -436,6 +475,13 @@ function createSessionDetailNew() {
     } catch (e) {}
   });
 
+  var customViews = Config.keys("custom-views") || [];
+
+  for (let key of customViews) {
+    let view = Config.sectionGet("custom-views", key);
+    found[key] = parseCustomView(key, view);
+  }
+
   var makers = internals.pluginEmitter.listeners("makeSessionDetail");
   async.each(makers, function(cb, nextCb) {
     cb(function (err, items) {
@@ -457,10 +503,6 @@ function createSessionDetailNew() {
                                                            .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
                                                            ;
   });
-}
-
-function createSessionDetail() {
-  createSessionDetailNew();
 }
 
 function createRightClicks() {
@@ -6046,9 +6088,6 @@ function main () {
   setInterval(loadFields, 2*60*1000);
 
   loadPlugins();
-
-  createSessionDetail();
-  setInterval(createSessionDetail, 5*60*1000);
 
   createRightClicks();
   setInterval(createRightClicks, 5*60*1000);
