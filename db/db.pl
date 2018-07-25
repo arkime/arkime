@@ -2000,7 +2000,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersCreate();
         queriesCreate();
     }
-    print "Finished.  Have fun!\n";
 } else {
 
 # Remaing is upgrade or upgradenoprompt

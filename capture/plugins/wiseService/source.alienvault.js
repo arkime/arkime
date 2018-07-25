@@ -20,7 +20,7 @@ var fs             = require('fs')
   , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
+  , HashTable      = require('hashtable-patch-valeriansaliou')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function AlienVaultSource (api, section) {

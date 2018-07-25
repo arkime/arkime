@@ -21,7 +21,7 @@
 var util           = require('util')
   , wiseSource     = require('./wiseSource.js')
   , iptrie         = require('iptrie')
-  , HashTable      = require('hashtable')
+  , HashTable      = require('hashtable-patch-valeriansaliou')
   ;
 
 function SimpleSource (api, section) {

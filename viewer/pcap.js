@@ -125,7 +125,7 @@ Pcap.prototype.unref = function() {
     if (this.closing && this.count === 0) {
       delete internals.pcaps[this.key];
       if (this.fd) {
-        fs.close(this.fd);
+        fs.close(this.fd, () => {});
       }
       delete this.fd;
     } else {

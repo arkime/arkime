@@ -32,10 +32,7 @@
     "vue-router": "^3.0.1",
     "unzip": "^0.1.11"
   },
-  "scripts": {
-  },
-  "devDependencies": {
-  },
-  "optionalDependencies": {
-  }
+  "scripts": {},
+  "devDependencies": {},
+  "optionalDependencies": {}
 }

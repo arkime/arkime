@@ -21,7 +21,7 @@ var fs             = require('fs')
   , unzip          = require('unzip')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
+  , HashTable      = require('hashtable-patch-valeriansaliou')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatQSource (api, section) {

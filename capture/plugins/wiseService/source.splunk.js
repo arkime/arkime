@@ -21,7 +21,7 @@ var wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , splunkjs       = require('splunk-sdk')
   , iptrie         = require('iptrie')
-  , HashTable      = require('hashtable')
+  , HashTable      = require('hashtable-patch-valeriansaliou')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
