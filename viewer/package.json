@@ -31,7 +31,8 @@
     "bundle": "webpack --progress --hide-modules -d --display-error-details --bail --config vueapp/build/webpack.dev.conf.js",
     "bundle:min": "node vueapp/build/build.js",
     "prestart": "npm run bundle:min",
-    "lint": "eslint --ext .js,.vue vueapp/src"
+    "lint": "eslint --ext .js,.vue vueapp/src",
+    "prelint": "jshint viewer.js db.js config.js multies.js"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
@@ -63,6 +64,7 @@
     "file-loader": "^1.1.4",
     "friendly-errors-webpack-plugin": "^1.6.1",
     "html-webpack-plugin": "^2.30.1",
+    "jshint": "^2.9.5",
     "node-notifier": "^5.1.2",
     "optimize-css-assets-webpack-plugin": "^3.2.0",
     "ora": "^1.2.0",

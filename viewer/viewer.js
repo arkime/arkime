@@ -440,7 +440,7 @@ function parseCustomView(key, input) {
       continue;
     }
     var parts = splitRemain(info.dbField, '.', 1);
-    if (parts.length == 1) {
+    if (parts.length === 1) {
       output += `      +arrayList(session, '${parts[0]}', '${info.friendlyName}', '${field}')\n`;
     } else {
       output += `      +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendlyName}', '${field}')\n`;
