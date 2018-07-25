@@ -6,9 +6,9 @@ shared:
             statuses:
                 - FAILURE
                 - ABORTED
-#    annotations:
-#        beta.screwdriver.cd/cpu: HIGH
-#        beta.screwdriver.cd/ram: HIGH
+    annotations:
+        beta.screwdriver.cd/cpu: HIGH
+        beta.screwdriver.cd/ram: HIGH
 
     environment:
         MOLOCH_COPY_BRANCH: "origin/master"
