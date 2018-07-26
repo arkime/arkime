@@ -2018,7 +2018,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   var writes = 0;
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    if (!fields.ro || processedRo[fields.ro]) {
+    if (!fields.rootId || processedRo[fields.rootId]) {
       if (writes++ > 100) {
         writes = 0;
         setImmediate(nextCb);
@@ -2027,7 +2027,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
       }
       return;
     }
-    processedRo[fields.ro] = true;
+    processedRo[fields.rootId] = true;
 
     query.query.bool.filter.push({term: {rootId: fields.rootId}});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
