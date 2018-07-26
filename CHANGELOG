@@ -13,10 +13,13 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.5.2 2018/07/XX
+1.5.2 2018/07/26
   - capture - new custom-fields section
   - viewer - new custom-views section
   - capture - fix for inplace pcap ingestion not displaying pcap in viewer, introduced in 1.5.0
+  - capture - support QUIC version >= 40
+  - release - Build Ubuntu 18.04 version
+  - wise - fixed sources that didn't register at startup
 
 1.5.1 2018/07/23
   - capture - fix ipv6 sctp hang
