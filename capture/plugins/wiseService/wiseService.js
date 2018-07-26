@@ -241,6 +241,15 @@ internals.sourceApi = {
   debug: internals.debug,
   addSource: function(section, src) {
     internals.sources[section] = src;
+
+    // If a type has already registered add this source if we support it
+    for (let type in internals.types) {
+      let typeInfo = internals.types[type];
+      if (src[typeInfo.funcName]) {
+        typeInfo.sources.push(src);
+        src.srcInProgress[type] = [];
+      }
+    }
   },
   funcName: funcName,
   app: app
