@@ -96,7 +96,7 @@ VirusTotalSource.prototype.performQuery = function () {
   this.waiting = [];
 
   var req = request(options, (err, im, results) => {
-    if (err || im.statusCode != 200 || results === undefined) {
+    if (err || im.statusCode !== 200 || results === undefined) {
       console.log(this.section, "Error for request:\n", options, "\n", im, "\nresults:\n", results);
       sent.forEach((md5) => {
         var cb = this.processing[md5];

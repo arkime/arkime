@@ -326,7 +326,7 @@ WISESource.prototype.tagsSetting = function () {
   } else {
     this.tagsResult = WISESource.emptyResult;
   }
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.formatSetting = function () {
   this.format  = this.api.getConfig(this.section, "format", "csv");
@@ -341,7 +341,7 @@ WISESource.prototype.formatSetting = function () {
     return false;
   }
   return true;
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 var typeName2Func = {ip: "getIp", domain: "getDomain", md5: "getMd5", email: "getEmail", url: "getURL", tuple: "getTuple", ja3: "getJa3", sha256: "getSha256"};
 WISESource.prototype.typeSetting = function ()
@@ -352,6 +352,6 @@ WISESource.prototype.typeSetting = function ()
     console.log(this.section, "ERROR - unknown type", this.type);
     return;
   }
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.emptyCombinedResult = WISESource.combineResults([]);

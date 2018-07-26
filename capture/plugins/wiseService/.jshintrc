@@ -1,14 +1,15 @@
 {
-  "laxcomma": true,
   "node": true,
   "plusplus": false,
   "curly": true,
   "eqeqeq": true,
   "immed": true,
-  "latedef": true,
+  "latedef": "nofunc",
+  "laxcomma": true,
   "newcap": true,
   "nonew": true,
   "undef": true,
   "strict": true,
-  "trailing": true
+  "trailing": true,
+  "esversion": 6
 }

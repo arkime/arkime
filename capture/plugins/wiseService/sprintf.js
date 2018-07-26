@@ -1,3 +1,5 @@
+'use strict';
+
 exports.sprintf = function() {
   // http://kevin.vanzonneveld.net
   // +   original by: Ash Searle (http://hexmen.com/blog/)

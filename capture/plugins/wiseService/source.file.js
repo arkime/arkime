@@ -39,8 +39,10 @@ function FileSource (api, section) {
     return;
   }
 
-  if (!this.initSimple())
+  if (!this.initSimple()) {
     return;
+  }
+
 
   setImmediate(this.load.bind(this));
 

@@ -22,6 +22,7 @@ var ini            = require('iniparser')
   , express        = require('express')
   , fs             = require('fs')
   , http           = require('http')
+  , https          = require('https')
   , glob           = require('glob')
   , async          = require('async')
   , sprintf        = require('./sprintf.js').sprintf
@@ -136,12 +137,14 @@ function addField(field) {
   var match = field.match(/field:([^;]+)/);
   var name = match[1];
 
+  var db;
   if ((match = field.match(/db:([^;]+)/))) {
-    var db = match[1];
+    db = match[1];
   }
 
+  var friendly;
   if ((match = field.match(/friendly:([^;]+)/))) {
-    var friendly = match[1];
+    friendly = match[1];
   }
 
   if (wiseSource.field2Pos[name] !== undefined) {
@@ -159,9 +162,9 @@ function addField(field) {
     internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
     internals.fieldsBuf0.writeUInt32BE(0, 4);
     internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
-    var offset = 9;
-    for (var i = 0; i < internals.fields.length; i++) {
-      var len = internals.fieldsBuf0.write(internals.fields[i], offset+2);
+    let offset = 9;
+    for (let i = 0; i < internals.fields.length; i++) {
+      let len = internals.fieldsBuf0.write(internals.fields[i], offset+2);
       internals.fieldsBuf0.writeUInt16BE(len+1, offset);
       internals.fieldsBuf0.writeUInt8(0, offset+2+len);
       offset += 3 + len;
@@ -174,9 +177,9 @@ function addField(field) {
   internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
   internals.fieldsBuf1.writeUInt32BE(1, 4);
   internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
-  var offset = 10;
-  for (var i = 0; i < internals.fields.length; i++) {
-    var len = internals.fieldsBuf1.write(internals.fields[i], offset+2);
+  let offset = 10;
+  for (let i = 0; i < internals.fields.length; i++) {
+    let len = internals.fieldsBuf1.write(internals.fields[i], offset+2);
     internals.fieldsBuf1.writeUInt16BE(len+1, offset);
     internals.fieldsBuf1.writeUInt8(0, offset+2+len);
     offset += 3 + len;
@@ -214,20 +217,23 @@ internals.sourceApi = {
       match = input.match(/fields:([^;]+)/);
       var fields = match[1];
 
-      var output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (let field of fields.split(",")) {
         let info = wiseSource.field2Info[field];
-        if (!info)
+        if (!info) {
           continue;
+        }
         var parts = splitRemain(info.db, '.', 1);
-        if (parts.length == 1) {
+        if (parts.length === 1) {
           output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
         } else {
           output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
         }
       }
+      internals.views[name] = output;
+    } else {
+      internals.views[name] = input;
     }
-    internals.views[name] = output;
   },
   addRightClick: function (name, rightClick) {
     internals.rightClicks[name] = rightClick;
@@ -285,7 +291,7 @@ function globalAllowed (value) {
     }
   }
   return true;
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
 function globalIPAllowed (value) {
   if (this.excludes.find(value)) {
@@ -295,7 +301,7 @@ function globalIPAllowed (value) {
     return false;
   }
   return true;
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
 function sourceAllowed (src, value) {
   var excludes = src[this.excludeName] || [];
@@ -308,7 +314,7 @@ function sourceAllowed (src, value) {
     }
   }
   return true;
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
 function sourceIPAllowed (src, value) {
   if (src.excludeIPs.find(value)) {
@@ -321,11 +327,12 @@ function sourceIPAllowed (src, value) {
     return false;
   }
   return true;
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
 function funcName(typeName) {
-  if (typeName === 'url')
+  if (typeName === 'url') {
     return 'getURL';
+  }
 
   return 'get' + typeName[0].toUpperCase() + typeName.slice(1);
 }
@@ -357,8 +364,8 @@ function processQuery(req, query, cb) {
 
     if (query.typeName === 'ip') {
       typeInfo.excludeName = 'excludeIPs';
-      typeInfo.globalAllowed = globalIPAllowed
-      typeInfo.sourceAllowed = sourceIPAllowed
+      typeInfo.globalAllowed = globalIPAllowed;
+      typeInfo.sourceAllowed = sourceIPAllowed;
     }
 
     for (var src in internals.sources) {
@@ -373,7 +380,7 @@ function processQuery(req, query, cb) {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(";").map(item => item.trim()).filter(item=>item !== "").forEach((item) => {
         var parts = item.split("/");
-        typeinfo.excludes.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+        typeInfo.excludes.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
       });
     } else {
       typeInfo.excludes = items.split(";").map(item=>item.trim()).filter(item=>item !== "").map(item => RegExp.fromWildExp(item, "ailop"));
@@ -383,7 +390,7 @@ function processQuery(req, query, cb) {
   typeInfo.requestStats++;
 
   // md5/sha256 have content type
-  if (query.typeName === "md5" || query.typeName == "sha256") {
+  if (query.typeName === "md5" || query.typeName === "sha256") {
     var parts = query.value.split(";");
     query.value = parts[0];
     query.contentType = parts[1];

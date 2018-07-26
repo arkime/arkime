@@ -93,7 +93,7 @@ function ThreatStreamSource (api, section) {
     ThreatStreamSource.prototype.getURL    = getURLSqlite3;
     this.loadTypes();
     api.app.get("/threatstream/_reload", (req, res) => {
-      this.openDB.bind(this)
+      this.openDB.bind(this);
       res.send("Ok");
     });
     break;
@@ -403,7 +403,7 @@ ThreatStreamSource.prototype.openDb = function() {
   var dbFile = this.api.getConfig("threatstream", "dbFile", "ts.db");
 
   var dbStat;
-  try {dbStat = fs.statSync(dbFile);} catch (e) {};
+  try {dbStat = fs.statSync(dbFile);} catch (e) {}
 
   var realDb;
   if (!dbStat || !dbStat.isFile()) {
@@ -449,7 +449,7 @@ ThreatStreamSource.prototype.openDb = function() {
         });
       });
     });
-  }
+  };
 
 
   // If the last copy time doesn't match start the copy process.
