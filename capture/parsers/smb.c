@@ -230,11 +230,11 @@ LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int l
 LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
-    unsigned char cmd    = 0;
 
     switch (*state) {
     case SMB_SMBHEADER: {
-        unsigned char flags = 0;
+        uint8_t  cmd    = 0;
+        uint8_t  flags = 0;
         if (BSB_REMAINING(*bsb) < 32) {
             return 1;
         }

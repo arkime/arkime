@@ -1524,9 +1524,6 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     BSB                jbsb;
     const uint64_t     fp = firstPacket;
-    double             maxFreeSpacePercent = 0;
-    uint64_t           maxFreeSpaceBytes   = 0;
-    int                i;
 
 
     BSB_INIT(jbsb, json, MOLOCH_HTTP_BUFFER_SIZE);
@@ -1586,30 +1583,41 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         if (strcmp(config.pcapDirAlgorithm, "max-free-percent") == 0) {
             // Select the pcapDir with the highest percentage of free space
+
+            double maxFreeSpacePercent = 0;
+            int i;
             for (i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
                 statvfs(config.pcapDir[i], &vfs);
-                LOG("%s has %0.2f%% free", config.pcapDir[i], 100 * ((double)vfs.f_bavail / (double)vfs.f_blocks));
+                if (config.debug)
+                    LOG("%s has %0.2f%% free", config.pcapDir[i], 100 * ((double)vfs.f_bavail / (double)vfs.f_blocks));
+
                 if ((double)vfs.f_bavail / (double)vfs.f_blocks >= maxFreeSpacePercent)
                 {
                     maxFreeSpacePercent = (double)vfs.f_bavail / (double)vfs.f_blocks;
                     config.pcapDirPos = i;
                 }
             }
-            LOG("%s has the highest percentage of available disk space", config.pcapDir[config.pcapDirPos]);
+            if (config.debug)
+                LOG("%s has the highest percentage of available disk space", config.pcapDir[config.pcapDirPos]);
         } else if (strcmp(config.pcapDirAlgorithm, "max-free-bytes") == 0) {
             // Select the pcapDir with the most bytes free
+
+            uint64_t maxFreeSpaceBytes   = 0;
+            int i;
             for (i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
                 statvfs(config.pcapDir[i], &vfs);
-                LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / (1000 * 1000));
+                if (config.debug)
+                    LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / (1000 * 1000));
                 if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes)
                 {
                     maxFreeSpaceBytes = (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
                     config.pcapDirPos = i;
                 }
             }
-            LOG("%s has the most available space", config.pcapDir[config.pcapDirPos]);
+            if (config.debug)
+                LOG("%s has the most available space", config.pcapDir[config.pcapDirPos]);
         } else {
             // Select pcapDir by round robin
             config.pcapDirPos++;
@@ -2159,10 +2167,8 @@ void moloch_db_init()
 /******************************************************************************/
 void moloch_db_exit()
 {
-    int i;
-
     if (!config.dryRun) {
-        for (i = 0; timers[i]; i++) {
+        for (int i = 0; timers[i]; i++) {
             g_source_remove(timers[i]);
         }
 

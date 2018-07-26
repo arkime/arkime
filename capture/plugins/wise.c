@@ -222,10 +222,9 @@ LOCAL void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer 
 /******************************************************************************/
 LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
 {
-    int i;
     HASH_REMOVE(wih_, types[(int)wi->type].itemHash, wi);
     if (wi->sessions) {
-        for (i = 0; i < wi->numSessions; i++) {
+        for (int i = 0; i < wi->numSessions; i++) {
             moloch_session_add_cmd(wi->sessions[i], MOLOCH_SES_CMD_FUNC, NULL, NULL, wise_session_cmd_cb);
         }
         g_free(wi->sessions);
@@ -665,9 +664,8 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 LOCAL void wise_plugin_exit()
 {
     MOLOCH_LOCK(item);
-    int type;
-    WiseItem_t *wi;
-    for (type = 0; type < INTEL_TYPE_SIZE; type++) {
+    for (int type = 0; type < INTEL_TYPE_SIZE; type++) {
+        WiseItem_t *wi;
         while (DLL_POP_TAIL(wil_, &types[type].itemList, wi)) {
             wise_free_item_unlocked(wi);
         }

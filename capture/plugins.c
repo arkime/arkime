@@ -274,7 +274,7 @@ void moloch_plugins_set_smtp_cb(const char *                name,
 }
 /******************************************************************************/
 void moloch_plugins_set_outstanding_cb(const char *                name,
-                                MolochPluginOutstandingFunc        outstanding)
+                                MolochPluginOutstandingFunc        outstandingFunc)
 {
     MolochPlugin_t *plugin;
 
@@ -284,7 +284,7 @@ void moloch_plugins_set_outstanding_cb(const char *                name,
         return;
     }
 
-    plugin->outstandingFunc = outstanding;
+    plugin->outstandingFunc = outstandingFunc;
 }
 /******************************************************************************/
 void moloch_plugins_cb_pre_save(MolochSession_t *session, int final)

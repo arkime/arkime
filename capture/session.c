@@ -160,10 +160,10 @@ int moloch_session_cmp(const void *keyv, const void *elementv)
     return memcmp(keyv, session->sessionId, MIN(((uint8_t *)keyv)[0], session->sessionId[0])) == 0;
 }
 /******************************************************************************/
-void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointer uw1, gpointer uw2, MolochCmd_func func)
+void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd sesCmd, gpointer uw1, gpointer uw2, MolochCmd_func func)
 {
     MolochSesCmd_t *cmd = MOLOCH_TYPE_ALLOC(MolochSesCmd_t);
-    cmd->cmd = icmd;
+    cmd->cmd = sesCmd;
     cmd->session = session;
     cmd->uw1 = uw1;
     cmd->uw2 = uw2;
@@ -464,9 +464,9 @@ uint32_t moloch_session_monitoring()
 void moloch_session_process_commands(int thread)
 {
     // Commands
-    MolochSesCmd_t *cmd = 0;
     int count;
     for (count = 0; count < 50; count++) {
+        MolochSesCmd_t *cmd = 0;
         MOLOCH_LOCK(sessionCmds[thread].lock);
         DLL_POP_HEAD(cmd_, &sessionCmds[thread], cmd);
         MOLOCH_UNLOCK(sessionCmds[thread].lock);

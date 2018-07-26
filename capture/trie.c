@@ -29,7 +29,7 @@ void moloch_trie_init(MolochTrie_t *trie)
     memset(trie, 0, sizeof(*trie));
     trie->root.data = 0;
     trie->root.first = 0;
-    trie->root.first = 255;
+    trie->root.last = 255;
     trie->root.children = malloc(sizeof(MolochTrieNode_t *) * 256);
     memset(trie->root.children, 0, sizeof(MolochTrieNode_t *) * 256);
 }
@@ -275,11 +275,11 @@ void * moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int le
 
 void moloch_trie_print_node(MolochTrieNode_t *node, int level)
 {
-    int p;
     if (node->data)
         printf("%.*s data:%p\n", level, "          ", node->data);
 
     if (node->children) {
+        int p;
         for (p = 0; p <= node->last - node->first; p++) {
             if (node->children[p]) {
                 printf("%.*s %c\n", level, "          ", p + node->first);
