@@ -1100,6 +1100,8 @@ export default {
         });
     },
     initializeGroupDragDrop: function () {
+      if (!this.$refs.draggableGroups) { return; }
+
       draggableGroups = Sortable.create(this.$refs.draggableGroups, {
         animation: 100,
         onMove: (event) => { // don't allow drag/drop if clusters are filtered
@@ -1131,6 +1133,8 @@ export default {
       });
     },
     initializeClusterDragDrop: function () {
+      if (!this.$refs.draggableClusters) { return; }
+
       for (let clusterGroup of this.$refs.draggableClusters) {
         draggableClusters = Sortable.create(clusterGroup, {
           group: 'clusters',

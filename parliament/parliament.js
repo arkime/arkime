@@ -806,6 +806,7 @@ router.get('/parliament', (req, res, next) => {
   for (const group of parliamentClone.groups) {
     for (let cluster of group.clusters) {
       cluster.activeIssues = [];
+      if (!cluster.issues) { continue; }
       for (const issue of cluster.issues) {
         if (!issue.dismissed && !issue.ignoreUntil) {
           cluster.activeIssues.push(issue);
