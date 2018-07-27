@@ -12,9 +12,9 @@ install:
 	$(INSTALL) *.js package.json $(PARLIAMENTDIR)
 	npm install
 	npm run build
-	$(CP) -pr public dist notifiers $(PARLIAMENTDIR)
+	$(CP) -pr vueapp/dist notifiers $(PARLIAMENTDIR)
 	(cd $(PARLIAMENTDIR) ; npm install --production)
 
 distclean realclean clean:
 	rm -rf node_modules
-	rm -rf dist
+	rm -rf vueapp/dist

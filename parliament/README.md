@@ -1,8 +1,8 @@
 # Moloch Parliament
 
-Moloch Parliament is an [Angular5][angular] web app to view multiple Moloch clusters.
+Moloch Parliament is an [Vue.js][vue] web app to view multiple Moloch clusters.
 
-This project was generated with [Angular CLI][angularcli] version 1.5.5.
+This project was generated with [Vue CLI][vuecli].
 
 
 ## Running from RPM/DEB
@@ -17,9 +17,9 @@ ProxyPass        /parliament/ http://localhost:8008/parliament/ retry=0
 
 ### Install Dependencies
 
-The app uses dependencies that are all bundled using [webpack][webpack] via `ng build`. `ng build` compiles the application into an output directory, in this case `parliament/dist`. This is done automatically when starting the application.
+The app uses dependencies that are all bundled and minified using [webpack][webpack] via `npm run build`. This compiles the application into an output directory, in this case `parliament/vueapp/dist`. This is done automatically when starting the application with `npm start`.
 
-The app uses a number of node.js tools for initialization and testing. You must have node.js and its package manager (npm) installed. You can get them from [http://nodejs.org/][node].
+The app uses a number of node.js tools for initialization. You must have node.js and its package manager (npm) installed. You can get them from [http://nodejs.org/][node].
 
 * We get dependencies via `npm`, the [node package manager][npm].
 
@@ -42,7 +42,7 @@ To start the app for production, simply run:
 ```
 npm start -s -- --pass somepassword --port 8765 -c ./absolute/path/to/parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to/certFile.pem
 ```
-This command starts the app, passing in the password, port, config file location, and key and cert file locations. It also bundles the application files into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, and `parliament/dist/styles.bundle.js`.
+This command starts the app, passing in the password, port, config file location, and key and cert file locations. It also bundles the application files into the `parliament/vueapp/dist` folder.
 
 _**Important**: when using `npm start` the leading `--`, before the parameters is essential._
 
@@ -68,7 +68,7 @@ _Note: if you do not pass in the port or file arguments, the defaults are used._
 
 Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
 
-To login, use the password that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode or configure one by clicking the "Create Password" button.
+To login, use the password that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode or configure one by navigating to the settings page.
 
 #### Development
 
@@ -77,28 +77,28 @@ To start the app for development and testing, simply run:
 npm run dev
 ```
 
-This command starts the app with the necessary config options set (`--pass admin --port 8008 -c ./parliament.dev.json`) and bundles the application files into into `parliament/dist/inline.bundle.js`, `parliament/dist/main.bundle.js`, `parliament/dist/polyfills.bundle.js`, `parliament/dist/styles.bundle.js`, and `parliament/dist/vendor.bundle.js` with corresponding map files for debugging.
+This command starts the app with the necessary config options set (`--pass admin --port 8008 -c ./parliament.dev.json`) and bundles the unminified application files into into the `parliament/vueapp/dist` folder.
 
-`ng build` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
+`npm run dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
 Now browse to the app at `http://localhost:8008`.
 
-To login, use the password, 'admin'
+To login, use the password, 'admin'.
 
 #### Further help with running the application
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+For a detailed explanation on how things work, check out the [vue webpack guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 
 
 ### Contributing
 
-Before submitting a pull request with your contribution, please run `npm run lint`, and correct any errors. This executes both `npm run jslint` and `npm run tslint`. The first command runs [jshint][jshint], a static code analysis tool for checking if JavaScript source code complies with coding rules (for server code). The second command runs [tslint][tslint], another static code analysis tool that checks TypeScript code for readability, maintainability, and functionality errors (for client code).
+Before submitting a pull request with your contribution, please run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 
 :octocat: Please use a fork to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 
 ### Parliament Definition
-parliament.json (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied parliament.example.json to view an example parliament configuration.
+`parliament.json` (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
 
 ##### Parliament model:
 ```javascript
@@ -108,7 +108,8 @@ parliament.json (or whatever you pass into the -c config option when starting Pa
   groups: [ ... ]   // list of groups in the parliament
 }
 ```
-**Note:** The password is hashed using [bcrypt][bcrypt]
+**Note:** The password is hashed using [bcrypt][bcrypt].
+
 ##### Group model:
 ```javascript
 {                                   // group object
@@ -156,48 +157,10 @@ parliament.json (or whatever you pass into the -c config option when starting Pa
 }
 ```
 
-
-
-### Directory Layout
-```
-dist/                   --> all of the bundled source files
-node_modules/           --> npm packages for the dependencies
-public/                 --> place for images and static public files
-src/                    --> all of the client source files for the application
-  app/                    --> all the main application files go here
-    app.module.ts           --> the root module that is bootstrapped to launch the app
-    app.pipes.ts            --> defines pipes (filters) to modify/transform data
-    auth.ts                 --> defines models for the auth service
-    directives.ts           --> defines custom directives
-    parliament.ts           --> defines models for the parliament object
-    *.component.ts          --> defines components for page functions
-    *.service.ts            --> defines any services used to provide data to the app
-    *.interceptor.ts        --> defines any http interceptors to modify requests/responses
-    *.html                  --> angular view for a component
-    *.css                   --> styles for a component
-  environments/           --> contains the environment files
-    environment.prod.ts     --> defines the production environment variable
-    environment.ts          --> defines the default environment variable
-  index.html              --> the main HTML page that exposes app-root to be bootstrapped
-  main.ts                 --> the app's main entry point that is compiles and bootstrapped with the root module
-  polyfills.ts            --> polyfills help normalize differences between browsers' support of web standards
-  styles.css              --> global app styles
-  tsconfig.app.json       --> typeScript compiler configuration for the app
-.angular-cli.json       --> config file for angular-cli
-.jshintrc               --> used to configure which linting rules get run on the server code
-.gitignore              --> makes sure autogenerated files are not committed to source control
-package.json            --> project identity and dependencies
-README.md               --> basic docs for the project
-server.js               --> node server file
-tsconfig.json           --> typeScript compiler configuration for your IDE to give you helpful tooling
-tslint.json             --> used to configure which linting rules get run on the client code
-```
-
-[angular]: https://angular.io/
-[angularcli]: https://github.com/angular/angular-cli
+[vue]: https://vuejs.org/
+[vuecli]: https://cli.vuejs.org/
 [webpack]: https://webpack.github.io/
 [node]: https://nodejs.org
 [npm]: https://www.npmjs.org/
-[tslint]: https://github.com/palantir/tslint
-[jshint]: https://github.com/jshint/jshint
-[bcrypt]: https://github.com/kelektiv/node.bcrypt.js
+[eslint]: https://eslint.org/
+[bcrypt]: https://github.com/kelektiv/node.bcrypt.js#readme
