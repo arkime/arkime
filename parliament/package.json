@@ -1,7 +1,11 @@
 {
   "name": "parliament",
   "version": "0.0.0",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aol/moloch.git"
+  },
   "scripts": {
     "build": "npm run bundle:min",
     "start": "node parliament.js",
@@ -13,7 +17,7 @@
     "bundle:min": "node vueapp/build/build.js"
   },
   "dependencies": {
-    "bcrypt": "^2.0.0",
+    "bcrypt": "^3.0.0",
     "jsonwebtoken": "^8.3.0",
     "notifme-sdk": "^1.7.1",
     "serve-favicon": "^2.5.0"
@@ -61,7 +65,7 @@
     "shelljs": "^0.7.6",
     "sortablejs": "^1.7.0",
     "uglifyjs-webpack-plugin": "^1.1.1",
-    "url-loader": "^0.5.8",
+    "url-loader": "^1.0.1",
     "vue": "^2.5.2",
     "vue-axios": "^2.1.2",
     "vue-loader": "^13.3.0",
