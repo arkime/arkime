@@ -147,7 +147,7 @@ let clusterId = 0;
 app.disable('x-powered-by');
 
 // expose vue bundles (prod)
-app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+app.use('/parliament/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
