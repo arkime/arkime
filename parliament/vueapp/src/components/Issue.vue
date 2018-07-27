@@ -13,7 +13,7 @@
     <br>
     <small class="cursor-help issue-date"
       v-b-tooltip.hover.top-left.html="issueDateTooltip(issue)">
-      {{ issue.lastNoticed | moment('MM/DD HH:mm:ss') }}
+      {{ issue.lastNoticed || issue.firstNoticed | moment('MM/DD HH:mm:ss') }}
     </small>
   </div>
 
@@ -49,26 +49,32 @@ export default {
   methods: {
     issueDateTooltip: function (issue) {
       let firstNoticed = this.$options.filters.moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss');
-      let lastNoticed = this.$options.filters.moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss');
+
       let htmlStr =
-        `<small>
-          <div>
+      `<small>
+        <div>
+          <strong>First</strong>
+          noticed at:
+          <br>
+          <strong>
+            ${firstNoticed}
+          </strong>
+        </div>`;
+
+      if (issue.lastNoticed) {
+        let lastNoticed = this.$options.filters.moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss');
+        htmlStr +=
+          `<div>
             <strong>Last</strong>
             noticed at:
             <br>
             <strong>
               ${lastNoticed}
             </strong>
-          </div>
-          <div>
-            <strong>First</strong>
-            noticed at:
-            <br>
-            <strong>
-              ${firstNoticed}
-            </strong>
-          </div>
-        </small>`;
+          </div>`;
+      }
+
+      htmlStr += '</small>';
       return htmlStr;
     },
     issueChange: function (changeEvent) {
