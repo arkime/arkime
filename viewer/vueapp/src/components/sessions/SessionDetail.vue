@@ -568,6 +568,7 @@ export default {
           if (!this.hidePackets) {
             this.getDecodings(); // IMPORTANT: kicks of packet request
           }
+          this.fields = responses[0];
 
           new Vue({
             // template string here
@@ -579,7 +580,7 @@ export default {
             // components scope, as you create a new component
             propsData: {
               session: this.session,
-              fields: responses[0],
+              fields: this.fields,
               molochclusters: responses[1]
             },
             props: [ 'session', 'fields', 'molochclusters' ],
@@ -610,6 +611,12 @@ export default {
               }
             },
             methods: {
+              getField: function (expr) {
+                if (!this.$parent.fields[expr]) {
+                  console.log('UNDEFINED', expr);
+                }
+                return this.$parent.fields[expr];
+              },
               actionFormDone: function (message, success, reload) {
                 if (message) {
                   this.message = message;

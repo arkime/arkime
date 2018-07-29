@@ -4216,6 +4216,9 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
           console.trace("ERROR - fixFields - ", err);
           return req.next(err);
         }
+        if (Config.debug > 1) {
+          console.log("Detail Rendering", data.replace(/>/g, ">\n"));
+        }
         res.send(data);
       });
     });

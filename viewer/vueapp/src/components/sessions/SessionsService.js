@@ -390,6 +390,9 @@ export default {
       for (let i = 0, len = params.sessions.length; i < len; ++i) {
         data.ids.push(params.sessions[i].id);
       }
+      if (data.ids.length > 0) {
+        delete params.expression;
+      }
       data.ids = data.ids.join(',');
     } else if (params.applyTo === 'visible') {
       // all sessions visible on the sessions page

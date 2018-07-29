@@ -30,7 +30,7 @@ ul.nav.nav-pills.mb-3
       | Send Session to {{ value.name }}
 
 div.form-container.mb-2
-  - var sessions = [session];
+  - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
     moloch-tag-sessions.form-container(:sessions=sessions, :add="true", :done="actionFormDone")
   div(v-if="form === 'remove:tags'")
