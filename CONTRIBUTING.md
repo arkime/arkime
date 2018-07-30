@@ -80,8 +80,8 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Provide a clear and descriptive title
 * Clearly describe the problem and solution
 * Include the relevant issue number(s) if applicable
+* Run `npm run lint` from the viewer directory and correct any errors
 * Ensure that all tests still pass by navigating to the `tests` directory and running `./tests.pl --viewer`
-* If making changes to the client code, please run the unit tests by navigating to the `viewer` directory and running `npm test`
 
 ---
 
