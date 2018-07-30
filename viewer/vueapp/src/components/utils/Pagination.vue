@@ -36,7 +36,7 @@
 <script>
 export default {
   name: 'MolochPaging',
-  props: [ 'recordsTotal', 'recordsFiltered' ],
+  props: [ 'recordsTotal', 'recordsFiltered', 'lengthDefault' ],
   watch: {
     length: function (newVal, oldVal) {
       if (newVal !== oldVal) {
@@ -53,10 +53,8 @@ export default {
   computed: {
     length: {
       get: function () {
-        let lengthUrlParam = this.$route.query.length;
         // only allow a maximum of 1000
-        lengthUrlParam = (lengthUrlParam && lengthUrlParam <= 1000) ? parseInt(lengthUrlParam) : 50;
-        return lengthUrlParam;
+        return Math.min(parseInt(this.$route.query.length || this.lengthDefault || 50), 1000);
       },
       set: function (newValue) {
         if (newValue !== this.length) {
@@ -70,7 +68,8 @@ export default {
         { value: 50, label: '50 per page' },
         { value: 100, label: '100 per page' },
         { value: 200, label: '200 per page' },
-        { value: 500, label: '500 per page' }
+        { value: 500, label: '500 per page' },
+        { value: 1000, label: '1000 per page' }
       ];
 
       let exists = false;

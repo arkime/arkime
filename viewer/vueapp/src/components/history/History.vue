@@ -40,7 +40,8 @@
           class="mt-1 ml-1"
           :records-total="history.recordsTotal"
           :records-filtered="history.recordsFiltered"
-          @changePaging="changePaging">
+          @changePaging="changePaging"
+          length-default=100>
         </moloch-paging>
       </div>
     </form> <!-- /paging navbar -->

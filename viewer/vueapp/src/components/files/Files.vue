@@ -20,7 +20,8 @@
         <moloch-paging v-if="files"
           :records-total="files.recordsTotal"
           :records-filtered="files.recordsFiltered"
-          v-on:changePaging="changePaging">
+          v-on:changePaging="changePaging"
+          length-default=500 >
         </moloch-paging>
       </div>
     </div>
@@ -114,7 +115,7 @@ export default {
       settings: null,
       files: null,
       query: {
-        length: parseInt(this.$route.query.length) || 50,
+        length: parseInt(this.$route.query.length) || 500,
         start: 0,
         filter: null,
         sortField: 'num',
