@@ -127,6 +127,16 @@ LOCAL void moloch_packet_free(MolochPacket_t *packet)
 /******************************************************************************/
 void moloch_packet_tcp_free(MolochSession_t *session)
 {
+    if (session->tcpData.td_count == 1 && session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH] == 1) {
+        MolochTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
+        const int which = ftd->packet->direction;
+        const uint8_t *data = ftd->packet->pkt + ftd->dataOffset;
+        const int len = ftd->len;
+
+        moloch_parsers_classify_tcp(session, data, len, which);
+        moloch_packet_process_data(session, data, len, which);
+    }
+
     MolochTcpData_t *td;
     while (DLL_POP_HEAD(td_, &session->tcpData, td)) {
         moloch_packet_free(td->packet);

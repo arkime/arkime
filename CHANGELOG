@@ -14,6 +14,9 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.5.3 2018/07/xx
+  - viewer - fix some spiview display issues
+  - parliament - uses Vue now
+  - capture - if single tcp data packet left at save time, try and classify it (issue #880)
 
 1.5.2 2018/07/26
   - capture - new custom-fields section
