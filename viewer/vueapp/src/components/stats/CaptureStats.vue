@@ -194,7 +194,7 @@ export default {
       showNodeStats: true,
       expandedNodeStats: {},
       query: {
-        length: parseInt(this.$route.query.length) || 50,
+        length: parseInt(this.$route.query.length) || 100,
         start: 0,
         filter: null,
         sortField: 'nodeName',
