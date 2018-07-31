@@ -172,7 +172,7 @@
           </span>
         </h3>
         <div class="row">
-          <div class="col-12 col-sm-6 col-md-6 col-lg-4"
+          <div class="col-12 col-xl-6"
             v-for="notifier of settings.notifiers"
             :key="notifier.name">
             <div class="card bg-light mb-3">
@@ -343,7 +343,7 @@ export default {
         });
     },
     toggleNotifier: function (notifier) {
-      notifier.on = !notifier.on;
+      this.$set(notifier, 'on', !notifier.on);
       this.saveSettings();
     },
     testNotifier: function (notifier) {
