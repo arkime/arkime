@@ -702,7 +702,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       hourlyN = 1;
     } else if (rotateIndex.startsWith("hourly")) {
       var match = rotateIndex.match(/^hourly(\d+)$/);
-      hourlyN = +match[1]
+      hourlyN = +match[1];
       offset = 3600 * hourlyN;
       rotateIndex = "hourly";
     }
