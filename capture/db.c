@@ -329,8 +329,23 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_ROTATE_HOURLY:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, tmp.tm_hour);
             break;
+        case MOLOCH_ROTATE_HOURLY2:
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/2)*2);
+            break;
+        case MOLOCH_ROTATE_HOURLY3:
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/3)*3);
+            break;
+        case MOLOCH_ROTATE_HOURLY4:
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/4)*4);
+            break;
         case MOLOCH_ROTATE_HOURLY6:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/6)*6);
+            break;
+        case MOLOCH_ROTATE_HOURLY8:
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/8)*8);
+            break;
+        case MOLOCH_ROTATE_HOURLY12:
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, (tmp.tm_hour/12)*12);
             break;
         case MOLOCH_ROTATE_DAILY:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday);
@@ -953,13 +968,12 @@ LOCAL uint64_t zero_atoll(char *v) {
 
 /******************************************************************************/
 #define NUMBER_OF_STATS 4
+LOCAL  uint64_t dbVersion;
 LOCAL  uint64_t dbTotalPackets[NUMBER_OF_STATS];
 LOCAL  uint64_t dbTotalK[NUMBER_OF_STATS];
 LOCAL  uint64_t dbTotalSessions[NUMBER_OF_STATS];
 LOCAL  uint64_t dbTotalDropped[NUMBER_OF_STATS];
 
-LOCAL  char     stats_key[200];
-LOCAL  int      stats_key_len = 0;
 
 LOCAL void moloch_db_load_stats()
 {
@@ -968,10 +982,20 @@ LOCAL void moloch_db_load_stats()
     uint32_t           source_len;
     unsigned char     *source = 0;
 
+    char     stats_key[200];
+    int      stats_key_len = 0;
     stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s", config.prefix, config.nodeName);
 
     unsigned char     *data = moloch_http_get(esServer, stats_key, stats_key_len, &data_len);
 
+    uint32_t            version_len;
+    unsigned char *version = moloch_js0n_get(data, data_len, "_version", &version_len);
+
+    if (!version_len || !version) {
+        dbVersion = 0;
+    } else {
+        dbVersion = atol((char *)version);
+    }
     source = moloch_js0n_get(data, data_len, "_source", &source_len);
     if (source) {
         dbTotalPackets[0]  = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
@@ -1254,6 +1278,15 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     lastUsage[n]           = usage;
 
     if (n == 0) {
+        char     stats_key[200];
+        int      stats_key_len = 0;
+        if (config.pcapReadOffline) {
+            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s", config.prefix, config.nodeName);
+        } else {
+            // Prevent out of order stats records when doing live captures
+            dbVersion++;
+            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s?version_type=external&version=%" PRIu64, config.prefix, config.nodeName, dbVersion);
+        }
         if (sync) {
             unsigned char *data = moloch_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
             if (data)

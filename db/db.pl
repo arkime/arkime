@@ -98,7 +98,7 @@ sub showHelp($)
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
-    print "       type                    - Same as rotateIndex in ini file = hourly,hourly6,daily,weekly,monthly\n";
+    print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
@@ -1299,8 +1299,13 @@ my($type, $prefix, $t) = @_;
         return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
     }
 
-    if ($type eq "hourly6") {
-        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/6)*6);
+    if ($type =~ /^hourly([23468])$/) {
+        my $n = int($1);
+        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/$n)*$n);
+    }
+
+    if ($type eq "hourly12") {
+        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/12)*12);
     }
 
     if ($type eq "daily") {
@@ -1573,7 +1578,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
-    showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
+    showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
 
     # First handle sessions expire
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
@@ -1585,6 +1590,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my @startTime = gmtime;
     if ($ARGV[2] eq "hourly") {
         $startTime[2] -= int($ARGV[3]);
+    } elsif ($ARGV[2] =~ /^hourly([23468])$/) {
+        $startTime[2] -= int($ARGV[3]) * int($1);
+    } elsif ($ARGV[2] eq "hourly12") {
+        $startTime[2] -= int($ARGV[3]) * 12;
     } elsif ($ARGV[2] eq "daily") {
         $startTime[3] -= int($ARGV[3]);
     } elsif ($ARGV[2] eq "weekly") {
@@ -1603,7 +1612,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
             $indices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         }
-        if ($ARGV[2] eq "hourly") {
+        if ($ARGV[2] =~ /^hourly/) {
             $startTime += 60*60;
         } else {
             $startTime += 24*60*60;

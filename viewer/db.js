@@ -696,10 +696,15 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
     }
 
     var offset = 86400;
+    var hourlyN;
     if (rotateIndex === "hourly") {
       offset = 3600;
-    } else if (rotateIndex === "hourly6") {
-      offset = 3600*6;
+      hourlyN = 1;
+    } else if (rotateIndex.startsWith("hourly")) {
+      var match = rotateIndex.match(/^hourly(\d+)$/);
+      hourlyN = +match[1]
+      offset = 3600 * hourlyN;
+      rotateIndex = "hourly";
     }
 
     startTime = Math.floor(startTime/offset)*offset;
@@ -719,19 +724,12 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
           twoDigitString(d.getUTCFullYear()%100) + 'w' +
           twoDigitString(Math.floor((d - jan) / 604800000));
         break;
-      case "hourly6":
-        iname = internals.prefix + "sessions2-" +
-          twoDigitString(d.getUTCFullYear()%100) +
-          twoDigitString(d.getUTCMonth()+1) +
-          twoDigitString(d.getUTCDate()) + 'h' +
-          twoDigitString((d.getUTCHours()/6)*6);
-        break;
       case "hourly":
         iname = internals.prefix + "sessions2-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
-          twoDigitString(d.getUTCHours());
+          twoDigitString((d.getUTCHours()/hourlyN)*hourlyN);
         break;
       default:
         iname = internals.prefix + "sessions2-" +

@@ -376,8 +376,18 @@ void moloch_config_load()
 
     if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
+    else if (strcmp(rotateIndex, "hourly2") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY2;
+    else if (strcmp(rotateIndex, "hourly3") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY3;
+    else if (strcmp(rotateIndex, "hourly4") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY4;
     else if (strcmp(rotateIndex, "hourly6") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY6;
+    else if (strcmp(rotateIndex, "hourly8") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY8;
+    else if (strcmp(rotateIndex, "hourly12") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY12;
     else if (strcmp(rotateIndex, "daily") == 0)
         config.rotate = MOLOCH_ROTATE_DAILY;
     else if (strcmp(rotateIndex, "weekly") == 0)
