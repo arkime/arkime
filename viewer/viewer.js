@@ -936,7 +936,7 @@ var settingDefaults = {
   timezone      : 'local',
   detailFormat  : 'last',
   showTimestamps: 'last',
-  sortColumn    : 'start',
+  sortColumn    : 'firstPacket',
   sortDirection : 'asc',
   spiGraph      : 'node',
   connSrcField  : 'srcIp',
