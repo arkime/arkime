@@ -155,21 +155,6 @@
         class="col">
         <h3>
           Notifiers
-          <span v-if="changed"
-            class="pull-right">
-            <a @click="cancelChangeNotifiers()"
-              class="btn btn-outline-warning cursor-pointer">
-              <span class="fa fa-ban">
-              </span>&nbsp;
-              Cancel
-            </a>
-            <a @click="saveSettings()"
-              class="btn btn-outline-success cursor-pointer">
-              <span class="fa fa-save">
-              </span>&nbsp;
-              Save Notifiers
-            </a>
-          </span>
         </h3>
         <div class="row">
           <div class="col-12 col-xl-6"
@@ -207,7 +192,7 @@
                   </span>
                   <input class="form-control"
                     v-model="field.value"
-                    @input="changed = true"
+                    @input="debounceInput"
                     :type="getFieldInputType(field)"
                   />
                   <span v-if="field.secret"
@@ -245,7 +230,7 @@
                     <div v-for="alert of notifier.alerts"
                       :key="alert.name"
                       class="form-check form-check-inline"
-                      @click="changed = true"
+                      @click="saveSettings"
                       :title="`Notify if ${alert.description}`"
                       v-b-tooltip.hover.top>
                       <label class="form-check-label">
@@ -277,6 +262,7 @@ import AuthService from '../auth';
 import SettingsService from './settings.service';
 
 let initialized;
+let inputDebounce;
 
 export default {
   name: 'Settings',
@@ -290,7 +276,6 @@ export default {
       visibleTab: 'password',
       // page data
       settings: {},
-      changed: false,
       // password settings
       currentPassword: '',
       newPassword: '',
@@ -336,7 +321,6 @@ export default {
       SettingsService.saveSettings(this.settings)
         .then((data) => {
           this.error = '';
-          this.changed = false;
         })
         .catch((error) => {
           this.error = error.text || 'Error saving settings.';
@@ -357,12 +341,11 @@ export default {
           this.error = error.text || 'Error issuing alert.';
         });
     },
-    clearNotfierFields: function (notifier) {
+    clearNotifierFields: function (notifier) {
       for (const field of notifier.fields) {
         field.value = '';
       }
-
-      this.changed = true;
+      this.saveSettings();
     },
     getFieldInputType: function (field) {
       return (field.secret && !field.showValue) ? 'password' : 'text';
@@ -410,9 +393,11 @@ export default {
           this.cancelChangePassword();
         });
     },
-    cancelChangeNotifiers: function () {
-      this.loadData();
-      this.changed = false;
+    debounceInput: function () {
+      if (inputDebounce) { clearTimeout(inputDebounce); }
+      inputDebounce = setTimeout(() => {
+        this.saveSettings();
+      }, 500);
     },
     toggleVisibleSecretField: function (field) {
       this.$set(field, 'showValue', !field.showValue);
