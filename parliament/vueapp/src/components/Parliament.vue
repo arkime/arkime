@@ -133,10 +133,13 @@
         class="mb-4">
 
         <!-- group title/description -->
-        <div class="row"
+        <div class="row group"
           v-if="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm)">
           <div class="col-md-12">
             <h5 class="mb-1">
+              <span v-if="loggedIn && !searchTerm"
+                class="group-handle fa fa-th">
+              </span>
               <!-- group action buttons -->
               <span v-if="loggedIn">
                 <a v-if="groupAddingCluster !== group.id && groupBeingEdited !== group.id"
@@ -358,6 +361,11 @@
                   </span>
                 </span>
                 <h6>
+                  <span v-if="loggedIn && !searchTerm"
+                    class="cluster-handle">
+                    <span class="fa fa-th">
+                    </span>
+                  </span>
                   <span v-if="cluster.multiviewer"
                     class="fa fa-sitemap text-muted cursor-help"
                     v-b-tooltip.hover.top
@@ -1102,6 +1110,7 @@ export default {
 
       draggableGroups = Sortable.create(this.$refs.draggableGroups, {
         animation: 100,
+        handle: '.group-handle',
         onMove: (event) => { // don't allow drag/drop if clusters are filtered
           // or when the user is not logged in
           if (this.searchTerm || !this.loggedIn) { return false; }
@@ -1140,6 +1149,7 @@ export default {
       for (let clusterGroup of this.$refs.draggableClusters) {
         draggableClusters = Sortable.create(clusterGroup, {
           group: 'clusters',
+          handle: '.cluster-handle',
           animation: 100,
           onMove: (event) => { // don't allow drag/drop if clusters are filtered
             // or whent he user is not logged in
@@ -1181,13 +1191,46 @@ export default {
     }
   },
   beforeDestroy: function () {
-    if (draggableGroups) { draggableGroups.destroy(); }
-    if (draggableClusters) { draggableClusters.destroy(); }
+    if (draggableGroups && draggableGroups.el) {
+      draggableGroups.destroy();
+    }
+    if (draggableClusters && draggableClusters.el) {
+      draggableClusters.destroy();
+    }
   }
 };
 </script>
 
 <style scoped>
+/* drag/drop handle styles */
+.group-handle {
+  color: #C3C3C3;
+  cursor: ns-resize;
+}
+
+.cluster-handle {
+  display: none;
+  color: #AAAAAA;
+  cursor: move;
+}
+.cluster-handle .fa {
+  margin-left: 5px;
+}
+.cluster:hover .cluster-handle {
+  color: #AAAAAA;
+  cursor: move;
+  display: block;
+  position: absolute;
+  top: -22px;
+  left: -1px;
+  width: 28px;
+  height: 24px;
+  background: #F8F9FA;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-bottom: none;
+}
+
 /* cluster styles */
 .cluster-group {
   list-style: none;
