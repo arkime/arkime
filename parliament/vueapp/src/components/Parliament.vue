@@ -694,7 +694,7 @@ export default {
     }
   },
   watch: {
-    refreshInterval: function (newVal, oldVal) {
+    refreshInterval: function (newVal) {
       this.stopAutoRefresh();
       if (newVal) {
         this.loadData();
@@ -1027,14 +1027,13 @@ export default {
         group.error = undefined;
         group.newTitle = undefined;
         group.newDescription = undefined;
-        group.filteredClusters = undefined;
         group.newClusterTitle = undefined;
         group.newClusterDescription = undefined;
         group.newClusterUrl = undefined;
         group.newClusterLocalUrl = undefined;
         group.newClusterMultiviewer = undefined;
         group.newClusterDisabled = undefined;
-        group.filteredClusters = undefined;
+        group.filteredClusters = group.clusters;
 
         for (const cluster of group.clusters) {
           cluster.error = undefined;
@@ -1086,13 +1085,12 @@ export default {
       }
       return undefined;
     },
-    updateOrder: function (errorText) {
-      const parliamentClone = JSON.parse(JSON.stringify(this.parliament));
-      this.sanitizeParliament(parliamentClone);
+    updateOrder: function (oldParliament, errorText) {
+      this.sanitizeParliament(this.parliament);
 
-      ParliamentService.updateParliamentOrder(parliamentClone)
+      ParliamentService.updateParliamentOrder(this.parliament)
         .then((data) => {
-          this.oldParliamentOrder = parliamentClone;
+          this.oldParliamentOrder = oldParliament;
         })
         .catch((error) => {
           this.parliament = JSON.parse(JSON.stringify(this.oldParliamentOrder));
@@ -1105,7 +1103,8 @@ export default {
       draggableGroups = Sortable.create(this.$refs.draggableGroups, {
         animation: 100,
         onMove: (event) => { // don't allow drag/drop if clusters are filtered
-          if (this.searchTerm) { return false; }
+          // or when the user is not logged in
+          if (this.searchTerm || !this.loggedIn) { return false; }
           this.stopAutoRefresh();
         },
         onEnd: (event) => { // dragged group was dropped
@@ -1124,10 +1123,13 @@ export default {
             return;
           }
 
+          const parliamentClone = JSON.parse(JSON.stringify(this.parliament));
+          this.sanitizeParliament(parliamentClone);
+
           this.parliament.groups.splice(oldIdx, 1);
           this.parliament.groups.splice(newIdx, 0, group);
 
-          this.updateOrder(errorText);
+          this.updateOrder(parliamentClone, errorText);
           this.startAutoRefresh();
         }
       });
@@ -1140,7 +1142,8 @@ export default {
           group: 'clusters',
           animation: 100,
           onMove: (event) => { // don't allow drag/drop if clusters are filtered
-            if (this.searchTerm) { return false; }
+            // or whent he user is not logged in
+            if (this.searchTerm || !this.loggedIn) { return false; }
             this.stopAutoRefresh();
           },
           onEnd: (event) => { // dragged cluster was dropped
@@ -1164,10 +1167,13 @@ export default {
               return;
             }
 
+            const parliamentClone = JSON.parse(JSON.stringify(this.parliament));
+            this.sanitizeParliament(parliamentClone);
+
             oldGroup.clusters.splice(oldIdx, 1);
             newGroup.clusters.splice(newIdx, 0, cluster);
 
-            this.updateOrder(errorText);
+            this.updateOrder(parliamentClone, errorText);
             this.startAutoRefresh();
           }
         });
