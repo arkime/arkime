@@ -717,7 +717,7 @@ export default {
     setTimeout(() => {
       this.initializeGroupDragDrop();
       this.initializeClusterDragDrop();
-    });
+    }, 400);
   },
   methods: {
     /* page functions -------------------------------------------------------- */
@@ -1209,17 +1209,9 @@ export default {
 }
 
 .cluster-handle {
-  display: none;
+  visibility: hidden;
   color: #AAAAAA;
   cursor: move;
-}
-.cluster-handle .fa {
-  margin-left: 5px;
-}
-.cluster:hover .cluster-handle {
-  color: #AAAAAA;
-  cursor: move;
-  display: block;
   position: absolute;
   top: -22px;
   left: -1px;
@@ -1229,6 +1221,12 @@ export default {
   border-radius: 4px 4px 0 0;
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-bottom: none;
+}
+.cluster-handle .fa {
+  margin-left: 5px;
+}
+.cluster:hover .cluster-handle {
+  visibility: visible;
 }
 
 /* cluster styles */
