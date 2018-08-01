@@ -1239,6 +1239,9 @@ export default {
 .cluster-group .cluster {
   padding-left: 2px;
   padding-right: 2px;
+  /* https://github.com/RubaXa/Sortable/issues/1276 */
+  position: relative;
+  transform: translateZ(0);
 }
 .cluster-group .card {
   height:100%;
