@@ -211,10 +211,6 @@ export default {
     }
   },
   watch: {
-    issues: {
-      deep: true,
-      handler: function (newValue) {}
-    },
     '$route.query.sort': function (newVal, oldVal) {
       this.loadData();
     },
@@ -233,16 +229,7 @@ export default {
 
       if (!this.error) {
         // update the list of issues
-        for (let [index, issue] of this.issues.entries()) {
-          if (issue.type === changeEvent.issue.type && issue.clusterId === changeEvent.issue.clusterId &&
-            issue.groupId === changeEvent.issue.groupId && issue.node === changeEvent.issue.node) {
-            if (changeEvent.issue.dismissed) { // remove dismissed issues
-              this.issues.splice(index, 1);
-            } else { // update ignored issues
-              issue = changeEvent.issue;
-            }
-          }
-        }
+        this.loadData();
       }
     },
     sortBy: function (property) {
