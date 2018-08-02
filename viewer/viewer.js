@@ -5700,8 +5700,8 @@ app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
      child;
 
   var tags = '';
-  if (req.body.tag) {
-    var t = req.body.tag.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
+  if (req.body.tags) {
+    var t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     t.forEach(function(tag) {
       if (tag.length > 0) {
         tags += ' --tag ' + tag;
