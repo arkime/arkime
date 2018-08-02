@@ -113,7 +113,7 @@
     <!-- no groups -->
     <div v-if="parliament.groups && !parliament.groups.length && !showNewGroupForm"
       class="info-area vertical-center">
-      <div class="text-muted">
+      <div class="text-muted mt-5">
         <span class="fa fa-3x fa-folder-open text-muted-more">
         </span>
         No groups in your parliament.
@@ -986,7 +986,7 @@ export default {
       }, this.refreshInterval);
     },
     stopAutoRefresh: function () {
-      clearInterval(interval);
+      if (interval) { clearInterval(interval); }
     },
     // Updates fetched parliament with current view flags and values
     // Assumes that groups and clusters within groups are in the same order
@@ -1191,6 +1191,7 @@ export default {
     }
   },
   beforeDestroy: function () {
+    this.stopAutoRefresh();
     if (draggableGroups && draggableGroups.el) {
       draggableGroups.destroy();
     }

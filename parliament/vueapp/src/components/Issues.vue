@@ -287,8 +287,11 @@ export default {
       }, this.refreshInterval);
     },
     stopAutoRefresh: function () {
-      clearInterval(interval);
+      if (interval) { clearInterval(interval); }
     }
+  },
+  beforeDestroy: function () {
+    this.stopAutoRefresh();
   }
 };
 </script>
