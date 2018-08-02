@@ -46,28 +46,72 @@
         aria-orientation="vertical">
         <div class="nav flex-column nav-pills">
           <a class="nav-link cursor-pointer"
+            @click="openView('general')"
+            :class="{'active':visibleTab === 'general'}">
+            <span class="fa fa-fw fa-cog">
+            </span>&nbsp;
+            General
+          </a>
+          <a class="nav-link cursor-pointer"
             @click="openView('password')"
             :class="{'active':visibleTab === 'password'}">
             <span class="fa fa-fw fa-lock">
             </span>&nbsp;
             Password
           </a>
-          <!-- <a class="nav-link cursor-pointer"
-            @click="openView('alerts')"
-            :class="{'active':visibleTab === 'alerts'}">
-            <span class="fa fa-fw fa-bell">
-            </span>&nbsp;
-            Alerts
-          </a> -->
           <a class="nav-link cursor-pointer"
             @click="openView('notifiers')"
             :class="{'active':visibleTab === 'notifiers'}">
-            <span class="fa fa-fw fa-envelope">
+            <span class="fa fa-fw fa-bell">
             </span>&nbsp;
             Notifiers
           </a>
         </div>
       </div> <!-- /navigation -->
+
+      <!-- general -->
+      <div v-if="visibleTab === 'general' && hasAuth && loggedIn"
+        class="col">
+        <h3>
+          General
+        </h3>
+        <hr>
+        <div class="row">
+          <div class="col-lg-9 col-md-12 form-group">
+            <label for="outOfDate">
+              Seconds before an Elasticsearch node is considered out of date
+            </label>
+            <input type="number"
+              class="form-control"
+              id="outOfDate"
+              @input="debounceInput"
+              v-model="settings.general.outOfDate"
+            />
+            <p class="form-text small text-muted">
+              Will add an
+              <strong>Out Of Date</strong>
+              issue to the node's cluster if the node has not checked in within the specified number of seconds.
+            </p>
+          </div>
+          <div class="col-lg-9 col-md-12 form-group">
+            <label for="esQueryTimeout">
+              Seconds until Elasticsearch queries to get cluster health and stats time out
+            </label>
+            <input type="number"
+              class="form-control"
+              id="esQueryTimeout"
+              @input="debounceInput"
+              v-model="settings.general.esQueryTimeout"
+            />
+            <p class="form-text small text-muted">
+              Aborts the queries and adds an
+              <strong>ES Down</strong>
+              issue if no response is received within the specified time.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- /general -->
 
       <!-- password -->
       <div v-if="(visibleTab === 'password' && hasAuth && loggedIn) || (visibleTab === 'password' && !hasAuth)"
@@ -98,6 +142,7 @@
             </a> <!-- /update/create password button -->
           </span>
         </h3>
+        <hr>
         <div v-if="hasAuth && loggedIn"
           class="input-group mb-2">
           <span class="input-group-prepend">
@@ -143,19 +188,13 @@
         </div>
       </div> <!-- /password -->
 
-      <!-- TODO alerts -->
-      <!-- <div v-if="visibleTab === 'alerts' && hasAuth && loggedIn"
-        class="col">
-        Alerts go here!
-      </div>  -->
-      <!-- /alerts -->
-
       <!-- notifiers -->
       <div v-if="visibleTab === 'notifiers' && hasAuth && loggedIn"
         class="col">
         <h3>
           Notifiers
         </h3>
+        <hr>
         <div class="row">
           <div class="col-12 col-xl-6"
             v-for="notifier of settings.notifiers"
@@ -230,12 +269,12 @@
                     <div v-for="alert of notifier.alerts"
                       :key="alert.name"
                       class="form-check form-check-inline"
-                      @click="saveSettings"
                       :title="`Notify if ${alert.description}`"
                       v-b-tooltip.hover.top>
                       <label class="form-check-label">
                         <input class="form-check-input"
                           type="checkbox"
+                          @input="updateAlert(alert)"
                           :id="alert.id"
                           :name="alert.id"
                           v-model="alert.on"
@@ -302,7 +341,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'alerts' || tab === 'notifiers' || tab === 'password') {
+      if (tab === 'general' || tab === 'notifiers' || tab === 'password') {
         this.visibleTab = tab;
       }
     }
@@ -316,6 +355,10 @@ export default {
       this.$router.push({
         hash: tabName
       });
+    },
+    updateAlert: function (alert) {
+      alert.on = !alert.on;
+      this.saveSettings();
     },
     saveSettings: function () {
       SettingsService.saveSettings(this.settings)
@@ -416,8 +459,8 @@ export default {
             this.error = error.text || 'Error fetching settings.';
           } else {
             this.error = 'No password set for your Parliament. Please set a password so you can do more stuff!';
+            this.openView('password'); // redirect the user to possibly create a password
           }
-          this.openView('password'); // redirect the user to possibly create a password
         });
     },
     closeSuccess: function (time) {

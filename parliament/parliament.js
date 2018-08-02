@@ -31,6 +31,14 @@ const issueTypes = {
   noPackets: { on: true, name: 'No Packets', text: 'is not receiving packets', severity: 'red', description: 'the capture node is not receiving packets' }
 };
 
+const settingsDefault = {
+  general : {
+    outOfDate: 30,
+    esQueryTimeout: 5
+  },
+  notifiers: {}
+};
+
 (function () { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
@@ -136,7 +144,7 @@ try {
   parliament = {
     version: version,
     groups: [],
-    settings: { notifiers: {} }
+    settings: settingsDefault
   };
 }
 
@@ -357,11 +365,13 @@ function setIssue (cluster, newIssue) {
 // Retrieves the health of each cluster and updates the cluster with that info
 function getHealth (cluster) {
   return new Promise((resolve, reject) => {
+    let timeout = getGeneralSetting('esQueryTimeout') * 1000;
+
     let options = {
       url: `${cluster.localUrl || cluster.url}/eshealth.json`,
       method: 'GET',
       rejectUnauthorized: false,
-      timeout: 5000
+      timeout: timeout
     };
 
     rp(options)
@@ -405,11 +415,13 @@ function getHealth (cluster) {
 // Retrieves, then calculates stats for each cluster and updates the cluster with that info
 function getStats (cluster) {
   return new Promise((resolve, reject) => {
+    let timeout = getGeneralSetting('esQueryTimeout') * 1000;
+
     let options = {
       url: `${cluster.localUrl || cluster.url}/stats.json`,
       method: 'GET',
       rejectUnauthorized: false,
-      timeout: 5000
+      timeout: timeout
     };
 
     // Get now before the query since we don't know how long query/response will take
@@ -453,7 +465,9 @@ function getStats (cluster) {
 
         // Look for issues
         for (let stat of stats.data) {
-          if ((now - stat.currentTime) > 70) {
+          let outOfDate = getGeneralSetting('outOfDate') * 1000;
+
+          if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
               type  : 'outOfDate',
               node  : stat.nodeName,
@@ -493,7 +507,7 @@ function getStats (cluster) {
 
 // Initializes the parliament with ids for each group and cluster
 // and sets up the parliament settings
-function initalizeParliament () {
+function initializeParliament () {
   return new Promise((resolve, reject) => {
     if (!parliament.groups) { parliament.groups = []; }
 
@@ -508,10 +522,13 @@ function initalizeParliament () {
     }
 
     if (!parliament.settings) {
-      parliament.settings = {};
+      parliament.settings = settingsDefault;
     }
     if (!parliament.settings.notifiers) {
-      parliament.settings.notifiers = {};
+      parliament.settings.notifiers = settingsDefault.notifiers;
+    }
+    if (!parliament.settings.general) {
+      parliament.settings.general = settingsDefault.general;
     }
 
     // build notifiers
@@ -603,6 +620,14 @@ function updateParliament () {
         return resolve();
       });
   });
+}
+
+function getGeneralSetting (type) {
+  let val = settingsDefault.general[type];
+  if (parliament.settings && parliament.settings.general && parliament.settings.general[type]) {
+    val = parliament.settings.general[type];
+  }
+  return val;
 }
 
 // Writes the parliament to the parliament json file, updates the parliament
@@ -728,29 +753,30 @@ router.put('/auth/update', (req, res, next) => {
 
 // Get the parliament settings object
 router.get('/settings', verifyToken, (req, res, next) => {
-  // restructure settings with arrays for client
-  let settings = { notifiers: [] };
+  if (!parliament.settings) {
+    const error = new Error('Your settings are empty. Try restarting Parliament.');
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 
-  for (let n in parliament.settings.notifiers) {
-    const notifier = parliament.settings.notifiers[n];
+  let settings = JSON.parse(JSON.stringify(parliament.settings));
 
-    let notifierData = { name: n, fields: [], alerts: [], on: notifier.on };
+  if (!settings.general) {
+    settings.general = settingsDefault.general;
+  }
 
-    for (let f in notifier.fields) {
-      const field = notifier.fields[f];
-      notifierData.fields.push(field);
-    }
+  for (let n in settings.notifiers) {
+    const notifier = settings.notifiers[n];
 
     for (let a in notifier.alerts) {
+      // describe alerts
       if (issueTypes.hasOwnProperty(a)) {
         const alert = JSON.parse(JSON.stringify(issueTypes[a]));
         alert.id = a;
         alert.on = notifier.alerts[a];
-        notifierData.alerts.push(alert);
+        notifier.alerts[a] = alert;
       }
     }
-
-    settings.notifiers.push(notifierData);
   }
 
   return res.json(settings);
@@ -759,14 +785,16 @@ router.get('/settings', verifyToken, (req, res, next) => {
 // Update the parliament settings object
 router.put('/settings', verifyToken, (req, res, next) => {
   // save notifiers
-  for (let notifier of req.body.settings.notifiers) {
+  for (let n in req.body.settings.notifiers) {
+    const notifier = req.body.settings.notifiers[n];
     let savedNotifiers = parliament.settings.notifiers;
 
     // notifier exists in settings, so update notifier and the fields
     if (savedNotifiers[notifier.name]) {
       savedNotifiers[notifier.name].on = !!notifier.on;
 
-      for (let field of notifier.fields) {
+      for (let f in notifier.fields) {
+        const field = notifier.fields[f];
         // notifier has field
         if (savedNotifiers[notifier.name].fields[field.name]) {
           savedNotifiers[notifier.name].fields[field.name].value = field.value;
@@ -777,7 +805,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
         }
       }
 
-      for (let alert of notifier.alerts) {
+      for (let a in notifier.alerts) {
+        const alert = notifier.alerts[a];
         // alert exists in settings, so update value
         if (savedNotifiers[notifier.name].alerts.hasOwnProperty(alert.id)) {
           savedNotifiers[notifier.name].alerts[alert.id] = alert.on;
@@ -792,6 +821,17 @@ router.put('/settings', verifyToken, (req, res, next) => {
       error.httpStatusCode = 500;
       return next(error);
     }
+  }
+
+  // save general settings
+  for (let s in req.body.settings.general) {
+    const setting = req.body.settings.general[s];
+    if (isNaN(setting)) {
+      const error = new Error(`${s} must be a number.`);
+      error.httpStatusCode = 422;
+      return next(error);
+    }
+    parliament.settings.general[s] = parseInt(setting);
   }
 
   let successObj  = { success: true, text: 'Successfully updated your settings.' };
@@ -1279,7 +1319,7 @@ server
     console.log(`Express server listening on port ${server.address().port} in ${app.settings.env} mode`);
   })
   .listen(app.get('port'), () => {
-    initalizeParliament()
+    initializeParliament()
       .then(() => {
         updateParliament();
       })

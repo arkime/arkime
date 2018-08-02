@@ -156,8 +156,8 @@
     <!-- no issues -->
     <div v-if="!issues || !issues.length"
       class="info-area vertical-center text-center">
-      <div class="text-muted">
-        <span class="fa fa-3x fa-folder-open text-muted-more">
+      <div class="text-muted mt-5">
+        <span class="fa fa-3x fa-smile-o text-muted-more">
         </span>
         No issues in your Parliament
       </div>
