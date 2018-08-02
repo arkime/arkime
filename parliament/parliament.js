@@ -829,6 +829,14 @@ router.put('/parliament', verifyToken, (req, res, next) => {
     return next(error);
   }
 
+  // remove any client only stuff
+  for (const group of req.body.reorderedParliament.groups) {
+    group.filteredClusters = undefined;
+    for (const cluster of group.clusters) {
+      cluster.activeIssues = undefined;
+    }
+  }
+
   parliament = req.body.reorderedParliament;
   updateParliament();
 
