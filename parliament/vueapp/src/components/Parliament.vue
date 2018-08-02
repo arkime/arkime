@@ -349,7 +349,7 @@
                   class="badge badge-pill badge-secondary cursor-help pull-right"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
                   v-b-tooltip.hover.top
-                  :title="`Moloch ES Status ${cluster.healthError}`">
+                  :title="`Moloch ES Status ${cluster.healthError || cluster.status}`">
                   <span v-if="cluster.status">
                     {{ cluster.status }}
                   </span>
