@@ -178,8 +178,8 @@
                 class="protocol-value">
                 <strong>
                   <moloch-session-field
-                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                    :expr="'ip.protocol'"
+                    :field="{dbField:'ipProtocol', exp:'protocols', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                    :expr="'protocols'"
                     :value="key"
                     :pull-left="true"
                     :parse="false"
