@@ -38,7 +38,7 @@
       <div v-if="loggedIn"
         class="col-md-4">
         <a v-if="!showNewGroupForm"
-          @click="showNewGroupForm = true"
+          @click="openNewGroupForm"
           class="btn btn-outline-primary cursor-pointer pull-right">
           <span class="fa fa-plus-circle">
           </span>&nbsp;
@@ -78,6 +78,7 @@
                 class="form-control"
                 id="newGroupTitle"
                 placeholder="Group title"
+                v-focus-input="focusGroupInput"
               />
             </div>
           </div>
@@ -192,7 +193,7 @@
               {{ group.description }}
             </p>
             <div v-if="group.error"
-              class="alert alert-danger alert-sm">
+              class="alert alert-danger alert-sm mt-3">
               <span class="fa fa-exclamation-triangle">
               </span>&nbsp;
               {{ group.error }}
@@ -221,6 +222,7 @@
                     class="form-control"
                     id="editGroupTitle"
                     placeholder="Group title"
+                    v-focus-input="focusGroupInput"
                   />
                 </div>
               </div>
@@ -259,6 +261,7 @@
                     class="form-control"
                     id="newClusterTitle"
                     placeholder="Cluster title"
+                    v-focus-input="focusClusterInput"
                   />
                 </div>
               </div>
@@ -349,7 +352,7 @@
                   class="badge badge-pill badge-secondary cursor-help pull-right"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
                   v-b-tooltip.hover.top
-                  :title="`Moloch ES Status ${cluster.healthError || cluster.status}`">
+                  :title="`Moloch ES Status: ${cluster.healthError || cluster.status}`">
                   <span v-if="cluster.status">
                     {{ cluster.status }}
                   </span>
@@ -531,6 +534,7 @@
                         class="form-control form-control-sm"
                         id="newClusterTitle"
                         placeholder="Cluster title"
+                        v-focus-input="focusClusterInput"
                       />
                     </div>
                     <div class="form-group">
@@ -657,6 +661,7 @@
 <script>
 import ParliamentService from './parliament.service';
 import Issue from './Issue';
+import { focusInput } from '@/components/utils';
 
 import Sortable from 'sortablejs';
 
@@ -669,6 +674,9 @@ export default {
   name: 'Parliament',
   components: {
     Issue
+  },
+  directives: {
+    focusInput
   },
   data: function () {
     return {
@@ -689,7 +697,10 @@ export default {
       // group form vars
       showNewGroupForm: false,
       newGroupTitle: '',
-      newGroupDescription: ''
+      newGroupDescription: '',
+      focusGroupInput: false,
+      // cluster form vars
+      focusClusterInput: false
     };
   },
   computed: {
@@ -727,11 +738,16 @@ export default {
         this.filterClusters();
       }, 400);
     },
+    openNewGroupForm: function () {
+      this.showNewGroupForm = true;
+      this.focusGroupInput = true;
+    },
     cancelCreateNewGroup: function () {
       this.error = '';
       this.newGroupTitle = '';
       this.newGroupDescription = '';
       this.showNewGroupForm = false;
+      this.focusGroupInput = false;
     },
     createNewGroup: function () {
       this.error = '';
@@ -752,6 +768,7 @@ export default {
           this.newGroupTitle = '';
           this.newGroupDescription = '';
           this.showNewGroupForm = false;
+          this.focusGroupInput = false;
           this.parliament.groups.push(data.group);
           this.filterClusters();
         })
@@ -763,12 +780,13 @@ export default {
       this.groupBeingEdited = group.id;
       group.newTitle = group.title;
       group.newDescription = group.description;
+      this.focusGroupInput = true;
     },
     editGroup: function (group) {
-      group.error = '';
+      this.$set(group, 'error', '');
 
       if (!group.newTitle) {
-        group.error = 'A group must have a title';
+        this.$set(group, 'error', 'A group must have a title');
         return;
       }
 
@@ -780,17 +798,18 @@ export default {
       ParliamentService.editGroup(group.id, updatedGroup)
         .then((data) => {
           // update group with new values and close form
-          group.error = '';
+          this.$set(group, 'error', '');
           group.title = group.newTitle;
           group.description = group.newDescription;
           this.groupBeingEdited = undefined;
+          this.focusGroupInput = false;
         })
         .catch((error) => {
-          group.error = error.text || 'Unable to udpate this group';
+          this.$set(group, 'error', error.text || 'Unable to udpate this group');
         });
     },
     deleteGroup: function (group) {
-      group.error = '';
+      this.$set(group, 'error', '');
 
       ParliamentService.deleteGroup(group.id)
         .then((data) => {
@@ -804,12 +823,15 @@ export default {
           }
         })
         .catch((error) => {
-          group.error = error.text || 'Unable to delete this group';
+          this.$set(group, 'error', error.text || 'Unable to delete this group');
         });
     },
     cancelUpdateGroup: function (group) {
+      this.$set(group, 'error', '');
       this.groupBeingEdited = undefined;
       this.groupAddingCluster = undefined;
+      this.focusGroupInput = false;
+      this.focusClusterInput = false;
       group.newClusterTitle = '';
       group.newClusterDescription = '';
       group.newClusterUrl = '';
@@ -819,16 +841,17 @@ export default {
     },
     displayNewClusterForm: function (group) {
       this.groupAddingCluster = group.id;
+      this.focusClusterInput = true;
     },
     createNewCluster: function (group) {
-      group.error = '';
+      this.$set(group, 'error', '');
 
       if (!group.newClusterTitle) {
-        group.error = 'A cluster must have a title';
+        this.$set(group, 'error', 'A cluster must have a title');
         return;
       }
       if (!group.newClusterUrl) {
-        group.error = 'A cluster must have a url';
+        this.$set(group, 'error', 'A cluster must have a url');
         return;
       }
 
@@ -843,17 +866,18 @@ export default {
 
       ParliamentService.createCluster(group.id, newCluster)
         .then((data) => {
-          group.error = '';
+          this.$set(group, 'error', '');
           group.clusters.push(data.cluster);
           this.cancelUpdateGroup(group);
           this.updateParliament(data.parliament);
           this.filterClusters();
         })
         .catch((error) => {
-          group.error = error.text || 'Unable to add a cluster to this group';
+          this.$set(group, 'error', error.text || 'Unable to add a cluster to this group');
         });
     },
     displayEditClusterForm: function (cluster) {
+      this.focusClusterInput = true;
       this.clusterBeingEdited = cluster.id;
       cluster.newTitle = cluster.title;
       cluster.newDescription = cluster.description;
@@ -863,17 +887,18 @@ export default {
       cluster.newDisabled = cluster.disabled;
     },
     cancelEditCluster: function (cluster) {
+      this.focusClusterInput = false;
       this.clusterBeingEdited = undefined;
     },
     editCluster: function (group, cluster) {
-      cluster.error = '';
+      this.$set(cluster, 'error', '');
 
       if (!cluster.newTitle) {
-        cluster.error = 'A cluster must have a title';
+        this.$set(cluster, 'error', 'A cluster must have a title');
         return;
       }
       if (!cluster.newUrl) {
-        cluster.error = 'A cluster must have a url';
+        this.$set(cluster, 'error', 'A cluster must have a url');
         return;
       }
 
@@ -892,7 +917,8 @@ export default {
 
       ParliamentService.editCluster(group.id, cluster.id, updatedCluster)
         .then((data) => {
-          cluster.error = '';
+          this.focusClusterInput = false;
+          this.$set(cluster, 'error', '');
           cluster.title = cluster.newTitle;
           cluster.description = cluster.newDescription;
           cluster.url = cluster.newUrl;
@@ -902,15 +928,15 @@ export default {
           this.cancelEditCluster();
         })
         .catch((error) => {
-          cluster.error = error.text || 'Unable to update this cluster';
+          this.$set(cluster, 'error', error.text || 'Unable to update this cluster');
         });
     },
     deleteCluster: function (group, cluster) {
-      group.error = '';
+      this.$set(group, 'error', '');
 
       ParliamentService.deleteCluster(group.id, cluster.id)
         .then((data) => {
-          group.error = '';
+          this.$set(group, 'error', '');
           let index = 0;
           for (const c of group.clusters) {
             if (c.id === cluster.id) {
@@ -922,7 +948,7 @@ export default {
           this.filterClusters();
         })
         .catch((error) => {
-          group.error = error.text || 'Unable to remove cluster from this group';
+          this.$set(group, 'error', error.text || 'Unable to remove cluster from this group');
         });
     },
     showMoreIssues: function (cluster) {
@@ -958,10 +984,10 @@ export default {
       }
 
       if (changeEvent.success) {
-        cluster.error = '';
+        this.$set(cluster, 'error', '');
         cluster.activeIssues.splice(changeEvent.index, 1);
       } else {
-        cluster.error = changeEvent.message;
+        this.$set(cluster, 'error', changeEvent.message);
       }
     },
     /* helper functions ---------------------------------------------------- */

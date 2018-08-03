@@ -79,30 +79,44 @@
         <div class="row">
           <div class="col-lg-9 col-md-12 form-group">
             <label for="outOfDate">
-              Seconds before an Elasticsearch node is considered out of date
+              Capture nodes need to check in at least this often
             </label>
-            <input type="number"
-              class="form-control"
-              id="outOfDate"
-              @input="debounceInput"
-              v-model="settings.general.outOfDate"
-            />
+            <div class="input-group">
+              <input type="number"
+                class="form-control"
+                id="outOfDate"
+                @input="debounceInput"
+                v-model="settings.general.outOfDate"
+              />
+              <span class="input-group-append">
+                <span class="input-group-text">
+                  seconds
+                </span>
+              </span>
+            </div>
             <p class="form-text small text-muted">
-              Will add an
+              We check in Elasticsearch if a capture node has checked in, and if not, an
               <strong>Out Of Date</strong>
-              issue to the node's cluster if the node has not checked in within the specified number of seconds.
+              issue will be added to the node's cluster.
             </p>
           </div>
           <div class="col-lg-9 col-md-12 form-group">
             <label for="esQueryTimeout">
-              Seconds until Elasticsearch queries to get cluster health and stats time out
+              Elasticsearch query timeout
             </label>
-            <input type="number"
-              class="form-control"
-              id="esQueryTimeout"
-              @input="debounceInput"
-              v-model="settings.general.esQueryTimeout"
-            />
+            <div class="input-group">
+              <input type="number"
+                class="form-control"
+                id="esQueryTimeout"
+                @input="debounceInput"
+                v-model="settings.general.esQueryTimeout"
+              />
+              <span class="input-group-append">
+                <span class="input-group-text">
+                  seconds
+                </span>
+              </span>
+            </div>
             <p class="form-text small text-muted">
               Aborts the queries and adds an
               <strong>ES Down</strong>
