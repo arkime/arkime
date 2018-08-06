@@ -129,6 +129,7 @@ export default {
       let data = {
         tags: this.tags,
         start: this.start,
+        cluster: this.cluster,
         applyTo: this.applyTo,
         segments: this.segments,
         sessions: this.sessions,
