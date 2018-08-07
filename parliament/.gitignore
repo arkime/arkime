@@ -2,6 +2,8 @@
 # parliament
 parliament.json
 parliament.dev.json
+parliament.issues.json
+parliament.dev.issues.json
 
 # compiled output
 /vueapp/dist

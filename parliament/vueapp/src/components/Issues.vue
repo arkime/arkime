@@ -106,15 +106,34 @@
               class="fa fa-sort-desc fa-fw">
             </span>
           </th>
+          <th scope="col"
+            class="cursor-pointer"
+            @click="sortBy('acknowledged')">
+            Acknowledged At
+            <span v-if="query.sort !== 'acknowledged'"
+              class="fa fa-sort fa-fw">
+            </span>
+            <span v-if="query.sort === 'acknowledged' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw">
+            </span>
+            <span v-if="query.sort === 'acknowledged' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw">
+            </span>
+          </th>
           <th scope="col" width="100px" v-if="loggedIn">
-            &nbsp;
+            <button class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
+              v-b-tooltip.hover.bottom-right
+              title="Remove all acknowledged issues"
+              @click="removeAllAcknowledgedIssues">
+              <span class="fa fa-trash fa-fw">
+              </span>
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
         <template v-for="issue of issues">
-          <tr v-if="!issue.dismissed"
-            :key="getIssueTrackingId(issue)"
+          <tr :key="getIssueTrackingId(issue)"
             :class="getIssueRowClass(issue)">
             <td>
               {{ issue.cluster }}
@@ -140,6 +159,11 @@
               </span>
               <span v-if="issue.ignoreUntil === -1">
                 Forever
+              </span>
+            </td>
+            <td>
+              <span v-if="issue.acknowledged">
+                {{ issue.acknowledged | moment('YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
             <td v-if="loggedIn">
@@ -256,7 +280,7 @@ export default {
       return id;
     },
     getIssueRowClass: function (issue) {
-      if (issue.ignoreUntil) {
+      if (issue.ignoreUntil || issue.acknowledged) {
         return 'table-secondary text-muted';
       } else if (issue.severity === 'red') {
         return 'table-danger';
@@ -265,6 +289,16 @@ export default {
       }
 
       return '';
+    },
+    removeAllAcknowledgedIssues: function () {
+      ParliamentService.removeAllAcknowledgedIssues()
+        .then((data) => {
+          this.error = '';
+          this.issues = data.issues;
+        })
+        .catch((error) => {
+          this.error = error.text || 'Error removing all acknowledged issues.';
+        });
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {

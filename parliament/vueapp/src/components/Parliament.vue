@@ -595,9 +595,10 @@
               <div v-if="loggedIn"
                 class="card-footer small">
                 <span v-show="cluster.id !== clusterBeingEdited">
-                  <a @click="dismissAllIssues(group.id, cluster)"
-                    class="btn btn-sm btn-outline-danger pull-right cursor-pointer"
-                    title="Dismiss all isues for this cluster"
+                  <a v-if="cluster.activeIssues && cluster.activeIssues.length"
+                    @click="acknowledgeAllIssues(group.id, cluster)"
+                    class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                    title="Acknowledge all issues for this cluster and silence them for an hour"
                     v-b-tooltip.hover.left>
                     <span class="fa fa-check">
                     </span>
@@ -958,13 +959,13 @@ export default {
       let i = this.showMoreIssuesFor.indexOf(cluster.id);
       if (i > -1) { this.showMoreIssuesFor.splice(i, 1); }
     },
-    dismissAllIssues: function (groupId, cluster) {
-      ParliamentService.dismissAllIssues(groupId, cluster.id)
+    acknowledgeAllIssues: function (groupId, cluster) {
+      ParliamentService.acknowledgeAllIssues(groupId, cluster.id)
         .then((data) => {
           cluster.activeIssues = [];
         })
         .catch((error) => {
-          this.error = error.text || 'Unable to dismiss all of the issues in this cluster';
+          this.error = error.text || 'Unable to acknowledge all of the issues in this cluster';
         });
     },
     getIssueTrackingId: function (issue) {

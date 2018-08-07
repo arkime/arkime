@@ -76,7 +76,8 @@
           General
         </h3>
         <hr>
-        <div class="row">
+        <div class="row"
+          v-if="settings.general">
           <div class="col-lg-9 col-md-12 form-group">
             <label for="outOfDate">
               Capture nodes need to check in at least this often
@@ -121,6 +122,49 @@
               Aborts the queries and adds an
               <strong>ES Down</strong>
               issue if no response is received within the specified time.
+            </p>
+          </div>
+          <div class="col-lg-9 col-md-12 form-group">
+            <label for="removeIssuesAfter">
+              Remove all issues after
+            </label>
+            <div class="input-group">
+              <input type="number"
+                class="form-control"
+                id="removeIssuesAfter"
+                @input="debounceInput"
+                v-model="settings.general.removeIssuesAfter"
+              />
+              <span class="input-group-append">
+                <span class="input-group-text">
+                  minutes
+                </span>
+              </span>
+            </div>
+            <p class="form-text small text-muted">
+              Removes issues that have not been seen again after the specified time.
+            </p>
+          </div>
+          <div class="col-lg-9 col-md-12 form-group">
+            <label for="removeAcknowledgedAfter">
+              Remove acknowledged issues after
+            </label>
+            <div class="input-group">
+              <input type="number"
+                class="form-control"
+                id="removeAcknowledgedAfter"
+                @input="debounceInput"
+                v-model="settings.general.removeAcknowledgedAfter"
+              />
+              <span class="input-group-append">
+                <span class="input-group-text">
+                  minutes
+                </span>
+              </span>
+            </div>
+            <p class="form-text small text-muted">
+              Removes <strong>acknowledged</strong>
+              issues that have not been seen again after the specified time.
             </p>
           </div>
         </div>
@@ -209,7 +253,8 @@
           Notifiers
         </h3>
         <hr>
-        <div class="row">
+        <div class="row"
+          v-if="settings.notifiers">
           <div class="col-12 col-xl-6"
             v-for="notifier of settings.notifiers"
             :key="notifier.name">

@@ -100,12 +100,54 @@ Before submitting a pull request with your contribution, please run `npm run lin
 ### Parliament Definition
 `parliament.json` (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
 
+### Issues
+`parliament.issues.json` will be created to store issues pertaining to the clusters in your parliament.
+
 ##### Parliament model:
 ```javascript
 {                   // parliament object
   version: x,       // version (number)
   password: 'hash', // hashed password
-  groups: [ ... ]   // list of groups in the parliament
+  groups: [ ... ],  // list of groups in the parliament
+  settings: {       // parliament settings
+    general: {      // general settings
+
+      // capture nodes need to check in at least this often (number of seconds)
+      // if a capture node has not checked in, an Out Of Date issue will be added to the node's cluster
+      outOfDate: 30,
+
+      // Elasticsearch query timeout (number of seconds)
+      // Aborts the queries and adds an ES Down issue if no response is received
+      esQueryTimeout: 5,
+
+      // Remove all issues after (number of minutes)
+      // Removes issues that have not been seen again after the specified time
+      removeIssuesAfter: 60,
+
+      // Remove acknowledged issues after (number of minutes)
+      // Removes acknowledged issues that have not been seen again after the specified time
+      removeAcknowledgedAfter: 15
+
+    },
+    notifiers: {    // notifiers (defined in parliament/notifiers/provider.notifme.js)
+      notifierX: {  // notifier (object)
+
+        // name of the notifier displayed in the UI (string)
+        name: 'slack',
+
+        // turns on/off this notifier (boolean)
+        on: false,
+
+        // fields necessary to notify via this notifier (object)
+        // (defined in parliament/notifiers/provider.notifme.js)
+        fields: {},
+
+        // which issues to alert on via this notifier (object)
+        alerts: {}
+
+      }
+    }
+  }
 }
 ```
 **Note:** The password is hashed using [bcrypt][bcrypt].
@@ -154,6 +196,49 @@ Before submitting a pull request with your contribution, please run `npm run lin
   // whether to hide the total number of nodes (defaults to false)
   hideTotalNodes: false
 
+}
+```
+##### Issue model:
+```javascript
+{ // issue object
+
+  // the type of issue: esDown, esRed, esDropped, outOfDate, or noPackets (string)
+  type: 'esDown',
+
+  // the specific error encountered (string)
+  value: 'Error: Issue Error',
+
+  // human readable text to describe the type of issue (string)
+  text: 'ES is down',
+
+  // human readable title to be displayed in the UI instead of type (string)
+  title: 'ES Down',
+
+  // how severe the issue is: red or yellow (string)
+  severity: 'red',
+
+  // the ID of the cluster that the issue pertains to (string)
+  clusterId: '1',
+
+  // more verbose info to be displayed in the UI (string)
+  // concatenation of issue title and value
+  message: 'ES is down: Error: Issue error',
+
+  // time that the issue was first noticed in ms (number)
+  firstNoticed: 1234567890,
+
+  // time that the issue was last noticed in ms (number)
+  lastNoticed: 1234567890,
+
+  // time that parliament issued an alert in ms (number)
+  alerted: 1234567890,
+
+  // time that the issue was acknowledged by a user in ms (number)
+  acknowledged: 1234567890,
+
+  // time that the issue will be ignored until in ms (number)
+  // once the current time has passed this value, the issue will alert again
+  ignoreUntil: 1234567890
 }
 ```
 
