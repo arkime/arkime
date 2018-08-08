@@ -528,6 +528,48 @@ function getStats (cluster) {
   });
 }
 
+function buildNotifiers () {
+  // build notifiers
+  for (let n in internals.notifiers) {
+    // if the notifier is not in settings, add it
+    if (!parliament.settings.notifiers[n]) {
+      const notifier = internals.notifiers[n];
+
+      let notifierData = { name: n, fields: {}, alerts: {} };
+
+      // add fields to notifier
+      for (let field of notifier.fields) {
+        let fieldData = field;
+        fieldData.value = ''; // has empty value to start
+        notifierData.fields[field.name] = fieldData;
+      }
+
+      // build alerts
+      for (let a in issueTypes) {
+        notifierData.alerts[a] = true;
+      }
+
+      parliament.settings.notifiers[n] = notifierData;
+    }
+  }
+}
+
+function describeNotifierAlerts (settings) {
+  for (let n in settings.notifiers) {
+    const notifier = settings.notifiers[n];
+
+    for (let a in notifier.alerts) {
+      // describe alerts
+      if (issueTypes.hasOwnProperty(a)) {
+        const alert = JSON.parse(JSON.stringify(issueTypes[a]));
+        alert.id = a;
+        alert.on = notifier.alerts[a];
+        notifier.alerts[a] = alert;
+      }
+    }
+  }
+}
+
 // Initializes the parliament with ids for each group and cluster
 // and sets up the parliament settings
 function initializeParliament () {
@@ -848,19 +890,7 @@ router.get('/settings', verifyToken, (req, res, next) => {
     settings.general = settingsDefault.general;
   }
 
-  for (let n in settings.notifiers) {
-    const notifier = settings.notifiers[n];
-
-    for (let a in notifier.alerts) {
-      // describe alerts
-      if (issueTypes.hasOwnProperty(a)) {
-        const alert = JSON.parse(JSON.stringify(issueTypes[a]));
-        alert.id = a;
-        alert.on = notifier.alerts[a];
-        notifier.alerts[a] = alert;
-      }
-    }
-  }
+  describeNotifierAlerts(settings);
 
   return res.json(settings);
 });
@@ -920,6 +950,30 @@ router.put('/settings', verifyToken, (req, res, next) => {
   let successObj  = { success: true, text: 'Successfully updated your settings.' };
   let errorText   = 'Unable to update your settings.';
   writeParliament(req, res, next, successObj, errorText);
+});
+
+// Update the parliament settings object to the defaults
+router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
+  parliament.settings = settingsDefault;
+
+  buildNotifiers();
+
+  let settings = JSON.parse(JSON.stringify(parliament.settings));
+  describeNotifierAlerts(settings);
+
+  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
+    (err) => {
+      if (err) {
+        const errorMsg = `Unable to write parliament data: ${err.message || err}`;
+        console.error(errorMsg);
+        const error = new Error(errorMsg);
+        error.httpStatusCode = 500;
+        return next(error);
+      }
+
+      return res.json(settings);
+    }
+  );
 });
 
 // Get parliament with stats

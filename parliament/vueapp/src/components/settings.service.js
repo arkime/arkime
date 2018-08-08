@@ -25,6 +25,18 @@ export default {
     });
   },
 
+  restoreDefaults: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.put('api/settings/restoreDefaults', {})
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  },
+
   testNotifier: function (notifierName) {
     return new Promise((resolve, reject) => {
       Vue.axios.post('api/testAlert', { notifier: notifierName })

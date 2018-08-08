@@ -8,6 +8,14 @@
       <span class="fa fa-exclamation-triangle">
       </span>&nbsp;
       {{ error }}
+      <span v-if="!settings && loggedIn">
+        If the problem persists, try
+        <a class="no-decoration"
+          href="javascript:void(0)"
+          @click="restoreDefaults">
+          restoring them to the defaults
+        </a>
+      </span>
       <button type="button"
         class="close cursor-pointer"
         @click="error = ''">
@@ -40,7 +48,7 @@
     <div class="row">
 
       <!-- navigation -->
-      <div v-if="hasAuth && loggedIn"
+      <div v-if="hasAuth && loggedIn && settings"
         class="col-xl-2 col-lg-3 col-md-3 col-sm-4"
         role="tablist"
         aria-orientation="vertical">
@@ -70,7 +78,7 @@
       </div> <!-- /navigation -->
 
       <!-- general -->
-      <div v-if="visibleTab === 'general' && hasAuth && loggedIn"
+      <div v-if="visibleTab === 'general' && hasAuth && loggedIn && settings"
         class="col">
         <h3>
           General
@@ -247,7 +255,7 @@
       </div> <!-- /password -->
 
       <!-- notifiers -->
-      <div v-if="visibleTab === 'notifiers' && hasAuth && loggedIn"
+      <div v-if="visibleTab === 'notifiers' && hasAuth && loggedIn && settings"
         class="col">
         <h3>
           Notifiers
@@ -371,9 +379,9 @@ export default {
       // page success message
       success: '',
       // default tab
-      visibleTab: 'password',
+      visibleTab: 'general',
       // page data
-      settings: {},
+      settings: undefined,
       // password settings
       currentPassword: '',
       newPassword: '',
@@ -503,6 +511,16 @@ export default {
     },
     toggleVisibleSecretField: function (field) {
       this.$set(field, 'showValue', !field.showValue);
+    },
+    restoreDefaults: function () {
+      SettingsService.restoreDefaults()
+        .then((data) => {
+          this.error = '';
+          this.settings = data;
+        })
+        .catch((error) => {
+          this.error = error.text || 'Error restoring default settings.';
+        });
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
