@@ -372,6 +372,7 @@ function setIssue (cluster, newIssue) {
 
   if (!existingIssue) {
     newIssue.firstNoticed = Date.now();
+    newIssue.lastNoticed = Date.now();
     issues.push(newIssue);
     issueAlert(cluster, newIssue);
   }
@@ -703,7 +704,7 @@ function cleanUpIssues () {
   let len = issues.length;
   while (len--) {
     const issue = issues[len];
-    const timeSinceLastNoticed = Date.now() - issue.lastNoticed;
+    const timeSinceLastNoticed = Date.now() - issue.lastNoticed || issue.firstNoticed;
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
