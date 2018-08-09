@@ -41,6 +41,13 @@ export default {
     window.addEventListener('keyup', (event) => {
       const activeElement = document.activeElement;
 
+      if (event.keyCode === 27) { // esc
+        activeElement.blur(); // remove focus from all inputs
+        this.$store.commit('setFocusSearch', false);
+        this.$store.commit('setFocusTimeRange', false);
+        return;
+      }
+
       // quit if the user is in an input
       if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
         return;
@@ -81,7 +88,6 @@ export default {
         holdingShiftKey = false;
       } else if (event.keyCode === 191) { // /
         if (holdingShiftKey) {
-          // TODO display keyboard shortcut "modal"
           this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
         }
       }
@@ -98,10 +104,10 @@ export default {
       this.$router.push({
         path: url,
         query: {
-          ...this.$route.query
+          ...this.$route.query,
+          expression: this.$store.state.expression
         },
         hash: this.$route.hash
-        // TODO send expression that has not been applied?
       });
     }
   }

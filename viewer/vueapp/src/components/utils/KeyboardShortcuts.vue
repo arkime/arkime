@@ -35,7 +35,6 @@
 </template>
 
 <script>
-// TODO transition
 export default {
   name: 'MolochKeyboardShortcuts',
   mounted: function () {

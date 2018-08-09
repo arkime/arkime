@@ -17,6 +17,7 @@
           tabindex="3"
           v-model="timeRange"
           @change="changeTimeRange()"
+          @blur="onOffTimeRangeFocus"
           v-focus-input="focusTimeRange">
           <option value="1">Last hour</option>
           <option value="6">Last 6 hours</option>
@@ -396,6 +397,9 @@ export default {
     },
     toggleStopPicker: function () {
       this.$refs.stopTime.fp.toggle();
+    },
+    onOffTimeRangeFocus: function () {
+      this.focusTimeRange = false;
     },
     /* helper functions ------------------------------------------ */
     /* Sets the current time in seconds */

@@ -186,6 +186,12 @@ export default {
         // if there's a request in progress, cancel it
         this.cancelPromise();
 
+        // if there's no results blur the input
+        if (!this.results || !this.results.length) {
+          event.target.blur();
+          this.focusInput = false;
+        }
+
         this.loadingValues = false;
         this.loadingError = false;
         this.results = null;
