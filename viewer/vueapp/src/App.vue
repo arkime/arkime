@@ -1,7 +1,12 @@
 <template>
   <div>
     <moloch-navbar></moloch-navbar>
-    <router-view/>
+    <router-view />
+    <transition name="shortcuts-slide">
+      <moloch-keyboard-shortcuts
+        v-if="displayKeyboardShortcutsHelp">
+      </moloch-keyboard-shortcuts>
+    </transition>
     <moloch-footer></moloch-footer>
   </div>
 </template>
@@ -9,11 +14,96 @@
 <script>
 import MolochNavbar from './components/utils/Navbar';
 import MolochFooter from './components/utils/Footer';
+import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
+
+let holdingShiftKey = false;
+
 export default {
   name: 'App',
   components: {
     MolochNavbar,
-    MolochFooter
+    MolochFooter,
+    MolochKeyboardShortcuts
+  },
+  computed: {
+    displayKeyboardShortcutsHelp: {
+      get: function () {
+        return this.$store.state.displayKeyboardShortcutsHelp;
+      },
+      set: function (newValue) {
+        this.$store.commit('setDisplayKeyboardShortcutsHelp', newValue);
+      }
+    }
+  },
+  mounted: function () {
+    const inputs = ['input', 'select', 'textarea'];
+
+    window.addEventListener('keyup', (event) => {
+      const activeElement = document.activeElement;
+
+      // quit if the user is in an input
+      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+        return;
+      }
+
+      if (event.keyCode === 81) { // q
+        // focus on search expression input
+        this.$store.commit('setFocusSearch', true);
+      } else if (event.keyCode === 84) { // t
+        // focus on time range selector
+        this.$store.commit('setFocusTimeRange', true);
+      } else if (event.keyCode === 83) { // s
+        // open sessions page if not on sessions page
+        if (this.$route.name !== 'Sessions') {
+          this.routeTo('/sessions');
+        }
+      } else if (event.keyCode === 86) { // v
+        // open spiview page if not on spiview page
+        if (this.$route.name !== 'Spiview') {
+          this.routeTo('/spiview');
+        }
+      } else if (event.keyCode === 71) { // g
+        // open spigraph page if not on spigraph page
+        if (this.$route.name !== 'Spigraph') {
+          this.routeTo('/spigraph');
+        }
+      } else if (event.keyCode === 67) { // c
+        // open connections page if not on connections page
+        if (this.$route.name !== 'Connections') {
+          this.routeTo('/connections');
+        }
+      } else if (event.keyCode === 72) { // h
+        // open help page if not on help page
+        if (this.$route.name !== 'Help') {
+          this.routeTo('/help');
+        }
+      } else if (event.keyCode === 16) { // shift
+        holdingShiftKey = false;
+      } else if (event.keyCode === 191) { // /
+        if (holdingShiftKey) {
+          // TODO display keyboard shortcut "modal"
+          this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
+        }
+      }
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.keyCode === 16) { // shift
+        holdingShiftKey = true;
+      }
+    });
+  },
+  methods: {
+    routeTo: function (url) {
+      this.$router.push({
+        path: url,
+        query: {
+          ...this.$route.query
+        },
+        hash: this.$route.hash
+        // TODO send expression that has not been applied?
+      });
+    }
   }
 };
 </script>
@@ -276,5 +366,13 @@ dl.dl-horizontal dt {
 dl.dl-horizontal dd {
   margin-left: 205px;
   margin-bottom: 0;
+}
+
+/* keyboard shortcuts help animation */
+.shortcuts-slide-enter-active, .shortcuts-slide-leave-active {
+  transition: all .5s ease;
+}
+.shortcuts-slide-enter, .shortcuts-slide-leave-to {
+  transform: translateX(-465px);
 }
 </style>

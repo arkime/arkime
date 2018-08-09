@@ -87,7 +87,6 @@ export default {
   data: function () {
     return {
       activeIdx: -1,
-      focusInput: true,
       results: [],
       fields: null,
       loadingError: '',
@@ -104,6 +103,14 @@ export default {
       },
       set: function (newValue) {
         this.$store.commit('setExpression', newValue);
+      }
+    },
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
       }
     }
   },
@@ -254,6 +261,7 @@ export default {
 
         this.results = null;
         this.activeIdx = -1;
+        this.focusInput = false;
       }, 300);
     },
     /* helper functions ------------------------------------------ */
@@ -261,7 +269,6 @@ export default {
     changeExpression: function () {
       this.activeIdx = -1;
       this.results = null;
-      this.focusInput = false;
       this.loadingValues = false;
       this.loadingError = false;
 

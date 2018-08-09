@@ -16,7 +16,8 @@
         <select class="form-control time-range-control"
           tabindex="3"
           v-model="timeRange"
-          @change="changeTimeRange()">
+          @change="changeTimeRange()"
+          v-focus-input="focusTimeRange">
           <option value="1">Last hour</option>
           <option value="6">Last 6 hours</option>
           <option value="24">Last 24 hours</option>
@@ -164,6 +165,8 @@
 </template>
 
 <script>
+import FocusInput from '../utils/FocusInput';
+
 import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 
@@ -174,6 +177,7 @@ let dateChanged = false;
 export default {
   name: 'MolochTime',
   components: { flatPickr },
+  directives: { FocusInput },
   props: [ 'timezone', 'hideBounding', 'hideInterval', 'updateTime' ],
   data: function () {
     return {
@@ -266,6 +270,14 @@ export default {
       set: function (newValue) {
         this.$store.commit('setTimeRange', newValue);
       }
+    },
+    focusTimeRange: {
+      get: function () {
+        return this.$store.state.focusTimeRange;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusTimeRange', newValue);
+      }
     }
   },
   methods: {
@@ -278,6 +290,7 @@ export default {
     changeTimeRange: function () {
       this.deltaTime = null;
       this.timeError = '';
+      this.focusTimeRange = false;
 
       this.$router.push({
         query: {
