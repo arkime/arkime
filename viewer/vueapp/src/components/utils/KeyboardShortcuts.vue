@@ -26,6 +26,8 @@
       <br>
       <code>'h'</code> - jump to the Moloch Help page
       <br>
+      <code>'esc'</code> - remove focus from any input and close this dialog
+      <br>
       <code>'?'</code> - shows you this dialog, but I guess you already knew that
 
     </div>
