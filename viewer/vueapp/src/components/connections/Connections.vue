@@ -139,6 +139,23 @@
           <span class="fa fa-unlock"></span>&nbsp;
           Unlock
         </button> <!-- /unlock button-->
+
+        <!-- zoom in/out -->
+        <div class="btn-group ml-1">
+          <button type="button"
+            class="btn btn-default btn-sm"
+            @click="zoomConnections(0.5)">
+            <span class="fa fa-fw fa-plus">
+            </span>
+          </button>
+          <button type="button"
+            class="btn btn-default btn-sm"
+            @click="zoomConnections(-0.5)">
+            <span class="fa fa-fw fa-minus">
+            </span>
+          </button>
+        </div> <!-- /zoom in/out -->
+
       </div>
     </form>
 
@@ -308,6 +325,20 @@ export default {
     unlock: function () {
       this.svg.selectAll('.node circle').each(function (d) { d.fixed = 0; });
       force.resume();
+    },
+    zoomConnections: function (direction) {
+      // get the coordinates of the center
+      const centerBefore = this.zoom.center();
+      const translate = this.zoom.translate();
+      const coordinates = this.getCoordinates(centerBefore);
+      this.zoom.scale(this.zoom.scale() * Math.pow(2, direction));
+
+      // translate back to the center
+      const centerAfter = this.getPoint(coordinates);
+      this.zoom.translate([translate[0] + centerBefore[0] - centerAfter[0],
+        translate[1] + centerBefore[1] - centerAfter[1]]);
+
+      this.svg.transition().duration(500).call(this.zoom.event);
     },
     closePopups: function () {
       $('.connections-popup').hide();
@@ -802,6 +833,7 @@ export default {
         .translate([0, 0])
         .scale(1)
         .scaleExtent([0.25, 6])
+        .center([self.width / 2, self.height / 2])
         .on('zoom', redraw);
 
       svgMain = d3.select('#network').append('svg:svg')
@@ -873,12 +905,28 @@ export default {
 
       this.svg.remove();
       this.svg = null;
+    },
+    getPoint: function (coordinates) {
+      const scale = this.zoom.scale();
+      const translate = this.zoom.translate();
+      return [coordinates[0] * scale + translate[0], coordinates[1] * scale + translate[1]];
+    },
+    getCoordinates: function (point) {
+      const scale = this.zoom.scale();
+      const translate = this.zoom.translate();
+      return [(point[0] - translate[0]) / scale, (point[1] - translate[1]) / scale];
     }
   }
 };
 </script>
 
 <style>
+.connections-page {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
 .connections-page .connections-popup {
   position: absolute;
   display: none;
