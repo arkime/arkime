@@ -88,7 +88,7 @@
             <tr :key="stat.id + 'data'">
               <td>
                 <toggle-btn class="mr-2"
-                  :opened="expandedNodeStats[stat.id.replace(/[.:]/g, '\\$&')]"
+                  :opened="stat.opened"
                   @toggle="toggleStatDetail(stat)">
                 </toggle-btn>
               </td>
@@ -343,6 +343,7 @@ export default {
       var self = this;
       let id = stat.id.replace(/[.:]/g, '\\$&');
 
+      this.$set(stat, 'opened', !stat.opened);
       this.expandedNodeStats[id] = !this.expandedNodeStats[id];
 
       document.getElementById('statsGraphRow-' + id).style.display =
