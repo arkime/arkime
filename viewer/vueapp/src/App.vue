@@ -48,8 +48,8 @@ export default {
         return;
       }
 
-      // quit if the user is in an input
-      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+      // quit if the user is in an input or not holding the shift key
+      if (!holdingShiftKey || (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
         return;
       }
 
@@ -84,12 +84,12 @@ export default {
         if (this.$route.name !== 'Help') {
           this.routeTo('/help');
         }
-      } else if (event.keyCode === 16) { // shift
-        holdingShiftKey = false;
       } else if (event.keyCode === 191) { // /
-        if (holdingShiftKey) {
-          this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
-        }
+        // display the keyboard shortcut dialog
+        this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
+      } else if (event.keyCode === 16) { // shift
+        // keyup on shift key, user is no longer holding shift
+        holdingShiftKey = false;
       }
     });
 

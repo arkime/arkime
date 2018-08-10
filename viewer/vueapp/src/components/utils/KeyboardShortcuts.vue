@@ -12,19 +12,19 @@
         </span>
       </a>
 
-      <code>'q'</code> - set focus to query bar
+      <code>'Q'</code> - set focus to query bar
       <br>
-      <code>'t'</code> - set focus to time range selector
+      <code>'T'</code> - set focus to time range selector
       <br>
-      <code>'s'</code> - jump to the Sessions page
+      <code>'S'</code> - jump to the Sessions page
       <br>
-      <code>'v'</code> - jump to the SPI View page
+      <code>'V'</code> - jump to the SPI View page
       <br>
-      <code>'g'</code> - jump to the SPI Graph page
+      <code>'G'</code> - jump to the SPI Graph page
       <br>
-      <code>'c'</code> - jump to the Connections page
+      <code>'C'</code> - jump to the Connections page
       <br>
-      <code>'h'</code> - jump to the Moloch Help page
+      <code>'H'</code> - jump to the Moloch Help page
       <br>
       <code>'esc'</code> - remove focus from any input and close this dialog
       <br>
