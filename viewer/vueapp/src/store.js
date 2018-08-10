@@ -15,7 +15,10 @@ const store = new Vuex.Store({
     mapSrc: true,
     mapDst: true,
     graphType: undefined,
-    seriesType: undefined
+    seriesType: undefined,
+    focusSearch: undefined,
+    focusTimeRange: undefined,
+    displayKeyboardShortcutsHelp: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -66,6 +69,15 @@ const store = new Vuex.Store({
     },
     updateSeriesType (state, value) {
       this.state.seriesType = value;
+    },
+    setFocusSearch (state, value) {
+      this.state.focusSearch = value;
+    },
+    setFocusTimeRange (state, value) {
+      this.state.focusTimeRange = value;
+    },
+    setDisplayKeyboardShortcutsHelp (state, value) {
+      this.state.displayKeyboardShortcutsHelp = value;
     }
   }
 });

@@ -28,7 +28,8 @@
         class="mt-1"
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
-        v-on:changePaging="changePaging">
+        v-on:changePaging="changePaging"
+        length-default=100>
       </moloch-paging>
 
       <table class="table table-sm text-right small">
@@ -194,7 +195,7 @@ export default {
       showNodeStats: true,
       expandedNodeStats: {},
       query: {
-        length: parseInt(this.$route.query.length) || 50,
+        length: parseInt(this.$route.query.length) || 100,
         start: 0,
         filter: null,
         sortField: 'nodeName',

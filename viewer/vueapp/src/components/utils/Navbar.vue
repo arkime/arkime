@@ -47,7 +47,7 @@
 
       <b-navbar-nav
         class="ml-auto">
-        <small class="navbar-text mr-2">
+        <small class="navbar-text mr-2 text-right">
           v{{ molochVersion }}
         </small>
         <e-s-health></e-s-health>

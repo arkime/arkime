@@ -328,6 +328,7 @@ function loadFields() {
     Config.loadFields(data);
     app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
     app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+    createSessionDetail();
   });
 }
 
@@ -411,7 +412,45 @@ function dot2value(obj, str) {
       return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
-function createSessionDetailNew() {
+function parseCustomView(key, input) {
+  var fieldsMap = Config.getFieldsMap();
+
+  var match = input.match(/require:([^;]+)/);
+  if (!match) {
+    console.log(`custom-view ${key} missing require section`);
+    process.exit(1);
+  }
+  var require = match[1];
+
+  match = input.match(/title:([^;]+)/);
+  var title = match[1] || key;
+
+  match = input.match(/fields:([^;]+)/);
+  if (!match) {
+    console.log(`custom-view ${key} missing fields section`);
+    process.exit(1);
+  }
+  var fields = match[1];
+
+  var output = `  if (session.${require})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+
+  for (let field of fields.split(",")) {
+    let info = fieldsMap[field];
+    if (!info) {
+      continue;
+    }
+    var parts = splitRemain(info.dbField, '.', 1);
+    if (parts.length === 1) {
+      output += `      +arrayList(session, '${parts[0]}', '${info.friendlyName}', '${field}')\n`;
+    } else {
+      output += `      +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendlyName}', '${field}')\n`;
+    }
+  }
+
+  return output;
+}
+
+function createSessionDetail() {
   var found = {};
   var dirs = [];
 
@@ -436,6 +475,13 @@ function createSessionDetailNew() {
     } catch (e) {}
   });
 
+  var customViews = Config.keys("custom-views") || [];
+
+  for (let key of customViews) {
+    let view = Config.sectionGet("custom-views", key);
+    found[key] = parseCustomView(key, view);
+  }
+
   var makers = internals.pluginEmitter.listeners("makeSessionDetail");
   async.each(makers, function(cb, nextCb) {
     cb(function (err, items) {
@@ -446,7 +492,7 @@ function createSessionDetailNew() {
     });
   }, function () {
     internals.sessionDetailNew = "include views/mixins.pug\n" +
-                                 "div.session-detail(sessionid=session.id)\n" +
+                                 "div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n" +
                                  "  include views/sessionDetail\n";
     Object.keys(found).sort().forEach(function(k) {
       internals.sessionDetailNew += found[k];
@@ -457,10 +503,6 @@ function createSessionDetailNew() {
                                                            .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
                                                            ;
   });
-}
-
-function createSessionDetail() {
-  createSessionDetailNew();
 }
 
 function createRightClicks() {
@@ -611,7 +653,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(err);
       }
       console.log("ERROR - getViewUrl - node:", req.params.nodeName, "err:", err);
-      res.send(`Can't find view url for '${req.params.nodeName}' check viewer logs on '${Config.hostName()}'`);
+      return res.send(`Can't find view url for '${req.params.nodeName}' check viewer logs on '${Config.hostName()}'`);
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -894,7 +936,7 @@ var settingDefaults = {
   timezone      : 'local',
   detailFormat  : 'last',
   showTimestamps: 'last',
-  sortColumn    : 'start',
+  sortColumn    : 'firstPacket',
   sortDirection : 'asc',
   spiGraph      : 'node',
   connSrcField  : 'srcIp',
@@ -1636,7 +1678,7 @@ function expireCheckAll () {
 //////////////////////////////////////////////////////////////////////////////////
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
-function addSortToQuery(query, info, d, missing) {
+function addSortToQuery(query, info, d) {
 
   function addSortDefault() {
     if (d) {
@@ -1645,9 +1687,7 @@ function addSortToQuery(query, info, d, missing) {
       }
       var obj = {};
       obj[d] = {order: "asc"};
-      if (missing && missing[d] !== undefined) {
-        obj[d].missing = missing[d];
-      }
+      obj[d].missing = '_last';
       query.sort.push(obj);
     }
   }
@@ -1681,9 +1721,16 @@ function addSortToQuery(query, info, d, missing) {
         obj[field] = {order: parts[1]};
       }
 
-      if (missing && missing[field] !== undefined) {
-        obj[field].missing = missing[field];
+      obj[field].unmapped_type = "string";
+      var fieldInfo  = Config.getDBFieldsMap()[field];
+      if (fieldInfo) {
+        if (fieldInfo.type === "ip") {
+          obj[field].unmapped_type = "ip";
+        } else if (fieldInfo.type === "integer") {
+          obj[field].unmapped_type = "long";
+        }
       }
+      obj[field].missing = (parts[1] === 'asc'?'_last':'_first');
       query.sort.push(obj);
     });
     return;
@@ -1707,9 +1754,6 @@ function addSortToQuery(query, info, d, missing) {
     var obj = {};
     var field = info["mDataProp_" + info["iSortCol_" + i]];
     obj[field] = {order: info["sSortDir_" + i]};
-    if (missing && missing[field] !== undefined) {
-      obj[field].missing = missing[field];
-    }
     query.sort.push(obj);
 
     if (field === "firstPacket") {
@@ -1974,7 +2018,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   var writes = 0;
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    if (!fields.ro || processedRo[fields.ro]) {
+    if (!fields.rootId || processedRo[fields.rootId]) {
       if (writes++ > 100) {
         writes = 0;
         setImmediate(nextCb);
@@ -1983,7 +2027,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
       }
       return;
     }
-    processedRo[fields.ro] = true;
+    processedRo[fields.rootId] = true;
 
     query.query.bool.filter.push({term: {rootId: fields.rootId}});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
@@ -4155,13 +4199,15 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
 
     sortFields(session);
 
-    fixFields(session, function() {
+    let hidePackets = (session.fileId === undefined || session.fileId.length === 0)?"true":"false";
+    fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename    : "sessionDetail",
         user        : req.user,
         session     : session,
         query       : req.query,
         basedir     : "/",
+        hidePackets : hidePackets,
         reqFields   : Config.headers("headers-http-request"),
         resFields   : Config.headers("headers-http-response"),
         emailFields : Config.headers("headers-email")
@@ -4169,6 +4215,9 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
         if (err) {
           console.trace("ERROR - fixFields - ", err);
           return req.next(err);
+        }
+        if (Config.debug > 1) {
+          console.log("Detail Rendering", data.replace(/>/g, ">\n"));
         }
         res.send(data);
       });
@@ -5651,8 +5700,8 @@ app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
      child;
 
   var tags = '';
-  if (req.body.tag) {
-    var t = req.body.tag.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
+  if (req.body.tags) {
+    var t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     t.forEach(function(tag) {
       if (tag.length > 0) {
         tags += ' --tag ' + tag;
@@ -6042,9 +6091,6 @@ function main () {
   setInterval(loadFields, 2*60*1000);
 
   loadPlugins();
-
-  createSessionDetail();
-  setInterval(createSessionDetail, 5*60*1000);
 
   createRightClicks();
   setInterval(createRightClicks, 5*60*1000);

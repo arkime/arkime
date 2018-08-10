@@ -1,10 +1,6 @@
 //- Display a clickable value
 mixin clickableValue(expr, value, parse)
-  -
-    function defineField(field) {
-      return "fields['" + field + "']";
-    }
-  moloch-session-field.detail-field(:expr='"'+expr+'"', :value=value, :field=defineField(expr), timezone=user.settings.timezone, :pull-left="true")
+  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, pull-left=true)
 
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
@@ -22,7 +18,7 @@ mixin arrayPrint(container, field, expr)
       if (value.length == 0)
         span &lt;empty&gt;
       else
-        moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
+        +clickableValue(expr, value)
 
 //- Standard method to print an array of values
 mixin arrayList(container, field, title, expr, extra, max)
@@ -33,13 +29,14 @@ mixin arrayList(container, field, title, expr, extra, max)
       +clickableLabel(expr, title)
     dd
       if (container && container[field])
+        - if (!Array.isArray(container[field])) { container[field] = [container[field]]; }
         each value,i in container[field]
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
             span &lt;empty&gt;
           else
-            moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
+            +clickableValue(expr, value)
         if (container[field].length > max)
           |<a class="cursor-pointer show-more-items" @click="showFewerItems($event)">less...</a></span>
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
@@ -58,7 +55,7 @@ mixin stringList(container, field, title, expr, extra)
         if (value.length == 0)
           span &lt;empty&gt;
         else
-          moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+value+'"', :field="fields['"+expr+"']", :pull-left="true")
+          +clickableValue(expr, value)
       if (extra)
         if (container && container[field] && container[field].length > 0)
           |,
@@ -68,35 +65,35 @@ mixin stringList(container, field, title, expr, extra)
 mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
   span
     if (full)
-      moloch-session-field.detail-field(:expr='"'+expr+'"', :value='"'+ipstr+'"', :field="fields['"+expr+"']", :pull-left="true", :session="session")
+      +clickableValue(expr, ipstr)
     else
-      moloch-session-field.detail-field(:expr='"ip.'+expr+'"', :value='"'+ipstr+'"', :field="fields['ip."+expr+"']", :pull-left="true", :session="session")
+      +clickableValue('ip.' + expr, ipstr)
     - if (port !== undefined)
       strong :
       if (full)
-        moloch-session-field.detail-field(:expr='"'+expr+'.port"', :value='"'+port+'"', :field="fields['"+expr+".port']", :pull-left="true")
+        +clickableValue(`${expr}.port`, port)
       else
-        moloch-session-field.detail-field(:expr='"port.'+expr+'"', :value='"'+port+'"', :field="fields['port."+expr+"']", :pull-left="true")
+        +clickableValue(`port.${expr}`, port)
     - if (geo)
       | (
       if (full)
-        moloch-session-field.detail-field(:expr='"'+expr+'.country"', :value='"'+geo+'"', :field="fields['"+expr+".country']", :pull-left="true")
+        +clickableValue(`${expr}.country`, geo)
       else
-        moloch-session-field.detail-field(:expr='"country.'+expr+'"', :value='"'+geo+'"', :field="fields['country."+expr+"']", :pull-left="true")
+        +clickableValue(`country.${expr}`, geo)
       |) &nbsp;
     - if (as)
       | [
       if (full)
-        moloch-session-field.detail-field(:expr='"'+expr+'.asn"', :value='"'+as+'"', :field="fields['"+expr+".asn']", :pull-left="true")
+        +clickableValue(expr + '.asn', as)
       else
-        moloch-session-field.detail-field(:expr='"asn.'+expr+'"', :value='"'+as+'"', :field="fields['asn."+expr+"']", :pull-left="true")
+        +clickableValue('asn.' + expr, as)
       |] &nbsp;
     - if (rir)
       | {
       if (full)
-        moloch-session-field.detail-field(:expr='"'+expr+'.rir"', :value='"'+rir+'"', :field="fields['"+expr+".rir']", :pull-left="true")
+        +clickableValue(expr + '.rir', rir)
       else
-        moloch-session-field.detail-field(:expr='"rir.'+expr+'"', :value='"'+rir+'"', :field="fields['rir."+expr+"']", :pull-left="true")
+        +clickableValue('rir.' + expr, rir)
       |}
 
 //- Standard method to print ip info with commas
@@ -138,7 +135,10 @@ mixin ipArrayList(container, field, title, expr, max)
       each ip,i in container[field]
         if (i == max)
           |<span style="display:none">
-        +ipPrint(container, container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
+        if (field == "ip")
+          +ipPrint(container, container.ip[i], undefined, (container.GEO?container.GEO[i]:null), (container.ASN?container.ASN[i]:null), (container.RIR?container.RIR[i]:null), expr, expr.endsWith(".ip"))
+        else
+          +ipPrint(container, container[field][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field + "ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr, true)
       if (container[field].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip;

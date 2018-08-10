@@ -1,13 +1,20 @@
 {
   "name": "WISE",
-  "version": "1.2.0",
+  "version": "1.5.2",
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "hashtable": "^2.0.2",
+    "hashtable": "",
     "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
+    "jshint": "^2.9.5",
     "lru-cache": "^4.0.1",
     "native-dns": "^0.7.0",
     "splunk-sdk": "^1.8.3"
+  },
+  "scripts": {
+    "lint": "jshint *.js"
+  },
+  "devDependencies": {
+    "jshint": "^2.9.5"
   }
 }

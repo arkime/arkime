@@ -927,7 +927,7 @@ export default {
 }
 
 .connections-page {
-  margin-top: 36px;
+  margin-top: 39px;
 }
 .connections-page form.connections-form {
   position: relative;

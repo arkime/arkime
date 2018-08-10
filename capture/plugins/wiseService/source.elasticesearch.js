@@ -76,8 +76,9 @@ function ElasticsearchSource (api, section) {
 
   this.sourceFields = [this.esResultField];
   for (var k in this.shortcuts) {
-    if (this.sourceFields.indexOf(k) === -1)
+    if (this.sourceFields.indexOf(k) === -1) {
       this.sourceFields.push(k);
+    }
   }
 }
 util.inherits(ElasticsearchSource, wiseSource);
@@ -117,10 +118,12 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
     for (var k in this.shortcuts) {
       if (json[k] !== undefined) {
         args.push(this.shortcuts[k]);
-        if (Array.isArray(json[k]))
+        if (Array.isArray(json[k])) {
           args.push(json[k][0]);
-        else
+        }
+        else {
           args.push(json[k]);
+        }
       }
     }
     var newresult = {num: args.length/2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer])};

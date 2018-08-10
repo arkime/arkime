@@ -61,6 +61,10 @@ function processArgs() {
   if (!internals.nodeName) {
     internals.nodeName = internals.hostName.split(".")[0];
   }
+
+  if (exports.debug > 0) {
+    console.log ("Debug Level", exports.debug);
+  }
 }
 processArgs();
 

@@ -17,6 +17,10 @@ Vagrant.configure("2") do |config|
     ubuntu1604.vm.box = "bento/ubuntu-16.04"
   end
 
+  config.vm.define "ubuntu-18.04" do |ubuntu1804|
+    ubuntu1804.vm.box = "bento/ubuntu-18.04"
+  end
+
   config.vm.define "centos-6" do |centos6|
     centos6.vm.box = "bento/centos-6.8"
   end

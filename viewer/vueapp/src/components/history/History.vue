@@ -40,7 +40,8 @@
           class="mt-1 ml-1"
           :records-total="history.recordsTotal"
           :records-filtered="history.recordsFiltered"
-          @changePaging="changePaging">
+          @changePaging="changePaging"
+          length-default=100>
         </moloch-paging>
       </div>
     </form> <!-- /paging navbar -->
@@ -59,7 +60,9 @@
           </th>
           <th v-for="column of columns"
             :key="column.name"
-            class="cursor-pointer"
+            :class="`cursor-pointer ${column.classes}`"
+            v-b-tooltip.hover
+            :title="column.help"
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}">
             <input type="text"
@@ -76,7 +79,7 @@
               <input type="checkbox"
                 class="checkbox"
                 v-b-tooltip.hover
-                :title="column.name + ' EXISTS!'"
+                :title="`Only show entries where the ${column.name} field exists`"
                 @change="loadData"
                 v-model="column.exists"
               />
@@ -141,14 +144,14 @@
             <td class="no-wrap">
               {{ item.timestamp | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
             </td>
-            <td class="no-wrap">
+            <td class="no-wrap text-right">
               {{ item.range*1000 | readableTime }}
             </td>
             <td v-has-permission="'createEnabled'"
               class="no-wrap">
               {{ item.userId }}
             </td>
-            <td class="no-wrap">
+            <td class="no-wrap text-right">
               {{ item.queryTime }}ms
             </td>
             <td class="no-wrap">
@@ -297,9 +300,9 @@ export default {
       settings: { timezone: 'local' },
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 10, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', nowrap: true, width: 8, help: 'The time range of the request' },
+        { name: 'Time Range', sort: 'range', nowrap: true, width: 8, classes: 'text-right', help: 'The time range of the request' },
         { name: 'User ID', sort: 'userId', nowrap: true, width: 11, filter: true, permission: 'createEnabled', help: 'The id of the user that initiated the request' },
-        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, help: 'Execution time in MS' },
+        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
         { name: 'Expression', sort: 'expression', nowrap: true, width: 27, exists: false, help: 'The query expression issued with the request' },
         { name: 'View', sort: 'view.name', nowrap: true, width: 23, exists: false, help: 'The view expression applied to the request' }

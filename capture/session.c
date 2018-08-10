@@ -160,10 +160,10 @@ int moloch_session_cmp(const void *keyv, const void *elementv)
     return memcmp(keyv, session->sessionId, MIN(((uint8_t *)keyv)[0], session->sessionId[0])) == 0;
 }
 /******************************************************************************/
-void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd icmd, gpointer uw1, gpointer uw2, MolochCmd_func func)
+void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd sesCmd, gpointer uw1, gpointer uw2, MolochCmd_func func)
 {
     MolochSesCmd_t *cmd = MOLOCH_TYPE_ALLOC(MolochSesCmd_t);
-    cmd->cmd = icmd;
+    cmd->cmd = sesCmd;
     cmd->session = session;
     cmd->uw1 = uw1;
     cmd->uw2 = uw2;
@@ -432,7 +432,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
         char buf[100];
-        LOG("Large number of chains: %s %u %u %u %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+        LOG("Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
@@ -464,9 +464,9 @@ uint32_t moloch_session_monitoring()
 void moloch_session_process_commands(int thread)
 {
     // Commands
-    MolochSesCmd_t *cmd = 0;
     int count;
     for (count = 0; count < 50; count++) {
+        MolochSesCmd_t *cmd = 0;
         MOLOCH_LOCK(sessionCmds[thread].lock);
         DLL_POP_HEAD(cmd_, &sessionCmds[thread], cmd);
         MOLOCH_UNLOCK(sessionCmds[thread].lock);
@@ -628,7 +628,7 @@ void moloch_session_flush()
 /******************************************************************************/
 void moloch_session_exit()
 {
-    int counts[SESSION_MAX] = {0, 0, 0, 0};
+    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0};
 
     int t, s;
 
@@ -638,7 +638,7 @@ void moloch_session_exit()
         }
     }
 
-    LOG("sessions: %d tcp: %d udp: %d icmp: %d sctp: %d esp: %d",
+    LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],

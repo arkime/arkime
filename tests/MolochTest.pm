@@ -287,6 +287,7 @@ my ($url, $token, $debug) = @_;
 ################################################################################
 sub waitFor {
 my ($host, $port) = @_;
+    print "Connecting $host:$port\n" if ($main::debug);
     while (1) {
         my $sock = IO::Socket::INET->new(
 	    PeerAddr => $host,
@@ -294,6 +295,7 @@ my ($host, $port) = @_;
 	    Proto    => 'tcp'
 	);
         if ($sock) {
+            print "Success\n" if ($main::debug);
             close($sock);
             return;
         };

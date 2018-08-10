@@ -140,8 +140,6 @@ chmod 0700 $MOLOCH_INSTALL_DIR/raw
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
     ES_VERSION=6.3.1
-    mkdir $MOLOCH_INSTALL_DIR/data
-    chown nobody $MOLOCH_INSTALL_DIR/data
     if [ -f "/etc/redhat-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.rpm
     else
@@ -189,8 +187,20 @@ EOF
 fi
 
 ################################################################################
-echo "Moloch - Downloading GEO files"
-$MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+
+MOLOCH_INET=not-set
+until [ "$MOLOCH_INET" == "yes" ] || [ "$MOLOCH_INET" == "no" ] || [ "$MOLOCH_INET" == "" ]; do
+    echo -n "Download GEO files? (yes or no) [yes] "
+    read -r MOLOCH_INET
+done
+
+if [ "$MOLOCH_INET" != "no" ]; then
+    echo "Moloch - Downloading GEO files"
+    $MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+else
+    echo "Moloch - NOT downloading GEO files"
+fi
+
 
 ################################################################################
 echo ""

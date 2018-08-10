@@ -34,7 +34,7 @@ bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
+	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'

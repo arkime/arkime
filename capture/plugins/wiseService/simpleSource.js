@@ -73,8 +73,9 @@ SimpleSource.prototype.initSimple = function() {
   }
 
   this.tagsSetting();
-  if (!this.formatSetting())
+  if (!this.formatSetting()) {
     return false;
+  }
 
 
   if (this.type === 'domain') {

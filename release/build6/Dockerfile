@@ -5,6 +5,8 @@ RUN yum -y update; \
 yum -y install centos-release-scl scl-utils centos-release-scl-rh wget; \
 (cd /etc/yum.repos.d/; wget http://packages.ntop.org/centos-stable/ntop.repo); \
 yum -y update; \
+yum -y remove kernel-headers; \
+yum -y install http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm; \
 yum -y install devtoolset-3-gcc-c++ git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget ruby193-ruby-devel ruby193-rubygems rpm-build python27-python-devel python27-python-pip pfring; \
 git clone https://github.com/aol/moloch; \
 (cd moloch ; scl enable devtoolset-3 python27 './easybutton-build.sh --daq --pfring'); \

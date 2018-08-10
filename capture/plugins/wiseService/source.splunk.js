@@ -73,8 +73,9 @@ function SplunkSource (api, section) {
 
   this.sourceFields = [this.esResultField];
   for (var k in this.shortcuts) {
-    if (this.sourceFields.indexOf(k) === -1)
+    if (this.sourceFields.indexOf(k) === -1) {
       this.sourceFields.push(k);
+    }
   }
 }
 util.inherits(SplunkSource, wiseSource);
@@ -102,10 +103,11 @@ SplunkSource.prototype.periodicRefresh = function() {
       for (var k in this.shortcuts) {
         if (item[k] !== undefined) {
           args.push(this.shortcuts[k]);
-          if (Array.isArray(item[k]))
+          if (Array.isArray(item[k])) {
             args.push(item[k][0]);
-          else
+          } else {
             args.push(item[k]);
+          }
         }
       }
 
@@ -121,7 +123,7 @@ SplunkSource.prototype.periodicRefresh = function() {
     }
     this.cache = cache;
   });
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 SplunkSource.prototype.dump = function(res) {
@@ -179,10 +181,11 @@ SplunkSource.prototype.sendResult = function(key, cb) {
     for (var k in this.shortcuts) {
       if (item[k] !== undefined) {
         args.push(this.shortcuts[k]);
-        if (Array.isArray(item[k]))
+        if (Array.isArray(item[k])) {
           args.push(item[k][0]);
-        else
+        } else {
           args.push(item[k]);
+        }
       }
     }
     var newresult = {num: args.length/2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer])};

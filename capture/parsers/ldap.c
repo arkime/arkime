@@ -30,13 +30,12 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
     uint32_t opc, otag, olen;
     uint32_t ipc, itag, ilen;
     uint32_t protocolOp;
-    unsigned char *ovalue, *ivalue;
 
     BSB_INIT(obsb, ldap->buf[which], ldap->len[which]);
     ldap->len[which] = -1; // stop any calls for this direction
 
     while (BSB_REMAINING(obsb) > 5) {
-        ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
+        uint8_t *ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
 
         BSB_INIT(ibsb, ovalue, olen);
 
@@ -46,7 +45,7 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
             return;
 
         // protocolOp
-        ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
+        uint8_t *ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
         if (ipc != 1 || protocolOp > 25)
             return;
 
@@ -86,7 +85,7 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
                 moloch_field_string_add(authTypeField, session, "ntlmsspAuth", 11, TRUE); // from wireshark
                 break;
             default:
-                snprintf(str, sizeof(str), "%d", itag);
+                snprintf(str, sizeof(str), "%d", (int)itag);
                 moloch_field_string_add(authTypeField, session, str, -1, TRUE);
 
             }

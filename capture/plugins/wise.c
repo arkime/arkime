@@ -222,10 +222,9 @@ LOCAL void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer 
 /******************************************************************************/
 LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
 {
-    int i;
     HASH_REMOVE(wih_, types[(int)wi->type].itemHash, wi);
     if (wi->sessions) {
-        for (i = 0; i < wi->numSessions; i++) {
+        for (int i = 0; i < wi->numSessions; i++) {
             moloch_session_add_cmd(wi->sessions[i], MOLOCH_SES_CMD_FUNC, NULL, NULL, wise_session_cmd_cb);
         }
         g_free(wi->sessions);
@@ -471,7 +470,7 @@ void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, struct in6
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
         uint32_t ip = MOLOCH_V6_TO_V4(*ip6);
-        snprintf(ipstr, sizeof(ipstr), "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
     } else {
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
@@ -503,7 +502,7 @@ void wise_lookup_tuple(MolochSession_t *session, WiseRequest_t *request)
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     );
 
-    BSB_EXPORT_sprintf(bsb, ";%d.%d.%d.%d;%d;%d.%d.%d.%d;%d",
+    BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
                        ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
                        session->port1,
                        ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
@@ -559,7 +558,7 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 
 void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 {
-    MolochString_t *hstring;
+    MolochString_t *hstring = NULL;
 
     MOLOCH_LOCK(iRequest);
     if (!iRequest) {
@@ -599,7 +598,7 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                 ghash = session->fields[pos]->ghash;
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                    snprintf(buf, sizeof(buf), "%u", (int)(long)ikey);
+                    snprintf(buf, sizeof(buf), "%d", (int)(long)ikey);
                     wise_lookup(session, iRequest, buf, type);
                 }
                 break;
@@ -665,9 +664,8 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 LOCAL void wise_plugin_exit()
 {
     MOLOCH_LOCK(item);
-    int type;
-    WiseItem_t *wi;
-    for (type = 0; type < INTEL_TYPE_SIZE; type++) {
+    for (int type = 0; type < INTEL_TYPE_SIZE; type++) {
+        WiseItem_t *wi;
         while (DLL_POP_TAIL(wil_, &types[type].itemList, wi)) {
             wise_free_item_unlocked(wi);
         }
@@ -782,6 +780,7 @@ LOCAL void wise_load_config()
             types[type].fields[(int)types[type].fieldsLen] = pos;
             types[type].fieldsLen++;
         }
+        g_strfreev(values);
     }
 
     g_strfreev(keys);

@@ -225,6 +225,7 @@ LOCAL void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *U
 /******************************************************************************/
 void moloch_parser_init()
 {
+    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q04", 3, quic_udp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_udp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_udp_classify);
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);

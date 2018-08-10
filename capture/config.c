@@ -261,7 +261,7 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
     }
 
     if (config.debug) {
-        LOG("%s=%d", key, value);
+        LOG("%s=%u", key, value);
     }
 
     return value;
@@ -376,8 +376,18 @@ void moloch_config_load()
 
     if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
+    else if (strcmp(rotateIndex, "hourly2") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY2;
+    else if (strcmp(rotateIndex, "hourly3") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY3;
+    else if (strcmp(rotateIndex, "hourly4") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY4;
     else if (strcmp(rotateIndex, "hourly6") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY6;
+    else if (strcmp(rotateIndex, "hourly8") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY8;
+    else if (strcmp(rotateIndex, "hourly12") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY12;
     else if (strcmp(rotateIndex, "daily") == 0)
         config.rotate = MOLOCH_ROTATE_DAILY;
     else if (strcmp(rotateIndex, "weekly") == 0)
@@ -532,12 +542,12 @@ void moloch_config_load()
             char *s = saveUnknownPackets[i];
 
             if (strcmp(s, "all") == 0) {
-                memset(&config.etherSavePcap, 0xff, 1024);
-                memset(&config.ipSavePcap, 0xff, 4);
+                memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
+                memset(&config.ipSavePcap, 0xff, sizeof(config.ipSavePcap));
             } else if (strcmp(s, "ip:all") == 0) {
-                memset(&config.ipSavePcap, 0xff, 4);
+                memset(&config.ipSavePcap, 0xff, sizeof(config.ipSavePcap));
             } else if (strcmp(s, "ether:all") == 0) {
-                memset(&config.etherSavePcap, 0xff, 1024);
+                memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
             } else if (strncmp(s, "ip:", 3) == 0) {
                 int n = atoi(s+3);
                 if (n < 0 || n > 0xff)
@@ -798,7 +808,7 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
     if (numFiles >= MOLOCH_CONFIG_FILES)
         LOGEXIT("Couldn't monitor anymore files %s %s", desc, names[0]);
 
-    for (i = 0; names[i] && i < MOLOCH_CONFIG_FILES; i++) {
+    for (i = 0; i < MOLOCH_CONFIG_FILES && names[i]; i++) {
         if (stat(names[i], &sb) != 0) {
             LOGEXIT("Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
         }

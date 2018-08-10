@@ -2,17 +2,26 @@
 
   <span>
 
-    <!-- info/error icon -->
+    <!-- error -->
+    <div v-if="error"
+      class="error-div text-muted-more mt-2 text-right">
+      <small>
+        {{ error || 'Network Error' }} - try
+        <a @click="reload"
+          class="cursor-pointer reload-btn">
+          reloading the page
+        </a>
+      </small>
+    </div> <!-- /error -->
+
+    <!-- info icon -->
     <span class="cursor-help"
       id="infoTooltip">
-      <span v-if="!error && esHealth"
-        class="fa fa-info-circle fa-2x"
-        :class="esHealthClass">
+      <span class="fa fa-info-circle fa-2x"
+        :class="esHealthClass"
+        v-if="!error && esHealth">
       </span>
-      <span v-if="error"
-        class="fa fa-exclamation-triangle fa-2x">
-      </span>
-    </span> <!-- /info/error icon -->
+    </span> <!-- /info icon -->
 
     <!-- tooltip content -->
     <b-tooltip
@@ -31,7 +40,7 @@
         Unassigned Shards: <strong>{{ esHealth.unassigned_shards }}</strong>
       </div>
       <div v-if="error">
-        {{ error }}
+
       </div>
     </b-tooltip> <!-- /tooltip content -->
 
@@ -40,8 +49,9 @@
 </template>
 
 <script>
+let interval;
+
 export default {
-  // TODO on destroy remove interval for loading data
   name: 'ESHealth',
   data: function () {
     return {
@@ -52,7 +62,7 @@ export default {
   },
   created: function () {
     this.loadData();
-    setInterval(() => {
+    interval = setInterval(() => {
       this.loadData();
     }, 10000);
   },
@@ -74,8 +84,15 @@ export default {
           this.esHealth = response.data;
         }, (error) => {
           this.error = error;
+          console.log(error);
         });
+    },
+    reload: function () {
+      window.location.reload();
     }
+  },
+  beforeDestroy: function () {
+    if (interval) { clearInterval(interval); }
   }
 };
 </script>
@@ -89,5 +106,17 @@ export default {
 }
 .health-green {
   color: #00aa00;
+}
+
+.error-div {
+  line-height: 1;
+  margin-right: -12px;
+}
+
+.reload-btn {
+  color: var(--color-tertiary-light) !important;
+}
+.reload-btn:hover {
+  color: var(--color-tertiary) !important;
 }
 </style>

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -I.
 
 use strict;
 use HTTP::Request::Common;
@@ -180,11 +180,11 @@ my ($cmd) = @_;
         print ("Starting viewer\n");
         if ($main::debug) {
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
-            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
@@ -251,11 +251,11 @@ my ($cmd) = @_;
 
         print ("Starting viewer\n");
         if ($main::debug) {
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
-            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");

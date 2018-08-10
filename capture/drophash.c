@@ -23,7 +23,6 @@
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-typedef struct molochdrophashitem_t MolochDropHashItem_t;
 struct molochdrophashitem_t {
     MolochDropHashItem_t *dhg_next, *dhg_prev;
     MolochDropHashItem_t *hnext;
@@ -34,7 +33,6 @@ struct molochdrophashitem_t {
     uint16_t              flags;
 };
 
-typedef struct molochdrophash_t MolochDropHash_t;
 struct molochdrophash_t {
     MolochDropHashItem_t **heads;
     uint32_t               cnt;
@@ -217,7 +215,6 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
     struct timespec currentTime;
     clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
 
-    int      i;
     int      cnt;
     int      ver;
     char     fisIp4;
@@ -262,7 +259,7 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
         LOG("ERROR - `%s` corrupt", group->file);
         return;
     }
-    for (i = 0; i < cnt; i++) {
+    for (int i = 0; i < cnt; i++) {
         int read = 0;
         read += fread(&port, 2, 1, fp);
         read += fread(key, isIp4?4:16, 1, fp);

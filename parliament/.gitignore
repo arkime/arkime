@@ -2,9 +2,11 @@
 # parliament
 parliament.json
 parliament.dev.json
+parliament.issues.json
+parliament.dev.issues.json
 
 # compiled output
-/dist
+/vueapp/dist
 /tmp
 /out-tsc
 
@@ -25,4 +27,11 @@ npm-debug.log
 
 # System Files
 .DS_Store
-Thumbs.db
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

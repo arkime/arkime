@@ -2,8 +2,6 @@
     :local:
     :depth: 2
     
-**Current Moloch users, please fill out the** `Moloch User Survey <https://docs.google.com/forms/d/1weLp8P18IUgVBSJ5saU3ee5cJhXksRg6XYtDxMQLirY/viewform>`_.
-
 What is Moloch?
 ===============
 
@@ -70,9 +68,9 @@ Moloch is a complex system to build and install manually. The following are roug
 Installing Elasticsearch
 ------------------------
 
-Recommended version **5.6.x** for Moloch 0.18 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
+Recommended version **6.3.x** for Moloch 1.5 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   5.6.7 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-6-7>`_.
+   6.3.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-6-3-1>`_.
 
 Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
@@ -88,7 +86,7 @@ Use the ``./easybutton-build.sh`` script to download all thirdparty libraries an
 
 Building Viewer
 ---------------
-1. Install `Node.js <http://nodejs.org/>`_ version 6.x, currently 8.x is not supported.  (Moloch versions before 0.18 required 4)
+1. Install `Node.js <http://nodejs.org/>`_ version 8.x, currently 10.x is not supported.
 
 2. In the ``viewer`` directory run ``npm install``.
 
@@ -99,9 +97,10 @@ Configuration
 
 1. Make sure you download the latest freely available GeoIP and RIR files.
 
-   - `GeoLiteCountry <http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz>`_ - Geographic IP data
-   - `GeoIPASNum <http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz>`_ - Geographic Autonomous System (AS) number data
+   - `GeoLiteCountry <https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country>`_ - Geographic IP data
+   - `GeoIPASNum <https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN>`_ - Geographic Autonomous System (AS) number data
    - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments 
+   - `OUI <https://raw.githubusercontent.com/wireshark/wireshark/master/manuf>`_ - OUI assignments
 
 2. Edit the ``config.ini`` file.
    

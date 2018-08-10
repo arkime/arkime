@@ -272,7 +272,17 @@ typedef struct {
 /*
  * Configuration Information
  */
-enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_HOURLY6, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
+enum MolochRotate {
+    MOLOCH_ROTATE_HOURLY,
+    MOLOCH_ROTATE_HOURLY2,
+    MOLOCH_ROTATE_HOURLY3,
+    MOLOCH_ROTATE_HOURLY4,
+    MOLOCH_ROTATE_HOURLY6,
+    MOLOCH_ROTATE_HOURLY8,
+    MOLOCH_ROTATE_HOURLY12,
+    MOLOCH_ROTATE_DAILY,
+    MOLOCH_ROTATE_WEEKLY,
+    MOLOCH_ROTATE_MONTHLY };
 
 #define MOLOCH_FIELDS_DB_MAX 512
 #define MOLOCH_FIELD_EXSPECIAL_SRC_IP       (MOLOCH_FIELDS_DB_MAX)
@@ -683,7 +693,7 @@ gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpoint
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen);
 char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
-gboolean moloch_string_add(void *hash, char *string, gpointer uw, gboolean copy);
+gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
 
 uint32_t moloch_string_hash(const void *key);
 uint32_t moloch_string_hash_len(const void *key, int len);
@@ -744,7 +754,7 @@ void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
-void     moloch_db_update_filesize(uint32_t fileid, uint64_t size);
+void     moloch_db_update_filesize(uint32_t fileid, uint64_t filesize);
 gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();
 void     moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac);
@@ -775,7 +785,7 @@ struct molochdrophashgroup_t {
 
 
 void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4);
-int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t seconds);
+int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor);
 int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *key, uint32_t current);
 void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key);
 void moloch_drophash_save(MolochDropHashGroup_t *group);
@@ -906,7 +916,7 @@ typedef enum {
 } MolochSesCmd;
 typedef void (*MolochCmd_func)(MolochSession_t *session, gpointer uw1, gpointer uw2);
 
-void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd cmd, gpointer uw1, gpointer uw2, MolochCmd_func func);
+void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd sesCmd, gpointer uw1, gpointer uw2, MolochCmd_func func);
 void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, MolochCmd_func func);
 
 /******************************************************************************/
@@ -927,7 +937,7 @@ uint64_t moloch_packet_total_bytes();
 void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
-void     moloch_packet_add_packet_ip(char *ip, int mode);
+void     moloch_packet_add_packet_ip(char *ipstr, int mode);
 
 void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
@@ -1050,6 +1060,7 @@ char *moloch_yara_version();
 void moloch_field_init();
 void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len);
 int  moloch_field_define_text(char *text, int *shortcut);
+int  moloch_field_define_text_full(char *field, char *text, int *shortcut);
 int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
 int  moloch_field_by_db(const char *dbField);
 int  moloch_field_by_exp(const char *exp);
@@ -1061,7 +1072,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val);
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
-gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
+gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *certs, int len);
 void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  moloch_field_count(int pos, MolochSession_t *session);

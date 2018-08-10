@@ -104,6 +104,12 @@
             </span>&nbsp;
             Users
           </a>
+          <a href="help#shortcuts"
+            class="nav-link">
+            <span class="fa fa-fw fa-keyboard-o">
+            </span>&nbsp;
+            Shortcuts
+          </a>
           <a href="help#fields"
             class="nav-link">
             <span class="fa fa-fw fa-list">
@@ -565,6 +571,31 @@
             These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), An Account enabled toggle, An Admin toggle,
             if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
             This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users Settings tab. (see above)
+          </p>
+
+          <h3 id="shortcuts">
+            <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
+            Keyboard Shortcuts
+          </h3>
+
+          <p>
+            <code>'Q'</code> - set focus to query bar
+            <br>
+            <code>'T'</code> - set focus to time range selector
+            <br>
+            <code>'S'</code> - jump to the Sessions page
+            <br>
+            <code>'V'</code> - jump to the SPI View page
+            <br>
+            <code>'G'</code> - jump to the SPI Graph page
+            <br>
+            <code>'C'</code> - jump to the Connections page
+            <br>
+            <code>'H'</code> - jump to the Moloch Help page
+            <br>
+            <code>'esc'</code> - remove focus from any input and close the keyboard shortcuts help dialog
+            <br>
+            <code>'?'</code> - shows you the keyboard shortcuts help dialog
           </p>
 
           <hr v-has-permission="'createEnabled'">

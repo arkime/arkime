@@ -353,6 +353,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("cassandra", "cassandra", 0, (unsigned char*)"\x00\x00\x00\x25\x80\x01\x00\x01\x00\x00\x00\x0c\x73\x65\x74\x5f", 16, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("cassandra", "cassandra", 0, (unsigned char*)"\x00\x00\x00\x1d\x80\x01\x00\x01\x00\x00\x00\x10\x64\x65\x73\x63", 16, misc_add_protocol_classify);
 
+    moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x13", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x19", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x1a", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\x1b", 1, ntp_classify);

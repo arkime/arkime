@@ -109,7 +109,7 @@ YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value)
     if (parent) {
         if (!key) {
             char str[10];
-            sprintf(str, "%d", parent->values->len);
+            sprintf(str, "%u", parent->values->len);
             node->key = g_strdup(str);
         }
         g_ptr_array_add(parent->values, node);
@@ -873,17 +873,22 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
 void moloch_rules_session_create(MolochSession_t *session)
 {
     switch (session->protocol) {
+    case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_IP, &session->addr2);
-    case IPPROTO_ICMP:
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
             moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
         if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
             moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
+        // NO BREAK because TCP/UDP/SCTP have ip also
+        // fall through
+    case IPPROTO_ESP:
+    case IPPROTO_ICMP:
+    case IPPROTO_ICMPV6:
+        if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
+            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
+        if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
+            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_IP, &session->addr2);
         break;
     }
 }

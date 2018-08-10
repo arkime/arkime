@@ -446,10 +446,10 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
             data[out[i+2] + out[i+3]] = 0;
             char **fields = g_strsplit((char*)data + out[i+2], ",", 0);
             int f;
-            for (f = 0; fields[f] && f < 100; f++) {
+            for (f = 0; f < 100 && fields[f]; f++) {
                 int shortcut = -1;
                 int pos = moloch_field_define_text(fields[f], &shortcut);
-                if (shortcut != -1 && shortcut >= 0 && shortcut < 20)
+                if (shortcut >= 0 && shortcut < 20)
                     fieldShortHand[shortcut] = pos;
             }
             g_strfreev(fields);

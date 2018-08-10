@@ -38,8 +38,9 @@ function RedisSource (api, section) {
 
   this.tagsSetting();
   this.typeSetting();
-  if (!this.formatSetting())
+  if (!this.formatSetting()) {
     return;
+  }
 
   this.client = redis.createClient({url: this.url});
   this[this.typeFunc] = RedisSource.prototype.fetch;
@@ -63,7 +64,7 @@ RedisSource.prototype.fetch = function (key, cb) {
       return cb(null, newresult);
     }, () => {});
   });
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^redis:/);});

@@ -8,13 +8,16 @@ CP = /bin/cp
 all:
 
 install:
-	@mkdir -p "$(PARLIAMENTDIR)"
-	$(INSTALL) *.js package.json $(PARLIAMENTDIR)
+	@mkdir -p "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
+	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)
 	npm install
 	npm run build
-	$(CP) -pr public dist notifiers $(PARLIAMENTDIR)
+	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
+	$(CP) -pr notifiers $(PARLIAMENTDIR)
+	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
 	(cd $(PARLIAMENTDIR) ; npm install --production)
+	rm -f $(PARLIAMENTDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -rf node_modules
-	rm -rf dist
+	rm -rf vueapp/dist

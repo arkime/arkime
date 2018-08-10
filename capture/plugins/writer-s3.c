@@ -125,8 +125,8 @@ void writer_s3_part_cb (int code, unsigned char *UNUSED(data), int UNUSED(len), 
 
     file->partNumberResponses++;
 
-    char qs[1000];
     if (file->doClose && file->partNumber == file->partNumberResponses) {
+        char qs[1000];
         snprintf(qs, sizeof(qs), "uploadId=%s", file->uploadId);
         char *buf = moloch_http_get_buffer(1000000);
         BSB bsb;
@@ -178,8 +178,8 @@ void writer_s3_init_cb (int UNUSED(code), unsigned char *data, int len, gpointer
     }
     g_match_info_free(match_info);
 
-    char qs[1000];
     while (DLL_POP_HEAD(os3_, &file->outputQ, output)) {
+        char qs[1000];
         snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", file->partNumber, file->uploadId);
         if (config.debug)
             LOG("Part-Request: %s %s", file->outputFileName, qs);
@@ -349,12 +349,12 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 /******************************************************************************/
 void writer_s3_flush(gboolean all)
 {
-    char qs[1000];
-
     if (!currentFile)
         return;
 
     if (currentFile->uploadId) {
+        char qs[1000];
+
         snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", currentFile->partNumber, currentFile->uploadId);
         writer_s3_request("PUT", currentFile->outputPath, qs, (unsigned char *)outputBuffer, outputPos, FALSE, writer_s3_part_cb, currentFile);
         if (config.debug)
@@ -386,11 +386,9 @@ void writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
     struct tm         *tmp = localtime(&packet->ts.tv_sec);
-    int                offset = 0;
+    int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
 
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap", s3Region, s3Bucket, config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
-    if (offset == 0)
-        offset = 6 + strlen(s3Region) + strlen(s3Bucket);
     
     currentFile = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
     DLL_INIT(os3_, &currentFile->outputQ);

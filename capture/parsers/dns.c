@@ -273,6 +273,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 continue;
 
             dns_add_host(session, (char *)name, namelen);
+            break;
         }
         case 28: {
             if (rdlength != 16)

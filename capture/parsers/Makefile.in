@@ -12,7 +12,7 @@ SRCS=$(wildcard *.c)
 SOS=$(SRCS:.c=.so)
 
 %.so : %.c ../moloch.h ../hash.h ../dll.h
-	$(CC) @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
+	$(CC) @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
 
 all:$(SOS)
 

@@ -31,7 +31,7 @@ extern MolochConfig_t        config;
 LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
 
 char                       *readerFileName[256];
-LOCAL uint8_t               outputIds[256];
+LOCAL uint32_t              outputIds[256];
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
