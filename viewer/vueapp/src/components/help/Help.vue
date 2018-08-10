@@ -341,44 +341,89 @@
             The sessions tab within Moloch is where an analyst will find the bulk of details regarding
             the sessions which are being investigated. From top to bottom the sessions tab contains as follows:
           </p>
+          <h6>
+            <span class="fa fa-search"></span>&nbsp;
+            Search
+          </h6>
           <p>
             The magnifying glass in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
             While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
           </p>
-          <p>
-            The eyeball icon will allow an Analyst to either overlay a save "View" onto their current query, or save the current query as a "View" for easy recall in the future.
-            Views should be used for often used search queries that an Analyst regularly finds themselves running.
-          </p>
-          <p>
-            The purple "Down" arrow contains a few options. The first is to export a PCAP of the required sessions data. Second, the data within the viewer may also be exported as a CSV for further review and manipulation.
-            Third, Tags may be added to the sessions which have been detected by the Analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.
-            The fourth option is used to send the selected data to another system for further analysis. Each of these options may be applied to only sessions which have been opened (by clicking the sessions + box),
-            any items visible (on the current page), or all items which have matched the query string.
-          </p>
+          <h6>
+            <span class="fa fa-clock-o"></span>&nbsp;
+            Time Bounding
+          </h6>
           <p>
             The next line on the sessions tab contains the time bounding selections. The first element sets relative timing (such as last hour, last day, etc).
             The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
             The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
           </p>
+          <h6>
+            <span class="fa fa-file-o"></span>&nbsp;
+            Paging
+          </h6>
+          <p>
+            The pagination controls and records per page select box is immediately time range input and allow a user to navigate through the sessions returned.
+            Hover over the records per page text for more information on how many total entries were searched.
+          </p>
+          <h6>
+            <span class="fa fa-eye"></span>&nbsp;
+            Views
+          </h6>
+          <p>
+            The eyeball icon button will allow an Analyst to either overlay a saved "View" onto their current query, or save the current query as a "View" for easy recall in the future.
+            Views should be used for often used search queries that an Analyst regularly finds themselves running.
+          </p>
+          <h6>
+            <span class="fa fa-caret-down"></span>&nbsp;
+            Actions
+          </h6>
+          <p>
+            The "Down" arrow button contains a few options:
+            <ol>
+              <li>Export a PCAP of the required sessions data.</li>
+              <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
+              <li>Tags may be added or removed from the sessions which have been detected by the Analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.</li>
+              <li>Send the selected data to another system for further analysis.</li>
+              <li>Scrub packet data by overwriting the packets (if a user has data removal privelages).</li>
+              <li>Delete SPI and PCAP data entirely (if a user has data removal privelages).</li>
+            </ol>
+            Each of these options may be applied to only sessions which have been opened (by clicking the sessions + box),
+            any items visible (on the current page), or all items which have matched the query string.
+          </p>
+          <h6>
+            <span class="fa fa-bar-chart"></span>&nbsp;
+            Visualizations
+          </h6>
           <p>
             The next section contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
             Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected. Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
           </p>
+          <h6>
+            <span class="fa fa-table"></span>&nbsp;
+            Sessions table
+          </h6>
           <p>
-          The pagination header and records per page selected box is immediately below the quick visualisation and are self descriptive.
-          </p>
-          <p>
-            Now we arrive at the meat of the Sessions tab... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the purple box which contains 9 white squares. By clicking this box an Analyst may select
+            Now we arrive at the meat of the Sessions tab... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th"></span> ) button. By clicking this button an Analyst may select
             any column that they wish to observed without opening a session fully. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the Analyst's search query. Instead of drilling into each
             session that Analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Pot, IRC Channel, and IRC Nickname. This column selection tool allows for an Analyst to readily view the information which is important to them,
             configurable per investigation.
           </p>
           <p>
-            <!-- TODO: describe right click interactions for column headers -->
+            A user can save or load previously saved column configurations by clicking the save/load column configuration ( <span class="fa fa-columns"></span> ) button.
+          </p>
+          <p>
+            Hover over a column header and click the column action ( <span class="fa fa-caret-down"></span> ) button to do a few unique things:
+            <ol>
+              <li>Hide the column from the table</li>
+              <li>Export the column values</li>
+              <li>Export the column values with counts</li>
+              <li>Open the SPI Graph page with that field (see the <a href="help#spigraph">SPI Graph</a> section for more details)</li>
+            </ol>
           </p>
           <p>
             Viewing the sessions data of a specific network session is as easy as clicking the "Plus" sign next to a session. Upon clicking the + the session drawer will expand giving further context to the session.
-            All packet data which was parsed will now be displayed. This includes everything fro the USer making the connection to the TCP Flags observed during the session.
+            All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
             If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
             Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
             they may be downloaded and analyzed when necessary.
