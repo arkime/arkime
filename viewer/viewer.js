@@ -5314,10 +5314,10 @@ function sendSessionWorker(options, cb) {
 
     if (options.tags) {
       tags = options.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
-      if (!session.ta) {
-        session.ta = [];
+      if (!session.tags) {
+        session.tags = [];
       }
-      session.ta = session.ta.concat(tags);
+      session.tags = session.tags.concat(tags);
     }
 
     var molochClusters = Config.configMap("moloch-clusters");
@@ -5380,7 +5380,7 @@ app.get('/:nodeName/sendSession/:id', checkProxyRequest, function(req, res) {
     cluster: req.query.cluster,
     id: req.params.id,
     saveId: req.query.saveId,
-    tags: req.query.tags,
+    tags: req.body.tags,
     nodeName: req.params.nodeName
   };
 
@@ -5396,7 +5396,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
   if (req.body.ids === undefined ||
       req.query.cluster === undefined ||
       req.query.saveId === undefined ||
-      req.query.tags === undefined) {
+      req.body.tags === undefined) {
     return res.end();
   }
 
@@ -5408,7 +5408,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
       cluster: req.query.cluster,
       id: id,
       saveId: req.query.saveId,
-      tags: req.query.tags,
+      tags: req.body.tags,
       nodeName: req.params.nodeName
     };
 
@@ -5436,7 +5436,7 @@ function sendSessionsList(req, res, list) {
         cluster: req.body.cluster,
         id: item._id,
         saveId: saveId,
-        tags: req.query.tags,
+        tags: req.body.tags,
         nodeName: fields.node
       };
       // Get from our DISK
@@ -5448,8 +5448,8 @@ function sendSessionsList(req, res, list) {
         var info = url.parse(viewUrl);
         info.path = Config.basePath(fields.node) + fields.node + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        if (req.query.tags) {
-          info.path += "&tags=" + req.query.tags;
+        if (req.body.tags) {
+          info.path += "&tags=" + req.body.tags;
         }
         addAuth(info, req.user, fields.node);
         addCaTrust(info, fields.node);
