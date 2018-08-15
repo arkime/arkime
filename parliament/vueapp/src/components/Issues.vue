@@ -400,6 +400,7 @@ export default {
       ParliamentService.acknowledgeIssues(selectedIssues)
         .then((data) => {
           this.allIssuesSelected = false;
+          this.atLeastOneIssueSelected = false;
           for (let issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
@@ -417,6 +418,7 @@ export default {
       ParliamentService.ignoreIssues(selectedIssues, forMs)
         .then((data) => {
           this.allIssuesSelected = false;
+          this.atLeastOneIssueSelected = false;
           for (let issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
@@ -434,6 +436,7 @@ export default {
       ParliamentService.removeIgnoreIssues(selectedIssues)
         .then((data) => {
           this.allIssuesSelected = false;
+          this.atLeastOneIssueSelected = false;
           for (let issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
