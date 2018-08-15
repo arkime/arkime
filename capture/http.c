@@ -191,6 +191,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
         curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
         curl_easy_setopt(easy, CURLOPT_TIMEOUT, 60L);
+        curl_easy_setopt(easy, CURLOPT_TCP_KEEPALIVE, 1L);
     } else {
         easy = server->syncRequest.easy;
     }
@@ -789,6 +790,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETFUNCTION, moloch_http_curl_open_callback);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
     curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
+    curl_easy_setopt(request->easy, CURLOPT_TCP_KEEPALIVE, 1L);
 
     if (request->headerList) {
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);
