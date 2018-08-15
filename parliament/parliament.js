@@ -1262,29 +1262,123 @@ router.get('/issues', (req, res, next) => {
   return res.json({ issues: issuesClone });
 });
 
-// Acknowledge an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/acknowledgeIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to acknowledge.';
+// acknowledge one or more issues
+router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to acknowledge.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
   }
 
   let now = Date.now();
+  let count = 0;
 
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.acknowledged = now;
+      count++;
+    }
+  }
 
-  if (!issue) {
-    const error = new Error('Unable to find issue to acknowledge.');
+  if (!count) {
+    let errorText = 'Unable to acknowledge requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
     error.httpStatusCode = 500;
     return next(error);
   }
 
-  issue.acknowledged = now;
+  let successText = `Successfully acknowledged ${count} requested issue`;
+  let errorText = 'Unable to acknowledge the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
 
-  let successObj  = { success:true, text:'Successfully acknowledged the requested issue.', acknowledged:now };
-  let errorText   = 'Unable to acknowledge that issue.';
+  let successObj = { success:true, text:successText, acknowledged:now };
+  writeIssues(req, res, next, successObj, errorText);
+});
+
+// ignore one or more issues
+router.put('/ignoreIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to ignore.';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  let ms = req.body.ms || 3600000; // Default to 1 hour
+  let ignoreUntil = Date.now() + ms;
+  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
+
+  let count = 0;
+
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.ignoreUntil = ignoreUntil;
+      count++;
+    }
+  }
+
+  if (!count) {
+    let errorText = 'Unable to ignore requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+
+  let successText = `Successfully ignored ${count} requested issue`;
+  let errorText = 'Unable to ignore the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
+
+  let successObj = { success:true, text:successText, ignoreUntil:ignoreUntil };
+  writeIssues(req, res, next, successObj, errorText);
+});
+
+// unignore one or more issues
+router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to unignore.';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  let count = 0;
+
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.ignoreUntil = undefined;
+      issue.alerted     = undefined; // reset alert time so it can alert again
+      count++;
+    }
+  }
+
+  if (!count) {
+    let errorText = 'Unable to unignore requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+
+  let successText = `Successfully unignored ${count} requested issue`;
+  let errorText = 'Unable to unignore the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
+
+  let successObj = { success:true, text:successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1342,83 +1436,6 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
   let successObj  = { success:true, text:`Successfully removed ${count} acknowledged issues.`, issues:issues };
   let errorText   = 'Unable to remove acknowledged issues.';
   writeIssues(req, res, next, successObj, errorText, true);
-});
-
-// Ignore an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to ignore.';
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
-  let ms = req.body.ms || 3600000; // Default to 1 hour
-
-  let ignoreUntil = Date.now() + ms;
-  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
-
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
-
-  if (!issue) {
-    const error = new Error('Unable to find issue to ignore.');
-    error.httpStatusCode = 500;
-    return next(error);
-  }
-
-  issue.ignoreUntil = ignoreUntil;
-
-  let successObj  = { success:true, text:'Successfully ignored the requested issue.', ignoreUntil:ignoreUntil };
-  let errorText   = 'Unable to ignore that issue.';
-  writeIssues(req, res, next, successObj, errorText);
-});
-
-// Allow an issue with a cluster to alert by removing ignoreUntil
-router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to remove the ignore.';
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
-
-  if (!issue) {
-    const error = new Error('Unable to find issue to remove the ignore.');
-    error.httpStatusCode = 500;
-    return next(error);
-  }
-
-  issue.ignoreUntil = undefined;
-  issue.alerted     = undefined; // reset alert time so it can alert again
-
-  let successObj  = { success:true, text:'Successfully removed the ignore for the requested issue.' };
-  let errorText   = 'Unable to remove the ignore for that issue.';
-  writeIssues(req, res, next, successObj, errorText);
-});
-
-// Acknowledge all issues with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/acknowledgeAllIssues', verifyToken, (req, res, next) => {
-  let now   = Date.now();
-  let count = 0;
-
-  for (let issue of issues) {
-    if (issue.clusterId === parseInt(req.params.clusterId) && !issue.acknowledged) {
-      issue.acknowledged = now;
-      count++;
-    }
-  }
-
-  if (!count) {
-    const error = new Error('There are no issues in this cluster to acknowledge.');
-    error.httpStatusCode = 400;
-    return next(error);
-  }
-
-  let successObj  = { success:true, text:`Successfully acknowledged ${count} issues.`, acknowledged:now };
-  let errorText   = 'Unable to acknowledge issues.';
-  writeIssues(req, res, next, successObj, errorText);
 });
 
 // issue a test alert to a specified notifier

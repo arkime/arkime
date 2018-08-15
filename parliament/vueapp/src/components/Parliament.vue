@@ -596,9 +596,9 @@
                 class="card-footer small">
                 <span v-show="cluster.id !== clusterBeingEdited">
                   <a v-if="cluster.activeIssues && cluster.activeIssues.length"
-                    @click="acknowledgeAllIssues(group.id, cluster)"
+                    @click="acknowledgeAllIssues(cluster)"
                     class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                    title="Acknowledge all issues for this cluster and silence them for an hour"
+                    title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
                     v-b-tooltip.hover.left>
                     <span class="fa fa-check">
                     </span>
@@ -959,8 +959,8 @@ export default {
       let i = this.showMoreIssuesFor.indexOf(cluster.id);
       if (i > -1) { this.showMoreIssuesFor.splice(i, 1); }
     },
-    acknowledgeAllIssues: function (groupId, cluster) {
-      ParliamentService.acknowledgeAllIssues(groupId, cluster.id)
+    acknowledgeAllIssues: function (cluster) {
+      ParliamentService.acknowledgeIssues(cluster.activeIssues)
         .then((data) => {
           cluster.activeIssues = [];
         })

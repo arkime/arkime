@@ -48,8 +48,8 @@
     <!-- acknowledge issue button -->
     <button v-if="!issue.acknowledged"
       class="btn btn-outline-success btn-xs pull-right cursor-pointer"
-      v-b-tooltip.hover.bottom-right
-      title="Acknowledge this issue and silence it for an hour"
+      v-b-tooltip.hover
+      title="Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved."
       @click="acknowledgeIssue">
       <span class="fa fa-check fa-fw">
       </span>
@@ -95,7 +95,7 @@ export default {
     /* Sends a request to acknowledge an issue
      * If succesful, updates the issue in the view, otherwise displays error */
     acknowledgeIssue: function () {
-      ParliamentService.acknowledgeIssue(this.groupId, this.clusterId, this.issue)
+      ParliamentService.acknowledgeIssues([this.issue])
         .then((data) => {
           this.issue.acknowledged = data.acknowledged;
           this.updateIssue(true, 'Issue acknowledged', this.issue);
@@ -109,7 +109,6 @@ export default {
     removeIssue: function () {
       ParliamentService.removeIssue(this.groupId, this.clusterId, this.issue)
         .then((data) => {
-          // TODO remove the issue
           this.issue = undefined;
           this.updateIssue(true, 'Issue removed', this.issue);
         })
@@ -123,7 +122,7 @@ export default {
      * @param {number} forMs - the amount of time (in ms) that the issue should be ignored
      */
     ignoreIssue: function (forMs) {
-      ParliamentService.ignoreIssue(this.groupId, this.clusterId, this.issue, forMs)
+      ParliamentService.ignoreIssues([this.issue], forMs)
         .then((data) => {
           this.issue.ignoreUntil = data.ignoreUntil;
           this.updateIssue(true, 'Issue ignored', this.issue);
@@ -135,7 +134,7 @@ export default {
     /* Sends a request to remove an ignore for an issue
      * If succesful, updates the issue in the view, otherwise displays error */
     removeIgnore: function () {
-      ParliamentService.removeIgnoreIssue(this.groupId, this.clusterId, this.issue)
+      ParliamentService.removeIgnoreIssues([this.issue])
         .then((data) => {
           this.issue.ignoreUntil = undefined;
           this.updateIssue(true, 'Issue unignored', this.issue);
