@@ -5483,7 +5483,10 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/libpcap.a"
+      PCAP_LIBS="$withval/libpcap.a "
+      if test -x $withval/pcap-config; then
+	 PCAP_LIBS+=`$withval/pcap-config --static --additional-libs`;
+      fi
     elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -5492,7 +5495,10 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval/include"
-      PCAP_LIBS="$withval/lib/libpcap.a"
+      PCAP_LIBS="$withval/lib/libpcap.a "
+      if test -x $withval/pcap-config; then
+	 PCAP_LIBS+=`$withval/pcap-config --static --additional-libs`;
+      fi
     else
       { { $as_echo "$as_me:$LINENO: error: pcap.h or libpcap.a not found in $withval" >&5
 $as_echo "$as_me: error: pcap.h or libpcap.a not found in $withval" >&2;}
@@ -8001,3 +8007,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:$LINENO: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+

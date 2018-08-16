@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - new hourly[2348]/hourly12 rotateIndex
   - capture - for live captures prevent out of order stats records
   - viewer - fix upload command tags (issue #888)
+  - release - libpcap 1.9.0
 
 1.5.2 2018/07/26
   - capture - new custom-fields section
