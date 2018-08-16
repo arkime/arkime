@@ -1,7 +1,7 @@
 <template>
 
   <!-- settings content -->
-  <div class="settings-page ml-1 mr-1">
+  <div class="settings-page">
 
     <!-- sub navbar -->
     <div class="sub-navbar">
@@ -2410,6 +2410,8 @@ export default {
 }
 .settings-content {
   margin-top: 90px;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .settings-page .sub-navbar {
