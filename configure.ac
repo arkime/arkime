@@ -116,7 +116,10 @@ AC_ARG_WITH(libpcap,
       fi
 
       PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/libpcap.a"
+      PCAP_LIBS="$withval/libpcap.a "
+      if test -x $withval/pcap-config; then
+	 PCAP_LIBS+=`$withval/pcap-config --static --additional-libs`;
+      fi
     elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -125,7 +128,10 @@ AC_ARG_WITH(libpcap,
       fi
 
       PCAP_CFLAGS="-I$withval/include"
-      PCAP_LIBS="$withval/lib/libpcap.a"
+      PCAP_LIBS="$withval/lib/libpcap.a "
+      if test -x $withval/pcap-config; then
+	 PCAP_LIBS+=`$withval/pcap-config --static --additional-libs`;
+      fi
     else
       AC_ERROR(pcap.h or libpcap.a not found in $withval)
     fi
