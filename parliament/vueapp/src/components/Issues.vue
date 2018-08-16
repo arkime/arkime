@@ -3,7 +3,7 @@
   <div class="container-fluid">
 
     <!-- page error -->
-    <div v-if="error"
+    <div v-if="!loading && error"
       class="alert alert-danger">
       <span class="fa fa-exclamation-triangle">
       </span>&nbsp;
@@ -242,7 +242,7 @@
     </table> <!-- /issues table -->
 
     <!-- no issues -->
-    <div v-if="!issues || !issues.length"
+    <div v-if="!loading && (!issues || !issues.length)"
       class="info-area vertical-center text-center">
       <div class="text-muted mt-5">
         <span class="fa fa-3x fa-smile-o text-muted-more">
@@ -270,6 +270,8 @@ export default {
     return {
       // page error
       error: '',
+      // page data loading
+      loading: true,
       // page data
       issues: [],
       allIssuesSelected: false,
@@ -456,9 +458,11 @@ export default {
       ParliamentService.getIssues(query)
         .then((data) => {
           this.error = '';
+          this.loading = false;
           this.issues = data.issues;
         })
         .catch((error) => {
+          this.loading = false;
           this.error = error.text || 'Error fetching issues. The issues below are likely out of date';
         });
     },
