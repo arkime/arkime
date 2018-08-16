@@ -404,7 +404,7 @@ export default {
           .catch((error) => {
             this.cancellablePromise = null;
             this.loadingValues = false;
-            this.loadingError = error;
+            this.loadingError = error.message || error;
           });
       }
     },
@@ -416,9 +416,11 @@ export default {
     addExistsItem: function (strToMatch, operator) {
       if (operator !== '==' && operator !== '!=') { return; }
 
-      if ('EXISTS!'.match(new RegExp(strToMatch + '.*'))) {
-        this.results.push('EXISTS!');
-      }
+      try {
+        if ('EXISTS!'.match(new RegExp(strToMatch + '.*'))) {
+          this.results.push('EXISTS!');
+        }
+      } catch (error) {}
     },
     /* aborts a pending promise */
     cancelPromise: function () {
