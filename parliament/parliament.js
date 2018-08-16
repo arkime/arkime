@@ -955,7 +955,16 @@ router.put('/settings', verifyToken, (req, res, next) => {
 
 // Update the parliament settings object to the defaults
 router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
-  parliament.settings = settingsDefault;
+  let type = 'all'; // default
+  if (req.body.type) {
+    type = req.body.type;
+  }
+
+  if (type === 'general') {
+    parliament.settings.general = JSON.parse(JSON.stringify(settingsDefault.general));
+  } else {
+    parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
+  }
 
   buildNotifiers();
 
@@ -972,7 +981,10 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
         return next(error);
       }
 
-      return res.json(settings);
+      return res.json({
+        settings: settings,
+        text: `Successfully restored ${req.body.type} default settings.`
+      });
     }
   );
 });
