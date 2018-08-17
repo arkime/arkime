@@ -21,6 +21,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - for live captures prevent out of order stats records
   - viewer - fix upload command tags (issue #888)
   - release - libpcap 1.9.0
+  - capture - aes-256-ctr: iv is 12B, limit maxFileSizeG to 64G, dek is more random
 
 1.5.2 2018/07/26
   - capture - new custom-fields section

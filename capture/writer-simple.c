@@ -225,10 +225,11 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             uint8_t dek[32];
             uint8_t iv[16];
             char    ivhex[33];
-            RAND_bytes(iv, 8);
-            memset(iv+8, 0, 8);
+            RAND_bytes(iv, 12);
+            RAND_bytes(dek, 32);
+            memset(iv+12, 0, 4);
             writer_simple_encrypt_key(dek, 32, dekhex);
-            moloch_sprint_hex_string(ivhex, iv, 8);
+            moloch_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
             name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
                                               "encoding", "aes-256-ctr",
@@ -418,6 +419,11 @@ void writer_simple_init(char *name)
             LOGEXIT("Must set simpleKEKId");
         simpleMode = MOLOCH_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
+        if (config.maxFileSizeB > 64*1024LL*1024LL*1024LL) {
+            LOG ("INFO: Reseting maxFileSizeG since %lf is greater then the max 64G in aes-256-ctr mode", config.maxFileSizeG);
+            config.maxFileSizeG = 64.0;
+            config.maxFileSizeB = 64LL*1024LL*1024LL*1024LL;
+        }
     } else if (strcmp(mode, "xor-2048") == 0) {
         if (!simpleKEKId)
             LOGEXIT("Must set simpleKEKId");
