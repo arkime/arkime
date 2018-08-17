@@ -8,7 +8,7 @@
       <span class="fa fa-exclamation-triangle">
       </span>&nbsp;
       {{ error }}
-      <span v-if="!settings && loggedIn">
+      <span v-if="!settings && loggedIn && !networkError">
         If the problem persists, try
         <a class="no-decoration"
           href="javascript:void(0)"
@@ -413,6 +413,7 @@ export default {
     return {
       // page error
       error: '',
+      networkError: false,
       // page success message
       success: '',
       // default tab
@@ -604,6 +605,7 @@ export default {
           initialized = true;
           if (this.hasAuth) {
             this.error = error.text || 'Error fetching settings.';
+            this.networkError = error.networkError;
           } else {
             this.error = 'No password set for your Parliament. Please set a password so you can do more stuff!';
             this.openView('password'); // redirect the user to possibly create a password
