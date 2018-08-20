@@ -378,13 +378,14 @@ function findIssue (clusterId, issueType, node) {
 // Updates an existing issue or pushes a new issue onto the issue array
 function setIssue (cluster, newIssue) {
   // build issue
-  let issueType       = issueTypes[newIssue.type];
-  newIssue.text       = issueType.text;
-  newIssue.title      = issueType.name;
-  newIssue.severity   = issueType.severity;
-  newIssue.clusterId  = cluster.id;
-  newIssue.cluster    = cluster.title;
-  newIssue.message    = formatIssueMessage(cluster, newIssue);
+  let issueType = issueTypes[newIssue.type];
+  newIssue.text = issueType.text;
+  newIssue.title = issueType.name;
+  newIssue.severity = issueType.severity;
+  newIssue.clusterId = cluster.id;
+  newIssue.cluster = cluster.title;
+  newIssue.message = formatIssueMessage(cluster, newIssue);
+  newIssue.provisional = true;
 
   let existingIssue = false;
 
@@ -394,6 +395,11 @@ function setIssue (cluster, newIssue) {
         issue.type === newIssue.type &&
         issue.node === newIssue.node) {
       existingIssue = true;
+
+      // this is at least the second time we've seen this issue
+      // so it must be a persistent issue
+      issue.provisional = false;
+
       if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
@@ -409,10 +415,11 @@ function setIssue (cluster, newIssue) {
   }
 
   if (!existingIssue) {
+    // this is the first time we've seen this issue
+    // don't alert yet, but create the issue
     newIssue.firstNoticed = Date.now();
     newIssue.lastNoticed = Date.now();
     issues.push(newIssue);
-    buildAlert(cluster, newIssue);
   }
 
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
@@ -746,6 +753,12 @@ function cleanUpIssues () {
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
+    // remove issues that are provisional that haven't been seen since the last cycle
+    if (issue.provisional && timeSinceLastNoticed >= 10000) {
+      issuesRemoved = true;
+      issues.splice(len, 1);
+    }
+
     // remove all issues that have not been seen again for the removeIssuesAfter time, and
     // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
     if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
@@ -1036,7 +1049,8 @@ router.get('/parliament', (req, res, next) => {
       cluster.activeIssues = [];
       for (let issue of issues) {
         if (issue.clusterId === cluster.id &&
-          !issue.acknowledged && !issue.ignoreUntil) {
+          !issue.acknowledged && !issue.ignoreUntil &&
+          !issue.provisional) {
           cluster.activeIssues.push(issue);
         }
       }
@@ -1276,6 +1290,9 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
 // Get a list of issues
 router.get('/issues', (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
+
+  // filter out provisional issues
+  issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
   let type = 'string';
   let sortBy = req.query.sort;
