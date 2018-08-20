@@ -38,7 +38,11 @@ LOCAL char                  udpTuple;
 LOCAL int                   protocolField;
 
 LOCAL uint32_t              fieldsTS;
-LOCAL int                   fieldsMap[MOLOCH_FIELDS_DB_MAX];
+
+#define FIELDS_MAP_MAX      21
+LOCAL int                   fieldsMap[FIELDS_MAP_MAX][MOLOCH_FIELDS_DB_MAX];
+LOCAL char                 *fieldsMapHash[FIELDS_MAP_MAX];
+LOCAL int                   fieldsMapCnt;
 
 LOCAL uint32_t              inflight;
 
@@ -49,6 +53,8 @@ LOCAL int                   wiseExcludeDomainsNum;
 LOCAL char                 *wiseURL;
 LOCAL int                   wisePort;
 LOCAL char                 *wiseHost;
+
+LOCAL char                  wiseGetURI[4096];
 
 LOCAL const int validDNS[256] = {
     ['-'] = 1,
@@ -161,7 +167,7 @@ LOCAL void wise_load_fields()
     char                key[500];
     int                 key_len;
 
-    memset(fieldsMap, -1, sizeof(fieldsMap));
+    memset(fieldsMap[0], -1, sizeof(fieldsMap[0]));
 
     key_len = snprintf(key, sizeof(key), "/fields?ver=1");
     size_t         data_len;
@@ -200,11 +206,11 @@ LOCAL void wise_load_fields()
     for (i = 0; i < cnt; i++) {
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-        fieldsMap[i] = moloch_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
-        if (fieldsMap[i] == -1)
+        fieldsMap[0][i] = moloch_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
+        if (fieldsMap[0][i] == -1)
             fieldsTS = 0;
         if (config.debug)
-            LOG("Couldn't define field - %d %d %s", i, fieldsMap[i], BSB_WORK_PTR(bsb));
+            LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
         BSB_IMPORT_skip(bsb, len);
     }
     free(data);
@@ -250,7 +256,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
     BSB_IMPORT_u32(bsb, fts);
     BSB_IMPORT_u32(bsb, ver);
 
-    if (BSB_IS_ERROR(bsb) || ver != 0) {
+    if (BSB_IS_ERROR(bsb) || (ver != 0 && ver != 2)) {
         MOLOCH_LOCK(item);
         for (i = 0; i < request->numItems; i++) {
             wise_free_item_unlocked(request->items[i]);
@@ -260,8 +266,59 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         return;
     }
 
-    if (fts != fieldsTS)
+    if (ver == 0 && fts != fieldsTS)
         wise_load_fields();
+
+    int hashPos = 0;
+    if (ver == 2) {
+        unsigned char *hash;
+        BSB_IMPORT_ptr(bsb, hash, 32);
+
+        int cnt;
+        BSB_IMPORT_u16(bsb, cnt);
+
+        MOLOCH_LOCK(item);
+        for (hashPos = 0; hashPos < fieldsMapCnt; hashPos++) {
+            if (memcmp(hash, fieldsMapHash[hashPos], 32) == 0)
+                break;
+        }
+
+        if (config.debug)
+            LOG("WISE Response %32.32s cnt %d pos %d", hash, cnt, hashPos);
+
+        if (hashPos == FIELDS_MAP_MAX)
+            LOGEXIT("Too many unique wise hashs");
+
+        int i;
+        if (hashPos == fieldsMapCnt) {
+            fieldsMapHash[hashPos] = g_strndup((gchar*)hash, 32);
+            fieldsMapCnt++;
+            sprintf(wiseGetURI, "/get?ver=2");
+            if (fieldsMapCnt > 0) {
+                strcat(wiseGetURI, "&hashes=");
+                strcat(wiseGetURI, fieldsMapHash[0]);
+                for (i = 1; i < fieldsMapCnt; i++) {
+                    strcat(wiseGetURI, ",");
+                    strcat(wiseGetURI, fieldsMapHash[i]);
+                }
+            }
+        }
+
+        if (cnt)
+            memset(fieldsMap[hashPos], -1, sizeof(fieldsMap[hashPos]));
+
+        for (i = 0; i < cnt; i++) {
+            int len = 0;
+            BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
+            fieldsMap[0][i] = moloch_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
+            if (fieldsMap[0][i] == -1)
+                fieldsTS = 0;
+            if (config.debug)
+                LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
+            BSB_IMPORT_skip(bsb, len);
+        }
+        MOLOCH_UNLOCK(item);
+    }
 
     struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
@@ -278,7 +335,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
 
                 int rfield = 0;
                 BSB_IMPORT_u08(bsb, rfield);
-                int fieldPos = fieldsMap[rfield];
+                int fieldPos = fieldsMap[hashPos][rfield];
 
                 int len = 0;
                 BSB_IMPORT_u08(bsb, len);
@@ -538,7 +595,7 @@ LOCAL void wise_flush_locked()
         return;
 
     inflight += iRequest->numItems;
-    if (moloch_http_send(wiseService, "POST", "/get?ver=1", -1, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
+    if (moloch_http_send(wiseService, "POST", wiseGetURI, -1, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
         LOG("Wise - request failed %p for %d items", iRequest, iRequest->numItems);
         wise_cb(500, NULL, 0, iRequest);
     }
@@ -852,4 +909,6 @@ void moloch_plugin_init()
     }
     g_timeout_add_seconds(1, wise_flush, 0);
     wise_load_fields();
+
+    sprintf(wiseGetURI, "/get?ver=2");
 }
