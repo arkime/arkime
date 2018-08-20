@@ -30,6 +30,7 @@ var ini    = require('iniparser'),
     crypto = require('crypto');
 
 exports.debug = 0;
+exports.insecure = false;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
     hostName: os.hostname(),
@@ -52,6 +53,8 @@ function processArgs() {
       internals.nodeName = process.argv[i];
     } else if (process.argv[i] === "--debug") {
       exports.debug++;
+    } else if (process.argv[i] === "--insecure") {
+      exports.insecure = true;
     } else {
       args.push(process.argv[i]);
     }

@@ -62,7 +62,8 @@ exports.initialize = function (info, cb) {
     requestTimeout: 300000,
     keepAlive: true,
     minSockets: 20,
-    maxSockets: 51
+    maxSockets: 51,
+    ssl: {rejectUnauthorized: !internals.info.insecure}
   });
 
   internals.elasticSearchClient.info((err,data) => {
@@ -82,7 +83,8 @@ exports.initialize = function (info, cb) {
         requestTimeout: 300000,
         keepAlive: true,
         minSockets: 5,
-        maxSockets: 6
+        maxSockets: 6,
+        ssl: {rejectUnauthorized: !internals.info.insecure}
       });
     } else {
       internals.usersElasticSearchClient = internals.elasticSearchClient;

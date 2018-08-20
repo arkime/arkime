@@ -66,7 +66,7 @@ var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   userNameHeader: Config.get("userNameHeader"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
-  httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
+  httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodeStats: [],
   caTrustCerts: {},
   cronRunning: false,
@@ -6137,6 +6137,7 @@ function processArgs(argv) {
       console.log("  -host <host name>     Host name to use, default os hostname");
       console.log("  -n <node name>        Node name section to use in config file, default first part of hostname");
       console.log("  --debug               Increase debug level, multiple are supported");
+      console.log("  --insecure            Disable cert verification");
 
       process.exit(0);
     }
@@ -6151,4 +6152,5 @@ Db.initialize({host: internals.elasticBase,
                usersHost: Config.get("usersElasticsearch"),
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
-               dontMapTags: Config.get("multiES", false)}, main);
+               dontMapTags: Config.get("multiES", false),
+               insecure: Config.insecure}, main);
