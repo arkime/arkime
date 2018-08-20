@@ -5,6 +5,7 @@ export default function setup () {
   axios.defaults.withCredentials = true;
   axios.defaults.xsrfCookieName = 'MOLOCH-COOKIE';
   axios.defaults.xsrfHeaderName = 'X-MOLOCH-COOKIE';
+  axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
   // watch for no response to let the user know the server is down
   axios.interceptors.response.use(function (response) {
