@@ -108,7 +108,7 @@
           <strong class="text-theme-accent"
             v-if="!error && recordsFiltered !== undefined">
             Showing {{ recordsFiltered | commaString }} entries filtered from
-            {{ recordsTotal }} total entries
+            {{ recordsTotal | commaString }} total entries
           </strong>
         </div>
       </div>
