@@ -268,6 +268,48 @@ function verifyToken (req, res, next) {
 }
 
 /* Helper functions -------------------------------------------------------- */
+// list of alerts that will be sent at every 10 seconds
+let alerts = [];
+function addToAlertQueue (notifier, config, message) {
+  alerts.push({
+    config: config,
+    message: message,
+    notifier: notifier
+  });
+}
+
+// sends alerts in the alerts list
+async function sendAlerts () {
+  let promise = new Promise((resolve, reject) => {
+    for (let i = 0, len = alerts.length; i < len; i++) {
+      (function (i) {
+        // timeout so that alerts are alerted in order
+        setTimeout(() => {
+          let alert = alerts[i];
+          alert.notifier.sendAlert(alert.config, alert.message);
+          if (i === len - 1) { resolve(); }
+        }, 250 * i);
+      })(i);
+    };
+  });
+
+  promise.then(() => {
+    alerts = []; // clear the queue
+  });
+}
+
+// sorts the list of alerts by cluster title then sends them
+// assumes that the alert message starts with the cluster title
+function processAlerts () {
+  if (alerts && alerts.length) {
+    alerts.sort((a, b) => {
+      return a.message.localeCompare(b.message);
+    });
+
+    sendAlerts();
+  }
+}
+
 function formatIssueMessage (cluster, issue) {
   let message = '';
 
@@ -292,7 +334,7 @@ function formatIssueMessage (cluster, issue) {
   return message;
 }
 
-function issueAlert (cluster, issue) {
+function buildAlert (cluster, issue) {
   issue.alerted = Date.now();
 
   const message = `${cluster.title} - ${issue.message}`;
@@ -322,7 +364,7 @@ function issueAlert (cluster, issue) {
       config[f.name] = field.value;
     }
 
-    notifier.sendAlert(config, message);
+    addToAlertQueue(notifier, config, message);
   }
 }
 
@@ -365,7 +407,7 @@ function setIssue (cluster, newIssue) {
       issue.lastNoticed = Date.now();
 
       if (!issue.acknowledged && !issue.ignoreUntil && !issue.alerted) {
-        issueAlert(cluster, issue);
+        buildAlert(cluster, issue);
       }
     }
   }
@@ -374,7 +416,7 @@ function setIssue (cluster, newIssue) {
     newIssue.firstNoticed = Date.now();
     newIssue.lastNoticed = Date.now();
     issues.push(newIssue);
-    issueAlert(cluster, newIssue);
+    buildAlert(cluster, newIssue);
   }
 
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
@@ -1531,5 +1573,6 @@ server
 
     setInterval(() => {
       updateParliament();
+      processAlerts();
     }, 10000);
   });
