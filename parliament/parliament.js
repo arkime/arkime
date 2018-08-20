@@ -270,14 +270,6 @@ function verifyToken (req, res, next) {
 /* Helper functions -------------------------------------------------------- */
 // list of alerts that will be sent at every 10 seconds
 let alerts = [];
-function addToAlertQueue (notifier, config, message) {
-  alerts.push({
-    config: config,
-    message: message,
-    notifier: notifier
-  });
-}
-
 // sends alerts in the alerts list
 async function sendAlerts () {
   let promise = new Promise((resolve, reject) => {
@@ -364,7 +356,11 @@ function buildAlert (cluster, issue) {
       config[f.name] = field.value;
     }
 
-    addToAlertQueue(notifier, config, message);
+    alerts.push({
+      config: config,
+      message: message,
+      notifier: notifier
+    });
   }
 }
 
