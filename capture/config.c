@@ -568,6 +568,10 @@ void moloch_config_load()
                 if (n < 0 || n > 0xffff)
                     LOGEXIT("Bad value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
+            } else if (strcmp(s, "corrupt") == 0) {
+                config.corruptSavePcap = 1;
+            } else if (strcmp(s, "-corrupt") == 0) {
+                config.corruptSavePcap = 0;
             } else {
                 LOGEXIT("Not sure what %s is", s);
             }

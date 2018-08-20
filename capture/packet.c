@@ -770,7 +770,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 }
 
 /******************************************************************************/
-static FILE *unknownPacketFile[2];
+static FILE *unknownPacketFile[3];
 LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const packet)
 {
     static MOLOCH_LOCK_DEFINE(lock);
@@ -784,7 +784,7 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
     MOLOCH_LOCK(lock);
     if (!unknownPacketFile[type]) {
         char               str[PATH_MAX];
-        static const char *names[] = {"unknown.ether", "unknown.ip"};
+        static const char *names[] = {"unknown.ether", "unknown.ip", "corrupt"};
 
         snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
         unknownPacketFile[type] = fopen(str, "w");
@@ -1715,6 +1715,10 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     default:
         LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
     }
+    if (rc == MOLOCH_PACKET_CORRUPT && config.corruptSavePcap) {
+        moloch_packet_save_unknown_packet(2, packet);
+    }
+
     MOLOCH_THREAD_INCR(packetStats[rc]);
 
     if (rc) {
@@ -2006,4 +2010,6 @@ void moloch_packet_exit()
         fclose(unknownPacketFile[0]);
     if (unknownPacketFile[1])
         fclose(unknownPacketFile[1]);
+    if (unknownPacketFile[2])
+        fclose(unknownPacketFile[2]);
 }

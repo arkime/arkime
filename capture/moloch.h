@@ -400,6 +400,7 @@ typedef struct moloch_config {
     char      readTruncatedPackets;
     char      yaraEveryPacket;
     char     *pcapDirAlgorithm;
+    char      corruptSavePcap;
 } MolochConfig_t;
 
 typedef struct {

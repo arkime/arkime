@@ -25,6 +25,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - deal with talking to multiple wise servers better
   - all - --insecure option
   - viewer - set rejectUnauthorized for ES connections (issue #894)
+  - capture - Added corrupt setting to saveUnknownPackets
 
 1.5.2 2018/07/26
   - capture - new custom-fields section
