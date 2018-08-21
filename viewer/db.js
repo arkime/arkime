@@ -63,7 +63,7 @@ exports.initialize = function (info, cb) {
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
-    ssl: {rejectUnauthorized: !internals.info.insecure}
+    ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
   });
 
   internals.elasticSearchClient.info((err,data) => {
@@ -84,7 +84,7 @@ exports.initialize = function (info, cb) {
         keepAlive: true,
         minSockets: 5,
         maxSockets: 6,
-        ssl: {rejectUnauthorized: !internals.info.insecure}
+        ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
       });
     } else {
       internals.usersElasticSearchClient = internals.elasticSearchClient;
