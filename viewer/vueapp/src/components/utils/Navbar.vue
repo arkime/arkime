@@ -80,7 +80,8 @@ export default {
         connections: { title: 'Connections', link: 'connections' },
         files: { title: 'Files', link: 'files' },
         stats: { title: 'Stats', link: 'stats' },
-        upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
+        upload: { title: 'Upload', link: 'upload', permission: 'canUpload' },
+        packetSearch: { title: 'Packet Search', link: 'packetsearch' }
       };
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {
