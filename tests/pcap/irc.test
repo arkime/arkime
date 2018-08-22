@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS4 University of Southern California",
+            "dstASN" : "AS23028 Team Cymru Inc.",
             "dstBytes" : 7899,
             "dstDataBytes" : 6901,
             "dstGEO" : "US",
