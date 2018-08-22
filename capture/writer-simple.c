@@ -404,8 +404,8 @@ void writer_simple_init(char *name)
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
     if (mode && !mode[0]) {
-        g_free(node);
-        node = NULL;
+        g_free(mode);
+        mode = NULL;
     } else {
         simpleKEKId = moloch_config_str(NULL, "simpleKEKId", NULL);
         if (simpleKEKId && !simpleKEKId[0]) {
