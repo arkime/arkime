@@ -402,7 +402,17 @@ void writer_simple_init(char *name)
     moloch_writer_write        = writer_simple_write;
 
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
-    simpleKEKId = moloch_config_str(NULL, "simpleKEKId", NULL);
+
+    if (mode && !mode[0]) {
+        g_free(node);
+        node = NULL;
+    } else {
+        simpleKEKId = moloch_config_str(NULL, "simpleKEKId", NULL);
+        if (simpleKEKId && !simpleKEKId[0]) {
+            g_free(simpleKEKId);
+            simpleKEKId = NULL;
+        }
+    }
 
     if (simpleKEKId) {
        char *key = moloch_config_section_str(NULL, "keks", simpleKEKId, NULL);
