@@ -12,7 +12,7 @@ import Spigraph from '@/components/spigraph/Spigraph';
 import Connections from '@/components/connections/Connections';
 import Settings from '@/components/settings/Settings';
 import Upload from '@/components/upload/Upload';
-import PacketSearch from '@/components/packetsearch/PacketSearch';
+import Hunt from '@/components/hunt/Hunt';
 import Moloch404 from '@/components/utils/404';
 
 Vue.use(Router);
@@ -92,9 +92,9 @@ const router = new Router({
       component: Upload
     },
     {
-      path: '/packetsearch',
-      name: 'Packet Search',
-      component: PacketSearch
+      path: '/hunt',
+      name: 'Hunt',
+      component: Hunt
     },
     {
       path: '*',
