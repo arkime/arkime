@@ -1266,6 +1266,8 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
           cluster.hideDataNodes   = req.body.hideDataNodes;
           cluster.hideDeltaTDPS   = req.body.hideDeltaTDPS;
           cluster.hideTotalNodes  = req.body.hideTotalNodes;
+          cluster.hideMonitoring  = req.body.hideMonitoring;
+          cluster.hideMolochNodes = req.body.hideMolochNodes;
           foundCluster = true;
           break;
         }

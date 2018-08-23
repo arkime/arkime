@@ -454,13 +454,13 @@
                         </small>
                       </label>
                     </div>
-                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                         <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
-                          :checked="!cluster.hideDataNodes"
-                          @change="cluster.hideDataNodes = !cluster.hideDataNodes"
+                          :checked="!cluster.hideMonitoring"
+                          @change="cluster.hideMonitoring = !cluster.hideMonitoring"
                         />
                         <strong class="d-inline-block">
                           {{ cluster.monitoring | commaString }}
@@ -470,13 +470,13 @@
                         </small>
                       </label>
                     </div>
-                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMolochNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                         <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
-                          :checked="!cluster.hideTotalNodes"
-                          @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
+                          :checked="!cluster.hideMolochNodes"
+                          @change="cluster.hideMolochNodes = !cluster.hideMolochNodes"
                         />
                         <strong class="d-inline-block">
                           {{ cluster.molochNodes | commaString }}
@@ -962,7 +962,9 @@ export default {
         hideDeltaBPS: cluster.hideDeltaBPS,
         hideDataNodes: cluster.hideDataNodes,
         hideDeltaTDPS: cluster.hideDeltaTDPS,
-        hideTotalNodes: cluster.hideTotalNodes
+        hideTotalNodes: cluster.hideTotalNodes,
+        hideMonitoring: cluster.hideMonitoring,
+        hideMolochNodes: cluster.hideMolochNodes
       };
 
       ParliamentService.editCluster(group.id, cluster.id, updatedCluster)
