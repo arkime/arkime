@@ -321,31 +321,37 @@
                   </span>
                 </h4> <!-- /notifier title -->
                 <!-- notifier fields -->
-                <div class="input-group mb-2"
-                  v-for="field of notifier.fields"
+                <div v-for="field of notifier.fields"
                   :key="field.name">
-                  <span class="input-group-prepend cursor-help"
-                    :title="field.description"
-                    v-b-tooltip.hover.bottom-left>
-                    <span class="input-group-text">
-                      {{ field.name }}
-                      <sup v-if="field.required">*</sup>
+                  <span class="mb-2"
+                    :class="{'input-group':field.type !== 'checkbox'}">
+                    <span class="input-group-prepend cursor-help"
+                      v-if="field.type !== 'checkbox'"
+                      :title="field.description"
+                      v-b-tooltip.hover.bottom-left>
+                      <span class="input-group-text">
+                        {{ field.name }}
+                        <sup v-if="field.required">*</sup>
+                      </span>
                     </span>
-                  </span>
-                  <input class="form-control"
-                    v-model="field.value"
-                    @input="debounceInput"
-                    :type="getFieldInputType(field)"
-                  />
-                  <span v-if="field.secret"
-                    class="input-group-append cursor-pointer"
-                    @click="toggleVisibleSecretField(field)">
-                    <span class="input-group-text">
-                      <span class="fa"
-                        :class="{'fa-eye':field.secret && !field.showValue, 'fa-eye-slash':field.secret && field.showValue}">
+                    <input :class="{'form-control':field.type !== 'checkbox'}"
+                      v-model="field.value"
+                      @input="debounceInput"
+                      :type="getFieldInputType(field)"
+                    />
+                    <span v-if="field.type === 'secret'"
+                      class="input-group-append cursor-pointer"
+                      @click="toggleVisibleSecretField(field)">
+                      <span class="input-group-text">
+                        <span class="fa"
+                          :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
+                        </span>
                       </span>
                     </span>
                   </span>
+                  <label v-if="field.type === 'checkbox'">
+                    &nbsp;{{ field.name }}
+                  </label>
                 </div> <!-- /notifier fields -->
                 <!-- notifier actions -->
                 <div class="row mt-3">
@@ -520,7 +526,13 @@ export default {
       this.saveSettings();
     },
     getFieldInputType: function (field) {
-      return (field.secret && !field.showValue) ? 'password' : 'text';
+      if (field.type === 'checkbox') {
+        return 'checkbox';
+      } else if (field.type === 'secret' && !field.showValue) {
+        return 'password';
+      } else {
+        return 'text';
+      }
     },
     cancelChangePassword: function () {
       this.currentPassword = '';

@@ -575,28 +575,41 @@ function getStats (cluster) {
 }
 
 function buildNotifiers () {
-  // build notifiers
+  // build/update notifiers
   for (let n in internals.notifiers) {
     // if the notifier is not in settings, add it
-    if (!parliament.settings.notifiers[n]) {
-      const notifier = internals.notifiers[n];
+    const notifier = internals.notifiers[n];
 
-      let notifierData = { name: n, fields: {}, alerts: {} };
+    let notifierData = { name: n, fields: {}, alerts: {} };
 
-      // add fields to notifier
-      for (let field of notifier.fields) {
-        let fieldData = field;
-        fieldData.value = ''; // has empty value to start
-        notifierData.fields[field.name] = fieldData;
+    // add fields (and existing values) to notifier
+    for (let field of notifier.fields) {
+      let fieldData = field;
+      let value = '';  // has empty value to start
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].fields[field.name]) {
+        value = parliament.settings.notifiers[n].fields[field.name].value;
       }
-
-      // build alerts
-      for (let a in issueTypes) {
-        notifierData.alerts[a] = true;
-      }
-
-      parliament.settings.notifiers[n] = notifierData;
+      fieldData.value = value;
+      notifierData.fields[field.name] = fieldData;
     }
+
+    // build alerts
+    for (let a in issueTypes) {
+      let value = true;
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].alerts.hasOwnProperty(a)) {
+        value = parliament.settings.notifiers[n].alerts[a];
+      }
+      notifierData.alerts[a] = value;
+    }
+
+    if (parliament.settings.notifiers[n] &&
+      parliament.settings.notifiers[n].on) {
+      notifierData.on = true;
+    }
+
+    parliament.settings.notifiers[n] = notifierData;
   }
 }
 
@@ -654,29 +667,7 @@ function initializeParliament () {
       parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
     }
 
-    // build notifiers
-    for (let n in internals.notifiers) {
-      // if the notifier is not in settings, add it
-      if (!parliament.settings.notifiers[n]) {
-        const notifier = internals.notifiers[n];
-
-        let notifierData = { name: n, fields: {}, alerts: {} };
-
-        // add fields to notifier
-        for (let field of notifier.fields) {
-          let fieldData = field;
-          fieldData.value = ''; // has empty value to start
-          notifierData.fields[field.name] = fieldData;
-        }
-
-        // build alerts
-        for (let a in issueTypes) {
-          notifierData.alerts[a] = true;
-        }
-
-        parliament.settings.notifiers[n] = notifierData;
-      }
-    }
+    buildNotifiers();
 
     fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
       (err) => {
