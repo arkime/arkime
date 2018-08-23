@@ -517,24 +517,28 @@ function getStats (cluster) {
         if (!stats || !stats.data) { return resolve(); }
 
         cluster.deltaBPS = 0;
-        // sum delta bytes per second
+        cluster.deltaTDPS = 0;
+        cluster.molochNodes = 0;
+        cluster.monitoring = 0;
+
+        let outOfDate = getGeneralSetting('outOfDate') * 1000;
+
         for (let stat of stats.data) {
+          // sum delta bytes per second
           if (stat.deltaBytesPerSec) {
             cluster.deltaBPS += stat.deltaBytesPerSec;
           }
-        }
 
-        cluster.deltaTDPS = 0;
-        // sum delta total dropped per second
-        for (let stat of stats.data) {
+          // sum delta total dropped per second
           if (stat.deltaTotalDroppedPerSec) {
             cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
           }
-        }
 
-        // Look for issues
-        for (let stat of stats.data) {
-          let outOfDate = getGeneralSetting('outOfDate') * 1000;
+          if (stat.monitoring) {
+            cluster.monitoring += stat.monitoring;
+          }
+
+          // Look for issues
 
           if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
@@ -542,6 +546,8 @@ function getStats (cluster) {
               node  : stat.nodeName,
               value : stat.currentTime * 1000
             });
+          } else {
+            cluster.molochNodes++;
           }
 
           if (stat.deltaPacketsPerSec === 0) {

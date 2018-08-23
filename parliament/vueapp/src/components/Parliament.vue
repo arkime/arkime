@@ -463,10 +463,42 @@
                           @change="cluster.hideDataNodes = !cluster.hideDataNodes"
                         />
                         <strong class="d-inline-block">
+                          {{ cluster.monitoring | commaString }}
+                        </strong>
+                        <small class="d-inline-block">
+                          Sessions Monitored
+                        </small>
+                      </label>
+                    </div>
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
+                      class="col-6">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                          type="checkbox"
+                          :checked="!cluster.hideTotalNodes"
+                          @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
+                        />
+                        <strong class="d-inline-block">
+                          {{ cluster.molochNodes | commaString }}
+                        </strong>
+                        <small class="d-inline-block">
+                          Active Moloch Nodes
+                        </small>
+                      </label>
+                    </div>
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
+                      class="col-6">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                          type="checkbox"
+                          :checked="!cluster.hideDataNodes"
+                          @change="cluster.hideDataNodes = !cluster.hideDataNodes"
+                        />
+                        <strong class="d-inline-block">
                           {{ cluster.dataNodes | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Data Nodes
+                          ES Data Nodes
                         </small>
                       </label>
                     </div>
@@ -482,7 +514,7 @@
                           {{ cluster.totalNodes | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Total Nodes
+                          ES Total Nodes
                         </small>
                       </label>
                     </div>
