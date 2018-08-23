@@ -2950,7 +2950,7 @@ function fixFields(fields, fixCb) {
   var files = [];
   async.forEachSeries(fields.fileId, function (item, cb) {
     Db.fileIdToFile(fields.node, item, function (file) {
-      if (file && file.locked === 1) {
+      if (file && file.locked !== 1) {
         files.push(file.name);
       }
       cb(null);
@@ -3051,6 +3051,10 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
           query._source.push(item);
         }
       });
+
+      if (query._source.indexOf("fileand") !== -1) {
+          query._source.push("fileId");
+      }
     } else {
       addMissing = true;
       query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel"];
@@ -3100,6 +3104,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
           return hitCb();
         } else {
           fixFields(fields, function() {
+            fields.fileand=fields.fileId
             results.results.push(fields);
             return hitCb();
           });
