@@ -402,9 +402,9 @@
                     </span>
                   </a>
                 </h6> <!-- /cluster title -->
-                <hr>
                 <!-- cluster description -->
-                <p class="text-muted small mb-2">
+                <p class="text-muted small mb-2"
+                  v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
                 <!-- cluster error -->
@@ -421,7 +421,7 @@
                 </div> <!-- /cluster error -->
                 <!-- cluster stats -->
                 <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && !cluster.disabled && !cluster.multiviewer) || (cluster.id === clusterBeingEdited && !cluster.newDisabled && !cluster.newMultiviewer)">
-                  <div class="row cluster-stats-row">
+                  <div class="row cluster-stats-row pt-1">
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
@@ -542,7 +542,8 @@
                   </template>
                   <template v-else>
                     <div v-for="(issue, index) in cluster.activeIssues.slice(0, 4)"
-                      :key="getIssueTrackingId(issue)">
+                      :key="getIssueTrackingId(issue)"
+                      class="pt-1">
                       <issue :issue="issue"
                         :group-id="group.id"
                         :cluster-id="cluster.id"
@@ -631,7 +632,7 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="loggedIn"
+              <div v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)"
                 class="card-footer small">
                 <a v-if="cluster.activeIssues && cluster.activeIssues.length"
                   @click="acknowledgeAllIssues(cluster)"
@@ -1326,10 +1327,6 @@ export default {
 }
 .cluster-group .card .card-body {
   padding: 0.5rem;
-}
-.cluster-group .card .card-body hr {
-  margin-top: 0;
-  margin-bottom: .3rem;
 }
 .cluster-group .card .card-footer {
   padding: 0.2rem 0.5rem;
