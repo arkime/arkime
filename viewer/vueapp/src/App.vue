@@ -53,43 +53,53 @@ export default {
         return;
       }
 
-      if (event.keyCode === 81) { // q
-        // focus on search expression input
-        this.$store.commit('setFocusSearch', true);
-      } else if (event.keyCode === 84) { // t
-        // focus on time range selector
-        this.$store.commit('setFocusTimeRange', true);
-      } else if (event.keyCode === 83) { // s
-        // open sessions page if not on sessions page
-        if (this.$route.name !== 'Sessions') {
-          this.routeTo('/sessions');
-        }
-      } else if (event.keyCode === 86) { // v
-        // open spiview page if not on spiview page
-        if (this.$route.name !== 'Spiview') {
-          this.routeTo('/spiview');
-        }
-      } else if (event.keyCode === 71) { // g
-        // open spigraph page if not on spigraph page
-        if (this.$route.name !== 'Spigraph') {
-          this.routeTo('/spigraph');
-        }
-      } else if (event.keyCode === 67) { // c
-        // open connections page if not on connections page
-        if (this.$route.name !== 'Connections') {
-          this.routeTo('/connections');
-        }
-      } else if (event.keyCode === 72) { // h
-        // open help page if not on help page
-        if (this.$route.name !== 'Help') {
-          this.routeTo('/help');
-        }
-      } else if (event.keyCode === 191) { // /
-        // display the keyboard shortcut dialog
-        this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
-      } else if (event.keyCode === 16) { // shift
-        // keyup on shift key, user is no longer holding shift
-        holdingShiftKey = false;
+      switch (event.keyCode) {
+        case 81: // q
+          // focus on search expression input
+          this.$store.commit('setFocusSearch', true);
+          break;
+        case 84: // t
+          // focus on time range selector
+          this.$store.commit('setFocusTimeRange', true);
+          break;
+        case 83: // s
+          // open sessions page if not on sessions page
+          if (this.$route.name !== 'Sessions') {
+            this.routeTo('/sessions');
+          }
+          break;
+        case 86: // v
+          // open spiview page if not on spiview page
+          if (this.$route.name !== 'Spiview') {
+            this.routeTo('/spiview');
+          }
+          break;
+        case 71: // g
+          // open spigraph page if not on spigraph page
+          if (this.$route.name !== 'Spigraph') {
+            this.routeTo('/spigraph');
+          }
+          break;
+        case 67: // c
+          // open connections page if not on connections page
+          if (this.$route.name !== 'Connections') {
+            this.routeTo('/connections');
+          }
+          break;
+        case 72: // h
+          // open help page if not on help page
+          if (this.$route.name !== 'Help') {
+            this.routeTo('/help');
+          }
+          break;
+        case 191: // /
+          // display the keyboard shortcut dialog
+          this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
+          break;
+        case 16: // shift
+          // keyup on shift key, user is no longer holding shift
+          holdingShiftKey = false;
+          break;
       }
     });
 
