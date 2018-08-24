@@ -92,6 +92,12 @@ export default {
             this.routeTo('/help');
           }
           break;
+        case 85: // u
+          // open hunt page if not on hunt page
+          if (this.$route.name !== 'Hunt') {
+            this.routeTo('/hunt');
+          }
+          break;
         case 191: // /
           // display the keyboard shortcut dialog
           this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
