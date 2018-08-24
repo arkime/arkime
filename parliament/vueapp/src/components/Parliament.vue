@@ -1138,15 +1138,16 @@ export default {
 
       for (const group of this.parliament.groups) {
         if (!this.searchTerm) {
-          group.filteredClusters = Object.assign([], group.clusters);
+          this.$set(group, 'filteredClusters', Object.assign([], group.clusters));
           this.numFilteredClusters += group.filteredClusters.length;
           continue;
         }
 
-        group.filteredClusters = Object.assign([], group.clusters)
+        this.$set(group, 'filteredClusters', Object.assign([], group.clusters)
           .filter((item) => {
             return item.title.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
-          });
+          })
+        );
 
         this.numFilteredClusters += group.filteredClusters.length;
       }
