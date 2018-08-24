@@ -538,7 +538,7 @@ function getStats (cluster) {
             cluster.monitoring += stat.monitoring;
           }
 
-          if ((now - stat.currentTime) > outOfDate && stat.deltaPacketsPerSec > 0) {
+          if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
             cluster.molochNodes++;
           }
 
