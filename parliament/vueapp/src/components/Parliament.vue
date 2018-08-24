@@ -421,7 +421,7 @@
                 </div> <!-- /cluster error -->
                 <!-- cluster stats -->
                 <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && !cluster.disabled && !cluster.multiviewer) || (cluster.id === clusterBeingEdited && !cluster.newDisabled && !cluster.newMultiviewer)">
-                  <div class="row">
+                  <div class="row cluster-stats-row">
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
@@ -1333,6 +1333,15 @@ export default {
 }
 .cluster-group .card .card-footer {
   padding: 0.2rem 0.5rem;
+}
+.cluster-group .cluster .cluster-stats-row {
+  line-height: 1;
+  margin-right: -2px;
+  margin-left: -2px;
+}
+.cluster-group .cluster .cluster-stats-row > div {
+  padding-right: 2px;
+  padding-left: 2px;
 }
 .sortable-chosen, .sortable-chosen.sortable-ghost {
   /* https://github.com/RubaXa/Sortable/issues/1276 */
