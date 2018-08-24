@@ -466,7 +466,7 @@
                           {{ cluster.monitoring | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Sessions Monitored
+                          Sessions
                         </small>
                       </label>
                     </div>
@@ -482,7 +482,7 @@
                           {{ cluster.molochNodes | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Active Moloch Nodes
+                          Active Nodes
                         </small>
                       </label>
                     </div>

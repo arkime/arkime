@@ -538,6 +538,10 @@ function getStats (cluster) {
             cluster.monitoring += stat.monitoring;
           }
 
+          if ((now - stat.currentTime) > outOfDate && stat.deltaPacketsPerSec > 0) {
+            cluster.molochNodes++;
+          }
+]
           // Look for issues
 
           if ((now - stat.currentTime) > outOfDate) {
@@ -546,8 +550,6 @@ function getStats (cluster) {
               node  : stat.nodeName,
               value : stat.currentTime * 1000
             });
-          } else {
-            cluster.molochNodes++;
           }
 
           if (stat.deltaPacketsPerSec === 0) {
