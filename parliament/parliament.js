@@ -19,8 +19,6 @@ const glob    = require('glob');
 const app     = express();
 const router  = express.Router();
 
-const version = 1;
-
 const saltrounds = 13;
 
 const issueTypes = {
@@ -143,11 +141,9 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  parliament = {
-    version: version,
-    groups: [],
-    settings: settingsDefault
-  };
+  console.error(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
+  console.error('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
+  process.exit(1);
 }
 
 // construct the issues file name
@@ -1581,7 +1577,7 @@ server
         updateParliament();
       })
       .catch(() => {
-        console.error(`ERROR - couldn't initialize Parliament`);
+        console.error(`ERROR - never mind, couldn't initialize Parliament`);
         process.exit(1);
       });
 
