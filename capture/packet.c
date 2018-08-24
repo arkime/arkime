@@ -1064,7 +1064,7 @@ LOCAL void moloch_packet_log(int ses)
         stats.total = totalPackets;
     }
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
       totalPackets,
       moloch_session_watch_count(ses),
       moloch_session_monitoring(),
@@ -1083,7 +1083,8 @@ LOCAL void moloch_packet_log(int ses)
       packetStats[MOLOCH_PACKET_IP_DROPPED],
       packetStats[MOLOCH_PACKET_OVERLOAD_DROPPED],
       packetStats[MOLOCH_PACKET_CORRUPT],
-      packetStats[MOLOCH_PACKET_UNKNOWN]
+      packetStats[MOLOCH_PACKET_UNKNOWN],
+      packetStats[MOLOCH_PACKET_IPPORT_DROPPED]
       );
 }
 /******************************************************************************/

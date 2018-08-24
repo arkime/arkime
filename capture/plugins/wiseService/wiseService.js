@@ -40,6 +40,7 @@ require('console-stamp')(console, '[HH:MM:ss.l]');
 var internals = {
   configFile: "/data/moloch/etc/wiseService.ini",
   debug: 0,
+  insecure: false,
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
@@ -59,6 +60,8 @@ function processArgs(argv) {
     if (argv[i] === "-c") {
       i++;
       internals.configFile = argv[i];
+    } else if (argv[i] === "--insecure") {
+      internals.insecure = true;
     } else if (argv[i] === "--debug") {
       internals.debug++;
     } else if (argv[i] === "--workers") {
@@ -242,6 +245,7 @@ internals.sourceApi = {
     internals.rightClicks[name] = rightClick;
   },
   debug: internals.debug,
+  insecure: internals.insecure,
   addSource: function(section, src) {
     internals.sources[section] = src;
 
@@ -268,6 +272,10 @@ function loadSources() {
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/_ns_/nstest.html", function(req, res) {
+  res.end();
+});
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/fields", function(req, res) {
   if (req.query.ver === undefined || req.query.ver === "0") {

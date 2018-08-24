@@ -288,6 +288,15 @@ export default {
   }
 };
 </script>
+
+<style>
+table .btn-group.row-actions-btn > .btn-sm {
+  padding: 1px 4px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+</style>
+
 <style scoped>
 .stats-content {
   padding-top: 36px;

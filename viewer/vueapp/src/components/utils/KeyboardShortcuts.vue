@@ -69,7 +69,7 @@ export default {
 
 <style scoped>
 .keyboard-shortcuts-help {
-  position: absolute;
+  position: fixed;
   top: 155px;
   width: 465px;
   z-index: 1;

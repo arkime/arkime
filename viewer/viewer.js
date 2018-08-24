@@ -571,6 +571,38 @@ function addAuth(info, user, node, secret) {
                                                     }, secret);
 }
 
+function loadCaTrust(node) {
+  var caTrustFile = Config.getFull(node, "caTrustFile");
+
+  if (caTrustFile && caTrustFile.length > 0) {
+    let certs = [];
+
+    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
+    caTrustFileLines = caTrustFileLines.split("\n");
+
+    var foundCert = [];
+
+    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
+      let line = caTrustFileLines[i];
+      if (line.length === 0) {
+        continue;
+      }
+      foundCert.push(line);
+      if (line.match(/-END CERTIFICATE-/)) {
+        certs.push(foundCert.join("\n"));
+        foundCert = [];
+      }
+    }
+
+    if (certs.length > 0) {
+      return certs;
+    }
+  }
+
+  return undefined;
+}
+
+
 function addCaTrust(info, node) {
   if (!Config.isHTTPS(node)) {
     return;
@@ -582,34 +614,12 @@ function addCaTrust(info, node) {
     return;
   }
 
-  var caTrustFile = Config.getFull(node, "caTrustFile");
+  internals.caTrustCerts[node] = loadCaTrust(node);
 
-  if (caTrustFile && caTrustFile.length > 0) {
-    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
-    caTrustFileLines = caTrustFileLines.split("\n");
-
-    var foundCert = [],
-        line;
-
-    internals.caTrustCerts[node] = [];
-
-    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
-      line = caTrustFileLines[i];
-      if (line.length === 0) {
-        continue;
-      }
-      foundCert.push(line);
-      if (line.match(/-END CERTIFICATE-/)) {
-        internals.caTrustCerts[node].push(foundCert.join("\n"));
-        foundCert = [];
-      }
-    }
-
-    if (internals.caTrustCerts[node].length > 0) {
-      info.ca = internals.caTrustCerts[node];
-      info.agent.options.ca = internals.caTrustCerts[node];
-      return;
-    }
+  if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
+    info.ca = internals.caTrustCerts[node];
+    info.agent.options.ca = internals.caTrustCerts[node];
+    return;
   }
 }
 
@@ -2368,6 +2378,23 @@ app.delete('/esindices/:index', logAction(), checkCookieToken, function(req, res
     }
     return res.send(JSON.stringify({ success: true, text: result }));
   });
+});
+
+app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to delete');
+  }
+
+  Db.optimizeIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      console.log ("ERROR -", req.params.index, "optimize failed", err);
+    }
+  });
+
+  // Always return right away, optimizeIndex might block
+  return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
 app.get('/estask/list', function(req, res) {
@@ -6153,4 +6180,6 @@ Db.initialize({host: internals.elasticBase,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                dontMapTags: Config.get("multiES", false),
-               insecure: Config.insecure}, main);
+               insecure: Config.insecure,
+               ca: loadCaTrust(internals.nodeName)
+              }, main);

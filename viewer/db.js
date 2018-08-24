@@ -63,7 +63,7 @@ exports.initialize = function (info, cb) {
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
-    ssl: {rejectUnauthorized: !internals.info.insecure}
+    ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
   });
 
   internals.elasticSearchClient.info((err,data) => {
@@ -84,7 +84,7 @@ exports.initialize = function (info, cb) {
         keepAlive: true,
         minSockets: 5,
         maxSockets: 6,
-        ssl: {rejectUnauthorized: !internals.info.insecure}
+        ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
       });
     } else {
       internals.usersElasticSearchClient = internals.elasticSearchClient;
@@ -253,14 +253,26 @@ exports.deleteDocument = function (index, type, id, options, cb) {
   return internals.elasticSearchClient.delete(params, cb);
 };
 
+// This API does not call fixIndex
 exports.deleteIndex = function (index, options, cb) {
   if (!cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index)};
+  var params = {index: index};
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.delete(params, cb);
+};
+
+// This API does not call fixIndex
+exports.optimizeIndex = function (index, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index, maxNumSegments: 1};
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.forcemerge(params, cb);
 };
 
 exports.indexStats = function(index, cb) {

@@ -19,8 +19,6 @@ const glob    = require('glob');
 const app     = express();
 const router  = express.Router();
 
-const version = 1;
-
 const saltrounds = 13;
 
 const issueTypes = {
@@ -143,11 +141,9 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  parliament = {
-    version: version,
-    groups: [],
-    settings: settingsDefault
-  };
+  console.error(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
+  console.error('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
+  process.exit(1);
 }
 
 // construct the issues file name
@@ -517,24 +513,32 @@ function getStats (cluster) {
         if (!stats || !stats.data) { return resolve(); }
 
         cluster.deltaBPS = 0;
-        // sum delta bytes per second
+        cluster.deltaTDPS = 0;
+        cluster.molochNodes = 0;
+        cluster.monitoring = 0;
+
+        let outOfDate = getGeneralSetting('outOfDate') * 1000;
+
         for (let stat of stats.data) {
+          // sum delta bytes per second
           if (stat.deltaBytesPerSec) {
             cluster.deltaBPS += stat.deltaBytesPerSec;
           }
-        }
 
-        cluster.deltaTDPS = 0;
-        // sum delta total dropped per second
-        for (let stat of stats.data) {
+          // sum delta total dropped per second
           if (stat.deltaTotalDroppedPerSec) {
             cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
           }
-        }
 
-        // Look for issues
-        for (let stat of stats.data) {
-          let outOfDate = getGeneralSetting('outOfDate') * 1000;
+          if (stat.monitoring) {
+            cluster.monitoring += stat.monitoring;
+          }
+
+          if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
+            cluster.molochNodes++;
+          }
+
+          // Look for issues
 
           if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
@@ -575,28 +579,41 @@ function getStats (cluster) {
 }
 
 function buildNotifiers () {
-  // build notifiers
+  // build/update notifiers
   for (let n in internals.notifiers) {
     // if the notifier is not in settings, add it
-    if (!parliament.settings.notifiers[n]) {
-      const notifier = internals.notifiers[n];
+    const notifier = internals.notifiers[n];
 
-      let notifierData = { name: n, fields: {}, alerts: {} };
+    let notifierData = { name: n, fields: {}, alerts: {} };
 
-      // add fields to notifier
-      for (let field of notifier.fields) {
-        let fieldData = field;
-        fieldData.value = ''; // has empty value to start
-        notifierData.fields[field.name] = fieldData;
+    // add fields (and existing values) to notifier
+    for (let field of notifier.fields) {
+      let fieldData = field;
+      let value = '';  // has empty value to start
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].fields[field.name]) {
+        value = parliament.settings.notifiers[n].fields[field.name].value;
       }
-
-      // build alerts
-      for (let a in issueTypes) {
-        notifierData.alerts[a] = true;
-      }
-
-      parliament.settings.notifiers[n] = notifierData;
+      fieldData.value = value;
+      notifierData.fields[field.name] = fieldData;
     }
+
+    // build alerts
+    for (let a in issueTypes) {
+      let value = true;
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].alerts.hasOwnProperty(a)) {
+        value = parliament.settings.notifiers[n].alerts[a];
+      }
+      notifierData.alerts[a] = value;
+    }
+
+    if (parliament.settings.notifiers[n] &&
+      parliament.settings.notifiers[n].on) {
+      notifierData.on = true;
+    }
+
+    parliament.settings.notifiers[n] = notifierData;
   }
 }
 
@@ -654,29 +671,7 @@ function initializeParliament () {
       parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
     }
 
-    // build notifiers
-    for (let n in internals.notifiers) {
-      // if the notifier is not in settings, add it
-      if (!parliament.settings.notifiers[n]) {
-        const notifier = internals.notifiers[n];
-
-        let notifierData = { name: n, fields: {}, alerts: {} };
-
-        // add fields to notifier
-        for (let field of notifier.fields) {
-          let fieldData = field;
-          fieldData.value = ''; // has empty value to start
-          notifierData.fields[field.name] = fieldData;
-        }
-
-        // build alerts
-        for (let a in issueTypes) {
-          notifierData.alerts[a] = true;
-        }
-
-        parliament.settings.notifiers[n] = notifierData;
-      }
-    }
+    buildNotifiers();
 
     fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
       (err) => {
@@ -1269,6 +1264,8 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
           cluster.hideDataNodes   = req.body.hideDataNodes;
           cluster.hideDeltaTDPS   = req.body.hideDeltaTDPS;
           cluster.hideTotalNodes  = req.body.hideTotalNodes;
+          cluster.hideMonitoring  = req.body.hideMonitoring;
+          cluster.hideMolochNodes = req.body.hideMolochNodes;
           foundCluster = true;
           break;
         }
@@ -1580,7 +1577,7 @@ server
         updateParliament();
       })
       .catch(() => {
-        console.error(`ERROR - couldn't initialize Parliament`);
+        console.error(`ERROR - never mind, couldn't initialize Parliament`);
         process.exit(1);
       });
 

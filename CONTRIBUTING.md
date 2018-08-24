@@ -85,4 +85,5 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 
 ---
 
-### THANKS! :heart:
+### :heart: Thanks,
+Andy & Elyse
