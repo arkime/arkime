@@ -46,6 +46,7 @@
 # 37 - add request body to history
 # 50 - Moloch 1.0
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
+# 52 - Hunt (packet search)
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -54,7 +55,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 51;
+my $VERSION = 52;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1169,6 +1170,74 @@ print "\n";
 ################################################################################
 
 ################################################################################
+sub huntCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+    my $mapping = '
+{
+  "history": {
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "size": {
+        "type": "integer"
+      },
+      "search": {
+        "type": "keyword"
+      },
+      "searchType": {
+        "type": "keyword"
+      },
+      "src": {
+        "type": "boolean"
+      },
+      "dst": {
+        "type": "boolean"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "matches": {
+        "type": "integer"
+      },
+      "searched": {
+        "type": "integer"
+      },
+      "numSessions": {
+        "type": "integer"
+      },
+      "created": {
+        "type": "date"
+      }
+    }
+  }
+}';
+
+print "Setting hunt mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunt_v1", $settings);
+esPut("/${PREFIX}hunt_v1/stat/_mapping?pretty", $mapping, 1);
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -1982,6 +2051,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}fields_v2", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
+    esDelete("/${PREFIX}hunt_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2005,6 +2075,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     sessions2Update();
     fieldsCreate();
     historyUpdate();
+    huntCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();

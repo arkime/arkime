@@ -2133,6 +2133,52 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+// TODO
+app.post('/hunt', logAction('hunt'), function (req, res) {
+  // TODO validate hunt obj
+  // TODO make sure name is unique
+  // TODO set user
+  // TODO set created time
+  // TODO don't rely on client to send numSessions
+  // TODO set status
+  Db.createHunt(req.body.hunt, function(err, result) {
+    if (err) { console.error('create hunt error', err, result); }
+    // TODO send entire hunt object back to be appended to the list
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+// TODO
+app.get('/hunt/list', logAction('hunt'), function (req, res) {
+  // TODO query
+  let query = {};
+
+  Promise.all([Db.searchHunt(query),
+               Db.numberOfHunts()])
+    .then(([hunts, total]) => {
+      if (hunts.error) { throw hunts.error; }
+
+      var results = { total:hunts.hits.total, results:[] };
+      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
+        var hit = hunts.hits.hits[i];
+        var hunt = hit._source;
+        hunt.id = hit._id;
+        hunt.index = hit._index;
+        results.results.push(hunt);
+      }
+
+      var r = {
+        recordsTotal: total.count,
+        recordsFiltered: results.total,
+        data: results.results
+      };
+
+      res.send(r);
+    }).catch(err => {
+      console.error('ERROR - /hunt/list', err);
+      return res.molochError(500, 'Error retrieving hunts - ' + err);
+    });
+});
+
 app.get('/history/list', function(req, res) {
 
   var userId;

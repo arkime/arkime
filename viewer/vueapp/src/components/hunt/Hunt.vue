@@ -74,21 +74,23 @@
                   </span>
                 </span>
                 <input type="text"
+                  v-model="jobName"
                   placeholder="Name your packet search job"
                   class="form-control"
                   maxlength="40"
                 />
               </div> <!-- /packet search job name -->
             </div>
-
+            <!-- packet search size -->
             <div class="form-group col-lg-6 col-md-12">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help">
+                <span class="input-group-prepend">
                   <span class="input-group-text">
                     Max number of packets to examine per session
                   </span>
                 </span>
                 <select class="form-control"
+                  v-model="jobSize"
                   style="-webkit-appearance: none;">
                   <option value="50">50 packets</option>
                   <option value="500">500 packets</option>
@@ -111,13 +113,15 @@
                   </span>
                 </span>
                 <input type="text"
+                  v-model="jobSearch"
                   placeholder="Search packets for"
                   class="form-control"
                 />
               </div>
               <div class="form-check form-check-inline">
                 <input class="form-check-input"
-                  checked
+                  :checked="jobSearchType === 'ascii'"
+                  @click="setJobSearchType('ascii')"
                   type="radio"
                   id="ascii"
                   value="ascii"
@@ -130,6 +134,8 @@
               </div>
               <div class="form-check form-check-inline">
                 <input class="form-check-input"
+                  :checked="jobSearchType === 'hex'"
+                  @click="setJobSearchType('hex')"
                   type="radio"
                   id="hex"
                   value="hex"
@@ -142,6 +148,8 @@
               </div>
               <div class="form-check form-check-inline">
                 <input class="form-check-input"
+                  :checked="jobSearchType === 'wildcard'"
+                  @click="setJobSearchType('wildcard')"
                   type="radio"
                   id="wildcard"
                   value="wildcard"
@@ -154,6 +162,8 @@
               </div>
               <div class="form-check form-check-inline">
                 <input class="form-check-input"
+                  :checked="jobSearchType === 'regex'"
+                  @click="setJobSearchType('regex')"
                   type="radio"
                   id="regex"
                   value="regex"
@@ -165,11 +175,12 @@
                 </label>
               </div>
             </div> <!-- /packet search text & text type -->
-            <!-- packet search what -->
+            <!-- packet search direction -->
             <div class="form-group col-lg-3 col-md-12">
               <div class="form-check">
                 <input class="form-check-input"
-                  checked
+                  :checked="jobSrc"
+                  @click="jobSrc = !jobSrc"
                   type="checkbox"
                   id="src"
                   value="src"
@@ -181,7 +192,8 @@
               </div>
               <div class="form-check">
                 <input class="form-check-input"
-                  checked
+                  :checked="jobDst"
+                  @click="jobDst = !jobDst"
                   type="checkbox"
                   id="dst"
                   value="dst"
@@ -191,12 +203,13 @@
                   search dst packets
                 </label>
               </div>
-            </div> <!-- /packet search what -->
+            </div> <!-- /packet search direction -->
             <!-- packet search type -->
             <div class="form-group col-lg-3 col-md-12">
               <div class="form-check">
                 <input class="form-check-input"
-                  checked
+                  :checked="jobType === 'raw'"
+                  @click="setJobType('raw')"
                   type="radio"
                   id="raw"
                   value="raw"
@@ -209,6 +222,8 @@
               </div>
               <div class="form-check">
                 <input class="form-check-input"
+                  :checked="jobType === 'reassembled'"
+                  @click="setJobType('raw')"
                   type="radio"
                   id="reassembled"
                   value="reassembled"
@@ -225,7 +240,7 @@
             <div class="col-12 mt-1">
               <!-- create search job button -->
               <button type="button"
-                @click="createFormOpened = false"
+                @click="createJob"
                 class="pull-right btn btn-theme-tertiary pull-right ml-1">
                 <span class="fa fa-plus">
                 </span>&nbsp;
@@ -295,7 +310,7 @@
           <tr v-if="results.length"
             v-for="job in results"
             :key="job.id">
-            <!-- TODO more info -->
+            <!-- TODO more info (direction & type) -->
             <td>
               <toggle-btn class="mt-1"
                 :opened="job.expanded"
@@ -326,12 +341,12 @@
               &nbsp;
               <span class="badge badge-secondary cursor-help"
                 :id="`jobmatches${job.id}`">
-                {{ ((job.searched / job.sessions) * 100) | round(1) }}%
+                {{ ((job.searched / job.numSessions) * 100) | round(1) }}%
               </span>
               <b-tooltip :target="`jobmatches${job.id}`">
                 Found {{ job.matches }} out of {{ job.searched | commaString }} sessions searched.
                 <div v-if="job.status !== 'finished'">
-                  Still need to search {{ (job.sessions - job.searched) | commaString }} sessions.
+                  Still need to search {{ (job.numSessions - job.searched) | commaString }} sessions.
                 </div>
               </b-tooltip>
             </td>
@@ -339,17 +354,11 @@
               {{ job.name }}
             </td>
             <td>
-              {{ job.user }}
+              {{ job.userId }}
             </td>
             <td>
-              {{ job.text }} ({{ job.textType }})
+              {{ job.search }} ({{ job.searchType }})
             </td>
-            <!-- <td>
-              {{ job.what }}
-            </td>
-            <td>
-              {{ job.type }}
-            </td> -->
             <td>
               {{ job.created | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
             </td>
@@ -436,7 +445,15 @@ export default {
       results: [], // page data
       settings: {}, // user settings
       sessions: {},
-      createFormOpened: false
+      createFormOpened: false,
+      // new job search default values
+      jobName: '',
+      jobSize: 50,
+      jobSearch: '',
+      jobSearchType: 'ascii',
+      jobSrc: true,
+      jobDst: true,
+      jobType: 'raw'
     };
   },
   computed: {
@@ -465,74 +482,47 @@ export default {
     this.getUserSettings();
     this.loadSessions();
     this.loadData();
+    // TODO interval to load data
   },
   methods: {
+    createJob: function () {
+      this.createFormOpened = false;
+
+      // TODO validate inputs
+      let newJob = {
+        name: this.jobName,
+        size: this.jobSize,
+        search: this.jobSearch,
+        searchType: this.jobSearchType,
+        type: this.jobType,
+        src: this.jobSrc,
+        dst: this.jobDst
+      };
+
+      this.axios.post('hunt', { hunt: newJob })
+        .then((response) => {
+          console.log(response);
+        }, (error) => {
+          console.log(error);
+        });
+    },
+    setJobSearchType: function (val) {
+      this.jobSearchType = val;
+    },
+    setJobType: function (val) {
+      this.jobType = val;
+    },
     toggleJobDetail: function (job) {
       this.$set(job, 'expanded', !job.expanded);
     },
     loadData: function () {
-      setTimeout(() => {
-        this.loading = false;
-
-        this.results = [
-          {
-            id: 1,
-            status: 'queued',
-            name: 'packet search 2',
-            user: 'andy',
-            text: 'super*secret', // search
-            textType: 'wildcard', // searchType
-            what: 'dst', // direction
-            type: 'raw',
-            matches: 0,
-            searched: 0,
-            sessions: 23658723, // numSessions
-            created: 1534958712
-          },
-          {
-            id: 0,
-            status: 'running',
-            name: 'packet search 1',
-            user: 'andy',
-            text: 'super secret',
-            textType: 'ascii',
-            what: 'src',
-            type: 'raw',
-            matches: 0,
-            searched: 666,
-            sessions: 12345,
-            created: 1534958664
-          },
-          {
-            id: 2,
-            status: 'paused',
-            name: 'packety searchy jobby A',
-            user: 'elyse',
-            text: '/fu/g',
-            textType: 'regex',
-            what: 'both',
-            type: 'reassembled',
-            matches: 2,
-            searched: 42395,
-            sessions: 23876765,
-            created: 1534872262
-          },
-          {
-            id: 3,
-            status: 'finished',
-            name: 'packety searchy jobby B',
-            user: 'elyse',
-            text: '737570657220736563726574',
-            textType: 'hex',
-            what: 'both',
-            type: 'reassembled',
-            matches: 50,
-            searched: 8453934,
-            sessions: 8453934,
-            created: 1534785862
-          }
-        ];
-      }, 2000);
+      this.axios.get('hunt/list')
+        .then((response) => {
+          this.results = response.data.data;
+          this.loading = false;
+        }, (error) => {
+          this.error = error;
+        });
     },
     /* helper functions ---------------------------------------------------- */
     getUserSettings: function () {
@@ -541,7 +531,7 @@ export default {
           this.settings = response.settings;
         }, (error) => {
           this.settings = { timezone: 'local' };
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     loadSessions: function () {
