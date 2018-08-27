@@ -414,6 +414,6 @@ table.table td:hover::before {
   color: #bbb;
 }
 .badge-notstarted {
-  border: 2px solid red;
+  border: 2px dotted var(--color-quaternary);
 }
 </style>
