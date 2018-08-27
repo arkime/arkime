@@ -2133,24 +2133,46 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-// TODO
-app.post('/hunt', logAction('hunt'), function (req, res) {
-  // TODO validate hunt obj
-  // TODO make sure name is unique
-  // TODO set user
-  // TODO set created time
-  // TODO don't rely on client to send numSessions
-  // TODO set status
-  Db.createHunt(req.body.hunt, function(err, result) {
+app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
+  // TODO make sure user exists and has privelages to create packet search job
+  let now = Math.floor(Date.now() / 1000);
+
+  if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
+  // TODO check uniqueness and sanitize input
+  if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
+  if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
+  if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
+  if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); }
+  if (!req.body.hunt.type) { return res.molochError(403, 'Missing packet search type (raw or reassembled packets)'); }
+  if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
+
+  let hunt = req.body.hunt;
+  hunt.created = now;
+  hunt.status = 'queued'; // always starts as queued
+  hunt.userId = req.user.userId;
+  hunt.matchedSessions = 0; // start with no matches
+  hunt.searchedSessions = 0; // start with no sessions searched
+
+  Db.createHunt(hunt, function (err, result) {
     if (err) { console.error('create hunt error', err, result); }
-    // TODO send entire hunt object back to be appended to the list
-    return res.send(JSON.stringify({ success: true, text: result }));
+    return res.send(JSON.stringify({ success: true, hunt: hunt }));
   });
 });
-// TODO
+
 app.get('/hunt/list', logAction('hunt'), function (req, res) {
-  // TODO query
-  let query = {};
+  let query = { sort: {} };
+
+  query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
+
+  if (req.query.searchTerm) { // apply search term
+    query.query = { bool: { must: [] } };
+    query.query.bool.must.push({
+      query_string: {
+        query : req.query.searchTerm,
+        fields: ['name', 'userId', 'status']
+      }
+    });
+  }
 
   Promise.all([Db.searchHunt(query),
                Db.numberOfHunts()])
@@ -2179,8 +2201,44 @@ app.get('/hunt/list', logAction('hunt'), function (req, res) {
     });
 });
 
-app.get('/history/list', function(req, res) {
+app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res) {
+  function deleteHunt (id) {
+    Db.deleteHuntItem(id, function (err, result) {
+      if (err || result.error) {
+        console.error('ERROR - deleting hunt item', err || result.error);
+        return res.molochError(500, 'Error deleting hunt item');
+      } else {
+        res.send(JSON.stringify({success: true, text: 'Deleted hunt item successfully'}));
+      }
+    });
+  }
 
+  if (!req.user.createEnabled) {
+    // if the user is not an admin they can only delete their own jobs
+    Db.searchHunt({})
+      .then((response) => {
+        if (response.error) { throw response.error; }
+        for (let i = 0, len = response.hits.hits.length; i < len; ++i) {
+          let hit = response.hits.hits[i];
+          let hunt = hit._source;
+          if (hit._id === req.params.id && hunt.userId === req.user.userId) {
+            return deleteHunt(req.params.id);
+          }
+        }
+        let errorText = 'You cannot delete other user\'s hunts unless you have admin privelages';
+        console.error(errorText);
+        return res.molochError(500, errorText);
+      })
+      .catch((error) => {
+        console.error('error', error);
+        return res.molochError(500, error);
+      });
+  } else { // admin can delete anyone's hunt
+    return deleteHunt(req.params.id);
+  }
+});
+
+app.get('/history/list', function(req, res) {
   var userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
     // if the admin has requested a specific user

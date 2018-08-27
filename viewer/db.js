@@ -438,16 +438,16 @@ exports.deleteHistoryItem = function (id, index, cb) {
 };
 
 exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunt_v1'), type:'hunt', body:doc, refresh: true}, cb);
+  return internals.elasticSearchClient.index({index:fixIndex('hunt'), type:'hunt', body:doc, refresh: true}, cb);
 };
 exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('hunt_v1'), type:'hunt', body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('hunt'), type:'hunt', body:query}, cb);
 };
 exports.numberOfHunts = function(cb) {
-  return internals.elasticSearchClient.count({index:fixIndex('hunt_v1'), type:'hunt'}, cb);
+  return internals.elasticSearchClient.count({index:fixIndex('hunt'), type:'hunt'}, cb);
 };
 exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({index:fixIndex('hunt_v1'), type:'hunt', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({index:fixIndex('hunt'), type:'hunt', id:id, refresh:true}, cb);
 };
 
 exports.molochNodeStats = function (name, cb) {

@@ -1183,7 +1183,7 @@ sub huntCreate
 
     my $mapping = '
 {
-  "history": {
+  "hunt": {
     "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "strict",
@@ -1215,16 +1215,19 @@ sub huntCreate
       "type": {
         "type": "keyword"
       },
-      "matches": {
+      "matchedSessions": {
         "type": "integer"
       },
-      "searched": {
+      "searchedSessions": {
         "type": "integer"
       },
-      "numSessions": {
+      "totalSessions": {
         "type": "integer"
       },
       "created": {
+        "type": "date"
+      },
+      "lastRun": {
         "type": "date"
       }
     }
@@ -1233,7 +1236,9 @@ sub huntCreate
 
 print "Setting hunt mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}hunt_v1", $settings);
-esPut("/${PREFIX}hunt_v1/stat/_mapping?pretty", $mapping, 1);
+esAlias("add", "hunt_v1", "hunt");
+print "Setting hunt_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunt_v1/hunt/_mapping?pretty", $mapping);
 }
 ################################################################################
 
