@@ -2137,14 +2137,26 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   // TODO make sure user exists and has privelages to create packet search job
   let now = Math.floor(Date.now() / 1000);
 
+  if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
-  // TODO check uniqueness and sanitize input
   if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
   if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
   if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
+
+  let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex' ];
   if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); }
+  else if (searchTypes.indexOf(req.body.hunt.searchType) === -1) {
+    return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "wildcard", or "regex"');
+  }
+
   if (!req.body.hunt.type) { return res.molochError(403, 'Missing packet search type (raw or reassembled packets)'); }
+  else if (req.body.hunt.type !== 'raw' && req.body.hunt.type !== 'reassembled') {
+    return res.molochError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
+  }
+
   if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
+
+  req.body.hunt.name = req.body.hunt.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   let hunt = req.body.hunt;
   hunt.created = now;
@@ -2155,6 +2167,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
 
   Db.createHunt(hunt, function (err, result) {
     if (err) { console.error('create hunt error', err, result); }
+    hunt.id = result._id;
     return res.send(JSON.stringify({ success: true, hunt: hunt }));
   });
 });
@@ -2225,9 +2238,7 @@ app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res)
             return deleteHunt(req.params.id);
           }
         }
-        let errorText = 'You cannot delete other user\'s hunts unless you have admin privelages';
-        console.error(errorText);
-        return res.molochError(500, errorText);
+        return res.molochError(500, 'You cannot delete other user\'s hunts unless you have admin privelages');
       })
       .catch((error) => {
         console.error('error', error);

@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -58,6 +58,15 @@ sub viewerDelete {
 my ($url, $debug) = @_;
 
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub viewerDeleteToken {
+my ($url, $token, $debug) = @_;
+
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url", "x-moloch-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -165,7 +174,7 @@ sub esCopy
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
-        
+
 
         my $incoming = esGet($url);
         my $out = "";
