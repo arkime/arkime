@@ -817,14 +817,14 @@ typedef struct
 LOCAL MolochClassifyHead_t classifersTcp0;
 LOCAL MolochClassifyHead_t classifersTcp1[256];
 LOCAL MolochClassifyHead_t classifersTcp2[256][256];
-LOCAL MolochClassifyHead_t classifersTcpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersTcpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersTcpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersTcpPortDst[0x10000];
 
 LOCAL MolochClassifyHead_t classifersUdp0;
 LOCAL MolochClassifyHead_t classifersUdp1[256];
 LOCAL MolochClassifyHead_t classifersUdp2[256][256];
-LOCAL MolochClassifyHead_t classifersUdpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersUdpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersUdpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
