@@ -617,13 +617,17 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     socklen_t addressLength = sizeof(localAddressStorage);
     int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
-    if (rc != 0)
+    if (rc != 0) {
+        close(fd);
         return 0;
+    }
 
     addressLength = sizeof(remoteAddressStorage);
     rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
-    if (rc != 0)
+    if (rc != 0) {
+        close(fd);
         return 0;
+    }
 
     char sessionId[MOLOCH_SESSIONID_LEN];
     int  localPort, remotePort;
