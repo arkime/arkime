@@ -420,11 +420,16 @@ LOCAL void suricata_close()
 /******************************************************************************/
 LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 {
+    static int printedError;
     struct stat sb;
 
     int rc = stat(suricataAlertFile, &sb);
 
     if (rc < 0) {
+        if (!printedError) {
+            LOG("ERROR - Can't access suricataAlertFile '%s' : %s\n", suricataAlertFile, strerror(errno));
+            printedError = 1;
+        }
         if (file) {
             // File disappeared
             suricata_read();
