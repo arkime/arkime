@@ -22,26 +22,28 @@
       id="nav_collapse">
 
       <b-navbar-nav>
-        <template v-for="item of menu">
-          <b-nav-item
-            v-if="item.oldPage"
-            :key="item.link"
-            class="cursor-pointer"
-            :href="item.href"
-            :active="isActive(item.link)"
-            v-has-permission="item.permission">
-            {{ item.title }}
-          </b-nav-item>
-          <b-nav-item
-            v-else
-            :key="item.link"
-            class="cursor-pointer"
-            v-has-permission="item.permission">
-            <router-link :to="{ path: item.link, query: item.query, params: { nav: true } }"
-              :class="{'router-link-active': $route.path === `/${item.link}`}">
-              {{ item.title }}
-            </router-link>
-          </b-nav-item>
+        <template v-for="item of menuOrder">
+          <template v-if="menu[item]">
+            <b-nav-item
+              v-if="menu[item].oldPage"
+              :key="menu[item].link"
+              class="cursor-pointer"
+              :href="menu[item].href"
+              :active="isActive(menu[item].link)"
+              v-has-permission="menu[item].permission">
+              {{ menu[item].title }}
+            </b-nav-item>
+            <b-nav-item
+              v-else
+              :key="menu[item].link"
+              class="cursor-pointer"
+              v-has-permission="menu[item].permission">
+              <router-link :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }"
+                :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+                {{ menu[item].title }}
+              </router-link>
+            </b-nav-item>
+          </template>
         </template>
       </b-navbar-nav>
 
@@ -68,7 +70,11 @@ export default {
   components: { ESHealth },
   data: function () {
     return {
-      molochVersion: this.$constants.MOLOCH_VERSION
+      molochVersion: this.$constants.MOLOCH_VERSION,
+      menuOrder: [
+        'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'files', 'stats', 'history', 'upload', 'settings', 'users'
+      ]
     };
   },
   computed: {
@@ -78,11 +84,14 @@ export default {
         spiview: { title: 'SPI View', link: 'spiview' },
         spigraph: { title: 'SPI Graph', link: 'spigraph' },
         connections: { title: 'Connections', link: 'connections' },
-        packetSearch: { title: 'Hunt', link: 'hunt' },
         files: { title: 'Files', link: 'files' },
         stats: { title: 'Stats', link: 'stats' },
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
       };
+
+      if (!this.$constants.MOLOCH_MULTIVIEWER) {
+        menu.hunt = { title: 'Hunt', link: 'hunt' };
+      }
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };

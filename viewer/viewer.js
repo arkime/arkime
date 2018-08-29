@@ -2135,7 +2135,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   // TODO make sure user exists and has privelages to create packet search job
-  let now = Math.floor(Date.now() / 1000);
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
 
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
@@ -2156,6 +2156,8 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
 
   if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
 
+  let now = Math.floor(Date.now() / 1000);
+
   req.body.hunt.name = req.body.hunt.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   let hunt = req.body.hunt;
@@ -2173,6 +2175,8 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
 });
 
 app.get('/hunt/list', logAction('hunt'), function (req, res) {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
   let query = { sort: {} };
 
   query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
@@ -2215,6 +2219,8 @@ app.get('/hunt/list', logAction('hunt'), function (req, res) {
 });
 
 app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res) {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
   function deleteHunt (id) {
     Db.deleteHuntItem(id, function (err, result) {
       if (err || result.error) {
@@ -5967,6 +5973,7 @@ app.use((req, res) => {
     version: app.locals.molochversion,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
+    multiViewer: Config.get('multiES', false),
     themeUrl: theme === 'custom-theme' ? 'user.css' : ''
   };
 
