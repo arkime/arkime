@@ -156,6 +156,9 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
         result = NULL;
     }
 
+    if (result)
+        g_strstrip(result);
+
     if (config.debug) {
         LOG("%s=%s", key, result?result:"(null)");
     }
