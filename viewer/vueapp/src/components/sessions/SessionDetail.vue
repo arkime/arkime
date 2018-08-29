@@ -1051,9 +1051,13 @@ export default {
 /* src/dst packet text colors */
 .packet-container .sessiondst {
   color: var(--color-dst, #0000FF) !important;
+  max-width: 50vw !important;
+  word-wrap: break-word;
 }
 .packet-container .sessionsrc {
   color: var(--color-src, #CA0404) !important;
+  max-width: 50vw !important;
+  word-wrap: break-word;
 }
 
 /* list values */
