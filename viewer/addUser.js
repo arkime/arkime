@@ -4,13 +4,13 @@
  * addUser.js <user id> <user friendly name> <password> [-noweb] [-admin]
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,6 +38,7 @@ function help() {
   console.log("  --remove              Can remove data (scrub, delete tags)");
   console.log("  --webauth             Can auth using the web auth header or password");
   console.log("  --webauthonly         Can auth using the web auth header only, password ignored");
+  console.log("  --packetSearch        Can create a packet search job (hunt)");
   console.log("");
   console.log("Config Options:");
   console.log("  -c <config file>      Config file to use");
@@ -63,6 +64,7 @@ function main() {
     emailSearch: false,
     createEnabled: false,
     removeEnabled: false,
+    packetSearch: false,
     settings: {}
   };
 
@@ -84,7 +86,7 @@ function main() {
     case "--apionly":
       nuser.webEnabled = false;
       break;
-      
+
     case "--webauthonly":
     case "-webauthonly":
       nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
@@ -102,6 +104,11 @@ function main() {
     case "-expression":
       nuser.expression = process.argv[i+1];
       i++;
+      break;
+
+    case "--packetSearch":
+    case "-packetSearch":
+      nuser.packetSearch = true;
       break;
 
     default:

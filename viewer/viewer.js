@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 50;
+var MIN_DB_VERSION = 52;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ if (Config.get("passwordSecret")) {
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     var username = req.query.molochRegressionUser || "anonymous";
-    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
     Db.getUserCache(username, function(err, suser) {
         if (!err && suser && suser.found) {
           userCleanup(suser._source);
@@ -267,7 +267,7 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
     Db.getUserCache("anonymous", function(err, suser) {
         if (!err && suser && suser.found) {
           req.user.settings = suser._source.settings || {};
@@ -959,7 +959,7 @@ var settingDefaults = {
 app.get('/user/current', function(req, res) {
 
   var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'packetSearch'];
 
   var clone     = {};
 
@@ -2134,14 +2134,15 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
 app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
-  // TODO make sure user exists and has privelages to create packet search job
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
   if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
   if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
   if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
+  if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
 
   let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex' ];
   if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); }
@@ -2153,8 +2154,6 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   else if (req.body.hunt.type !== 'raw' && req.body.hunt.type !== 'reassembled') {
     return res.molochError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
   }
-
-  if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
 
   let now = Math.floor(Date.now() / 1000);
 
@@ -2176,6 +2175,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
 
 app.get('/hunt/list', logAction('hunt'), function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   let query = { sort: {} };
 
@@ -2220,6 +2220,7 @@ app.get('/hunt/list', logAction('hunt'), function (req, res) {
 
 app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+    if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   function deleteHunt (id) {
     Db.deleteHuntItem(id, function (err, result) {
@@ -4753,7 +4754,8 @@ internals.usersMissing = {
 app.post('/user/list', logAction('users'), function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
-  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
+  var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
+    'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch'];
 
   var query = {_source: columns,
                sort: {},
@@ -4762,15 +4764,15 @@ app.post('/user/list', logAction('users'), function(req, res) {
               };
 
   if (req.body.filter) {
-    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
-                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
+    query.query = {bool: {should: [{wildcard: {userName: '*' + req.body.filter + '*'}},
+                                   {wildcard: {userId: '*' + req.body.filter + '*'}}
                                   ]
                          }
                   };
   }
 
-  req.body.sortField = req.body.sortField || "userId";
-  query.sort[req.body.sortField] = { order: req.body.desc === true ? "desc": "asc"};
+  req.body.sortField = req.body.sortField || 'userId';
+  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc': 'asc'};
   query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
 
   Promise.all([Db.searchUsers(query),
@@ -4782,11 +4784,11 @@ app.post('/user/list', logAction('users'), function(req, res) {
     for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
       var fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
       fields.id = users.hits.hits[i]._id;
-      fields.expression = fields.expression || "";
+      fields.expression = fields.expression || '';
       fields.headerAuthEnabled = fields.headerAuthEnabled || false;
       fields.emailSearch = fields.emailSearch || false;
       fields.removeEnabled = fields.removeEnabled || false;
-      fields.userName = safeStr(fields.userName || "");
+      fields.userName = safeStr(fields.userName || '');
       results.results.push(fields);
     }
 
@@ -4795,7 +4797,7 @@ app.post('/user/list', logAction('users'), function(req, res) {
              data: results.results};
     res.send(r);
   }).catch((err) => {
-    console.log("ERROR - /user/list", err);
+    console.log('ERROR - /user/list', err);
     return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
@@ -4827,10 +4829,11 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       emailSearch: req.body.emailSearch === true,
       headerAuthEnabled: req.body.headerAuthEnabled === true,
       createEnabled: req.body.createEnabled === true,
-      removeEnabled: req.body.removeEnabled === true
+      removeEnabled: req.body.removeEnabled === true,
+      packetSearch: req.body.packetSearch === true
     };
 
-    console.log('Creating new user', nuser);
+    // console.log('Creating new user', nuser);
     Db.setUser(req.body.userId, nuser, function(err, info) {
       if (!err) {
         return res.send(JSON.stringify({success: true, text:'User created succesfully'}));
@@ -4901,6 +4904,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     user.emailSearch = req.body.emailSearch === true;
     user.headerAuthEnabled = req.body.headerAuthEnabled === true;
     user.removeEnabled = req.body.removeEnabled === true;
+    user.packetSearch = req.body.packetSearch === true;
 
     // Can only change createEnabled if it is currently turned on
     if (req.body.createEnabled !== undefined && req.user.createEnabled) {
@@ -4908,7 +4912,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     }
 
     Db.setUser(req.body.userId, user, function(err, info) {
-      console.log("setUser", user, err, info);
+      // console.log("setUser", user, err, info);
       return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
     });
   });

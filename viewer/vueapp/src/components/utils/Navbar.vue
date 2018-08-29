@@ -90,7 +90,7 @@ export default {
       };
 
       if (!this.$constants.MOLOCH_MULTIVIEWER) {
-        menu.hunt = { title: 'Hunt', link: 'hunt' };
+        menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch' };
       }
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {

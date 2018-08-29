@@ -46,7 +46,7 @@
 # 37 - add request body to history
 # 50 - Moloch 1.0
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
-# 52 - Hunt (packet search)
+# 52 - Hunt (packet search) and users_v6
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -1254,9 +1254,9 @@ sub usersCreate
   }
 }';
 
-    print "Creating users_v5 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v5", $settings);
-    esAlias("add", "users_v5", "users");
+    print "Creating users_v6 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v6", $settings);
+    esAlias("add", "users_v6", "users");
     usersUpdate();
 }
 ################################################################################
@@ -1293,6 +1293,9 @@ sub usersUpdate
       "removeEnabled": {
         "type": "boolean"
       },
+      "packetSearch": {
+        "type": "boolean"
+      },
       "passStore": {
         "type": "keyword"
       },
@@ -1323,8 +1326,8 @@ sub usersUpdate
   }
 }';
 
-    print "Setting users_v5 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v5/user/_mapping?pretty", $mapping);
+    print "Setting users_v6 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v6/user/_mapping?pretty", $mapping);
 }
 ################################################################################
 sub createAliasedFromNonAliased
@@ -2112,7 +2115,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("fields", "fields_v2", "fields_v1", \&fieldsCreate);
         createNewAliasesFromOld("queries", "queries_v2", "queries_v1", \&queriesCreate);
         createNewAliasesFromOld("files", "files_v5", "files_v4", \&filesCreate);
-        createNewAliasesFromOld("users", "users_v5", "users_v4", \&usersCreate);
+        createNewAliasesFromOld("users", "users_v6", "users_v4", \&usersCreate);
         createNewAliasesFromOld("dstats", "dstats_v3", "dstats_v2", \&dstatsCreate);
         createNewAliasesFromOld("stats", "stats_v3", "stats_v2", \&statsCreate);
 
@@ -2123,7 +2126,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags", 1);
 
         checkForOld5Indices();
-    } elsif ($main::versionNumber <= 51) {
+    } elsif ($main::versionNumber <= 52) {
+        createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         sessions2Update();
         checkForOld5Indices();
     } else {
