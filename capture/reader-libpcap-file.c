@@ -211,7 +211,61 @@ LOCAL int reader_libpcapfile_next()
     }
 
 filesDone:
+    if (config.pcapFileLists) {
+        static int pcapFileListsPos;
+        static FILE *file;
+        char line[PATH_MAX];
 
+        if (!file && !config.pcapFileLists[pcapFileListsPos]) {
+            goto fileListsDone;
+        }
+
+        if (!file) {
+            if (strcmp(config.pcapFileLists[pcapFileListsPos], "-") == 0)
+                file = stdin;
+            else
+                file = fopen(config.pcapFileLists[pcapFileListsPos], "r");
+            pcapFileListsPos++;
+            if (!file) {
+                LOG("ERROR - Couldn't open %s", config.pcapFileLists[pcapFileListsPos - 1]);
+                return reader_libpcapfile_next();
+            }
+        }
+
+        if (feof(file)) {
+            fclose(file);
+            file = NULL;
+            return reader_libpcapfile_next();
+        }
+
+        if (!fgets(line, sizeof(line), file)) {
+            fclose(file);
+            file = NULL;
+            return reader_libpcapfile_next();
+        }
+
+        int lineLen = strlen(line);
+        if (line[lineLen-1] == '\n') {
+            line[lineLen-1] = 0;
+        }
+
+        g_strstrip(line);
+        if (!line[0] || line[0] == '#')
+            return reader_libpcapfile_next();
+
+        LOG ("Processing %s", line);
+        errbuf[0] = 0;
+        pcap = pcap_open_offline(line, errbuf);
+        if (!pcap) {
+            LOG("Couldn't process '%s' error '%s'", line, errbuf);
+            return reader_libpcapfile_next();
+        }
+        reader_libpcapfile_opened();
+        return 1;
+    }
+
+
+fileListsDone:
     if (config.pcapReadDirs) {
         static int   pcapDirPos = 0;
         static GDir *pcapGDir[21];
