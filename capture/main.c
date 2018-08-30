@@ -68,6 +68,25 @@ gboolean moloch_debug_flag()
     return TRUE;
 }
 
+/******************************************************************************/
+gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
+{
+    char *equal = strchr(input, '=');
+    if (!equal)
+        LOGEXIT("%s requires a '=' in value %s", option_name, input);
+
+    char *key = g_strndup(input, equal - input);
+    char *value = g_strdup(equal + 1);
+
+    if (!config.override) {
+        config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    }
+    g_hash_table_insert(config.override, key, value);
+
+    return TRUE;
+}
+/******************************************************************************/
+
 LOCAL  GOptionEntry entries[] =
 {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
@@ -84,6 +103,7 @@ LOCAL  GOptionEntry entries[] =
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
     { "filelist",  'F',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.pcapFileLists, "File that has a list of pcap file names, 1 per line", NULL },
     { "op",          0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraOps,      "FieldExpr=Value to set on all session, can be used multiple times", NULL},
+    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       moloch_cmdline_option, "Key=Value to override config.ini", NULL},
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
     { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       moloch_debug_flag,     "Turn on all debugging", NULL },
     { "quiet",     'q',                    0, G_OPTION_ARG_NONE,           &config.quiet,         "Turn off regular logging", NULL },

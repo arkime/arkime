@@ -325,6 +325,8 @@ typedef struct moloch_config {
     gboolean  trackESP;
     gint      pktsToRead;
 
+    GHashTable *override;
+
     uint64_t  ipSavePcap[4];
     uint64_t  etherSavePcap[1024];
 
