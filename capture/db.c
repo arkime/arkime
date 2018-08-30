@@ -2095,7 +2095,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
     moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
 }
 /******************************************************************************/
-gboolean moloch_db_file_exists(char *filename)
+gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
 {
     size_t                 data_len;
     char                   key[2000];
@@ -2121,13 +2121,36 @@ gboolean moloch_db_file_exists(char *filename)
         return FALSE;
     }
 
-    if (*total != '0') {
+    if (*total == '0') {
         free(data);
-        return TRUE;
+        return FALSE;
+    }
+
+    if (outputId) {
+        uint32_t           hits_len;
+        unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
+
+        uint32_t           hit_len;
+        unsigned char     *hit = moloch_js0n_get(hits, hits_len, "hits", &hit_len);
+
+        uint32_t           source_len;
+        unsigned char     *source = 0;
+
+        /* Remove array wrapper */
+        source = moloch_js0n_get(hit+1, hit_len-2, "_source", &source_len);
+
+        uint32_t           len;
+        unsigned char     *value;
+
+        if ((value = moloch_js0n_get(source, source_len, "num", &len))) {
+            *outputId = atoi((char*)value);
+        } else {
+            LOGEXIT("ERROR - No num field in %.*s", source_len, source);
+        }
     }
 
     free(data);
-    return FALSE;
+    return TRUE;
 }
 /******************************************************************************/
 int moloch_db_can_quit()
@@ -2185,12 +2208,15 @@ void moloch_db_init()
         moloch_config_monitor_file("rir file", config.rirFile, moloch_db_load_rir);
 
     if (!config.dryRun) {
-        timers[0] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);
-        timers[1] = g_timeout_add_seconds(  5, moloch_db_update_stats_gfunc, (gpointer)1);
-        timers[2] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
-        timers[3] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
-        timers[4] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
-        timers[5] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
+        int t = 0;
+        if (!config.noStats) {
+            timers[t++] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);
+            timers[t++] = g_timeout_add_seconds(  5, moloch_db_update_stats_gfunc, (gpointer)1);
+            timers[t++] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
+            timers[t++] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
+        }
+        timers[t++] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
+        timers[t++] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -2206,7 +2232,9 @@ void moloch_db_exit()
         }
 
         moloch_db_flush_gfunc((gpointer)1);
-        moloch_db_update_stats(0, 1);
+        if (!config.noStats) {
+            moloch_db_update_stats(0, 1);
+        }
         moloch_http_free_server(esServer);
     }
 

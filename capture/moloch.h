@@ -314,10 +314,12 @@ typedef struct moloch_config {
     gboolean  noSPI;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
+    gboolean  noStats;
     gboolean  tests;
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
+    gboolean  pcapReprocess;
     gboolean  flushBetween;
     gboolean  noLoadTags;
     gboolean  trackESP;
@@ -757,7 +759,7 @@ void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
 void     moloch_db_update_filesize(uint32_t fileid, uint64_t filesize);
-gboolean moloch_db_file_exists(char *filename);
+gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId);
 void     moloch_db_exit();
 void     moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac);
 

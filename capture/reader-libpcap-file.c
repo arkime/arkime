@@ -176,9 +176,42 @@ LOCAL void reader_libpcapfile_init_monitor()
 }
 #endif
 /******************************************************************************/
-LOCAL int reader_libpcapfile_next()
+LOCAL int reader_libpcapfile_process(char *filename)
 {
     char         errbuf[1024];
+
+    if (!realpath(filename, offlinePcapFilename)) {
+        LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", filename, errno);
+        return 1;
+    }
+
+    if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename, NULL)) {
+        if (config.debug)
+            LOG("Skipping %s", filename);
+        return 1;
+    }
+
+    if (config.pcapReprocess && !moloch_db_file_exists(offlinePcapFilename, NULL)) {
+        LOG("Can't reprocess %s", filename);
+        return 1;
+    }
+
+    errbuf[0] = 0;
+    LOG ("Processing %s", filename);
+    pktsToRead = config.pktsToRead;
+    pcap = pcap_open_offline(filename, errbuf);
+
+    if (!pcap) {
+        LOG("Couldn't process '%s' error '%s'", filename, errbuf);
+        return 1;
+    }
+
+    reader_libpcapfile_opened();
+    return 0;
+}
+/******************************************************************************/
+LOCAL int reader_libpcapfile_next()
+{
     gchar       *fullfilename;
 
     pcap = 0;
@@ -188,25 +221,15 @@ LOCAL int reader_libpcapfile_next()
 
         fullfilename = config.pcapReadFiles[pcapFilePos];
 
-        errbuf[0] = 0;
         if (!fullfilename) {
             goto filesDone;
         }
         pcapFilePos++;
 
-        LOG ("Processing %s", fullfilename);
-        pcap = pcap_open_offline(fullfilename, errbuf);
-        pktsToRead = config.pktsToRead;
-
-        if (!pcap) {
-            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
+        if (reader_libpcapfile_process(fullfilename)) {
             return reader_libpcapfile_next();
         }
-        if (!realpath(fullfilename, offlinePcapFilename)) {
-            LOGEXIT("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", fullfilename, errno);
-        }
 
-        reader_libpcapfile_opened();
         return 1;
     }
 
@@ -253,14 +276,10 @@ filesDone:
         if (!line[0] || line[0] == '#')
             return reader_libpcapfile_next();
 
-        LOG ("Processing %s", line);
-        errbuf[0] = 0;
-        pcap = pcap_open_offline(line, errbuf);
-        if (!pcap) {
-            LOG("Couldn't process '%s' error '%s'", line, errbuf);
+        if (reader_libpcapfile_process(line)) {
             return reader_libpcapfile_next();
         }
-        reader_libpcapfile_opened();
+
         return 1;
     }
 
@@ -320,27 +339,11 @@ fileListsDone:
                 continue;
             }
 
-            if (!realpath(fullfilename, offlinePcapFilename)) {
+            if (reader_libpcapfile_process(fullfilename)) {
                 g_free(fullfilename);
                 continue;
             }
 
-            if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename)) {
-                if (config.debug)
-                    LOG("Skipping %s", fullfilename);
-                g_free(fullfilename);
-                continue;
-            }
-
-            LOG ("Processing %s", fullfilename);
-            errbuf[0] = 0;
-            pcap = pcap_open_offline(fullfilename, errbuf);
-            if (!pcap) {
-                LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
-                g_free(fullfilename);
-                continue;
-            }
-            reader_libpcapfile_opened();
             g_free(fullfilename);
             return 1;
         }
@@ -366,27 +369,11 @@ dirsDone:
         fullfilename = string->str;
         MOLOCH_TYPE_FREE(MolochString_t, string);
 
-        if (!realpath(fullfilename, offlinePcapFilename)) {
+        if (reader_libpcapfile_process(fullfilename)) {
             g_free(fullfilename);
             continue;
         }
 
-        if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename)) {
-            if (config.debug)
-                LOG("Skipping %s", fullfilename);
-            g_free(fullfilename);
-            continue;
-        }
-
-        LOG ("Processing %s", fullfilename);
-        errbuf[0] = 0;
-        pcap = pcap_open_offline(fullfilename, errbuf);
-        if (!pcap) {
-            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
-            g_free(fullfilename);
-            continue;
-        }
-        reader_libpcapfile_opened();
         g_free(fullfilename);
         return 1;
     }
