@@ -514,7 +514,6 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
 import SessionsService from '../sessions/SessionsService';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
@@ -532,7 +531,6 @@ export default {
       pageError: '',
       loading: true,
       results: [], // page data
-      user: {}, // user + settings
       sessions: {}, // sessions a new job applies to
       // new job search form
       createFormError: '',
@@ -566,6 +564,9 @@ export default {
         interval: this.$route.query.interval || 'auto',
         expression: this.$store.state.expression || undefined
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   components: {
@@ -576,7 +577,6 @@ export default {
     MolochNoResults
   },
   mounted: function () {
-    this.getUserSettings();
     this.loadData();
     setTimeout(() => {
       // wait for computed query
@@ -698,15 +698,6 @@ export default {
 
           this.results = response.data.data;
         }, (error) => {
-          this.pageError = error.text || error;
-        });
-    },
-    getUserSettings: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
           this.pageError = error.text || error;
         });
     },

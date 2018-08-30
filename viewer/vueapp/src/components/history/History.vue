@@ -24,7 +24,7 @@
           />
         </div>
         <div class="form-inline mt-1">
-          <moloch-time :timezone="settings.timezone"
+          <moloch-time :timezone="user.settings.timezone"
             @timeChange="loadData"
             :hide-bounding="true"
             :hide-interval="true">
@@ -104,7 +104,7 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="history.data">
         <!-- no results -->
         <tr v-if="!history.data.length">
           <td :colspan="colSpan"
@@ -142,7 +142,7 @@
               </a>
             </td>
             <td class="no-wrap">
-              {{ item.timestamp | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+              {{ item.timestamp | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
             </td>
             <td class="no-wrap text-right">
               {{ item.range*1000 | readableTime }}
@@ -265,7 +265,6 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -287,17 +286,11 @@ export default {
     return {
       error: '',
       loading: true,
-      user: null,
-      history: {
-        data: [],
-        recordsTotal: undefined,
-        recordsFiltered: undefined
-      },
+      history: {},
       expandedLogs: { change: false },
       showColFilters: false,
       colSpan: 7,
       filters: {},
-      settings: { timezone: 'local' },
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 10, help: 'The time of the request' },
         { name: 'Time Range', sort: 'range', nowrap: true, width: 8, classes: 'text-right', help: 'The time range of the request' },
@@ -321,10 +314,18 @@ export default {
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   created: function () {
-    this.loadUser();
+    // if the user is an admin, show them all the columns
+    if (this.user.createEnabled) { this.colSpan = 8; }
+    // query for the user requested or the current user
+    this.filters.userId = this.$route.query.userId || this.user.userId;
+
+    this.loadData();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -372,17 +373,6 @@ export default {
         });
     },
     /* helper functions ------------------------------------------ */
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-          if (response.createEnabled) { this.colSpan = 8; }
-          this.filters.userId = this.$route.query.userId || response.userId;
-          this.loadData();
-        }, (error) => {
-          this.loadData();
-        });
-    },
     loadData: function () {
       this.loading = true;
 

@@ -354,7 +354,6 @@ export default {
     return {
       error: '',
       loading: true,
-      user: null,
       users: null,
       createError: '',
       newuser: { enabled: true },
@@ -381,8 +380,17 @@ export default {
       ]
     };
   },
+  computed: {
+    user: {
+      get: function () {
+        return this.$store.state.user;
+      },
+      set: function (newValue) {
+        this.$store.commit('setUser', newValue);
+      }
+    }
+  },
   created: function () {
-    this.loadUser();
     this.loadData();
   },
   methods: {
@@ -416,6 +424,10 @@ export default {
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
+          // update the current user if they were changed
+          if (this.user.userId === user.userId) {
+            this.loadUser();
+          }
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';

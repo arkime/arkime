@@ -23,22 +23,12 @@
 
       <b-navbar-nav>
         <template v-for="item of menuOrder">
-          <template v-if="menu[item]">
+          <template v-if="user && menu[item] && menu[item].hasPermission">
             <b-nav-item
-              v-if="menu[item].oldPage"
               :key="menu[item].link"
-              class="cursor-pointer"
-              :href="menu[item].href"
-              :active="isActive(menu[item].link)"
-              v-has-permission="menu[item].permission">
-              {{ menu[item].title }}
-            </b-nav-item>
-            <b-nav-item
-              v-else
-              :key="menu[item].link"
-              class="cursor-pointer"
-              v-has-permission="menu[item].permission">
-              <router-link :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }"
+              class="cursor-pointer">
+              <router-link
+                :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }"
                 :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
                 {{ menu[item].title }}
               </router-link>
@@ -108,6 +98,14 @@ export default {
           ...this.$route.query,
           expression: this.$store.state.expression
         };
+
+        // determine if user can view menu item
+        // this can't be done with the has-permission directive because
+        // a sibling of this component might update the user (Users.vue)
+        if (this.user) {
+          item.hasPermission = !item.permission ||
+            (this.user.hasOwnProperty(item.permission) && this.user[item.permission]);
+        }
       }
 
       return menu;
@@ -119,6 +117,9 @@ export default {
           return link;
         }
       }
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   methods: {

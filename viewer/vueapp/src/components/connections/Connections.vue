@@ -196,7 +196,6 @@
 
 <script>
 import Vue from 'vue';
-import UserService from '../users/UserService';
 import MolochSearch from '../search/Search';
 import FieldService from '../search/FieldService';
 import MolochPaging from '../utils/Pagination';
@@ -229,7 +228,6 @@ export default {
   },
   data: function () {
     return {
-      user: null,
       loading: true,
       error: '',
       settings: {}, // user settings
@@ -260,6 +258,9 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   watch: {
@@ -287,8 +288,7 @@ export default {
     this.colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.startD3();
-    // IMPORTANT: kicks off the initial search query
-    this.loadUser();
+    this.loadData();
 
     $('.footer').hide();
   },
@@ -365,16 +365,6 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-          // IMPORTANT: kicks off the initial search query
-          this.loadData();
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
-        });
-    },
     loadData: function () {
       this.loading = true;
       this.error = false;

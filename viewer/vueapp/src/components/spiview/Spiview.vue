@@ -6,7 +6,7 @@
     <!-- search navbar -->
     <moloch-search
       :num-matching-sessions="filtered"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="changeSearch">
     </moloch-search> <!-- /search navbar -->
 
@@ -126,7 +126,7 @@
           :graph-data="graphData"
           :map-data="mapData"
           :primary="true"
-          :timezone="settings.timezone">
+          :timezone="user.settings.timezone">
         </moloch-visualizations>
       </div> <!-- /session visualizations -->
 
@@ -296,7 +296,7 @@
                           :parse="true"
                           :pull-left="true"
                           :session-btn="true"
-                          :timezone="settings.timezone">
+                          :timezone="user.settings.timezone">
                         </moloch-session-field>
                         <sup>({{ bucket.doc_count | round(0) }})</sup>
                       </span>
@@ -389,9 +389,6 @@ export default {
       loadingVisualizations: true,
       staleData: undefined,
       filtered: 0,
-      settings: {
-        timezone: 'local'
-      },
       fieldConfigs: [],
       graphData: undefined,
       mapData: undefined,
@@ -415,6 +412,9 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   mounted: function () {
@@ -745,7 +745,6 @@ export default {
     },
     issueQueries: function () {
       this.getFields(); // IMPORTANT: kicks off initial query for spi data!
-      this.getUserSettings();
       this.getSpiviewFieldConfigs();
     },
     getFields: function () {
@@ -934,16 +933,6 @@ export default {
         });
 
       return pendingPromise;
-    },
-    /* Retrieves the current user's settings (specifically for timezone) */
-    getUserSettings: function () {
-      UserService.getSettings()
-        .then((settings) => {
-          this.settings = settings;
-        })
-        .catch((error) => {
-          this.error = error;
-        });
     },
     /* Gets the current user's custom spiview fields configurations */
     getSpiviewFieldConfigs: function () {

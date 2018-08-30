@@ -8,7 +8,7 @@
       :num-visible-sessions="query.length"
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
@@ -32,7 +32,7 @@
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
-        :timezone="settings.timezone">
+        :timezone="user.settings.timezone">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -41,7 +41,7 @@
           class="sticky-sessions"
           v-if="stickySessions.length"
           :sessions="stickySessions"
-          :timezone="settings.timezone"
+          :timezone="user.settings.timezone"
           @closeSession="closeSession"
           @closeAllSessions="closeAllSessions">
         </moloch-sticky-sessions>
@@ -311,7 +311,7 @@
                       :expr="col.exp"
                       :value="value"
                       :parse="true"
-                      :timezone="settings.timezone">
+                      :timezone="user.settings.timezone">
                     </moloch-session-field>
                   </span>
                 </span> <!-- /field value is an array -->
@@ -323,7 +323,7 @@
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :timezone="settings.timezone">
+                    :timezone="user.settings.timezone">
                   </moloch-session-field>
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
@@ -419,12 +419,10 @@ export default {
   },
   data: function () {
     return {
-      user: null,
       loading: true,
       error: '',
       sessions: {}, // page data
       stickySessions: [],
-      settings: {}, // user settings
       colWidths: {},
       colConfigs: [],
       colConfigError: '',
@@ -466,6 +464,9 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     },
     filteredFields: function () {
       let filteredGroupedFields = {};
@@ -857,7 +858,7 @@ export default {
             .then((result) => {
               this.fields = result;
               this.setupFields();
-              this.getUserSettings(); // IMPORTANT: kicks off the initial search query!
+              this.setupUserSettings(); // IMPORTANT: kicks off the initial search query!
             }).catch((error) => {
               this.loading = false;
               this.error = error;
@@ -877,34 +878,26 @@ export default {
           this.colConfigError = error.text;
         });
     },
-    getUserSettings: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
+    setupUserSettings: function () {
+      // if settings has custom sort field and the custom sort field
+      // exists in the table headers, apply it
+      if (this.user.settings && this.user.settings.sortColumn !== 'last' &&
+         this.tableState.visibleHeaders.indexOf(this.user.settings.sortColumn) > -1) {
+        this.query.sorts = [[this.user.settings.sortColumn, this.user.settings.sortDirection]];
+        this.tableState.order = this.query.sorts;
+      }
 
-          // if settings has custom sort field and the custom sort field
-          // exists in the table headers, apply it
-          if (this.settings && this.settings.sortColumn !== 'last' &&
-             this.tableState.visibleHeaders.indexOf(this.settings.sortColumn) > -1) {
-            this.query.sorts = [[this.settings.sortColumn, this.settings.sortDirection]];
-            this.tableState.order = this.query.sorts;
-          }
+      // IMPORTANT: kicks off the initial search query
+      if (!this.user.settings.manualQuery ||
+        !JSON.parse(this.user.settings.manualQuery) ||
+        componentInitialized) {
+        this.loadData();
+      } else {
+        this.loading = false;
+        this.error = 'Now, issue a query!';
+      }
 
-          // IMPORTANT: kicks off the initial search query
-          if (!this.settings.manualQuery ||
-            !JSON.parse(this.settings.manualQuery) ||
-            componentInitialized) {
-            this.loadData();
-          } else {
-            this.loading = false;
-            this.error = 'Now, issue a query!';
-          }
-
-          componentInitialized = true;
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-          this.error = error;
-        });
+      componentInitialized = true;
     },
     /**
      * Makes a request to the Session Service to get the list of sessions

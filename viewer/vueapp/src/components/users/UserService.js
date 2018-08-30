@@ -1,7 +1,5 @@
 import Vue from 'vue';
-
-let _userCache;
-let queryInProgress;
+import store from '../../store';
 
 const defaultSettings = { timezone: 'local' };
 
@@ -13,48 +11,35 @@ export default {
    *                            or rejection of the request.
    */
   getCurrent: function () {
-    if (queryInProgress) { return queryInProgress; }
-
-    queryInProgress = new Promise((resolve, reject) => {
-      if (_userCache) { resolve(_userCache); }
-
+    return new Promise((resolve, reject) => {
       Vue.axios.get('user/current')
         .then((response) => {
-          queryInProgress = undefined;
-          _userCache = response.data;
+          store.commit('setUser', response.data);
           resolve(response.data);
         }, (error) => {
-          queryInProgress = undefined;
           reject(error);
         });
     });
-
-    return queryInProgress;
   },
 
   /**
    * Determines whether a user has permission to perform a specific task
-   * @param {string} priv       The privilege in question. Values include:
-   *                            'createEnabled', 'emailSearch', 'enabled',
-   *                            'headerAuthEnabled', 'removeEnabled', 'webEnabled'
-   * @returns {Promise} Promise A promise object that signals the completion
+   * @param {string} priv The privilege in question. Values include:
+   *                      'createEnabled', 'emailSearch', 'enabled', 'packetSearch',
+   *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled'
+   * @returns {boolean}   A promise object that signals the completion
    *                            or rejection of the request.
    */
   hasPermission: function (priv) {
-    return new Promise((resolve, reject) => {
-      this.getCurrent()
-        .then((user) => {
-          let privs = priv.split(',');
-          for (let priv of privs) {
-            if (!user[priv]) {
-              return resolve(false);
-            }
-          }
-          resolve(true);
-        }, (error) => {
-          reject(error);
-        });
-    });
+    let user = store.state.user;
+    if (!user) { return false; }
+    let privs = priv.split(',');
+    for (let priv of privs) {
+      if (!user[priv]) {
+        return false;
+      }
+    }
+    return true;
   },
 
   /**
@@ -101,8 +86,10 @@ export default {
 
       if (userId) { options.url += `?userId=${userId}`; }
 
-      // update cache
-      _userCache.settings = settings;
+      // update user settings
+      if (!userId || store.state.user.userId === userId) {
+        store.commit('setUserSettings', settings);
+      }
 
       Vue.axios(options)
         .then((response) => {

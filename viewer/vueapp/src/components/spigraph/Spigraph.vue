@@ -5,7 +5,7 @@
     <!-- search navbar -->
     <moloch-search
       :num-matching-sessions="filtered"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
@@ -124,7 +124,7 @@
           :graph-data="graphData"
           :map-data="mapData"
           :primary="true"
-          :timezone="settings.timezone">
+          :timezone="user.settings.timezone">
         </moloch-visualizations>
       </div> <!-- /main visualization -->
 
@@ -159,7 +159,7 @@
               :graph-data="item.graph"
               :map-data="item.map"
               :primary="false"
-              :timezone="settings.timezone">
+              :timezone="user.settings.timezone">
             </moloch-visualizations>
           </div>
         </div> <!-- /field visualization -->
@@ -193,8 +193,6 @@
 
 <script>
 import FieldService from '../search/FieldService';
-import UserService from '../users/UserService';
-
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
@@ -221,9 +219,6 @@ export default {
       fields: [],
       loading: true,
       filtered: 0,
-      settings: {
-        timezone: 'local'
-      },
       graphData: undefined,
       mapData: undefined,
       refresh: 0,
@@ -236,6 +231,9 @@ export default {
     };
   },
   computed: {
+    user: function () {
+      return this.$store.state.user;
+    },
     graphType: function () {
       return this.$store.state.graphType;
     },
@@ -247,7 +245,7 @@ export default {
       return {
         sort: sort,
         date: this.$store.state.timeRange,
-        field: this.$route.query.field || 'node',
+        field: this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -287,8 +285,11 @@ export default {
     }
   },
   created: function () {
-    // IMPORTANT: kicks off the initial search query
-    this.getUserSettings();
+    setTimeout(() => {
+      // wait for query to be computed
+      this.loadData();
+    });
+
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
@@ -354,17 +355,6 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    getUserSettings: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-          // IMPORTANT: kicks off the initial search query
-          this.loadData();
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-          this.error = error;
-        });
-    },
     loadData: function () {
       this.loading = true;
       this.error = false;
@@ -372,7 +362,7 @@ export default {
       this.items = []; // clear items
 
       if (!this.$route.query.field) {
-        this.query.field = this.settings.spiGraph;
+        this.query.field = this.user.settings.spiGraph;
       }
 
       this.$http.get('spigraph.json', { params: this.query })
