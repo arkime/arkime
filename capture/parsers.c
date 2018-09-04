@@ -867,6 +867,10 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
+    if ((type & (MOLOCH_PARSERS_PORT_UDP | MOLOCH_PARSERS_PORT_TCP)) == 0) {
+        LOGEXIT("Parser '%s' has empty type", name);
+    }
+
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
     c->name     = name;
     c->uw       = uw;
