@@ -145,6 +145,7 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
         keyfile = molochKeyFile;
 
     if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+        result = g_strdup(result);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
