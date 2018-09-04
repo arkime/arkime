@@ -1189,10 +1189,6 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-.spiview-page form.info-nav button,
-.spiview-page form.info-nav .field-config-menu {
-  margin-top: -2px;
-}
 .spiview-page form.info-nav .field-config-menu .dropdown-header {
   padding: 0 2px;
 }
