@@ -81,56 +81,56 @@
                 <input v-model="user.userName"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'userName')"
                 />
               </td>
               <td class="no-wrap">
                 <input v-model="user.expression"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'expression')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.enabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'enabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.createEnabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'createEnabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.webEnabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'webEnabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.headerAuthEnabled"
-                  @change="userChanged(user);"
+                  @change="userChanged(user, 'headerAuthEnabled');"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.emailSearch"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'emailSearch')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.removeEnabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'removeEnabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.packetSearch"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'packetSearch')"
                 />
               </td>
               <td class="no-wrap pull-right">
@@ -419,14 +419,14 @@ export default {
       this.msg = null;
       this.msgType = null;
     },
-    userChanged: function (user) {
+    userChanged: function (user, field) {
       this.$http.post('user/update', user)
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
-            this.loadUser();
+            this.user[field] = user[field];
           }
         }, (error) => {
           this.msg = error.text;
