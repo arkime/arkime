@@ -50,7 +50,6 @@ export default {
           for (var key in response.data) {
             var item = response.data[key];
             if (item.func !== undefined) {
-              // TODO
               /* eslint-disable no-new-func */
               item.func = new Function('key', 'value', item.func);
             }

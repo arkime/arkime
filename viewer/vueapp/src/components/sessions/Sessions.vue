@@ -88,13 +88,13 @@
                     {{ key }}
                   </b-dropdown-header>
                   <!-- TODO fix tooltip placement -->
+                  <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
                   <b-dropdown-item
                     v-for="(field, k) in group"
                     :key="key + k"
                     :class="{'active':isVisible(field.dbField) >= 0}"
                     @click.stop.prevent="toggleVisibility(field.dbField)"
-                    v-b-tooltip.hover
-                    placement="right"
+                    v-b-tooltip.hover.top
                     :title="field.help">
                     {{ field.friendlyName }}
                     <small>({{ field.exp }})</small>
