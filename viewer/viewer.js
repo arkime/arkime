@@ -803,6 +803,16 @@ function logAction(uiPage) {
   };
 }
 
+function fieldToExp (req, res, next) {
+  if (req.query.exp && !req.query.field) {
+    var field = Config.getFieldsMap()[req.query.exp];
+    if (field) { req.query.field = field.dbField; }
+    else { req.query.field = req.query.exp; }
+  }
+
+  return next();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
@@ -3269,7 +3279,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
   });
 });
 
-app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
+app.get('/spigraph.json', logAction('spigraph'), fieldToExp, function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
@@ -3281,7 +3291,8 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
     query.size = 0;
     var size = +req.query.size || 20;
 
-    var field = req.query.field || "node";
+    var field = req.query.field || 'node';
+
     query.aggregations.field = {terms: {field: field, size: size}};
 
     Promise.all([Db.healthCachePromise(),
@@ -3344,7 +3355,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
             r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
           }
           if (results.items.length === result.responses.length) {
-            var s = req.query.sort || "lpHisto";
+            var s = req.query.sort || 'lpHisto';
             results.items = results.items.sort(function (a, b) {
               var result;
               if (s === 'name') { result = a.name.localeCompare(b.name); }
@@ -3356,7 +3367,7 @@ app.get('/spigraph.json', logAction('spigraph'), function(req, res) {
         });
       });
     }).catch((err) => {
-      console.log("spigraph.json error", err);
+      console.log('spigraph.json error', err);
       return res.molochError(403, errorString(err));
     });
   });
@@ -3788,19 +3799,12 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
-app.get('/unique.txt', logAction(), function(req, res) {
+app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   if (req.query.field === undefined && req.query.exp === undefined) {
     return res.send("Missing field or exp parameter");
   }
 
   noCache(req, res);
-
-  // look up the field based on the expression
-  if (req.query.exp && !req.query.field) {
-    var field = Config.getFieldsMap()[req.query.exp];
-    if (field) { req.query.field = field.dbField; }
-    else { req.query.field = req.query.exp; }
-  }
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;

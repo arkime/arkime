@@ -144,7 +144,9 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+    if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+        result = g_strdup(result);
+    } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         result = g_key_file_get_string(keyfile, config.nodeClass, key, NULL);
@@ -156,6 +158,9 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
         result = NULL;
     }
 
+    if (result)
+        g_strstrip(result);
+
     if (config.debug) {
         LOG("%s=%s", key, result?result:"(null)");
     }
@@ -166,12 +171,15 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 /******************************************************************************/
 gchar **moloch_config_raw_str_list(GKeyFile *keyfile, char *key, char *d)
 {
+    char   *hvalue;
     gchar **result;
 
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+    if (config.override && keyfile == molochKeyFile && (hvalue = g_hash_table_lookup(config.override, key))) {
+        result = g_strsplit(hvalue, ";", 0);
+    } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string_list(keyfile, config.nodeName, key, NULL, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         result = g_key_file_get_string_list(keyfile, config.nodeClass, key, NULL, NULL);
@@ -238,12 +246,15 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
 /******************************************************************************/
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max)
 {
-    uint32_t value = d;
+    char     *result;
+    uint32_t  value = d;
 
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+    if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+        value = atol(result);
+    } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_integer(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         value = g_key_file_get_integer(keyfile, config.nodeClass, key, NULL);
@@ -270,12 +281,15 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
 /******************************************************************************/
 double moloch_config_double(GKeyFile *keyfile, char *key, double d, double min, double max)
 {
-    double value = d;
+    char     *result;
+    double    value = d;
 
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+    if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+        value = atof(result);
+    } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_double(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         value = g_key_file_get_double(keyfile, config.nodeClass, key, NULL);
@@ -298,12 +312,15 @@ double moloch_config_double(GKeyFile *keyfile, char *key, double d, double min, 
 /******************************************************************************/
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
 {
-    gboolean value = d;
+    char     *result;
+    gboolean  value = d;
 
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+    if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+        value = strcmp(result, "true") == 0 || strcmp(result, "1") == 0;
+    } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_boolean(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         value = g_key_file_get_boolean(keyfile, config.nodeClass, key, NULL);

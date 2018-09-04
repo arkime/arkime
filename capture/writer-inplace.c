@@ -51,8 +51,12 @@ LOCAL long writer_inplace_create(MolochPacket_t * const packet)
     stat(readerName, &st);
 
     uint32_t outputId;
-    char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, 1, &outputId);
-    g_free(filename);
+    if (config.pcapReprocess) {
+        moloch_db_file_exists(readerName, &outputId);
+    } else {
+        char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, 1, &outputId);
+        g_free(filename);
+    }
     outputIds[packet->readerPos] = outputId;
     return outputId;
 }

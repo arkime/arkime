@@ -89,7 +89,7 @@
                 v-for="item in stat.nodes[node]">
                 <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
                   class="badge badge-pill badge-secondary cursor-help"
-                  :class="{'badge-primary':item.prirep === 'p'}"
+                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED'}"
                   :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
                   {{ item.shard }}
                   <span>
@@ -412,5 +412,8 @@ table.table td:hover::before {
 }
 .badge > span span {
   color: #bbb;
+}
+.badge-notstarted {
+  border: 2px dotted var(--color-quaternary);
 }
 </style>

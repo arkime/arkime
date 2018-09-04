@@ -14,18 +14,36 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.5.3 2018/08/xx
-  - viewer - fix some spiview display issues
-  - parliament - uses Vue now
-  - capture - if single tcp data packet left at save time, try and classify it (issue #880)
-  - all - new hourly[2348]/hourly12 rotateIndex
-  - capture - for live captures prevent out of order stats records
-  - viewer - fix upload command tags (issue #888)
   - release - libpcap 1.9.0
-  - capture - aes-256-ctr: iv is 12B, limit maxFileSizeG to 64G, dek is more random
+  - all - new hourly[2348]/hourly12 rotateIndex
   - all - deal with talking to multiple wise servers better
   - all - --insecure option
+  - all - use package-lock.json so all builds use the same packages
+  - viewer - fix some spiview display issues (dns ip, email headers)
+  - viewer - fix upload command tags (issue #888)
+  - viewer - aes-256-ctr: fix issues decoding larger files
   - viewer - set rejectUnauthorized for ES connections (issue #894)
+  - viewer - fix some payloads not displaying for css reasons
+  - viewer - added zoom buttons to connections
+  - viewer - keyboard shortcuts
+  - capture - require gnu99 supporting compiler
+  - capture - if single tcp data packet left at save time, try and classify it (issue #880)
+  - capture - for live captures prevent out of order stats records
+  - capture - aes-256-ctr: iv is 12B, limit maxFileSizeG to 64G, dek is more random
   - capture - Added corrupt setting to saveUnknownPackets
+  - capture - new -o option to override config file from command line
+  - capture - trim leading/trailing whitespace from config options
+  - capture - new --nostats option to stop stats from being sent to ES
+  - capture - fix http socket leak on errors
+  - capture - new -F option to specify files that contain a list of pcap files to process
+  - capture - new --reprocess option that won't create a new file entry (but
+              will duplicate SPI data)
+  - capture - add IPPORT_DROPPED count to stats log
+  - capture - fix some possible bad memory reads in oracle/radius/http parsers
+  - parliament - uses Vue now
+  - parliament - support email alerts
+  - parliament - new edit slider to show edit buttons
+  - parliament - many improvements how issues work
 
 1.5.2 2018/07/26
   - capture - new custom-fields section

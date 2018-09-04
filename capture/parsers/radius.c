@@ -86,7 +86,7 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
 /******************************************************************************/
 LOCAL void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len != ((data[2] << 8) | data[3])) {
+    if (len < 4 || len != ((data[2] << 8) | data[3])) {
         return;
     }
 

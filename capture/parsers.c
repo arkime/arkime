@@ -817,14 +817,14 @@ typedef struct
 LOCAL MolochClassifyHead_t classifersTcp0;
 LOCAL MolochClassifyHead_t classifersTcp1[256];
 LOCAL MolochClassifyHead_t classifersTcp2[256][256];
-LOCAL MolochClassifyHead_t classifersTcpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersTcpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersTcpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersTcpPortDst[0x10000];
 
 LOCAL MolochClassifyHead_t classifersUdp0;
 LOCAL MolochClassifyHead_t classifersUdp1[256];
 LOCAL MolochClassifyHead_t classifersUdp2[256][256];
-LOCAL MolochClassifyHead_t classifersUdpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersUdpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersUdpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
@@ -865,6 +865,10 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
 
     if (MOLOCH_API_VERSION != apiversion) {
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+    }
+
+    if ((type & (MOLOCH_PARSERS_PORT_UDP | MOLOCH_PARSERS_PORT_TCP)) == 0) {
+        LOGEXIT("Parser '%s' has empty type", name);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);

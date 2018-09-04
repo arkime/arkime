@@ -347,10 +347,11 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   exportUniqueValues: function (exp, counts, routeParams) {
-    routeParams.counts = counts;
-    routeParams.exp = exp;
+    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+    clonedParams.counts = counts;
+    clonedParams.exp = exp;
 
-    let url = `unique.txt?${qs.stringify(routeParams)}`;
+    let url = `unique.txt?${qs.stringify(clonedParams)}`;
 
     window.open(url, '_blank');
   },
@@ -361,9 +362,10 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   openSpiGraph: function (dbField, routeParams) {
-    routeParams.field = dbField;
+    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+    clonedParams.field = dbField;
 
-    let url = `spigraph?${qs.stringify(routeParams)}`;
+    let url = `spigraph?${qs.stringify(clonedParams)}`;
 
     window.open(url, '_blank');
   },

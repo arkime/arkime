@@ -245,7 +245,7 @@ export default {
       return {
         sort: sort,
         date: this.$store.state.timeRange,
-        field: this.$route.query.field || this.user.settings.spiGraph || 'node',
+        exp: this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -257,8 +257,8 @@ export default {
     },
     fieldObj: function () {
       for (let field of this.fields) {
-        if (field.dbField === this.query.field ||
-          field.exp === this.query.field) {
+        if (field.dbField === this.query.exp ||
+          field.exp === this.query.exp) {
           oldFieldObj = field;
           return field;
         }
@@ -301,7 +301,8 @@ export default {
           friendlyName: 'Dst IP:Dst Port'
         });
         for (let field of this.fields) {
-          if (field.dbField === this.query.field) {
+          if (field.dbField === this.query.exp ||
+            field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
           }
         }
@@ -346,11 +347,11 @@ export default {
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
-      this.query.field = field.dbField;
+      this.query.exp = field.dbField;
       this.$router.push({
         query: {
           ...this.$route.query,
-          field: this.query.field
+          field: this.query.exp
         }
       });
     },
@@ -360,10 +361,6 @@ export default {
       this.error = false;
 
       this.items = []; // clear items
-
-      if (!this.$route.query.field) {
-        this.query.field = this.user.settings.spiGraph;
-      }
 
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {

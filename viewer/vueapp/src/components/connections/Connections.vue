@@ -177,7 +177,6 @@
       <moloch-no-results
         v-if="!error && !loading && recordsFiltered === 0"
         class="mt-5 mb-5"
-        :records-total="recordsFiltered"
         :view="query.view">
       </moloch-no-results> <!-- /no results -->
 

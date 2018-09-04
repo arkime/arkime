@@ -247,6 +247,8 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
 
             if (question[3])
                 g_base64_decode_inplace(question+3, &olen);
+            else
+                olen = 0;
 
             char *out = g_convert((char *)question+3, olen, "utf-8", str+2, &bread, &bwritten, &error);
             if (error) {

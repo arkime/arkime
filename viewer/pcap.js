@@ -186,10 +186,10 @@ Pcap.prototype.readPacket = function(pos, cb) {
 
   if (this.encoding === "aes-256-ctr") {
     posoffset = pos%16;
-    pos = pos & ~0xf;
+    pos = pos - posoffset; // Can't use & ~0xf because javascript is 32bit
   } else if (this.encoding === "xor-2048") {
     posoffset = pos%256;
-    pos = pos & ~0xff;
+    pos = pos - posoffset; // Can't use & ~0xff because javascript is 32bit
   }
 
   try {

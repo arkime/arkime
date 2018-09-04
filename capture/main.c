@@ -68,6 +68,25 @@ gboolean moloch_debug_flag()
     return TRUE;
 }
 
+/******************************************************************************/
+gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
+{
+    char *equal = strchr(input, '=');
+    if (!equal)
+        LOGEXIT("%s requires a '=' in value %s", option_name, input);
+
+    char *key = g_strndup(input, equal - input);
+    char *value = g_strdup(equal + 1);
+
+    if (!config.override) {
+        config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    }
+    g_hash_table_insert(config.override, key, value);
+
+    return TRUE;
+}
+/******************************************************************************/
+
 LOCAL  GOptionEntry entries[] =
 {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
@@ -77,11 +96,14 @@ LOCAL  GOptionEntry entries[] =
     { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL},
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
     { "skip",      's',                    0, G_OPTION_ARG_NONE,           &config.pcapSkip,      "Used with -R option and without --copy, skip files already processed", NULL },
+    { "reprocess",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapReprocess, "In offline mode reprocess files, use the same files table entry", NULL },
     { "recursive",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host", NULL },
     { "host",        0,                    0, G_OPTION_ARG_STRING,         &config.hostName,      "Override hostname, this is what remote viewers will use to connect", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
+    { "filelist",  'F',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.pcapFileLists, "File that has a list of pcap file names, 1 per line", NULL },
     { "op",          0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraOps,      "FieldExpr=Value to set on all session, can be used multiple times", NULL},
+    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       moloch_cmdline_option, "Key=Value to override config.ini", NULL},
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
     { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       moloch_debug_flag,     "Turn on all debugging", NULL },
     { "quiet",     'q',                    0, G_OPTION_ARG_NONE,           &config.quiet,         "Turn off regular logging", NULL },
@@ -90,8 +112,8 @@ LOCAL  GOptionEntry entries[] =
     { "flush",       0,                    0, G_OPTION_ARG_NONE,           &config.flushBetween,  "In offline mode flush streams between files", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
-    { "noLoadTags",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noLoadTags,    "Don't load tags at startup", NULL },
-    { "insecure",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
+    { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
+    { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -104,6 +126,8 @@ void free_args()
     g_free(config.configFile);
     if (config.pcapReadFiles)
         g_strfreev(config.pcapReadFiles);
+    if (config.pcapFileLists)
+        g_strfreev(config.pcapFileLists);
     if (config.pcapReadDirs)
         g_strfreev(config.pcapReadDirs);
     if (config.extraTags)
@@ -131,7 +155,7 @@ void parse_args(int argc, char **argv)
 
     g_option_context_free(context);
 
-    config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs);
+    config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs || config.pcapFileLists);
 
     if (!config.configFile)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
