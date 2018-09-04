@@ -7,8 +7,8 @@
       v-if="user.settings"
       :start="sessionsQuery.start"
       :timezone="user.settings.timezone"
-      hide-actions
-      hide-interval
+      :hide-actions="true"
+      :hide-interval="true"
       @changeSearch="loadSessions">
     </moloch-search> <!-- /search navbar -->
 
