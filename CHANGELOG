@@ -40,6 +40,8 @@ NOTICE: Restart wiseService before capture when upgrading
               will duplicate SPI data)
   - capture - add IPPORT_DROPPED count to stats log
   - capture - fix some possible bad memory reads in oracle/radius/http parsers
+  - capture - fix some possible integer overflow issues
+  - capture - fix tcp sequence number issues
   - parliament - uses Vue now
   - parliament - support email alerts
   - parliament - new edit slider to show edit buttons

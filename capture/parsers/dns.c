@@ -239,7 +239,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 break;
             struct in_addr in;
             unsigned char *ptr = BSB_WORK_PTR(bsb);
-            in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
+            in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
             moloch_field_ip4_add(ipField, session, in.s_addr);
 
