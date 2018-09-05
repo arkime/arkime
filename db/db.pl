@@ -1229,6 +1229,10 @@ sub huntCreate
       },
       "lastRun": {
         "type": "date"
+      },
+      "query": {
+        "type": "object",
+        "dynamic": "true"
       }
     }
   }

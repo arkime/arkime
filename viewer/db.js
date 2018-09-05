@@ -449,6 +449,9 @@ exports.numberOfHunts = function(cb) {
 exports.deleteHuntItem = function (id, cb) {
   return internals.elasticSearchClient.delete({index:fixIndex('hunt'), type:'hunt', id:id, refresh:true}, cb);
 };
+exports.setHunt = function(id, doc, cb) {
+  return internals.elasticSearchClient.index({index:fixIndex('hunt'), type: 'hunt', body:doc, id: id, refresh:true}, cb);
+};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, (err, stat) => {

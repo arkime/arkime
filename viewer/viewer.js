@@ -2143,12 +2143,94 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+function processHuntJob (huntId, hunt) {
+  Db.setHunt(huntId, hunt, (err, info) => {
+    if (err) {
+      console.error('Error starting hunt job', err, info);
+      return;
+    }
+    console.log('Started hunt: ', hunt.name); // TODO remove
+  });
+
+  // build session query
+  // do query
+  // for each session
+  // // write stat every 5 minutes
+  // // call remote search - get viewurl
+}
+
+let runningHuntJob;
+function processHuntJobs () {
+  console.log('process hunt jobbies'); // TODO remove
+
+  if (runningHuntJob) { return; }
+
+  let query = { sort: { created: { order: 'asc' } } };
+
+  Db.searchHunt(query)
+    .then((hunts) => {
+      if (hunts.error) { throw hunts.error; }
+
+      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
+        var hit = hunts.hits.hits[i];
+        var hunt = hit._source;
+        let id = hit._id;
+
+        if (hunt.status === 'running') { // there is a job already running
+          console.log('hunt running', hunt.name); // TODO remove
+          runningHuntJob = hunt;
+          // TODO update the number of sesssions matched and searched
+          return;
+        } else if (hunt.status === 'queued') { // get the first queued hunt
+          console.log('hunt queued and starting to run', hunt.name); // TODO remove
+          hunt.status = 'running'; // update the hunt job
+          runningHuntJob = hunt;
+          processHuntJob(id, hunt);
+          return;
+        }
+
+        runningHuntJob = undefined;
+      }
+    }).catch(err => {
+      console.error('Error fetching hunt jobs', err);
+      return;
+    });
+}
+
+function updateHuntStatus (req, res, status, successText, errorText) {
+  Db.get('hunt', 'hunt', req.params.id, (err, hit) => {
+    if (err) {
+      console.error(errorText, err, hit);
+      return res.molochError(500, errorText);
+    }
+
+    // don't let a user play a hunt job if one is already running
+    if (status === 'running' && runningHuntJob) {
+      return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
+    }
+
+    let hunt = hit._source;
+    // clear the running hunt job if this is it
+    if (hunt.status === 'running') { runningHuntJob = undefined; }
+    hunt.status = status; // update the hunt job
+
+    Db.setHunt(req.params.id, hunt, (err, info) => {
+      if (err) {
+        console.error(errorText, err, info);
+        return res.molochError(500, errorText);
+      }
+      res.send(JSON.stringify({success: true, text: successText}));
+    });
+  });
+}
+
 app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
+  if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
   if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
   if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
   if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
@@ -2183,7 +2265,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   });
 });
 
-app.get('/hunt/list', logAction('hunt'), function (req, res) {
+app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
@@ -2228,9 +2310,10 @@ app.get('/hunt/list', logAction('hunt'), function (req, res) {
     });
 });
 
-app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res) {
+// TODO make sure hunt job is stopped before removal
+app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-    if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
+  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   function deleteHunt (id) {
     Db.deleteHuntItem(id, function (err, result) {
@@ -2264,6 +2347,45 @@ app.delete('/hunt/:id', logAction('hunt'), checkCookieToken, function (req, res)
   } else { // admin can delete anyone's hunt
     return deleteHunt(req.params.id);
   }
+});
+
+app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, function (req, res) {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
+  updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
+});
+
+app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, function (req, res) {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
+  updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
+});
+
+// TODO test
+app.get('/hunt/remote', function (req, res) {
+  if (!req.query.huntId) { return res.molochError(403, 'Missing hunt id'); }
+  if (!req.query.sessionId) { return res.molochError(403, 'Missing session id'); }
+
+  // fetch hunt and session
+  Promise.all([Db.get('hunt', 'hunt', req.query.huntId),
+               Db.get(Db.id2Index(req.query.sessionId), 'session', req.query.sessionId)])
+    .then(([hunt, session]) => {
+      if (hunt.error) { throw hunt.error; }
+      if (session.error) { throw session.error; }
+
+      hunt = hunt._source;
+      session = session._source;
+
+      let matched = false;
+
+      // TODO search pcap (pcapSearch?)
+      // TODO update session to include job that matched (hunts[]?)
+
+      res.send({ success:true, matched:matched });
+    }).catch(err => {
+      console.log('ERROR - hunt/remote', err);
+      return res.molochError(500, 'Error hunting on remote viewer - ' + err);
+    });
 });
 
 app.get('/history/list', function(req, res) {
@@ -5665,7 +5787,7 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
         });
       });
     },
-    function () {
+    function () { // TODO ECR
       // Get from remote DISK
       getViewUrl(node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
@@ -5900,6 +6022,10 @@ if (Config.get("regressionTests")) {
   app.get('/processCronQueries', function(req, res) {
     processCronQueries();
     res.send("{}");
+  });
+  app.get('/processHuntJobs', function (req, res) {
+    processHuntJobs();
+    res.send('{}');
   });
 }
 
@@ -6252,10 +6378,11 @@ function main () {
   createRightClicks();
   setInterval(createRightClicks, 5*60*1000);
 
-  if (Config.get("cronQueries", false)) {
+  if (Config.get("cronQueries", false)) { // this viewer will process the cron queries
     console.log("This node will process Cron Queries, delayed by", internals.cronTimeout, "seconds");
     setInterval(processCronQueries, 60*1000);
     setTimeout(processCronQueries, 1000);
+    setInterval(processHuntJobs, 10000); // TODO maybe add a different config option
   }
 
   var server;

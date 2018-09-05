@@ -346,7 +346,7 @@
             v-for="job in results">
             <tr :key="`${job.id}-row`">
               <td>
-                <toggle-btn class="mt-1"
+                <toggle-btn
                   v-if="user.userId === job.userId || user.createEnabled"
                   :opened="job.expanded"
                   @toggle="toggleJobDetail(job)">
@@ -431,6 +431,7 @@
                     </span>
                   </b-tooltip>
                   <button v-if="job.status === 'running'"
+                    @click="pauseJob(job)"
                     type="button"
                     v-b-tooltip.hover
                     title="Pause this job"
@@ -439,6 +440,7 @@
                     </span>
                   </button>
                   <button v-if="job.status === 'paused'"
+                    @click="playJob(job)"
                     type="button"
                     v-b-tooltip.hover
                     title="Play this job"
@@ -546,7 +548,7 @@ export default {
       // packet search job search query
       query: {
         sortField: 'created',
-        desc: true,
+        desc: false,
         searchTerm: ''
       }
     };
@@ -621,13 +623,14 @@ export default {
         type: this.jobType,
         src: this.jobSrc,
         dst: this.jobDst,
-        totalSessions: this.sessions.recordsFiltered
+        totalSessions: this.sessions.recordsFiltered,
+        query: this.sessionsQuery
       };
 
       this.axios.post('hunt', { hunt: newJob })
         .then((response) => {
           this.createFormOpened = false;
-          this.results.unshift(response.data.hunt);
+          this.results.push(response.data.hunt);
         }, (error) => {
           this.createFormError = error.text || error;
         });
@@ -641,6 +644,22 @@ export default {
               return;
             }
           }
+        }, (error) => {
+          this.$set(job, 'error', error.text || error);
+        });
+    },
+    pauseJob: function (job) {
+      this.axios.put(`hunt/${job.id}/pause`)
+        .then((response) => {
+          this.$set(job, 'status', 'paused');
+        }, (error) => {
+          this.$set(job, 'error', error.text || error);
+        });
+    },
+    playJob: function (job) { // TODO
+      this.axios.put(`hunt/${job.id}/play`)
+        .then((response) => {
+          this.$set(job, 'status', 'queued');
         }, (error) => {
           this.$set(job, 'error', error.text || error);
         });
