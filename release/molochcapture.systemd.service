@@ -5,6 +5,9 @@ After=network.target
 [Service]
 Type=simple
 Restart=on-failure
+RestartSec=30
+StartLimitInterval=5m
+StartLimitBurst=5
 StandardOutput=tty
 ExecStartPre=-MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
 ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/moloch-capture -c MOLOCH_INSTALL_DIR/etc/config.ini >> MOLOCH_INSTALL_DIR/logs/capture.log 2>&1'
