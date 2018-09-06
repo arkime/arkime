@@ -3150,6 +3150,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
                recordsFiltered: 0,
                graph: {},
                map: {},
+               error: errorString(err),
                health: Db.healthCache(),
                data:[]};
       res.send(r);
