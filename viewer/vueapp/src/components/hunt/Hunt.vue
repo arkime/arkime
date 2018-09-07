@@ -164,7 +164,7 @@
                     hex
                   </label>
                 </div>
-                <div class="form-check form-check-inline">
+                <!-- <div class="form-check form-check-inline">
                   <input class="form-check-input"
                     :checked="jobSearchType === 'wildcard'"
                     @click="setJobSearchType('wildcard')"
@@ -177,7 +177,7 @@
                     for="wildcard">
                     wildcard
                   </label>
-                </div>
+                </div> -->
                 <div class="form-check form-check-inline">
                   <input class="form-check-input"
                     :checked="jobSearchType === 'regex'"
@@ -266,7 +266,7 @@
                 <button type="button"
                   @click="createJob"
                   class="pull-right btn btn-theme-tertiary pull-right ml-1">
-                  <span class="fa fa-plus">
+                  <span class="fa fa-plus fa-fw">
                   </span>&nbsp;
                   Create
                 </button> <!-- /create search job button -->
@@ -274,7 +274,7 @@
                 <button type="button"
                   @click="cancelCreateForm"
                   class="pull-right btn btn-warning pull-right">
-                  <span class="fa fa-ban">
+                  <span class="fa fa-ban fa-fw">
                   </span>&nbsp;
                   Cancel
                 </button> <!-- /cancel create search job button -->
@@ -384,6 +384,13 @@
                     Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
                   </div>
                 </b-tooltip>
+                <span v-if="job.errors && job.errors.length"
+                  class="badge badge-danger cursor-help">
+                  <span class="fa fa-exclamation-triangle"
+                    v-b-tooltip.hover
+                    title="Errors were encountered while running this hunt job. Open the job to view the error details.">
+                  </span>
+                </span>
               </td>
               <td>
                 {{ job.name }}
@@ -411,14 +418,14 @@
                     v-b-tooltip.hover
                     title="Remove this job from history"
                     class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span class="fa fa-trash-o">
+                    <span class="fa fa-trash-o fa-fw">
                     </span>
                   </button>
                   <button type="button"
                     v-if="job.matchedSessions"
                     :id="`openresults${job.id}`"
                     class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                    <span class="fa fa-folder-open">
+                    <span class="fa fa-folder-open fa-fw">
                     </span>
                   </button>
                   <b-tooltip v-if="job.matchedSessions"
@@ -436,7 +443,7 @@
                     v-b-tooltip.hover
                     title="Pause this job"
                     class="pull-right btn btn-sm btn-warning">
-                    <span class="fa fa-pause">
+                    <span class="fa fa-pause fa-fw">
                     </span>
                   </button>
                   <button v-if="job.status === 'paused'"
@@ -445,7 +452,7 @@
                     v-b-tooltip.hover
                     title="Play this job"
                     class="pull-right btn btn-sm btn-theme-secondary">
-                    <span class="fa fa-play">
+                    <span class="fa fa-play fa-fw">
                     </span>
                   </button>
                 </span>
@@ -458,6 +465,15 @@
                   <div class="col-12">
                     This hunt is
                     <strong>{{ job.status }}</strong>
+                  </div>
+                </div>
+                <div v-if="job.lastUpdated"
+                  class="row">
+                  <div class="col-12">
+                    This hunt was last updated at:
+                    <strong>
+                      {{ job.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                    </strong>
                   </div>
                 </div>
                 <div class="row">
@@ -482,6 +498,16 @@
                     searched sessions out of
                     <strong>{{ job.totalSessions }}</strong>
                     total sessions to search
+                  </div>
+                </div>
+                <div v-if="job.errors"
+                  v-for="(error, index) in job.errors"
+                  :key="index"
+                  class="row text-danger">
+                  <div class="col-12">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ error.value }}
                   </div>
                 </div>
               </td>

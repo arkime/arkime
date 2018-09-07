@@ -1170,7 +1170,7 @@ print "\n";
 ################################################################################
 
 ################################################################################
-sub huntCreate
+sub huntsCreate
 {
   my $settings = '
 {
@@ -1227,22 +1227,29 @@ sub huntCreate
       "created": {
         "type": "date"
       },
-      "lastRun": {
+      "lastUpdated": {
         "type": "date"
       },
       "query": {
         "type": "object",
         "dynamic": "true"
+      },
+      "errors": {
+        "properties": {
+          "value": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }
 }';
 
-print "Setting hunt mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunt_v1", $settings);
-esAlias("add", "hunt_v1", "hunt");
-print "Setting hunt_v1 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunt_v1/hunt/_mapping?pretty", $mapping);
+print "Setting hunts mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1", $settings);
+esAlias("add", "hunts_v1", "hunts");
+print "Setting hunts_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1/hunt/_mapping?pretty", $mapping);
 }
 ################################################################################
 
@@ -2063,7 +2070,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}fields_v2", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
-    esDelete("/${PREFIX}hunt_v1", 1);
+    esDelete("/${PREFIX}hunts_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2087,7 +2094,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     sessions2Update();
     fieldsCreate();
     historyUpdate();
-    huntCreate();
+    huntsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();

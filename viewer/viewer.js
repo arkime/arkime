@@ -82,6 +82,7 @@ var internals = {
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
+  runningHuntJob: undefined
 };
 
 if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
@@ -2143,27 +2144,244 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-function processHuntJob (huntId, hunt) {
-  Db.setHunt(huntId, hunt, (err, info) => {
-    if (err) {
-      console.error('Error starting hunt job', err, info);
-      return;
+function packetSearch (packet, options) {
+  if (options.searchType === 'asciicase') {
+    if (packet.toString().includes(options.search)) {
+      return true;
     }
-    console.log('Started hunt: ', hunt.name); // TODO remove
-  });
+  } else if (options.searchType === 'ascii') {
+    if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
+      return true;
+    }
+  } else if (options.searchType === 'regex') {
+    let regex = new RegExp(options.search);
+    if (packet.toString().match(regex)) {
+      return true;
+    }
+  } else if (options.searchType === 'hex') {
+    if (packet.toString('hex').includes(options.search)) {
+      return true;
+    }
+  }
 
-  // build session query
-  // do query
-  // for each session
-  // // write stat every 5 minutes
-  // // call remote search - get viewurl
+  return false;
 }
 
-let runningHuntJob;
-function processHuntJobs () {
-  console.log('process hunt jobbies'); // TODO remove
+function sessionHunt (sessionId, options, cb) {
+  // setTimeout(() => { // TODO remove
+  if (options.type === 'reassembled') {
+    processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, results) {
+      if (err) {
+        return cb(null, false);
+      }
 
-  if (runningHuntJob) { return; }
+      for (let i = 0, ilen = results.length; i < ilen; i++) {
+        let found = packetSearch(results[i].data, options);
+        if (found) { return cb(null, found); }
+      }
+
+      return cb(null, false);
+    });
+  } else if (options.type === 'raw') {
+    let packets = [];
+    processSessionId(sessionId, true, null, function (pcap, buffer, cb, i) {
+      packets[i] = buffer;
+      cb(null);
+    }, function(err, session) {
+      if (err) {
+        return cb(null, false);
+      }
+
+      for (let i = 0, ilen = packets.length; i < ilen; i++) {
+        let found = packetSearch(packets[i], options);
+        if (found) { return cb(null, found); }
+      }
+
+      return cb(null, false);
+    },
+    options.size || 10000, 10); // TODO what is limit 10 and what should it be?
+  }
+  // }, 500);
+}
+
+function pauseHuntJobWithError (huntId, hunt, error) {
+  console.error(error.value);
+
+  hunt.status = 'paused';
+
+  if (!hunt.errors) {
+    hunt.errors = [ error ];
+  } else {
+    hunt.errors.push(error);
+  }
+
+  Db.setHunt(huntId, hunt, (err, info) => {
+    if (err) {
+      console.error('Error adding errors and pausing hunt job', err, info);
+      return;
+    }
+  });
+}
+
+// TODO what happens if process is stopped? how to restart running job?
+function processHuntJob (huntId, hunt) {
+  // start the hunt
+  hunt.lastUpdated = Math.floor(Date.now() / 1000);
+  Db.setHunt(huntId, hunt, (err, info) => {
+    if (err) {
+      pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err} ${info}` });
+      return;
+    }
+  });
+
+  // find the user that created the hunt
+  Db.getUserCache(hunt.userId, function(err, user) {
+    if (err && !user) {
+      pauseHuntJobWithError(huntId, hunt, { value: err });
+      return;
+    }
+    if (!user || !user.found) {
+      pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
+      return;
+    }
+    if (!user._source.enabled) {
+      pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
+      return;
+    }
+
+    user = user._source;
+
+    molochparser.parser.yy = {
+      emailSearch: user.emailSearch === true,
+      fieldsMap: Config.getFieldsMap()
+    };
+
+    // build session query
+    var query = {
+      from: 0,
+      size: hunt.totalSessions,
+      query: { bool: { filter: [{}] } },
+      _source: ['_id', 'node'],
+      sort: { timestamp: { order: 'asc' } }
+    };
+
+    if (hunt.query.expression) {
+      try {
+        query.query.bool.filter.push(molochparser.parse(hunt.query.expression));
+      } catch (e) {
+        pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile hunt query expression: ${e}` });
+        return;
+      }
+    }
+
+    if (user.expression && user.expression.length > 0) {
+      try {
+        // Expression was set by admin, so assume email search ok
+        molochparser.parser.yy.emailSearch = true;
+        var userExpression = molochparser.parse(user.expression);
+        query.query.bool.filter.push(userExpression);
+      } catch (e) {
+        pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile user forced expression (${user.expression}): ${e}` });
+        return;
+      }
+    }
+
+    lookupQueryItems(query.query.bool.filter, function (lerr) {
+      // TODO Process at most 24 hours
+      query.query.bool.filter[0] = {
+        range: {
+          timestamp: {
+            gte: hunt.query.startTime * 1000,
+            lt: hunt.query.stopTime * 1000
+          }
+        }
+      };
+
+      if (Config.debug > 2) {
+        console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+      }
+
+      // do sessions query
+      Db.search('sessions2-*', 'session', query, function getMoreUntilDone (err, result) {
+        if (err || result.error) {
+          pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
+          return;
+        }
+
+        let hits = result.hits.hits;
+        let searchedSessions = 0;
+
+        async.forEachSeries(hits, function (hit, cb) {
+          searchedSessions++;
+          let node = hit._source.node;
+
+          isLocalView(node, function () {
+            let options = {
+              size: hunt.size,
+              type: hunt.type,
+              search: hunt.search,
+              searchType: hunt.searchType
+            };
+            sessionHunt(hit._id, options, function (err, matched) {
+              if (err) {
+                pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${hit._id}): ${err}` });
+                return;
+              }
+
+              // TODO if matched, add new fields to the session that includes the hunt name and id
+              if (matched) { hunt.matchedSessions++; }
+
+              let now = Math.floor(Date.now() / 1000);
+              // update the hunt with number of matchedSessions and searchedSessions
+              if ((now - hunt.lastUpdated) > 1) { // TODO every minute? (60000)
+                hunt.lastUpdated = now;
+                hunt.searchedSessions = searchedSessions;
+                Db.setHunt(huntId, hunt, () => {});
+              }
+
+              return cb(null, matched);
+            });
+          },
+          function () {
+            // Check Remotely
+            getViewUrl(node, function (err, viewUrl, client) {
+              var info = url.parse(viewUrl);
+              info.path = `${Config.basePath(node)}${node}/hunt/${huntId}/remote/${hit._id}`;
+              info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+              addAuth(info, user, node);
+              addCaTrust(info, node);
+              let preq = client.request(info, function (pres) {
+                pres.on('end', function () {
+                  // TODO need to parse returned data from /hunt/remote and do stuff with matched
+                  // this might make lots of calls, need to throttle? or chunk up requests?
+                  return cb(null);
+                });
+              });
+              preq.on('error', function (e) {
+                console.error('ERROR - Couldn\'t hunt/remote', info, '\nerror=', e);
+                return cb({ success: false, text: 'Couldn\'t hunt/remote' + e });
+              });
+              preq.end();
+            });
+          });
+        }, function (err) { // done running the hunt job
+          internals.runningHuntJob = undefined;
+          hunt.status = 'finished';
+          hunt.searchedSessions = hunt.totalSessions;
+          Db.setHunt(huntId, hunt, (err, info) => {
+            if (err) {
+              pauseHuntJobWithError(huntId, hunt, { value: `Error finishing hunt job: ${err} ${info}` });
+              return;
+            }
+          });
+        });
+      });
+    });
+  });
+}
+
+function processHuntJobs () {
+  if (internals.runningHuntJob) { return; }
 
   let query = { sort: { created: { order: 'asc' } } };
 
@@ -2177,19 +2395,16 @@ function processHuntJobs () {
         let id = hit._id;
 
         if (hunt.status === 'running') { // there is a job already running
-          console.log('hunt running', hunt.name); // TODO remove
-          runningHuntJob = hunt;
-          // TODO update the number of sesssions matched and searched
+          internals.runningHuntJob = hunt;
           return;
         } else if (hunt.status === 'queued') { // get the first queued hunt
-          console.log('hunt queued and starting to run', hunt.name); // TODO remove
           hunt.status = 'running'; // update the hunt job
-          runningHuntJob = hunt;
+          internals.runningHuntJob = hunt;
           processHuntJob(id, hunt);
           return;
         }
 
-        runningHuntJob = undefined;
+        internals.runningHuntJob = undefined;
       }
     }).catch(err => {
       console.error('Error fetching hunt jobs', err);
@@ -2198,20 +2413,20 @@ function processHuntJobs () {
 }
 
 function updateHuntStatus (req, res, status, successText, errorText) {
-  Db.get('hunt', 'hunt', req.params.id, (err, hit) => {
+  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
     if (err) {
       console.error(errorText, err, hit);
       return res.molochError(500, errorText);
     }
 
     // don't let a user play a hunt job if one is already running
-    if (status === 'running' && runningHuntJob) {
+    if (status === 'running' && internals.runningHuntJob) {
       return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
     }
 
     let hunt = hit._source;
     // clear the running hunt job if this is it
-    if (hunt.status === 'running') { runningHuntJob = undefined; }
+    if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
     hunt.status = status; // update the hunt job
 
     Db.setHunt(req.params.id, hunt, (err, info) => {
@@ -2231,6 +2446,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
   if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
+  // TODO make sure hunt name is unique
   if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
   if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
   if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
@@ -2310,7 +2526,7 @@ app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
     });
 });
 
-// TODO make sure hunt job is stopped before removal
+// TODO make sure hunt job is stopped before removal and make sure internals.runningHuntJob is set to undefined
 app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
@@ -2355,20 +2571,17 @@ app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, function (req, r
   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
 });
 
+// TODO make sure that playing a paused hunt job starts it off where it left off
 app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
 });
 
-// TODO test
-app.get('/hunt/remote', function (req, res) {
-  if (!req.query.huntId) { return res.molochError(403, 'Missing hunt id'); }
-  if (!req.query.sessionId) { return res.molochError(403, 'Missing session id'); }
-
+app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
   // fetch hunt and session
-  Promise.all([Db.get('hunt', 'hunt', req.query.huntId),
-               Db.get(Db.id2Index(req.query.sessionId), 'session', req.query.sessionId)])
+  Promise.all([Db.get('hunts', 'hunt', req.params.huntId),
+               Db.get(Db.id2Index(req.params.sessionId), 'session', req.params.sessionId)])
     .then(([hunt, session]) => {
       if (hunt.error) { throw hunt.error; }
       if (session.error) { throw session.error; }
@@ -2382,7 +2595,7 @@ app.get('/hunt/remote', function (req, res) {
       // TODO update session to include job that matched (hunts[]?)
 
       res.send({ success:true, matched:matched });
-    }).catch(err => {
+    }).catch((err) => {
       console.log('ERROR - hunt/remote', err);
       return res.molochError(500, 'Error hunting on remote viewer - ' + err);
     });
@@ -5227,6 +5440,7 @@ function pcapSearch(id, options, cb) {
     console.log("ERROR - Unknown search type", options);
     return cb(null, true);
   }
+
   processSessionIdAndDecode(id, 10000, function(err, session, results) {
     if (err) {
       return cb(null, false);
@@ -5787,7 +6001,7 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
         });
       });
     },
-    function () { // TODO ECR
+    function () {
       // Get from remote DISK
       getViewUrl(node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
