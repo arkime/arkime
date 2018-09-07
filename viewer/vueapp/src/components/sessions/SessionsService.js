@@ -334,7 +334,6 @@ export default {
       options.params.ids = options.data.ids;
     }
 
-    // TODO test passing in fields (params.fields => options.params.fields)
     let url = `${baseUrl}?${qs.stringify(options.params)}`;
 
     window.location = url;
