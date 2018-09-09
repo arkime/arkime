@@ -732,7 +732,8 @@ gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2)
   return memcmp (v1, v2, 16) == 0;
 }
 /******************************************************************************/
-guint moloch_field_ip_hash (gconstpointer v) SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+guint moloch_field_ip_hash (gconstpointer v)
 {
   const signed char *p;
   guint32 h = 5381;
@@ -931,7 +932,8 @@ added:
     return TRUE;
 }
 /******************************************************************************/
-uint32_t moloch_field_certsinfo_hash(const void *key) SUPPRESS_SHIFT
+SUPPRESS_SHIFT
+uint32_t moloch_field_certsinfo_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
 

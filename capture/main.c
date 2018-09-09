@@ -398,7 +398,8 @@ gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy
     return TRUE;
 }
 /******************************************************************************/
-uint32_t moloch_string_hash(const void *key) SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+uint32_t moloch_string_hash(const void *key)
 {
     unsigned char *p = (unsigned char *)key;
     uint32_t n = 0;
@@ -409,7 +410,8 @@ uint32_t moloch_string_hash(const void *key) SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
     return n;
 }
 /******************************************************************************/
-uint32_t moloch_string_hash_len(const void *key, int len) SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+uint32_t moloch_string_hash_len(const void *key, int len)
 {
     unsigned char *p = (unsigned char *)key;
     uint32_t n = 0;

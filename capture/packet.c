@@ -1742,7 +1742,8 @@ int moloch_packet_outstanding()
     return count;
 }
 /******************************************************************************/
-LOCAL uint32_t moloch_packet_frag_hash(const void *key) SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;
     uint32_t n = 0;

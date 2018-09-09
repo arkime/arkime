@@ -274,7 +274,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         unsigned char *hash;
         BSB_IMPORT_ptr(bsb, hash, 32);
 
-        int cnt;
+        int cnt = 0;
         BSB_IMPORT_u16(bsb, cnt);
 
         MOLOCH_LOCK(item);
