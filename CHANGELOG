@@ -13,7 +13,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.5.3 2018/08/xx
+1.5.3 2018/09/10
   - release - libpcap 1.9.0
   - all - new hourly[2348]/hourly12 rotateIndex
   - all - deal with talking to multiple wise servers better
