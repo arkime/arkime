@@ -1224,6 +1224,9 @@ sub huntsCreate
       "totalSessions": {
         "type": "integer"
       },
+      "lastPacketTime": {
+        "type": "date"
+      },
       "created": {
         "type": "date"
       },

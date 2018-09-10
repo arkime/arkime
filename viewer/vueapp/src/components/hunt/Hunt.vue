@@ -14,6 +14,27 @@
 
     <div>&nbsp;</div>
 
+    <!-- hunt create navbar -->
+    <form class="hunt-create-navbar">
+      <div class="mt-1 ml-1 mr-1">
+        <button type="button"
+          v-if="!createFormOpened"
+          @click="createFormOpened = true"
+          class="btn btn-theme-tertiary btn-sm pull-right">
+          Create a new packet search job
+        </button>
+        <div class="mt-1" style="display:inline-block;">
+          <span class="fa fa-info-circle fa-fw">
+          </span>&nbsp;
+          Creating a new packet search job will search the packets of
+          <strong>
+            {{ sessions.recordsFiltered | commaString }}
+          </strong>
+          sessions.
+        </div>
+      </div>
+    </form> <!-- /hunt create navbar -->
+
     <!-- loading overlay -->
     <moloch-loading
       v-if="loading && !pageError">
@@ -28,37 +49,24 @@
 
     <!-- packet search jobs content -->
     <div v-if="!pageError"
-      class="mt-5 ml-2 mr-2">
+      class="packet-search-content ml-2 mr-2">
 
       <!-- create new packet search job -->
       <div class="mb-3">
-        <br>
-        <button type="button"
-          v-if="!createFormOpened"
-          @click="createFormOpened = true"
-          class="btn btn-theme-tertiary btn-lg btn-block">
-          Create a new packet search job
-        </button>
         <div v-if="createFormOpened"
           class="card">
-          <form class="card-body">
+          <form class="card-body"
+            @keyup.enter="createJob">
             <div class="row">
               <div class="col-12">
                 <div class="alert alert-info">
-                  <span class="fa fa-info-circle fa-fw">
-                  </span>&nbsp;
-                  This packet search job will search
-                  <strong>
-                    {{ sessions.recordsFiltered | commaString }}
-                  </strong>
-                  sessions.
                   <em v-if="sessions.recordsFiltered > 10000">
                     That's a lot of sessions, this job will take a while.
                     <strong>
                       Proceed with caution.
                     </strong>
+                    <br>
                   </em>
-                  <br>
                   <span class="fa fa-exclamation-triangle fa-fw">
                   </span>&nbsp;
                   Make sure your search above contains only the sessions that
@@ -79,6 +87,7 @@
                   </span>
                   <input type="text"
                     v-model="jobName"
+                    v-focus-input="true"
                     placeholder="Name your packet search job"
                     class="form-control"
                     maxlength="40"
@@ -284,6 +293,12 @@
         </div>
       </div> <!-- /create new packet search job -->
 
+      <!-- error -->
+      <div v-if="error"
+        class="alert alert-danger">
+        {{ error }}
+      </div> <!-- /error -->
+
       <!-- search packet search jobs -->
       <div class="form-group">
         <div class="input-group input-group-sm">
@@ -313,6 +328,9 @@
               <span v-show="query.sortField === 'status' && query.desc" class="fa fa-sort-desc"></span>
               <span v-show="query.sortField !== 'status'" class="fa fa-sort"></span>
             </th>
+            <th>
+              Matches
+            </th>
             <th class="cursor-pointer"
               @click="columnClick('name')">
               Name
@@ -337,7 +355,7 @@
               <span v-show="query.sortField === 'created' && query.desc" class="fa fa-sort-desc"></span>
               <span v-show="query.sortField !== 'created'" class="fa fa-sort"></span>
             </th>
-            <th width="120px">&nbsp;</th>
+            <th width="140px">&nbsp;</th>
           </tr>
         </thead>
         <tbody>
@@ -393,6 +411,9 @@
                 </span>
               </td>
               <td>
+                {{ job.matchedSessions }}
+              </td>
+              <td>
                 {{ job.name }}
               </td>
               <td>
@@ -407,10 +428,6 @@
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
               </td>
               <td>
-                <small v-if="job.error"
-                  class="text-danger">
-                  {{ job.error }}
-                </small>
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   <button
                     @click="removeJob(job)"
@@ -460,7 +477,7 @@
             </tr>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
-              <td colspan="7">
+              <td colspan="8">
                 <div class="row">
                   <div class="col-12">
                     This hunt is
@@ -492,12 +509,27 @@
                 </div>
                 <div class="row">
                   <div class="col-12">
-                    <label>Found</label>
+                    Found
                     <strong>{{ job.matchedSessions }}</strong> of
                     <strong>{{ job.searchedSessions }}</strong>
                     searched sessions out of
                     <strong>{{ job.totalSessions }}</strong>
                     total sessions to search
+                  </div>
+                </div>
+                <div v-if="job.query.expression"
+                  class="row">
+                  <div class="col-12">
+                    The sessions query expression was:
+                    <strong>{{ job.query.expression }}</strong>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12">
+                    The sessions query time range was from
+                    <strong>{{ job.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    to
+                    <strong>{{ job.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
                   </div>
                 </div>
                 <div v-if="job.errors"
@@ -548,15 +580,25 @@ import MolochSearch from '../search/Search';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
+import FocusInput from '../utils/FocusInput';
 
 let timeout;
 let interval;
 
 export default {
   name: 'PacketSearch',
+  components: {
+    ToggleBtn,
+    MolochSearch,
+    MolochLoading,
+    MolochError,
+    MolochNoResults
+  },
+  directives: { FocusInput },
   data: function () {
     return {
       pageError: '',
+      error: '',
       loading: true,
       results: [], // page data
       sessions: {}, // sessions a new job applies to
@@ -597,13 +639,6 @@ export default {
       return this.$store.state.user;
     }
   },
-  components: {
-    ToggleBtn,
-    MolochSearch,
-    MolochLoading,
-    MolochError,
-    MolochNoResults
-  },
   mounted: function () {
     this.loadData();
     setTimeout(() => {
@@ -614,10 +649,12 @@ export default {
     // interval to load jobs every 15 seconds
     interval = setInterval(() => {
       this.loadData();
-    }, 15000);
+    }, 10000);
   },
   methods: {
     cancelCreateForm: function () {
+      this.jobName = '';
+      this.jobSearch = '';
       this.createFormError = '';
       this.createFormOpened = false;
     },
@@ -657,11 +694,15 @@ export default {
         .then((response) => {
           this.createFormOpened = false;
           this.results.push(response.data.hunt);
+          this.jobName = '';
+          this.jobSearch = '';
+          this.createFormError = '';
         }, (error) => {
           this.createFormError = error.text || error;
         });
     },
     removeJob: function (job) {
+      this.error = '';
       this.axios.delete(`hunt/${job.id}`)
         .then((response) => {
           for (let i = 0, len = this.results.length; i < len; ++i) {
@@ -671,23 +712,25 @@ export default {
             }
           }
         }, (error) => {
-          this.$set(job, 'error', error.text || error);
+          this.error = error.text || error;
         });
     },
     pauseJob: function (job) {
+      this.error = '';
       this.axios.put(`hunt/${job.id}/pause`)
         .then((response) => {
           this.$set(job, 'status', 'paused');
         }, (error) => {
-          this.$set(job, 'error', error.text || error);
+          this.error = error.text || error;
         });
     },
-    playJob: function (job) { // TODO
+    playJob: function (job) {
+      this.error = '';
       this.axios.put(`hunt/${job.id}/play`)
         .then((response) => {
           this.$set(job, 'status', 'queued');
         }, (error) => {
-          this.$set(job, 'error', error.text || error);
+          this.error = error.text || error;
         });
     },
     setJobSearchType: function (val) {
@@ -730,6 +773,7 @@ export default {
 
       this.axios.get('hunt/list', { params: this.query })
         .then((response) => {
+          this.pageError = '';
           this.loading = false;
 
           if (expanded.length) {
@@ -768,7 +812,25 @@ export default {
   margin-top: 36px;
 }
 
+.packet-search-content {
+  margin-top: 100px;
+}
+
 .info-area {
   font-size: var(--px-xxlg);
+}
+
+form.hunt-create-navbar {
+  z-index: 4;
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
 }
 </style>
