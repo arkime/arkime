@@ -1585,7 +1585,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
-    delete $indices->{$endTimeIndex};
+    delete $indices->{$endTimeIndex}; # Don't optimize current index
 
     my @startTime = gmtime;
     if ($ARGV[2] eq "hourly") {
@@ -1604,18 +1604,13 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     parseArgs(4);
 
+    my $startTime = mktime(@startTime) * 1000;
     my $optimizecnt = 0;
-    my $startTime = mktime(@startTime);
-    while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], "sessions2-", $startTime);
-        if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
-            $indices->{$iname}->{OPTIMIZEIT} = 1;
+    foreach my $i (sort (keys %{$indices})) {
+        my $json = esPost("/$i/session/_search?size=0", '{ "aggs" : { "max" : { "max" : { "field" : "lastPacket" } } } }');
+        if (int($json->{aggregations}->{max}->{value}) >= $startTime) {
+            $indices->{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        }
-        if ($ARGV[2] =~ /^hourly/) {
-            $startTime += 60*60;
-        } else {
-            $startTime += 24*60*60;
         }
     }
 
@@ -1627,6 +1622,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    esPost("/_flush/synced", "", 1);
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
