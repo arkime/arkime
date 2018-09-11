@@ -86,10 +86,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 4,
             "dstPayload8" : "01545e6381800001",
             "dstPort" : 53,
@@ -229,10 +228,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 4,
             "dstPayload8" : "0100e2ec81800001",
             "dstPort" : 53,
