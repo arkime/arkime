@@ -2171,8 +2171,26 @@ function packetSearch (packet, options) {
 }
 
 function sessionHunt (sessionId, options, cb) {
-  // TODO how to search src vs dst (and both) packets (options.src & options.dst)?
-  // TODO options.size = -1 = ALL packets
+  function packetLoop (packets) {
+    let i = 0;
+    let increment = 1;
+    let len = packets.length;
+
+    if (options.src && !options.dst) {
+      increment = 2;
+    } else if (options.dst && !options.src) {
+      i = 1;
+      increment = 2;
+    }
+
+    for (i; i < len; i+=increment) {
+      let found = packetSearch(packets[i], options);
+      if (found) { return true; }
+    }
+
+    return false;
+  }
+
   setTimeout(() => { // TODO remove
     if (options.type === 'reassembled') {
       processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, results) {
@@ -2180,12 +2198,7 @@ function sessionHunt (sessionId, options, cb) {
           return cb(null, false);
         }
 
-        for (let i = 0, ilen = results.length; i < ilen; i++) {
-          let found = packetSearch(results[i].data, options);
-          if (found) { return cb(null, found); }
-        }
-
-        return cb(null, false);
+        return cb(null, packetLoop(results));
       });
     } else if (options.type === 'raw') {
       let packets = [];
@@ -2197,14 +2210,9 @@ function sessionHunt (sessionId, options, cb) {
           return cb(null, false);
         }
 
-        for (let i = 0, ilen = packets.length; i < ilen; i++) {
-          let found = packetSearch(packets[i], options);
-          if (found) { return cb(null, found); }
-        }
-
-        return cb(null, false);
+        return cb(null, packetLoop(packets));
       },
-      options.size || 10000, 10); // TODO what is limit 10 and what should it be?
+      options.size || 10000, 10);
     }
   }, 100);
 }
@@ -2229,9 +2237,8 @@ function pauseHuntJobWithError (huntId, hunt, error) {
 }
 
 function processHuntJob (huntId, hunt) {
-  // start the hunt
   hunt.lastUpdated = Math.floor(Date.now() / 1000);
-  console.log('process single hunt job:', hunt.name, '-', hunt.status); // TODO remove
+
   Db.setHunt(huntId, hunt, (err, info) => {
     if (err) {
       pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err} ${info}` });
@@ -2300,7 +2307,7 @@ function processHuntJob (huntId, hunt) {
       // TODO Process at most 24 hours
       query.query.bool.filter[0] = {
         range: {
-          timestamp: {
+          lastPacket: {
             gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
             lt: hunt.query.stopTime * 1000
           }
@@ -2313,8 +2320,6 @@ function processHuntJob (huntId, hunt) {
         console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
       }
 
-      console.log('sessions query filter', query.query.bool.filter[0].range.timestamp); // TODO remove
-
       // do sessions query
       Db.search('sessions2-*', 'session', query, function getMoreUntilDone (err, result) {
         if (err || result.error) {
@@ -2323,10 +2328,11 @@ function processHuntJob (huntId, hunt) {
         }
 
         let hits = result.hits.hits;
-        console.log('session hits', result.hits.hits.length); // TODO remove
         let searchedSessions = hunt.searchedSessions || 0;
 
         let options = {
+          src: hunt.src,
+          dst: hunt.dst,
           size: hunt.size,
           type: hunt.type,
           search: hunt.search,
@@ -2348,11 +2354,22 @@ function processHuntJob (huntId, hunt) {
                 return;
               }
 
-              // TODO make sure there are no duplicate matches
-              // TODO if matched, add new fields to the session that includes the hunt name and id
               if (matched) {
-                console.log('matched session', hit._id); // TODO remove
                 hunt.matchedSessions++;
+
+                // Do the ES update
+                let document = {
+                  doc: {
+                    huntId: huntId,
+                    huntName: hunt.name
+                  }
+                };
+
+                Db.update(Db.id2Index(hit._id), 'session', hit._id, document, function (err, data) {
+                  if (err) {
+                    console.log('add hunt info error', hit, err, data);
+                  }
+                });
               }
 
               let lastPacketTime = hit._source.lastPacket;
@@ -2361,10 +2378,11 @@ function processHuntJob (huntId, hunt) {
               // and the date of the first packet of the last searched session
               if ((now - hunt.lastUpdated) > 5) {
                 Db.get('hunts', 'hunt', huntId, (err, huntHit) => {
-                  let errorText;
-                  if (err) { errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`; }
-                  if (!huntHit) { errorText = `Couldn't find hunt: ${hunt.name} (${huntId})`; }
-                  if (errorText) {
+                  if (!huntHit || !huntHit.found) { // hunt hit not found, likely deleted
+                    return cb('undefined');
+                  }
+                  if (err) {
+                    let errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
                     pauseHuntJobWithError(huntId, hunt, { value: errorText });
                     return cb({ success: false, text: errorText });
                   }
@@ -2408,7 +2426,7 @@ function processHuntJob (huntId, hunt) {
           });
         }, function (err) { // done running the hunt job
           internals.runningHuntJob = undefined;
-          if (err === 'paused') { return; }
+          if (err === 'paused' || err === 'undefined') { return; }
           hunt.status = 'finished';
           hunt.searchedSessions = hunt.totalSessions;
           Db.setHunt(huntId, hunt, (err, info) => {
@@ -2499,18 +2517,22 @@ function updateHuntStatus (req, res, status, successText, errorText) {
 }
 
 app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
+  // make sure viewer is not multi and user has permission
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
-
+  // make sure all the necessary data is included in the post body
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
-  // TODO only use the query items that are necessary (expression, startTime, stopTime)
-  if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
-  // TODO make sure hunt name is unique
   if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
   if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
   if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
-  if (!req.body.hunt.src && !req.body.hunt.dst) { return res.molochError(403, 'The hunt must search source or destination packets (or both)'); }
+  if (!req.body.hunt.src && !req.body.hunt.dst) {
+    return res.molochError(403, 'The hunt must search source or destination packets (or both)');
+  }
+  if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
+  if (!req.body.hunt.query.startTime || !req.body.hunt.query.stopTime) {
+    return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
+  }
 
   let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex' ];
   if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); }
@@ -2533,6 +2555,11 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   hunt.userId = req.user.userId;
   hunt.matchedSessions = 0; // start with no matches
   hunt.searchedSessions = 0; // start with no sessions searched
+  hunt.query = { // only use the necessary query items
+    expression: req.body.hunt.query.expression,
+    startTime: req.body.hunt.query.startTime,
+    stopTime: req.body.hunt.query.stopTime
+  };
 
   Db.createHunt(hunt, function (err, result) {
     if (err) { console.error('create hunt error', err, result); }
@@ -2586,7 +2613,6 @@ app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
     });
 });
 
-// TODO make sure hunt job is stopped before removal and make sure internals.runningHuntJob is set to undefined
 app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
@@ -2604,15 +2630,11 @@ app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, function (req, 
 
   if (!req.user.createEnabled) {
     // if the user is not an admin they can only delete their own jobs
-    Db.searchHunt({})
+    Db.searchHunt({ query: { terms: { _id: [req.params.id] } } })
       .then((response) => {
         if (response.error) { throw response.error; }
-        for (let i = 0, len = response.hits.hits.length; i < len; ++i) {
-          let hit = response.hits.hits[i];
-          let hunt = hit._source;
-          if (hit._id === req.params.id && hunt.userId === req.user.userId) {
-            return deleteHunt(req.params.id);
-          }
+        if (response.hits.hits[0]._id === req.params.id && response.hits.hits[0]._source.userId === req.user.userId) {
+          return deleteHunt(req.params.id);
         }
         return res.molochError(500, 'You cannot delete other user\'s hunts unless you have admin privelages');
       })
@@ -2631,7 +2653,6 @@ app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, function (req, r
   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
 });
 
-// TODO make sure that playing a paused hunt job starts it off where it left off
 app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }

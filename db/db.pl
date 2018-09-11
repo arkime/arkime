@@ -919,6 +919,22 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
+    esPost("/${PREFIX}fields_v2/field/huntId", '{
+      "friendlyName": "Hunt ID",
+      "group": "general",
+      "help": "The ID of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntId",
+      "dbField2": "huntId"
+    }');
+    esPost("/${PREFIX}fields_v2/field/huntName", '{
+      "friendlyName": "Hunt Name",
+      "group": "general",
+      "help": "The name of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntName",
+      "dbField2": "huntName"
+    }');
 }
 
 ################################################################################
@@ -2140,10 +2156,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags", 1);
 
         checkForOld5Indices();
-    } elsif ($main::versionNumber <= 52) {
+    } elsif ($main::versionNumber < 52) {
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         sessions2Update();
         checkForOld5Indices();
+        fieldsUpdate();
+    } elsif ($main::versionNumber <= 52) {
+      fieldsUpdate();
     } else {
         print "db.pl is hosed\n";
     }

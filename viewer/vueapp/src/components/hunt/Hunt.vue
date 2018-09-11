@@ -21,7 +21,7 @@
           v-if="!createFormOpened"
           @click="createFormOpened = true"
           class="btn btn-theme-tertiary btn-sm pull-right">
-          Create a new packet search job
+          Create a packet search job
         </button>
         <div class="mt-1" style="display:inline-block;">
           <span class="fa fa-info-circle fa-fw">
@@ -108,7 +108,7 @@
                     <option value="50">50 packets</option>
                     <option value="500">500 packets</option>
                     <option value="5000">5000 packets</option>
-                    <option value="-1">All packets</option>
+                    <option value="10000">All packets</option>
                   </select>
                 </div>
               </div> <!-- /packet search size -->
@@ -355,6 +355,9 @@
               <span v-show="query.sortField === 'created' && query.desc" class="fa fa-sort-desc"></span>
               <span v-show="query.sortField !== 'created'" class="fa fa-sort"></span>
             </th>
+            <th>
+              ID
+            </th>
             <th width="140px">&nbsp;</th>
           </tr>
         </thead>
@@ -428,6 +431,9 @@
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
               </td>
               <td>
+                {{ job.id }}
+              </td>
+              <td>
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   <button
                     @click="removeJob(job)"
@@ -439,6 +445,7 @@
                     </span>
                   </button>
                   <button type="button"
+                    @click="openSessions(job)"
                     v-if="job.matchedSessions"
                     :id="`openresults${job.id}`"
                     class="ml-1 pull-right btn btn-sm btn-theme-primary">
@@ -477,7 +484,7 @@
             </tr>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
-              <td colspan="8">
+              <td colspan="9">
                 <div class="row">
                   <div class="col-12">
                     This hunt is
@@ -732,6 +739,10 @@ export default {
         }, (error) => {
           this.error = error.text || error;
         });
+    },
+    openSessions: function (job) {
+      let url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
+      window.open(url, '_blank');
     },
     setJobSearchType: function (val) {
       this.jobSearchType = val;
