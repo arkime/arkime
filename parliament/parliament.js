@@ -517,7 +517,7 @@ function getStats (cluster) {
         cluster.molochNodes = 0;
         cluster.monitoring = 0;
 
-        let outOfDate = getGeneralSetting('outOfDate') * 1000;
+        let outOfDate = getGeneralSetting('outOfDate');
 
         for (let stat of stats.data) {
           // sum delta bytes per second
