@@ -356,7 +356,10 @@ export default {
       loading: true,
       users: null,
       createError: '',
-      newuser: { enabled: true },
+      newuser: {
+        enabled: true,
+        packetSearch: true
+      },
       msg: '',
       msgType: undefined,
       query: {
