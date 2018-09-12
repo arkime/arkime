@@ -44,26 +44,7 @@ function ElasticsearchSource (api, section) {
     }
   });
 
-  switch (this.type) {
-  case "domain":
-    this.getDomain = this.sendResult;
-    break;
-  case "ip":
-    this.getIp = this.sendResult;
-    break;
-  case "md5":
-    this.getMd5 = this.sendResult;
-    break;
-  case "email":
-    this.getEmail = this.sendResult;
-    break;
-  case "url":
-    this.getURL = this.sendResult;
-    break;
-  default:
-    console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
-    return false;
-  }
+  this[this.api.funcName(this.type)] = this.sendResult;
 
   this.client = new elasticsearch.Client({
                       host: this.elasticsearch.split(","),
