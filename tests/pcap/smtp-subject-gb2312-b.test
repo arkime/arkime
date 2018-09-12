@@ -176,10 +176,9 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "srcOuiCnt" : 2,
+            "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPayload8" : "45484c4f20787878",
             "srcPort" : 24962,

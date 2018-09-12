@@ -64,6 +64,7 @@ my $REPLICAS = -1;
 my $HISTORY = 13;
 my $SEGMENTS = 1;
 my $NOOPTIMIZE = 0;
+my $FULL = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -243,7 +244,7 @@ sub esCopy
     }
 
     print "\n";
-    $main::userAgent->timeout(30);
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub esScroll
@@ -335,7 +336,7 @@ sub sequenceUpgrade
         esPost("/${PREFIX}sequence_v2/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
     }
     esDelete("/${PREFIX}sequence_v1");
-    $main::userAgent->timeout(30);
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub filesCreate
@@ -1630,6 +1631,8 @@ sub parseArgs {
             $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
 	    $NOOPTIMIZE = 1;
+        } elsif ($ARGV[$pos] eq "--full") {
+	    $FULL = 1;
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }
@@ -1661,7 +1664,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 30);
+$main::userAgent = LWP::UserAgent->new(timeout => 60);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
@@ -1692,7 +1695,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
-    delete $indices->{$endTimeIndex};
+    delete $indices->{$endTimeIndex}; # Don't optimize current index
 
     my @startTime = gmtime;
     if ($ARGV[2] eq "hourly") {
@@ -1711,18 +1714,20 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     parseArgs(4);
 
+    my $startTime = mktime(@startTime) * 1000;
     my $optimizecnt = 0;
-    my $startTime = mktime(@startTime);
-    while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], "sessions2-", $startTime);
-        if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
-            $indices->{$iname}->{OPTIMIZEIT} = 1;
+    my $optimizeRest = 0;
+    foreach my $i (sort (keys %{$indices})) {
+        if ($optimizeRest) {
+            $indices->{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        }
-        if ($ARGV[2] =~ /^hourly/) {
-            $startTime += 60*60;
         } else {
-            $startTime += 24*60*60;
+            my $json = esPost("/$i/session/_search?size=0", '{ "aggs" : { "max" : { "max" : { "field" : "lastPacket" } } } }');
+            if (int($json->{aggregations}->{max}->{value}) >= $startTime) {
+                $indices->{$i}->{OPTIMIZEIT} = 1;
+                $optimizecnt++;
+                $optimizeRest = !$FULL;
+            }
         }
     }
 
@@ -1734,6 +1739,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    esPost("/_flush/synced", "", 1);
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {

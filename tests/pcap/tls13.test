@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS13335 Cloudflare Inc",
+            "dstASN" : "AS13335 Cloudflare, Inc.",
             "dstBytes" : 1454,
             "dstDataBytes" : 1220,
             "dstGEO" : "US",

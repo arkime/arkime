@@ -119,6 +119,7 @@ char *moloch_session_id_string (char *sessionId, char *buf)
 /* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
  * MurmurHash based
  */
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t moloch_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
@@ -137,6 +138,7 @@ uint32_t moloch_session_hash(const void *key)
 /* http://academic-pub.org/ojs/index.php/ijecs/article/viewFile/1346/297
  * XOR32
  */
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t moloch_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;

@@ -318,7 +318,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("rdp", NULL, 0, (unsigned char*)"\x03\x00", 2, rdp_classify);
     moloch_parsers_classifier_register_tcp("imap", NULL, 0, (unsigned char*)"* OK ", 5, imap_classify);
     moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK ", 4, misc_add_protocol_classify);
-    moloch_parsers_classifier_register_tcp("gh0st", NULL, 14, 0, 0, gh0st_classify);
+    moloch_parsers_classifier_register_tcp("gh0st", NULL, 13, (unsigned char *)"\x78", 1, gh0st_classify);
     moloch_parsers_classifier_register_tcp("other220", NULL, 0, (unsigned char*)"220 ", 4, other220_classify);
     moloch_parsers_classifier_register_tcp("vnc", NULL, 0, (unsigned char*)"RFB 0", 5, vnc_classify);
 

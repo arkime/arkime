@@ -61,10 +61,9 @@
             "srcPayload8" : "4e0000018da20200",
             "srcPort" : 40041,
             "tags" : [
-               "acked-unseen-segment-src",
                "no-syn-ack"
             ],
-            "tagsCnt" : 2,
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,

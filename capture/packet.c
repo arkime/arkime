@@ -145,13 +145,13 @@ void moloch_packet_tcp_free(MolochSession_t *session)
 }
 /******************************************************************************/
 // Idea from gopacket tcpassembly/assemply.go
-LOCAL int32_t moloch_packet_sequence_diff (uint32_t a, uint32_t b)
+LOCAL int64_t moloch_packet_sequence_diff (int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
-        return (a + 0xffffffffLL - b);
+        return a + 0x100000000LL - b;
 
     if (b > 0xc0000000 && a < 0x40000000)
-        return (a - b - 0xffffffffLL);
+        return a - b - 0x100000000LL;
 
     return b - a;
 }
@@ -272,11 +272,11 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
 
     int            len = packet->payloadLen - 4*tcphdr->th_off;
 
-#ifdef DEBUG_PACKET
-    LOG("poffset: %d plen: %d len: %d", packet->payloadOffset, packet->payloadLen, len);
-#endif
-
     const uint32_t seq = ntohl(tcphdr->th_seq);
+
+#ifdef DEBUG_PACKET
+    LOG("poffset: %d plen: %d len: %d seq: %u ack: %u", packet->payloadOffset, packet->payloadLen, len, seq, ntohl(tcphdr->th_ack));
+#endif
 
     if (tcphdr->th_win == 0 && (tcphdr->th_flags & TH_RST) == 0) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO + packet->direction]++;
@@ -366,8 +366,11 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
     }
 
     if (tcphdr->th_flags & TH_ACK) {
-        if (session->haveTcpSession && (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&
-            (moloch_packet_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) {
+        if (session->haveTcpSession &&  // Seen a SYN
+            (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&  // Haven't already tagged
+            session->tcpSeq[(packet->direction+1)%2] != 0 &&                  // The syn-ack isn't what is missing
+            (moloch_packet_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
+
                 static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
                 moloch_session_add_tag(session, tags[packet->direction]);
                 session->ackedUnseenSegment |= (1 << packet->direction);
@@ -379,8 +382,8 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
         return 1;
 
     // This packet is before what we are processing
-    int32_t diff = moloch_packet_sequence_diff(session->tcpSeq[packet->direction], seq + len);
-    if (diff <= 0)
+    int64_t diff = moloch_packet_sequence_diff(session->tcpSeq[packet->direction], seq + len);
+    if (session->haveTcpSession && diff <= 0)
         return 1;
 
     MolochTcpData_t *ftd, *td = MOLOCH_TYPE_ALLOC(MolochTcpData_t);
@@ -1407,7 +1410,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
     packet->protocol = nxt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
-    packet->payloadLen = ip_len - ip_hdr_len + sizeof(struct ip6_hdr);
+    packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
     return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
@@ -1739,6 +1742,7 @@ int moloch_packet_outstanding()
     return count;
 }
 /******************************************************************************/
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;

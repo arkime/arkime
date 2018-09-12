@@ -83,14 +83,35 @@ sub doTests {
         }
 
         my $testData = `$cmd`;
-        my $testJson = sortJson(from_json($testData, {relaxed => 1}));
+        my $testJson;
+
+        eval {
+            $testJson = sortJson(from_json($testData, {relaxed => 1}));
+            1;
+        } or do {
+            my $e = $@;
+            print "$e\n";
+            print $testData, "\n";
+            exit 1;
+        };
+
         eq_or_diff($testJson, $savedJson, "$filename", { context => 3 });
     }
 }
 ################################################################################
 sub doFix {
     my $data = do { local $/; <> };
-    my $json = from_json($data, {relaxed => 1});
+    my $json;
+    eval {
+        $json = from_json($data, {relaxed => 1});
+        1;
+    } or do {
+        my $e = $@;
+        print "$e\n";
+        print $data, "\n";
+        exit 1;
+    };
+
     fix($json);
     $json = to_json($json, {pretty => 1, canonical => 1});
     print $json, "\n";

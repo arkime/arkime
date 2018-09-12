@@ -13,7 +13,14 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.5.3 2018/08/xx
+1.6.0 2018/09/xx
+  - release - glib 2.56.2, yara 3.8.1, curl 7.61.1, lua 3.3.5, node 8.11.4
+  - db - expire checks min lastPacket in each session2 like curator, not just
+         based on name
+ - wise - support any field for ES WISE source
+
+
+1.5.3 2018/09/10
   - release - libpcap 1.9.0
   - all - new hourly[2348]/hourly12 rotateIndex
   - all - deal with talking to multiple wise servers better
@@ -40,6 +47,8 @@ NOTICE: Restart wiseService before capture when upgrading
               will duplicate SPI data)
   - capture - add IPPORT_DROPPED count to stats log
   - capture - fix some possible bad memory reads in oracle/radius/http parsers
+  - capture - fix some possible integer overflow issues
+  - capture - fix tcp sequence number issues
   - parliament - uses Vue now
   - parliament - support email alerts
   - parliament - new edit slider to show edit buttons
@@ -179,7 +188,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - node 8.9.4
 
 
-0.50.1 2017/03/29
+0.50.1 2018/03/29
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
   - viewer - sessions.csv handle multiple fields parameters
@@ -196,7 +205,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - ES scrolling should be much faster
 
 
-0.50.0 2017/01/24
+0.50.0 2018/01/24
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - viewer - Fixed CSV export of fields within objects (issue #790)
   - capture - Retry http requests on connect failures
@@ -210,7 +219,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - parliament - move all calls behind /parliament to make easier to reverse proxy
   - viewer - users forceExpression handles special characters correctly again
 
-0.20.2 2017/01/04
+0.20.2 2018/01/04
   - NOTICE: Supported ES Versions: 2.4.x, > 5.3.1, 6.x is NOT supported
   - viewer - upgrade elasticsearch-js
   - capture - new --host commandline option to specify how viewers should talk to host

@@ -36,6 +36,19 @@
 
 #define UNUSED(x) x __attribute((unused))
 
+#if defined(__clang__)
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("unsigned-integer-overflow")))
+#define SUPPRESS_SHIFT __attribute__((no_sanitize("shift")))
+#elif __GNUC__ >= 5
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_SHIFT __attribute__((no_sanitize_undefined()))
+#else
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_SHIFT
+#endif
 
 #define MOLOCH_API_VERSION 102
 

@@ -272,6 +272,8 @@ LOCAL struct {
 
 #define MAX_IPS 2000
 
+LOCAL MOLOCH_LOCK_DEFINE(outputed);
+
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
     uint32_t               i;
@@ -931,12 +933,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (config.dryRun) {
         if (config.tests) {
             static int outputed;
-            static MOLOCH_LOCK_DEFINE(outputed);
 
             MOLOCH_LOCK(outputed);
             outputed++;
             const int hlen = dataPtr - startPtr;
             fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (outputed==1 ? "":","), hlen-1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb)-hlen-1), dbInfo[thread].json+hlen);
+            fflush(stderr);
             MOLOCH_UNLOCK(outputed);
         } else if (config.debug) {
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), dbInfo[thread].json);
@@ -2180,7 +2182,9 @@ LOCAL  guint timers[10];
 void moloch_db_init()
 {
     if (config.tests) {
+        MOLOCH_LOCK(outputed);
         fprintf(stderr, "{\"sessions2\": [\n");
+        MOLOCH_UNLOCK(outputed);
     }
     if (!config.dryRun) {
         esServer = moloch_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
