@@ -539,7 +539,7 @@
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
-      <div v-if="!historyListError"
+      <div v-if="!historyListLoadingError"
         class="row form-inline">
         <div class="col-12">
         <!-- job history paging -->
