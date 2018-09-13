@@ -1250,6 +1250,9 @@ sub huntsCreate
       "lastUpdated": {
         "type": "date"
       },
+      "started": {
+        "type": "date"
+      },
       "query": {
         "type": "object",
         "dynamic": "true"

@@ -5123,7 +5123,10 @@ function updateSessionWithHunt (session, sessionId, hunt, huntId) {
 }
 
 function processHuntJob (huntId, hunt) {
-  hunt.lastUpdated = Math.floor(Date.now() / 1000);
+  let now = Math.floor(Date.now() / 1000);
+
+  hunt.lastUpdated = now;
+  if (!hunt.started) { hunt.started = now; }
 
   Db.setHunt(huntId, hunt, (err, info) => {
     if (err) {
@@ -5301,7 +5304,7 @@ function processHuntJob (huntId, hunt) {
 
 function processHuntJobs () {
   if (Config.debug) {
-    console.log("HUNT - processing hunt jobs");
+    console.log('HUNT - processing hunt jobs');
   }
 
   if (!internals.proccessHuntJobsInitialized) {
@@ -5310,7 +5313,11 @@ function processHuntJobs () {
 
   if (internals.runningHuntJob) { return; }
 
-  let query = { sort: { created: { order: 'asc' } } };
+  let query = {
+    size: 10000,
+    sort: { created: { order: 'asc' } },
+    query: { terms: { status: ['queued', 'paused', 'running'] } }
+  };
 
   Db.searchHunt(query)
     .then((hunts) => {
@@ -5434,18 +5441,33 @@ app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
-  let query = { sort: {}, size: 10000 };
+  let query = {
+    sort: {},
+    from: parseInt(req.query.start) || 0,
+    size: parseInt(req.query.length) || 10000,
+    query: { bool: { must: [] } }
+  };
 
   query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc': 'asc'};
 
-  if (req.query.searchTerm) { // apply search term
-    query.query = { bool: { must: [] } };
-    query.query.bool.must.push({
-      query_string: {
-        query : req.query.searchTerm,
-        fields: ['name', 'userId', 'status']
-      }
-    });
+  if (req.query.history) { // only get finished jobs
+    query.query.bool.must.push({ term: { status: 'finished' } });
+    if (req.query.searchTerm) { // apply search term
+      query.query.bool.must.push({
+        query_string: {
+          query : req.query.searchTerm,
+          fields: ['name', 'userId']
+        }
+      });
+    }
+  } else { // get queued, paused, and running jobs
+    query.from = 0;
+    query.size = 1000;
+    query.query.bool.must.push({ terms: { status: ['queued', 'paused', 'running'] } });
+  }
+
+  if (Config.debug) {
+    console.log('hunt query:', JSON.stringify(query, null, 2));
   }
 
   Promise.all([Db.searchHunt(query),
