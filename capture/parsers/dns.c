@@ -27,6 +27,119 @@ LOCAL  int                   queryClassField;
 LOCAL  int                   statusField;
 LOCAL  int                   opCodeField;
 
+/*------------VISA Enhancement Begin---------------*/
+LOCAL int                   ipQueryField;
+LOCAL int                   ipAnswerField;
+LOCAL int                   ipAuthoritativeField;
+LOCAL int                   ipAdditionalField;
+LOCAL int                   ipUpdateField;
+
+LOCAL int                   hostQueryField;
+LOCAL int                   hostAnswerField;
+LOCAL int                   hostAuthoritativeField;
+LOCAL int                   hostAdditionalField;
+LOCAL int                   hostUpdateField;
+/*------------VISA Enhancement End---------------*/
+
+/*------------VISA Enhancement Begin---------------*/
+
+/* Reference https://github.com/spc476/SPCDNS/blob/master/src/dns.h */
+typedef enum dns_type
+{
+  RR_A          =   1,  /* IPv4 Address                     + RFC-1035 */
+  RR_NS         =   2,  /* Name server                      + RFC-1035 */
+  RR_MD         =   3,  /* Mail Destination                 O+ RFC-1035 */
+  RR_MF         =   4,  /* Mail Forwarder                   O+ RFC-1035 */
+  RR_CNAME      =   5,  /* Canonical name                   + RFC-1035 */
+  RR_SOA        =   6,  /* Start of Authority               + RFC-1035 */
+  RR_MB         =   7,  /* Mailbox                          E+ RFC-1035 */
+  RR_MG         =   8,  /* Mailgroup                        E+ RFC-1035 */
+  RR_MR         =   9,  /* Mailrename                       E+ RFC-1035 */
+  RR_NULL       =  10,  /* NULL resource                    E+ RFC-1035 */
+  RR_WKS        =  11,  /* Well Known Service               + RFC-1035 */
+  RR_PTR        =  12,  /* Pointer                          + RFC-1035 */
+  RR_HINFO      =  13,  /* Host Info                        + RFC-1035 */
+  RR_MINFO      =  14,  /* Mailbox/mail list info           + RFC-1035 */
+  RR_MX         =  15,  /* Mail Exchange                    + RFC-1035 */
+  RR_TXT        =  16,  /* Text                             + RFC-1035 */
+  RR_RP         =  17,  /* Responsible Person               + RFC-1183 */
+  RR_AFSDB      =  18,  /* Andrew File System DB            + RFC-1183 RFC-5864 */
+  RR_X25        =  19,  /* X.25 address, route binding      + RFC-1183 */
+  RR_ISDN       =  20,  /* ISDN address, route binding      + RFC-1183 */
+  RR_RT         =  21,  /* Route Through                    + RFC-1183 */
+  RR_NSAP       =  22,  /* Network Service Access Proto     + RFC-1348 RFC-1706 */
+  RR_NSAP_PTR   =  23,  /* NSAP Pointer                     + RFC-1348 */
+  RR_SIG        =  24,  /* Signature                        RFC-2065 RFC-2535 RFC-3755 RFC-4034 */
+  RR_KEY        =  25,  /* Key                              RFC-2065 RFC-2535 RFC-3755 RFC-4034 */
+  RR_PX         =  26,  /* X.400 mail mapping               + RFC-2163 */
+  RR_GPOS       =  27,  /* Geographical position            O+ RFC-1712 */
+  RR_AAAA       =  28,  /* IPv6 Address                     + RFC-1886 RFC-3596 */
+  RR_LOC        =  29,  /* Location                         + RFC-1876 */
+  RR_NXT        =  30,  /* Next RR                          RFC-2065 RFC-2535 RFC-3755 */
+  RR_EID        =  31,  /* Endpoint Identifier              ???      */
+  RR_NIMLOC     =  32,  /* Nimrod Locator                   ???      */
+  RR_SRV        =  33,  /* Service                          + RFC-2782 */
+  RR_ATM        =  34,  /* ATM Address                      ???      */
+  RR_NAPTR      =  35,  /* Naming Authority Pointer         + RFC-2168 RFC-2915 RFC-3403 */
+  RR_KX         =  36,  /* Key Exchange                     RFC-2230 */
+  RR_CERT       =  37,  /* Certification                    RFC-4398 */
+  RR_A6         =  38,  /* IPv6 Address                     RFC-2874 RFC-3658 */
+  RR_DNAME      =  39,  /* Non-terminal DNAME (IPv6)        RFC-2672 */
+  RR_SINK       =  40,  /* Kitchen sink                     E  ???      */
+  RR_OPT        =  41,  /* EDNS0 option (meta-RR)           + RFC-2671 */
+  RR_APL        =  42,  /* Address Prefix List              RFC-3123 */
+  RR_DS         =  43,  /* Delegation Signer                RFC-3658 RFC-4034 */
+  RR_SSHFP      =  44,  /* SSH Key Fingerprint              RFC-4255 */
+  RR_ISECKEY    =  45,  /* IP Security Key                  RFC-4025 */
+  RR_RRSIG      =  46,  /* Resource Record Signature        RFC-3755 RFC-4034 */
+  RR_NSEC       =  47,  /* Next Security Record             RFC-3755 RFC-4034 */
+  RR_DNSKEY     =  48,  /* DNS Security Key                 RFC-3755 RFC-4034 */
+  RR_DHCID      =  49,  /* DHCID                            RFC-4701 */
+  RR_NSEC3      =  50,  /* NSEC3                            RFC-5155 */
+  RR_NSEC3PARAM =  51,  /* NSEC3PARAM                       RFC-5155 */
+  RR_HIP        =  55,  /* Host Identity Protocol           RFC-5205 */
+  RR_NINFO      =  56,  /* NINFO                            ???      */
+  RR_RKEY       =  57,  /* RKEY                             ???      */
+  RR_TALINK     =  58,  /* Trust Anchor Link                ???      */
+  RR_SPF        =  99,  /* Sender Policy Framework          O+ RFC-4408 */
+  RR_UINFO      = 100,  /* IANA Reserved                    ???      */
+  RR_UID        = 101,  /* IANA Reserved                    ???      */
+  RR_GID        = 102,  /* IANA Reserved                    ???      */
+  RR_UNSPEC     = 103,  /* IANA Reserved                    ???      */
+
+    /* Query types, >= 128 */
+  
+  RR_TKEY       = 249,  /* Transaction Key                  RFC-2930 */
+  RR_TSIG       = 250,  /* Transaction Signature            RFC-2845 */
+  RR_IXFR       = 251,  /* Incremental zone transfer        RFC-1995 */
+  RR_AXFR       = 252,  /* Transfer of zone                 RFC-1035 RFC-5936 */
+  RR_MAILB      = 253,  /* Mailbox related records          RFC-1035 */
+  RR_MAILA      = 254,  /* Mail agent RRs (obsolete)        O  RFC-1035 */
+  RR_ANY        = 255,  /* All records                      RFC-1035 */
+
+  RR_UNKNOWN    = 65280 /* Unknown record type              RFC-2929 */
+} dns_type_t;
+
+typedef enum dns_class
+{
+  CLASS_IN      =     1,    /* Internet                     RFC-1035 */
+  CLASS_CS      =     2,    /* CSNET (obsolete)             RFC-1035 */
+  CLASS_CH      =     3,    /* CHAOS                        RFC-1035 */
+  CLASS_HS      =     4,    /* Hesiod                       RFC-1035 */
+  CLASS_NONE    =   254,    /*                              RFC-2136 */
+  CLASS_ANY     =   255,    /* All classes                  RFC-1035 */
+  CLASS_UNKNOWN = 65280     /* Unknown class                RFC-2929 */
+} dns_class_t;
+
+typedef enum dns_result_record_type
+{
+  RESULT_RECORD_ANSWER                  =     1,    /* Answer Record                    */
+  RESULT_RECORD_AUTHORITATIVE           =     2,    /* Authoritative Record (obsolete)  */
+  RESULT_RECORD_ADDITIONAL              =     3,    /* Additional Record                */
+  RESULT_RECORD_UNKNOWN                 =     4,    /* Unknown Record                   */
+} dns_result_record_type_t;
+/*------------VISA Enhancement End---------------*/
+
 typedef struct {
     unsigned char      *data[2];
     uint16_t            size[2];
@@ -139,14 +252,40 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
 
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
+    /*------------VISA Enhancement Begin---------------*/
+    int aa      = (data[2] >> 2) & 0x1;
+    int tc      = (data[2] >> 1) & 0x1;
+    int rd      = (data[2] >> 0) & 0x1;
+    int ra      = (data[3] >> 7) & 0x1;
+    int z       = (data[3] >> 6) & 0x1;
+    int ad      = (data[3] >> 5) & 0x1;
+    int cd      = (data[3] >> 4) & 0x1;
+/*------------VISA Enhancement End---------------*/
 
     if (opcode > 5)
         return;
 
-    int qdcount = (data[4] << 8) | data[5];
-    int ancount = (data[6] << 8) | data[7];
-    int prereqs = opcode == 5?(data[8] << 8) | data[9]:0;
-    int updates = opcode == 5?(data[10] << 8) | data[11]:0;
+    int qdcount = (data[4] << 8) | data[5];                     /*number of question records*/ 
+    int ancount = (data[6] << 8) | data[7];                     /*number of answer recrods*/
+    int prereqs = opcode == 5?(data[8] << 8) | data[9]:0;       /*number of prerequisite recrods in UPDATE*/
+    int updates = opcode == 5?(data[10] << 8) | data[11]:0;     /*number of update records in UPDATE*/
+
+/*------------VISA Enhancement Begin---------------*/
+    int nscount = (data[8] << 8) | data[9];   /*number of authoritative records*/
+    int arcount = (data[10] << 8) | data[11]; /*number of additional records*/
+
+    int resultRecordCount [3];
+    resultRecordCount [0] = ancount;
+    resultRecordCount [1] = nscount;
+    resultRecordCount [2] = arcount;
+
+    int _ipField = 0;
+    int _hostField = 0;
+
+#ifdef DNSDEBUG
+        LOG("DNSDEBUG: [Query/Zone Count (qd/zo count): %d], [Answer/Prerequisite Count (an/pre count): %d], [Authority Record/Update Count (ns/up count): %d], [Additional Information Count (ar/ad count): %d]", qdcount, ancount, nscount, arcount);
+#endif
+/*------------VISA Enhancement End-----------------*/
 
     if (qdcount > 10 || qdcount <= 0)
         return;
@@ -156,6 +295,8 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
 
     /* QD Section */
     int i;
+    _ipField = ipQueryField;
+    _hostField = hostQueryField;
     for (i = 0; BSB_NOT_ERROR(bsb) && i < qdcount; i++) {
         unsigned char  namebuf[8000];
         int namelen = sizeof(namebuf);
@@ -173,8 +314,8 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         BSB_IMPORT_u16(bsb, qtype);
         BSB_IMPORT_u16(bsb, qclass);
 
-        if (opcode == 5)
-            continue;
+        if (opcode == 5)/* Skip Zone records in UPDATE query*/ 
+          continue;
 
         if (qclass <= 255 && qclasses[qclass]) {
             moloch_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
@@ -184,8 +325,10 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             moloch_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
         }
 
-        if (namelen > 0)
+        if (namelen > 0) {
             dns_add_host(session, (char *)name, namelen);
+            moloch_field_string_add_lower(_hostField, session, (char *)name, namelen);
+        }
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     switch(kind) {
@@ -207,8 +350,26 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         int rcode      = data[3] & 0xf;
         moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
     }
+    int recordType = 0;
+    for (recordType= RESULT_RECORD_ANSWER ; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
 
-    for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount + prereqs + updates; i++) {
+      int recordNum = resultRecordCount[recordType-1];
+      
+      for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
+
+          if (recordType == RESULT_RECORD_ANSWER) {
+              _ipField = ipAnswerField;
+              _hostField = hostAnswerField;
+          } else if (recordType == RESULT_RECORD_AUTHORITATIVE) {
+              _ipField = ipAuthoritativeField;
+              _hostField = hostAuthoritativeField;
+          } else if (recordType == RESULT_RECORD_ADDITIONAL) {
+              _ipField = ipAdditionalField;
+              _hostField = hostAdditionalField;
+          } else {
+              return;
+          }
+    //for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount + prereqs + updates; i++) {
         unsigned char  namebuf[8000];
         int namelen = sizeof(namebuf);
         unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
@@ -228,13 +389,13 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             break;
         }
 
-        if (anclass != 1) {
+        if (anclass != CLASS_IN) {
             BSB_IMPORT_skip(bsb, rdlength);
             continue;
         }
 
         switch (antype) {
-        case 1: {
+        case RR_A: {
             if (rdlength != 4)
                 break;
             struct in_addr in;
@@ -242,13 +403,19 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
             moloch_field_ip4_add(ipField, session, in.s_addr);
+            dns_add_host(session, (char *)name, namelen);
 
-            if (opcode == 5) {
-                dns_add_host(session, (char *)name, namelen);
+            if (opcode == 5) { /*IPs/ Hostname in update/prerequisites records of UPDATE query*/ 
+              moloch_field_ip4_add(ipUpdateField, session, in.s_addr);
+              moloch_field_string_add_lower(hostUpdateField, session, (char *)name, namelen);
+            } else { /*IPs/Hostname in answer/authoritative/additional records of UPDATE query*/ 
+              moloch_field_ip4_add(_ipField, session, in.s_addr);
+              moloch_field_string_add_lower(_hostField, session, (char *)name, namelen);
             }
             break;
         }
-        case 5: {
+        case RR_NS:
+        case RR_CNAME: {
             BSB rdbsb;
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
@@ -259,9 +426,15 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 continue;
 
             dns_add_host(session, (char *)name, namelen);
+
+            if (opcode == 5) { /* Hostname in update/prerequisites records of UPDATE query*/ 
+               moloch_field_string_add_lower(hostUpdateField, session, (char *)name, namelen);
+            } else { /*Hostname in answer/authoritative/additional records of UPDATE query*/ 
+              moloch_field_string_add_lower(_hostField, session, (char *)name, namelen);
+            }
             break;
         }
-        case 15: {
+        case RR_MX: {
             BSB rdbsb;
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
             BSB_IMPORT_skip(rdbsb, 2); // preference
@@ -273,22 +446,34 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 continue;
 
             dns_add_host(session, (char *)name, namelen);
+
+            if (opcode == 5) { /* Hostname in update/prerequisites records of UPDATE query*/ 
+              moloch_field_string_add_lower(hostUpdateField, session, (char *)name, namelen);
+            } else { /*Hostname in answer/authoritative/additional records of UPDATE query*/ 
+              moloch_field_string_add_lower(_hostField, session, (char *)name, namelen);
+            }
             break;
         }
-        case 28: {
+        case RR_AAAA: {
             if (rdlength != 16)
                 break;
             unsigned char *ptr = BSB_WORK_PTR(bsb);
 
             moloch_field_ip6_add(ipField, session, ptr);
+            dns_add_host(session, (char *)name, namelen);
 
-            if (opcode == 5) {
-                dns_add_host(session, (char *)name, namelen);
+            if (opcode == 5) { /*IPs/Hostname in update/prerequisites records of UPDATE query*/ 
+              moloch_field_ip6_add(ipUpdateField, session, ptr);
+              moloch_field_string_add_lower(hostUpdateField, session, (char *)name, namelen);
+            } else { /*IPs/Hostname in answer/authoritative/additional records of UPDATE query*/ 
+              moloch_field_ip6_add(_ipField, session, ptr);
+              moloch_field_string_add_lower(_hostField, session, (char *)name, namelen);
             }
             break;
         }
         } /* switch */
         BSB_IMPORT_skip(bsb, rdlength);
+      }
     }
 }
 /******************************************************************************/
@@ -390,6 +575,78 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
+/*------------VISA Enhancement Begin---------------*/
+    ipQueryField = moloch_field_define("dns", "ip",
+        "ip.dns.query", "IP",  "dns.query.ip",
+        "IP in DNS query",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    ipAnswerField = moloch_field_define("dns", "ip",
+        "ip.dns.answer", "IP",  "dns.answer.ip",
+        "IP in answer section of DNS result",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    ipAuthoritativeField = moloch_field_define("dns", "ip",
+        "ip.dns.authritative", "IP",  "dns.authoritative.ip",
+        "IP in authritative section of DNS result",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    ipAdditionalField = moloch_field_define("dns", "ip",
+        "ip.dns.additional", "IP",  "dns.additional.ip",
+        "IP in additional section of DNS result",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    ipUpdateField = moloch_field_define("dns", "ip",
+        "ip.dns.update", "IP",  "dns.update.ip",
+        "IP in update section of DNS result",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    hostQueryField = moloch_field_define("dns", "lotermfield",
+        "host.dns.query", "Host", "dns.query.host",
+        "DNS hosts in query",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
+        NULL);
+
+    hostAnswerField = moloch_field_define("dns", "lotermfield",
+        "host.dns.answer", "Host", "dns.answer.host",
+        "DNS hosts in answer section of DNS result",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
+        NULL);
+
+    hostAuthoritativeField = moloch_field_define("dns", "lotermfield",
+        "host.dns.authritative", "Host", "dns.authoritative.host",
+        "DNS hosts in authritative section of DNS result",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
+        NULL);
+
+    hostAdditionalField = moloch_field_define("dns", "lotermfield",
+        "host.dns.additional", "Host", "dns.additional.host",
+        "DNS hosts in additional section of DNS result",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
+        NULL);
+
+    hostUpdateField = moloch_field_define("dns", "lotermfield",
+        "host.dns.update", "Host", "dns.update.host",
+        "DNS hosts in update section of DNS result",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
+        NULL);
+/*------------VISA Enhancement End-------------------*/
+
     statusField = moloch_field_define("dns", "uptermfield",
         "dns.status", "Status Code", "dns.status",
         "DNS lookup return code",
@@ -489,4 +746,3 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("mdns",  (void*)(long)2, 5353, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
 
 }
-
