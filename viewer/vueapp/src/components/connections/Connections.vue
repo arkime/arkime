@@ -142,7 +142,7 @@
 
         <!-- export button-->
         <button class="btn btn-default btn-sm ml-1"
-          @click.stop.prevent="exportPng()">
+          @click.stop.prevent="exportPng">
           <span class="fa fa-export"></span>&nbsp;
           Export
         </button> <!-- /export button-->
