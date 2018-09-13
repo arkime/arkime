@@ -408,9 +408,12 @@ typedef struct moloch_config {
     char      logFileCreation;
     char      logHTTPConnections;
     char      parseSMTP;
+    char      parseSMTPHeaderAll;
     char      parseSMB;
     char      parseQSValue;
     char      parseCookieValue;
+    char      parseHTTPHeaderRequestAll;
+    char      parseHTTPHeaderResponseAll;
     char      supportSha256;
     char      reqBodyOnlyUtf8;
     char      compressES;

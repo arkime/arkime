@@ -25,3 +25,17 @@ if (session.http)
       each value,i in session.http.responseHeader
         if (session.http['response-' + value])
           +arrayList(session.http, "response-" + value, value + " Header", "http." + value)
+    if (session.http.requestHeaderField && session.http.requestHeaderValue)
+      div.sessionDetailMeta.bold HTTP Request Header Detail
+      dl.sessionDetailMeta(suffix="http-request-header-detail")
+        each value,i in session.http.requestHeaderField
+          dt #{value}
+          dd
+            +clickableValue('http.header.request.value', session.http.requestHeaderValue[i])
+    if (session.http.responseHeaderField && session.http.responseHeaderValue)
+      div.sessionDetailMeta.bold HTTP Response Header Detail
+      dl.sessionDetailMeta(suffix="http-response-header-detail")
+        each value,i in session.http.responseHeaderField
+          dt #{value}
+          dd
+            +clickableValue('http.header.response.value', session.http.responseHeaderValue[i])

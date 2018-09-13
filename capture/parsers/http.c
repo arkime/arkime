@@ -72,6 +72,14 @@ LOCAL  int statuscodeField;
 LOCAL  int methodField;
 LOCAL  int reqBodyField;
 
+/*------------VISA Enhancement Begin---------------*/
+LOCAL  int headerReqField;
+LOCAL  int headerReqValue;
+LOCAL  int headerResField;
+LOCAL  int headerResValue;
+/*------------VISA Enhancement End---------------*/
+
+
 /******************************************************************************/
 LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
 {
@@ -332,6 +340,28 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
     LOG("HTTPDEBUG: which: %d value: %.*s", http->which, (int)length, at);
 #endif
 
+/*------------VISA Enhancement Begin---------------*/
+    if(http->which == 0) { // Headers in HTTP request
+        if (config.parseHTTPHeaderRequestAll) {
+            char *req_header_field = g_strdup(http->header[http->which]);
+            char *req_header_value = g_strndup(at, length);
+            moloch_field_string_add(headerReqField, session, req_header_field, -1, TRUE);
+            moloch_field_string_add(headerReqValue, session, req_header_value, -1, TRUE);
+            g_free(req_header_field);
+            g_free(req_header_value);
+        }
+    } else { // headers in HTTP respone
+        if (config.parseHTTPHeaderResponseAll) {
+            char *res_header_field = g_strdup(http->header[http->which]);
+            char *res_header_value = g_strndup(at, length);
+            moloch_field_string_add(headerResField, session, res_header_field, -1, TRUE);
+            moloch_field_string_add(headerResValue, session, res_header_value, -1, TRUE);
+            g_free(res_header_field);
+            g_free(res_header_value);
+        }
+    }
+/*------------VISA Enhancement End---------------*/
+    
     if ((http->inValue & (1 << http->which)) == 0) {
         http->inValue |= (1 << http->which);
 
@@ -741,6 +771,32 @@ static const char *method_strings[] =
         "Response has header present",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
+
+    /*------------VISA Enhancement Begin---------------*/
+    headerReqField = moloch_field_define("http", 
+        "termfield", "http.header.request.field", 
+        "Request Header Fields", "http.requestHeaderField", "Contains Request header fields",
+        MOLOCH_FIELD_TYPE_STR_ARRAY,  MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+
+    headerReqValue = moloch_field_define("http",
+        "termfield", "http.header.request.value", "Request Header Values",
+        "http.requestHeaderValue", "Contains request header values",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+
+    headerResField = moloch_field_define("http",
+        "termfield", "http.header.response.field",
+        "Response Header fields", "http.responseHeaderField", "Contains response header fields",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+
+    headerResValue = moloch_field_define("http",
+        "termfield", "http.header.response.value",
+        "Response Header Values", "http.responseHeaderValue", "Contains response header values",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+/*------------VISA Enhancement End---------------*/
 
     moloch_field_define("http", "lotermfield",
         "http.hasheader", "Has Src or Dst Header", "hhall",
