@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 19;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -60,8 +60,22 @@ my $otherToken = getTokenCookie('user2');
   $hunts = viewerGet("/hunt/list", "");
   is (@{$hunts->{data}}, 0, "Can't add a job without a type");
 
+# Must have query to add a hunt
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $hunts = viewerGet("/hunt/list", "");
+  is (@{$hunts->{data}}, 0, "Can't add a job without a query");
+
+# Must have fully formed query to add a hunt
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}}', $token);
+  $hunts = viewerGet("/hunt/list", "");
+  is (@{$hunts->{data}}, 0, "Can't add a job without a query stopTime");
+
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}}', $token);
+  $hunts = viewerGet("/hunt/list", "");
+  is (@{$hunts->{data}}, 0, "Can't add a job without a query starTime");
+
 # Add a valid hunt
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   $hunts = viewerGet("/hunt/list", "");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
@@ -74,7 +88,7 @@ my $otherToken = getTokenCookie('user2');
   $hunts = viewerGet("/hunt/list", "");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
 
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   $hunts = viewerGet("/hunt/list", "");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
@@ -84,7 +98,7 @@ my $otherToken = getTokenCookie('user2');
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # Admin can delete any hunt
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   my $id3 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
