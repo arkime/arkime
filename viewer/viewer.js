@@ -5248,6 +5248,12 @@ function processHuntJob (huntId, hunt) {
         let hits = result.hits.hits;
         let searchedSessions = hunt.searchedSessions || 0;
 
+        // if the session query results length is not equal to the total sessions that the hunt
+        // job is searching, update the hunt total sessions so that the percent works correctly
+        if (hunt.totalSessions !== (result.hits.hits.length + searchedSessions)) {
+          hunt.totalSessions = result.hits.hits.length + searchedSessions;
+        }
+
         let options = {
           src: hunt.src,
           dst: hunt.dst,

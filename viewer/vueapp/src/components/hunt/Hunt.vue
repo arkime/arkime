@@ -539,7 +539,7 @@
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
-      <div v-if="!historyListLoadingError"
+      <div v-if="!historyListLoadingError && historyResults.data.length"
         class="row form-inline">
         <div class="col-12">
         <!-- job history paging -->
@@ -789,7 +789,7 @@
             <span v-if="!query.searchTerm">
               There are currently no packet search jobs.
               <br>
-              Fill out the form above to create one.
+              Click the "Create a packet search job" button above, and fill out the form to create one.
             </span>
             <span v-else>
               There are no packet search jobs that match your search.

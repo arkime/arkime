@@ -2170,6 +2170,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         fieldsUpdate();
+        usersUpdate();
         huntsCreate();
     } elsif ($main::versionNumber <= 52) {
       fieldsUpdate();
