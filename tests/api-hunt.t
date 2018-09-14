@@ -1,4 +1,4 @@
-use Test::More tests => 19;
+use Test::More tests => 22;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -97,13 +97,26 @@ my $otherToken = getTokenCookie('user2');
   $hunts = viewerGet("/hunt/list", "");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
+# If the user is not an admin they can only pause their own hunts
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  my $id3 = $json->{hunt}->{id};
+  $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", $otherToken);
+  is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privelages", "Non admin user cannot pause another user's hunt");
+
+# If the user is not an admin they can only play their own hunts
+  $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", $otherToken);
+  is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privelages", "Non admin user cannot pause another user's hunt");
+
 # Admin can delete any hunt
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
-  my $id3 = $json->{hunt}->{id};
-  $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
+  my $id4 = $json->{hunt}->{id};
+  $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
 
 # multiget should return an error
+  my $mjson = multiGet("/hunt/list");
+  is ($mjson->{text}, "Not supported in multies", "Hunt not supported in multies");
 
 # cleanup
-  $json = viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);

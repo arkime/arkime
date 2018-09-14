@@ -741,6 +741,26 @@ function checkWebEnabled(req, res, next) {
   return next();
 }
 
+function checkHuntAccess (req, res, next) {
+  if (req.user.createEnabled) {
+    // an admin can do anything to any hunt
+    return next();
+  } else {
+    Db.searchHunt({ query: { terms: { _id: [req.params.id] } } })
+      .then((response) => {
+        if (response.error) { throw response.error; }
+        if (response.hits.hits[0]._id === req.params.id && response.hits.hits[0]._source.userId === req.user.userId) {
+          return next();
+        }
+        return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privelages');
+      })
+      .catch((error) => {
+        console.error('error', error);
+        return res.molochError(500, error);
+      });
+  }
+}
+
 function logAction(uiPage) {
   return function(req, res, next) {
     var log = {
@@ -4672,6 +4692,7 @@ app.post('/user/list', logAction('users'), function(req, res) {
       fields.emailSearch = fields.emailSearch || false;
       fields.removeEnabled = fields.removeEnabled || false;
       fields.userName = safeStr(fields.userName || '');
+      fields.packetSearch = fields.packetSearch || false;
       results.results.push(fields);
     }
 
@@ -4795,7 +4816,9 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     }
 
     Db.setUser(req.body.userId, user, function(err, info) {
-      // console.log("setUser", user, err, info);
+      if (Config.debug) {
+        console.log("setUser", user, err, info);
+      }
       return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
     });
   });
@@ -4976,28 +4999,34 @@ app.post('/removeTags', logAction(), function(req, res) {
 //// Packet Search
 //////////////////////////////////////////////////////////////////////////////////
 function packetSearch (packet, options) {
-  if (options.searchType === 'asciicase') {
-    if (packet.toString().includes(options.search)) {
-      return true;
-    }
-  } else if (options.searchType === 'ascii') {
-    if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
-      return true;
-    }
-  } else if (options.searchType === 'regex' && options.regex) {
-    if (packet.toString().match(options.regex)) {
-      return true;
-    }
-  } else if (options.searchType === 'hex') {
-    if (packet.toString('hex').includes(options.search)) {
-      return true;
-    }
-  } else {
-    console.error('Invalid hunt search type');
-    return false;
+  let found = false;
+
+  switch (options.searchType) {
+    case 'asciicase':
+      if (packet.toString().includes(options.search)) {
+        found = true;
+      }
+      break;
+    case 'ascii':
+      if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
+        found = true;
+      }
+      break;
+    case 'regex':
+      if (options.regex && packet.toString().match(options.regex)) {
+        found = true;
+      }
+      break;
+    case 'hex':
+      if (packet.toString('hex').includes(options.search)) {
+        found = true;
+      }
+      break;
+    default:
+      console.error('Invalid hunt search type');
   }
 
-  return false;
+  return found;
 }
 
 function sessionHunt (sessionId, options, cb) {
@@ -5307,10 +5336,6 @@ function processHuntJobs () {
     console.log('HUNT - processing hunt jobs');
   }
 
-  if (!internals.proccessHuntJobsInitialized) {
-    internals.runndingHuntJob = undefined;
-  }
-
   if (internals.runningHuntJob) { return; }
 
   let query = {
@@ -5497,47 +5522,27 @@ app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
     });
 });
 
-app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, function (req, res) {
+app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, checkHuntAccess, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
-  function deleteHunt (id) {
-    Db.deleteHuntItem(id, function (err, result) {
-      if (err || result.error) {
-        console.error('ERROR - deleting hunt item', err || result.error);
-        return res.molochError(500, 'Error deleting hunt item');
-      } else {
-        res.send(JSON.stringify({success: true, text: 'Deleted hunt item successfully'}));
-      }
-    });
-  }
-
-  if (!req.user.createEnabled) {
-    // if the user is not an admin they can only delete their own jobs
-    Db.searchHunt({ query: { terms: { _id: [req.params.id] } } })
-      .then((response) => {
-        if (response.error) { throw response.error; }
-        if (response.hits.hits[0]._id === req.params.id && response.hits.hits[0]._source.userId === req.user.userId) {
-          return deleteHunt(req.params.id);
-        }
-        return res.molochError(500, 'You cannot delete other user\'s hunts unless you have admin privelages');
-      })
-      .catch((error) => {
-        console.error('error', error);
-        return res.molochError(500, error);
-      });
-  } else { // admin can delete anyone's hunt
-    return deleteHunt(req.params.id);
-  }
+  Db.deleteHuntItem(req.params.id, function (err, result) {
+    if (err || result.error) {
+      console.error('ERROR - deleting hunt item', err || result.error);
+      return res.molochError(500, 'Error deleting hunt item');
+    } else {
+      res.send(JSON.stringify({success: true, text: 'Deleted hunt item successfully'}));
+    }
+  });
 });
 
-app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, function (req, res) {
+app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, checkHuntAccess, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
 });
 
-app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, function (req, res) {
+app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, checkHuntAccess, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
