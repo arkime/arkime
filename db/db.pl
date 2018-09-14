@@ -64,6 +64,7 @@ my $HISTORY = 13;
 my $SEGMENTS = 1;
 my $NOOPTIMIZE = 0;
 my $FULL = 0;
+my $REVERSE = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -105,6 +106,7 @@ sub showHelp($)
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "    --reverse                  - Optimize from most recent to oldest\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "\n";
@@ -1500,7 +1502,6 @@ sub optimizeOther {
     foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v5", "${PREFIX}queries_v2") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
-        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     print "\n" if ($verbose > 0);
@@ -1526,6 +1527,8 @@ sub parseArgs {
 	    $NOOPTIMIZE = 1;
         } elsif ($ARGV[$pos] eq "--full") {
 	    $FULL = 1;
+        } elsif ($ARGV[$pos] eq "--reverse") {
+	    $REVERSE = 1;
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }
@@ -1610,7 +1613,9 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $startTime = mktime(@startTime) * 1000;
     my $optimizecnt = 0;
     my $optimizeRest = 0;
-    foreach my $i (sort (keys %{$indices})) {
+    my @indiceskeys = sort (keys %{$indices});
+
+    foreach my $i (@indiceskeys) {
         if ($optimizeRest) {
             $indices->{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
@@ -1633,7 +1638,9 @@ if ($ARGV[1] =~ /^users-?import$/) {
     optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     esPost("/_flush/synced", "", 1);
-    foreach my $i (sort (keys %{$indices})) {
+
+    @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
+    foreach my $i (@indiceskeys) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
@@ -1681,12 +1688,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     dbESVersion();
     $main::userAgent->timeout(7200);
+    esPost("/_flush/synced", "", 1);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1);
-        esPost("/$i/_upgrade", "", 1);
     }
     esPost("/_flush/synced", "", 1);
     print "\n";
