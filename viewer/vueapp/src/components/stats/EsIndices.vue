@@ -142,7 +142,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'EsIndices',
-  props: [ 'dataInterval' ],
+  props: [ 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -181,6 +181,11 @@ export default {
       } else if (this.dataInterval !== '0') {
         this.loadData();
         this.setRequestInterval();
+      }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
       }
     }
   },

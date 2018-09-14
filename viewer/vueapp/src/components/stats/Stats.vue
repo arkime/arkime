@@ -130,6 +130,17 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex !== 0">
+          <button type="button"
+            class="btn btn-theme-tertiary btn-sm"
+            @click="loadData()">
+            <span>
+              Refresh
+            </span>
+          </button>
+        </div>
+
         <!-- error (from child component) -->
         <div v-if="childError"
           role="alert"
@@ -167,6 +178,7 @@
           @click="tabIndexChange()">
           <capture-stats v-if="user && tabIndex === 1"
             :graph-hide="graphHide"
+            :refreshData="refreshData"
             :data-interval="dataInterval"
             :user="user">
           </capture-stats>
@@ -174,12 +186,14 @@
         <b-tab title="ES Nodes"
           @click="tabIndexChange()">
           <es-nodes v-if="user && tabIndex === 2"
+            :refreshData="refreshData"
             :data-interval="dataInterval">
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
           <es-indices v-if="user && tabIndex === 3"
+            :refreshData="refreshData"
             :data-interval="dataInterval"
             @errored="onError">
           </es-indices>
@@ -188,12 +202,14 @@
           @click="tabIndexChange()">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
+            :refreshData="refreshData"
             :user="user">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
           @click="tabIndexChange()">
           <es-shards v-if="user && tabIndex === 5"
+            :refreshData="refreshData"
             :data-interval="dataInterval">
           </es-shards>
         </b-tab>
@@ -223,6 +239,7 @@ export default {
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
       dataInterval: this.$route.query.refreshInterval || '5000',
+      refreshData: false,
       childError: ''
     };
   },
@@ -281,6 +298,10 @@ export default {
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
       }
+    },
+    loadData: function () {
+      this.refreshData = true;
+      setTimeout(() => { this.refreshData = false; });
     },
     onError: function (message) {
       this.childError = message;
