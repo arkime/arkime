@@ -1043,7 +1043,7 @@ LOCAL uint64_t moloch_db_memory_size()
     buf[len] = 0;
 
     uint64_t size;
-    sscanf(buf, "%ld", &size);
+    sscanf(buf, "%lu", &size);
 
     if (size == 0) {
         LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);
@@ -1715,7 +1715,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 /******************************************************************************/
 char *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id)
 {
-    return moloch_db_create_file_full(firstPacket, name, size, locked, id, NULL);
+    return moloch_db_create_file_full(firstPacket, name, size, locked, id, (char *)NULL);
 }
 /******************************************************************************/
 LOCAL void moloch_db_check()

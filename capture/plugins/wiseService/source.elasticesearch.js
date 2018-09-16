@@ -44,6 +44,9 @@ function ElasticsearchSource (api, section) {
     }
   });
 
+  if (!this.type)
+    return;
+
   this[this.api.funcName(this.type)] = this.sendResult;
 
   this.client = new elasticsearch.Client({

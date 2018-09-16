@@ -777,7 +777,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         pos = moloch_field_define(group, kind,
                 expression, expression, field,
                 help,
-                t, f, NULL);
+                t, f, (char *)NULL);
         moloch_config_add_header(hash, g_strdup(keys[k]), pos);
         g_strfreev(values);
     }

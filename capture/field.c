@@ -194,7 +194,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (count)
         flags |= MOLOCH_FIELD_FLAG_CNT;
 
-    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, NULL);
+    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, (char *)NULL);
     g_strfreev(elements);
     return pos;
 }

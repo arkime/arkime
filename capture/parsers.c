@@ -463,7 +463,7 @@ int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsi
         if (seqs[num].value == 0)
             break;
 #ifdef DEBUG_PARSERS
-        LOG("%d %p %d %d %d %d", num, seqs[num].value, seqs[num].pc, seqs[num].tag, seqs[num].len, BSB_IS_ERROR(bsb));
+        LOG("%d %p %u %u %u %u", num, seqs[num].value, seqs[num].pc, seqs[num].tag, seqs[num].len, BSB_IS_ERROR(bsb));
 #endif
         num++;
     }

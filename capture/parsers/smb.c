@@ -268,7 +268,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %d", which, cmd, smb->flags2[which], *state, *remlen);
+        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %u", which, cmd, smb->flags2[which], *state, *remlen);
 #endif
         break;
     }
@@ -394,7 +394,7 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags: %x newstate: %d remlen: %d", which, cmd, flags, *state, *remlen);
+        LOG("%d cmd: %x flags: %x newstate: %d remlen: %u", which, cmd, flags, *state, *remlen);
 #endif
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
         break;
@@ -465,7 +465,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
     uint32_t             *remlen       = &smb->remlen[which];
 
 #ifdef SMBDEBUG
-    LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %d", remaining, *state, *buflen, *remlen);
+    LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %u", remaining, *state, *buflen, *remlen);
 #endif
 
     while (remaining > 0) {
@@ -493,7 +493,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         while (!done && BSB_REMAINING(bsb) > 0) {
 #ifdef SMBDEBUG
-            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
             switch (*state) {
             case SMB_NETBIOS:
@@ -527,7 +527,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
             }
 
 #ifdef SMBDEBUG
-            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
         }
 
