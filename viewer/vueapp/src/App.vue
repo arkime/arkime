@@ -335,6 +335,14 @@ label.btn-radio:disabled, button.btn-checkbox:disabled {
   flex-direction  : column;
 }
 
+.horizontal-center {
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  text-align      : center;
+  flex-direction  : column;
+}
+
 /* displays large text for important information
  * note: must contain an inner div with the text
  * example:

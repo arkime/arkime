@@ -522,7 +522,7 @@
         </tbody>
       </table>
 
-      <h4 v-if="historyResults.data.length">
+      <h4>
         <span class="fa fa-clock-o">
         </span>&nbsp;
         Hunt Job History
@@ -539,7 +539,7 @@
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
-      <div v-if="!historyListLoadingError && historyResults.data.length"
+      <div v-if="!historyListLoadingError"
         class="row form-inline">
         <div class="col-12">
         <!-- job history paging -->
@@ -567,8 +567,7 @@
         </div>
       </div>
 
-      <table v-if="historyResults.data.length"
-        class="table table-sm table-striped">
+      <table class="table table-sm table-striped">
         <thead>
           <tr>
             <th width="40px">&nbsp;</th>
@@ -780,16 +779,18 @@
       </table>
 
       <!-- no results -->
-      <div v-if="!loading && !historyResults.data.length && !results.length"
+      <div v-if="!loading && !historyResults.data.length"
         class="ml-1 mr-1">
-        <div class="mb-5 info-area vertical-horizontal-center">
+        <div class="mb-5 info-area horizontal-center">
           <div>
             <span class="fa fa-3x text-muted-more fa-folder-open">
             </span>&nbsp;
             <span v-if="!query.searchTerm">
-              There are currently no packet search jobs.
-              <br>
-              Click the "Create a packet search job" button above, and fill out the form to create one.
+              There are currently no packet search jobs in the history.
+              <span v-if="!results.length">
+                <br>
+                Click the "Create a packet search job" button above, and fill out the form to create one.
+              </span>
             </span>
             <span v-else>
               There are no packet search jobs that match your search.
