@@ -5445,6 +5445,11 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
     return res.molochError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
   }
 
+  let limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+  if (parseInt(req.body.hunt.totalSessions) > limit) {
+    return res.molochError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
+  }
+
   let now = Math.floor(Date.now() / 1000);
 
   req.body.hunt.name = req.body.hunt.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
@@ -6336,6 +6341,8 @@ app.use((req, res) => {
     .replace(/_userId_/g, req.user?req.user.userId:'-')
     .replace(/_userName_/g, req.user?req.user.userName:'-');
 
+  let limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+
   const appContext = {
     theme: theme,
     titleConfig: titleConfig,
@@ -6344,7 +6351,9 @@ app.use((req, res) => {
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
-    themeUrl: theme === 'custom-theme' ? 'user.css' : ''
+    themeUrl: theme === 'custom-theme' ? 'user.css' : '',
+    huntWarn: Config.get('huntWarn', 100000),
+    huntLimit: limit
   };
 
   // Create a fresh Vue app instance

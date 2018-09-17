@@ -51,8 +51,9 @@
             @keyup.enter="createJob">
             <div class="row">
               <div class="col-12">
-                <div class="alert alert-info">
-                  <em v-if="sessions.recordsFiltered > 10000">
+                <div class="alert alert-info"
+                  :class="{'alert-info':sessions.recordsFiltered < huntWarn,'alert-danger':sessions.recordsFiltered >= huntWarn}">
+                  <em v-if="sessions.recordsFiltered > huntWarn">
                     That's a lot of sessions, this job will take a while.
                     <strong>
                       Proceed with caution.
@@ -851,7 +852,10 @@ export default {
       jobSearchType: 'ascii',
       jobSrc: true,
       jobDst: true,
-      jobType: 'raw'
+      jobType: 'raw',
+      // hunt limits
+      huntWarn: this.$constants.MOLOCH_HUNTWARN,
+      huntLimit: this.$constants.MOLOCH_HUNTLIMIT
     };
   },
   computed: {
@@ -905,6 +909,10 @@ export default {
 
       if (!this.sessions.recordsFiltered) {
         this.createFormError = 'This hunt applies to no sessions. Try searching for sessions first.';
+        return;
+      }
+      if (this.sessions.recordsFiltered > this.huntLimit) {
+        this.createFormError = `This hunt applies to too many sessions. Narrow down your session search to less than ${this.huntLimit} first.`;
         return;
       }
       if (!this.jobName) {
