@@ -5030,45 +5030,66 @@ function packetSearch (packet, options) {
 }
 
 function sessionHunt (sessionId, options, cb) {
-  function packetLoop (packets) {
-    let i = 0;
-    let increment = 1;
-    let len = packets.length;
-
-    if (options.src && !options.dst) {
-      increment = 2;
-    } else if (options.dst && !options.src) {
-      i = 1;
-      increment = 2;
-    }
-
-    for (i; i < len; i+=increment) {
-      let found = packetSearch(packets[i], options);
-      if (found) { return true; }
-    }
-
-    return false;
-  }
-
   if (options.type === 'reassembled') {
-    processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, results) {
+    processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, packets) {
       if (err) {
         return cb(null, false);
       }
 
-      return cb(null, packetLoop(results));
+      let i = 0;
+      let increment = 1;
+      let len = packets.length;
+
+      if (options.src && !options.dst) {
+        increment = 2;
+      } else if (options.dst && !options.src) {
+        i = 1;
+        increment = 2;
+      }
+
+      for (i; i < len; i+=increment) {
+        if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+      }
+
+      return cb(null, false);
     });
   } else if (options.type === 'raw') {
     let packets = [];
     processSessionId(sessionId, true, null, function (pcap, buffer, cb, i) {
-      packets[i] = buffer;
+      if (options.src === options.dst) {
+        packets.push(buffer);
+      } else {
+          let packet = {};
+          pcap.decode(buffer, packet);
+          packet.data = buffer.slice(16);
+          packets.push(packet);
+      }
       cb(null);
     }, function(err, session) {
       if (err) {
         return cb(null, false);
       }
 
-      return cb(null, packetLoop(packets));
+      let len = packets.length;
+      if (options.src === options.dst) {
+        // If search both src/dst don't need to check key
+        for (let i = 0; i < len; i++) {
+          if (packetSearch(packets[i], options)) { return cb(null, true); }
+        }
+      } else {
+        // If searching src NOR dst need to check key
+        let skey = Pcap.keyFromSession(session);
+        for (let i = 0; i < len; i++) {
+          let key = Pcap.key(packets[i]);
+          let isSrc = key === skey;
+          if (options.src && isSrc) {
+            if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+          } else if (options.dst && !isSrc) {
+            if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+          }
+        }
+      }
+      return cb(null, false);
     },
     options.size || 10000, 10);
   }

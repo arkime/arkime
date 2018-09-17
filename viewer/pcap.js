@@ -956,3 +956,27 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     cb(e, null);
   }
 };
+
+exports.key = function(packet) {
+  switch(packet.ip.p) {
+  case 6: // tcp
+    return packet.ip.addr1 + ':' + packet.tcp.sport;
+  case 17: // udp
+    return packet.ip.addr1 + ':' + packet.udp.sport;
+  case 132: // sctp
+    return packet.ip.addr1 + ':' + packet.sctp.sport;
+  default:
+    return packet.ip.addr1;
+  }
+};
+
+exports.keyFromSession = function(session) {
+  switch(session.ipProtocol) {
+  case 6: // tcp
+  case 17: // udp
+  case 132: // sctp
+    return session.srcIp + ':' + session.srcPort;
+  default:
+    return session.srcIp;
+  }
+};
