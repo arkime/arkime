@@ -5090,6 +5090,7 @@ function pauseHuntJobWithError (huntId, hunt, error) {
       console.error('Error adding errors and pausing hunt job', err, info);
       return;
     }
+    internals.runningHuntJob = undefined;
   });
 }
 
