@@ -24,7 +24,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.length"
-            v-on:change="changeLength()">
+            @change="changeLength">
             <option value="100">100</option>
             <option value="500">500</option>
             <option value="1000">1,000</option>
@@ -103,7 +103,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.minConn"
-            v-on:change="changeMinConn()">
+            @change="changeMinConn">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -123,7 +123,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.nodeDist"
-            v-on:change="changeNodeDist()">
+            @change="changeNodeDist">
             <option value="75">75</option>
             <option value="100">100</option>
             <option value="125">125</option>
@@ -135,15 +135,19 @@
 
         <!-- unlock button-->
         <button class="btn btn-default btn-sm ml-1"
-          @click.stop.prevent="unlock()">
+          v-b-tooltip.hover
+          title="Unlock any nodes that you have set into place"
+          @click.stop.prevent="unlock">
           <span class="fa fa-unlock"></span>&nbsp;
           Unlock
         </button> <!-- /unlock button-->
 
         <!-- export button-->
         <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Export this graph as a png"
           @click.stop.prevent="exportPng">
-          <span class="fa fa-export"></span>&nbsp;
+          <span class="fa fa-download"></span>&nbsp;
           Export
         </button> <!-- /export button-->
 
@@ -151,12 +155,16 @@
         <div class="btn-group ml-1">
           <button type="button"
             class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom in"
             @click="zoomConnections(0.5)">
             <span class="fa fa-fw fa-plus">
             </span>
           </button>
           <button type="button"
             class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom out"
             @click="zoomConnections(-0.5)">
             <span class="fa fa-fw fa-minus">
             </span>
