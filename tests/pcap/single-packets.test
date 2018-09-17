@@ -124,7 +124,7 @@
       },
       {
          "body" : {
-            "dstASN" : "AS16625 Akamai Technologies, Inc.",
+            "dstASN" : "AS4657 StarHub Internet Exchange",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "SG",
