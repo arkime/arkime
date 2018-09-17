@@ -227,12 +227,11 @@ import EsTasks from './EsTasks';
 import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import UserService from '../users/UserService';
+
 export default {
   name: 'Stats',
   data: function () {
     return {
-      user: null,
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
@@ -243,25 +242,19 @@ export default {
       childError: ''
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
+  },
   components: {
     CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks
-  },
-  created: function () {
-    this.loadUser();
   },
   watch: {
     // watch for the route to change, then update the view
     '$route': 'updateParams'
   },
   methods: {
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
-        });
-    },
     statsTypeChange: function () {
       this.$router.push({ query: { ...this.$route.query, type: this.statsType } });
     },

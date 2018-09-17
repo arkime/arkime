@@ -4,7 +4,8 @@
     <div class="mr-1 ml-1 mt-1 mb-1">
 
       <!-- actions dropdown menu -->
-      <b-dropdown right
+      <b-dropdown v-if="!hideActions"
+        right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
         variant="theme-primary">
@@ -93,6 +94,7 @@
       <!-- time inputs -->
       <moloch-time :timezone="timezone"
         @timeChange="timeChange"
+        :hide-interval="hideInterval"
         :updateTime="updateTime">
       </moloch-time> <!-- /time inputs -->
 
@@ -234,7 +236,9 @@ export default {
     'numMatchingSessions',
     'start',
     'timezone',
-    'fields'
+    'fields',
+    'hideActions',
+    'hideInterval'
   ],
   data: function () {
     return {

@@ -70,8 +70,8 @@
                   {{ file.locked === 1 ? 'True' : 'False' }}
                 </td>
                 <td class="no-wrap">
-                  <span v-if="settings">
-                    {{ file.first | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                  <span v-if="user">
+                    {{ file.first | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
                   </span>
                 </td>
                 <td class="no-wrap text-right">
@@ -98,7 +98,6 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -112,7 +111,6 @@ export default {
     return {
       error: '',
       loading: true,
-      settings: null,
       files: null,
       query: {
         length: parseInt(this.$route.query.length) || 500,
@@ -131,8 +129,12 @@ export default {
       ]
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
+  },
   created: function () {
-    this.loadUser();
     this.loadData();
   },
   methods: {
@@ -155,14 +157,6 @@ export default {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
       this.loadData();
-    },
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-        });
     },
     loadData: function () {
       this.$http.get('file/list', { params: this.query })

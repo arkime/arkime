@@ -8,10 +8,9 @@ export default {
 
     $(el).hide();
 
-    UserService.hasPermission(binding.value)
-      .then((response) => {
-        if (response) { $(el).show(); }
-      });
+    if (UserService.hasPermission(binding.value)) {
+      $(el).show();
+    }
   }
 };
 </script>

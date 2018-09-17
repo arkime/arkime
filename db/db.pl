@@ -46,6 +46,7 @@
 # 37 - add request body to history
 # 50 - Moloch 1.0
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
+# 52 - Hunt (packet search)
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -54,7 +55,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 51;
+my $VERSION = 52;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -921,6 +922,22 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
+    esPost("/${PREFIX}fields_v2/field/huntId", '{
+      "friendlyName": "Hunt ID",
+      "group": "general",
+      "help": "The ID of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntId",
+      "dbField2": "huntId"
+    }');
+    esPost("/${PREFIX}fields_v2/field/huntName", '{
+      "friendlyName": "Hunt Name",
+      "group": "general",
+      "help": "The name of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntName",
+      "dbField2": "huntName"
+    }');
 }
 
 ################################################################################
@@ -1172,6 +1189,96 @@ print "\n";
 ################################################################################
 
 ################################################################################
+sub huntsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+    my $mapping = '
+{
+  "hunt": {
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "size": {
+        "type": "integer"
+      },
+      "search": {
+        "type": "keyword"
+      },
+      "searchType": {
+        "type": "keyword"
+      },
+      "src": {
+        "type": "boolean"
+      },
+      "dst": {
+        "type": "boolean"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "matchedSessions": {
+        "type": "integer"
+      },
+      "searchedSessions": {
+        "type": "integer"
+      },
+      "totalSessions": {
+        "type": "integer"
+      },
+      "lastPacketTime": {
+        "type": "date"
+      },
+      "created": {
+        "type": "date"
+      },
+      "lastUpdated": {
+        "type": "date"
+      },
+      "started": {
+        "type": "date"
+      },
+      "query": {
+        "type": "object",
+        "dynamic": "true"
+      },
+      "errors": {
+        "properties": {
+          "value": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}';
+
+print "Setting hunts mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1", $settings);
+esAlias("add", "hunts_v1", "hunts");
+print "Setting hunts_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1/hunt/_mapping?pretty", $mapping);
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -1220,6 +1327,9 @@ sub usersUpdate
         "type": "boolean"
       },
       "removeEnabled": {
+        "type": "boolean"
+      },
+      "packetSearch": {
         "type": "boolean"
       },
       "passStore": {
@@ -1995,6 +2105,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}fields_v2", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
+    esDelete("/${PREFIX}hunts_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2018,6 +2129,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     sessions2Update();
     fieldsCreate();
     historyUpdate();
+    huntsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2060,9 +2172,15 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags", 1);
 
         checkForOld5Indices();
-    } elsif ($main::versionNumber <= 51) {
+        huntsCreate();
+    } elsif ($main::versionNumber < 52) {
         sessions2Update();
         checkForOld5Indices();
+        fieldsUpdate();
+        usersUpdate();
+        huntsCreate();
+    } elsif ($main::versionNumber <= 52) {
+      fieldsUpdate();
     } else {
         print "db.pl is hosed\n";
     }
