@@ -140,6 +140,13 @@
           Unlock
         </button> <!-- /unlock button-->
 
+        <!-- export button-->
+        <button class="btn btn-default btn-sm ml-1"
+          @click.stop.prevent="exportPng">
+          <span class="fa fa-export"></span>&nbsp;
+          Export
+        </button> <!-- /export button-->
+
         <!-- zoom in/out -->
         <div class="btn-group ml-1">
           <button type="button"
@@ -213,6 +220,8 @@ let linkPopupVue;
 
 // save visualization data
 let force, svgMain;
+
+const saveSvgAsPng = require('save-svg-as-png');
 
 export default {
   name: 'Connections',
@@ -338,6 +347,9 @@ export default {
         translate[1] + centerBefore[1] - centerAfter[1]]);
 
       this.svg.transition().duration(500).call(this.zoom.event);
+    },
+    exportPng: function () {
+      saveSvgAsPng.saveSvgAsPng(document.getElementById('graphSvg'), 'connections.png', {backgroundColor: '#FFFFFF'});
     },
     closePopups: function () {
       $('.connections-popup').hide();
@@ -827,7 +839,8 @@ export default {
 
       svgMain = d3.select('#network').append('svg:svg')
         .attr('width', self.width)
-        .attr('height', self.height);
+        .attr('height', self.height)
+        .attr('id', 'graphSvg');
 
       self.svg = svgMain.append('svg:g')
         .call(self.zoom)
