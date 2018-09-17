@@ -2165,6 +2165,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags", 1);
 
         checkForOld5Indices();
+        huntsCreate();
     } elsif ($main::versionNumber < 52) {
         sessions2Update();
         checkForOld5Indices();
