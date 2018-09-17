@@ -2171,16 +2171,18 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags_v2", 1);
         esDelete("/${PREFIX}tags", 1);
 
-        checkForOld5Indices();
         huntsCreate();
-    } elsif ($main::versionNumber < 52) {
-        sessions2Update();
         checkForOld5Indices();
+    } elsif ($main::versionNumber < 52) {
         fieldsUpdate();
         usersUpdate();
         huntsCreate();
+        sessions2Update();
+        checkForOld5Indices();
     } elsif ($main::versionNumber <= 52) {
-      fieldsUpdate();
+        usersUpdate();
+        sessions2Update();
+        checkForOld5Indices();
     } else {
         print "db.pl is hosed\n";
     }

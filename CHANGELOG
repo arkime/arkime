@@ -17,8 +17,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - glib 2.56.2, yara 3.8.1, curl 7.61.1, lua 3.3.5, node 8.11.4
   - db - expire checks min lastPacket in each session2 like curator, not just
          based on name
- - wise - support any field for ES WISE source
- - viewer - packet search (hunt)
+  - wise - support any field for ES WISE source
+  - viewer - packet search (hunt)
+  - suricata - parse severity
 
 
 1.5.3 2018/09/10

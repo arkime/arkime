@@ -5239,7 +5239,7 @@ function processHuntJob (huntId, hunt) {
       }
 
       // do sessions query
-      Db.search('sessions2-*', 'session', query, function getMoreUntilDone (err, result) {
+      Db.searchScroll('sessions2-*', 'session', query, {}, function getMoreUntilDone (err, result) {
         if (err || result.error) {
           pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
           return;
@@ -5267,7 +5267,7 @@ function processHuntJob (huntId, hunt) {
           options.regex = new RegExp(hunt.search);
         }
 
-        async.forEachSeries(hits, function (hit, cb) {
+        async.forEachLimit(hits, 3, function (hit, cb) {
           searchedSessions++;
           let session = hit._source;
           let sessionId = hit._id;
@@ -5306,16 +5306,16 @@ function processHuntJob (huntId, hunt) {
                 pres.on('end', function () {
                   let json = JSON.parse(response);
                   if (json.error) {
-                    console.error(`Error hunting on remove viewer: ${json.error}`);
-                    return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remove viewer: ${json.error}` });
+                    console.error(`Error hunting on remote viewer: ${json.error} - ${info.path}`);
+                    return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
                   }
                   if (json.matched) { hunt.matchedSessions++; }
                   return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
                 });
               });
               preq.on('error', function (err) {
-                console.error(`Error hunting on remove viewer: ${err}`);
-                return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remove viewer: ${err}` });
+                console.error(`Error hunting on remote viewer: ${err}`);
+                return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
               });
               preq.end();
             });
