@@ -1,6 +1,6 @@
 <template>
 
-  <div class="packet-search-page">
+  <div class="packet-search-page ml-2 mr-2">
 
     <!-- search navbar -->
     <moloch-search
