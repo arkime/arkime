@@ -32,7 +32,7 @@
       </div>
 
       <table v-if="stats.indices.length"
-        class="table table-sm small scrolly-table">
+        class="table table-sm small scrolly-table pt-2 pb-1">
         <thead>
           <tr>
             <th v-for="column in columns"
@@ -77,7 +77,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="stat in stats.indices"
+          <tr v-for="(stat, index) in stats.indices"
             :key="stat.name">
             <td>
               {{ stat.name }}
@@ -89,10 +89,13 @@
                 v-for="item in stat.nodes[node]">
                 <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
                   class="badge badge-pill badge-secondary cursor-help"
-                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED'}"
-                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
+                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
+                  @mouseenter="showDetails(item)"
+                  @mouseleave="hideDetails(item)">
                   {{ item.shard }}
-                  <span>
+                  <span v-if="item.showDetails"
+                    @mouseenter="hideDetails(item)">
                     <div>
                       <span>Node:</span>
                       {{ node }}
@@ -249,6 +252,12 @@ export default {
         }, (error) => {
           this.error = error.text || error;
         });
+    },
+    showDetails: function (item) {
+      this.$set(item, 'showDetails', true);
+    },
+    hideDetails: function (item) {
+      this.$set(item, 'showDetails', false);
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -414,6 +423,11 @@ table.table td:hover::before {
   border-left: 8px solid black;
   right: -8px;
   bottom: 7px;
+}
+.badge.render-tooltip-bottom:hover > span {
+  bottom: -100px;
+}.badge.render-tooltip-bottom:hover > span:before {
+  bottom: 93px;
 }
 .badge > span span {
   color: #bbb;
