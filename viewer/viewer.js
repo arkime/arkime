@@ -696,6 +696,30 @@ function proxyRequest (req, res, errCb) {
   });
 }
 
+function makeRequest (node, path, user, cb) {
+  getViewUrl(node, function (err, viewUrl, client) {
+    let info = url.parse(viewUrl);
+    info.path = encodeURI(`${Config.basePath(node)}${path}`);
+    info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+    addAuth(info, user, node);
+    addCaTrust(info, node);
+    let preq = client.request(info, function (pres) {
+      let response = '';
+      pres.on('data', function (chunk) {
+        response += chunk;
+      });
+      pres.on('end', function () {
+        cb(null, response);
+      });
+    });
+    preq.on('error', function (err) {
+      console.error(`Error with ${info.path} on remote viewer: ${err}`);
+      cb(err);
+    });
+    preq.end();
+  });
+}
+
 function isLocalView (node, yesCb, noCb) {
   var pcapWriteMethod = Config.getFull(node, "pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
@@ -5311,36 +5335,22 @@ function processHuntJob (huntId, hunt) {
             });
           },
           function () { // Check Remotely
-            getViewUrl(node, function (err, viewUrl, client) {
-              var info = url.parse(viewUrl);
-              info.path = `${Config.basePath(node)}${node}/hunt/${huntId}/remote/${sessionId}?`;
-              info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-              for (let option in options) { // pass in packet search options as query params
-                info.path += `${option}=${options[option]}&`;
-              }
-              info.path = encodeURI(info.path);
-              addAuth(info, user, node);
-              addCaTrust(info, node);
-              let preq = client.request(info, function (pres) {
-                let response = '';
-                pres.on('data', function (chunk) {
-                  response += chunk;
-                });
-                pres.on('end', function () {
-                  let json = JSON.parse(response);
-                  if (json.error) {
-                    console.error(`Error hunting on remote viewer: ${json.error} - ${info.path}`);
-                    return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
-                  }
-                  if (json.matched) { hunt.matchedSessions++; }
-                  return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-                });
-              });
-              preq.on('error', function (err) {
-                console.error(`Error hunting on remote viewer: ${err}`);
+            let path = `${node}/hunt/${huntId}/remote/${sessionId}?`;
+            for (let option in options) { // pass in packet search options as query params
+              path += `${option}=${options[option]}&`;
+            }
+
+            makeRequest (node, path, user, (err, response) => {
+              if (err) {
                 return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
-              });
-              preq.end();
+              }
+              let json = JSON.parse(response);
+              if (json.error) {
+                console.error(`Error hunting on remote viewer: ${json.error} - ${path}`);
+                return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
+              }
+              if (json.matched) { hunt.matchedSessions++; }
+              return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
             });
           });
         }, function (err) { // done running the hunt job
@@ -5747,22 +5757,9 @@ function scrubList(req, res, entire, list) {
     },
     function () {
       // Get from remote DISK
-      getViewUrl(fields.node, function(err, viewUrl, client) {
-        var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.node) + fields.node + (entire?"/delete/":"/scrub/") + item._id;
-        info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        addAuth(info, req.user, fields.node);
-        addCaTrust(info, fields.node);
-        var preq = client.request(info, function(pres) {
-          pres.on('end', function () {
-            setImmediate(nextCb);
-          });
-        });
-        preq.on('error', function (e) {
-          console.log("ERROR - Couldn't proxy scrub request=", info, "\nerror=", e);
-          nextCb(null);
-        });
-        preq.end();
+      let path = fields.node + (entire?"/delete/":"/scrub/") + item._id;
+      makeRequest(fields.node, path, req.user, function (err, response) {
+        setImmediate(nextCb);
       });
     });
   }, function(err) {
@@ -5986,28 +5983,13 @@ function sendSessionsList(req, res, list) {
       internals.sendSessionQueue.push(options, nextCb);
     },
     function () {
-      // Get from remote DISK
-      getViewUrl(fields.node, function(err, viewUrl, client) {
-        var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.node) + fields.node + "/sendSession/" + item._id + "?saveId=" + saveId + "&cluster=" + req.body.cluster;
-        info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        if (req.body.tags) {
-          info.path += "&tags=" + req.body.tags;
-        }
-        addAuth(info, req.user, fields.node);
-        addCaTrust(info, fields.node);
-        var preq = client.request(info, function(pres) {
-          pres.on('data', function (chunk) {
-          });
-          pres.on('end', function () {
-            setImmediate(nextCb);
-          });
-        });
-        preq.on('error', function (e) {
-          console.log("ERROR - Couldn't proxy sendSession request=", info, "\nerror=", e);
-          nextCb(null);
-        });
-        preq.end();
+      let path = `${fields.node}/sendSession/${item._id}?saveId=${saveId}&cluster=${req.body.cluster}`;
+      if (req.body.tags) {
+        path += `&tags=${req.body.tags}`;
+      }
+
+      makeRequest(node, path, req.user, (err, response) => {
+        setImmediate(nextCb);
       });
     });
   }, function(err) {
