@@ -214,7 +214,7 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
             session->databytes[which] += len;
             session->totalDatabytes[which] += len;
 
-            if (config.yara && config.yaraEveryPacket) {
+            if (config.yara && config.yaraEveryPacket && !session->stopYara) {
                 moloch_yara_execute(session, data, len, 0);
             }
 
@@ -252,7 +252,7 @@ LOCAL void moloch_packet_process_udp(MolochSession_t * const session, MolochPack
 
         moloch_parsers_classify_udp(session, data, len, packet->direction);
 
-        if (config.yara && config.yaraEveryPacket) {
+        if (config.yara && config.yaraEveryPacket && !session->stopYara) {
             moloch_yara_execute(session, data, len, 0);
         }
     }

@@ -995,7 +995,7 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     }
 
     moloch_rules_run_after_classify(session);
-    if (config.yara && !config.yaraEveryPacket)
+    if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         moloch_yara_execute(session, data, remaining, 0);
 }
 /******************************************************************************/
@@ -1038,6 +1038,6 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     }
 
     moloch_rules_run_after_classify(session);
-    if (config.yara && !config.yaraEveryPacket)
+    if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         moloch_yara_execute(session, data, remaining, 0);
 }

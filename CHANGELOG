@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - support any field for ES WISE source
   - viewer - packet search (hunt)
   - suricata - parse severity
+  - capture - new _dontCheckYara rule ops
 
 
 1.5.3 2018/09/10

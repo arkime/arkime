@@ -31,6 +31,7 @@ HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
 #define MOLOCH_FIELD_SPECIAL_MIN_SAVE   -4
 #define MOLOCH_FIELD_SPECIAL_DROP_SRC   -5
 #define MOLOCH_FIELD_SPECIAL_DROP_DST   -6
+#define MOLOCH_FIELD_SPECIAL_STOP_YARA  -7
 
 LOCAL va_list empty_va_list;
 
@@ -1187,6 +1188,9 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_SPECIAL_DROP_DST:
                 moloch_packet_drophash_add(session, 1, op->strLenOrInt);
                 break;
+            case MOLOCH_FIELD_SPECIAL_STOP_YARA:
+                session->stopYara = 1;
+                break;
             }
             continue;
         }
@@ -1274,6 +1278,7 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
         case MOLOCH_FIELD_SPECIAL_DROP_SRC:
         case MOLOCH_FIELD_SPECIAL_DROP_DST:
+        case MOLOCH_FIELD_SPECIAL_STOP_YARA:
             op->strLenOrInt = atoi(value);
             op->str = 0;
             break;
@@ -1340,6 +1345,7 @@ void moloch_field_init()
     moloch_field_by_exp_add_special("_minPacketsBeforeSavingSPI", MOLOCH_FIELD_SPECIAL_MIN_SAVE);
     moloch_field_by_exp_add_special("_dropBySrc", MOLOCH_FIELD_SPECIAL_DROP_SRC);
     moloch_field_by_exp_add_special("_dropByDst", MOLOCH_FIELD_SPECIAL_DROP_DST);
+    moloch_field_by_exp_add_special("_dontCheckYara", MOLOCH_FIELD_SPECIAL_STOP_YARA);
 
     moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
     moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
