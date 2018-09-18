@@ -1860,6 +1860,11 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printIndex($status, "files_v4");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
+    printIndex($status, "hunts_v1");
+    printIndex($status, "dstats_v3");
+    printIndex($status, "dstats_v2");
+    printIndex($status, "sequence_v2");
+    printIndex($status, "sequence_v1");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -2018,7 +2023,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
-    esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
+    die "This command doesn't work anymore";
     exit 0;
 }
 
@@ -2154,6 +2159,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     print "Starting Upgrade\n";
 
+    esDelete("/${PREFIX}dstats_v2/version/version", 1);
+    esDelete("/${PREFIX}dstats_v3/version/version", 1);
     if ($main::versionNumber < 51) {
         dbCheckForActivity();
         esPost("/_flush/synced", "", 1);
@@ -2191,4 +2198,3 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 print "Finished\n";
 
 sleep 1;
-#esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
