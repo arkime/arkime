@@ -159,6 +159,8 @@ export default {
       this.loadData();
     },
     loadData: function () {
+      this.loading = true;
+
       this.$http.get('file/list', { params: this.query })
         .then((response) => {
           this.error = '';
