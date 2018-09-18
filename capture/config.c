@@ -513,7 +513,7 @@ void moloch_config_load()
     int maxStreams               = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
     config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
-    config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
+    config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 10000000);
     config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
     config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
     config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);

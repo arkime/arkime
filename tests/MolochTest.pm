@@ -155,8 +155,8 @@ my ($url) = @_;
 sub esPost {
 my ($url, $content) = @_;
 
-    my $response = $MolochTest::userAgent->post("$MolochTest::elasticsearch$url", Content => $content);
-    #print $url, " response:", $response->content;
+    my $response = $MolochTest::userAgent->post("$MolochTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    #diag $url, " response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
 }

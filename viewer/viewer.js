@@ -726,6 +726,7 @@ function checkCookieToken(req, res, next) {
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || req.token.pid !== process.pid ||
       req.token.userId !== req.user.userId) {
+
     console.trace('bad token', req.token);
     return res.molochError(500, 'Timeout - Please try reloading page and repeating the action');
   }
@@ -5348,6 +5349,7 @@ function processHuntJob (huntId, hunt) {
           hunt.status = 'finished';
           hunt.searchedSessions = hunt.totalSessions;
           Db.setHunt(huntId, hunt, (err, info) => {
+            processHuntJobs(); // Start new hunt
             if (err) {
               pauseHuntJobWithError(huntId, hunt, { value: `Error finishing hunt job: ${err} ${info}` });
               return;
@@ -6286,9 +6288,25 @@ if (Config.get("regressionTests")) {
     processCronQueries();
     res.send("{}");
   });
+
+  // Make sure all jobs have run and return
   app.get('/processHuntJobs', function (req, res) {
     processHuntJobs();
-    res.send('{}');
+
+    setTimeout(function checkHuntFinished() {
+      if (internals.runningHuntJob) {
+        setTimeout(checkHuntFinished, 1000);
+      } else {
+        Db.search("hunts", "hunt", {query: {term: {status: "queued"}}}, function(err, result) {
+          if (result.hits.total > 0) {
+            processHuntJobs();
+            setTimeout(checkHuntFinished, 1000);
+          } else {
+            res.send('{}');
+          }
+        });
+      }
+    }, 1000);
   });
 }
 
