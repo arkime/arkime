@@ -5,6 +5,9 @@
       <small>
         Moloch v{{molochVersion}} |
         <a href="https://molo.ch">molo.ch</a>
+        <span v-if="responseTime">
+          | {{ responseTime | commaString }}ms
+        </span>
       </small>
     </p>
   </div>
@@ -18,6 +21,11 @@ export default {
     return {
       molochVersion: this.$constants.MOLOCH_VERSION
     };
+  },
+  computed: {
+    responseTime: function () {
+      return this.$store.state.responseTime;
+    }
   }
 };
 </script>

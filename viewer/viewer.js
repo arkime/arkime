@@ -45,7 +45,8 @@ var Config         = require('./config.js'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
     PNG            = require('pngjs').PNG,
-    decode         = require('./decode.js');
+    decode         = require('./decode.js'),
+    onHeaders      = require('on-headers');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -860,6 +861,19 @@ function fieldToExp (req, res, next) {
   return next();
 }
 
+// record the time it took from the request to start
+// until the headers are set to send the response
+function recordResponseTime (req, res, next) {
+  onHeaders(res, () => {
+    let now = process.hrtime();
+    let ms = ((now[0] - req._startAt[0]) * 1000) + ((now[1] - req._startAt[1]) / 1000000);
+    ms = Math.ceil(ms);
+    res.setHeader('X-Moloch-Response-Time', ms);
+  });
+
+  next();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
@@ -1096,7 +1110,7 @@ function postSettingUser (req, res, next) {
 
 
 // gets a user's settings
-app.get('/user/settings', getSettingUser, function(req, res) {
+app.get('/user/settings', getSettingUser, recordResponseTime, function(req, res) {
   if (!req.settingUser) {
     res.status(404);
     return res.send(JSON.stringify({success:false, text:'User not found'}));
@@ -2190,7 +2204,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/history/list', function(req, res) {
+app.get('/history/list', recordResponseTime, function(req, res) {
   var userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
     // if the admin has requested a specific user
@@ -2321,7 +2335,7 @@ app.get('/fields', function(req, res) {
   }
 });
 
-app.get('/file/list', logAction('files'), function(req, res) {
+app.get('/file/list', logAction('files'), recordResponseTime, function(req, res) {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -2388,7 +2402,7 @@ app.get('/eshealth.json', function(req, res) {
   });
 });
 
-app.get('/esindices/list', function(req, res) {
+app.get('/esindices/list', recordResponseTime, function(req, res) {
   Db.indicesCache(function(err, indices) {
     // Implement filtering
     if (req.query.filter !== undefined) {
@@ -2453,7 +2467,7 @@ app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(r
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
-app.get('/estask/list', function(req, res) {
+app.get('/estask/list', recordResponseTime, function(req, res) {
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
 
@@ -2516,7 +2530,7 @@ app.post('/estask/cancel', logAction(), function(req, res) {
   });
 });
 
-app.get('/esshard/list', function(req, res) {
+app.get('/esshard/list', recordResponseTime, function(req, res) {
   Promise.all([Db.shards(),
                Db.getClusterSettings({flatSettings: true})
               ]).then(([shards, settings]) => {
@@ -2644,7 +2658,7 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
   });
 });
 
-app.get('/esstats.json', function(req, res) {
+app.get('/esstats.json', recordResponseTime, function(req, res) {
   var stats = [];
   var r;
 
@@ -2753,7 +2767,7 @@ function mergeUnarray(to, from) {
     }
   }
 }
-app.get('/stats.json', function(req, res) {
+app.get('/stats.json', recordResponseTime, function(req, res) {
   noCache(req, res);
 
   var query = {from: +req.query.start || 0,
@@ -3099,7 +3113,7 @@ app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
   });
 });
 
-app.get('/sessions.json', logAction('sessions'), function(req, res) {
+app.get('/sessions.json', logAction('sessions'), recordResponseTime, function(req, res) {
   var i;
 
   var graph = {};
@@ -3203,7 +3217,7 @@ app.get('/sessions.json', logAction('sessions'), function(req, res) {
   });
 });
 
-app.get('/spigraph.json', logAction('spigraph'), fieldToExp, function(req, res) {
+app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
@@ -3297,7 +3311,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, function(req, res) 
   });
 });
 
-app.get('/spiview.json', logAction('spiview'), function(req, res) {
+app.get('/spiview.json', logAction('spiview'), recordResponseTime, function(req, res) {
   if (req.query.spi === undefined) {
     return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
   }
@@ -3620,7 +3634,7 @@ function buildConnections(req, res, cb) {
   });
 }
 
-app.get('/connections.json', logAction('connections'), function(req, res) {
+app.get('/connections.json', logAction('connections'), recordResponseTime, function(req, res) {
   var health;
   Db.healthCache(function(err, h) {health = h;});
   buildConnections(req, res, function (err, nodes, links, total) {
@@ -4679,7 +4693,7 @@ internals.usersMissing = {
   emailSearch: 0,
   removeEnabled: 0
 };
-app.post('/user/list', logAction('users'), function(req, res) {
+app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
   var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
@@ -5510,7 +5524,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   });
 });
 
-app.get('/hunt/list', logAction('hunt/list'), function (req, res) {
+app.get('/hunt/list', logAction('hunt/list'), recordResponseTime, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 

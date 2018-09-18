@@ -19,7 +19,8 @@ const store = new Vuex.Store({
     focusSearch: undefined,
     focusTimeRange: undefined,
     displayKeyboardShortcutsHelp: undefined,
-    user: undefined
+    user: undefined,
+    responseTime: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -85,6 +86,9 @@ const store = new Vuex.Store({
     },
     setUserSettings (state, value) {
       this.state.user.settings = value;
+    },
+    setResponseTime (state, value) {
+      this.state.responseTime = value;
     }
   }
 });
