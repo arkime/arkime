@@ -5198,6 +5198,23 @@ function updateSessionWithHunt (session, sessionId, hunt, huntId) {
   });
 }
 
+function buildHuntOptions (hunt) {
+  let options = {
+    src: hunt.src,
+    dst: hunt.dst,
+    size: hunt.size,
+    type: hunt.type,
+    search: hunt.search,
+    searchType: hunt.searchType
+  };
+
+  if (hunt.searchType === 'regex') {
+    options.regex = new RegExp(hunt.search);
+  }
+
+  return options;
+}
+
 function processHuntJob (huntId, hunt) {
   let now = Math.floor(Date.now() / 1000);
 
@@ -5301,18 +5318,7 @@ function processHuntJob (huntId, hunt) {
           hunt.totalSessions = result.hits.hits.length + searchedSessions;
         }
 
-        let options = {
-          src: hunt.src,
-          dst: hunt.dst,
-          size: hunt.size,
-          type: hunt.type,
-          search: hunt.search,
-          searchType: hunt.searchType
-        };
-
-        if (hunt.searchType === 'regex') {
-          options.regex = new RegExp(hunt.search);
-        }
+        let options = buildHuntOptions(hunt);
 
         async.forEachLimit(hits, 3, function (hit, cb) {
           searchedSessions++;
@@ -5335,10 +5341,7 @@ function processHuntJob (huntId, hunt) {
             });
           },
           function () { // Check Remotely
-            let path = `${node}/hunt/${huntId}/remote/${sessionId}?`;
-            for (let option in options) { // pass in packet search options as query params
-              path += `${option}=${options[option]}&`;
-            }
+            let path = `${node}/hunt/${huntId}/remote/${sessionId}`;
 
             makeRequest (node, path, user, (err, response) => {
               if (err) {
@@ -5608,7 +5611,9 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
       hunt = hunt._source;
       session = session._source;
 
-      sessionHunt(sessionId, req.query, function (err, matched) {
+      let options = buildHuntOptions(hunt);
+
+      sessionHunt(sessionId, options, function (err, matched) {
         if (err) {
           return res.send({ matched: false, error: err });
         }
@@ -5988,7 +5993,7 @@ function sendSessionsList(req, res, list) {
         path += `&tags=${req.body.tags}`;
       }
 
-      makeRequest(node, path, req.user, (err, response) => {
+      makeRequest(fields.node, path, req.user, (err, response) => {
         setImmediate(nextCb);
       });
     });

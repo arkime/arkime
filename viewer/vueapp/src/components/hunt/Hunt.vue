@@ -697,12 +697,18 @@
                   <button type="button"
                     @click="openSessions(job)"
                     v-if="job.matchedSessions"
-                    v-b-tooltip.hover
-                    title="Open results in a new Sessions tab"
+                    :id="`openresults${job.id}`"
                     class="ml-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw">
                     </span>
                   </button>
+                  <b-tooltip v-if="job.matchedSessions"
+                    :target="`openresults${job.id}`">
+                    Open results in a new Sessions tab.
+                    <br>
+                    <strong>Note:</strong> ES takes a while to update sessions, so your results
+                    might take a minute to show up.
+                  </b-tooltip>
                 </span>
               </td>
             </tr>
