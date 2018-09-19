@@ -949,10 +949,10 @@ export default {
       this.axios.post('hunt', { hunt: newJob })
         .then((response) => {
           this.createFormOpened = false;
-          this.results.push(response.data.hunt);
           this.jobName = '';
           this.jobSearch = '';
           this.createFormError = '';
+          this.loadData();
         }, (error) => {
           this.createFormError = error.text || error;
         });

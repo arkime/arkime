@@ -5406,12 +5406,14 @@ function processHuntJob (huntId, hunt) {
   });
 }
 
-function processHuntJobs () {
+// Kick off the process of running a hunt job
+// cb is optional and is called either when a job has been started or end of function
+function processHuntJobs (cb) {
   if (Config.debug) {
     console.log('HUNT - processing hunt jobs');
   }
 
-  if (internals.runningHuntJob) { return; }
+  if (internals.runningHuntJob) { return (cb?cb():null); }
   internals.runningHuntJob = true;
 
   let query = {
@@ -5436,21 +5438,22 @@ function processHuntJobs () {
             // restart the abandoned hunt
             processHuntJob(id, hunt);
           }
-          return;
+          return (cb?cb():null);
         } else if (hunt.status === 'queued') { // get the first queued hunt
           hunt.status = 'running'; // update the hunt job
           internals.runningHuntJob = hunt;
           processHuntJob(id, hunt);
-          return;
+          return (cb?cb():null);
         }
       }
 
       // Made to the end without starting a job
       internals.proccessHuntJobsInitialized = true;
       internals.runningHuntJob = undefined;
+      return (cb?cb():null);
     }).catch(err => {
       console.error('Error fetching hunt jobs', err);
-      return;
+      return (cb?cb():null);
     });
 }
 
@@ -5541,8 +5544,9 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   Db.createHunt(hunt, function (err, result) {
     if (err) { console.error('create hunt error', err, result); }
     hunt.id = result._id;
-    processHuntJobs();
-    return res.send(JSON.stringify({ success: true, hunt: hunt }));
+    processHuntJobs( () => {
+      return res.send(JSON.stringify({ success: true, hunt: hunt }));
+    });
   });
 });
 
