@@ -42,10 +42,11 @@ const settingsDefault = {
 (function () { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
+  let debug = 0;
 
   function setPasswordHash (err, hash) {
     if (err) {
-      console.error(`Error hashing password: ${err}`);
+      console.log(`Error hashing password: ${err}`);
       return;
     }
 
@@ -60,6 +61,7 @@ const settingsDefault = {
     console.log('  --port         Port for the web app to listen on');
     console.log('  --cert         Public certificate to use for https');
     console.log('  --key          Private certificate to use for https');
+    console.log('  --debug        Increase debug level, multiple are supported');
 
     process.exit(0);
   }
@@ -97,7 +99,7 @@ const settingsDefault = {
         break;
 
       case '--debug':
-        // Someday support debug :)
+        debug++;
         break;
 
       case '-h':
@@ -115,6 +117,8 @@ const settingsDefault = {
   if (!appArgs.length) {
     console.log('WARNING: No config options were set, starting Parliament in view only mode with defaults.\n');
   }
+
+  app.set('debug', debug);
 
   // set optional config options that reqiure defaults
   app.set('port', port || 8008);
@@ -141,8 +145,8 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  console.error(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
-  console.error('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
+  console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
+  console.log('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
   process.exit(1);
 }
 
@@ -221,7 +225,7 @@ router.use((req, res, next) => {
 
 // Handle errors
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.log(err.stack);
   res.status(err.httpStatusCode || 500).json({
     success : false,
     text    : err.message || 'Error'
@@ -275,6 +279,9 @@ async function sendAlerts () {
         setTimeout(() => {
           let alert = alerts[i];
           alert.notifier.sendAlert(alert.config, alert.message);
+          if (app.get('debug')) {
+            console.log('Sending alert:', alert.message, JSON.stringify(alert.config, null, 2));
+          }
           if (i === len - 1) { resolve(); }
         }, 250 * i);
       })(i);
@@ -346,7 +353,7 @@ function buildAlert (cluster, issue) {
       let field = parliament.settings.notifiers[n].fields[f.name];
       if (!field || (field.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
-        console.error(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
+        console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
         continue;
       }
       config[f.name] = field.value;
@@ -418,10 +425,14 @@ function setIssue (cluster, newIssue) {
     issues.push(newIssue);
   }
 
+  if (app.get('debug') > 1) {
+    console.log('Setting issue:', JSON.stringify(newIssue, null, 2));
+  }
+
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
       if (err) {
-        console.error('Unable to write issue:', err.message || err);
+        console.log('Unable to write issue:', err.message || err);
       }
     }
   );
@@ -448,7 +459,7 @@ function getHealth (cluster) {
           health = JSON.parse(response);
         } catch (e) {
           cluster.healthError = 'ES health parse failure';
-          console.error('Bad response for es health', cluster.localUrl || cluster.url);
+          console.log('Bad response for es health', cluster.localUrl || cluster.url);
           return resolve();
         }
 
@@ -471,7 +482,10 @@ function getHealth (cluster) {
 
         cluster.healthError = message;
 
-        console.error('HEALTH ERROR:', options.url, message);
+        if (app.get('debug')) {
+          console.log('HEALTH ERROR:', options.url, message);
+        }
+
         return resolve();
       });
   });
@@ -497,7 +511,7 @@ function getStats (cluster) {
 
         if (response.bsqErr) {
           cluster.statsError = response.bsqErr;
-          console.error('Get stats error', response.bsqErr);
+          console.log('Get stats error', response.bsqErr);
           return resolve();
         }
 
@@ -506,7 +520,7 @@ function getStats (cluster) {
           stats = JSON.parse(response);
         } catch (e) {
           cluster.statsError = 'ES stats parse failure';
-          console.error('Bad response for stats', cluster.localUrl || cluster.url);
+          console.log('Bad response for stats', cluster.localUrl || cluster.url);
           return resolve();
         }
 
@@ -568,11 +582,15 @@ function getStats (cluster) {
       })
       .catch((error) => {
         let message = error.message || error;
-        console.error('STATS ERROR:', options.url, message);
 
         setIssue(cluster, { type: 'esDown', value: message });
 
         cluster.statsError = message;
+
+        if (app.get('debug')) {
+          console.log('STATS ERROR:', options.url, message);
+        }
+
         return resolve();
       });
   });
@@ -614,6 +632,10 @@ function buildNotifiers () {
     }
 
     parliament.settings.notifiers[n] = notifierData;
+  }
+
+  if (app.get('debug')) {
+    console.log('Built notifiers:', JSON.stringify(parliament.settings.notifiers, null, 2));
   }
 }
 
@@ -671,12 +693,18 @@ function initializeParliament () {
       parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
     }
 
+    if (app.get('debug')) {
+      console.log('Parliament initialized!');
+      console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
+      console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
+    }
+
     buildNotifiers();
 
     fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
       (err) => {
         if (err) {
-          console.error('Parliament initialization error:', err.message || err);
+          console.log('Parliament initialization error:', err.message || err);
           return reject(new Error('Parliament initialization error'));
         }
 
@@ -714,7 +742,7 @@ function updateParliament () {
           fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
             (err) => {
               if (err) {
-                console.error('Unable to write issue:', err.message || err);
+                console.log('Unable to write issue:', err.message || err);
               }
             }
           );
@@ -723,16 +751,24 @@ function updateParliament () {
         fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
           (err) => {
             if (err) {
-              console.error('Parliament update error:', err.message || err);
+              console.log('Parliament update error:', err.message || err);
               return reject(new Error('Parliament update error'));
             }
 
             return resolve();
           });
+
+        if (app.get('debug')) {
+          console.log('Parliament updated!');
+          if (issuesRemoved) {
+            console.log('Issues updated!');
+          }
+        }
+
         return resolve();
       })
       .catch((error) => {
-        console.error('Parliament update error:', error.messge || error);
+        console.log('Parliament update error:', error.messge || error);
         return resolve();
       });
   });
@@ -785,9 +821,13 @@ function getGeneralSetting (type) {
 function writeParliament (req, res, next, successObj, errorText, sendParliament) {
   fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
+      if (app.get('debug')) {
+        console.log('Wrote parliament file', err || '');
+      }
+
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
@@ -814,9 +854,13 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
 function writeIssues (req, res, next, successObj, errorText, sendIssues) {
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
+      if (app.get('debug')) {
+        console.log('Wrote issues file', err || '');
+      }
+
       if (err) {
         const errorMsg = `Unable to write issue data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
@@ -900,7 +944,7 @@ router.put('/auth/update', (req, res, next) => {
 
   bcrypt.hash(req.body.newPassword, saltrounds, (err, hash) => {
     if (err) {
-      console.error(`Error hashing password: ${err}`);
+      console.log(`Error hashing password: ${err}`);
       const error = new Error('Hashing password failed.');
       error.httpStatusCode = 401;
       return next(error);
@@ -1021,7 +1065,7 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
     (err) => {
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
@@ -1522,7 +1566,7 @@ router.post('/testAlert', (req, res, next) => {
       if (!field || (field.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         let message = `Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`;
-        console.error(message);
+        console.log(message);
 
         const error = new Error(message);
         error.httpStatusCode = 422;
@@ -1565,11 +1609,16 @@ if (app.get('keyFile') && app.get('certFile')) {
 
 server
   .on('error', function (e) {
-    console.error(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
+    console.log(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
     process.exit(1);
   })
   .on('listening', function (e) {
     console.log(`Express server listening on port ${server.address().port} in ${app.settings.env} mode`);
+    if (app.get('debug')) {
+      console.log('Debug Level', app.get('debug'));
+      console.log('Parliament file:', app.get('file'));
+      console.log('Issues file:', issuesFilename);
+    }
   })
   .listen(app.get('port'), () => {
     initializeParliament()
@@ -1577,7 +1626,7 @@ server
         updateParliament();
       })
       .catch(() => {
-        console.error(`ERROR - never mind, couldn't initialize Parliament`);
+        console.log(`ERROR - never mind, couldn't initialize Parliament`);
         process.exit(1);
       });
 
