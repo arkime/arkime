@@ -438,7 +438,7 @@ exports.deleteHistoryItem = function (id, index, cb) {
 };
 
 exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: true}, cb);
+  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: "wait_for"}, cb);
 };
 exports.searchHunt = function (query, cb) {
   return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query}, cb);

@@ -97,6 +97,10 @@
                   <span v-if="item.showDetails"
                     @mouseenter="hideDetails(item)">
                     <div>
+                      <span>Index:</span>
+                      {{ stat.name }}
+                    </div>
+                    <div>
                       <span>Node:</span>
                       {{ node }}
                     </div>
