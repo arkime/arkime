@@ -429,7 +429,7 @@
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
                     might take a minute to show up.
                   </b-tooltip>
-                  <button v-if="job.status === 'running'"
+                  <button v-if="job.status === 'running' || job.status === 'queued'"
                     @click="pauseJob(job)"
                     type="button"
                     v-b-tooltip.hover
@@ -898,10 +898,10 @@ export default {
       this.loadSessions();
     });
 
-    // interval to load jobs every 10 seconds
+    // interval to load jobs every 5 seconds
     interval = setInterval(() => {
       this.loadData();
-    }, 10000);
+    }, 5000);
   },
   methods: {
     cancelCreateForm: function () {
