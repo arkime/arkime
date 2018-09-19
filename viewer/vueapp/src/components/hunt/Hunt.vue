@@ -485,8 +485,8 @@
                 <div class="row">
                   <div class="col-12">
                     Found
-                    <strong>{{ job.matchedSessions }}</strong> of
-                    <strong>{{ job.searchedSessions }}</strong>
+                    <strong>{{ job.matchedSessions | commaString }}</strong> of
+                    <strong>{{ job.searchedSessions | commaString }}</strong>
                     searched sessions out of
                     <strong>{{ job.totalSessions }}</strong>
                     total sessions to search
@@ -650,7 +650,7 @@
                   {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
                 </span>
                 <b-tooltip :target="`jobmatches${job.id}`">
-                  Found {{ job.matchedSessions }} out of {{ job.searchedSessions | commaString }} sessions searched.
+                  Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
                   <div v-if="job.status !== 'finished'">
                     Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
                   </div>
@@ -664,7 +664,7 @@
                 </span>
               </td>
               <td>
-                {{ job.matchedSessions }}
+                {{ job.matchedSessions | commaString }}
               </td>
               <td>
                 {{ job.name }}
@@ -747,10 +747,10 @@
                 <div class="row">
                   <div class="col-12">
                     Found
-                    <strong>{{ job.matchedSessions }}</strong> of
-                    <strong>{{ job.searchedSessions }}</strong>
+                    <strong>{{ job.matchedSessions | commaString }}</strong> of
+                    <strong>{{ job.searchedSessions | commaString }}</strong>
                     searched sessions out of
-                    <strong>{{ job.totalSessions }}</strong>
+                    <strong>{{ job.totalSessions | commaString }}</strong>
                     total sessions to search
                   </div>
                 </div>
