@@ -355,33 +355,6 @@ table.table tbody > tr > td:first-child {
   padding-right: .5rem;
 }
 
-/* hoverable columns */
-table.table td, th {
-  position: relative;
-}
-/* apply hover background to column (only cells above the hovered cell) */
-table.table td:hover::after,
-table.table th:hover::after {
-  content: "";
-  position: absolute;
-  background-color: var(--color-gray-light) !important;
-  left: 0;
-  top: -5000px;
-  height: calc(100% + 5000px);
-  width: 100%;
-  z-index: -1;
-}
-/* apply hover background to row (only cells left of the hovered cell) */
-table.table td:hover::before {
-  content: "";
-  position: absolute;
-  background-color: var(--color-gray-light) !important;
-  z-index: -1;
-  right: 0;
-  height: 100%;
-  width: 10000px;
-}
-
 .badge {
   font-weight: 500;
   font-size: 14px;
