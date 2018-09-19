@@ -772,18 +772,18 @@ function checkHuntAccess (req, res, next) {
     // an admin can do anything to any hunt
     return next();
   } else {
-    Db.searchHunt({ query: { terms: { _id: [req.params.id] } } })
-      .then((response) => {
-        if (response.error) { throw response.error; }
-        if (response.hits.hits[0]._id === req.params.id && response.hits.hits[0]._source.userId === req.user.userId) {
-          return next();
-        }
-        return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privelages');
-      })
-      .catch((error) => {
-        console.error('error', error);
-        return res.molochError(500, error);
-      });
+    Db.get('hunts', 'hunt', req.params.id, (err, huntHit) => {
+      if (err) {
+        console.error('error', err);
+        return res.molochError(500, err);
+      }
+      if (!huntHit || !huntHit.found) { throw 'Hunt not found'; }
+
+      if (huntHit._source.userId === req.user.userId) {
+        return next();
+      }
+      return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
+    });
   }
 }
 
@@ -5161,7 +5161,7 @@ function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
   let lastPacketTime = session.lastPacket;
   let now = Math.floor(Date.now() / 1000);
 
-  if ((now - hunt.lastUpdated) > 5) { // only update every 5 seconds
+  if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
     Db.get('hunts', 'hunt', huntId, (err, huntHit) => {
       if (!huntHit || !huntHit.found) { // hunt hit not found, likely deleted
         return cb('undefined');
