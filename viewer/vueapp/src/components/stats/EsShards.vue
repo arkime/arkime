@@ -402,9 +402,9 @@ table.table tbody > tr > td:first-child {
   bottom: 7px;
 }
 .badge.render-tooltip-bottom:hover > span {
-  bottom: -100px;
+  bottom: -120px;
 }.badge.render-tooltip-bottom:hover > span:before {
-  bottom: 93px;
+  bottom: 113px;
 }
 .badge > span span {
   color: #bbb;
