@@ -5146,11 +5146,12 @@ function pauseHuntJobWithError (huntId, hunt, error) {
   }
 
   Db.setHunt(huntId, hunt, (err, info) => {
+    internals.runningHuntJob = undefined;
     if (err) {
       console.error('Error adding errors and pausing hunt job', err, info);
       return;
     }
-    internals.runningHuntJob = undefined;
+    processHuntJobs();
   });
 }
 
@@ -5229,6 +5230,90 @@ function buildHuntOptions (hunt) {
   return options;
 }
 
+// Actually do the search against ES and process the results.
+function runHuntJob (huntId, hunt, query, user) {
+
+  let options = buildHuntOptions(hunt);
+  let searchedSessions;
+
+  Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone (err, result) {
+    if (err || result.error) {
+      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
+      return;
+    }
+
+    let hits = result.hits.hits;
+
+    if (searchedSessions === undefined) {
+      searchedSessions = hunt.searchedSessions || 0;
+      // if the session query results length is not equal to the total sessions that the hunt
+      // job is searching, update the hunt total sessions so that the percent works correctly
+      if (hunt.totalSessions !== (result.hits.total + searchedSessions)) {
+        hunt.totalSessions = result.hits.total + searchedSessions;
+      }
+    }
+
+    async.forEachLimit(hits, 3, function (hit, cb) {
+      searchedSessions++;
+      let session = hit._source;
+      let sessionId = hit._id;
+      let node = session.node;
+
+      isLocalView(node, function () {
+        sessionHunt(sessionId, options, function (err, matched) {
+          if (err) {
+            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` });
+          }
+
+          if (matched) {
+            hunt.matchedSessions++;
+            updateSessionWithHunt(session, sessionId, hunt, huntId);
+          }
+
+          updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+        });
+      },
+      function () { // Check Remotely
+        let path = `${node}/hunt/${huntId}/remote/${sessionId}`;
+
+        makeRequest (node, path, user, (err, response) => {
+          if (err) {
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
+          }
+          let json = JSON.parse(response);
+          if (json.error) {
+            console.error(`Error hunting on remote viewer: ${json.error} - ${path}`);
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
+          }
+          if (json.matched) { hunt.matchedSessions++; }
+          return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+        });
+      });
+    }, function (err) { // done running this section of hunt job
+
+      // Some kind of error, stop now
+      if (err === 'paused' || err === 'undefined') {
+        internals.runningHuntJob = undefined;
+        return;
+      }
+
+      // There might be more, issue another scroll
+      if (result.hits.hits.length !== 0) {
+        return Db.scroll({ body: { scroll_id: result._scroll_id, }, scroll: '600s' }, getMoreUntilDone);
+      }
+
+      // We are totally done with this hunt
+      hunt.status = 'finished';
+      hunt.searchedSessions = hunt.totalSessions;
+      Db.setHunt(huntId, hunt, (err, info) => {
+        internals.runningHuntJob = undefined;
+        processHuntJobs(); // Start new hunt
+      });
+    });
+  });
+}
+
+// Do the house keeping before actually running the hunt job
 function processHuntJob (huntId, hunt) {
   let now = Math.floor(Date.now() / 1000);
 
@@ -5267,7 +5352,7 @@ function processHuntJob (huntId, hunt) {
     // build session query
     var query = {
       from: 0,
-      size: hunt.totalSessions,
+      size: 100, // Only fetch 100 items at a time
       query: { bool: { filter: [{}] } },
       _source: ['_id', 'node'],
       sort: { lastPacket: { order: 'asc' } }
@@ -5300,7 +5385,6 @@ function processHuntJob (huntId, hunt) {
     }
 
     lookupQueryItems(query.query.bool.filter, function (lerr) {
-      // TODO Process at most 24 hours?
       query.query.bool.filter[0] = {
         range: {
           lastPacket: {
@@ -5317,73 +5401,7 @@ function processHuntJob (huntId, hunt) {
       }
 
       // do sessions query
-      Db.searchScroll('sessions2-*', 'session', query, {}, function getMoreUntilDone (err, result) {
-        if (err || result.error) {
-          pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
-          return;
-        }
-
-        let hits = result.hits.hits;
-        let searchedSessions = hunt.searchedSessions || 0;
-
-        // if the session query results length is not equal to the total sessions that the hunt
-        // job is searching, update the hunt total sessions so that the percent works correctly
-        if (hunt.totalSessions !== (result.hits.hits.length + searchedSessions)) {
-          hunt.totalSessions = result.hits.hits.length + searchedSessions;
-        }
-
-        let options = buildHuntOptions(hunt);
-
-        async.forEachLimit(hits, 3, function (hit, cb) {
-          searchedSessions++;
-          let session = hit._source;
-          let sessionId = hit._id;
-          let node = session.node;
-
-          isLocalView(node, function () {
-            sessionHunt(sessionId, options, function (err, matched) {
-              if (err) {
-                return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` });
-              }
-
-              if (matched) {
-                hunt.matchedSessions++;
-                updateSessionWithHunt(session, sessionId, hunt, huntId);
-              }
-
-              updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-            });
-          },
-          function () { // Check Remotely
-            let path = `${node}/hunt/${huntId}/remote/${sessionId}`;
-
-            makeRequest (node, path, user, (err, response) => {
-              if (err) {
-                return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
-              }
-              let json = JSON.parse(response);
-              if (json.error) {
-                console.error(`Error hunting on remote viewer: ${json.error} - ${path}`);
-                return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
-              }
-              if (json.matched) { hunt.matchedSessions++; }
-              return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-            });
-          });
-        }, function (err) { // done running the hunt job
-          internals.runningHuntJob = undefined;
-          if (err === 'paused' || err === 'undefined') { return; }
-          hunt.status = 'finished';
-          hunt.searchedSessions = hunt.totalSessions;
-          Db.setHunt(huntId, hunt, (err, info) => {
-            processHuntJobs(); // Start new hunt
-            if (err) {
-              pauseHuntJobWithError(huntId, hunt, { value: `Error finishing hunt job: ${err} ${info}` });
-              return;
-            }
-          });
-        });
-      });
+      runHuntJob(huntId, hunt, query, user);
     });
   });
 }
@@ -5394,6 +5412,7 @@ function processHuntJobs () {
   }
 
   if (internals.runningHuntJob) { return; }
+  internals.runningHuntJob = true;
 
   let query = {
     size: 10000,
@@ -5413,6 +5432,7 @@ function processHuntJobs () {
         if (hunt.status === 'running') { // there is a job already running
           internals.runningHuntJob = hunt;
           if (!internals.proccessHuntJobsInitialized) {
+            internals.proccessHuntJobsInitialized = true;
             // restart the abandoned hunt
             processHuntJob(id, hunt);
           }
@@ -5423,11 +5443,11 @@ function processHuntJobs () {
           processHuntJob(id, hunt);
           return;
         }
-
-        internals.runningHuntJob = undefined;
       }
 
+      // Made to the end without starting a job
       internals.proccessHuntJobsInitialized = true;
+      internals.runningHuntJob = undefined;
     }).catch(err => {
       console.error('Error fetching hunt jobs', err);
       return;
@@ -5463,6 +5483,7 @@ function updateHuntStatus (req, res, status, successText, errorText) {
         return res.molochError(500, errorText);
       }
       res.send(JSON.stringify({success: true, text: successText}));
+      processHuntJobs();
     });
   });
 }
@@ -5520,6 +5541,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   Db.createHunt(hunt, function (err, result) {
     if (err) { console.error('create hunt error', err, result); }
     hunt.id = result._id;
+    processHuntJobs();
     return res.send(JSON.stringify({ success: true, hunt: hunt }));
   });
 });
