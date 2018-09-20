@@ -729,6 +729,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 n += 4;
             }
 
+            if (packet->vlan)
+                moloch_field_int_add(vlanField, session, packet->vlan);
+
             if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
                 ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
                 moloch_field_ip4_add(greIpField, session, ip4->ip_src.s_addr);
