@@ -336,6 +336,7 @@ typedef struct moloch_config {
     gboolean  flushBetween;
     gboolean  noLoadTags;
     gboolean  trackESP;
+    gboolean  noLockPcap;
     gint      pktsToRead;
 
     GHashTable *override;
