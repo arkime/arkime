@@ -1,4 +1,4 @@
-use Test::More tests => 166;
+use Test::More tests => 214;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -166,6 +166,9 @@ my $hToken = getTokenCookie('huntuser');
 
   createHunts("regex", "G..89");
 
+  createHunts("hex", "766d663d");
+  createHunts("hexregex", "766..63d");
+
   # Actually process the hunts
   viewerGet("/processHuntJobs");
 
@@ -217,6 +220,20 @@ my $hToken = getTokenCookie('huntuser');
   checkHunt("reassembled-regex-both-G..89", 1);
   checkHunt("reassembled-regex-src-G..89", 0);
   checkHunt("reassembled-regex-dst-G..89", 1);
+
+  checkHunt("raw-hex-both-766d663d", 1);
+  checkHunt("raw-hex-src-766d663d", 1);
+  checkHunt("raw-hex-dst-766d663d", 0);
+  checkHunt("reassembled-hex-both-766d663d", 1);
+  checkHunt("reassembled-hex-src-766d663d", 1);
+  checkHunt("reassembled-hex-dst-766d663d", 0);
+
+  checkHunt("raw-hexregex-both-766..63d", 1);
+  checkHunt("raw-hexregex-src-766..63d", 1);
+  checkHunt("raw-hexregex-dst-766..63d", 0);
+  checkHunt("reassembled-hexregex-both-766..63d", 1);
+  checkHunt("reassembled-hexregex-src-766..63d", 1);
+  checkHunt("reassembled-hexregex-dst-766..63d", 0);
 
 
 # cleanup

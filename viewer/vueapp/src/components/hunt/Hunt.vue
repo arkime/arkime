@@ -194,6 +194,20 @@
                     regex
                   </label>
                 </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input"
+                    :checked="jobSearchType === 'hexregex'"
+                    @click="setJobSearchType('hexregex')"
+                    type="radio"
+                    id="hexregex"
+                    value="hexregex"
+                    name="packetSearchTextType"
+                  />
+                  <label class="form-check-label"
+                    for="hexregex">
+                    hex regex
+                  </label>
+                </div>
               </div> <!-- /packet search text & text type -->
               <!-- packet search direction -->
               <div class="form-group col-lg-3 col-md-12">
