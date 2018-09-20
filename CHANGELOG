@@ -23,6 +23,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - suricata - parse severity
   - capture - new _dontCheckYara rule ops
   - parliament - add --debug option
+  - capture - set vlan field for afpacket
 
 
 1.5.3 2018/09/10

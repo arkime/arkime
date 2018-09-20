@@ -50,7 +50,7 @@
 #define SUPPRESS_SHIFT
 #endif
 
-#define MOLOCH_API_VERSION 102
+#define MOLOCH_API_VERSION 160
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -477,6 +477,7 @@ typedef struct molochpacket_t
     uint16_t       pktlen;         // length of packet
     uint16_t       payloadLen;     // length of ip payload
     uint16_t       payloadOffset;  // offset to ip payload from start
+    uint16_t       vlan;           // non zero if the reader gets the vlan
     uint8_t        ipOffset;       // offset to ip header from start
     uint8_t        vpnIpOffset;    // offset to vpn ip header from start
     uint8_t        protocol;       // ip protocol
@@ -618,7 +619,7 @@ typedef struct moloch_session_head {
 } MolochSessionHead_t;
 
 
-//#define MOLOCH_USE_MALLOC
+#define MOLOCH_USE_MALLOC
 
 #ifdef MOLOCH_USE_MALLOC
 #define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
