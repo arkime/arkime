@@ -714,7 +714,7 @@ function makeRequest (node, path, user, cb) {
       });
     });
     preq.on('error', function (err) {
-      console.error(`Error with ${info.path} on remote viewer: ${err}`);
+      console.log(`Error with ${info.path} on remote viewer: ${err}`);
       cb(err);
     });
     preq.end();
@@ -774,7 +774,7 @@ function checkHuntAccess (req, res, next) {
   } else {
     Db.get('hunts', 'hunt', req.params.id, (err, huntHit) => {
       if (err) {
-        console.error('error', err);
+        console.log('error', err);
         return res.molochError(500, err);
       }
       if (!huntHit || !huntHit.found) { throw 'Hunt not found'; }
@@ -5069,8 +5069,13 @@ function packetSearch (packet, options) {
         found = true;
       }
       break;
+    case 'hexregex':
+      if (options.regex && packet.toString('hex').match(options.regex)) {
+        found = true;
+      }
+      break;
     default:
-      console.error('Invalid hunt search type');
+      console.log('Invalid hunt search type');
   }
 
   return found;
@@ -5143,7 +5148,7 @@ function sessionHunt (sessionId, options, cb) {
 }
 
 function pauseHuntJobWithError (huntId, hunt, error) {
-  if (error) { console.error(error.value); }
+  if (error) { console.log(error.value); }
 
   hunt.status = 'paused';
 
@@ -5156,7 +5161,7 @@ function pauseHuntJobWithError (huntId, hunt, error) {
   Db.setHunt(huntId, hunt, (err, info) => {
     internals.runningHuntJob = undefined;
     if (err) {
-      console.error('Error adding errors and pausing hunt job', err, info);
+      console.log('Error adding errors and pausing hunt job', err, info);
       return;
     }
     processHuntJobs();
@@ -5231,7 +5236,7 @@ function buildHuntOptions (hunt) {
     searchType: hunt.searchType
   };
 
-  if (hunt.searchType === 'regex') {
+  if (hunt.searchType === 'regex' || hunt.searchType === 'hexregex') {
     options.regex = new RegExp(hunt.search);
   }
 
@@ -5290,7 +5295,7 @@ function runHuntJob (huntId, hunt, query, user) {
           }
           let json = JSON.parse(response);
           if (json.error) {
-            console.error(`Error hunting on remote viewer: ${json.error} - ${path}`);
+            console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
             return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
           }
           if (json.matched) { hunt.matchedSessions++; }
@@ -5460,7 +5465,7 @@ function processHuntJobs (cb) {
       internals.runningHuntJob = undefined;
       return (cb?cb():null);
     }).catch(err => {
-      console.error('Error fetching hunt jobs', err);
+      console.log('Error fetching hunt jobs', err);
       return (cb?cb():null);
     });
 }
@@ -5468,7 +5473,7 @@ function processHuntJobs (cb) {
 function updateHuntStatus (req, res, status, successText, errorText) {
   Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
     if (err) {
-      console.error(errorText, err, hit);
+      console.log(errorText, err, hit);
       return res.molochError(500, errorText);
     }
 
@@ -5490,7 +5495,7 @@ function updateHuntStatus (req, res, status, successText, errorText) {
 
     Db.setHunt(req.params.id, hunt, (err, info) => {
       if (err) {
-        console.error(errorText, err, info);
+        console.log(errorText, err, info);
         return res.molochError(500, errorText);
       }
       res.send(JSON.stringify({success: true, text: successText}));
@@ -5517,10 +5522,10 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
     return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
   }
 
-  let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex' ];
+  let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex', 'hexregex' ];
   if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); }
   else if (searchTypes.indexOf(req.body.hunt.searchType) === -1) {
-    return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "wildcard", or "regex"');
+    return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "wildcard", "hexregex", or "regex"');
   }
 
   if (!req.body.hunt.type) { return res.molochError(403, 'Missing packet search type (raw or reassembled packets)'); }
@@ -5550,7 +5555,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   };
 
   Db.createHunt(hunt, function (err, result) {
-    if (err) { console.error('create hunt error', err, result); }
+    if (err) { console.log('create hunt error', err, result); }
     hunt.id = result._id;
     processHuntJobs( () => {
       return res.send(JSON.stringify({ success: true, hunt: hunt }));
@@ -5613,7 +5618,7 @@ app.get('/hunt/list', logAction('hunt/list'), recordResponseTime, function (req,
 
       res.send(r);
     }).catch(err => {
-      console.error('ERROR - /hunt/list', err);
+      console.log('ERROR - /hunt/list', err);
       return res.molochError(500, 'Error retrieving hunts - ' + err);
     });
 });
@@ -5624,7 +5629,7 @@ app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, checkHuntAccess
 
   Db.deleteHuntItem(req.params.id, function (err, result) {
     if (err || result.error) {
-      console.error('ERROR - deleting hunt item', err || result.error);
+      console.log('ERROR - deleting hunt item', err || result.error);
       return res.molochError(500, 'Error deleting hunt item');
     } else {
       res.send(JSON.stringify({success: true, text: 'Deleted hunt item successfully'}));
@@ -6437,7 +6442,7 @@ app.use((req, res) => {
   // Render the Vue instance to HTML
   renderer.renderToString(vueApp, appContext, (err, html) => {
     if (err) {
-      console.error(err);
+      console.log(err);
       if (err.code === 404) {
         res.status(404).end('Page not found');
       } else {

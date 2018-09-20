@@ -114,6 +114,7 @@ LOCAL  GOptionEntry entries[] =
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
+    { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
