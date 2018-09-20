@@ -174,6 +174,15 @@
             v-if="expandedLogs[item.id]">
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
+                <!-- forced expression -->
+                <div v-has-permission="'createEnabled'"
+                  v-if="item.forcedExpression !== undefined"
+                  class="mt-1">
+                  <span>
+                    <dt>Forced Expression</dt>
+                    <dd>{{ item.forcedExpression }}</dd>
+                  </span>
+                </div> <!-- /forced expression -->
                 <!-- count info -->
                 <div v-if="item.recordsReturned !== undefined"
                   class="mt-1">

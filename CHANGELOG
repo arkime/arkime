@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
          based on name
   - wise - support any field for ES WISE source
   - viewer - packet search (hunt)
+  - viewer - admins can see forced expression for users in history
   - suricata - parse severity
   - capture - new _dontCheckYara rule ops
   - parliament - add --debug option

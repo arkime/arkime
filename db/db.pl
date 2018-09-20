@@ -47,6 +47,7 @@
 # 50 - Moloch 1.0
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
 # 52 - Hunt (packet search)
+# 53 - add forcedExpression to history
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -55,7 +56,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 52;
+my $VERSION = 53;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1157,6 +1158,9 @@ sub historyUpdate
       "body": {
         "type": "object",
         "dynamic": "true"
+      },
+      "forcedExpression": {
+        "type": "keyword"
       }
     }
   }
@@ -2172,6 +2176,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("dstats", "dstats_v3", "dstats_v2", \&dstatsCreate);
         createNewAliasesFromOld("stats", "stats_v3", "stats_v2", \&statsCreate);
 
+        historyUpdate();
         sessions2Update();
 
         esDelete("/${PREFIX}tags_v3", 1);
@@ -2181,12 +2186,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         huntsCreate();
         checkForOld5Indices();
     } elsif ($main::versionNumber < 52) {
+        historyUpdate();
         fieldsUpdate();
         usersUpdate();
         huntsCreate();
         sessions2Update();
         checkForOld5Indices();
-    } elsif ($main::versionNumber <= 52) {
+    } elsif ($main::versionNumber <= 53) {
+        historyUpdate();
         usersUpdate();
         sessions2Update();
         checkForOld5Indices();

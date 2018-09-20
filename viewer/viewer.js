@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 52;
+var MIN_DB_VERSION = 53;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -797,6 +797,10 @@ function logAction(uiPage) {
       query     : req._parsedUrl.query,
       expression: req.query.expression
     };
+
+    if (req.user.expression) {
+      log.forcedExpression = req.user.expression;
+    }
 
     if (uiPage) { log.uiPage = uiPage; }
 
@@ -2293,6 +2297,10 @@ app.get('/history/list', recordResponseTime, function(req, res) {
       var log = hit._source;
       log.id = hit._id;
       log.index = hit._index;
+      if (!req.user.createEnabled) {
+        // remove forced expression for reqs made by nonadmin users
+        log.forcedExpression = undefined;
+      }
       results.results.push(log);
     }
     var r = {

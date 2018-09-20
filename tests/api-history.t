@@ -1,4 +1,4 @@
-use Test::More tests => 37;
+use Test::More tests => 41;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -112,21 +112,70 @@ my $pwd = "*/pcap";
     $mjson = viewerGet("/history/list?molochRegressionUser=historytest1");
     is ($mjson->{recordsFiltered}, 0, "multi Should be no items");
 
+# An admin user should see forced expressions for users
+    # create a user with a forced expression
+    $json = viewerPostToken("/user/create", '{"userId": "historytest2", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp"}', $token);
+    sleep(1);
+    esGet("/_refresh");
+    esGet("/_flush");
+
+    # issue a request as the user with the forced expression
+    countTest(1, "molochRegressionUser=historytest2&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    sleep(1);
+    esGet("/_refresh");
+    esGet("/_flush");
+
+    # find and delete the user/create history item
+    $json = viewerGet("/history/list?molochRegressionUser=anonymous");
+    $item = $json->{data}->[0];
+    $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");
+
+    # confirm that the forced expression is visible to admin
+    $json = viewerGet("/history/list");
+    my $found2 = 0;
+    foreach my $item3 (@{$json->{data}}) {
+        if ($item3->{forcedExpression} eq "protocols == udp") {
+            $found2 = 1;
+            last;
+        }
+    }
+    is ($found2, 1, "Admin should see forcedExpression in history");
+
+# A nonadmin user should not see forcedExpression
+  $json = viewerGet("/history/list?molochRegressionUser=historytest2");
+
+  my $found3 = 0;
+  foreach my $item4 (@{$json->{data}}) {
+      if ($item4->{forcedExpression} eq "protocols == udp") {
+          $found3 = 1;
+          last;
+      }
+  }
+  is ($found3, 0, "Non admin should not see forcedExpression in history");
+
+  # delete the history item with the forced expression
+  $item = $json->{data}->[0];
+  $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");
+
 # Delete Users
     $json = viewerPostToken("/user/delete", "userId=historytest1&password=a&newPassword=b&currentPassword=c&test=1", $token);
+    sleep(1);
+    esGet("/_refresh");
+    esGet("/_flush");
 
+    $json = viewerPostToken("/user/delete", "userId=historytest2&password=a&newPassword=b&currentPassword=c&test=1", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
 # Check history for delete
-    $json = viewerGet("/history/list?molochRegressionUser=anonymous");
-    is ($json->{recordsFiltered}, 1, "Delete: recordsFiltered");
+    $json = viewerGet("/history/list?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
+    is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
     is ($item->{api}, "/user/delete", "Delete: api");
     is ($item->{userId}, "anonymous", "Delete: userId");
     ok (!exists $item->{body}->{password}, "Delete: should have no password item");
     ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
     ok (!exists $item->{body}->{currentPassword}, "Delete: should have no currentPassword item");
-    is ($item->{body}->{userId}, "historytest1", "Delete: correct userId item");
+    is ($item->{body}->{userId}, "historytest2", "Delete: correct userId item");
     is ($item->{body}->{test}, "1", "Delete: correct test item");
