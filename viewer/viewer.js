@@ -1183,11 +1183,18 @@ app.post('/user/views/create', [checkCookieToken, logAction(), postSettingUser],
     }
     container = user.views._groups[req.body.groupName];
   }
+
   req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
   if (container[req.body.viewName]) {
     container[req.body.viewName].expression = req.body.expression;
   } else {
     container[req.body.viewName] = {expression: req.body.expression};
+  }
+
+  if (req.body.sessionsColConfig) {
+    container[req.body.viewName].sessionsColConfig = req.body.sessionsColConfig;
+  } else if (container[req.body.viewName].sessionsColConfig && !req.body.sessionsColConfig) {
+    container[req.body.viewName].sessionsColConfig = undefined;
   }
 
   Db.setUser(user.userId, user, function(err, info) {

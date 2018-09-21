@@ -20,7 +20,8 @@ const store = new Vuex.Store({
     focusTimeRange: undefined,
     displayKeyboardShortcutsHelp: undefined,
     user: undefined,
-    responseTime: undefined
+    responseTime: undefined,
+    sessionsTableState: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -89,6 +90,9 @@ const store = new Vuex.Store({
     },
     setResponseTime (state, value) {
       this.state.responseTime = value;
+    },
+    setSessionsTableState (state, value) {
+      this.state.sessionsTableState = value;
     }
   }
 });

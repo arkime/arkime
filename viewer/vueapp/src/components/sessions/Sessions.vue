@@ -482,6 +482,24 @@ export default {
       return filteredGroupedFields;
     }
   },
+  watch: {
+    'query.view': function (newView, oldView) {
+      // look up the views and apply the column config if it exists
+      UserService.getViews()
+        .then((response) => {
+          for (let view in response) {
+            if (view === newView && response[view].sessionsColConfig) {
+              this.loading = true;
+              this.tableState = response[view].sessionsColConfig;
+              this.mapHeadersToFields();
+              this.query.sorts = this.tableState.order;
+              this.saveTableState();
+              this.loadData(true);
+            }
+          }
+        });
+    }
+  },
   methods: {
     /* exposed page functions ---------------------------------------------- */
     /* SESSION DETAIL */
@@ -844,6 +862,7 @@ export default {
       SessionsService.getState('sessionsNew')
         .then((response) => {
           this.tableState = response.data;
+          this.$store.commit('setSessionsTableState', this.tableState);
           if (Object.keys(this.tableState).length === 0 ||
             !this.tableState.visibleHeaders || !this.tableState.order) {
             this.tableState = defaultTableState;
@@ -962,6 +981,7 @@ export default {
      * @param {bool} stopLoading Whether to stop the loading state when promise returns
      */
     saveTableState: function (stopLoading) {
+      this.$store.commit('setSessionsTableState', this.tableState);
       SessionsService.saveState(this.tableState, 'sessionsNew')
         .then(() => {
           if (stopLoading) { this.loading = false; }
