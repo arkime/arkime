@@ -63,7 +63,7 @@ node server.js --pass somepassword --port 8765 -c ./absolute/path/to/parliament.
 | -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
 | --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
 | --cert          | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
-| --dashboardOnly | EMPTY   | This flag runs the parliament in dashboard only mode. A user will not be allowed to configure settings, a password, or interact with the parliament via the UI |
+| --dashboardOnly | EMPTY   | This flag runs the parliament in dashboard only mode. A user will not be allowed to configure settings, a password, or interact with the parliament via the UI. |
 
 _Note: if you do not pass in the port or file arguments, the defaults are used._
 
@@ -92,6 +92,8 @@ For a detailed explanation on how things work, check out the [vue webpack guide]
 
 
 ### Contributing
+
+Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Moloch.
 
 Before submitting a pull request with your contribution, please run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 
