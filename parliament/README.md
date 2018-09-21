@@ -56,13 +56,14 @@ node server.js --pass somepassword --port 8765 -c ./absolute/path/to/parliament.
 
 **The parameters are defined as follows:**
 
-| Parameter    | Default | Description |
-| ------------ | ------- | ----------- |
-| --pass       | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
-| --port       | 8008    | Port for the web app to listen on. |
-| -c, --config | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
-| --key        | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
-| --cert       | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
+| Parameter       | Default | Description |
+| --------------- | ------- | ----------- |
+| --pass          | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
+| --port          | 8008    | Port for the web app to listen on. |
+| -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
+| --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
+| --cert          | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
+| --dashboardOnly | EMPTY   | This flag runs the parliament in dashboard only mode. A user will not be allowed to configure settings, a password, or interact with the parliament via the UI |
 
 _Note: if you do not pass in the port or file arguments, the defaults are used._
 

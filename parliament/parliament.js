@@ -94,6 +94,10 @@ const settingsDefault = {
         i++;
         break;
 
+      case '--dashboardOnly':
+        app.set('dashboardOnly', true);
+        break;
+
       case '--regressionTests':
         app.set('regressionTests', 1);
         break;
@@ -879,6 +883,12 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 /* APIs -------------------------------------------------------------------- */
 // Authenticate user
 router.post('/auth', (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot login.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
   let hasAuth = !!app.get('password');
   if (!hasAuth) {
     const error = new Error('No password set.');
@@ -906,10 +916,14 @@ router.post('/auth', (req, res, next) => {
   });
 });
 
-// Get whether authentication is set
+// Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
   let hasAuth = !!app.get('password');
-  return res.json({ hasAuth:hasAuth });
+  let dashboardOnly = !!app.get('dashboardOnly');
+  return res.json({
+    hasAuth: hasAuth,
+    dashboardOnly: dashboardOnly
+  });
 });
 
 // Get whether the user is logged in
@@ -920,6 +934,12 @@ router.get('/auth/loggedin', verifyToken, (req, res, next) => {
 
 // Update (or create) a password for the parliament
 router.put('/auth/update', (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot create a password.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
   if (!req.body.newPassword) {
     const error = new Error('You must provide a new password');
     error.httpStatusCode = 422;
@@ -1618,6 +1638,9 @@ server
       console.log('Debug Level', app.get('debug'));
       console.log('Parliament file:', app.get('file'));
       console.log('Issues file:', issuesFilename);
+      if (app.get('dashboardOnly')) {
+        console.log('Opening in dashboard only mode');
+      }
     }
   })
   .listen(app.get('port'), () => {

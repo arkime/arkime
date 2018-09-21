@@ -24,6 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - suricata - parse severity
   - capture - new _dontCheckYara rule ops
   - parliament - add --debug option
+  - parliament - add --dasboardOnly flag
   - capture - set vlan field for afpacket
 
 
