@@ -142,3 +142,23 @@ mixin ipArrayList(container, field, title, expr, max)
       if (container[field].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip;
+
+mixin printHeader(inHeaderNames, inHeaderValues, expr)
+  - var headers = {};
+  -
+    function headerObject(names, values, headers) {
+      for (i = 0; i < names.length; i++) {
+        if(headers[names[i]])
+          headers[names[i]].add(values[i]);
+        else
+          headers[names[i]] = new Set().add(values[i]);
+      }
+    }
+  - headerObject(inHeaderNames, inHeaderValues, headers)
+  - headerNames = Object.keys(headers)
+  for headerName in headerNames
+    dt #{headerName}
+    - var headerValues = Array.from (headers[headerName]);
+    each headerValue,i in headerValues
+      dd
+        +clickableValue(expr, headerValue)
