@@ -53,7 +53,7 @@
       class="col-md-1 no-wrap">
       <div class="form-check small mt-1 pl-0"
         v-b-tooltip.hover
-        title="Save the visible sessions table columns with this view. When applying this view, thes sessions table will be updated with these columns.">
+        title="Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.">
         <input v-model="useColConfig"
           class="form-check-input"
           type="checkbox"

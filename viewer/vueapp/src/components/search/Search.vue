@@ -74,7 +74,12 @@
             @click="deleteView(key)">
             <span class="fa fa-trash-o"></span>
           </button>
-          {{ key }}
+          {{ key }}&nbsp;
+          <span v-if="value.sessionsColConfig"
+            class="fa fa-columns cursor-help"
+            v-b-tooltip.hover
+            title="This view has a sessions table column configuration and sort order associated with it. Applying this view will also update the sessions table.">
+          </span>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
