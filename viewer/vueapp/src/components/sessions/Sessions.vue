@@ -430,13 +430,16 @@ export default {
       graphData: undefined,
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
-      newColConfigName: '' // name of new custom column config
+      newColConfigName: '', // name of new custom column config
+      viewChanged: false,
+      views: undefined
     };
   },
   created: function () {
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
+    this.getViews();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -484,20 +487,7 @@ export default {
   },
   watch: {
     'query.view': function (newView, oldView) {
-      // look up the views and apply the column config if it exists
-      UserService.getViews()
-        .then((response) => {
-          for (let view in response) {
-            if (view === newView && response[view].sessionsColConfig) {
-              this.loading = true;
-              this.tableState = response[view].sessionsColConfig;
-              this.mapHeadersToFields();
-              this.query.sorts = this.tableState.order;
-              this.saveTableState();
-              this.loadData(true);
-            }
-          }
-        });
+      this.viewChanged = true;
     }
   },
   methods: {
@@ -950,6 +940,18 @@ export default {
 
       this.query.sorts = this.tableState.order || defaultTableState.order;
 
+      if (this.viewChanged) {
+        for (let view in this.views) {
+          if (view === this.query.view && this.views[view].sessionsColConfig) {
+            this.tableState = this.views[view].sessionsColConfig;
+            this.mapHeadersToFields();
+            this.query.sorts = this.tableState.order;
+            this.saveTableState();
+          }
+        }
+        this.viewChanged = false;
+      }
+
       SessionsService.get(this.query)
         .then((response) => {
           this.error = '';
@@ -1184,6 +1186,12 @@ export default {
           this.showFitButton = true;
         }
       }
+    },
+    getViews: function () {
+      UserService.getViews()
+        .then((response) => {
+          this.views = response;
+        });
     },
 
     /* event handlers ------------------------------------------------------ */
