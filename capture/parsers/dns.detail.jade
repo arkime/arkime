@@ -1,14 +1,57 @@
+mixin ipArrayListDNS(container, field, title, expr, max)
+  if (!max)
+    - max = 25
+  if (container[field+ ".ip"])
+    dt
+      b-dropdown.clickable-label(text=title, size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
+          | Export Unique #{title}
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
+          | Export Unique #{title} with counts
+        b-dropdown-item(@click="openSpiGraph('" + "ip." + expr  + "')")
+          | Open #{title} SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" +   "country." + expr + "', 0)")
+          | Export Unique #{title} Country
+        b-dropdown-item(@click="exportUnique('" +  "country." + expr + "', 1)")
+          | Export Unique #{title} Country with counts
+        b-dropdown-item(@click="openSpiGraph('" + "country." + expr +"')")
+          | Open #{title} Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "asn." + expr + "', 0)")
+          | Export Unique #{title} ASN
+        b-dropdown-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
+          | Export Unique #{title} ASN with counts
+        b-dropdown-item(@click="openSpiGraph('" + "asn." + expr + "')")
+          | Open #{title} ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 0)")
+          | Export Unique #{title} RIR
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 1)")
+          | Export Unique #{title} RIR with counts
+        b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
+          | Open #{title} RIR SPI Graph
+    dd
+      each ip,i in container[field + ".ip"]
+        if (i == max)
+          |<span style="display:none">
+        +ipPrint(container, container[field + ".ip"][i], undefined, (container[field + ".GEO"]?container[field + ".GEO"][i]:null), (container[field+".ASN"]?container[field + ".ASN"][i]:null), (container[field + ".RIR"]?container[field + ".RIR"][i]:null), expr)
+      if (container[field + ".ip"].length > max)
+        |</span>
+        a.cursor-pointer.show-more-items &hellip
+
+
 if (session.dns)
   div.sessionDetailMeta.bold DNS
   dl.sessionDetailMeta(suffix="dns")
     +ipArrayListDNS(session.dns, "query","IPs Query", "dns.query")
     +ipArrayListDNS(session.dns, "answer","IPs Answer","dns.answer")
-    +ipArrayListDNS(session.dns, "authoritative","IPs Authoritative","dns.authritative")
+    +ipArrayListDNS(session.dns, "authoritative","IPs Authoritative","dns.authoritative")
     +ipArrayListDNS(session.dns, "additional", "IPs Additional","dns.additional")  
     +ipArrayListDNS(session.dns, "update", "IPs Update","dns.update")  
     +arrayList(session.dns, "query.host","Hosts Query", "host.dns.query")
     +arrayList(session.dns, "answer.host","Hosts Answer","host.dns.answer")
-    +arrayList(session.dns, "authoritative.host","Hosts Authoritative","host.dns.authritative")
+    +arrayList(session.dns, "authoritative.host","Hosts Authoritative","host.dns.authoritative")
     +arrayList(session.dns, "additional.host", "Hosts Additional","host.dns.additional")  
     +arrayList(session.dns, "update.host", "Hosts Update","host.dns.update")  
     +arrayList(session.dns, 'puny', "Puny", "dns.puny")

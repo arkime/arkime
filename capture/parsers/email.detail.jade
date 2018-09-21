@@ -21,7 +21,21 @@ if (user.emailSearch && session.email)
     if (session.email.headerField && session.email.headerValue)
       div.sessionDetailMeta.bold Email Header Detail
       dl.sessionDetailMeta(suffix="email-header-detail")
-        each value,i in session.email.headerField
-          dt #{value}
-          dd
-            +clickableValue('email.header.value', session.email.headerValue[i])
+        - var headers = {};
+        -
+          function headerObject(names, values, headers) {
+            for (i = 0; i < names.length; i++) {
+              if(headers[names[i]])
+                headers[names[i]].add(values[i]);
+              else
+                headers[names[i]] = new Set().add(values[i]);
+            }
+          }
+        - headerObject(session.email.headerField, session.email.headerValue, headers)
+        - headerNames = Object.keys(headers)
+        for headerName in headerNames
+          dt #{headerName}
+          - var headerValues = Array.from (headers[headerName]);
+          each headerValue,i in headerValues
+            dd
+              +clickableValue('email.header.value', headerValue)

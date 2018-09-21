@@ -43,11 +43,8 @@ LOCAL  int uaField;
 LOCAL  int mvField;
 LOCAL  int fctField;
 LOCAL  int magicField;
-
-/*------------VISA Enhancement Begin---------------*/
 LOCAL  int headerField;
 LOCAL  int headerValue;
-/*------------VISA Enhancement End---------------*/
 
 typedef struct {
     MolochStringHead_t boundaries;
@@ -549,19 +546,11 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
 
             moloch_field_string_add(hhField, session, lower, colon - line->str, TRUE);
 
-/*------------VISA Enhancement Begin---------------*/
             if (config.parseSMTPHeaderAll) {
                 int colon_position = colon - line->str + 1;
-                char *smtp_header_field = g_strndup(line->str, colon - line->str);
-                char *smtp_header_value = g_strndup(line->str + colon_position, line->len - colon_position); 
-
-                moloch_field_string_add(headerField, session, smtp_header_field, colon - line->str, TRUE);
-                moloch_field_string_add(headerValue, session, smtp_header_value, line->len - colon_position, TRUE); 
-
-                g_free(smtp_header_field);
-                g_free(smtp_header_value);
+                moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
+                moloch_field_string_add(headerValue, session, line->str + colon_position, line->len - colon_position, TRUE);
             }
-/*------------VISA Enhancement End---------------*/
 
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
@@ -977,7 +966,6 @@ void moloch_parser_init()
         "requiredRight", "emailSearch",
         NULL);
 
-/*------------VISA Enhancement Begin---------------*/
     headerField = moloch_field_define("email", "termfield", 
         "email.header.field", "Header Field", "email.headerField", "Email has the header field set",
         MOLOCH_FIELD_TYPE_STR_ARRAY,  MOLOCH_FIELD_FLAG_CNT,
@@ -988,7 +976,6 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         NULL);
-/*------------VISA Enhancement End---------------*/
 
     magicField = moloch_field_define("email", "termfield",
         "email.bodymagic", "Body Magic", "email.bodyMagic",

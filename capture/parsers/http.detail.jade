@@ -1,3 +1,23 @@
+mixin printHeader(inHeaderNames, inHeaderValues, expr)
+  - var headers = {};
+  -
+    function headerObject(names, values, headers) {
+      for (i = 0; i < names.length; i++) {
+        if(headers[names[i]])
+          headers[names[i]].add(values[i]);
+        else
+          headers[names[i]] = new Set().add(values[i]);
+      }
+    }
+  - headerObject(inHeaderNames, inHeaderValues, headers)
+  - headerNames = Object.keys(headers)
+  for headerName in headerNames
+    dt #{headerName}
+    - var headerValues = Array.from (headers[headerName]);
+    each headerValue,i in headerValues
+      dd
+        +clickableValue(expr, headerValue)
+
 if (session.http)
   div.sessionDetailMeta.bold HTTP
   dl.sessionDetailMeta(suffix="http")
@@ -8,7 +28,7 @@ if (session.http)
     +ipArrayList(session.http, "xffIp", "XFFs", "ip.xff")
     +arrayList(session.http, "requestHeader", "Request Headers", "http.hasheader.src")
     +arrayList(session.http, "clientVersion", "Client Versions", "http.version.src")
-    +arrayList(session.http, "responseHeader", "Resp Headers", "http.hasheader.dst")
+    +arrayList(session.http, "responseHeader", "Response Headers", "http.hasheader.dst")
     +arrayList(session.http, "serverVersion", "Server Versions", "http.version.dst")
     +arrayList(session.http, "md5", "Body MD5s", "http.md5")
     +arrayList(session.http, "sha256", "Body SHA256s", "http.sha256")
@@ -28,14 +48,8 @@ if (session.http)
     if (session.http.requestHeaderField && session.http.requestHeaderValue)
       div.sessionDetailMeta.bold HTTP Request Header Detail
       dl.sessionDetailMeta(suffix="http-request-header-detail")
-        each value,i in session.http.requestHeaderField
-          dt #{value}
-          dd
-            +clickableValue('http.header.request.value', session.http.requestHeaderValue[i])
+        +printHeader(session.http.requestHeaderField, session.http.requestHeaderValue, 'http.header.request.value')
     if (session.http.responseHeaderField && session.http.responseHeaderValue)
       div.sessionDetailMeta.bold HTTP Response Header Detail
       dl.sessionDetailMeta(suffix="http-response-header-detail")
-        each value,i in session.http.responseHeaderField
-          dt #{value}
-          dd
-            +clickableValue('http.header.response.value', session.http.responseHeaderValue[i])
+        +printHeader(session.http.responseHeaderField, session.http.responseHeaderValue, 'http.header.response.value')
