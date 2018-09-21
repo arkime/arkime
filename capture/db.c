@@ -2184,6 +2184,7 @@ void moloch_db_init()
     if (config.tests) {
         MOLOCH_LOCK(outputed);
         fprintf(stderr, "{\"sessions2\": [\n");
+        fflush(stderr);
         MOLOCH_UNLOCK(outputed);
     }
     if (!config.dryRun) {
@@ -2245,7 +2246,10 @@ void moloch_db_exit()
     }
 
     if (config.tests) {
+        MOLOCH_LOCK(outputed);
         fprintf(stderr, "]}\n");
+        fflush(stderr);
+        MOLOCH_UNLOCK(outputed);
     }
 
     if (ipTree4) {
