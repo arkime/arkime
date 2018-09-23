@@ -232,20 +232,21 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"PRST", 4, quic_add);
 
     hostField = moloch_field_define("quic", "lotermfield",
-        "host.quic", "Hostname", "quic.host", 
-        "QUIC host header field", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
-        "aliases", "[\"quic.host\"]", NULL);
+        "host.quic", "Hostname", "quic.host",
+        "QUIC host header field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "aliases", "[\"quic.host\"]",
+        (char *)NULL);
 
     uaField = moloch_field_define("quic", "termfield",
         "quic.user-agent", "User-Agent", "quic.useragent",
         "User-Agent",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     versionField = moloch_field_define("quic", "termfield",
         "quic.version", "Version", "quic.version",
         "QUIC Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 }

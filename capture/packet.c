@@ -1795,111 +1795,111 @@ void moloch_packet_init()
         "mac.src", "Src MAC", "srcMac",
         "Source ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
         "mac.dst", "Dst MAC", "dstMac",
         "Destination ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
         "mac", "Src or Dst MAC", "macall",
         "Shorthand for mac.src or mac.dst",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
-        NULL);
+        (char *)NULL);
 
     oui1Field = moloch_field_define("general", "termfield",
         "oui.src", "Src OUI", "srcOui",
         "Source ethernet oui set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     oui2Field = moloch_field_define("general", "termfield",
         "oui.dst", "Dst OUI", "dstOui",
         "Destination ethernet oui set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
 
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "vlan",
         "vlan value",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     greIpField = moloch_field_define("general", "ip",
         "gre.ip", "GRE IP", "greIp",
         "GRE ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.syn", "TCP Flag SYN", "tcpflags.syn",
         "Count of packets with SYN and no ACK flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.syn-ack", "TCP Flag SYN-ACK", "tcpflags.syn-ack",
         "Count of packets with SYN and ACK flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.ack", "TCP Flag ACK", "tcpflags.ack",
         "Count of packets with only the ACK flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.psh", "TCP Flag PSH", "tcpflags.psh",
         "Count of packets with PSH flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.fin", "TCP Flag FIN", "tcpflags.fin",
         "Count of packets with FIN flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.rst", "TCP Flag RST", "tcpflags.rst",
         "Count of packets with RST flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.urg", "TCP Flag URG", "tcpflags.urg",
         "Count of packets with URG flag set",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     icmpTypeField = moloch_field_define("general", "integer",
         "icmp.type", "ICMP Type", "icmp.type",
         "ICMP type field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
-        NULL);
+        (char *)NULL);
 
     icmpCodeField = moloch_field_define("general", "integer",
         "icmp.code", "ICMP Code", "icmp.code",
         "ICMP code field values",
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "packets.src", "Src Packets", "srcPackets",
         "Total number of packets sent by source in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "packets.dst", "Dst Packets", "dstPackets",
         "Total number of packets sent by destination in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {

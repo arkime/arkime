@@ -719,75 +719,75 @@ void moloch_parser_init()
         "cert", "cert", "cert",
         "CERT Info",
         MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "integer",
         "cert.cnt", "Cert Cnt", "certCnt",
         "Count of certificates",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "lotermfield",
         "cert.alt", "Alt Name", "cert.alt",
         "Certificate alternative names",
         0,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "lotermfield",
         "cert.serial", "Serial Number", "cert.serial",
         "Serial Number",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "lotermfield",
         "cert.issuer.cn", "Issuer CN", "cert.issuerCN",
         "Issuer's common name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "lotermfield",
         "cert.subject.cn", "Subject CN", "cert.subjectCN",
         "Subject's common name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "termfield",
         "cert.issuer.on", "Issuer ON", "cert.issuerON",
         "Issuer's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "termfield",
         "cert.subject.on", "Subject ON", "cert.subjectON",
         "Subject's organization name",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "lotermfield",
         "cert.hash", "Hash", "cert.hash",
         "SHA1 hash of entire certificate",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "seconds",
         "cert.notbefore", "Not Before", "cert.notBefore",
         "Certificate is not valid before this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "type2", "date",
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "seconds",
         "cert.notafter", "Not After", "cert.notAfter",
         "Certificate is not valid after this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "type2", "date",
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("cert", "integer",
         "cert.validfor", "Days Valid For", "cert.validDays",
         "Certificate is valid for this may days",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     hostField = moloch_field_by_exp("host.http");
 
@@ -795,38 +795,38 @@ void moloch_parser_init()
         "tls.version", "Version", "tls.version",
         "SSL/TLS version field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     cipherField = moloch_field_define("tls", "uptermfield",
         "tls.cipher", "Cipher", "tls.cipher",
         "SSL/TLS cipher field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     ja3Field = moloch_field_define("tls", "lotermfield",
         "tls.ja3", "JA3", "tls.ja3",
         "SSL/TLS JA3 field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     dstIdField = moloch_field_define("tls", "lotermfield",
         "tls.sessionid.dst", "Dst Session Id", "tls.dstSessionId",
         "SSL/TLS Dst Session Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  0,
-        NULL);
+        (char *)NULL);
 
     srcIdField = moloch_field_define("tls", "lotermfield",
         "tls.sessionid.src", "Src Session Id", "tls.srcSessionId",
         "SSL/TLS Src Session Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  0,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
         "tls.sessionid", "Src or Dst Session Id", "tlsidall",
         "Shorthand for tls.sessionid.src or tls.sessionid.dst",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
-        NULL);
+        (char *)NULL);
 
     moloch_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 

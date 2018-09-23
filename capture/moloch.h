@@ -930,7 +930,6 @@ uint32_t moloch_session_monitoring();
 void     moloch_session_process_commands(int thread);
 
 int      moloch_session_need_save_outstanding();
-int      moloch_session_thread_outstanding(int thread);
 int      moloch_session_cmd_outstanding();
 
 typedef enum {

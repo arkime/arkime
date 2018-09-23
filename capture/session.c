@@ -386,11 +386,6 @@ int moloch_session_need_save_outstanding()
     return count;
 }
 /******************************************************************************/
-int moloch_session_thread_outstanding(int thread)
-{
-    return DLL_COUNT(q_, &closingQ[thread]) + DLL_COUNT(cmd_, &sessionCmds[thread]);
-}
-/******************************************************************************/
 MolochSession_t *moloch_session_find(int ses, char *sessionId)
 {
     MolochSession_t *session;
@@ -574,7 +569,7 @@ void moloch_session_init()
         "protocols", "Protocols", "protocol",
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     int primes[SESSION_MAX];
     int s;

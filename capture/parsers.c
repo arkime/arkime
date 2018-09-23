@@ -525,20 +525,20 @@ void moloch_parsers_init()
         "session.segments", "Session Segments", "segmentCnt",
         "Number of segments in session so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "session.length", "Session Length", "length",
         "Session Length in milliseconds so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     userField = moloch_field_define("general", "lotermfield",
         "user", "User", "user",
         "External user set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     int flags = MAGIC_MIME;
 
@@ -681,13 +681,13 @@ void moloch_parsers_init()
         "tags", "Tags", "tags",
         "Tags set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
         "asset", "Asset", "asset",
         "Asset name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     gsize keys_len;
     gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);

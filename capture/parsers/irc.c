@@ -109,17 +109,17 @@ LOCAL void irc_classify(MolochSession_t *session, const unsigned char *data, int
 void moloch_parser_init()
 {
     nickField = moloch_field_define("irc", "termfield",
-        "irc.nick", "Nickname", "irc.nick", 
-        "Nicknames set", 
-        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
+        "irc.nick", "Nickname", "irc.nick",
+        "Nicknames set",
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     channelsField = moloch_field_define("irc", "termfield",
-        "irc.channel", "Channel", "irc.channel", 
-        "Channels joined",  
-        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
-        NULL);
+        "irc.channel", "Channel", "irc.channel",
+        "Channels joined",
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
 
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)":", 1, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
