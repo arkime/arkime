@@ -360,6 +360,7 @@ table.table tbody > tr > td:first-child {
 }
 
 .badge {
+  padding: .1em .4em;
   font-weight: 500;
   font-size: 14px;
 }
@@ -408,6 +409,12 @@ table.table tbody > tr > td:first-child {
 }
 .badge > span span {
   color: #bbb;
+}
+.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+  border: 2px dotted #6c757d;
+}
+.badge.badge-primary {
+  border: 2px dotted var(--color-primary);
 }
 .badge-notstarted {
   border: 2px dotted var(--color-quaternary);
