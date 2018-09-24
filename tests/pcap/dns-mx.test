@@ -3,12 +3,63 @@
       {
          "body" : {
             "dns" : {
+               "ASN" : [
+                  "AS15395 Rackspace Ltd.",
+                  "AS27357 Rackspace Hosting"
+               ],
+               "GEO" : [
+                  "US",
+                  "US"
+               ],
+               "RIR" : [
+                  "ARIN",
+                  "ARIN"
+               ],
+               "additional.ASN" : [
+                  "AS15395 Rackspace Ltd.",
+                  "AS27357 Rackspace Hosting"
+               ],
+               "additional.GEO" : [
+                  "US",
+                  "US"
+               ],
+               "additional.RIR" : [
+                  "ARIN",
+                  "ARIN"
+               ],
+               "additional.host" : [
+                  "dns2.stabletransit.com",
+                  "dns1.stabletransit.com"
+               ],
+               "additional.hostCnt" : 2,
+               "additional.ip" : [
+                  "65.61.188.4",
+                  "69.20.95.4"
+               ],
+               "additional.ipCnt" : 2,
+               "answer.host" : [
+                  "cluster5.us.messagelabs.com",
+                  "cluster5a.us.messagelabs.com"
+               ],
+               "answer.hostCnt" : 2,
+               "authoritative.host" : [
+                  "dns2.stabletransit.com",
+                  "dns1.stabletransit.com"
+               ],
+               "authoritative.hostCnt" : 2,
                "host" : [
+                  "dns2.stabletransit.com",
+                  "dns1.stabletransit.com",
                   "cluster5.us.messagelabs.com",
                   "mx.com",
                   "cluster5a.us.messagelabs.com"
                ],
-               "hostCnt" : 3,
+               "hostCnt" : 5,
+               "ip" : [
+                  "65.61.188.4",
+                  "69.20.95.4"
+               ],
+               "ipCnt" : 2,
                "opcode" : [
                   "QUERY"
                ],
@@ -21,6 +72,10 @@
                   "MX"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "mx.com"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],

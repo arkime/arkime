@@ -18,7 +18,11 @@
                "qt" : [
                   "DNSKEY"
                ],
-               "qtCnt" : 1
+               "qtCnt" : 1,
+               "query.host" : [
+                  "<root>"
+               ],
+               "query.hostCnt" : 1
             },
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 0,

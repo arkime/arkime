@@ -32,6 +32,18 @@
                   "subject"
                ],
                "headerCnt" : 3,
+               "headerField" : [
+                  "from",
+                  "to",
+                  "subject"
+               ],
+               "headerFieldCnt" : 3,
+               "headerValue" : [
+                  "xxxxx@xxx.net",
+                  "xxxxx@xxx.net",
+                  "Awesome windows: See Whats Next in charset decoding!"
+               ],
+               "headerValueCnt" : 3,
                "src" : [
                   "xxxxx@xxx.net"
                ],

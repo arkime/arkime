@@ -79,6 +79,24 @@
                   "authorization"
                ],
                "requestHeaderCnt" : 10,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "cookie",
+                  "connection",
+                  "if-modified-since"
+               ],
+               "requestHeaderFieldCnt" : 6,
+               "requestHeaderValue" : [
+                  "*/*",
+                  "en-GB,en;q=0.5",
+                  "gzip, deflate",
+                  "zzzzzzzzzzzzzzzzzz=auto; cprelogin=no; cpsession=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz; langedit=; lang=",
+                  "keep-alive",
+                  "Wed, 29 Oct 2014 01:11:13 GMT"
+               ],
+               "requestHeaderValueCnt" : 6,
                "responseHeader" : [
                   "expires",
                   "keep-alive",
@@ -89,6 +107,26 @@
                   "server"
                ],
                "responseHeaderCnt" : 7,
+               "responseHeaderField" : [
+                  "server",
+                  "x-keep-alive-count",
+                  "connection",
+                  "keep-alive",
+                  "date",
+                  "cache-control",
+                  "expires"
+               ],
+               "responseHeaderFieldCnt" : 7,
+               "responseHeaderValue" : [
+                  "cpsrvd/11.44.1.19",
+                  "1",
+                  "Keep-Alive",
+                  "timeout=70, max=200",
+                  "Wed, 29 Oct 2014 17:35:08 GMT",
+                  "max-age=5184000, public",
+                  "Sun, 28 Dec 2014 17:35:07 GMT"
+               ],
+               "responseHeaderValueCnt" : 7,
                "serverVersion" : [
                   "1.1"
                ],

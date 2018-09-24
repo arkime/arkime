@@ -42,6 +42,16 @@
                   "host"
                ],
                "requestHeaderCnt" : 4,
+               "requestHeaderField" : [
+                  "accept",
+                  "connection"
+               ],
+               "requestHeaderFieldCnt" : 2,
+               "requestHeaderValue" : [
+                  "*/*",
+                  "close"
+               ],
+               "requestHeaderValueCnt" : 2,
                "responseHeader" : [
                   "content-type",
                   "date",
@@ -49,6 +59,20 @@
                   "server"
                ],
                "responseHeaderCnt" : 4,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "connection",
+                  "content-type"
+               ],
+               "responseHeaderFieldCnt" : 4,
+               "responseHeaderValue" : [
+                  "Tue, 26 Feb 2013 15:10:21 GMT",
+                  "Apache",
+                  "close",
+                  "text/html; charset=iso-8859-1"
+               ],
+               "responseHeaderValueCnt" : 4,
                "serverVersion" : [
                   "1.1"
                ],

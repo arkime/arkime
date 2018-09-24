@@ -65,6 +65,16 @@
                   "host"
                ],
                "requestHeaderCnt" : 6,
+               "requestHeaderField" : [
+                  "accept-encoding",
+                  "connection"
+               ],
+               "requestHeaderFieldCnt" : 2,
+               "requestHeaderValue" : [
+                  "gzip",
+                  "close"
+               ],
+               "requestHeaderValueCnt" : 2,
                "responseHeader" : [
                   "content-type",
                   "transfer-encoding",
@@ -76,6 +86,28 @@
                   "set-cookie"
                ],
                "responseHeaderCnt" : 8,
+               "responseHeaderField" : [
+                  "date",
+                  "content-type",
+                  "transfer-encoding",
+                  "connection",
+                  "set-cookie",
+                  "server",
+                  "cf-ray",
+                  "content-encoding"
+               ],
+               "responseHeaderFieldCnt" : 8,
+               "responseHeaderValue" : [
+                  "Wed, 03 Feb 2016 15:27:08 GMT",
+                  "text/html",
+                  "chunked",
+                  "close",
+                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Thu, 02-Feb-17 15:27:08 GMT; path=/; domain=.xxxxxxxxx.xx; HttpOnly",
+                  "xxxxxxxxxxxxxxxx",
+                  "xxxxxxxxxxxxxxxx-IAD",
+                  "gzip"
+               ],
+               "responseHeaderValueCnt" : 8,
                "serverVersion" : [
                   "1.1"
                ],

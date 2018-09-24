@@ -18,6 +18,31 @@
                   "RIPE",
                   "RIPE"
                ],
+               "answer.ASN" : [
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited"
+               ],
+               "answer.GEO" : [
+                  "GB",
+                  "GB",
+                  "GB"
+               ],
+               "answer.RIR" : [
+                  "RIPE",
+                  "RIPE",
+                  "RIPE"
+               ],
+               "answer.host" : [
+                  "start.ubuntu.com"
+               ],
+               "answer.hostCnt" : 1,
+               "answer.ip" : [
+                  "91.189.90.40",
+                  "91.189.90.41",
+                  "91.189.89.88"
+               ],
+               "answer.ipCnt" : 3,
                "host" : [
                   "start.ubuntu.com"
                ],
@@ -40,6 +65,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "start.ubuntu.com"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],

@@ -50,6 +50,14 @@
                   "host"
                ],
                "requestHeaderCnt" : 3,
+               "requestHeaderField" : [
+                  "accept"
+               ],
+               "requestHeaderFieldCnt" : 1,
+               "requestHeaderValue" : [
+                  "*/*"
+               ],
+               "requestHeaderValueCnt" : 1,
                "responseHeader" : [
                   "content-type",
                   "accept-ranges",
@@ -59,6 +67,24 @@
                   "server"
                ],
                "responseHeaderCnt" : 6,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "accept-ranges",
+                  "content-length",
+                  "connection",
+                  "content-type"
+               ],
+               "responseHeaderFieldCnt" : 6,
+               "responseHeaderValue" : [
+                  "Mon, 25 Nov 2013 14:55:52 GMT",
+                  "Apache/2.2.15 (CentOS)",
+                  "bytes",
+                  "5039",
+                  "close",
+                  "text/html; charset=UTF-8"
+               ],
+               "responseHeaderValueCnt" : 6,
                "serverVersion" : [
                   "1.1"
                ],

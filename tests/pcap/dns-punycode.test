@@ -3,10 +3,113 @@
       {
          "body" : {
             "dns" : {
-               "host" : [
-                  "уаноо.қаз"
+               "ASN" : [
+                  "AS10880 Yahoo",
+                  "AS7280 Yahoo! Inc.",
+                  "AS36646 Yahoo",
+                  "AS23879 Internet Content Provider",
+                  "AS23879 Internet Content Provider",
+                  "AS10880 Yahoo",
+                  "AS10229 Internet Content Provider",
+                  "AS7280 Yahoo! Inc."
                ],
-               "hostCnt" : 1,
+               "GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "HK",
+                  "IN",
+                  "US",
+                  "TW",
+                  "US"
+               ],
+               "RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "APNIC",
+                  "",
+                  "",
+                  "APNIC",
+                  ""
+               ],
+               "additional.ASN" : [
+                  "AS10880 Yahoo",
+                  "AS7280 Yahoo! Inc.",
+                  "AS36646 Yahoo",
+                  "AS23879 Internet Content Provider",
+                  "AS23879 Internet Content Provider",
+                  "AS10880 Yahoo",
+                  "AS10229 Internet Content Provider",
+                  "AS7280 Yahoo! Inc."
+               ],
+               "additional.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "HK",
+                  "IN",
+                  "US",
+                  "TW",
+                  "US"
+               ],
+               "additional.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "APNIC",
+                  "",
+                  "",
+                  "APNIC",
+                  ""
+               ],
+               "additional.host" : [
+                  "ns5.yahoo.com",
+                  "ns1.yahoo.com",
+                  "ns2.yahoo.com",
+                  "ns3.yahoo.com",
+                  "ns4.yahoo.com"
+               ],
+               "additional.hostCnt" : 5,
+               "additional.ip" : [
+                  "68.180.131.16",
+                  "68.142.255.16",
+                  "98.138.11.157",
+                  "203.84.221.53",
+                  "2406:8600:b8:fe03::1003",
+                  "2001:4998:130::1001",
+                  "119.160.253.83",
+                  "2001:4998:140::1002"
+               ],
+               "additional.ipCnt" : 8,
+               "authoritative.host" : [
+                  "ns5.yahoo.com",
+                  "ns1.yahoo.com",
+                  "ns2.yahoo.com",
+                  "ns3.yahoo.com",
+                  "ns4.yahoo.com"
+               ],
+               "authoritative.hostCnt" : 5,
+               "host" : [
+                  "ns5.yahoo.com",
+                  "ns1.yahoo.com",
+                  "ns2.yahoo.com",
+                  "уаноо.қаз",
+                  "ns3.yahoo.com",
+                  "ns4.yahoo.com"
+               ],
+               "hostCnt" : 6,
+               "ip" : [
+                  "68.180.131.16",
+                  "68.142.255.16",
+                  "98.138.11.157",
+                  "203.84.221.53",
+                  "2406:8600:00b8:fe03:0000:0000:0000:1003",
+                  "2001:4998:0130:0000:0000:0000:0000:1001",
+                  "119.160.253.83",
+                  "2001:4998:0140:0000:0000:0000:0000:1002"
+               ],
+               "ipCnt" : 8,
                "opcode" : [
                   "QUERY"
                ],
@@ -23,6 +126,10 @@
                   "SOA"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "xn--80a0adav.xn--80ao21a"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],

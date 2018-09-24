@@ -19,6 +19,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "no.such.host"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],

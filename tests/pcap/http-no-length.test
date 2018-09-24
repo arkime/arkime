@@ -71,6 +71,26 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 10,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "accept-charset",
+                  "keep-alive",
+                  "connection",
+                  "cookie"
+               ],
+               "requestHeaderFieldCnt" : 7,
+               "requestHeaderValue" : [
+                  "*/*",
+                  "en-us,en;q=0.5",
+                  "gzip,deflate",
+                  "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+                  "115",
+                  "keep-alive",
+                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "requestHeaderValueCnt" : 7,
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -84,6 +104,32 @@
                   "set-cookie"
                ],
                "responseHeaderCnt" : 10,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "content-type",
+                  "expires",
+                  "last-modified",
+                  "cache-control",
+                  "pragma",
+                  "p3p",
+                  "set-cookie",
+                  "connection"
+               ],
+               "responseHeaderFieldCnt" : 10,
+               "responseHeaderValue" : [
+                  "Mon, 10 May 2010 08:31:02 GMT",
+                  "Apache",
+                  "application/x-javascript",
+                  "Thu, 11 Jan 1973 16:00:00 GMT",
+                  "Mon, 10 May 2010 08:31:02 GMT",
+                  "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+                  "no-cache",
+                  "policyref=\"/w3c/p3p.xml\", CP=\"ALL IND DSP COR ADM CONo CUR IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Sun, 11-Jan-2037 14:00:00 GMT; path=/; domain=.xxxxxx.xx",
+                  "close"
+               ],
+               "responseHeaderValueCnt" : 10,
                "serverVersion" : [
                   "1.0"
                ],

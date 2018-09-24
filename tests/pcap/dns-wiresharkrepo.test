@@ -4,12 +4,24 @@
          "body" : {
             "dns" : {
                "ASN" : [
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
                   "AS1280 Internet Systems Consortium, Inc.",
                   "AS1280 Internet Systems Consortium, Inc.",
                   "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc."
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
                   "US",
                   "US",
                   "US",
@@ -17,10 +29,95 @@
                ],
                "RIR" : [
                   "ARIN",
+                  "ARIN",
+                  "",
+                  "ARIN",
+                  "ARIN",
+                  "",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "additional.ASN" : [
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
+               ],
+               "additional.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "additional.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "additional.host" : [
+                  "smtp1.google.com",
+                  "smtp6.google.com",
+                  "smtp5.google.com",
+                  "smtp4.google.com",
+                  "smtp3.google.com",
+                  "smtp2.google.com"
+               ],
+               "additional.hostCnt" : 6,
+               "additional.ip" : [
+                  "216.239.57.26",
+                  "64.233.167.25",
+                  "66.102.9.25",
+                  "216.239.37.25",
+                  "216.239.37.26",
+                  "216.239.57.25"
+               ],
+               "additional.ipCnt" : 6,
+               "answer.ASN" : [
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc."
+               ],
+               "answer.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "answer.RIR" : [
+                  "ARIN",
                   "",
                   "",
                   "ARIN"
                ],
+               "answer.host" : [
+                  "www.isc.org",
+                  "smtp1.google.com",
+                  "www.netbsd.org",
+                  "smtp6.google.com",
+                  "smtp5.google.com",
+                  "smtp4.google.com",
+                  "smtp3.google.com",
+                  "smtp2.google.com",
+                  "www.l.google.com"
+               ],
+               "answer.hostCnt" : 9,
+               "answer.ip" : [
+                  "204.152.190.12",
+                  "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
+                  "2001:4f8:0:2::d",
+                  "204.152.184.88"
+               ],
+               "answer.ipCnt" : 4,
                "host" : [
                   "www.isc.org",
                   "www.example.notginh",
@@ -39,12 +136,18 @@
                ],
                "hostCnt" : 14,
                "ip" : [
-                  "204.152.190.12",
-                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                  "216.239.57.25",
+                  "216.239.57.26",
                   "2001:04f8:0000:0002:0000:0000:0000:000d",
-                  "204.152.184.88"
+                  "204.152.190.12",
+                  "204.152.184.88",
+                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                  "66.102.9.25",
+                  "64.233.167.25",
+                  "216.239.37.25",
+                  "216.239.37.26"
                ],
-               "ipCnt" : 4,
+               "ipCnt" : 10,
                "opcode" : [
                   "QUERY"
                ],
@@ -63,6 +166,17 @@
                   "ANY"
                ],
                "qtCnt" : 7,
+               "query.host" : [
+                  "www.isc.org",
+                  "www.example.notginh",
+                  "www.google.com",
+                  "www.netbsd.org",
+                  "google.com",
+                  "104.9.192.66.in-addr.arpa",
+                  "www.example.com",
+                  "www.l.google.com"
+               ],
+               "query.hostCnt" : 8,
                "status" : [
                   "NXDOMAIN",
                   "NOERROR"
@@ -194,6 +308,10 @@
                   "PTR"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "1.0.0.127.in-addr.arpa"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
@@ -264,10 +382,21 @@
       {
          "body" : {
             "dns" : {
-               "host" : [
-                  "isc.org"
+               "answer.host" : [
+                  "ns-ext.nrt1.isc.org",
+                  "ns-ext.isc.org",
+                  "ns-ext.lga1.isc.org",
+                  "ns-ext.sth1.isc.org"
                ],
-               "hostCnt" : 1,
+               "answer.hostCnt" : 4,
+               "host" : [
+                  "isc.org",
+                  "ns-ext.nrt1.isc.org",
+                  "ns-ext.isc.org",
+                  "ns-ext.lga1.isc.org",
+                  "ns-ext.sth1.isc.org"
+               ],
+               "hostCnt" : 5,
                "opcode" : [
                   "QUERY"
                ],
@@ -280,6 +409,10 @@
                   "NS"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "isc.org"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
@@ -366,6 +499,10 @@
                   "SRV"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],
@@ -454,6 +591,10 @@
                   "SRV"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "_ldap._tcp.dc._msdcs.utelsystems.local"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],
@@ -542,6 +683,10 @@
                   "SRV"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],
@@ -630,6 +775,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "grimm.utelsystems.local"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],
@@ -718,6 +867,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "grimm.utelsystems.local"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],

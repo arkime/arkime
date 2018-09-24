@@ -49,6 +49,26 @@
                   "subject"
                ],
                "headerCnt" : 6,
+               "headerField" : [
+                  "received",
+                  "received",
+                  "content-type",
+                  "mime-version",
+                  "subject",
+                  "from",
+                  "to"
+               ],
+               "headerFieldCnt" : 7,
+               "headerValue" : [
+                  "from smtp-02.xxxxxxxxx.com (smtp-02.xxxxxxxxx.com [10.168.0.01]) by smtp-01.xxxxxxxxx.com (Postfix) with ESMTP id 9723037B486 for <xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com>; Mon, 18 Nov 2013 00:06:52 -0800 (PST)",
+                  "from xxxx.xxxx.xxxxxxxxx.com (xxxx.xxxx.xxxxxxxxx.com [10.168.00.02]) by smtp-02.xxxxxxxxx.com (Postfix) with ESMTP id 952D416A4B4 for <xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com>; Mon, 18 Nov 2013 00:06:52 -0800 (PST)",
+                  "multipart/mixed; boundary=\"===============1250870193309395048==\"",
+                  "1.0",
+                  "=?utf-8?q?xxxxxx_xxxxxx_xx_xxxxxxxxx_xx-xxxxxxx=EF=BC=88ANA=EF=BC=89GGL?= =?utf-8?q?=5Fxxxxxxxxxxxxx=5Fxxxxxx=2Ezip?=",
+                  "xxxxxxxxx@xxxxxxxxx.com",
+                  "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
+               ],
+               "headerValueCnt" : 7,
                "host" : [
                   "xxxx.xxxx.xxxxxxxxx.com",
                   "smtp-02.xxxxxxxxx.com",

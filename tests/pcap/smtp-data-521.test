@@ -40,6 +40,26 @@
                   "subject"
                ],
                "headerCnt" : 7,
+               "headerField" : [
+                  "from",
+                  "subject",
+                  "to",
+                  "content-type",
+                  "mime-version",
+                  "reply-to",
+                  "date"
+               ],
+               "headerFieldCnt" : 7,
+               "headerValue" : [
+                  "\"xxxxxxxxx 123456789\" <1234567899@aol.com>",
+                  "Urgent Trip.",
+                  "\"xxxxx-xxxx\" <xxxxx-xxxx@xxxx.xxx.xx.jp>",
+                  "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\"",
+                  "1.0",
+                  "\"1234567899@aol.com\" <1234567899@aol.com>",
+                  "Thu, 5 Dec 2013 14:56:55 +0100"
+               ],
+               "headerValueCnt" : 7,
                "mimeVersion" : [
                   "1.0"
                ],

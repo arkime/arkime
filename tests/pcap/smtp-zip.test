@@ -59,6 +59,34 @@
                   "subject"
                ],
                "headerCnt" : 10,
+               "headerField" : [
+                  "received",
+                  "received",
+                  "date",
+                  "from",
+                  "to",
+                  "subject",
+                  "message-id",
+                  "mime-version",
+                  "content-type",
+                  "content-disposition",
+                  "user-agent"
+               ],
+               "headerFieldCnt" : 11,
+               "headerValue" : [
+                  "from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1]) by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBHEoG4S029660 for <xxxxxxxxx@xxxxxxx.com>; Tue, 17 Dec 2013 09:50:17 -0500",
+                  "(from xxxxx@localhost) by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4/Submit) id rBHEoGha029657 for xxxxxxxxx@xxxxxxx.com; Tue, 17 Dec 2013 09:50:16 -0500",
+                  "Tue, 17 Dec 2013 09:50:16 -0500",
+                  "xxxxxxxxx <xxxxx@xxx.net>",
+                  "xxxxxxxxx@xxxxxxx.com",
+                  "zip test",
+                  "<20131217145016.GA29077@xxx.net>",
+                  "1.0",
+                  "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\"",
+                  "inline",
+                  "Mutt/1.5.20 (2009-12-10)"
+               ],
+               "headerValueCnt" : 11,
                "host" : [
                   "localhost",
                   "xxxxxxxxxxxxx.xxx.com"

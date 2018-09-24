@@ -29,6 +29,22 @@
                   "subject"
                ],
                "headerCnt" : 5,
+               "headerField" : [
+                  "received",
+                  "subject",
+                  "message-id",
+                  "from",
+                  "date"
+               ],
+               "headerFieldCnt" : 5,
+               "headerValue" : [
+                  "from root by testhost.test.ex with local-bsmtp (Exim x.yz) (envelope-from <sender@dom>) id 1bwpfB-0000Be-Tu for p@test.ex; Wed, 19 Oct 2016 13:08:05 +0100",
+                  "foo",
+                  "<E1bwpfB-0000Be-Tu@testhost.test.ex>",
+                  "sender@dom",
+                  "Wed, 19 Oct 2016 13:08:05 +0100"
+               ],
+               "headerValueCnt" : 5,
                "host" : [
                   "testhost.test.ex",
                   "root"

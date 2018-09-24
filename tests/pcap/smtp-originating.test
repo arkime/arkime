@@ -59,6 +59,38 @@
                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                ],
                "headerCnt" : 13,
+               "headerField" : [
+                  "domainkey-signature",
+                  "received",
+                  "from",
+                  "content-type",
+                  "content-transfer-encoding",
+                  "subject",
+                  "date",
+                  "message-id",
+                  "to",
+                  "mime-version",
+                  "x-mailer",
+                  "x-elnk-trace",
+                  "x-originating-ip"
+               ],
+               "headerFieldCnt" : 13,
+               "headerValue" : [
+                  "a=rsa-sha1; q=dns; c=nofws;  s=xxxxxxxxxx; d=xxxxxxxxx.net;  b=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;  h=Received:From:Content-Type:Content-Transfer-Encoding:Subject:Date:Message-Id:To:Mime-Version:X-Mailer:X-ELNK-Trace:X-Originating-IP;",
+                  "from [10.000.000.002] (helo=[10.000.00.03]) by xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net with esmtpa (Exim 4.67) (envelope-from <xxxxxxxx@xxxxxxxxx.net>) id xxxxxxxxxxxxxxxx for xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com; Mon, 13 Jan 2014 10:01:13 -0500",
+                  "xxxxxx xxxxxxx <xxxxxxxx@xxxxxxxxx.net>",
+                  "text/plain; charset=us-ascii",
+                  "quoted-printable",
+                  "xxxxxxxxxxxxxxxxxx",
+                  "Mon, 13 Jan 2014 07:01:01 -0800",
+                  "<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@xxxxxxxxx.net>",
+                  "xxxxxxxx xxxxxxx <xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com>",
+                  "1.0 (Apple Message framework v1283)",
+                  "Apple Mail (2.1283)",
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "10.000.000.004"
+               ],
+               "headerValueCnt" : 13,
                "host" : [
                   "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
                ],

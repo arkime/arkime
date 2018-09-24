@@ -40,6 +40,14 @@
                   "host"
                ],
                "requestHeaderCnt" : 3,
+               "requestHeaderField" : [
+                  "accept"
+               ],
+               "requestHeaderFieldCnt" : 1,
+               "requestHeaderValue" : [
+                  "*/*"
+               ],
+               "requestHeaderValueCnt" : 1,
                "response-location" : [
                   "https://www.aol.com/"
                ],
@@ -59,6 +67,44 @@
                   "location"
                ],
                "responseHeaderCnt" : 13,
+               "responseHeaderField" : [
+                  "cache-control",
+                  "content-type",
+                  "date",
+                  "request-id",
+                  "server",
+                  "set-cookie",
+                  "set-cookie",
+                  "set-cookie",
+                  "set-cookie",
+                  "set-cookie",
+                  "vary",
+                  "x-aol-hn",
+                  "x-content-type-options",
+                  "x-xss-protection",
+                  "content-length",
+                  "connection"
+               ],
+               "responseHeaderFieldCnt" : 16,
+               "responseHeaderValue" : [
+                  "no-cache, no-store, private, max-age=0",
+                  "text/html; charset=UTF-8",
+                  "Wed, 15 Mar 2017 18:49:53 GMT",
+                  "2d571b22-09b0-11e7-b43e-02afcb36bd8b",
+                  "Apache",
+                  "AMPMV-99=1e393084c0261f6e5527c37544e7d220f1797c37; expires=Fri, 14-Apr-2017 18:49:53 GMT; Max-Age=2592000; path=/",
+                  "AMPMV-84=162eb0f3e15d1c386c5eb016e6ac8862cf3d8ab4; expires=Fri, 14-Apr-2017 18:49:53 GMT; Max-Age=2592000; path=/",
+                  "AMPMV-98=c7ea22328cd19e9e5a522ddbc431920e9d804c70; expires=Wed, 31-May-2017 04:00:00 GMT; Max-Age=6599407; path=/",
+                  "AMPMV-73=5a87a46cbf5cb42198eaf3d48a3a02ad0a68e846; expires=Fri, 14-Apr-2017 18:49:53 GMT; Max-Age=2592000; path=/",
+                  "AMPMV-90=68d8ac2406a9ad2cf08c2f54b5da1e1b1c57123b; expires=Mon, 20-Mar-2017 04:00:00 GMT; Max-Age=378607; path=/",
+                  "Accept-Encoding",
+                  "i-00a709614b39984a1",
+                  "nosniff",
+                  "1; mode=block",
+                  "104",
+                  "keep-alive"
+               ],
+               "responseHeaderValueCnt" : 16,
                "serverVersion" : [
                   "1.1"
                ],

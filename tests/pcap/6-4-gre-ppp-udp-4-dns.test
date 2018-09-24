@@ -19,6 +19,10 @@
                   "AAAA"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NXDOMAIN"
                ],

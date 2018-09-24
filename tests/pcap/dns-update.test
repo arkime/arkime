@@ -27,7 +27,24 @@
                "status" : [
                   "NOTIMPL"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "update.ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "update.GEO" : [
+                  "RU"
+               ],
+               "update.RIR" : [
+                  ""
+               ],
+               "update.host" : [
+                  "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
+               ],
+               "update.hostCnt" : 1,
+               "update.ip" : [
+                  "10.0.0.1"
+               ],
+               "update.ipCnt" : 1
             },
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 170,

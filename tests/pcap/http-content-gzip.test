@@ -72,6 +72,24 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 9,
+               "requestHeaderField" : [
+                  "connection",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "cookie",
+                  "if-none-match"
+               ],
+               "requestHeaderFieldCnt" : 6,
+               "requestHeaderValue" : [
+                  "keep-alive",
+                  "*/*",
+                  "gzip,deflate,sdch",
+                  "en-US,en;q=0.8",
+                  "xxxxxxxxxx=xxx",
+                  "\"vcCp3Q\""
+               ],
+               "requestHeaderValueCnt" : 6,
                "responseHeader" : [
                   "expires",
                   "content-type",
@@ -85,6 +103,32 @@
                   "age"
                ],
                "responseHeaderCnt" : 10,
+               "responseHeaderField" : [
+                  "etag",
+                  "date",
+                  "expires",
+                  "content-type",
+                  "content-encoding",
+                  "server",
+                  "cache-control",
+                  "content-length",
+                  "age",
+                  "alternate-protocol"
+               ],
+               "responseHeaderFieldCnt" : 10,
+               "responseHeaderValue" : [
+                  "\"a2fyAA\"",
+                  "Tue, 05 Aug 2014 12:34:05 GMT",
+                  "Tue, 05 Aug 2014 12:44:05 GMT",
+                  "application/xml",
+                  "gzip",
+                  "Google Frontend",
+                  "public, max-age=600",
+                  "190",
+                  "179",
+                  "80:quic"
+               ],
+               "responseHeaderValueCnt" : 10,
                "serverVersion" : [
                   "1.1"
                ],

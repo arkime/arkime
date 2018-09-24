@@ -46,6 +46,14 @@
                   "host"
                ],
                "requestHeaderCnt" : 3,
+               "requestHeaderField" : [
+                  "accept"
+               ],
+               "requestHeaderFieldCnt" : 1,
+               "requestHeaderValue" : [
+                  "*/*"
+               ],
+               "requestHeaderValueCnt" : 1,
                "response-location" : [
                   "https://www.github.com/"
                ],
@@ -55,6 +63,16 @@
                   "location"
                ],
                "responseHeaderCnt" : 3,
+               "responseHeaderField" : [
+                  "content-length",
+                  "connection"
+               ],
+               "responseHeaderFieldCnt" : 2,
+               "responseHeaderValue" : [
+                  "0",
+                  "close"
+               ],
+               "responseHeaderValueCnt" : 2,
                "serverVersion" : [
                   "1.1"
                ],

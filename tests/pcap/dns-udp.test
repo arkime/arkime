@@ -4,23 +4,75 @@
          "body" : {
             "dns" : {
                "ASN" : [
-                  "AS36459 GitHub, Inc."
+                  "AS36459 GitHub, Inc.",
+                  "---"
                ],
                "GEO" : [
-                  "US"
+                  "US",
+                  "---"
                ],
                "RIR" : [
+                  "ARIN",
+                  ""
+               ],
+               "additional.ASN" : [
+                  "---"
+               ],
+               "additional.GEO" : [
+                  "---"
+               ],
+               "additional.RIR" : [
+                  ""
+               ],
+               "additional.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "additional.hostCnt" : 4,
+               "additional.ip" : [
+                  "10.2.95.12"
+               ],
+               "additional.ipCnt" : 1,
+               "answer.ASN" : [
+                  "AS36459 GitHub, Inc."
+               ],
+               "answer.GEO" : [
+                  "US"
+               ],
+               "answer.RIR" : [
                   "ARIN"
                ],
-               "host" : [
-                  "www.github.com",
+               "answer.host" : [
                   "github.com"
                ],
-               "hostCnt" : 2,
-               "ip" : [
+               "answer.hostCnt" : 1,
+               "answer.ip" : [
                   "192.30.252.128"
                ],
-               "ipCnt" : 1,
+               "answer.ipCnt" : 1,
+               "authoritative.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "authoritative.hostCnt" : 4,
+               "host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "www.github.com",
+                  "ns1.p16.dynect.net",
+                  "github.com",
+                  "ns2.p16.dynect.net"
+               ],
+               "hostCnt" : 6,
+               "ip" : [
+                  "192.30.252.128",
+                  "10.2.95.12"
+               ],
+               "ipCnt" : 2,
                "opcode" : [
                   "QUERY"
                ],
@@ -33,6 +85,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "www.github.com"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
@@ -105,23 +161,75 @@
          "body" : {
             "dns" : {
                "ASN" : [
-                  "AS36459 GitHub, Inc."
+                  "AS36459 GitHub, Inc.",
+                  "---"
                ],
                "GEO" : [
-                  "US"
+                  "US",
+                  "---"
                ],
                "RIR" : [
+                  "ARIN",
+                  ""
+               ],
+               "additional.ASN" : [
+                  "---"
+               ],
+               "additional.GEO" : [
+                  "---"
+               ],
+               "additional.RIR" : [
+                  ""
+               ],
+               "additional.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "additional.hostCnt" : 4,
+               "additional.ip" : [
+                  "10.2.95.12"
+               ],
+               "additional.ipCnt" : 1,
+               "answer.ASN" : [
+                  "AS36459 GitHub, Inc."
+               ],
+               "answer.GEO" : [
+                  "US"
+               ],
+               "answer.RIR" : [
                   "ARIN"
                ],
-               "host" : [
-                  "www.github.com",
+               "answer.host" : [
                   "github.com"
                ],
-               "hostCnt" : 2,
-               "ip" : [
+               "answer.hostCnt" : 1,
+               "answer.ip" : [
                   "192.30.252.130"
                ],
-               "ipCnt" : 1,
+               "answer.ipCnt" : 1,
+               "authoritative.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "authoritative.hostCnt" : 4,
+               "host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "www.github.com",
+                  "ns1.p16.dynect.net",
+                  "github.com",
+                  "ns2.p16.dynect.net"
+               ],
+               "hostCnt" : 6,
+               "ip" : [
+                  "192.30.252.130",
+                  "10.2.95.12"
+               ],
+               "ipCnt" : 2,
                "opcode" : [
                   "QUERY"
                ],
@@ -134,6 +242,10 @@
                   "A"
                ],
                "qtCnt" : 1,
+               "query.host" : [
+                  "www.github.com"
+               ],
+               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
@@ -219,7 +331,11 @@
                "qt" : [
                   "ANY"
                ],
-               "qtCnt" : 1
+               "qtCnt" : 1,
+               "query.host" : [
+                  "10.100.10.10.in-addr.arpa"
+               ],
+               "query.hostCnt" : 1
             },
             "dstBytes" : 0,
             "dstDataBytes" : 0,

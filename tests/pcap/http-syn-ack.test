@@ -53,6 +53,20 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "connection",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language"
+               ],
+               "requestHeaderFieldCnt" : 4,
+               "requestHeaderValue" : [
+                  "keep-alive",
+                  "*/*",
+                  "gzip, deflate, xxxx",
+                  "xx-XX,et;q=0.8,en-US;q=0.6,en;q=0.4"
+               ],
+               "requestHeaderValueCnt" : 4,
                "responseHeader" : [
                   "pragma",
                   "expires",
@@ -67,6 +81,34 @@
                   "server"
                ],
                "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "server",
+                  "date",
+                  "content-type",
+                  "transfer-encoding",
+                  "connection",
+                  "pragma",
+                  "expires",
+                  "cache-control",
+                  "access-control-allow-origin",
+                  "content-encoding",
+                  "vary"
+               ],
+               "responseHeaderFieldCnt" : 11,
+               "responseHeaderValue" : [
+                  "nginx",
+                  "Fri, 01 Jul 2016 09:42:40 GMT",
+                  "application/javascript",
+                  "chunked",
+                  "keep-alive",
+                  "public",
+                  "0",
+                  "must-revalidate, post-check=0, pre-check=0",
+                  "*",
+                  "gzip",
+                  "Accept-Encoding"
+               ],
+               "responseHeaderValueCnt" : 11,
                "serverVersion" : [
                   "1.1"
                ],

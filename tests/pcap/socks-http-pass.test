@@ -248,6 +248,14 @@
                   "host"
                ],
                "requestHeaderCnt" : 3,
+               "requestHeaderField" : [
+                  "accept"
+               ],
+               "requestHeaderFieldCnt" : 1,
+               "requestHeaderValue" : [
+                  "*/*"
+               ],
+               "requestHeaderValueCnt" : 1,
                "responseHeader" : [
                   "expires",
                   "content-type",
@@ -262,6 +270,34 @@
                   "server"
                ],
                "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "cache-control",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "last-modified",
+                  "server",
+                  "x-cache",
+                  "x-ec-custom-error",
+                  "content-length"
+               ],
+               "responseHeaderFieldCnt" : 11,
+               "responseHeaderValue" : [
+                  "bytes",
+                  "max-age=604800",
+                  "text/html",
+                  "Tue, 03 Dec 2013 17:08:54 GMT",
+                  "\"359670651\"",
+                  "Tue, 10 Dec 2013 17:08:54 GMT",
+                  "Fri, 09 Aug 2013 23:54:35 GMT",
+                  "ECS (iad/1984)",
+                  "HIT",
+                  "1",
+                  "1270"
+               ],
+               "responseHeaderValueCnt" : 11,
                "serverVersion" : [
                   "1.1"
                ],

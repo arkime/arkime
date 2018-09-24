@@ -66,6 +66,22 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "cookie",
+                  "connection"
+               ],
+               "requestHeaderFieldCnt" : 5,
+               "requestHeaderValue" : [
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                  "ro-ro,ro;q=0.8,en-us;q=0.6,en-gb;q=0.4,en;q=0.2",
+                  "gzip, deflate",
+                  "PREF=ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 5,
                "response-location" : [
                   "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
                ],
@@ -83,6 +99,32 @@
                   "location"
                ],
                "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "cache-control",
+                  "content-type",
+                  "set-cookie",
+                  "p3p",
+                  "date",
+                  "server",
+                  "content-length",
+                  "x-xss-protection",
+                  "x-frame-options",
+                  "alternate-protocol"
+               ],
+               "responseHeaderFieldCnt" : 10,
+               "responseHeaderValue" : [
+                  "private",
+                  "text/html; charset=UTF-8",
+                  "NID=67=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Wed, 28-May-2014 13:58:15 GMT; path=/; domain=.google.com; HttpOnly",
+                  "CP=\"This is not a P3P policy! See http://www.google.com/support/accounts/bin/answer.py?hl=en&answer=151657 for more info.\"",
+                  "Tue, 26 Nov 2013 13:58:15 GMT",
+                  "gws",
+                  "258",
+                  "1; mode=block",
+                  "SAMEORIGIN",
+                  "80:quic"
+               ],
+               "responseHeaderValueCnt" : 10,
                "serverVersion" : [
                   "1.1"
                ],
