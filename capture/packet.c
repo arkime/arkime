@@ -265,6 +265,7 @@ LOCAL void moloch_packet_process_udp(MolochSession_t * const session, MolochPack
     }
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)
 {
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
@@ -480,6 +481,7 @@ void moloch_packet_flush()
     }
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL void *moloch_packet_thread(void *threadp)
 {
     MolochPacket_t  *packet;
@@ -910,6 +912,7 @@ void moloch_packet_frags_free(MolochFrags_t * const frags)
     MOLOCH_TYPE_FREE(MolochFrags_t, frags);
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 {
     MolochPacket_t * fpacket;
@@ -1140,6 +1143,7 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
@@ -1195,6 +1199,9 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     }
 
     switch (ip4->ip_p) {
+    case IPPROTO_IPV4:
+        return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
+        break;
     case IPPROTO_TCP:
         if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
 #ifdef DEBUG_PACKET
@@ -1279,6 +1286,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
