@@ -547,9 +547,18 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
             moloch_field_string_add(hhField, session, lower, colon - line->str, TRUE);
 
             if (config.parseSMTPHeaderAll) {
+
                 int colon_position = colon - line->str + 1;
+                char *header_value   = line->str + colon_position;
+                int  header_value_len =  line->len - colon_position;
+
+                while (isspace(*header_value)) {
+                    header_value++;
+                    header_value_len--;
+                }
+
                 moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
-                moloch_field_string_add(headerValue, session, line->str + colon_position, line->len - colon_position, TRUE);
+                moloch_field_string_add(headerValue, session, header_value, header_value_len, TRUE);
             }
 
             if (emailHeader) {
