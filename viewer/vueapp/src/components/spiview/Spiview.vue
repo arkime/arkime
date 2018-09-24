@@ -200,7 +200,7 @@
                   <form class="form-inline">
                     <input type="text"
                       class="form-control form-control-sm mr-1 mb-1"
-                      placeholder="Search for fields in this category"
+                      placeholder="Search for fields to display in this category"
                       @input="updateFilteredFields(category, $event.target.value)"
                     />
                     <span class="small"
