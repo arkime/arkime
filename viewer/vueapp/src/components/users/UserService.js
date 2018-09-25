@@ -375,6 +375,33 @@ export default {
   },
 
   /**
+   * Updates a user's specified custom column configuration
+   * @param {string} data       The column configuration object to be updated
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateColumnConfig: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: `user/columns/${data.name}`,
+        method: 'PUT',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
    * Gets a user's custom spiview fields configurations
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)

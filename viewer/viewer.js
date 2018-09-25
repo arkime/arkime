@@ -1473,6 +1473,41 @@ app.get('/user/columns', getSettingUser, function(req, res) {
   return res.send(req.settingUser.columnConfigs || []);
 });
 
+// udpates custom column configurations for a user
+app.put('/user/columns/:name', checkCookieToken, logAction(), postSettingUser, function(req, res) {
+  if (!req.settingUser)   { return res.molochError(403, 'Unknown user'); }
+
+  if (!req.body.name)     { return res.molochError(403, 'Missing custom column configuration name'); }
+  if (!req.body.columns)  { return res.molochError(403, 'Missing columns'); }
+  if (!req.body.order)    { return res.molochError(403, 'Missing sort order'); }
+
+  let user = req.settingUser;
+  user.columnConfigs = user.columnConfigs || [];
+
+  // find the custom column configuration to update
+  let found = false;
+  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.columnConfigs[i].name) {
+      found = true;
+      user.columnConfigs[i] = req.body;
+    }
+  }
+
+  if (!found) { return res.molochError(200, 'Custom column configuration not found'); }
+
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/columns udpate error', err, info);
+      return res.molochError(500, 'Update custom column configuration failed');
+    }
+    return res.send(JSON.stringify({
+      success   : true,
+      text      : 'Updated column configuration',
+      colConfig : req.body
+    }));
+  });
+});
+
 // creates a new custom column configuration for a user
 app.post('/user/columns/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}

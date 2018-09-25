@@ -144,6 +144,11 @@
                   {{ colConfigError }}
                 </b-dropdown-item>
                 <b-dropdown-item
+                  v-if="colConfigSuccess"
+                  class="text-success">
+                  {{ colConfigSuccess }}
+                </b-dropdown-item>
+                <b-dropdown-item
                   v-b-tooltip.hover
                   @click.stop.prevent="loadColumnConfiguration()"
                   title="Reset table to default columns">
@@ -153,10 +158,18 @@
                   v-for="(config, key) in colConfigs"
                   :key="key"
                   @click.self.stop.prevent="loadColumnConfiguration(key)">
-                  <button class="btn btn-xs btn-danger pull-right"
+                  <button class="btn btn-xs btn-danger pull-right ml-1"
                     type="button"
                     @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                     <span class="fa fa-trash-o">
+                    </span>
+                  </button>
+                  <button class="btn btn-xs btn-warning pull-right"
+                    type="button"
+                    v-b-tooltip.hover
+                    title="Update this column configuration with the currently visible columns"
+                    @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                    <span class="fa fa-save">
                     </span>
                   </button>
                   {{ config.name }}
@@ -426,6 +439,7 @@ export default {
       colWidths: {},
       colConfigs: [],
       colConfigError: '',
+      colConfigSuccess: '',
       headers: [],
       graphData: undefined,
       mapData: undefined,
@@ -785,6 +799,29 @@ export default {
         .then((response) => {
           this.colConfigs.splice(index, 1);
           this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    },
+    /**
+     * Updates a previously saved custom column configuration
+     * @param {string} name The name of the column config to udpate
+     * @param {int} index   The index in the array of the column config to udpate
+     */
+    updateColumnConfiguration: function (name, index) {
+      let data = {
+        name: name,
+        columns: this.tableState.visibleHeaders.slice(),
+        order: this.tableState.order.slice()
+      };
+
+      UserService.updateColumnConfig(data)
+        .then((response) => {
+          this.colConfigs[index] = data;
+          this.colConfigError = false;
+          this.colConfigSuccess = response.text;
+          setTimeout(() => { this.colConfigSuccess = ''; }, 5000);
         })
         .catch((error) => {
           this.colConfigError = error.text;
@@ -1223,6 +1260,10 @@ export default {
 </script>
 
 <style>
+.col-config-menu .dropdown-menu {
+  min-width: 250px;
+  max-width: 350px;
+}
 .col-config-menu > button.btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;;
@@ -1363,9 +1404,6 @@ table.sessions-table tbody tr td {
 }
 
 /* custom column configurations menu --------- */
-.col-config-menu {
-  max-width: 280px;
-}
 .col-config-menu .dropdown-header {
   padding: .25rem .5rem 0;
 }
