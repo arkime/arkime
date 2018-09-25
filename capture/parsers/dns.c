@@ -331,6 +331,11 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             moloch_field_ip4_add(ipField, session, in.s_addr);
 
             if (opcode == 5) { // IPs and Hostname in update or prerequisites records of UPDATE query
+                dns_add_host(session, (char *)name, namelen);
+                if (config.parseDNSRecordAll) {
+                    moloch_field_ip4_add(ipUpdateField, session, in.s_addr);
+                    moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
+                }
             } else if (config.parseDNSRecordAll) { // IPs and Hostname in answer, authoritative, or additional records
                 moloch_field_ip4_add(ip_field, session, in.s_addr);
                 moloch_field_string_add_host(host_field, session, (char*)name, namelen);
@@ -374,7 +379,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             if (config.parseDNSRecordAll) {
                 if (opcode == 5) // Hostname in update or prerequisites records of UPDATE query
                     moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
-                else //Hostname in answer, authoritative, or additional records
+                else // Hostname in answer, authoritative, or additional records
                     moloch_field_string_add_host (host_field, session, (char*)name, namelen);
             }
             break;
