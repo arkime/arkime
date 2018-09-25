@@ -40,21 +40,28 @@ mixin ipArrayListDNS(container, field, title, expr, max)
         |</span>
         a.cursor-pointer.show-more-items &hellip
 
+
 if (session.dns)
   div.sessionDetailMeta.bold DNS
   dl.sessionDetailMeta(suffix="dns")
-    +ipArrayListDNS(session.dns, "query","IPs Query", "dns.query")
-    +ipArrayListDNS(session.dns, "answer","IPs Answer","dns.answer")
-    +ipArrayListDNS(session.dns, "authoritative","IPs Authoritative","dns.authoritative")
-    +ipArrayListDNS(session.dns, "additional", "IPs Additional","dns.additional")  
-    +ipArrayListDNS(session.dns, "update", "IPs Update","dns.update")  
-    +arrayList(session.dns, "query.host","Hosts Query", "host.dns.query")
-    +arrayList(session.dns, "answer.host","Hosts Answer","host.dns.answer")
-    +arrayList(session.dns, "authoritative.host","Hosts Authoritative","host.dns.authoritative")
-    +arrayList(session.dns, "additional.host", "Hosts Additional","host.dns.additional")  
-    +arrayList(session.dns, "update.host", "Hosts Update","host.dns.update")  
+    +ipArrayList(session.dns, "ip", "IPs", "dns")
+    +arrayList(session.dns, 'host', "Hosts", "host.dns")
     +arrayList(session.dns, 'puny', "Puny", "dns.puny")
     +arrayList(session.dns, 'opcode', "Op Code", "dns.opcode")
     +arrayList(session.dns, 'status', "Status Code", "dns.status")
     +arrayList(session.dns, 'qt', "Query Type", "dns.query.type")
     +arrayList(session.dns, 'qc', "Query Class", "dns.query.class")
+    if (session.dns['query.ip'] || session.dns['answer.ip'] || session.dns['authoritative.ip'] || session.dns['additional.ip'] || session.dns['update.ip'] || session.dns['query.host'] || session.dns['answer.host'] || session.dns['authoritative.host'] || session.dns['additional.host'] || session.dns['update.host'])
+      div.sessionDetailMeta.bold DNS Record Details
+      dl.sessionDetailMeta(suffix="dns-record-details")
+        +ipArrayListDNS(session.dns, "query","IPs Query", "dns.query")
+        +ipArrayListDNS(session.dns, "answer","IPs Answer","dns.answer")
+        +ipArrayListDNS(session.dns, "authoritative","IPs Authoritative","dns.authoritative")
+        +ipArrayListDNS(session.dns, "additional", "IPs Additional","dns.additional")
+        +ipArrayListDNS(session.dns, "update", "IPs Update","dns.update")
+        +arrayList(session.dns, "query.host","Hosts Query", "host.dns.query")
+        +arrayList(session.dns, "answer.host","Hosts Answer","host.dns.answer")
+        +arrayList(session.dns, "authoritative.host","Hosts Authoritative","host.dns.authoritative")
+        +arrayList(session.dns, "additional.host", "Hosts Additional","host.dns.additional")
+        +arrayList(session.dns, "update.host", "Hosts Update","host.dns.update")
+

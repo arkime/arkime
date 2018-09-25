@@ -410,6 +410,7 @@ typedef struct moloch_config {
     char      parseSMTP;
     char      parseSMTPHeaderAll;
     char      parseSMB;
+    char      parseDNSRecordAll;
     char      parseQSValue;
     char      parseCookieValue;
     char      parseHTTPHeaderRequestAll;
