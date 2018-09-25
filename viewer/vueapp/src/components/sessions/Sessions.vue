@@ -121,13 +121,13 @@
                       class="form-control"
                       v-model="newColConfigName"
                       placeholder="Enter new column configuration name"
-                      @keydown.enter="saveColumnConfiguration()"
+                      @keydown.enter="saveColumnConfiguration"
                     />
                     <div class="input-group-append">
                       <button type="button"
                         class="btn btn-theme-secondary"
                         :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration()"
+                        @click="saveColumnConfiguration"
                         v-b-tooltip.hover
                         title="Save this custom column configuration">
                         <span class="fa fa-save">
@@ -150,7 +150,7 @@
                 </b-dropdown-item>
                 <b-dropdown-item
                   v-b-tooltip.hover
-                  @click.stop.prevent="loadColumnConfiguration()"
+                  @click.stop.prevent="loadColumnConfiguration"
                   title="Reset table to default columns">
                   Moloch Default
                 </b-dropdown-item>
@@ -253,8 +253,8 @@
               </b-dropdown> <!-- /column dropdown menu -->
               <!-- sortable column -->
               <span v-if="(header.exp || header.sortBy) && !header.unsortable"
-                @mousedown="mouseDown()"
-                @mouseup="mouseUp()"
+                @mousedown="mouseDown"
+                @mouseup="mouseUp"
                 @click="sortBy($event, header.sortBy || header.dbField)"
                 class="cursor-pointer">
                 <div class="header-sort">
@@ -281,7 +281,7 @@
             <button type="button"
               v-if="showFitButton && !loading"
               class="btn btn-xs btn-theme-quaternary fit-btn"
-              @click="fitTable()"
+              @click="fitTable"
               v-b-tooltip.hover
               title="Fit the table to the current window size">
               <span class="fa fa-arrows-h">

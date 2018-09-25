@@ -1589,6 +1589,40 @@ app.get('/user/spiview/fields', getSettingUser, function(req, res) {
   return res.send(req.settingUser.spiviewFieldConfigs || []);
 });
 
+// udpates custom spiview field configuration for a user
+app.put('/user/spiview/fields/:name', checkCookieToken, logAction(), postSettingUser, function(req, res) {
+  if (!req.settingUser) { return res.molochError(403, 'Unknown user'); }
+
+  if (!req.body.name)   { return res.molochError(403, 'Missing custom spiview field configuration name'); }
+  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
+
+  let user = req.settingUser;
+  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+  // find the custom spiview field configuration to update
+  let found = false;
+  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
+    if (req.body.name === user.spiviewFieldConfigs[i].name) {
+      found = true;
+      user.spiviewFieldConfigs[i] = req.body;
+    }
+  }
+
+  if (!found) { return res.molochError(200, 'Custom spiview field configuration not found'); }
+
+  Db.setUser(user.userId, user, function(err, info) {
+    if (err) {
+      console.log('/user/spiview/fields udpate error', err, info);
+      return res.molochError(500, 'Update spiview field configuration failed');
+    }
+    return res.send(JSON.stringify({
+      success   : true,
+      text      : 'Updated spiview field configuration',
+      colConfig : req.body
+    }));
+  });
+});
+
 // creates a new custom spiview fields configuration for a user
 app.post('/user/spiview/fields/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}

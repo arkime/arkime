@@ -56,8 +56,13 @@
             {{ fieldConfigError }}
           </b-dropdown-item>
           <b-dropdown-item
+            v-if="fieldConfigSuccess"
+            class="text-success">
+            {{ fieldConfigSuccess }}
+          </b-dropdown-item>
+          <b-dropdown-item
             v-b-tooltip.hover
-            @click.stop.prevent="loadFieldConfiguration()"
+            @click.stop.prevent="loadFieldConfiguration"
             title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
             Moloch Default
           </b-dropdown-item>
@@ -65,10 +70,18 @@
             v-for="(config, key) in fieldConfigs"
             :key="key"
             @click.self.stop.prevent="loadFieldConfiguration(key)">
-            <button class="btn btn-xs btn-danger pull-right"
+            <button class="btn btn-xs btn-danger pull-right ml-1"
               type="button"
               @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
               <span class="fa fa-trash-o">
+              </span>
+            </button>
+            <button class="btn btn-xs btn-warning pull-right"
+              type="button"
+              v-b-tooltip.hover
+              title="Update this field configuration with the currently visible fields"
+              @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+              <span class="fa fa-save">
               </span>
             </button>
             {{ config.name }}
@@ -91,7 +104,7 @@
         </em>
         <button type="button"
           class="btn btn-warning btn-sm pull-right"
-          @click="cancelLoading()">
+          @click="cancelLoading">
           <span class="fa fa-ban">
           </span>&nbsp;
           cancel
@@ -397,7 +410,8 @@ export default {
       spiQuery: this.$route.query.spi,
       // field config vars
       newFieldConfigName: '',
-      fieldConfigError: ''
+      fieldConfigError: '',
+      fieldConfigSuccess: ''
     };
   },
   computed: {
@@ -700,6 +714,28 @@ export default {
         .then(() => {
           this.fieldConfigs.splice(index, 1);
           this.fieldConfigError = false;
+        })
+        .catch((error) => {
+          this.fieldConfigError = error.text;
+        });
+    },
+    /**
+     * Updates a previously saved custom spiview fields configuration
+     * @param {string} name The name of the spiview fields config to update
+     * @param {int} index   The index in the array of the spiview fields config to update
+     */
+    updateFieldConfiguration: function (name, index) {
+      let data = {
+        name: name,
+        fields: this.spiQuery
+      };
+
+      UserService.updateSpiviewFieldConfig(data)
+        .then((response) => {
+          this.fieldConfigs[index] = data;
+          this.fieldConfigError = false;
+          this.fieldConfigSuccess = response.text;
+          setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
         })
         .catch((error) => {
           this.fieldConfigError = error.text;

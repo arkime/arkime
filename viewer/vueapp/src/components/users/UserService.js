@@ -479,6 +479,33 @@ export default {
   },
 
   /**
+   * Updates a user's specified custom spiview fields configuration
+   * @param {string} data       The name of the spiview fields configuration to be updated
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateSpiviewFieldConfig: function (data, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: `user/spiview/fields/${data.name}`,
+        method: 'PUT',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+    });
+  },
+
+  /**
    * Changes current user's password
    * @param {object} data       The data to send to the server
    *                            { userId, currentPassword, newPassword }
