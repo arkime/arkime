@@ -245,7 +245,10 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
             *question = 0;
             *endquestion = 0;
 
-            g_base64_decode_inplace(question+3, &olen);
+            if (question[3])
+                g_base64_decode_inplace(question+3, &olen);
+            else
+                olen = 0;
 
             char *out = g_convert((char *)question+3, olen, "utf-8", str+2, &bread, &bwritten, &error);
             if (error) {
@@ -468,7 +471,8 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
         }
         case EMAIL_AUTHLOGIN_RETURN: {
             gsize out_len = 0;
-            g_base64_decode_inplace(line->str, &out_len);
+            if (line->len > 0)
+                g_base64_decode_inplace(line->str, &out_len);
             if (out_len > 0) {
                 moloch_field_string_add_lower(userField, session, line->str, out_len);
             }
@@ -478,7 +482,8 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
         case EMAIL_AUTHPLAIN_RETURN: {
             gsize out_len = 0;
             gsize zation = 0;
-            g_base64_decode_inplace(line->str, &out_len);
+            if (line->len > 0)
+                g_base64_decode_inplace(line->str, &out_len);
             zation = strlen(line->str);
             if (zation < out_len) {
                 gsize cation = strlen(line->str+zation+1);
@@ -852,14 +857,14 @@ void moloch_parser_init()
         "aliases", "[\"email.host\"]",
         "requiredRight", "emailSearch",
         "category", "host",
-        NULL);
+        (char *)NULL);
 
     uaField = moloch_field_define("email", "termfield",
         "email.x-mailer", "X-Mailer Header", "email.useragent",
         "Email X-Mailer header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     srcField = moloch_field_define("email", "lotermfield",
         "email.src", "Sender", "email.src",
@@ -867,7 +872,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     dstField = moloch_field_define("email", "lotermfield",
         "email.dst", "Receiver", "email.dst",
@@ -875,42 +880,42 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     subField = moloch_field_define("email", "termfield",
         "email.subject", "Subject", "email.subject",
         "Email subject header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     idField = moloch_field_define("email", "termfield",
         "email.message-id", "Id", "email.id",
         "Email Message-Id header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     ctField = moloch_field_define("email", "termfield",
         "email.content-type", "Content-Type", "email.contentType",
         "Email content-type header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     mvField = moloch_field_define("email", "termfield",
         "email.mime-version", "Mime-Version", "email.mimeVersion",
         "Email Mime-Header header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     fnField = moloch_field_define("email", "termfield",
         "email.fn", "Filenames", "email.filename",
         "Email attachment filenames",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     md5Field = moloch_field_define("email", "termfield",
         "email.md5", "Attach MD5s", "email.md5",
@@ -918,7 +923,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         "category", "md5",
-        NULL);
+        (char *)NULL);
 
     if (config.supportSha256) {
         sha256Field = moloch_field_define("email", "termfield",
@@ -928,7 +933,7 @@ void moloch_parser_init()
             "requiredRight", "emailSearch",
             "category", "sha256",
             "disabled", "true",
-            NULL);
+            (char *)NULL);
     }
 
     fctField = moloch_field_define("email", "termfield",
@@ -936,7 +941,7 @@ void moloch_parser_init()
         "Email attachment content types",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     ipField = moloch_field_define("email", "ip",
         "ip.email", "IP", "email.ip",
@@ -944,20 +949,20 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_IP_GHASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
         "category", "ip",
-        NULL);
+        (char *)NULL);
 
     hhField = moloch_field_define("email", "lotermfield",
         "email.has-header", "Header", "email.header",
         "Email has the header set",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
-        NULL);
+        (char *)NULL);
 
     magicField = moloch_field_define("email", "termfield",
         "email.bodymagic", "Body Magic", "email.bodyMagic",
         "The content type of body determined by libfile/magic",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);
     moloch_config_add_header(&emailHeaders, "cc", dstField);

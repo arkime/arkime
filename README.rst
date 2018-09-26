@@ -139,7 +139,7 @@ Hardware Requirements
 
 Moloch is built to run across many machines for large deployments.  For demo, small network, or home installations everything on a single machine is fine.
 
-For larger installations please see the FAQ for recomended configurations.
+For larger installations please see the FAQ for recommended configurations.
 
 
 

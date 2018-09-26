@@ -18,7 +18,10 @@ const store = new Vuex.Store({
     seriesType: undefined,
     focusSearch: undefined,
     focusTimeRange: undefined,
-    displayKeyboardShortcutsHelp: undefined
+    displayKeyboardShortcutsHelp: undefined,
+    user: undefined,
+    responseTime: undefined,
+    sessionsTableState: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -78,6 +81,18 @@ const store = new Vuex.Store({
     },
     setDisplayKeyboardShortcutsHelp (state, value) {
       this.state.displayKeyboardShortcutsHelp = value;
+    },
+    setUser (state, value) {
+      this.state.user = value;
+    },
+    setUserSettings (state, value) {
+      this.state.user.settings = value;
+    },
+    setResponseTime (state, value) {
+      this.state.responseTime = value;
+    },
+    setSessionsTableState (state, value) {
+      this.state.sessionsTableState = value;
     }
   }
 });

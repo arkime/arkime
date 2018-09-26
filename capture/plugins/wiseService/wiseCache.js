@@ -20,7 +20,7 @@
 var LRU = require('lru-cache')
   , redis = require('redis')
   , bson = require('bson')
-  , BSON = new bson.BSONPure.BSON()
+  , BSON = new bson()
   ;
 
 

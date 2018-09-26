@@ -86,6 +86,9 @@ void moloch_yara_load(char *name)
     YR_COMPILER *compiler;
     YR_RULES *rules;
 
+    if (!name)
+        return;
+
     moloch_yara_open(name, &compiler, &rules);
 
     if (yRules)
@@ -101,6 +104,9 @@ void moloch_yara_load_email(char *name)
 {
     YR_COMPILER *compiler;
     YR_RULES *rules;
+
+    if (!name)
+        return;
 
     moloch_yara_open(name, &compiler, &rules);
 

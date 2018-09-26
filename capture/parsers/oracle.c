@@ -22,19 +22,19 @@ extern MolochConfig_t        config;
 // Lots of info from https://www.pythian.com/blog/repost-oracle-protocol/
 
 /******************************************************************************/
-LOCAL char *oracle_get_item(const char *data, char *needle, int needle_len, int *len)
+LOCAL char *oracle_get_item(const unsigned char *data, char *needle, int needle_len, int *len)
 {
-    const char *start = data + data[27];
+    const unsigned char *start = data + data[27];
 
-    char *item = g_strstr_len((char *)start, data[25], (gchar *)needle);
+    unsigned char *item = (unsigned char *)g_strstr_len((char *)start, data[25], (gchar *)needle);
     if (item) {
-        char *paren = g_strstr_len(item, data[25] - (item - start), ")");
+        unsigned char *paren = (unsigned char *)g_strstr_len((char *)item, data[25] - (item - start), ")");
         if (paren) {
             *len = (paren-item)-needle_len;
             if (*len == 0)
                 return NULL;
 
-            return g_ascii_strdown(item+needle_len, *len);
+            return g_ascii_strdown((char *)item+needle_len, *len);
         }
     }
     return NULL;
@@ -48,17 +48,17 @@ LOCAL void oracle_classify(MolochSession_t *session, const unsigned char *data, 
     char *buf;  // can't be more then 1 byte big
     int  blen;
 
-    buf = oracle_get_item((const char *)data, "HOST=", 5, &blen); // Already lowercases
+    buf = oracle_get_item(data, "HOST=", 5, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(hostField, session, buf, blen, FALSE)) {
         g_free(buf);
     }
 
-    buf = oracle_get_item((const char *)data, "USER=", 5, &blen); // Already lowercases
+    buf = oracle_get_item(data, "USER=", 5, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(userField, session, buf, blen, FALSE)) {
         g_free(buf);
     }
 
-    buf = oracle_get_item((const char *)data, "SERVICE_NAME=", 13, &blen); // Already lowercases
+    buf = oracle_get_item(data, "SERVICE_NAME=", 13, &blen); // Already lowercases
     if (buf && !moloch_field_string_add(serviceField, session, buf, blen, FALSE)) {
         g_free(buf);
     }
@@ -75,18 +75,18 @@ void moloch_parser_init()
         "Oracle User",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     hostField = moloch_field_define("oracle", "lotermfield",
         "oracle.host", "Host", "oracle.host",
         "Oracle Host",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     serviceField = moloch_field_define("oracle", "lotermfield",
         "oracle.service", "Service", "oracle.service",
         "Oracle Service",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 }
 

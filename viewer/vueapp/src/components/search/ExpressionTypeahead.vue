@@ -30,6 +30,7 @@
     </div> <!-- /typeahead input -->
 
     <!-- TODO fix tooltip placement issues -->
+    <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
     <!-- results dropdown -->
     <div id="typeahead-results"
       ref="typeaheadResults"
@@ -40,8 +41,7 @@
         class="dropdown-item cursor-pointer"
         :class="{'active':key === activeIdx}"
         @click="addToQuery(value)"
-        v-b-tooltip.hover
-        placement="right"
+        v-b-tooltip.hover.top
         :title="value.help">
         <strong v-if="value.exp">{{ value.exp }}</strong>
         <strong v-if="!value.exp">{{ value }}</strong>
@@ -404,7 +404,7 @@ export default {
           .catch((error) => {
             this.cancellablePromise = null;
             this.loadingValues = false;
-            this.loadingError = error;
+            this.loadingError = error.message || error;
           });
       }
     },
@@ -416,9 +416,11 @@ export default {
     addExistsItem: function (strToMatch, operator) {
       if (operator !== '==' && operator !== '!=') { return; }
 
-      if ('EXISTS!'.match(new RegExp(strToMatch + '.*'))) {
-        this.results.push('EXISTS!');
-      }
+      try {
+        if ('EXISTS!'.match(new RegExp(strToMatch + '.*'))) {
+          this.results.push('EXISTS!');
+        }
+      } catch (error) {}
     },
     /* aborts a pending promise */
     cancelPromise: function () {

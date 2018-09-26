@@ -33,6 +33,8 @@ INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
+SANITIZE_FLAGS  = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
@@ -45,6 +47,20 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
 	(cd parsers; $(MAKE))
 	(cd plugins; $(MAKE))
+
+sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+	$(CC) $(SANITIZE_FLAGS) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
+	    $(INCLUDE_PCAP) \
+	    $(INCLUDE_OTHER) \
+	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
+	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
+            @UNDEFINED_FLAGS@ \
+	    $(LIB_PCAP) \
+	    $(LIB_OTHER) \
+	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
+	-rm */*.so
+	(cd parsers; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
+	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
@@ -67,3 +83,6 @@ installdirs:
 
 distclean realclean clean:
 	rm -f *.o moloch-capture */*.o */*.so
+
+cppcheck:
+	cppcheck --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c

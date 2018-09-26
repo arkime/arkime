@@ -19,8 +19,6 @@ const glob    = require('glob');
 const app     = express();
 const router  = express.Router();
 
-const version = 1;
-
 const saltrounds = 13;
 
 const issueTypes = {
@@ -44,10 +42,11 @@ const settingsDefault = {
 (function () { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
+  let debug = 0;
 
   function setPasswordHash (err, hash) {
     if (err) {
-      console.error(`Error hashing password: ${err}`);
+      console.log(`Error hashing password: ${err}`);
       return;
     }
 
@@ -62,6 +61,7 @@ const settingsDefault = {
     console.log('  --port         Port for the web app to listen on');
     console.log('  --cert         Public certificate to use for https');
     console.log('  --key          Private certificate to use for https');
+    console.log('  --debug        Increase debug level, multiple are supported');
 
     process.exit(0);
   }
@@ -94,12 +94,16 @@ const settingsDefault = {
         i++;
         break;
 
+      case '--dashboardOnly':
+        app.set('dashboardOnly', true);
+        break;
+
       case '--regressionTests':
         app.set('regressionTests', 1);
         break;
 
       case '--debug':
-        // Someday support debug :)
+        debug++;
         break;
 
       case '-h':
@@ -117,6 +121,8 @@ const settingsDefault = {
   if (!appArgs.length) {
     console.log('WARNING: No config options were set, starting Parliament in view only mode with defaults.\n');
   }
+
+  app.set('debug', debug);
 
   // set optional config options that reqiure defaults
   app.set('port', port || 8008);
@@ -143,11 +149,9 @@ try {
     app.set('password', parliament.password);
   }
 } catch (err) {
-  parliament = {
-    version: version,
-    groups: [],
-    settings: settingsDefault
-  };
+  console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
+  console.log('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
+  process.exit(1);
 }
 
 // construct the issues file name
@@ -180,7 +184,7 @@ app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/
 app.use('/parliament/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
 
 // log requests
-app.use(logger('dev'));
+app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
 
 app.use(favicon(`${__dirname}/favicon.ico`));
 
@@ -225,7 +229,7 @@ router.use((req, res, next) => {
 
 // Handle errors
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.log(err.stack);
   res.status(err.httpStatusCode || 500).json({
     success : false,
     text    : err.message || 'Error'
@@ -268,6 +272,43 @@ function verifyToken (req, res, next) {
 }
 
 /* Helper functions -------------------------------------------------------- */
+// list of alerts that will be sent at every 10 seconds
+let alerts = [];
+// sends alerts in the alerts list
+async function sendAlerts () {
+  let promise = new Promise((resolve, reject) => {
+    for (let i = 0, len = alerts.length; i < len; i++) {
+      (function (i) {
+        // timeout so that alerts are alerted in order
+        setTimeout(() => {
+          let alert = alerts[i];
+          alert.notifier.sendAlert(alert.config, alert.message);
+          if (app.get('debug')) {
+            console.log('Sending alert:', alert.message, JSON.stringify(alert.config, null, 2));
+          }
+          if (i === len - 1) { resolve(); }
+        }, 250 * i);
+      })(i);
+    };
+  });
+
+  promise.then(() => {
+    alerts = []; // clear the queue
+  });
+}
+
+// sorts the list of alerts by cluster title then sends them
+// assumes that the alert message starts with the cluster title
+function processAlerts () {
+  if (alerts && alerts.length) {
+    alerts.sort((a, b) => {
+      return a.message.localeCompare(b.message);
+    });
+
+    sendAlerts();
+  }
+}
+
 function formatIssueMessage (cluster, issue) {
   let message = '';
 
@@ -292,7 +333,7 @@ function formatIssueMessage (cluster, issue) {
   return message;
 }
 
-function issueAlert (cluster, issue) {
+function buildAlert (cluster, issue) {
   issue.alerted = Date.now();
 
   const message = `${cluster.title} - ${issue.message}`;
@@ -316,13 +357,17 @@ function issueAlert (cluster, issue) {
       let field = parliament.settings.notifiers[n].fields[f.name];
       if (!field || (field.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
-        console.error(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
+        console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
         continue;
       }
       config[f.name] = field.value;
     }
 
-    notifier.sendAlert(config, message);
+    alerts.push({
+      config: config,
+      message: message,
+      notifier: notifier
+    });
   }
 }
 
@@ -340,13 +385,14 @@ function findIssue (clusterId, issueType, node) {
 // Updates an existing issue or pushes a new issue onto the issue array
 function setIssue (cluster, newIssue) {
   // build issue
-  let issueType       = issueTypes[newIssue.type];
-  newIssue.text       = issueType.text;
-  newIssue.title      = issueType.name;
-  newIssue.severity   = issueType.severity;
-  newIssue.clusterId  = cluster.id;
-  newIssue.cluster    = cluster.title;
-  newIssue.message    = formatIssueMessage(cluster, newIssue);
+  let issueType = issueTypes[newIssue.type];
+  newIssue.text = issueType.text;
+  newIssue.title = issueType.name;
+  newIssue.severity = issueType.severity;
+  newIssue.clusterId = cluster.id;
+  newIssue.cluster = cluster.title;
+  newIssue.message = formatIssueMessage(cluster, newIssue);
+  newIssue.provisional = true;
 
   let existingIssue = false;
 
@@ -356,6 +402,11 @@ function setIssue (cluster, newIssue) {
         issue.type === newIssue.type &&
         issue.node === newIssue.node) {
       existingIssue = true;
+
+      // this is at least the second time we've seen this issue
+      // so it must be a persistent issue
+      issue.provisional = false;
+
       if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
@@ -365,22 +416,27 @@ function setIssue (cluster, newIssue) {
       issue.lastNoticed = Date.now();
 
       if (!issue.acknowledged && !issue.ignoreUntil && !issue.alerted) {
-        issueAlert(cluster, issue);
+        buildAlert(cluster, issue);
       }
     }
   }
 
   if (!existingIssue) {
+    // this is the first time we've seen this issue
+    // don't alert yet, but create the issue
     newIssue.firstNoticed = Date.now();
     newIssue.lastNoticed = Date.now();
     issues.push(newIssue);
-    issueAlert(cluster, newIssue);
+  }
+
+  if (app.get('debug') > 1) {
+    console.log('Setting issue:', JSON.stringify(newIssue, null, 2));
   }
 
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
       if (err) {
-        console.error('Unable to write issue:', err.message || err);
+        console.log('Unable to write issue:', err.message || err);
       }
     }
   );
@@ -407,7 +463,7 @@ function getHealth (cluster) {
           health = JSON.parse(response);
         } catch (e) {
           cluster.healthError = 'ES health parse failure';
-          console.error('Bad response for es health', cluster.localUrl || cluster.url);
+          console.log('Bad response for es health', cluster.localUrl || cluster.url);
           return resolve();
         }
 
@@ -430,7 +486,10 @@ function getHealth (cluster) {
 
         cluster.healthError = message;
 
-        console.error('HEALTH ERROR:', options.url, message);
+        if (app.get('debug')) {
+          console.log('HEALTH ERROR:', options.url, message);
+        }
+
         return resolve();
       });
   });
@@ -456,7 +515,7 @@ function getStats (cluster) {
 
         if (response.bsqErr) {
           cluster.statsError = response.bsqErr;
-          console.error('Get stats error', response.bsqErr);
+          console.log('Get stats error', response.bsqErr);
           return resolve();
         }
 
@@ -465,31 +524,39 @@ function getStats (cluster) {
           stats = JSON.parse(response);
         } catch (e) {
           cluster.statsError = 'ES stats parse failure';
-          console.error('Bad response for stats', cluster.localUrl || cluster.url);
+          console.log('Bad response for stats', cluster.localUrl || cluster.url);
           return resolve();
         }
 
         if (!stats || !stats.data) { return resolve(); }
 
         cluster.deltaBPS = 0;
-        // sum delta bytes per second
+        cluster.deltaTDPS = 0;
+        cluster.molochNodes = 0;
+        cluster.monitoring = 0;
+
+        let outOfDate = getGeneralSetting('outOfDate');
+
         for (let stat of stats.data) {
+          // sum delta bytes per second
           if (stat.deltaBytesPerSec) {
             cluster.deltaBPS += stat.deltaBytesPerSec;
           }
-        }
 
-        cluster.deltaTDPS = 0;
-        // sum delta total dropped per second
-        for (let stat of stats.data) {
+          // sum delta total dropped per second
           if (stat.deltaTotalDroppedPerSec) {
             cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
           }
-        }
 
-        // Look for issues
-        for (let stat of stats.data) {
-          let outOfDate = getGeneralSetting('outOfDate') * 1000;
+          if (stat.monitoring) {
+            cluster.monitoring += stat.monitoring;
+          }
+
+          if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
+            cluster.molochNodes++;
+          }
+
+          // Look for issues
 
           if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
@@ -519,39 +586,60 @@ function getStats (cluster) {
       })
       .catch((error) => {
         let message = error.message || error;
-        console.error('STATS ERROR:', options.url, message);
 
         setIssue(cluster, { type: 'esDown', value: message });
 
         cluster.statsError = message;
+
+        if (app.get('debug')) {
+          console.log('STATS ERROR:', options.url, message);
+        }
+
         return resolve();
       });
   });
 }
 
 function buildNotifiers () {
-  // build notifiers
+  // build/update notifiers
   for (let n in internals.notifiers) {
     // if the notifier is not in settings, add it
-    if (!parliament.settings.notifiers[n]) {
-      const notifier = internals.notifiers[n];
+    const notifier = internals.notifiers[n];
 
-      let notifierData = { name: n, fields: {}, alerts: {} };
+    let notifierData = { name: n, fields: {}, alerts: {} };
 
-      // add fields to notifier
-      for (let field of notifier.fields) {
-        let fieldData = field;
-        fieldData.value = ''; // has empty value to start
-        notifierData.fields[field.name] = fieldData;
+    // add fields (and existing values) to notifier
+    for (let field of notifier.fields) {
+      let fieldData = field;
+      let value = '';  // has empty value to start
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].fields[field.name]) {
+        value = parliament.settings.notifiers[n].fields[field.name].value;
       }
-
-      // build alerts
-      for (let a in issueTypes) {
-        notifierData.alerts[a] = true;
-      }
-
-      parliament.settings.notifiers[n] = notifierData;
+      fieldData.value = value;
+      notifierData.fields[field.name] = fieldData;
     }
+
+    // build alerts
+    for (let a in issueTypes) {
+      let value = true;
+      if (parliament.settings.notifiers[n] &&
+        parliament.settings.notifiers[n].alerts.hasOwnProperty(a)) {
+        value = parliament.settings.notifiers[n].alerts[a];
+      }
+      notifierData.alerts[a] = value;
+    }
+
+    if (parliament.settings.notifiers[n] &&
+      parliament.settings.notifiers[n].on) {
+      notifierData.on = true;
+    }
+
+    parliament.settings.notifiers[n] = notifierData;
+  }
+
+  if (app.get('debug')) {
+    console.log('Built notifiers:', JSON.stringify(parliament.settings.notifiers, null, 2));
   }
 }
 
@@ -609,34 +697,18 @@ function initializeParliament () {
       parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
     }
 
-    // build notifiers
-    for (let n in internals.notifiers) {
-      // if the notifier is not in settings, add it
-      if (!parliament.settings.notifiers[n]) {
-        const notifier = internals.notifiers[n];
-
-        let notifierData = { name: n, fields: {}, alerts: {} };
-
-        // add fields to notifier
-        for (let field of notifier.fields) {
-          let fieldData = field;
-          fieldData.value = ''; // has empty value to start
-          notifierData.fields[field.name] = fieldData;
-        }
-
-        // build alerts
-        for (let a in issueTypes) {
-          notifierData.alerts[a] = true;
-        }
-
-        parliament.settings.notifiers[n] = notifierData;
-      }
+    if (app.get('debug')) {
+      console.log('Parliament initialized!');
+      console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
+      console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
     }
+
+    buildNotifiers();
 
     fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
       (err) => {
         if (err) {
-          console.error('Parliament initialization error:', err.message || err);
+          console.log('Parliament initialization error:', err.message || err);
           return reject(new Error('Parliament initialization error'));
         }
 
@@ -674,7 +746,7 @@ function updateParliament () {
           fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
             (err) => {
               if (err) {
-                console.error('Unable to write issue:', err.message || err);
+                console.log('Unable to write issue:', err.message || err);
               }
             }
           );
@@ -683,16 +755,24 @@ function updateParliament () {
         fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
           (err) => {
             if (err) {
-              console.error('Parliament update error:', err.message || err);
+              console.log('Parliament update error:', err.message || err);
               return reject(new Error('Parliament update error'));
             }
 
             return resolve();
           });
+
+        if (app.get('debug')) {
+          console.log('Parliament updated!');
+          if (issuesRemoved) {
+            console.log('Issues updated!');
+          }
+        }
+
         return resolve();
       })
       .catch((error) => {
-        console.error('Parliament update error:', error.messge || error);
+        console.log('Parliament update error:', error.messge || error);
         return resolve();
       });
   });
@@ -707,6 +787,12 @@ function cleanUpIssues () {
     const timeSinceLastNoticed = Date.now() - issue.lastNoticed || issue.firstNoticed;
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
+
+    // remove issues that are provisional that haven't been seen since the last cycle
+    if (issue.provisional && timeSinceLastNoticed >= 10000) {
+      issuesRemoved = true;
+      issues.splice(len, 1);
+    }
 
     // remove all issues that have not been seen again for the removeIssuesAfter time, and
     // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
@@ -739,9 +825,13 @@ function getGeneralSetting (type) {
 function writeParliament (req, res, next, successObj, errorText, sendParliament) {
   fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
+      if (app.get('debug')) {
+        console.log('Wrote parliament file', err || '');
+      }
+
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
@@ -768,9 +858,13 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
 function writeIssues (req, res, next, successObj, errorText, sendIssues) {
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
+      if (app.get('debug')) {
+        console.log('Wrote issues file', err || '');
+      }
+
       if (err) {
         const errorMsg = `Unable to write issue data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
@@ -789,6 +883,12 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 /* APIs -------------------------------------------------------------------- */
 // Authenticate user
 router.post('/auth', (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot login.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
   let hasAuth = !!app.get('password');
   if (!hasAuth) {
     const error = new Error('No password set.');
@@ -816,10 +916,14 @@ router.post('/auth', (req, res, next) => {
   });
 });
 
-// Get whether authentication is set
+// Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
   let hasAuth = !!app.get('password');
-  return res.json({ hasAuth:hasAuth });
+  let dashboardOnly = !!app.get('dashboardOnly');
+  return res.json({
+    hasAuth: hasAuth,
+    dashboardOnly: dashboardOnly
+  });
 });
 
 // Get whether the user is logged in
@@ -830,6 +934,12 @@ router.get('/auth/loggedin', verifyToken, (req, res, next) => {
 
 // Update (or create) a password for the parliament
 router.put('/auth/update', (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot create a password.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
   if (!req.body.newPassword) {
     const error = new Error('You must provide a new password');
     error.httpStatusCode = 422;
@@ -854,7 +964,7 @@ router.put('/auth/update', (req, res, next) => {
 
   bcrypt.hash(req.body.newPassword, saltrounds, (err, hash) => {
     if (err) {
-      console.error(`Error hashing password: ${err}`);
+      console.log(`Error hashing password: ${err}`);
       const error = new Error('Hashing password failed.');
       error.httpStatusCode = 401;
       return next(error);
@@ -955,7 +1065,16 @@ router.put('/settings', verifyToken, (req, res, next) => {
 
 // Update the parliament settings object to the defaults
 router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
-  parliament.settings = settingsDefault;
+  let type = 'all'; // default
+  if (req.body.type) {
+    type = req.body.type;
+  }
+
+  if (type === 'general') {
+    parliament.settings.general = JSON.parse(JSON.stringify(settingsDefault.general));
+  } else {
+    parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
+  }
 
   buildNotifiers();
 
@@ -966,13 +1085,16 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
     (err) => {
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message || err}`;
-        console.error(errorMsg);
+        console.log(errorMsg);
         const error = new Error(errorMsg);
         error.httpStatusCode = 500;
         return next(error);
       }
 
-      return res.json(settings);
+      return res.json({
+        settings: settings,
+        text: `Successfully restored ${req.body.type} default settings.`
+      });
     }
   );
 });
@@ -986,7 +1108,8 @@ router.get('/parliament', (req, res, next) => {
       cluster.activeIssues = [];
       for (let issue of issues) {
         if (issue.clusterId === cluster.id &&
-          !issue.acknowledged && !issue.ignoreUntil) {
+          !issue.acknowledged && !issue.ignoreUntil &&
+          !issue.provisional) {
           cluster.activeIssues.push(issue);
         }
       }
@@ -1205,6 +1328,8 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
           cluster.hideDataNodes   = req.body.hideDataNodes;
           cluster.hideDeltaTDPS   = req.body.hideDeltaTDPS;
           cluster.hideTotalNodes  = req.body.hideTotalNodes;
+          cluster.hideMonitoring  = req.body.hideMonitoring;
+          cluster.hideMolochNodes = req.body.hideMolochNodes;
           foundCluster = true;
           break;
         }
@@ -1226,6 +1351,9 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
 // Get a list of issues
 router.get('/issues', (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
+
+  // filter out provisional issues
+  issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
   let type = 'string';
   let sortBy = req.query.sort;
@@ -1262,29 +1390,123 @@ router.get('/issues', (req, res, next) => {
   return res.json({ issues: issuesClone });
 });
 
-// Acknowledge an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/acknowledgeIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to acknowledge.';
+// acknowledge one or more issues
+router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to acknowledge.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
   }
 
   let now = Date.now();
+  let count = 0;
 
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.acknowledged = now;
+      count++;
+    }
+  }
 
-  if (!issue) {
-    const error = new Error('Unable to find issue to acknowledge.');
+  if (!count) {
+    let errorText = 'Unable to acknowledge requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
     error.httpStatusCode = 500;
     return next(error);
   }
 
-  issue.acknowledged = now;
+  let successText = `Successfully acknowledged ${count} requested issue`;
+  let errorText = 'Unable to acknowledge the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
 
-  let successObj  = { success:true, text:'Successfully acknowledged the requested issue.', acknowledged:now };
-  let errorText   = 'Unable to acknowledge that issue.';
+  let successObj = { success:true, text:successText, acknowledged:now };
+  writeIssues(req, res, next, successObj, errorText);
+});
+
+// ignore one or more issues
+router.put('/ignoreIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to ignore.';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  let ms = req.body.ms || 3600000; // Default to 1 hour
+  let ignoreUntil = Date.now() + ms;
+  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
+
+  let count = 0;
+
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.ignoreUntil = ignoreUntil;
+      count++;
+    }
+  }
+
+  if (!count) {
+    let errorText = 'Unable to ignore requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+
+  let successText = `Successfully ignored ${count} requested issue`;
+  let errorText = 'Unable to ignore the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
+
+  let successObj = { success:true, text:successText, ignoreUntil:ignoreUntil };
+  writeIssues(req, res, next, successObj, errorText);
+});
+
+// unignore one or more issues
+router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the issue(s) to unignore.';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  let count = 0;
+
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue) {
+      issue.ignoreUntil = undefined;
+      issue.alerted     = undefined; // reset alert time so it can alert again
+      count++;
+    }
+  }
+
+  if (!count) {
+    let errorText = 'Unable to unignore requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+
+  let successText = `Successfully unignored ${count} requested issue`;
+  let errorText = 'Unable to unignore the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
+
+  let successObj = { success:true, text:successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1344,83 +1566,6 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
   writeIssues(req, res, next, successObj, errorText, true);
 });
 
-// Ignore an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/ignoreIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to ignore.';
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
-  let ms = req.body.ms || 3600000; // Default to 1 hour
-
-  let ignoreUntil = Date.now() + ms;
-  if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
-
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
-
-  if (!issue) {
-    const error = new Error('Unable to find issue to ignore.');
-    error.httpStatusCode = 500;
-    return next(error);
-  }
-
-  issue.ignoreUntil = ignoreUntil;
-
-  let successObj  = { success:true, text:'Successfully ignored the requested issue.', ignoreUntil:ignoreUntil };
-  let errorText   = 'Unable to ignore that issue.';
-  writeIssues(req, res, next, successObj, errorText);
-});
-
-// Allow an issue with a cluster to alert by removing ignoreUntil
-router.put('/groups/:groupId/clusters/:clusterId/removeIgnoreIssue', verifyToken, (req, res, next) => {
-  if (!req.body.type) {
-    let message = 'Must specify the issue type to remove the ignore.';
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
-  let issue = findIssue(parseInt(req.params.clusterId), req.body.type, req.body.node);
-
-  if (!issue) {
-    const error = new Error('Unable to find issue to remove the ignore.');
-    error.httpStatusCode = 500;
-    return next(error);
-  }
-
-  issue.ignoreUntil = undefined;
-  issue.alerted     = undefined; // reset alert time so it can alert again
-
-  let successObj  = { success:true, text:'Successfully removed the ignore for the requested issue.' };
-  let errorText   = 'Unable to remove the ignore for that issue.';
-  writeIssues(req, res, next, successObj, errorText);
-});
-
-// Acknowledge all issues with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/acknowledgeAllIssues', verifyToken, (req, res, next) => {
-  let now   = Date.now();
-  let count = 0;
-
-  for (let issue of issues) {
-    if (issue.clusterId === parseInt(req.params.clusterId) && !issue.acknowledged) {
-      issue.acknowledged = now;
-      count++;
-    }
-  }
-
-  if (!count) {
-    const error = new Error('There are no issues in this cluster to acknowledge.');
-    error.httpStatusCode = 400;
-    return next(error);
-  }
-
-  let successObj  = { success:true, text:`Successfully acknowledged ${count} issues.`, acknowledged:now };
-  let errorText   = 'Unable to acknowledge issues.';
-  writeIssues(req, res, next, successObj, errorText);
-});
-
 // issue a test alert to a specified notifier
 router.post('/testAlert', (req, res, next) => {
   if (!req.body.notifier) {
@@ -1441,7 +1586,7 @@ router.post('/testAlert', (req, res, next) => {
       if (!field || (field.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         let message = `Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`;
-        console.error(message);
+        console.log(message);
 
         const error = new Error(message);
         error.httpStatusCode = 422;
@@ -1484,11 +1629,19 @@ if (app.get('keyFile') && app.get('certFile')) {
 
 server
   .on('error', function (e) {
-    console.error(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
+    console.log(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
     process.exit(1);
   })
   .on('listening', function (e) {
     console.log(`Express server listening on port ${server.address().port} in ${app.settings.env} mode`);
+    if (app.get('debug')) {
+      console.log('Debug Level', app.get('debug'));
+      console.log('Parliament file:', app.get('file'));
+      console.log('Issues file:', issuesFilename);
+      if (app.get('dashboardOnly')) {
+        console.log('Opening in dashboard only mode');
+      }
+    }
   })
   .listen(app.get('port'), () => {
     initializeParliament()
@@ -1496,11 +1649,12 @@ server
         updateParliament();
       })
       .catch(() => {
-        console.error(`ERROR - couldn't initialize Parliament`);
+        console.log(`ERROR - never mind, couldn't initialize Parliament`);
         process.exit(1);
       });
 
     setInterval(() => {
       updateParliament();
+      processAlerts();
     }, 10000);
   });

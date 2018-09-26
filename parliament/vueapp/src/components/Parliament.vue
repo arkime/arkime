@@ -34,17 +34,24 @@
           />
         </div>
       </div> <!-- /search -->
-      <!-- create group -->
       <div v-if="loggedIn"
         class="col-md-4">
-        <a v-if="!showNewGroupForm"
+        <!-- edit mode toggle -->
+        <span @click="toggleEditMode"
+          class="fa fa-toggle-off fa-2x pull-right cursor-pointer mt-1 pl-2"
+          :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
+          title="Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)"
+          v-b-tooltip.hover.bottom>
+        </span> <!-- /edit mode toggle -->
+        <!-- create group -->
+        <a v-if="!showNewGroupForm && editMode"
           @click="openNewGroupForm"
           class="btn btn-outline-primary cursor-pointer pull-right">
           <span class="fa fa-plus-circle">
           </span>&nbsp;
           New Group
         </a>
-        <span v-else>
+        <span v-else-if="editMode">
           <a @click="createNewGroup"
             class="btn btn-outline-success cursor-pointer pull-right">
             <span class="fa fa-plus-circle"></span>&nbsp;
@@ -56,14 +63,14 @@
             </span>&nbsp;
             Cancel
           </a>
-        </span>
-      </div> <!-- /create group -->
+        </span> <!-- /create group -->
+      </div>
     </div> <!-- /search & create group -->
 
     <hr>
 
     <!-- new group form -->
-    <div v-if="showNewGroupForm && loggedIn"
+    <div v-if="showNewGroupForm && loggedIn && editMode"
       class="row">
       <div class="col-md-12">
         <div @keyup.enter="createNewGroup">
@@ -118,7 +125,7 @@
         <span class="fa fa-3x fa-folder-open text-muted-more">
         </span>
         No groups in your parliament.
-        <a v-if="loggedIn"
+        <a v-if="loggedIn && editMode"
           @click="showNewGroupForm = true"
           class="cursor-pointer no-href no-decoration">
           Create one
@@ -137,12 +144,12 @@
         <div class="row group"
           v-if="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm)">
           <div class="col-md-12">
-            <h5 class="mb-1">
-              <span v-if="loggedIn && !searchTerm"
+            <h5 class="mb-1 pb-1">
+              <span v-if="loggedIn && !searchTerm && editMode"
                 class="group-handle fa fa-th">
               </span>
               <!-- group action buttons -->
-              <span v-if="loggedIn">
+              <span v-if="loggedIn && editMode">
                 <a v-if="groupAddingCluster !== group.id && groupBeingEdited !== group.id"
                   @click="displayNewClusterForm(group)"
                   class="btn btn-sm btn-outline-info pull-right cursor-pointer mb-1">
@@ -180,7 +187,7 @@
                 </a>
               </span> <!-- /group action buttons -->
               {{ group.title }}&nbsp;
-              <a v-if="loggedIn && groupAddingCluster !== group.id && groupBeingEdited === group.id"
+              <a v-if="loggedIn && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
                 @click="deleteGroup(group)"
                 v-b-tooltip.hover.top
                 title="Delete Group"
@@ -207,7 +214,7 @@
         </div> <!-- /group title/description -->
 
         <!-- edit group form -->
-        <div v-if="loggedIn && groupBeingEdited === group.id"
+        <div v-if="loggedIn && groupBeingEdited === group.id && editMode"
           class="row">
           <div class="col-md-12">
             <form>
@@ -246,7 +253,7 @@
         </div> <!-- /edit group form -->
 
         <!-- create cluster form -->
-        <div v-if="loggedIn && groupAddingCluster === group.id">
+        <div v-if="loggedIn && groupAddingCluster === group.id && editMode">
           <div class="col-md-12">
             <hr>
             <form @keyup.enter="createCluster">
@@ -364,7 +371,7 @@
                   </span>
                 </span>
                 <h6>
-                  <span v-if="loggedIn && !searchTerm"
+                  <span v-if="loggedIn && !searchTerm && editMode"
                     class="cluster-handle">
                     <span class="fa fa-th">
                     </span>
@@ -395,9 +402,9 @@
                     </span>
                   </a>
                 </h6> <!-- /cluster title -->
-                <hr>
                 <!-- cluster description -->
-                <p class="text-muted small mb-2">
+                <p class="text-muted small mb-2"
+                  v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
                 <!-- cluster error -->
@@ -414,11 +421,11 @@
                 </div> <!-- /cluster error -->
                 <!-- cluster stats -->
                 <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && !cluster.disabled && !cluster.multiviewer) || (cluster.id === clusterBeingEdited && !cluster.newDisabled && !cluster.newMultiviewer)">
-                  <div class="row">
+                  <div class="row cluster-stats-row pt-1">
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited"
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDeltaBPS"
                           @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
@@ -434,7 +441,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited"
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDeltaTDPS"
                           @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
@@ -447,10 +454,42 @@
                         </small>
                       </label>
                     </div>
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
+                      class="col-6">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                          type="checkbox"
+                          :checked="!cluster.hideMonitoring"
+                          @change="cluster.hideMonitoring = !cluster.hideMonitoring"
+                        />
+                        <strong class="d-inline-block">
+                          {{ cluster.monitoring | commaString }}
+                        </strong>
+                        <small class="d-inline-block">
+                          Sessions
+                        </small>
+                      </label>
+                    </div>
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMolochNodes"
+                      class="col-6">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                          type="checkbox"
+                          :checked="!cluster.hideMolochNodes"
+                          @change="cluster.hideMolochNodes = !cluster.hideMolochNodes"
+                        />
+                        <strong class="d-inline-block">
+                          {{ cluster.molochNodes | commaString }}
+                        </strong>
+                        <small class="d-inline-block">
+                          Active Nodes
+                        </small>
+                      </label>
+                    </div>
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited"
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDataNodes"
                           @change="cluster.hideDataNodes = !cluster.hideDataNodes"
@@ -459,14 +498,14 @@
                           {{ cluster.dataNodes | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Data Nodes
+                          ES Data Nodes
                         </small>
                       </label>
                     </div>
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited"
+                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideTotalNodes"
                           @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
@@ -475,7 +514,7 @@
                           {{ cluster.totalNodes | commaString }}
                         </strong>
                         <small class="d-inline-block">
-                          Total Nodes
+                          ES Total Nodes
                         </small>
                       </label>
                     </div>
@@ -503,7 +542,8 @@
                   </template>
                   <template v-else>
                     <div v-for="(issue, index) in cluster.activeIssues.slice(0, 4)"
-                      :key="getIssueTrackingId(issue)">
+                      :key="getIssueTrackingId(issue)"
+                      class="pt-1">
                       <issue :issue="issue"
                         :group-id="group.id"
                         :cluster-id="cluster.id"
@@ -521,7 +561,7 @@
                   </template>
                 </small> <!-- /cluster issues -->
                 <!-- edit cluster form -->
-                <div v-if="loggedIn && cluster.id === clusterBeingEdited"
+                <div v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
                   class="small">
                   <hr class="mt-2">
                   <form class="edit-cluster">
@@ -592,27 +632,26 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="loggedIn"
+              <div v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)"
                 class="card-footer small">
-                <span v-show="cluster.id !== clusterBeingEdited">
-                  <a v-if="cluster.activeIssues && cluster.activeIssues.length"
-                    @click="acknowledgeAllIssues(group.id, cluster)"
-                    class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                    title="Acknowledge all issues for this cluster and silence them for an hour"
-                    v-b-tooltip.hover.left>
-                    <span class="fa fa-check">
-                    </span>
-                  </a>
-                  <a class="btn btn-sm btn-outline-warning cursor-pointer"
-                    @click="displayEditClusterForm(cluster)"
-                    title="Edit cluster"
-                    v-b-tooltip.hover.right>
-                    <span class="fa fa-pencil">
-                    </span>
-                  </a>
-                </span>
-                <span v-show="cluster.id === clusterBeingEdited">
-                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                <a v-if="cluster.activeIssues && cluster.activeIssues.length"
+                  @click="acknowledgeAllIssues(cluster)"
+                  class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                  title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
+                  v-b-tooltip.hover.left>
+                  <span class="fa fa-check">
+                  </span>
+                </a>
+                <a v-show="cluster.id !== clusterBeingEdited && editMode"
+                  class="btn btn-sm btn-outline-warning cursor-pointer"
+                  @click="displayEditClusterForm(cluster)"
+                  title="Edit cluster"
+                  v-b-tooltip.hover.right>
+                  <span class="fa fa-pencil">
+                  </span>
+                </a>
+                <span v-show="cluster.id === clusterBeingEdited && editMode">
+                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1"
                     @click="editCluster(group, cluster)"
                     title="Save cluster"
                     v-b-tooltip.hover.top>
@@ -645,7 +684,7 @@
           <strong>
             No clusters in this group.
             <a @click="displayNewClusterForm(group)"
-              v-if="loggedIn"
+              v-if="loggedIn && editMode"
               class="no-decoration cursor-pointer no-href">
               Create one
             </a>
@@ -701,7 +740,9 @@ export default {
       newGroupDescription: '',
       focusGroupInput: false,
       // cluster form vars
-      focusClusterInput: false
+      focusClusterInput: false,
+      // create/edit/rearrange groups/clusters (or not)
+      editMode: false
     };
   },
   computed: {
@@ -733,6 +774,15 @@ export default {
   },
   methods: {
     /* page functions -------------------------------------------------------- */
+    toggleEditMode: function () {
+      this.editMode = !this.editMode;
+      this.showNewGroupForm = false;
+      this.groupBeingEdited = undefined;
+      this.groupAddingCluster = undefined;
+      this.clusterBeingEdited = undefined;
+      this.focusClusterInput = false;
+      this.focusGroupInput = false;
+    },
     debounceSearch: function () {
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
@@ -913,7 +963,9 @@ export default {
         hideDeltaBPS: cluster.hideDeltaBPS,
         hideDataNodes: cluster.hideDataNodes,
         hideDeltaTDPS: cluster.hideDeltaTDPS,
-        hideTotalNodes: cluster.hideTotalNodes
+        hideTotalNodes: cluster.hideTotalNodes,
+        hideMonitoring: cluster.hideMonitoring,
+        hideMolochNodes: cluster.hideMolochNodes
       };
 
       ParliamentService.editCluster(group.id, cluster.id, updatedCluster)
@@ -959,8 +1011,8 @@ export default {
       let i = this.showMoreIssuesFor.indexOf(cluster.id);
       if (i > -1) { this.showMoreIssuesFor.splice(i, 1); }
     },
-    acknowledgeAllIssues: function (groupId, cluster) {
-      ParliamentService.acknowledgeAllIssues(groupId, cluster.id)
+    acknowledgeAllIssues: function (cluster) {
+      ParliamentService.acknowledgeIssues(cluster.activeIssues)
         .then((data) => {
           cluster.activeIssues = [];
         })
@@ -1087,15 +1139,16 @@ export default {
 
       for (const group of this.parliament.groups) {
         if (!this.searchTerm) {
-          group.filteredClusters = Object.assign([], group.clusters);
+          this.$set(group, 'filteredClusters', Object.assign([], group.clusters));
           this.numFilteredClusters += group.filteredClusters.length;
           continue;
         }
 
-        group.filteredClusters = Object.assign([], group.clusters)
+        this.$set(group, 'filteredClusters', Object.assign([], group.clusters)
           .filter((item) => {
             return item.title.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
-          });
+          })
+        );
 
         this.numFilteredClusters += group.filteredClusters.length;
       }
@@ -1267,9 +1320,6 @@ export default {
 .cluster-group .cluster {
   padding-left: 2px;
   padding-right: 2px;
-  /* https://github.com/RubaXa/Sortable/issues/1276 */
-  position: relative;
-  transform: translateZ(0);
 }
 .cluster-group .card {
   height:100%;
@@ -1278,12 +1328,21 @@ export default {
 .cluster-group .card .card-body {
   padding: 0.5rem;
 }
-.cluster-group .card .card-body hr {
-  margin-top: 0;
-  margin-bottom: .3rem;
-}
 .cluster-group .card .card-footer {
   padding: 0.2rem 0.5rem;
+}
+.cluster-group .cluster .cluster-stats-row {
+  line-height: 1;
+  margin-right: -2px;
+  margin-left: -2px;
+}
+.cluster-group .cluster .cluster-stats-row > div {
+  padding-right: 2px;
+  padding-left: 2px;
+}
+.sortable-chosen, .sortable-chosen.sortable-ghost {
+  /* https://github.com/RubaXa/Sortable/issues/1276 */
+  z-index: 10000;
 }
 
 /* compact form for editing clusters */

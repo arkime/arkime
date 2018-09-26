@@ -81,51 +81,57 @@
                 <input v-model="user.userName"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'userName')"
                 />
               </td>
               <td class="no-wrap">
                 <input v-model="user.expression"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'expression')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.enabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'enabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.createEnabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'createEnabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.webEnabled"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'webEnabled')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.headerAuthEnabled"
-                  @change="userChanged(user);"
+                  @change="userChanged(user, 'headerAuthEnabled');"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.emailSearch"
-                  @change="userChanged(user)"
+                  @change="userChanged(user, 'emailSearch')"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
-                    v-model="user.removeEnabled"
-                    @change="userChanged(user)"
-                  />
+                  v-model="user.removeEnabled"
+                  @change="userChanged(user, 'removeEnabled')"
+                />
+              </td>
+              <td class="no-wrap">
+                <input type="checkbox"
+                  v-model="user.packetSearch"
+                  @change="userChanged(user, 'packetSearch')"
+                />
               </td>
               <td class="no-wrap pull-right">
                 <a class="btn btn-sm btn-theme-primary"
@@ -310,6 +316,17 @@
                   </label>
                 </div>
               </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[9].help">
+                    <input type="checkbox"
+                      v-model="newuser.packetSearch"
+                    />
+                    Packet Search
+                  </label>
+                </div>
+              </div>
             </form>
           </div>
         </div> <!-- /new user form -->
@@ -337,10 +354,12 @@ export default {
     return {
       error: '',
       loading: true,
-      user: null,
       users: null,
       createError: '',
-      newuser: { enabled: true },
+      newuser: {
+        enabled: true,
+        packetSearch: true
+      },
       msg: '',
       msgType: undefined,
       query: {
@@ -359,12 +378,22 @@ export default {
         { name: 'Web Interface', sort: 'webEnabled', help: 'Can access the web interface. When off only APIs can be used' },
         { name: 'Web Auth Header', sort: 'headerAuthEnabled', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
         { name: 'Email Search', sort: 'emailSearch', help: 'Can perform email searches' },
-        { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' }
+        { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
+        { name: 'Can Search Packets', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' }
       ]
     };
   },
+  computed: {
+    user: {
+      get: function () {
+        return this.$store.state.user;
+      },
+      set: function (newValue) {
+        this.$store.commit('setUser', newValue);
+      }
+    }
+  },
   created: function () {
-    this.loadUser();
     this.loadData();
   },
   methods: {
@@ -393,11 +422,15 @@ export default {
       this.msg = null;
       this.msgType = null;
     },
-    userChanged: function (user) {
+    userChanged: function (user, field) {
       this.$http.post('user/update', user)
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
+          // update the current user if they were changed
+          if (this.user.userId === user.userId) {
+            this.user[field] = user[field];
+          }
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';

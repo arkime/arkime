@@ -36,7 +36,7 @@ extern MolochConfig_t        config;
 
 
 typedef struct suricataitem_t SuricataItem_t;
-typedef struct suricataitem_t {
+struct suricataitem_t {
     SuricataItem_t *items_next;
     char            sessionId[MOLOCH_SESSIONID_LEN];
     time_t          timestamp;
@@ -54,17 +54,17 @@ typedef struct suricataitem_t {
     char            action_len;
     char            signature_len;
     char            category_len;
-} SuricataItem_t;
+};
 
 #define SURICATA_HASH_SIZE 7919
 
 typedef struct suricatahead_t SuricataHead_t;
-typedef struct suricatahead_t {
+struct suricatahead_t {
     SuricataItem_t  *items[SURICATA_HASH_SIZE];
     MOLOCH_LOCK_EXTERN(lock);
     uint32_t         cnt;
     uint16_t         num;
-} SuricataHead_t;
+};
 
 
 LOCAL char                  *suricataAlertFile;
@@ -88,16 +88,6 @@ SuricataHead_t alerts;
 
 /******************************************************************************/
 LOCAL void suricata_item_free(SuricataItem_t *item);
-/******************************************************************************/
-#ifdef NEEDPRINT
-LOCAL void suricata_print(SuricataItem_t *item)
-{
-    char buf[100];
-    moloch_session_id_string(item->sessionId, buf);
-
-    printf("sessionId: %s hash: %u ses: %d timestamp: %ld\n", buf, item->hash, item->ses, item->timestamp);
-}
-#endif
 /******************************************************************************/
 LOCAL void suricata_alerts_init()
 {
@@ -272,6 +262,8 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
         } else if (MATCH(data, "signature")) {
             item->signature = g_strndup(data + out[i+2], out[i+3]);
             item->signature_len = out[i+3];
+        } else if (MATCH(line, "severity")) {
+            item->severity = atoi(data + out[i+2]);
         } else if (MATCH(data, "category")) {
             item->category = g_strndup(data + out[i+2], out[i+3]);
             item->category_len = out[i+3];
@@ -420,11 +412,16 @@ LOCAL void suricata_close()
 /******************************************************************************/
 LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 {
+    static int printedError;
     struct stat sb;
 
     int rc = stat(suricataAlertFile, &sb);
 
     if (rc < 0) {
+        if (!printedError) {
+            LOG("ERROR - Can't access suricataAlertFile '%s' : %s\n", suricataAlertFile, strerror(errno));
+            printedError = 1;
+        }
         if (file) {
             // File disappeared
             suricata_read();
@@ -454,6 +451,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
         fileSize = sb.st_size;
     }
 
+    printedError = 0;
     return TRUE;
 }
 /******************************************************************************/
@@ -489,41 +487,41 @@ void moloch_plugin_init()
         "suricata.flowId", "Flow Id", "suricata.flowId",
         "Suricata Flow Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     actionField = moloch_field_define("suricata", "termfield",
         "suricata.action", "Action", "suricata.action",
         "Suricata Action",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     signatureField = moloch_field_define("suricata", "termfield",
         "suricata.signature", "Signature", "suricata.signature",
         "Suricata Signature",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     categoryField = moloch_field_define("suricata", "termfield",
         "suricata.category", "Category", "suricata.category",
         "Suricata Category",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     gidField = moloch_field_define("suricata", "integer",
         "suricata.gid", "Gid", "suricata.gid",
         "Suricata Gid",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     signatureIdField = moloch_field_define("suricata", "integer",
         "suricata.signatureId", "Signature Id", "suricata.signatureId",
         "Suricata Signature Id",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     severityField = moloch_field_define("suricata", "integer",
         "suricata.severity", "Severity", "suricata.severity",
         "Suricata Severity",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 }

@@ -463,7 +463,7 @@ int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsi
         if (seqs[num].value == 0)
             break;
 #ifdef DEBUG_PARSERS
-        LOG("%d %p %d %d %d %d", num, seqs[num].value, seqs[num].pc, seqs[num].tag, seqs[num].len, BSB_IS_ERROR(bsb));
+        LOG("%d %p %u %u %u %u", num, seqs[num].value, seqs[num].pc, seqs[num].tag, seqs[num].len, BSB_IS_ERROR(bsb));
 #endif
         num++;
     }
@@ -525,20 +525,20 @@ void moloch_parsers_init()
         "session.segments", "Session Segments", "segmentCnt",
         "Number of segments in session so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "session.length", "Session Length", "length",
         "Session Length in milliseconds so far",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        NULL);
+        (char *)NULL);
 
     userField = moloch_field_define("general", "lotermfield",
         "user", "User", "user",
         "External user set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     int flags = MAGIC_MIME;
 
@@ -681,13 +681,13 @@ void moloch_parsers_init()
         "tags", "Tags", "tags",
         "Tags set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
         "asset", "Asset", "asset",
         "Asset name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     gsize keys_len;
     gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);
@@ -817,14 +817,14 @@ typedef struct
 LOCAL MolochClassifyHead_t classifersTcp0;
 LOCAL MolochClassifyHead_t classifersTcp1[256];
 LOCAL MolochClassifyHead_t classifersTcp2[256][256];
-LOCAL MolochClassifyHead_t classifersTcpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersTcpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersTcpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersTcpPortDst[0x10000];
 
 LOCAL MolochClassifyHead_t classifersUdp0;
 LOCAL MolochClassifyHead_t classifersUdp1[256];
 LOCAL MolochClassifyHead_t classifersUdp2[256][256];
-LOCAL MolochClassifyHead_t classifersUdpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersUdpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersUdpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
@@ -867,6 +867,10 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
+    if ((type & (MOLOCH_PARSERS_PORT_UDP | MOLOCH_PARSERS_PORT_TCP)) == 0) {
+        LOGEXIT("Parser '%s' has empty type", name);
+    }
+
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
     c->name     = name;
     c->uw       = uw;
@@ -895,6 +899,9 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     if (MOLOCH_API_VERSION != apiversion) {
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
+
+    if (!match)
+        LOGEXIT("Can't have a null match for %s", name);
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
     c->name     = name;
@@ -988,7 +995,7 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     }
 
     moloch_rules_run_after_classify(session);
-    if (config.yara && !config.yaraEveryPacket)
+    if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         moloch_yara_execute(session, data, remaining, 0);
 }
 /******************************************************************************/
@@ -1031,6 +1038,6 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     }
 
     moloch_rules_run_after_classify(session);
-    if (config.yara && !config.yaraEveryPacket)
+    if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         moloch_yara_execute(session, data, remaining, 0);
 }

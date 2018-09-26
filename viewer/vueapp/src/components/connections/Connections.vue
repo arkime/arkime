@@ -24,7 +24,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.length"
-            v-on:change="changeLength()">
+            @change="changeLength">
             <option value="100">100</option>
             <option value="500">500</option>
             <option value="1000">1,000</option>
@@ -103,7 +103,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.minConn"
-            v-on:change="changeMinConn()">
+            @change="changeMinConn">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -123,7 +123,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="query.nodeDist"
-            v-on:change="changeNodeDist()">
+            @change="changeNodeDist">
             <option value="75">75</option>
             <option value="100">100</option>
             <option value="125">125</option>
@@ -135,10 +135,42 @@
 
         <!-- unlock button-->
         <button class="btn btn-default btn-sm ml-1"
-          @click.stop.prevent="unlock()">
+          v-b-tooltip.hover
+          title="Unlock any nodes that you have set into place"
+          @click.stop.prevent="unlock">
           <span class="fa fa-unlock"></span>&nbsp;
           Unlock
         </button> <!-- /unlock button-->
+
+        <!-- export button-->
+        <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Export this graph as a png"
+          @click.stop.prevent="exportPng">
+          <span class="fa fa-download"></span>&nbsp;
+          Export
+        </button> <!-- /export button-->
+
+        <!-- zoom in/out -->
+        <div class="btn-group ml-1">
+          <button type="button"
+            class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom in"
+            @click="zoomConnections(0.5)">
+            <span class="fa fa-fw fa-plus">
+            </span>
+          </button>
+          <button type="button"
+            class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom out"
+            @click="zoomConnections(-0.5)">
+            <span class="fa fa-fw fa-minus">
+            </span>
+          </button>
+        </div> <!-- /zoom in/out -->
+
       </div>
     </form>
 
@@ -160,7 +192,6 @@
       <moloch-no-results
         v-if="!error && !loading && recordsFiltered === 0"
         class="mt-5 mb-5"
-        :records-total="recordsFiltered"
         :view="query.view">
       </moloch-no-results> <!-- /no results -->
 
@@ -179,7 +210,6 @@
 
 <script>
 import Vue from 'vue';
-import UserService from '../users/UserService';
 import MolochSearch from '../search/Search';
 import FieldService from '../search/FieldService';
 import MolochPaging from '../utils/Pagination';
@@ -199,6 +229,8 @@ let linkPopupVue;
 // save visualization data
 let force, svgMain;
 
+const saveSvgAsPng = require('save-svg-as-png');
+
 export default {
   name: 'Connections',
   components: {
@@ -212,7 +244,6 @@ export default {
   },
   data: function () {
     return {
-      user: null,
       loading: true,
       error: '',
       settings: {}, // user settings
@@ -243,6 +274,9 @@ export default {
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   watch: {
@@ -270,8 +304,7 @@ export default {
     this.colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.startD3();
-    // IMPORTANT: kicks off the initial search query
-    this.loadUser();
+    this.loadData();
 
     $('.footer').hide();
   },
@@ -309,6 +342,23 @@ export default {
       this.svg.selectAll('.node circle').each(function (d) { d.fixed = 0; });
       force.resume();
     },
+    zoomConnections: function (direction) {
+      // get the coordinates of the center
+      const centerBefore = this.zoom.center();
+      const translate = this.zoom.translate();
+      const coordinates = this.getCoordinates(centerBefore);
+      this.zoom.scale(this.zoom.scale() * Math.pow(2, direction));
+
+      // translate back to the center
+      const centerAfter = this.getPoint(coordinates);
+      this.zoom.translate([translate[0] + centerBefore[0] - centerAfter[0],
+        translate[1] + centerBefore[1] - centerAfter[1]]);
+
+      this.svg.transition().duration(500).call(this.zoom.event);
+    },
+    exportPng: function () {
+      saveSvgAsPng.saveSvgAsPng(document.getElementById('graphSvg'), 'connections.png', {backgroundColor: '#FFFFFF'});
+    },
     closePopups: function () {
       $('.connections-popup').hide();
     },
@@ -334,16 +384,6 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-          // IMPORTANT: kicks off the initial search query
-          this.loadData();
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
-        });
-    },
     loadData: function () {
       this.loading = true;
       this.error = false;
@@ -802,11 +842,13 @@ export default {
         .translate([0, 0])
         .scale(1)
         .scaleExtent([0.25, 6])
+        .center([self.width / 2, self.height / 2])
         .on('zoom', redraw);
 
       svgMain = d3.select('#network').append('svg:svg')
         .attr('width', self.width)
-        .attr('height', self.height);
+        .attr('height', self.height)
+        .attr('id', 'graphSvg');
 
       self.svg = svgMain.append('svg:g')
         .call(self.zoom)
@@ -873,12 +915,28 @@ export default {
 
       this.svg.remove();
       this.svg = null;
+    },
+    getPoint: function (coordinates) {
+      const scale = this.zoom.scale();
+      const translate = this.zoom.translate();
+      return [coordinates[0] * scale + translate[0], coordinates[1] * scale + translate[1]];
+    },
+    getCoordinates: function (point) {
+      const scale = this.zoom.scale();
+      const translate = this.zoom.translate();
+      return [(point[0] - translate[0]) / scale, (point[1] - translate[1]) / scale];
     }
   }
 };
 </script>
 
 <style>
+.connections-page {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
 .connections-page .connections-popup {
   position: absolute;
   display: none;

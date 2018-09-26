@@ -46,6 +46,8 @@
 # 37 - add request body to history
 # 50 - Moloch 1.0
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
+# 52 - Hunt (packet search)
+# 53 - add forcedExpression to history
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -54,7 +56,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 51;
+my $VERSION = 53;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -63,6 +65,8 @@ my $REPLICAS = -1;
 my $HISTORY = 13;
 my $SEGMENTS = 1;
 my $NOOPTIMIZE = 0;
+my $FULL = 0;
+my $REVERSE = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -104,6 +108,7 @@ sub showHelp($)
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "    --reverse                  - Optimize from most recent to oldest\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "\n";
@@ -236,13 +241,13 @@ sub esCopy
 
     my $status = esGet("/${PREFIX}${dsti}/_refresh", 1);
     my $status = esGet("/_stats/docs", 1);
-    if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} != $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
-        print $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " != ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
+    if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} > $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
+        print $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
         die "ERROR - Copy failed from $srci to $dsti\n";
     }
 
     print "\n";
-    $main::userAgent->timeout(30);
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub esScroll
@@ -334,7 +339,7 @@ sub sequenceUpgrade
         esPost("/${PREFIX}sequence_v2/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
     }
     esDelete("/${PREFIX}sequence_v1");
-    $main::userAgent->timeout(30);
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub filesCreate
@@ -918,6 +923,22 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
+    esPost("/${PREFIX}fields_v2/field/huntId", '{
+      "friendlyName": "Hunt ID",
+      "group": "general",
+      "help": "The ID of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntId",
+      "dbField2": "huntId"
+    }');
+    esPost("/${PREFIX}fields_v2/field/huntName", '{
+      "friendlyName": "Hunt Name",
+      "group": "general",
+      "help": "The name of the packet search job that matched this session",
+      "type": "termfield",
+      "dbField": "huntName",
+      "dbField2": "huntName"
+    }');
 }
 
 ################################################################################
@@ -1137,6 +1158,9 @@ sub historyUpdate
       "body": {
         "type": "object",
         "dynamic": "true"
+      },
+      "forcedExpression": {
+        "type": "keyword"
       }
     }
   }
@@ -1165,6 +1189,96 @@ foreach my $i (keys %{$indices}) {
 }
 
 print "\n";
+}
+################################################################################
+
+################################################################################
+sub huntsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+    my $mapping = '
+{
+  "hunt": {
+    "_all": {"enabled": "false"},
+    "_source": {"enabled": "true"},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "size": {
+        "type": "integer"
+      },
+      "search": {
+        "type": "keyword"
+      },
+      "searchType": {
+        "type": "keyword"
+      },
+      "src": {
+        "type": "boolean"
+      },
+      "dst": {
+        "type": "boolean"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "matchedSessions": {
+        "type": "integer"
+      },
+      "searchedSessions": {
+        "type": "integer"
+      },
+      "totalSessions": {
+        "type": "integer"
+      },
+      "lastPacketTime": {
+        "type": "date"
+      },
+      "created": {
+        "type": "date"
+      },
+      "lastUpdated": {
+        "type": "date"
+      },
+      "started": {
+        "type": "date"
+      },
+      "query": {
+        "type": "object",
+        "dynamic": "true"
+      },
+      "errors": {
+        "properties": {
+          "value": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}';
+
+print "Setting hunts mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1", $settings);
+esAlias("add", "hunts_v1", "hunts");
+print "Setting hunts_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v1/hunt/_mapping?pretty", $mapping);
 }
 ################################################################################
 
@@ -1217,6 +1331,9 @@ sub usersUpdate
         "type": "boolean"
       },
       "removeEnabled": {
+        "type": "boolean"
+      },
+      "packetSearch": {
         "type": "boolean"
       },
       "passStore": {
@@ -1499,7 +1616,6 @@ sub optimizeOther {
     foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v5", "${PREFIX}queries_v2") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
-        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     print "\n" if ($verbose > 0);
@@ -1523,6 +1639,10 @@ sub parseArgs {
             $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
 	    $NOOPTIMIZE = 1;
+        } elsif ($ARGV[$pos] eq "--full") {
+	    $FULL = 1;
+        } elsif ($ARGV[$pos] eq "--reverse") {
+	    $REVERSE = 1;
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }
@@ -1554,7 +1674,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 30);
+$main::userAgent = LWP::UserAgent->new(timeout => 60);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
@@ -1585,7 +1705,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
-    delete $indices->{$endTimeIndex};
+    delete $indices->{$endTimeIndex}; # Don't optimize current index
 
     my @startTime = gmtime;
     if ($ARGV[2] eq "hourly") {
@@ -1604,18 +1724,22 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     parseArgs(4);
 
+    my $startTime = mktime(@startTime) * 1000;
     my $optimizecnt = 0;
-    my $startTime = mktime(@startTime);
-    while ($startTime <= $endTime) {
-        my $iname = time2index($ARGV[2], "sessions2-", $startTime);
-        if (exists $indices->{$iname} && $indices->{$iname}->{OPTIMIZEIT} != 1) {
-            $indices->{$iname}->{OPTIMIZEIT} = 1;
+    my $optimizeRest = 0;
+    my @indiceskeys = sort (keys %{$indices});
+
+    foreach my $i (@indiceskeys) {
+        if ($optimizeRest) {
+            $indices->{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        }
-        if ($ARGV[2] =~ /^hourly/) {
-            $startTime += 60*60;
         } else {
-            $startTime += 24*60*60;
+            my $json = esPost("/$i/session/_search?size=0", '{ "aggs" : { "max" : { "max" : { "field" : "lastPacket" } } } }');
+            if (int($json->{aggregations}->{max}->{value}) >= $startTime) {
+                $indices->{$i}->{OPTIMIZEIT} = 1;
+                $optimizecnt++;
+                $optimizeRest = !$FULL;
+            }
         }
     }
 
@@ -1627,7 +1751,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
     $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
     printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
-    foreach my $i (sort (keys %{$indices})) {
+    esPost("/_flush/synced", "", 1);
+
+    @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
+    foreach my $i (@indiceskeys) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
@@ -1675,12 +1802,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
 
     dbESVersion();
     $main::userAgent->timeout(7200);
+    esPost("/_flush/synced", "", 1);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1);
-        esPost("/$i/_upgrade", "", 1);
     }
     esPost("/_flush/synced", "", 1);
     print "\n";
@@ -1737,6 +1864,11 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printIndex($status, "files_v4");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
+    printIndex($status, "hunts_v1");
+    printIndex($status, "dstats_v3");
+    printIndex($status, "dstats_v2");
+    printIndex($status, "sequence_v2");
+    printIndex($status, "sequence_v1");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -1895,7 +2027,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
-    esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
+    die "This command doesn't work anymore";
     exit 0;
 }
 
@@ -1982,6 +2114,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}fields_v2", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
+    esDelete("/${PREFIX}hunts_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2005,6 +2138,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     sessions2Update();
     fieldsCreate();
     historyUpdate();
+    huntsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2029,6 +2163,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     print "Starting Upgrade\n";
 
+    esDelete("/${PREFIX}dstats_v2/version/version", 1);
+    esDelete("/${PREFIX}dstats_v3/version/version", 1);
     if ($main::versionNumber < 51) {
         dbCheckForActivity();
         esPost("/_flush/synced", "", 1);
@@ -2040,14 +2176,25 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("dstats", "dstats_v3", "dstats_v2", \&dstatsCreate);
         createNewAliasesFromOld("stats", "stats_v3", "stats_v2", \&statsCreate);
 
+        historyUpdate();
         sessions2Update();
 
         esDelete("/${PREFIX}tags_v3", 1);
         esDelete("/${PREFIX}tags_v2", 1);
         esDelete("/${PREFIX}tags", 1);
 
+        huntsCreate();
         checkForOld5Indices();
-    } elsif ($main::versionNumber <= 51) {
+    } elsif ($main::versionNumber < 52) {
+        historyUpdate();
+        fieldsUpdate();
+        usersUpdate();
+        huntsCreate();
+        sessions2Update();
+        checkForOld5Indices();
+    } elsif ($main::versionNumber <= 53) {
+        historyUpdate();
+        usersUpdate();
         sessions2Update();
         checkForOld5Indices();
     } else {
@@ -2058,4 +2205,3 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 print "Finished\n";
 
 sleep 1;
-#esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");

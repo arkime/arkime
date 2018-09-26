@@ -26,7 +26,8 @@ export default function setup () {
       } else if (!error.response) {
         error.response = {
           data: {
-            text: error.message || 'Cannot connect to server'
+            text: error.message || 'Cannot connect to server',
+            networkError: true
           }
         };
       }

@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS16625 Akamai Technologies, Inc.",
+            "dstASN" : "AS35994 Akamai Technologies, Inc.",
             "dstBytes" : 328,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -23,7 +23,7 @@
             "firstPacket" : 1402723255667,
             "greASN" : [
                "AS3215 Orange",
-               "AS13335 Cloudflare Inc"
+               "AS13335 Cloudflare, Inc."
             ],
             "greGEO" : [
                "FR",
@@ -69,7 +69,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS16625 Akamai Technologies, Inc.",
+            "srcASN" : "AS35994 Akamai Technologies, Inc.",
             "srcBytes" : 328,
             "srcDataBytes" : 0,
             "srcGEO" : "US",

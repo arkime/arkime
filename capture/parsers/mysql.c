@@ -121,12 +121,12 @@ void moloch_parser_init()
         "Mysql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     versionField = moloch_field_define("mysql", "termfield",
         "mysql.ver", "Version", "mysql.version",
         "Mysql server version string",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 }
 

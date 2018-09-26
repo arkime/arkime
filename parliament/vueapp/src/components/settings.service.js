@@ -25,9 +25,9 @@ export default {
     });
   },
 
-  restoreDefaults: function () {
+  restoreDefaults: function (type) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('api/settings/restoreDefaults', {})
+      Vue.axios.put('api/settings/restoreDefaults', { type: type })
         .then((response) => {
           resolve(response.data);
         })

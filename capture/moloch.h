@@ -36,8 +36,24 @@
 
 #define UNUSED(x) x __attribute((unused))
 
+#if defined(__clang__)
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("unsigned-integer-overflow")))
+#define SUPPRESS_SHIFT __attribute__((no_sanitize("shift")))
+#define SUPPRESS_ALIGNMENT __attribute__((no_sanitize("alignment")))
+#elif __GNUC__ >= 5
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_SHIFT __attribute__((no_sanitize_undefined()))
+#define SUPPRESS_ALIGNMENT
+#else
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+#define SUPPRESS_SHIFT
+#define SUPPRESS_ALIGNMENT
+#endif
 
-#define MOLOCH_API_VERSION 102
+#define MOLOCH_API_VERSION 160
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -302,6 +318,7 @@ typedef struct moloch_config {
     char     *hostName;
     char    **pcapReadFiles;
     char    **pcapReadDirs;
+    char    **pcapFileLists;
     gboolean  pcapReadOffline;
     gchar   **extraTags;
     gchar   **extraOps;
@@ -313,14 +330,19 @@ typedef struct moloch_config {
     gboolean  noSPI;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
+    gboolean  noStats;
     gboolean  tests;
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
+    gboolean  pcapReprocess;
     gboolean  flushBetween;
     gboolean  noLoadTags;
     gboolean  trackESP;
+    gboolean  noLockPcap;
     gint      pktsToRead;
+
+    GHashTable *override;
 
     uint64_t  ipSavePcap[4];
     uint64_t  etherSavePcap[1024];
@@ -400,6 +422,7 @@ typedef struct moloch_config {
     char      readTruncatedPackets;
     char      yaraEveryPacket;
     char     *pcapDirAlgorithm;
+    char      corruptSavePcap;
 } MolochConfig_t;
 
 typedef struct {
@@ -458,6 +481,7 @@ typedef struct molochpacket_t
     uint16_t       pktlen;         // length of packet
     uint16_t       payloadLen;     // length of ip payload
     uint16_t       payloadOffset;  // offset to ip payload from start
+    uint16_t       vlan;           // non zero if the reader gets the vlan
     uint8_t        ipOffset;       // offset to ip header from start
     uint8_t        vpnIpOffset;    // offset to vpn ip header from start
     uint8_t        protocol;       // ip protocol
@@ -585,6 +609,7 @@ typedef struct moloch_session {
     uint16_t               midSave:1;
     uint16_t               outOfOrder:2;
     uint16_t               ackedUnseenSegment:2;
+    uint16_t               stopYara:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -598,7 +623,7 @@ typedef struct moloch_session_head {
 } MolochSessionHead_t;
 
 
-//#define MOLOCH_USE_MALLOC
+#define MOLOCH_USE_MALLOC
 
 #ifdef MOLOCH_USE_MALLOC
 #define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
@@ -755,7 +780,7 @@ void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
 void     moloch_db_update_filesize(uint32_t fileid, uint64_t filesize);
-gboolean moloch_db_file_exists(char *filename);
+gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId);
 void     moloch_db_exit();
 void     moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac);
 
@@ -908,7 +933,6 @@ uint32_t moloch_session_monitoring();
 void     moloch_session_process_commands(int thread);
 
 int      moloch_session_need_save_outstanding();
-int      moloch_session_thread_outstanding(int thread);
 int      moloch_session_cmd_outstanding();
 
 typedef enum {

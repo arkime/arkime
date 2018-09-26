@@ -92,7 +92,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'EsTasks',
-  props: [ 'user', 'dataInterval' ],
+  props: [ 'user', 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -132,6 +132,11 @@ export default {
     },
     'query.cancellable': function () {
       this.loadData();
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {

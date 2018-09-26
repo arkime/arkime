@@ -47,7 +47,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -110,7 +110,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 2,
@@ -169,7 +169,7 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 2,
@@ -198,7 +198,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 2,
@@ -280,7 +280,7 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 2,
@@ -331,7 +331,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -421,7 +421,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "3com"
+               "3Com"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 2,
@@ -488,7 +488,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -550,7 +550,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 30,
@@ -788,7 +788,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -850,7 +850,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -930,7 +930,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -992,7 +992,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1050,7 +1050,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1108,7 +1108,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1208,7 +1208,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "3com"
+               "3Com"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,
@@ -1257,7 +1257,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -1319,7 +1319,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1377,7 +1377,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1435,7 +1435,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1535,7 +1535,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "3com"
+               "3Com"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,
@@ -1584,7 +1584,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -1646,7 +1646,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1704,7 +1704,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1762,7 +1762,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -1862,7 +1862,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "3com"
+               "3Com"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 3,
@@ -1911,7 +1911,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -1973,7 +1973,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -2031,7 +2031,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -2125,7 +2125,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2188,7 +2188,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 2,
@@ -2239,7 +2239,7 @@
             ],
             "srcMacCnt" : 2,
             "srcOui" : [
-               "3com",
+               "3Com",
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 2,
@@ -2289,7 +2289,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2373,7 +2373,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2457,7 +2457,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2614,7 +2614,7 @@
             ],
             "srcMacCnt" : 1,
             "srcOui" : [
-               "3com"
+               "3Com"
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 1,
@@ -2676,7 +2676,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2738,7 +2738,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
@@ -2886,7 +2886,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -2970,7 +2970,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -3054,7 +3054,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -3138,7 +3138,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,
@@ -3222,7 +3222,7 @@
             ],
             "dstMacCnt" : 1,
             "dstOui" : [
-               "3com"
+               "3Com"
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 1,

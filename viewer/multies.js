@@ -736,7 +736,8 @@ nodes.forEach((node) => {
     host: node.split(",")[0],
     apiVersion: "5.5",
     requestTimeout: 300000,
-    keepAlive: true
+    keepAlive: true,
+    ssl: {rejectUnauthorized: !Config.insecure}
   });
 });
 

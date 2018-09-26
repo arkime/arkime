@@ -12,6 +12,7 @@
     "prestart": "npm run bundle:min",
     "dev": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "dev:noauth": "node parliament.js --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
+    "dev:dashboard": "node parliament.js --port 8008 -c ./parliament.dev.json --dashboardOnly & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "lint": "eslint parliament.js --ext .js,.vue vueapp/src",
     "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle:min": "node vueapp/build/build.js"

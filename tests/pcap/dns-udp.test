@@ -47,7 +47,7 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
+               "Cisco Systems, Inc",
                "Jetcell, Inc."
             ],
             "dstOuiCnt" : 2,
@@ -148,10 +148,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
             "dstPayload8" : "e039818000010002",
             "dstPort" : 53,

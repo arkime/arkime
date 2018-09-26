@@ -154,6 +154,10 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->ts.tv_usec    = th->tp_nsec/1000;
             packet->readerPos     = info;
 
+            if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
+                packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
+            }
+
             moloch_packet_batch(&batch, packet);
 
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
@@ -188,7 +192,7 @@ void reader_tpacketv3_stop()
 void reader_tpacketv3_init(char *UNUSED(name))
 {
     int i;
-    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1<<31);
+    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
     numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 6);
 
     if (blocksize % getpagesize() != 0) {
@@ -196,7 +200,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     if (blocksize % config.snapLen != 0) {
-        LOGEXIT("block size %d not divisible by %d", blocksize, config.snapLen);
+        LOGEXIT("block size %d not divisible by %u", blocksize, config.snapLen);
     }
 
     moloch_packet_set_linksnap(1, config.snapLen);

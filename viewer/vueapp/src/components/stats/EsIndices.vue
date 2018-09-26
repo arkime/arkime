@@ -68,13 +68,21 @@
           </template>
           <tr v-for="(stat, i) of stats.data"
             :key="stat.name">
-            <td class="text-left">
+            <td class="hover-menu text-left">
               {{ stat.index }}
-              <a class="btn btn-xs btn-danger ml-2"
-                v-has-permission="'createEnabled'"
-                @click="deleteIndex(i, stat.index)">
-                <span class="fa fa-trash-o"></span>
-              </a>
+              <!-- column dropdown menu -->
+              <b-dropdown size="sm"
+                class="row-actions-btn ml-1"
+                v-has-permission="'createEnabled'">
+                <b-dropdown-item
+                  @click="deleteIndex(i, stat.index)">
+                  Delete Index {{ stat.index }}
+                </b-dropdown-item>
+                <b-dropdown-item
+                  @click="optimizeIndex(stat.index)">
+                  Optimize Index {{ stat.index }}
+                </b-dropdown-item>
+              </b-dropdown> <!-- /column dropdown menu -->
             </td>
             <td>{{ stat['docs.count'] | round(0) | commaString }}</td>
             <td>{{ stat['store.size'] | humanReadableBytes }}</td>
@@ -134,7 +142,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'EsIndices',
-  props: [ 'dataInterval' ],
+  props: [ 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -174,6 +182,11 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -202,6 +215,13 @@ export default {
       this.$http.delete(`esindices/${indexName}`)
         .then((response) => {
           this.stats.data.splice(i, 1);
+        }, (error) => {
+          this.$emit('errored', error.text || error);
+        });
+    },
+    optimizeIndex (indexName) {
+      this.$http.post(`esindices/${indexName}/optimize`)
+        .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
@@ -254,6 +274,9 @@ export default {
 </script>
 
 <style scoped>
+td {
+  white-space: nowrap;
+}
 tr.bold {
   font-weight: bold;
 }
@@ -264,10 +287,10 @@ table.table tr.border-top-bold > td {
   border-top: 2px solid #dee2e6;
 }
 
-table.table td .btn {
-  visibility: hidden;
-}
-table.table td:hover .btn {
+.table .hover-menu:hover .btn-group {
   visibility: visible;
+}
+.table .hover-menu .btn-group {
+  visibility: hidden;
 }
 </style>

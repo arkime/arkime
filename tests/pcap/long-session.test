@@ -13,10 +13,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
             "dstPort" : 80,
             "dstRIR" : "TEST",
@@ -122,10 +121,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 1,
             "dstPort" : 80,
             "dstRIR" : "TEST",

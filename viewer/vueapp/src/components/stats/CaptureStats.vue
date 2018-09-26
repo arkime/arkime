@@ -88,7 +88,7 @@
             <tr :key="stat.id + 'data'">
               <td>
                 <toggle-btn class="mr-2"
-                  :opened="expandedNodeStats[stat.id.replace(/[.:]/g, '\\$&')]"
+                  :opened="stat.opened"
                   @toggle="toggleStatDetail(stat)">
                 </toggle-btn>
               </td>
@@ -183,7 +183,7 @@ let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'NodeStats',
-  props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
+  props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval', 'refreshData' ],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
   data: function () {
     return {
@@ -242,6 +242,11 @@ export default {
       } else if (this.dataInterval !== '0') {
         this.loadData();
         this.setRequestInterval();
+      }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
       }
     }
   },
@@ -343,6 +348,7 @@ export default {
       var self = this;
       let id = stat.id.replace(/[.:]/g, '\\$&');
 
+      this.$set(stat, 'opened', !stat.opened);
       this.expandedNodeStats[id] = !this.expandedNodeStats[id];
 
       document.getElementById('statsGraphRow-' + id).style.display =

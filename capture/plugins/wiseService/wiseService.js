@@ -18,20 +18,21 @@
  */
 'use strict';
 
-var ini            = require('iniparser')
-  , express        = require('express')
-  , fs             = require('fs')
-  , http           = require('http')
-  , https          = require('https')
-  , glob           = require('glob')
-  , async          = require('async')
-  , sprintf        = require('./sprintf.js').sprintf
-  , csv            = require('csv')
-  , request        = require('request')
-  , iptrie         = require('iptrie')
-  , wiseSource     = require('./wiseSource.js')
-  , wiseCache      = require('./wiseCache.js')
-  , cluster        = require("cluster")
+const ini            = require('iniparser')
+    , express        = require('express')
+    , fs             = require('fs')
+    , http           = require('http')
+    , https          = require('https')
+    , glob           = require('glob')
+    , async          = require('async')
+    , sprintf        = require('./sprintf.js').sprintf
+    , csv            = require('csv')
+    , request        = require('request')
+    , iptrie         = require('iptrie')
+    , wiseSource     = require('./wiseSource.js')
+    , wiseCache      = require('./wiseCache.js')
+    , cluster        = require("cluster")
+    , crypto         = require("crypto")
   ;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
@@ -39,6 +40,7 @@ require('console-stamp')(console, '[HH:MM:ss.l]');
 var internals = {
   configFile: "/data/moloch/etc/wiseService.ini",
   debug: 0,
+  insecure: false,
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
@@ -58,6 +60,8 @@ function processArgs(argv) {
     if (argv[i] === "-c") {
       i++;
       internals.configFile = argv[i];
+    } else if (argv[i] === "--insecure") {
+      internals.insecure = true;
     } else if (argv[i] === "--debug") {
       internals.debug++;
     } else if (argv[i] === "--workers") {
@@ -186,6 +190,8 @@ function addField(field) {
   }
   internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
 
+  internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest("hex");
+
   wiseSource.pos2Field[pos] = name;
   wiseSource.field2Pos[name] = pos;
   wiseSource.field2Info[name] = {pos: pos, friendly: friendly, db: db};
@@ -239,6 +245,7 @@ internals.sourceApi = {
     internals.rightClicks[name] = rightClick;
   },
   debug: internals.debug,
+  insecure: internals.insecure,
   addSource: function(section, src) {
     internals.sources[section] = src;
 
@@ -265,6 +272,10 @@ function loadSources() {
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/_ns_/nstest.html", function(req, res) {
+  res.end();
+});
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/fields", function(req, res) {
   if (req.query.ver === undefined || req.query.ver === "0") {
@@ -503,6 +514,51 @@ function processQuery(req, query, cb) {
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
+function processQueryResponse0(req, res, queries, results) {
+  var buf = new Buffer(8);
+  buf.writeUInt32BE(internals.fieldsTS, 0);
+  buf.writeUInt32BE(0, 4);
+  res.write(buf);
+  for (var r = 0; r < results.length; r++) {
+    if (results[r][0] > 0) {
+      internals.types[queries[r].typeName].foundStats++;
+    }
+    res.write(results[r]);
+  }
+  res.end();
+}
+//////////////////////////////////////////////////////////////////////////////////
+//
+function processQueryResponse2(req, res, queries, results) {
+  var hashes = (req.query.hashes || "").split(",")
+
+  const sendFields = !hashes.includes(internals.fieldsMd5);
+
+  var buf = new Buffer(42);
+  buf.writeUInt32BE(0, 0);
+  buf.writeUInt32BE(2, 4);
+  buf.write(internals.fieldsMd5, 8);
+
+  if (sendFields) {
+    // Send all the fields
+    res.write(buf.slice(0, 40));
+    res.write(internals.fieldsBuf1.slice(8));
+  } else {
+    // Don't send the fields
+    buf.writeUInt16BE(0, 40);
+    res.write(buf);
+  }
+
+  // Send the results
+  for (let r = 0; r < results.length; r++) {
+    if (results[r][0] > 0) {
+      internals.types[queries[r].typeName].foundStats++;
+    }
+    res.write(results[r]);
+  }
+  res.end();
+}
+//////////////////////////////////////////////////////////////////////////////////
 app.post("/get", function(req, res) {
   var offset = 0;
 
@@ -541,17 +597,12 @@ app.post("/get", function(req, res) {
         console.log("Error", err || "Timed out" );
         return;
       }
-      var buf = new Buffer(8);
-      buf.writeUInt32BE(internals.fieldsTS, 0);
-      buf.writeUInt32BE(0, 4);
-      res.write(buf);
-      for (var r = 0; r < results.length; r++) {
-        if (results[r][0] > 0) {
-          internals.types[queries[r].typeName].foundStats++;
-        }
-        res.write(results[r]);
+
+      if (req.query.ver === "2") {
+        processQueryResponse2(req, res, queries, results);
+      } else {
+        processQueryResponse0(req, res, queries, results);
       }
-      res.end();
     });
   });
 });

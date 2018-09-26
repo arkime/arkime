@@ -186,10 +186,10 @@ Pcap.prototype.readPacket = function(pos, cb) {
 
   if (this.encoding === "aes-256-ctr") {
     posoffset = pos%16;
-    pos = pos & ~0xf;
+    pos = pos - posoffset; // Can't use & ~0xf because javascript is 32bit
   } else if (this.encoding === "xor-2048") {
     posoffset = pos%256;
-    pos = pos & ~0xff;
+    pos = pos - posoffset; // Can't use & ~0xff because javascript is 32bit
   }
 
   try {
@@ -954,5 +954,29 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     cb(null, results);
   } catch (e) {
     cb(e, null);
+  }
+};
+
+exports.key = function(packet) {
+  switch(packet.ip.p) {
+  case 6: // tcp
+    return packet.ip.addr1 + ':' + packet.tcp.sport;
+  case 17: // udp
+    return packet.ip.addr1 + ':' + packet.udp.sport;
+  case 132: // sctp
+    return packet.ip.addr1 + ':' + packet.sctp.sport;
+  default:
+    return packet.ip.addr1;
+  }
+};
+
+exports.keyFromSession = function(session) {
+  switch(session.ipProtocol) {
+  case 6: // tcp
+  case 17: // udp
+  case 132: // sctp
+    return session.srcIp + ':' + session.srcPort;
+  default:
+    return session.srcIp;
   }
 };

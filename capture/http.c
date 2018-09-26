@@ -191,6 +191,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
         curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
         curl_easy_setopt(easy, CURLOPT_TIMEOUT, 60L);
+        curl_easy_setopt(easy, CURLOPT_TCP_KEEPALIVE, 1L);
     } else {
         easy = server->syncRequest.easy;
     }
@@ -616,13 +617,17 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     socklen_t addressLength = sizeof(localAddressStorage);
     int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
-    if (rc != 0)
+    if (rc != 0) {
+        close(fd);
         return 0;
+    }
 
     addressLength = sizeof(remoteAddressStorage);
     rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
-    if (rc != 0)
+    if (rc != 0) {
+        close(fd);
         return 0;
+    }
 
     char sessionId[MOLOCH_SESSIONID_LEN];
     int  localPort, remotePort;
@@ -679,9 +684,8 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 /******************************************************************************/
 LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
 {
-    MolochHttpRequest_t       *request;
-
     while (1) {
+        MolochHttpRequest_t *request;
         MOLOCH_LOCK(requests);
         DLL_POP_HEAD(rqt_, &requests, request);
         if (!request) {
@@ -789,6 +793,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETFUNCTION, moloch_http_curl_open_callback);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
     curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
+    curl_easy_setopt(request->easy, CURLOPT_TCP_KEEPALIVE, 1L);
 
     if (request->headerList) {
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);

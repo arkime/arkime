@@ -51,10 +51,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 9,
             "dstPayload8" : "1603010055020000",
             "dstPort" : 443,

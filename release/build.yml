@@ -50,7 +50,7 @@
           - name: install devtoolset centos 6
             yum: state=present name={{item}}
             with_items:
-              - devtoolset-3-toolchain
+              - devtoolset-6-toolchain
               - python27-python-devel
               - python27-python-pip
 
@@ -136,15 +136,15 @@
         git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
 
       - name: build centos 6
-        shell: cd {{moloch_name}}; make clean; scl enable devtoolset-3 python27 "./easybutton-build.sh -d /data/{{moloch_name}} --daq"
+        shell: cd {{moloch_name}}; make clean; scl enable devtoolset-6 python27 "./easybutton-build.sh -d /data/{{moloch_name}} --daq --pfring"
         when: ansible_distribution_major_version == "6"
 
       - name: build not centos 6
-        shell: cd {{moloch_name}}; make clean; ./easybutton-build.sh -d /data/{{moloch_name}} --daq
+        shell: cd {{moloch_name}}; make clean; ./easybutton-build.sh -d /data/{{moloch_name}} --daq --pfring
         when: ansible_distribution_major_version != "6"
 
       - name: install centos 6
-        shell: unset SUDO_USER SUDO_UID; npm config set user root; npm config set unsafe-perm true; cd {{moloch_name}}; scl enable devtoolset-3 "make install"
+        shell: unset SUDO_USER SUDO_UID; npm config set user root; npm config set unsafe-perm true; cd {{moloch_name}}; scl enable devtoolset-6 "make install"
         environment:
           PATH: "/data/{{moloch_name}}/bin:{{ansible_env.PATH}}"
           HOME: "/root"

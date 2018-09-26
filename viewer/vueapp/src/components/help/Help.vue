@@ -124,11 +124,11 @@
             <span class="fa fa-question-circle"></span>&nbsp;
             About
           </h3>
-          <p><strong>
+          <p class="lead"><strong>
             Moloch is a large scale, open source, full packet capturing, indexing,
             and database system.
           </strong></p>
-          <p>
+          <p class="lead">
             Moloch is not meant to replace Intrusion Detection Systems (IDS).
             Moloch augments your current security infrastructure by storing and
             indexing network traffic in standard PCAP format, while also providing
@@ -161,11 +161,13 @@
           <p>
             Most Moloch tabs have a search bar on the top of the page.
             Moloch uses a very simple query language for building expressions. It
-            supports grouping using parenthesis as well as logical AND and OR statements using &amp;&amp; and
-            || respectively. Fields can be accessed directly using the field names
-            and operators described in the <a href="help#fields">table below</a>.
+            supports grouping using parenthesis as well as logical AND and OR statements using
+            <code>&amp;&amp;</code> and <code>||</code> respectively.
+            Fields can be accessed directly using the field names
+            and operators described in the
+            <a href="help#fields" class="no-decoration">table below</a>.
             Most fields also support a shorthand OR query using square brackets
-            using CSV rules to list possible values (field==[item1,item2,item3]).
+            using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
           </p>
           <p>
             All queries are bounded by a start and stop time. The bounded start and stop times can be
@@ -173,7 +175,7 @@
             Since every session has a first packet, last packet, and database timestamp, Moloch offers
             a choice on how to select the sessions:
           </p>
-          <dl class="dl-horizontal small">
+          <dl class="dl-horizontal">
             <dt>First Packet</dt>
             <dd>The timestamp of the first packet received for the session.</dd>
             <dt>Last Packet</dt>
@@ -185,151 +187,157 @@
             <dt>Database</dt>
             <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
           </dl>
-
           <br>
-
-          <h4 id="stringSearch">String Search</h4>
-          <p>
-            In Moloch string fields are special since they can be searched in several different
-            ways. When fields are indexed, their case may or may not be normalized,
-            which is documented in the <a href="help#fields">fields table below</a>.
-            The types of string searches are:
-          </p>
-          <dl class="dl-horizontal small">
-            <dt>Wildcard</dt>
-            <dd>
-              If a <code>*</code> appears in a expression, it is assumed a wildcard
-              match is being used. Supported wildcards are <code>*</code>, which
-              matches any character sequence (including the empty one), and
-              <code>?</code>, which matches any single character. The wildcard query
-              is run against the full text strings, after case normalization if
-              enabled for the field. For example
-              <code>http.uri == "www.f*k.com"</code> will capture an http.uri string
-              which contains either www.fork.com or www.frack.com.
-            </dd>
-            <dt>Regex</dt>
-            <dd>
-              A regex query must be surrounded by forward slashes and will always be
-              anchored. This means you will almost always want to include a leading
-              and trailing <code>.*.</code> within your regex query. The regex query
-              is run against the full text strings, after case normalization (if enabled) for the field.
-              For example <code>http.uri == /.*www\.f.*k\.com.*/.</code> It uses the
-              Lucene regex implementation which doesn't support most PCRE features.
-            </dd>
-            <dt>Lists</dt>
-            <dd>
-              In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
-              <code>protocols == [http, ssh]</code>. This query will search for any sessions containing either http OR ssh.
-              Note: Currently a list containing wildcard or regex strings will be processed as normal strings instead
-              of wildcards and regexes.
-            </dd>
-          </dl>
-
-          <br>
-
-          <h4 id="ipSearch">IP Search</h4>
-          <p>
-            IP searching is very flexible and can be performed using the full ip
-            address, a partial ip address, CIDR representation. For fields
-            that include a port number, it is possible to follow any of the ip
-            representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
-            first class searchable and may be searched for directly. For example:
-            <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
-            An IP search can also be done with list of IPs which may be in mixed representations: <code>ip == [1.2.3.4, 1.3/16]</code>
-          </p>
-
-          <br>
-
-          <h4 id="numericSearch">Numeric Search</h4>
-          <p>
-            Numeric fields support simple range operators besides the default equals
-            and not equals query types. For example - show events with bytes transferred being less then 10000: <code>bytes &lt;= 10000</code>.
-            Numeric fields also support lists for a simple OR query. For example: <code>port == [80,443,23]</code>
-          </p>
-
-          <br>
-
-          <h4 id="dateSearch">Date Search</h4>
-          <p>
-            Date fields support simple range operators besides the default equals
-            and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
-            They also support lists for a simple OR query. For example:
-            <code>stoptime == ["2004/07/31 05:33:41", "2004/07/31 06:33:41"]</code>.
-            Finally, relative dates and optional snapping are supported using the
-            Splunk syntax:
-          </p>
-
-          <ul class="small">
-            <li>
-              Begin the string with a plus (+) or minus (-) to indicate the offset from
-              the current time.
-            </li>
-            <li>
-              Define the time amount with a number and a unit.
-              The supported time units are:
-              <ul>
-                <li>
-                  <strong>second:</strong> s, sec, secs, second, seconds
-                </li>
-                <li>
-                  <strong>minute:</strong> m, min, minute, minutes
-                </li>
-                <li>
-                  <strong>hour:</strong> h, hr, hrs, hour, hours
-                </li>
-                <li>
-                  <strong>day:</strong> d, day, days
-                </li>
-                <li>
-                  <strong>week:</strong> w, week, weeks
-                </li>
-                <li>
-                  <strong>month:</strong> mon, month, months
-                </li>
-                <li>
-                  <strong>quarter:</strong> q, qtr, qtrs, quarter, quarters
-                </li>
-                <li>
-                  <strong>year:</strong> y, yr, yrs, year, years
-                </li>
-              </ul>
-            </li>
-            <li>
-              Optionally, specify a "snap to" time unit that indicates the nearest
-              or latest time to which the time amount rounds down. Separate the time
-              amount from the "snap to" time unit with an "@" character.
-            </li>
-          </ul>
-
-          <br>
-
-          <h4 id="fieldExistsSearch">Field Exists Search</h4>
-          <p>
-            It is possible to check if a field has been set or not in the session by
-            using the special comparison value of <code>field == EXISTS!</code> OR negated: <code>field != EXISTS!</code>.
-            For example, to verify that a certificate doesn't have an issuer common name, but does
-            have a issuer organizational name, the follow query could be used:
-            <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
-          </p>
-
-          <hr>
-
-          <h4 id="examples">Examples</h4>
-
-          <p>
-            Find all the sessions involving Russia (RU) or China (CN) that are
-            using port 80 and also a hostname which contains "com":
-            <pre>
-              (country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com
-            </pre>
-          </p>
-          <p>
-            Find all the sessions of type "text/plain", involving Canada (CA), and
-            containing less than 20 packets:
-            <pre>
-              <code>tags == "http:content:text/plain" &amp;&amp; country == CA &amp;&amp; packets &lt; 20</code>
-            </pre>
-          </p>
+          <div class="ml-4">
+            <h6 id="stringSearch">
+              <span class="fa fa-search"></span>&nbsp;
+              String Search
+            </h6>
+            <p>
+              In Moloch, string fields are special since they can be searched in several different
+              ways. When fields are indexed, their case may or may not be normalized,
+              which is documented in the
+              <a href="help#fields" class="no-decoration">fields table below</a>.
+              The types of string searches are:
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Wildcard</dt>
+              <dd>
+                If a <code>*</code> appears in a expression, it is assumed a wildcard
+                match is being used. Supported wildcards are <code>*</code>, which
+                matches any character sequence (including the empty one), and
+                <code>?</code>, which matches any single character. The wildcard query
+                is run against the full text strings, after case normalization if
+                enabled for the field. For example
+                <code>http.uri == "www.f*k.com"</code> will capture an http.uri string
+                which contains either www.fork.com or www.frack.com.
+              </dd>
+              <dt>Regex</dt>
+              <dd>
+                A regex query must be surrounded by forward slashes and will always be
+                anchored. This means you will almost always want to include a leading
+                and trailing <code>.*.</code> within your regex query. The regex query
+                is run against the full text strings, after case normalization (if enabled) for the field.
+                For example <code>http.uri == /.*www\.f.*k\.com.*/.</code> It uses the
+                Lucene regex implementation which doesn't support most PCRE features.
+              </dd>
+              <dt>Lists</dt>
+              <dd>
+                In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
+                <code>protocols == [http,ssh]</code>. This query will search for any sessions containing either http OR ssh.
+                <strong>Note:</strong> A list containing wildcard or regex strings will be processed as normal strings instead
+                of wildcards and regexes.
+              </dd>
+            </dl>
+            <h6 id="ipSearch">
+              <span class="fa fa-search"></span>&nbsp;
+              IP Search
+            </h6>
+            <p>
+              IP searching is very flexible and can be performed using the full IP
+              address, a partial IP address, or CIDR representation. For fields
+              that include a port number, it is possible to follow any of the IP
+              representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
+              first class searchable and may be searched for directly. For example:
+              <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
+              An IP search can also be done with list of IPs which may be in mixed representations: <code>ip == [1.2.3.4,1.3/16]</code>
+            </p>
+            <h6 id="numericSearch">
+              <span class="fa fa-search"></span>&nbsp;
+              Numeric Search
+            </h6>
+            <p>
+              Numeric fields support simple range operators besides the default equals
+              and not equals query types. For example, to show events with bytes transferred being less then 10000,
+              use this query: <code>bytes &lt;= 10000</code>.
+              Numeric fields also support lists for a simple OR query. For example, <code>port == [80,443,23]</code>
+            </p>
+            <h6 id="dateSearch">
+              <span class="fa fa-search"></span>&nbsp;
+              Date Search
+            </h6>
+            <p>
+              Date fields support simple range operators besides the default equals
+              and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
+              They also support lists for a simple OR query. For example:
+              <code>stoptime == ["2004/07/31 05:33:41","2004/07/31 06:33:41"]</code>.
+              However, it's much easier to use the
+              <a href="help#timebounding" class="no-decoration">time bounding</a>
+              controls under the search bar.
+              Finally, relative dates and optional snapping are supported using the
+              Splunk syntax:
+            </p>
+            <ul>
+              <li>
+                Begin the string with a plus (+) or minus (-) to indicate the offset from
+                the current time.
+              </li>
+              <li>
+                Define the time amount with a number and a unit.
+                The supported time units are:
+                <ul>
+                  <li>
+                    <strong>second:</strong> s, sec, secs, second, seconds
+                  </li>
+                  <li>
+                    <strong>minute:</strong> m, min, minute, minutes
+                  </li>
+                  <li>
+                    <strong>hour:</strong> h, hr, hrs, hour, hours
+                  </li>
+                  <li>
+                    <strong>day:</strong> d, day, days
+                  </li>
+                  <li>
+                    <strong>week:</strong> w, week, weeks
+                  </li>
+                  <li>
+                    <strong>month:</strong> mon, month, months
+                  </li>
+                  <li>
+                    <strong>quarter:</strong> q, qtr, qtrs, quarter, quarters
+                  </li>
+                  <li>
+                    <strong>year:</strong> y, yr, yrs, year, years
+                  </li>
+                </ul>
+              </li>
+              <li>
+                Optionally, specify a "snap to" time unit that indicates the nearest
+                or latest time to which the time amount rounds down. Separate the time
+                amount from the "snap to" time unit with an "@" character.
+              </li>
+            </ul>
+            <h6 id="fieldExistsSearch">
+              <span class="fa fa-search"></span>&nbsp;
+              Field Exists Search
+            </h6>
+            <p>
+              It is possible to check if a field has been set or not in the session by
+              using the special comparison value of <code>field == EXISTS!</code> OR negated: <code>field != EXISTS!</code>.
+              For example, to verify that a certificate doesn't have an issuer common name, but does
+              have a issuer organizational name, the follow query could be used:
+              <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
+            </p>
+            <h6 id="examples">
+              <span class="fa fa-search"></span>&nbsp;
+              Examples
+            </h6>
+            <p>
+              Find all the sessions involving Russia (RU) or China (CN) that are
+              using port 80 and also a hostname which contains "com":
+              <pre>
+                (country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com
+              </pre>
+            </p>
+            <p>
+              Find all the sessions of type "text/plain", involving Canada (CA), and
+              containing less than 20 packets:
+              <pre>
+                <code>tags == "http:content:text/plain" &amp;&amp; country == CA &amp;&amp; packets &lt; 20</code>
+              </pre>
+            </p>
+          </div>
 
           <hr>
 
@@ -338,51 +346,104 @@
             Sessions
           </h3>
           <p>
-            The sessions tab within Moloch is where an analyst will find the bulk of details regarding
-            the sessions which are being investigated. From top to bottom the sessions tab contains as follows:
+            The Sessions page within Moloch is where an analyst will find the bulk of the details regarding
+            the sessions being investigated.
           </p>
-          <p>
-            The magnifying glass in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
-            While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
-          </p>
-          <p>
-            The eyeball icon will allow an Analyst to either overlay a save "View" onto their current query, or save the current query as a "View" for easy recall in the future.
-            Views should be used for often used search queries that an Analyst regularly finds themselves running.
-          </p>
-          <p>
-            The purple "Down" arrow contains a few options. The first is to export a PCAP of the required sessions data. Second, the data within the viewer may also be exported as a CSV for further review and manipulation.
-            Third, Tags may be added to the sessions which have been detected by the Analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.
-            The fourth option is used to send the selected data to another system for further analysis. Each of these options may be applied to only sessions which have been opened (by clicking the sessions + box),
-            any items visible (on the current page), or all items which have matched the query string.
-          </p>
-          <p>
-            The next line on the sessions tab contains the time bounding selections. The first element sets relative timing (such as last hour, last day, etc).
-            The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
-            The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
-          </p>
-          <p>
-            The next section contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
-            Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected. Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
-          </p>
-          <p>
-          The pagination header and records per page selected box is immediately below the quick visualisation and are self descriptive.
-          </p>
-          <p>
-            Now we arrive at the meat of the Sessions tab... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the purple box which contains 9 white squares. By clicking this box an Analyst may select
-            any column that they wish to observed without opening a session fully. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the Analyst's search query. Instead of drilling into each
-            session that Analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Pot, IRC Channel, and IRC Nickname. This column selection tool allows for an Analyst to readily view the information which is important to them,
-            configurable per investigation.
-          </p>
-          <p>
-            <!-- TODO: describe right click interactions for column headers -->
-          </p>
-          <p>
-            Viewing the sessions data of a specific network session is as easy as clicking the "Plus" sign next to a session. Upon clicking the + the session drawer will expand giving further context to the session.
-            All packet data which was parsed will now be displayed. This includes everything fro the USer making the connection to the TCP Flags observed during the session.
-            If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
-            Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
-            they may be downloaded and analyzed when necessary.
-          </p>
+          <div class="ml-4">
+            <h6>
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Search
+            </h6>
+            <p>
+              The magnifying glass ( <span class="fa fa-search"></span> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
+              While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
+              See the <a href="help#search" class="no-decoration">search section</a> for more in depth information.
+            </p>
+            <h6 id="timebounding">
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Time Bounding
+            </h6>
+            <p>
+              The controls under the search bar contain the time bounding selections. The first element sets relative timing (such as last hour, last day, etc).
+              The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
+              The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Paging
+            </h6>
+            <p>
+              The paging controls and records per page select box is found under the time range inputs and allows a user to navigate through the sessions returned.
+              Hover over the records per page text for more information on how many total entries were searched.
+            </p>
+            <h6 id="views">
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Views
+            </h6>
+            <p>
+              The eyeball icon ( <span class="fa fa-eye"></span> ) button allows an analyst to either overlay a saved "View" onto their current query, or save the current query as a "View" for easy recall in the future.
+              Views should be used for often used search queries that an analyst regularly finds themselves running.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Actions
+            </h6>
+            <p>
+              The down arrow ( <span class="fa fa-caret-down"></span> ) button contains a few options:
+              <ol>
+                <li>Export a PCAP of the required sessions data.</li>
+                <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
+                <li>Tags may be added or removed from the sessions which have been detected by the analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.</li>
+                <li>Send the selected data to another system for further analysis.</li>
+                <li>Scrub packet data by overwriting the packets (if a user has data removal privelages).</li>
+                <li>Delete SPI and PCAP data entirely (if a user has data removal privelages).</li>
+              </ol>
+              Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
+              any items visible (on the current page), or all items which have matched the query string.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Visualizations
+            </h6>
+            <p>
+              The section above the Sessions table contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
+              Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected.
+              Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-exchange"></span>&nbsp;
+              Sessions table
+            </h6>
+            <p>
+              Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th"></span> ) button. By clicking this button an analyst may select
+              any field that they wish to observe without opening a session fully by adding it as a column to the table. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the analyst's search query. Instead of drilling into each
+              session, that analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Pot, IRC Channel, and IRC Nickname. This column selection tool allows for an analyst to readily view the information which is important to them, configurable per investigation.
+            </p>
+            <p>
+              <em>
+                <strong>Tip:</strong>
+                An analyst can save or load previously saved column configurations by clicking the save/load column configuration
+                ( <span class="fa fa-columns"></span> ) button.
+              </em>
+            </p>
+            <p>
+              Hover over a column header and click the column action ( <span class="fa fa-caret-down"></span> ) button to do a few things:
+              <ol>
+                <li>Hide the column from the table</li>
+                <li>Export the column values</li>
+                <li>Export the column values with counts</li>
+                <li>Open the SPI Graph page with that field (see the <a href="help#spigraph">SPI Graph</a> section for more details)</li>
+              </ol>
+            </p>
+            <p>
+              Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus"></span> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
+              All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
+              If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
+              Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
+              they may be downloaded and analyzed when necessary.
+            </p>
+          </div>
+
           <hr>
 
           <h3 id="spiview">
@@ -390,12 +451,17 @@
             SPI View
           </h3>
           <p>
-            The SPI (Session Profile Information) View is used to dive into specific metrics of a session which and analyst wish to further focus in on. Instead of manually writing a query
-            an analyst can use right click actions within the SPI View which will all the Analyst to add the specific item as an AND or AND NOT item to their query. This tab also allows an
+            The SPI (Session Profile Information) View is used to dive into specific metrics of a session which an analyst wishes to investigate further. Instead of manually writing a query,
+            an analyst can hover over field values within the SPI View to add the specific item as an AND or AND NOT to their query. This page also allows an
             analyst a quick view into counts of each item that the user is interested in. As an example, if a analyst wanted to see all BASIC authorization headers that have been recorded
-            over the current time Window and analyst could open the http drawer and click to enable the http.authorization field. The analyst could then update their search query to either
+            over the current time window, an analyst could open the http drawer and click to enable the http.authorization field. The analyst could then update their search query to either
             include a specific authorization string which has been observed, or use a wild card to see all of a certain type of authorization header (Basic *, BEARER *, etc). Additionally,
             the SPI View allows an analyst a quick view of observed IP addresses within the time window, http response codes, IRC NICKs/Channels, and much, much more.
+          </p>
+          <p>
+            <strong>Tip:</strong>
+            The analyst can save or load the fields that they have displayed/hidden on the SPI View page by clicking the save/load field configuration
+            ( <span class="fa fa-columns"></span> ) button.
           </p>
 
           <hr>
@@ -405,9 +471,10 @@
             SPI Graph
           </h3>
           <p>
-            The SPI Graph tab allows a user to visualize, via bar charts over time, any item within the SPI View. This tab is very useful for both at a glance views of activity per SPI type,
-            as well as deep dive analysis. As an example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection dropdown.
+            The SPI Graph page allows a user to visualize, via bar charts over time, any item within the SPI View page. This page is very useful for both at a glance views of activity per SPI type,
+            as well as deep dive analysis. For example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection typeahead.
             Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigates SPI type is noisy.
+            An analyst can sort by either the noisiest value (graph) or by alphabetical order (name). This page also has the ability to update every X seconds.
           </p>
 
           <hr>
@@ -417,9 +484,9 @@
             Connections
           </h3>
           <p>
-            The Connections tab allows a user to view a tree force graph based on a source node and destination node of there choosing. Relationships may be visually determined using this method.
-            An example of using this graph may be to set your Src node to ip.src, Dst node to ip.dst:port which will show the relationship of source IP addresses to destination IP address / port combinations.
-            Those whom prefer to analyze session data view visualisation may heavily use these graphs. The default settings for this page may be set in the settings tab.
+            The Connections page allows a user to view a tree force graph based on a source node and destination node of their choosing. Relationships may be visually determined using this method.
+            For example, set your Src node to ip.src, Dst node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
+            Those who prefer to analyze session data visually may rely heavily on these graphs. The default settings for this page may be set in the settings page.
           </p>
 
           <hr>
@@ -429,7 +496,7 @@
             Files
           </h3>
           <p>
-            The files tab shows a table view of PCAPs which have been written. Details included are: File Number. Node, filename, if the file is locked, the first date and the file size.
+            The files page shows a table view of PCAPs which have been written. Details included are: File Number. Node, filename, if the file is locked, the first date and the file size.
           </p>
 
           <hr>
@@ -439,59 +506,187 @@
             Stats
           </h3>
           <p>
-            The Stats tab provides both a visual representation and table view of the metrics listed below, per node. Additional options for filtering may also be applied.  The stats are reported every 2 seconds.
-            Options:
+            There are several tabs that contain statistics about your capture node and Elasticsearch node and are enumerated below:
           </p>
-          <dl class="dl-horizontal small">
-            <dt>Packets/Sec</dt>
-            <dd>The number of packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
-            <dt>Bytes/Sec</dt>
-            <dd>The size of all the packets that we've received that aren't corrupt that we try add to a packetQ per second</dd>
-            <dt>Bits/Sec</dt>
-            <dd>Same as Bytes/Sec but in bits per second</dd>
-            <dt>Sessions/Sec</dt>
-            <dd>Number of sessions sent to elasticsearch per second</dd>
-            <dt>Input Dropped/Sec</dt>
-            <dd>Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
-            <dt>Active Sessions</dt>
-            <dd>Number of sessions Moloch is currently monitoring</dd>
-            <dt>Active TCP Sessions</dt>
-            <dd>Number of TCP sessions Moloch is currently monitoring</dd>
-            <dt>Active UDP Sessions</dt>
-            <dd>Number of UDP sessions Moloch is currently monitoring</dd>
-            <dt>Active ICMP Sessions</dt>
-            <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
-            <dt>Free Space MB</dt>
-            <dd>Free space in MB across all configured disks</dd>
-            <dt>Free Space %</dt>
-            <dd>Percentage of free space across all configured disks</dd>
-            <dt>Memory</dt>
-            <dd>Amount of memory that Moloch is using</dd>
-            <dt>Memory %</dt>
-            <dd>Perentage of memory that Moloch is using</dd>
-            <dt>CPU</dt>
-            <dd>CPU percentage that Moloch is using</dd>
-            <dt>Disk Queue</dt>
-            <dd>Number of blocks of data that are waiting to be written to disk</dd>
-            <dt>ES Queue</dt>
-            <dd>Number of elasticsearch requests that are waiting to be sent</dd>
-            <dt>ES Dropped/Sec</dt>
-            <dd>Number of elasticsearch requests that were dropped because of queue overflow per second</dd>
-            <dt>Packet Queue</dt>
-            <dd>Number of packets that are waiting to processed</dd>
-            <dt>Closing Queue</dt>
-            <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
-            <dt>Waiting Queue</dt>
-            <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
-            <dt>Active Fragments</dt>
-            <dd>Number of packets that are waiting on remaining IP fragments to show up</dd>
-            <dt>Fragments Dropped/Sec</dt>
-            <dd>Number of packets that were dropped because frag overload or timeouts</dd>
-            <dt>Overload Dropped/Sec</dt>
-            <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
-            <dt>Total Dropped/Sec</dt>
-            <dd>Sum of the inputs dropped and overload metrics</dd>
-          </dl>
+          <div class="ml-4">
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              Capture Graphs
+            </h6>
+            <p>
+              The Capture Graphs tab displays realtime graphs representing what the capture node is doing.
+              Larger values are overplotted in successively darker colors.
+              Hover over the graph to see what each capture node is capturing at any specific time.
+            </p>
+            <p>
+              <strong>Tip:</strong>
+              These graphs are 1440 pixels wide (4 hours of data at 10 second intervals).
+              Expand your browser window to at least 1500 pixels wide for best viewing or you will be shown a horizontal scroll bar (ew).
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              Capture Stats
+            </h6>
+            <p>
+              The Capture Stats tab displays a table containing the following information for each capture node:
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Node</dt>
+              <dd>The name of the capture node</dd>
+              <dt>Time</dt>
+              <dd>The time reported by the capture node</dd>
+              <dt>Free Space</dt>
+              <dd>Percentage of free space across all configured disks</dd>
+              <dt>CPU</dt>
+              <dd>CPU percentage that Moloch is using</dd>
+              <dt>Memory %</dt>
+              <dd>Perentage of memory that Moloch is using</dd>
+              <dt>Packet Q</dt>
+              <dd>Number of packets that are waiting to processed</dd>
+              <dt>Packets/s</dt>
+              <dd>The number of packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
+              <dt>Bytes/s</dt>
+              <dd>The size of all the packets that we've received that aren't corrupt that we try add to a packetQ per second</dd>
+              <dt>Sessions/s</dt>
+              <dd>Number of sessions sent to Elasticsearch per second</dd>
+              <dt>Packet Drops/s</dt>
+              <dd>Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
+              <dt>Overload Drops/s</dt>
+              <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
+              <dt>ES Drops/s</dt>
+              <dd>Number of elasticsearch requests that were dropped because of queue overflow per second</dd>
+              <!-- <dt>Bits/Sec</dt>
+              <dd>Same as Bytes/Sec but in bits per second</dd>
+              <dt>Active Sessions</dt>
+              <dd>Number of sessions Moloch is currently monitoring</dd>
+              <dt>Active TCP Sessions</dt>
+              <dd>Number of TCP sessions Moloch is currently monitoring</dd>
+              <dt>Active UDP Sessions</dt>
+              <dd>Number of UDP sessions Moloch is currently monitoring</dd>
+              <dt>Active ICMP Sessions</dt>
+              <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
+              <dt>Free Space MB</dt>
+              <dd>Free space in MB across all configured disks</dd>
+              <dt>Memory</dt>
+              <dd>Amount of memory that Moloch is using</dd>
+              <dt>Disk Queue</dt>
+              <dd>Number of blocks of data that are waiting to be written to disk</dd>
+              <dt>ES Queue</dt>
+              <dd>Number of elasticsearch requests that are waiting to be sent</dd>
+              <dt>Closing Queue</dt>
+              <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
+              <dt>Waiting Queue</dt>
+              <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
+              <dt>Active Fragments</dt>
+              <dd>Number of packets that are waiting on remaining IP fragments to show up</dd>
+              <dt>Fragments Dropped/Sec</dt>
+              <dd>Number of packets that were dropped because frag overload or timeouts</dd>
+              <dt>Total Dropped/Sec</dt>
+              <dd>Sum of the inputs dropped and overload metrics</dd> -->
+            </dl>
+            <p>
+              <em>
+                <strong>Tip:</strong>
+                Click the <span class="fa fa-plus"></span> button to display graphs about the table information.
+              </em>
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              ES Nodes
+            </h6>
+            <p>
+              The ES Nodes tab displays a table containing the following information for each ES node:
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Name</dt>
+              <dd>The name of the ES node</dd>
+              <dt>Documents</dt>
+              <dd>The total number of documents that this node has ingested</dd>
+              <dt>Disk Storage</dt>
+              <dd>The size of the Elasticsearch store</dd>
+              <dt>Heap Size</dt>
+              <dd>JVM heap used in bytes</dd>
+              <dt>OS Load</dt>
+              <dd>Currently calculated average load of the system</dd>
+              <dt>CPU</dt>
+              <dd>CPU usage in percent</dd>
+              <dt>Reads/s</dt>
+              <dd>The number of bytes read across all devices used by Elasticsearch per second</dd>
+              <dt>Writes/s</dt>
+              <dd>The number of bytes written across all devices used by Elasticsearch per second</dd>
+              <dt>Searches/s</dt>
+              <dd>Current query phase operations per second</dd>
+            </dl>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              ES Indices
+            </h6>
+            <p>
+              The ES Indices tab displays a table containing the following information for each ES index:
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Name</dt>
+              <dd>The name of the index</dd>
+              <dt>Documents</dt>
+              <dd>The number of documents in the index</dd>
+              <dt>Disk Size</dt>
+              <dd>The size of the Elasticsearch store for this index</dd>
+              <dt>Shards</dt>
+              <dd>Number of shards created for this index</dd>
+              <dt>Segments</dt>
+              <dd>Number of segments for this index</dd>
+              <dt>Replicas</dt>
+              <dd>Number of replicas for the primary shard in this index</dd>
+              <dt>Memory</dt>
+              <dd>How much memory is used for this index</dd>
+              <dt>Health</dt>
+              <dd>The health of the index (green, yellow, or red)</dd>
+              <dt>Status</dt>
+              <dd>Whether an index is open or closed</dd>
+            </dl>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              ES Tasks
+            </h6>
+            <p>
+              The ES Tasks tab displays a table containing the following information for each ES task:
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Action</dt>
+              <dd>The action that the task is performing</dd>
+              <dt>Description</dt>
+              <dd>More detail about the action that is being performed</dd>
+              <dt>Start Time</dt>
+              <dd>The time that the task was initiated (the task is removed from this list upon completion)</dd>
+              <dt>Running Time</dt>
+              <dd>The amount of time that the task has taken</dd>
+              <dt>Children</dt>
+              <dd>The number of child tasks associated with this task</dd>
+            </dl>
+            <p>
+              <em>
+                <strong>Tip:</strong>
+                If you have data removal privelages, you can cancel tasks by clicking the
+                <span class="fa fa-trash"></span> button.
+                This is useful when you run a query that is taking longer than intended.
+                <br>
+                You can also filter the table by only cancelable tasks by clicking the checkbox
+                in the top right corner of the table.
+              </em>
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              ES Shards
+            </h6>
+            <p>
+              The ES Shards tab displays a matrix containing the ES indices and nodes.
+              Each cell describes the number of shards that that index has in that particular node.
+              <span class="badge badge-pill badge-secondary">Gray</span> means it's an alternate shard and the
+              <span class="badge badge-pill badge-primary">other color</span> means it's a primary shard.
+              Hover over a cell to get more information.
+            </p>
+          </div>
+
           <hr>
 
           <h3 id="history">
@@ -499,12 +694,12 @@
             History
           </h3>
           <p>
-            The History tab provides the ability to view Moloch actions/queries to
+            The History page provides the ability to view Moloch actions/queries to
             ES. It is usable both as a history for a user and for auditing abilities
             for an admin. A non-admin user can only view their own actions. An admin
             user can view all users' actions.
           </p>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa-search"></span>&nbsp;
             Use the search input at the top of the page to search for specific history items.
             <br>
@@ -515,28 +710,28 @@
               for more information about how to query the history table.
             </em>
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa fa-clock-o"></span>&nbsp;
             Filter history by a time range by utilizing the time controls under the search bar.
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa fa-sort"></span>&nbsp;
             Sort history by clicking any column header.
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa-filter"></span>&nbsp;
             Use the filter button to filter history by specific field values.
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa-check-square"></span>&nbsp;
             Use the checkboxes within column headers to display history items that
             always have a value for that field.
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa-plus"></span>&nbsp;
             Use the expand button to display more information about a history item.
           </div>
-          <div class="margined-left-xxxxlg">
+          <div class="ml-4">
             <span class="fa fa-fw fa-folder-open"></span>&nbsp;
             Use the open button to "go to" the history item. This will open the page
             that the action/query was issued from.
@@ -554,11 +749,80 @@
             Settings
           </h3>
           <p>
-            The Settings tab allows for general user based settings to be managed. These settings include, timezone format, session detail format (such as ascii or hex), if timestamps should be displayed within session data,
-            Which sessions column receives default sorting, the default graph for the SPI Graph tab, and the default Src field and Dst field for the Connections tab.
-            Additionally, users may create views (saved queries) here as well. A user may also change their password on this page. If a user wishes to create a cron'd query
-            they may add/remove these queries on this page as well.
+            The Settings page allows for general user based settings to be managed and is separated into different sections.
+            An admin can update the settings of any user.
           </p>
+          <div class="ml-4">
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              General
+            </h6>
+            <p>
+              Here, a user can:
+              <ol>
+                <li>Manage their timezone format</li>
+                <li>Set their default session detail packets format</li>
+                <li>Set their default number of packets returned</li>
+                <li>Set the default for showing or hiding packet timestamps</li>
+                <li>Manage whether to issue a query on Sessions page load</li>
+                <li>Set their default Sessions table sort</li>
+                <li>Set their default SPI Graph field</li>
+                <li>Set their default Connections source field</li>
+                <li>Set their default Connetions destination field</li>
+              </ol>
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Views
+            </h6>
+            <p>
+              Here, a user can manage their saved views by updating or deleting them.
+              They can also create a new view.
+              See the <a href="help#views" class="no-decoration">Views</a> section for more information.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Cron Queries
+            </h6>
+            <p>
+              Here, a user can manage their cron queries by updating or deleting them.
+              They can also create a new cron query.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Column Configurations
+            </h6>
+            <p>
+              Here, a user can view and remove their currently saved custom Sessions table column configurations.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              SPI View Field Configurations
+            </h6>
+            <p>
+              Here, a user can view and remove their currently saved custom SPI View field configurations.
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Themes
+            </h6>
+            <p>
+              Here, a user can select from several predefined user interface themes.
+              If they're feeling adventurous and maybe a little dangerous, they can create their own custom theme.
+              <br>
+              <em>
+                <strong>Note:</strong>
+                Be careful with this feature, it is easy to make the UI completley unusable.
+              </em>
+            </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Password
+            </h6>
+            <p>
+              Here, a user can update their password.
+            </p>
+          </div>
 
           <hr>
 
@@ -567,18 +831,19 @@
             Users
           </h3>
           <p v-has-permission="'createEnabled'">
-            The Users tab, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
-            These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), An Account enabled toggle, An Admin toggle,
+            The Users page, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
+            These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
             if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
-            This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users Settings tab. (see above)
+            This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users <a href="help#settings" class="no-decoration">Settings</a> page.
           </p>
+
+          <hr>
 
           <h3 id="shortcuts">
             <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
             Keyboard Shortcuts
           </h3>
-
-          <p>
+          <p class="ml-4">
             <code>'Q'</code> - set focus to query bar
             <br>
             <code>'T'</code> - set focus to time range selector
@@ -592,6 +857,8 @@
             <code>'C'</code> - jump to the Connections page
             <br>
             <code>'H'</code> - jump to the Moloch Help page
+            <br>
+            <code>'U'</code> - jump to the Moloch Hunt page
             <br>
             <code>'esc'</code> - remove focus from any input and close the keyboard shortcuts help dialog
             <br>
@@ -628,19 +895,32 @@
             class="table table-sm table-striped">
             <thead>
               <tr>
-                <th>
+                <th class="cursor-pointer"
+                  @click="sortFields('friendlyName')">
                   Name
+                  <span v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="fieldQuery.sortField !== 'friendlyName'" class="fa fa-sort"></span>
                 </th>
-                <th>
+                <th class="cursor-pointer"
+                  @click="sortFields('exp')">
                   Exp
+                  <span v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="fieldQuery.sortField !== 'exp'" class="fa fa-sort"></span>
                 </th>
-                <th v-if="showDBFields">
+                <th v-if="showDBFields"
+                  class="cursor-pointer"
+                  @click="sortFields('dbField')">
                   Database Field
+                  <span v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="fieldQuery.sortField !== 'dbField'" class="fa fa-sort"></span>
                 </th>
                 <th>
                   Operators
                 </th>
-                <th>
+                <th class="cursor-pointer">
                   Data Type
                 </th>
                 <th>
@@ -717,7 +997,11 @@ export default {
       fields: [],
       searchFields: '',
       showDBFields: false,
-      filteredFields: []
+      filteredFields: [],
+      fieldQuery: {
+        sortField: 'exp',
+        desc: true
+      }
     };
   },
   watch: {
@@ -736,6 +1020,9 @@ export default {
       // debounce the input so it only issues a request after keyups cease for 400ms
       timeout = setTimeout(() => {
         timeout = null;
+
+        this.sortFields(this.fieldQuery.sortField);
+
         this.filteredFields = this.fields.filter((field) => {
           let hasMatch = field.exp.toLowerCase().includes(
             this.searchFields.toLowerCase()
@@ -757,6 +1044,20 @@ export default {
     },
     toggleDBFields: function () {
       this.showDBFields = !this.showDBFields;
+    },
+    sortFields: function (field) {
+      if (this.fieldQuery.sortField === field) {
+        this.fieldQuery.desc = !this.fieldQuery.desc;
+      }
+      this.fieldQuery.sortField = field;
+
+      this.filteredFields = this.filteredFields.sort((a, b) => {
+        if (this.fieldQuery.desc) {
+          return a[field].localeCompare(b[field]);
+        } else {
+          return b[field].localeCompare(a[field]);
+        }
+      });
     },
     fieldOperator: function (field) {
       if (!info[field.type]) { return; }
@@ -849,5 +1150,10 @@ export default {
 }
 .help-content .list-move {
   transition: transform .5s;
+}
+
+.badge.badge-primary {
+  font-weight: bold;
+  background-color: var(--color-primary);
 }
 </style>

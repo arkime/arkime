@@ -155,8 +155,8 @@ do {                                              \
 #define BSB_IMPORT_u16(b, x)                      \
 do {                                              \
     if ((b).ptr + 2 <= (b).end) {                 \
-        x = (uint16_t)(((b).ptr)[0] << 8 |        \
-            ((b).ptr)[1]);                        \
+        x = ((uint16_t)((b).ptr)[0]) << 8 |       \
+            ((uint16_t)((b).ptr)[1]);             \
         (b).ptr += 2;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -165,9 +165,9 @@ do {                                              \
 #define BSB_IMPORT_u24(b, x)                      \
 do {                                              \
     if ((b).ptr + 3 <= (b).end) {                 \
-        x = (uint32_t)(((b).ptr)[0] << 16 |       \
-            ((b).ptr)[1] << 8             |       \
-            ((b).ptr)[2]);                        \
+        x = ((uint32_t)((b).ptr)[0]) << 16 |      \
+            ((uint32_t)((b).ptr)[1]) << 8  |      \
+            ((uint32_t)((b).ptr)[2]);             \
         (b).ptr += 3;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -176,10 +176,10 @@ do {                                              \
 #define BSB_IMPORT_u32(b, x)                      \
 do {                                              \
     if ((b).ptr + 4 <= (b).end) {                 \
-        x = (uint32_t)(((b).ptr)[0] << 24 |       \
-            ((b).ptr)[1] << 16            |       \
-            ((b).ptr)[2] << 8             |       \
-            ((b).ptr)[3]);                        \
+        x = ((uint32_t)((b).ptr)[0]) << 24 |      \
+            ((uint32_t)((b).ptr)[1]) << 16 |      \
+            ((uint32_t)((b).ptr)[2]) << 8  |      \
+            ((uint32_t)((b).ptr)[3]);             \
         (b).ptr += 4;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -214,8 +214,8 @@ do {                                              \
 #define BSB_LIMPORT_u16(b, x)                     \
 do {                                              \
     if ((b).ptr + 2 <= (b).end) {                 \
-        x = (uint16_t)(((b).ptr)[1] << 8 |        \
-            ((b).ptr)[0]);                        \
+        x = ((uint16_t)((b).ptr)[1]) << 8 |       \
+            ((uint16_t)((b).ptr)[0]);             \
         (b).ptr += 2;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -224,9 +224,9 @@ do {                                              \
 #define BSB_LIMPORT_u24(b, x)                     \
 do {                                              \
     if ((b).ptr + 3 <= (b).end) {                 \
-        x = (uint32_t)(((b).ptr)[2] << 16 |       \
-            ((b).ptr)[1] << 8             |       \
-            ((b).ptr)[0]);                        \
+        x = ((uint32_t)((b).ptr)[2]) << 16 |      \
+            ((uint32_t)((b).ptr)[1]) << 8  |      \
+            ((uint32_t)((b).ptr)[0]);             \
         (b).ptr += 3;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -235,10 +235,10 @@ do {                                              \
 #define BSB_LIMPORT_u32(b, x)                     \
 do {                                              \
     if ((b).ptr + 4 <= (b).end) {                 \
-        x = (uint32_t)(((b).ptr)[3] << 24 |       \
-            ((b).ptr)[2] << 16            |       \
-            ((b).ptr)[1] << 8             |       \
-            ((b).ptr)[0]);                        \
+        x = ((uint32_t)((b).ptr)[3]) << 24 |      \
+            ((uint32_t)((b).ptr)[2]) << 16 |      \
+            ((uint32_t)((b).ptr)[1]) << 8  |      \
+            ((uint32_t)((b).ptr)[0]);             \
         (b).ptr += 4;                             \
     } else                                        \
         BSB_SET_ERROR(b);                         \
