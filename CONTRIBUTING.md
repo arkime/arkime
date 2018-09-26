@@ -18,8 +18,11 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 **Then, get some test data!**
 
 * Start Elasticsearch
+* Move to viewer/ directory and run "npm install"
+* Move to capture/plugins/wiseService/ directory and run "npm install"
+* Move to parliament/ directory and run "npm install"
 * Move to the Moloch tests directory
-* Run `./tests.pl --viewer`
+* Run `PERL5LIB=`pwd` ./tests.pl --viewer` or `PERL5LIB=`pwd` ./tests.pl --viewer --debug`  (Debug information will be found in /tmp) 
 
 > **Note:** this will only work if viewer is not already running.
 
