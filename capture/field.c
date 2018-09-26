@@ -35,6 +35,8 @@ HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
 
 LOCAL va_list empty_va_list;
 
+#define MOLOCH_FIELD_MAX_ELEMENT_SIZE 16384
+
 /******************************************************************************/
 LOCAL int moloch_field_exp_cmp(const void *keyv, const void *elementv)
 {
@@ -436,13 +438,21 @@ void moloch_field_by_exp_add_exspecial(char *exp, int pos, int type)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
+void moloch_field_truncated(MolochSession_t *session, const MolochFieldInfo_t *info)
+{
+    char str[1024];
+    snprintf(str, sizeof(str), "truncated-field-%s", info->dbField);
+    moloch_session_add_tag(session, str);
+}
+/******************************************************************************/
 const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy)
 {
-    MolochField_t         *field;
-    MolochStringHashStd_t *hash;
-    MolochString_t        *hstring;
+    MolochField_t                    *field;
+    MolochStringHashStd_t            *hash;
+    MolochString_t                   *hstring;
+    const MolochFieldInfo_t          *info = config.fields[pos];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -450,10 +460,16 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         session->fields[pos] = field;
         if (len == -1)
             len = strlen(string);
-        field->jsonSize = 6 + config.fields[pos]->dbFieldLen + 2*len;
+
+        if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+            len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+            moloch_field_truncated(session, info);
+        }
+
+        field->jsonSize = 6 + info->dbFieldLen + 2*len;
         if (copy)
             string = g_strndup(string, len);
-        switch (config.fields[pos]->type) {
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_STR:
             field->str = (char*)string;
             goto added;
@@ -477,12 +493,17 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             g_hash_table_add(field->ghash, (gpointer)string);
             goto added;
         default:
-            LOGEXIT("Not a string %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a string %s", info->dbField);
         }
     }
 
     if (len == -1)
         len = strlen(string);
+
+    if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+        len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+        moloch_field_truncated(session, info);
+    }
 
     field = session->fields[pos];
     field->jsonSize += (6 + 2*len);
@@ -490,7 +511,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
     if (field->jsonSize > 20000)
         session->midSave = 1;
 
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_STR:
         if (copy)
             string = g_strndup(string, len);
@@ -532,11 +553,11 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         g_hash_table_add(field->ghash, (gpointer)string);
         goto added;
     default:
-        LOGEXIT("Not a string %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a string %s", info->dbField);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
+    if (info->ruleEnabled)
       moloch_rules_run_field_set(session, pos, (const gpointer) string);
 
     return string;
@@ -546,6 +567,11 @@ gboolean moloch_field_string_add_lower(int pos, MolochSession_t *session, const 
 {
     if (len == -1)
         len = strlen(string);
+
+    if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+        len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+        moloch_field_truncated(session, config.fields[pos]);
+    }
 
     char *lower = g_ascii_strdown(string, len);
     if (!moloch_field_string_add(pos, session, lower, len, FALSE)) {
@@ -561,6 +587,11 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
 
     if (len == -1 ) {
         len = strlen(string);
+    }
+
+    if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+        len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+        moloch_field_truncated(session, config.fields[pos]);
     }
 
     if (string[len] == 0)
@@ -587,11 +618,12 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
 /******************************************************************************/
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy)
 {
-    MolochField_t         *field;
-    MolochStringHashStd_t *hash;
-    MolochString_t        *hstring;
+    MolochField_t                    *field;
+    MolochStringHashStd_t            *hash;
+    MolochString_t                   *hstring;
+    const MolochFieldInfo_t          *info = config.fields[pos];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -599,10 +631,14 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
         session->fields[pos] = field;
         if (len == -1)
             len = strlen(string);
-        field->jsonSize = 6 + config.fields[pos]->dbFieldLen + 2*len;
+        if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+            len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+            moloch_field_truncated(session, info);
+        }
+        field->jsonSize = 6 + info->dbFieldLen + 2*len;
         if (copy)
             string = g_strndup(string, len);
-        switch (config.fields[pos]->type) {
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_STR_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
             HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_ncmp);
@@ -613,11 +649,11 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             hstring->utf8 = 0;
             hstring->uw = uw;
             HASH_ADD(s_, *hash, hstring->str, hstring);
-            if (config.fields[pos]->ruleEnabled)
+            if (info->ruleEnabled)
                 moloch_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
         default:
-            LOGEXIT("Not a string hash %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a string hash %s", info->dbField);
         }
     }
 
@@ -627,10 +663,15 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
     field = session->fields[pos];
     field->jsonSize += (6 + 2*len);
 
+    if (len > MOLOCH_FIELD_MAX_ELEMENT_SIZE) {
+        len = MOLOCH_FIELD_MAX_ELEMENT_SIZE;
+        moloch_field_truncated(session, info);
+    }
+
     if (field->jsonSize > 20000)
         session->midSave = 1;
 
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
 
@@ -648,11 +689,11 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
         hstring->utf8 = 0;
         hstring->uw = uw;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
-        if (config.fields[pos]->ruleEnabled)
+        if (info->ruleEnabled)
             moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
-        LOGEXIT("Not a string hash %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a string hash %s", info->dbField);
     }
 }
 /******************************************************************************/
