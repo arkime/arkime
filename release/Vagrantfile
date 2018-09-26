@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.provider "virtualbox" do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "4000"]
+    vb.customize ["modifyvm", :id, "--memory", "4000", "--cpus", "2"]
   end
 
   config.vm.define "ubuntu-14.04" do |ubuntu1404|
