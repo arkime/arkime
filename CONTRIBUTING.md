@@ -15,21 +15,25 @@
 
 First, checkout the main [Moloch README](README.rst) for information on how to build and run Moloch.
 
-**Then, get some test data!**
+* Install and Start Elasticsearch
+* Install the dependencies, thirdparty libiraries and build moloch (./easybutton-build.sh) 
+* Uncompress node:  `xz -cd node-<VERSION>-linux-x64.tar.xz | tar xvf -`
+* Create a link to node: `ln -s node-v8.11.4-linux-x64 node`
+* Move to moloch's main directory and run `../node/npm install`
+* Move to capture/plugins/wiseService/ directory and run `../../../node/bin/npm install`
+* Move to viewer/ directory and run `../node/npm install`
+* Move to parliament/ directory and run  `../node/npm install`
 
-* Start Elasticsearch
+**Then, get some test data! (and run tests) **
+
 * Move to the Moloch tests directory
-* Run `./tests.pl --viewer`
+* Run ```PERL5LIB=`pwd` ./tests.pl --viewer``` or ```PERL5LIB=`pwd` ./tests.pl --viewer --debug```  (Debug information will be found in /tmp) 
 
 > **Note:** this will only work if viewer is not already running.
 
 You should now have test data loaded, so let's **start the web app**:
 
-* Move to the Moloch viewer directory
-* Run `npm install`
-* Move to the vueapp directory
-* Run `npm install`
-* Move back up to the viewer directory
+# * Move back up to the viewer directory
 * Run `npm run start:test`
 * Now browse to the app at `http://localhost:8123`
 
