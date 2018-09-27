@@ -81,6 +81,9 @@ installdirs:
 	(cd parsers; $(MAKE) install)
 	(cd plugins; $(MAKE) install)
 
+check:
+	(cd plugins; $(MAKE) check)
+
 distclean realclean clean:
 	rm -f *.o moloch-capture */*.o */*.so
 
