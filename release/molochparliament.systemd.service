@@ -1,5 +1,5 @@
 [Unit]
-Description=Moloch WISE
+Description=Moloch Parliament
 After=network.target
 
 [Service]
