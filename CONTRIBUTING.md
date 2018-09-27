@@ -17,6 +17,7 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 
 **Then, get some test data!**
 
+* Make sure node 8 is in your path
 * Install and Start Elasticsearch
 * Use `easybutton-build.sh` or `configure` and `make` to build everything
 * Run `make check` from the top level directory, this will
