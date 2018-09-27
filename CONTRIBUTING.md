@@ -27,7 +27,7 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 **Then, get some test data! (and run tests) **
 
 * Move to the Moloch tests directory
-* Run `PERL5LIB=`pwd` ./tests.pl --viewer` or `PERL5LIB=`pwd` ./tests.pl --viewer --debug`  (Debug information will be found in /tmp) 
+* Run ```PERL5LIB=`pwd` ./tests.pl --viewer``` or ```PERL5LIB=`pwd` ./tests.pl --viewer --debug```  (Debug information will be found in /tmp) 
 
 > **Note:** this will only work if viewer is not already running.
 
