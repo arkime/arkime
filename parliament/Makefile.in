@@ -7,6 +7,10 @@ CP = /bin/cp
 
 all:
 
+check:
+	npm install
+	npm run build
+
 install:
 	@mkdir -p "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
 	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)

@@ -349,6 +349,7 @@ export default {
     let clonedParams = JSON.parse(JSON.stringify(routeParams));
     clonedParams.counts = counts;
     clonedParams.exp = exp;
+    clonedParams.field = undefined;
 
     let url = `unique.txt?${qs.stringify(clonedParams)}`;
 

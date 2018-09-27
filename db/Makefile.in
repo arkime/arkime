@@ -10,5 +10,7 @@ install:
 	@mkdir -p "$(DBDIR)"
 	$(INSTALL) daily.sh db.pl elasticsearch.yml.sample runes.sh.sample $(DBDIR)
 
+check:
+
 distclean realclean clean:
 

@@ -17,9 +17,11 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 
 **Then, get some test data!**
 
-* Start Elasticsearch
-* Move to the Moloch tests directory
-* Run `./tests.pl --viewer`
+* Install and Start Elasticsearch
+* Use `easybutton-build.sh` or `configure` and `make` to build everything
+* Run `make check` from the top level directory, this will
+  * run `npm install` everywhere
+  * run `tests.pl` and `tests.pl --viewer` in the tests directory
 
 > **Note:** this will only work if viewer is not already running.
 
