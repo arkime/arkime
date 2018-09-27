@@ -1,3 +1,8 @@
+
+use Cwd qw( abs_path );
+use File::Basename qw( dirname );
+use lib dirname(abs_path($0));
+
 # Tests on a fresh install
 use Test::More tests => 45;
 use Cwd;
