@@ -19,10 +19,10 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 * Install the dependencies, thirdparty libiraries and build moloch (./easybutton-build.sh) 
 * Uncompress node:  `xz -cd node-<VERSION>-linux-x64.tar.xz | tar xvf -`
 * Create a link to node: `ln -s node-v8.11.4-linux-x64 node`
-* Move to moloch's main directory and run "npm install"
-* Move to capture/plugins/wiseService/ directory and run "npm install"
-* Move to viewer/ directory and run "npm install"
-* Move to parliament/ directory and run "npm install"
+* Move to moloch's main directory and run `../node/npm install`
+* Move to capture/plugins/wiseService/ directory and run `../../../node/bin/npm install`
+* Move to viewer/ directory and run `../node/npm install`
+* Move to parliament/ directory and run  `../node/npm install`
 
 **Then, get some test data! (and run tests) **
 
