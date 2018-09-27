@@ -9,7 +9,7 @@
       :message="error">
     </moloch-error>
 
-    <div v-if="!error && !loading"
+    <div v-if="!error"
       class="shards-container mt-1">
 
       <div class="input-group input-group-sm">
@@ -21,8 +21,9 @@
         <input type="text"
           class="form-control shards-search"
           v-model="query.filter"
-          @keyup="searchForES()"
-          placeholder="Begin typing to search for ES nodes and indices">
+          @keyup="searchForES"
+          placeholder="Begin typing to search for ES nodes and indices"
+        />
       </div>
 
       <div v-if="!stats.indices.length"
@@ -169,6 +170,7 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsShards',
@@ -223,6 +225,7 @@ export default {
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
+        this.loading = true;
         this.loadData();
       }, 400);
     },
@@ -266,12 +269,17 @@ export default {
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
     },
     loadData: function () {
+      respondedAt = undefined;
+
       this.$http.get('esshard/list', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
           this.stats = response.data;
@@ -297,6 +305,7 @@ export default {
             }
           }
         }, (error) => {
+          respondedAt = undefined;
           this.error = error;
           this.loading = false;
         });

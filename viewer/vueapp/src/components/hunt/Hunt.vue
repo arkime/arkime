@@ -837,6 +837,7 @@ import FocusInput from '../utils/FocusInput';
 
 let timeout;
 let interval;
+let respondedAt;
 
 export default {
   name: 'PacketSearch',
@@ -914,8 +915,10 @@ export default {
 
     // interval to load jobs every 5 seconds
     interval = setInterval(() => {
-      this.loadData();
-    }, 5000);
+      if (respondedAt && Date.now() - respondedAt >= 5000) {
+        this.loadData();
+      }
+    }, 500);
   },
   methods: {
     cancelCreateForm: function () {
@@ -1051,6 +1054,8 @@ export default {
       this[errorArea] = errorText;
     },
     loadData: function () {
+      respondedAt = undefined;
+
       let expanded = [];
       if (this.results && this.results.length) {
         // save the expanded ones
@@ -1114,7 +1119,11 @@ export default {
       // stop loading when both requests are done
       Promise.all([historyReq, queueReq])
         .then((values) => {
+          respondedAt = Date.now();
           this.loading = false;
+        })
+        .catch(() => {
+          respondedAt = undefined;
         });
     },
     loadSessions: function () {

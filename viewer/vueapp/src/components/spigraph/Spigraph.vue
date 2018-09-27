@@ -45,7 +45,7 @@
             </span>
             <select class="form-control"
               v-model="query.size"
-              @change="changeMaxElements()">
+              @change="changeMaxElements">
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -68,7 +68,7 @@
             </span>
             <select class="form-control"
               v-model="sortBy"
-              @change="changeSortBy()">
+              @change="changeSortBy">
               <option value="name">name</option>
               <option value="graph">graph</option>
             </select>
@@ -87,7 +87,7 @@
             </span>
             <select class="form-control"
               v-model="refresh"
-              @change="changeRefreshInterval()">
+              @change="changeRefreshInterval">
               <option value="0">0</option>
               <option value="5">5</option>
               <option value="10">10</option>
@@ -202,6 +202,7 @@ import MolochVisualizations from '../visualizations/Visualizations';
 
 let oldFieldObj;
 let refreshInterval;
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'Spigraph',
@@ -288,6 +289,7 @@ export default {
     setTimeout(() => {
       // wait for query to be computed
       this.loadData();
+      this.changeRefreshInterval();
     });
 
     FieldService.get(true)
@@ -340,8 +342,10 @@ export default {
       if (this.refresh && this.refresh > 0) {
         this.loadData();
         refreshInterval = setInterval(() => {
-          this.loadData();
-        }, this.refresh * 1000);
+          if (respondedAt && Date.now() - respondedAt >= parseInt(this.refresh * 1000)) {
+            this.loadData();
+          }
+        }, 500);
       }
     },
     /* event functions ----------------------------------------------------- */
@@ -357,21 +361,21 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      respondedAt = undefined;
       this.loading = true;
       this.error = false;
 
-      this.items = []; // clear items
-
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.items = []; // clear items
           this.processData(response.data);
           this.recordsTotal = response.data.recordsTotal;
           this.recordsFiltered = response.data.recordsFiltered;
-
-          this.changeRefreshInterval();
         }, (error) => {
+          respondedAt = undefined;
           this.loading = false;
           this.error = error.text || error;
         });
@@ -457,4 +461,4 @@ export default {
 .spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
   background-color: var(--color-quaternary-lightest);
 }
-</style>
+</style> -->
