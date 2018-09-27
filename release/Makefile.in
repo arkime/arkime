@@ -3,6 +3,7 @@ etcdir         = @prefix@/etc
 
 all:
 clean:
+check:
 
 install:
 	$(INSTALL) README.txt @prefix@
