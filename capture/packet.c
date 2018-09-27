@@ -1123,7 +1123,7 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
         MOLOCH_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1) {
-            LOG("WARNING - Packet Q %u is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue in %s", thread, overloadDrops[thread], config.configFile);
         }
         packet->pkt = 0;
         MOLOCH_COND_SIGNAL(packetQ[thread].lock);
