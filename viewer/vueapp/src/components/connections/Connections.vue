@@ -407,7 +407,7 @@ export default {
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     getFields: function () {
@@ -432,7 +432,7 @@ export default {
           }
         }).catch((error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     dbField2Type: function (dbField) {

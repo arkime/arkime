@@ -308,7 +308,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = error;
+        this.error = error.text || error;
       });
   },
   methods: {
@@ -373,7 +373,7 @@ export default {
           this.changeRefreshInterval();
         }, (error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     processData: function (json) {
