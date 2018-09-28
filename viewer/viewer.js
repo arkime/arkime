@@ -3315,7 +3315,11 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
     var field = req.query.field || 'node';
 
-    query.aggregations.field = {terms: {field: field, size: size}};
+    if (field === 'ip.dst:port') {
+      query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggs: {sub: {terms: {field: 'dstPort', size: size}}}};
+    } else {
+      query.aggregations.field = {terms: {field: field, size: size*2}};
+    }
 
     Promise.all([Db.healthCachePromise(),
                  Db.numberOfDocuments('sessions2-*'),
@@ -3338,15 +3342,32 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
       var aggs = result.aggregations.field.buckets;
       var interval = query.aggregations.dbHisto.histogram.interval;
       var filter = {term: {}};
+      var sfilter = {term: {}};
       query.query.bool.filter.push(filter);
+
+      if (field === 'ip.dst:port') {
+        query.query.bool.filter.push(sfilter);
+      }
 
       delete query.aggregations.field;
 
-      var queries = [];
+      var queriesInfo = [];
       aggs.forEach(function(item) {
-        filter.term[field] = item.key;
-        queries.push(JSON.stringify(query));
+        if (field === 'ip.dst:port') {
+          filter.term.dstIp = item.key;
+          let sep = (item.key.indexOf(":") === -1)? ':' : '.';
+          item.sub.buckets.forEach((sitem) => {
+            sfilter.term.dstPort = sitem.key;
+            queriesInfo.push({key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
+          });
+        } else {
+          filter.term[field] = item.key;
+          queriesInfo.push({key: item.key, doc_count: item.doc_count, query: JSON.stringify(query)});
+        }
       });
+
+      queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size*2);
+      let queries = queriesInfo.map((item) => {return item.query;});
 
       Db.msearch(indices, 'session', queries, function(err, result) {
         if (!result.responses) {
@@ -3354,7 +3375,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
         }
 
         result.responses.forEach(function(item, i) {
-          var r = {name: aggs[i].key, count: aggs[i].doc_count};
+          var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
 
           r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
@@ -3383,7 +3404,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
               if (s === 'name') { result = a.name.localeCompare(b.name); }
               else { result = b[s] - a[s]; }
               return result;
-            });
+            }).slice(0, size);
             return res.send(results);
           }
         });
