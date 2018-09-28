@@ -578,6 +578,15 @@
               placeholder="Search your packet search job history"
               class="form-control"
             />
+            <span class="input-group-append">
+              <button type="button"
+                @click="clear"
+                :disabled="!query.searchTerm"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close">
+                </span>
+              </button>
+            </span>
           </div> <!-- /search packet search jobs -->
         </div>
       </div>
@@ -1028,6 +1037,10 @@ export default {
       timeout = setTimeout(() => {
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.searchTerm = undefined;
+      this.loadData();
     },
     columnClick: function (name) {
       if (name === this.query.sortField) {

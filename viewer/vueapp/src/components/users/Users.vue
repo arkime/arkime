@@ -14,8 +14,18 @@
           <input type="text"
             class="form-control"
             v-model="query.filter"
-            @keyup="searchForUsers()"
-            placeholder="Begin typing to search for users by name">
+            @keyup="searchForUsers"
+            placeholder="Begin typing to search for users by name"
+          />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!query.filter"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
       </div>
     </div>
@@ -72,6 +82,14 @@
           </thead>
           <transition-group name="list"
             tag="tbody">
+            <tr v-if="!users.data.length"
+              key="noUsers"
+              class="text-danger text-center">
+              <td colspan="11"
+                class="pt-2">
+                <h6>No users match your search</h6>
+              </td>
+            </tr>
             <tr v-for="(user, index) of users.data"
               :key="user.id">
               <td class="no-wrap">
@@ -228,7 +246,7 @@
               <div>
                 <button type="button"
                   class="btn btn-sm btn-theme-tertiary pull-right mb-4"
-                  @click="createUser()">
+                  @click="createUser">
                   <span class="fa fa-plus-circle">
                   </span>&nbsp;
                   Create
@@ -411,6 +429,10 @@ export default {
         searchInputTimeout = null;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     columnClick (name) {
       this.query.sortField = name;

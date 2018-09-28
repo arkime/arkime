@@ -210,6 +210,12 @@ a.no-decoration { text-decoration: none; }
 }
 
 /* themed buttons */
+.btn-clear-input {
+  color: var(--color-foreground, #555) !important;
+  background-color: var(--color-background, #EEE) !important;
+  border-color: var(--color-gray) !important;
+}
+
 .btn.btn-theme-primary {
   color           : #FFFFFF;
   background-color: var(--color-primary);

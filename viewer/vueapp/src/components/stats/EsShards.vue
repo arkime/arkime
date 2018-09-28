@@ -12,7 +12,7 @@
     <div v-if="!error"
       class="shards-container mt-1">
 
-      <div class="input-group input-group-sm">
+      <div class="input-group input-group-sm mb-1">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
@@ -24,15 +24,24 @@
           @keyup="searchForES"
           placeholder="Begin typing to search for ES nodes and indices"
         />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
-      <div v-if="!stats.indices.length"
+      <div v-if="stats.indices && !stats.indices.length"
         class="text-danger text-center mt-4 mb-4">
         <span class="fa fa-warning"></span>&nbsp;
         No results match your search
       </div>
 
-      <table v-if="stats.indices.length"
+      <table v-if="stats.indices && stats.indices.length"
         class="table table-sm small scrolly-table pt-2 pb-1">
         <thead>
           <tr>
@@ -228,6 +237,10 @@ export default {
         this.loading = true;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     columnClick (name) {
       if (!name) { return; }

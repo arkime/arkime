@@ -577,12 +577,6 @@ export default {
   width: auto;
 }
 
-.btn-clear-input {
-  color: var(--color-foreground, #555) !important;
-  background-color: var(--color-background, #EEE) !important;
-  border-color: var(--color-gray) !important;
-}
-
 .typeahead-results {
   top: initial;
   left: initial;

@@ -13,9 +13,18 @@
           <input type="text"
             class="form-control"
             v-model="query.filter"
-            @keyup="searchForFiles()"
+            @keyup="searchForFiles"
             placeholder="Begin typing to search for files by name"
           />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!query.filter"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
         <moloch-paging v-if="files"
           :records-total="files.recordsTotal"
@@ -152,6 +161,10 @@ export default {
         searchInputTimeout = null;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     columnClick (name) {
       this.query.sortField = name;

@@ -17,11 +17,21 @@
             <span class="fa fa-search"></span>
           </span>
         </div>
-        <input type="text"
+        <input type="search"
           class="form-control"
           v-model="query.filter"
           @keyup="searchForNodes()"
-          placeholder="Begin typing to search for nodes by name">
+          placeholder="Begin typing to search for nodes by name"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
       <moloch-paging v-if="stats"
@@ -147,6 +157,10 @@ export default {
         initialized = false;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     loadData: function () {
       this.$http.get('stats.json', { params: this.query })

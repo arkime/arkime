@@ -19,9 +19,18 @@
           <input type="text"
             class="form-control"
             v-model="query.searchTerm"
-            @keyup="debounceSearch()"
+            @keyup="debounceSearch"
             placeholder="Search for history in the table below"
           />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!query.searchTerm"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
         <div class="form-inline mt-1">
           <moloch-time :timezone="user.settings.timezone"
@@ -71,7 +80,7 @@
               v-model="filters[column.sort]"
               :placeholder="`Filter by ${column.name}`"
               class="form-control form-control-sm input-filter"
-              @keyup="debounceSearch()"
+              @keyup="debounceSearch"
               @click.stop
             />
             <div v-if="column.hasOwnProperty('exists')"
@@ -350,6 +359,10 @@ export default {
         searchInputTimeout = null;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.searchTerm = undefined;
+      this.loadData();
     },
     columnClick: function (name) {
       this.query.sortField = name;

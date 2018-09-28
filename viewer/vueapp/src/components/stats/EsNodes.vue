@@ -23,6 +23,15 @@
           @keyup="searchForES"
           placeholder="Begin typing to search for ES nodes (hint: this input accepts regex)"
         />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
       <table class="table table-sm table-striped text-right small mt-3">
@@ -219,6 +228,10 @@ export default {
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
+      this.loadData();
+    },
+    clear () {
+      this.query.filter = undefined;
       this.loadData();
     },
     exclude: function (type, column) {
