@@ -22,10 +22,16 @@
         @input="debounceExprChange"
         @keyup.enter="enterClick"
         @keyup.esc.tab.enter.down.up.stop="keyup($event)"
-        class="form-control search-control" />
-      <span v-if="expression"
-        @click="clear()"
-        class="fa fa-close text-muted clear-input cursor-pointer">
+        class="form-control search-control"
+      />
+      <span class="input-group-append">
+        <button type="button"
+          @click="clear"
+          :disabled="!expression"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-close">
+          </span>
+        </button>
       </span>
     </div> <!-- /typeahead input -->
 
@@ -571,11 +577,10 @@ export default {
   width: auto;
 }
 
-.clear-input {
-  z-index: 3;
-  position: absolute;
-  right: 10px;
-  top: 8px;
+.btn-clear-input {
+  color: var(--color-foreground, #555) !important;
+  background-color: var(--color-background, #EEE) !important;
+  border-color: var(--color-gray) !important;
 }
 
 .typeahead-results {
