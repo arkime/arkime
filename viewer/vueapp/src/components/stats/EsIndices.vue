@@ -282,6 +282,19 @@ export default {
 };
 </script>
 
+<style>
+/* remove any space between dropdown button and menu to make
+   sure the menu doesn't get hidden */
+.hover-menu .dropdown-menu {
+  margin-top: 0;
+}
+/* widen the button to make sure the user has enough space to
+   move their mouse to the menu so that it doesn't get hidden */
+.hover-menu .btn-sm {
+  padding: 1px 8px !important;
+}
+</style>
+
 <style scoped>
 td {
   white-space: nowrap;
