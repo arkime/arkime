@@ -19,10 +19,6 @@
                   "SOA"
                ],
                "qtCnt" : 1,
-               "query.host" : [
-                  "bortzmeyer.42"
-               ],
-               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],

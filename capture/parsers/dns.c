@@ -14,30 +14,22 @@
  */
 #include "moloch.h"
 
+//#define DNSDEBUG 1
+
 LOCAL  char                 *qclasses[256];
 LOCAL  char                 *qtypes[256];
 LOCAL  char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
 LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
 
 LOCAL  int                   ipField;
+LOCAL  int                   ipNameServerField;
 LOCAL  int                   hostField;
+LOCAL  int                   hostNameServerField;
 LOCAL  int                   punyField;
 LOCAL  int                   queryTypeField;
 LOCAL  int                   queryClassField;
 LOCAL  int                   statusField;
 LOCAL  int                   opCodeField;
-
-LOCAL int                   ipQueryField;
-LOCAL int                   ipAnswerField;
-LOCAL int                   ipAuthoritativeField;
-LOCAL int                   ipAdditionalField;
-LOCAL int                   ipUpdateField;
-
-LOCAL int                   hostQueryField;
-LOCAL int                   hostAnswerField;
-LOCAL int                   hostAuthoritativeField;
-LOCAL int                   hostAdditionalField;
-LOCAL int                   hostUpdateField;
 
 typedef enum dns_type
 {
@@ -61,10 +53,10 @@ typedef enum dns_class
 
 typedef enum dns_result_record_type
 {
-  RESULT_RECORD_ANSWER                  =     1,    /* Answer Record                    */
-  RESULT_RECORD_AUTHORITATIVE           =     2,    /* Authoritative Record (obsolete)  */
-  RESULT_RECORD_ADDITIONAL              =     3,    /* Additional Record                */
-  RESULT_RECORD_UNKNOWN                 =     4,    /* Unknown Record                   */
+  RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
+  RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
+  RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
+  RESULT_RECORD_UNKNOWN         =     4,    /* Unknown Record*/
 } DNSResultRecordType_t;
 
 typedef struct {
@@ -163,12 +155,51 @@ LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb
     return name;
 }
 /******************************************************************************/
-LOCAL void dns_add_host(MolochSession_t *session, char *string, int len)
+LOCAL void dns_add_host(int field, MolochSession_t *session, char *string, int len)
 {
-    moloch_field_string_add_host(hostField, session, string, len);
+    moloch_field_string_add_host(field, session, string, len);
     if (moloch_memstr((const char *)string, len, "xn--", 4)) {
         moloch_field_string_add_lower(punyField, session, string, len);
     }
+}
+/******************************************************************************/
+LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len) {
+
+    char *host =0;
+    MolochField_t *field = 0;
+    MolochString_t *hstring = 0;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+        return FALSE;
+
+    if (!session->fields[pos]) // Hash list has not been created
+        return FALSE;
+
+    if (len == -1 ) {
+        len = strlen(string);
+    }
+
+    if (string[len] == 0)
+        host = g_hostname_to_unicode(string);
+    else {
+        char ch = string[len];
+        string[len] = 0;
+        host = g_hostname_to_unicode(string);
+        string[len] = ch;
+    }
+
+    // If g_hostname_to_unicode fails, just use the input
+    if (!host) {
+        return FALSE;
+    }
+
+    field = session->fields[pos];
+    HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(host, len), host, hstring);
+
+    if (hstring) // hostname found
+        return TRUE;
+
+    return FALSE;
 }
 /******************************************************************************/
 LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
@@ -179,7 +210,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
 
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
- /*  
+ /*
     int aa      = (data[2] >> 2) & 0x1;
     int tc      = (data[2] >> 1) & 0x1;
     int rd      = (data[2] >> 0) & 0x1;
@@ -191,29 +222,21 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
     if (opcode > 5)
         return;
 
-    int qdcount = (data[4] << 8) | data[5];                                    /*number of question records*/
-    int ancount = (data[6] << 8) | data[7];                                    /*number of answer recrods*/
-    
-    int prereqs = opcode == 5?(data[8] << 8) | data[9]:0;                      /*number of prerequisite recrods in UPDATE*/
-    int updates = opcode == 5?(data[10] << 8) | data[11]:0;                    /*number of update records in UPDATE*/
-
-    int nscount = config.parseDNSRecordAll? (data[8] << 8) | data[9]:0;        /*number of authoritative records*/
-    int arcount = config.parseDNSRecordAll?  (data[10] << 8) | data[11]:0;     /*number of additional records*/
-
+    int qd_count = (data[4] << 8) | data[5];                                                          /*number of question records*/
+    int an_prereqs_count = (data[6] << 8) | data[7];                                                  /*number of answer or prerequisite records*/
+    int ns_update_count = (opcode == 5 || config.parseDNSRecordAll)? (data[8] << 8) | data[9]:0;      /*number of authoritative or update recrods*/
+    int ar_count = (opcode == 5 || config.parseDNSRecordAll)? (data[10] << 8) | data[11]:0;           /*number of additional records*/
 
     int resultRecordCount [3] = {0};
-    resultRecordCount [0] = ancount;
-    resultRecordCount [1] = opcode == 5? prereqs:nscount;
-    resultRecordCount [2] = opcode == 5? updates:arcount;
-
-    int ip_field = 0;
-    int host_field = 0;
+    resultRecordCount [0] = an_prereqs_count;
+    resultRecordCount [1] = ns_update_count;
+    resultRecordCount [2] = ar_count;
 
 #ifdef DNSDEBUG
-        LOG("DNSDEBUG: [Query/Zone Count (qd/zo count): %d], [Answer/Prerequisite Count (an/pre count): %d], [Authority Record/Update Count (ns/up count): %d], [Additional Information Count (ar/ad count): %d]", qdcount, ancount, nscount, arcount);
+        LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
 #endif
 
-    if (qdcount > 10 || qdcount <= 0)
+    if (qd_count > 10 || qd_count <= 0)
         return;
 
     BSB bsb;
@@ -221,9 +244,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
 
     /* QD Section */
     int i;
-    ip_field = ipQueryField;
-    host_field = hostQueryField;
-    for (i = 0; BSB_NOT_ERROR(bsb) && i < qdcount; i++) {
+    for (i = 0; BSB_NOT_ERROR(bsb) && i < qd_count; i++) {
         unsigned char  namebuf[8000];
         int namelen = sizeof(namebuf);
         unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
@@ -252,8 +273,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         }
 
         if (namelen > 0) {
-            dns_add_host(session, (char *)name, namelen);
-            moloch_field_string_add_host (host_field, session, (char*)name, namelen);
+            dns_add_host(hostField, session, (char *)name, namelen);
         }
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
@@ -277,135 +297,122 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
     }
     int recordType = 0;
-    for (recordType= RESULT_RECORD_ANSWER ; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
+    for (recordType= RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
+        int recordNum = resultRecordCount[recordType-1];
+        for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
 
-      int recordNum = resultRecordCount[recordType-1];
-      
-      for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
+            unsigned char  namebuf[8000];
+            int namelen = sizeof(namebuf);
+            unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
-        if (recordType == RESULT_RECORD_ANSWER) {
-            ip_field = ipAnswerField;
-            host_field = hostAnswerField;
-        } else if (recordType == RESULT_RECORD_AUTHORITATIVE) {
-            ip_field = ipAuthoritativeField;
-            host_field = hostAuthoritativeField;
-        } else if (recordType == RESULT_RECORD_ADDITIONAL) {
-            ip_field = ipAdditionalField;
-            host_field = hostAdditionalField;
-        } else {
-            return;
-        }
+            if (BSB_IS_ERROR(bsb) || !name)
+             break;
 
-        unsigned char  namebuf[8000];
-        int namelen = sizeof(namebuf);
-        unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
+            uint16_t antype = 0;
+            BSB_IMPORT_u16 (bsb, antype);
+            uint16_t anclass = 0;
+            BSB_IMPORT_u16 (bsb, anclass);
+            BSB_IMPORT_skip(bsb, 4); // ttl
+            uint16_t rdlength = 0;
+            BSB_IMPORT_u16 (bsb, rdlength);
 
-        if (BSB_IS_ERROR(bsb) || !name)
-            break;
+            if (BSB_REMAINING(bsb) < rdlength) {
+                break;
+            }
 
-        uint16_t antype = 0;
-        BSB_IMPORT_u16 (bsb, antype);
-        uint16_t anclass = 0;
-        BSB_IMPORT_u16 (bsb, anclass);
-        BSB_IMPORT_skip(bsb, 4); // ttl
-        uint16_t rdlength = 0;
-        BSB_IMPORT_u16 (bsb, rdlength);
+            if (anclass != CLASS_IN) {
+                BSB_IMPORT_skip(bsb, rdlength);
+                continue;
+            }
 
-        if (BSB_REMAINING(bsb) < rdlength) {
-            break;
-        }
+            switch (antype) {
+            case RR_A: {
+                if (rdlength != 4)
+                    break;
+                struct in_addr in;
+                unsigned char *ptr = BSB_WORK_PTR(bsb);
+                in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
-        if (anclass != CLASS_IN) {
+                if (opcode == 5) { // update
+                    moloch_field_ip4_add(ipField, session, in.s_addr);
+                    dns_add_host(hostField, session, (char *)name, namelen);
+                } else {
+                    if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
+                        moloch_field_ip4_add(ipField, session, in.s_addr);
+                    }
+                    else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                        moloch_field_ip4_add(ipNameServerField, session, in.s_addr);
+                    }
+                }
+                break;
+            }
+            case RR_NS: {
+
+                if (!config.parseDNSRecordAll)
+                    break;
+
+                BSB rdbsb;
+                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
+
+                namelen = sizeof(namebuf);
+                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
+                    continue;
+
+                dns_add_host(hostNameServerField, session, (char *)name, namelen);
+
+                break;
+            }
+            case RR_CNAME: {
+                BSB rdbsb;
+                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
+
+                namelen = sizeof(namebuf);
+                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
+                    continue;
+
+                dns_add_host(hostField, session, (char *)name, namelen);
+
+                break;
+            }
+            case RR_MX: {
+                BSB rdbsb;
+                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
+                BSB_IMPORT_skip(rdbsb, 2); // preference
+
+                namelen = sizeof(namebuf);
+                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
+                    continue;
+
+                dns_add_host(hostField, session, (char*)name, namelen);
+
+                break;
+            }
+            case RR_AAAA: {
+                if (rdlength != 16)
+                    break;
+                unsigned char *ptr = BSB_WORK_PTR(bsb);
+
+                if (opcode == 5) { // update
+                    moloch_field_ip6_add(ipField, session, ptr);
+                    dns_add_host(hostField, session, (char *)name, namelen);
+                } else {
+                    if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
+                        moloch_field_ip6_add(ipField, session, ptr);
+                    } else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                        moloch_field_ip6_add(ipNameServerField, session, ptr);
+                    }
+                }
+                break;
+            }
+            } /* switch */
             BSB_IMPORT_skip(bsb, rdlength);
-            continue;
         }
-
-        switch (antype) {
-          case RR_A: {
-            if (rdlength != 4)
-                break;
-            struct in_addr in;
-            unsigned char *ptr = BSB_WORK_PTR(bsb);
-            in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
-
-            moloch_field_ip4_add(ipField, session, in.s_addr);
-
-            if (opcode == 5) { // IPs and Hostname in update or prerequisites records of UPDATE query
-                dns_add_host(session, (char *)name, namelen);
-                if (config.parseDNSRecordAll) {
-                    moloch_field_ip4_add(ipUpdateField, session, in.s_addr);
-                    moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
-                }
-            } else if (config.parseDNSRecordAll) { // IPs and Hostname in answer, authoritative, or additional records
-                moloch_field_ip4_add(ip_field, session, in.s_addr);
-                moloch_field_string_add_host(host_field, session, (char*)name, namelen);
-            }
-            break;
-          }
-          case RR_NS:
-          case RR_CNAME: {
-            BSB rdbsb;
-            BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-
-            namelen = sizeof(namebuf);
-            unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
-
-            if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
-                continue;
-
-            dns_add_host(session, (char *)name, namelen);
-
-            if (config.parseDNSRecordAll) {
-                if (opcode == 5) // Hostname in update or prerequisites records of UPDATE query
-                    moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
-                else //Hostname in answer, authoritative, or additional records
-                    moloch_field_string_add_host (host_field, session, (char*)name, namelen);
-            }
-            break;
-          }
-          case RR_MX: {
-            BSB rdbsb;
-            BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-            BSB_IMPORT_skip(rdbsb, 2); // preference
-
-            namelen = sizeof(namebuf);
-            unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
-
-            if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
-                continue;
-
-            dns_add_host(session, (char *)name, namelen);
-            
-            if (config.parseDNSRecordAll) {
-                if (opcode == 5) // Hostname in update or prerequisites records of UPDATE query
-                    moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
-                else // Hostname in answer, authoritative, or additional records
-                    moloch_field_string_add_host (host_field, session, (char*)name, namelen);
-            }
-            break;
-          }
-          case RR_AAAA: {
-            if (rdlength != 16)
-                break;
-            unsigned char *ptr = BSB_WORK_PTR(bsb);
-
-            moloch_field_ip6_add(ipField, session, ptr);
-            
-            if (opcode == 5) { // IPs or Hostname in update or prerequisites records of UPDATE query
-                dns_add_host(session, (char *)name, namelen);
-                if (config.parseDNSRecordAll) {
-                    moloch_field_ip6_add(ipUpdateField, session, ptr);
-                    moloch_field_string_add_host (hostUpdateField, session, (char*)name, namelen);
-                }
-            } else if (config.parseDNSRecordAll) { // IPs or Hostname in answer, authoritative, or additional records
-                moloch_field_ip6_add(ip_field, session, ptr);
-                moloch_field_string_add_host(host_field, session, (char*)name, namelen);
-            }
-            break;
-          }
-        } /* switch */
-        BSB_IMPORT_skip(bsb, rdlength);
-      }
     }
 }
 /******************************************************************************/
@@ -493,6 +500,20 @@ void moloch_parser_init()
         "category", "ip",
         NULL);
 
+    ipNameServerField = moloch_field_define("dns", "ip",
+        "ip.dns.nameserver", "IP",  "dns.nameserver.ip",
+        "IPs for nameservers",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        NULL);
+
+    moloch_field_define("dns", "ip",
+        "ip.dns.all", "IP", "dnsipall",
+        "Shorthand for ip.dns or ip.dns.nameserver",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        "regex", "^ip\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
+        NULL);
+
     hostField = moloch_field_define("dns", "lotermfield",
         "host.dns", "Host", "dns.host",
         "DNS lookup hostname",
@@ -501,80 +522,24 @@ void moloch_parser_init()
         "category", "host",
         NULL);
 
+    hostNameServerField = moloch_field_define("dns", "lotermfield",
+        "host.dns.nameserver", "Host", "dns.nameserver.host",
+        "Hostnames for nameservers",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
+        "category", "host",
+        NULL);
+
+    moloch_field_define("dns", "lotermfield",
+        "host.dns.all", "Host", "dnshostall",
+        "Shorthand for host.dns or host.dns.nameserver",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
+        NULL);
+
     punyField = moloch_field_define("dns", "lotermfield",
         "dns.puny", "Puny", "dns.puny",
         "DNS lookup punycode",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
-
-    ipQueryField = moloch_field_define("dns", "ip",
-        "ip.dns.query", "IP",  "dns.query.ip",
-        "IP in DNS query",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        NULL);
-
-    ipAnswerField = moloch_field_define("dns", "ip",
-        "ip.dns.answer", "IP",  "dns.answer.ip",
-        "IP in answer section of DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        NULL);
-
-    ipAuthoritativeField = moloch_field_define("dns", "ip",
-        "ip.dns.authoritative", "IP",  "dns.authoritative.ip",
-        "IP in authroitative section of DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        NULL);
-
-    ipAdditionalField = moloch_field_define("dns", "ip",
-        "ip.dns.additional", "IP",  "dns.additional.ip",
-        "IP in additional section of DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        NULL);
-
-    ipUpdateField = moloch_field_define("dns", "ip",
-        "ip.dns.update", "IP",  "dns.update.ip",
-        "IP in update section of DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        NULL);
-
-    hostQueryField = moloch_field_define("dns", "lotermfield",
-        "host.dns.query", "Host", "dns.query.host",
-        "DNS hosts in query",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        NULL);
-
-    hostAnswerField = moloch_field_define("dns", "lotermfield",
-        "host.dns.answer", "Host", "dns.answer.host",
-        "DNS hosts in answer section of DNS result",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        NULL);
-
-    hostAuthoritativeField = moloch_field_define("dns", "lotermfield",
-        "host.dns.authoritative", "Host", "dns.authoritative.host",
-        "DNS hosts in autohritative section of DNS result",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        NULL);
-
-    hostAdditionalField = moloch_field_define("dns", "lotermfield",
-        "host.dns.additional", "Host", "dns.additional.host",
-        "DNS hosts in additional section of DNS result",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        NULL);
-
-    hostUpdateField = moloch_field_define("dns", "lotermfield",
-        "host.dns.update", "Host", "dns.update.host",
-        "DNS hosts in update section of DNS result",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
         NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
@@ -600,7 +565,6 @@ void moloch_parser_init()
         "DNS lookup query class",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
-
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";

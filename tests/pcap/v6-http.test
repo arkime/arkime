@@ -268,12 +268,7 @@
                "qt" : [
                   "ANY"
                ],
-               "qtCnt" : 1,
-               "query.host" : [
-                  "linux.local",
-                  "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
-               ],
-               "query.hostCnt" : 2
+               "qtCnt" : 1
             },
             "dstBytes" : 0,
             "dstDataBytes" : 0,

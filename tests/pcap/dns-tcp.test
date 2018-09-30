@@ -14,17 +14,9 @@
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
                   "AS15169 Google LLC"
                ],
                "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
                   "US",
                   "US",
                   "US",
@@ -48,134 +40,58 @@
                   "ARIN",
                   "ARIN",
                   "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
                   "ARIN"
                ],
-               "additional.ASN" : [
+               "host" : [
+                  "google.com"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "74.125.228.32",
+                  "74.125.228.33",
+                  "74.125.228.34",
+                  "74.125.228.35",
+                  "74.125.228.36",
+                  "74.125.228.37",
+                  "74.125.228.38",
+                  "74.125.228.39",
+                  "74.125.228.40",
+                  "74.125.228.41",
+                  "74.125.228.46"
+               ],
+               "ipCnt" : 11,
+               "nameserver.ASN" : [
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC"
                ],
-               "additional.GEO" : [
+               "nameserver.GEO" : [
                   "US",
                   "US",
                   "US",
                   "US"
                ],
-               "additional.RIR" : [
+               "nameserver.RIR" : [
                   "ARIN",
                   "ARIN",
                   "ARIN",
                   "ARIN"
                ],
-               "additional.host" : [
+               "nameserver.host" : [
                   "ns1.google.com",
                   "ns4.google.com",
                   "ns3.google.com",
                   "ns2.google.com"
                ],
-               "additional.hostCnt" : 4,
-               "additional.ip" : [
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
                   "216.239.38.10",
                   "216.239.34.10",
                   "216.239.36.10",
                   "216.239.32.10"
                ],
-               "additional.ipCnt" : 4,
-               "answer.ASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
-               ],
-               "answer.GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "answer.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "answer.host" : [
-                  "google.com"
-               ],
-               "answer.hostCnt" : 1,
-               "answer.ip" : [
-                  "74.125.228.32",
-                  "74.125.228.33",
-                  "74.125.228.34",
-                  "74.125.228.35",
-                  "74.125.228.36",
-                  "74.125.228.37",
-                  "74.125.228.38",
-                  "74.125.228.39",
-                  "74.125.228.40",
-                  "74.125.228.41",
-                  "74.125.228.46"
-               ],
-               "answer.ipCnt" : 11,
-               "authoritative.host" : [
-                  "ns1.google.com",
-                  "ns4.google.com",
-                  "ns3.google.com",
-                  "ns2.google.com"
-               ],
-               "authoritative.hostCnt" : 4,
-               "host" : [
-                  "ns1.google.com",
-                  "google.com",
-                  "ns4.google.com",
-                  "ns3.google.com",
-                  "ns2.google.com"
-               ],
-               "hostCnt" : 5,
-               "ip" : [
-                  "216.239.34.10",
-                  "216.239.36.10",
-                  "216.239.38.10",
-                  "74.125.228.32",
-                  "74.125.228.33",
-                  "74.125.228.34",
-                  "74.125.228.35",
-                  "74.125.228.36",
-                  "74.125.228.37",
-                  "74.125.228.38",
-                  "74.125.228.39",
-                  "74.125.228.40",
-                  "74.125.228.41",
-                  "216.239.32.10",
-                  "74.125.228.46"
-               ],
-               "ipCnt" : 15,
+               "nameserver.ipCnt" : 4,
                "opcode" : [
                   "QUERY"
                ],
@@ -188,10 +104,6 @@
                   "A"
                ],
                "qtCnt" : 1,
-               "query.host" : [
-                  "google.com"
-               ],
-               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],
@@ -294,17 +206,9 @@
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network"
                ],
                "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
                   "US",
                   "US",
                   "US",
@@ -316,104 +220,52 @@
                   "ARIN",
                   "ARIN",
                   "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
                   "ARIN"
                ],
-               "additional.ASN" : [
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network"
-               ],
-               "additional.GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "additional.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "additional.host" : [
-                  "dns-02.ns.aol.com",
-                  "dns-01.ns.aol.com",
-                  "dns-07.ns.aol.com",
-                  "dns-06.ns.aol.com"
-               ],
-               "additional.hostCnt" : 4,
-               "additional.ip" : [
-                  "64.236.1.107",
-                  "207.200.73.80",
-                  "64.12.51.132",
-                  "205.188.157.232"
-               ],
-               "additional.ipCnt" : 4,
-               "answer.ASN" : [
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network"
-               ],
-               "answer.GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "answer.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "answer.host" : [
+               "host" : [
                   "aol.com"
                ],
-               "answer.hostCnt" : 1,
-               "answer.ip" : [
+               "hostCnt" : 1,
+               "ip" : [
                   "64.12.89.186",
                   "205.188.101.58",
                   "205.188.100.58",
                   "207.200.74.38",
                   "64.12.79.57"
                ],
-               "answer.ipCnt" : 5,
-               "authoritative.host" : [
+               "ipCnt" : 5,
+               "nameserver.ASN" : [
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network"
+               ],
+               "nameserver.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserver.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "nameserver.host" : [
                   "dns-02.ns.aol.com",
                   "dns-01.ns.aol.com",
                   "dns-07.ns.aol.com",
                   "dns-06.ns.aol.com"
                ],
-               "authoritative.hostCnt" : 4,
-               "host" : [
-                  "dns-02.ns.aol.com",
-                  "dns-01.ns.aol.com",
-                  "aol.com",
-                  "dns-07.ns.aol.com",
-                  "dns-06.ns.aol.com"
-               ],
-               "hostCnt" : 5,
-               "ip" : [
-                  "64.12.79.57",
-                  "207.200.74.38",
-                  "64.12.51.132",
-                  "205.188.100.58",
-                  "207.200.73.80",
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
                   "64.236.1.107",
-                  "205.188.101.58",
-                  "64.12.89.186",
+                  "207.200.73.80",
+                  "64.12.51.132",
                   "205.188.157.232"
                ],
-               "ipCnt" : 9,
+               "nameserver.ipCnt" : 4,
                "opcode" : [
                   "QUERY"
                ],
@@ -426,10 +278,6 @@
                   "A"
                ],
                "qtCnt" : 1,
-               "query.host" : [
-                  "aol.com"
-               ],
-               "query.hostCnt" : 1,
                "status" : [
                   "NOERROR"
                ],

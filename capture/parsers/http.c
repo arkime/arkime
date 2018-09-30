@@ -76,7 +76,6 @@ LOCAL  int headerReqValue;
 LOCAL  int headerResField;
 LOCAL  int headerResValue;
 
-
 /******************************************************************************/
 LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
 {
@@ -248,7 +247,6 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         l--;
     }
 
-
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_INT:
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
@@ -284,7 +282,6 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         break;
     }
     } /* SWITCH */
-
 
     g_string_truncate(http->valueString[http->which], 0);
     http->pos[http->which] = 0;
@@ -337,7 +334,7 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d value: %.*s", http->which, (int)length, at);
 #endif
-    
+
     if ((http->inValue & (1 << http->which)) == 0) {
         http->inValue |= (1 << http->which);
 
@@ -406,7 +403,6 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
     char                   version[20];
-
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d code: %d method: %d", http->which, parser->status_code, parser->method);
@@ -916,4 +912,3 @@ static const char *method_strings[] =
     parserSettings.on_header_field = moloch_hp_cb_on_header_field;
     parserSettings.on_header_value = moloch_hp_cb_on_header_value;
 }
-

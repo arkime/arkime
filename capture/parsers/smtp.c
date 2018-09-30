@@ -174,7 +174,6 @@ LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
         ipos++;
     }
 
-
     *olen = opos;
     str[opos] = 0;
     return start;
@@ -185,7 +184,6 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
 {
     /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
     /* =?charset?encoding?encoded-text?= */
-
 
     char  output[0xfff];
     char *str = string;
@@ -978,7 +976,7 @@ void moloch_parser_init()
         "email.header.field", "Header Field", "email.headerField", "Email has the header field set",
         MOLOCH_FIELD_TYPE_STR_ARRAY,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
-    
+
     headerValue = moloch_field_define("email", "termfield",
         "email.header.value", "Header Value", "email.headerValue", "Email has the header value",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,

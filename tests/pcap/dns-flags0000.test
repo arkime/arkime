@@ -19,10 +19,6 @@
                   "A"
                ],
                "qtCnt" : 1,
-               "query.host" : [
-                  "flashservice.adobe.com"
-               ],
-               "query.hostCnt" : 1,
                "status" : [
                   "REFUSED"
                ],

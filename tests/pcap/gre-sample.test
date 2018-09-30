@@ -370,11 +370,7 @@
                "qt" : [
                   "ANY"
                ],
-               "qtCnt" : 1,
-               "query.host" : [
-                  "www.gleeble.org"
-               ],
-               "query.hostCnt" : 1
+               "qtCnt" : 1
             },
             "dstBytes" : 0,
             "dstDataBytes" : 0,
