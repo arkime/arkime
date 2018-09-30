@@ -67,7 +67,7 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - yum -y install libasan-static
-            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-fno-common -fsanitize=address' sanitize)
+            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address' sanitize)
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999

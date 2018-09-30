@@ -623,8 +623,6 @@ typedef struct moloch_session_head {
 } MolochSessionHead_t;
 
 
-#define MOLOCH_USE_MALLOC
-
 #ifdef MOLOCH_USE_MALLOC
 #define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
 #define MOLOCH_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))

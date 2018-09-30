@@ -33,7 +33,7 @@ INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
-SANITIZE_FLAGS  = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+SANITIZE_FLAGS  = -DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
@@ -49,7 +49,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	(cd plugins; $(MAKE))
 
 sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) $(SANITIZE_FLAGS) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
+	$(CC) $(SANITIZE_FLAGS) -fPIC -g -O0 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
