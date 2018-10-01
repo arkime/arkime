@@ -459,7 +459,6 @@
                   "accept-encoding",
                   "accept-language"
                ],
-               "requestHeaderFieldCnt" : 3,
                "requestHeaderValue" : [
                   "text/html, text/plain, text/css, text/sgml, */*;q=0.01",
                   "gzip, bzip2",
@@ -481,10 +480,9 @@
                   "connection",
                   "content-type"
                ],
-               "responseHeaderFieldCnt" : 5,
                "responseHeaderValue" : [
-                  "Sun, 05 Aug 2007 19:16:44 GMT",
-                  "Apache",
+                  "sun, 05 aug 2007 19:16:44 gmt",
+                  "apache",
                   "2121",
                   "close",
                   "text/html"

@@ -61,9 +61,8 @@
                   "cache-control",
                   "pragma"
                ],
-               "requestHeaderFieldCnt" : 3,
                "requestHeaderValue" : [
-                  "PRODUCT=xxxxxxxxxx;xxxxxxxxxx=xxxxxxxxx;xx=xxxxx;xxxxxxxxx;xxxxxxxxxx",
+                  "product=xxxxxxxxxx;xxxxxxxxxx=xxxxxxxxx;xx=xxxxx;xxxxxxxxx;xxxxxxxxxx",
                   "no-store,no-cache",
                   "no-cache"
                ],

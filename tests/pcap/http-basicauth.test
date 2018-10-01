@@ -87,14 +87,13 @@
                   "connection",
                   "if-modified-since"
                ],
-               "requestHeaderFieldCnt" : 6,
                "requestHeaderValue" : [
                   "*/*",
-                  "en-GB,en;q=0.5",
+                  "en-gb,en;q=0.5",
                   "gzip, deflate",
                   "zzzzzzzzzzzzzzzzzz=auto; cprelogin=no; cpsession=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz; langedit=; lang=",
                   "keep-alive",
-                  "Wed, 29 Oct 2014 01:11:13 GMT"
+                  "wed, 29 oct 2014 01:11:13 gmt"
                ],
                "requestHeaderValueCnt" : 6,
                "responseHeader" : [
@@ -116,15 +115,14 @@
                   "cache-control",
                   "expires"
                ],
-               "responseHeaderFieldCnt" : 7,
                "responseHeaderValue" : [
                   "cpsrvd/11.44.1.19",
                   "1",
-                  "Keep-Alive",
+                  "keep-alive",
                   "timeout=70, max=200",
-                  "Wed, 29 Oct 2014 17:35:08 GMT",
+                  "wed, 29 oct 2014 17:35:08 gmt",
                   "max-age=5184000, public",
-                  "Sun, 28 Dec 2014 17:35:07 GMT"
+                  "sun, 28 dec 2014 17:35:07 gmt"
                ],
                "responseHeaderValueCnt" : 7,
                "serverVersion" : [

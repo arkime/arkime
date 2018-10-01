@@ -32,18 +32,6 @@
                   "subject"
                ],
                "headerCnt" : 3,
-               "headerField" : [
-                  "from",
-                  "to",
-                  "subject"
-               ],
-               "headerFieldCnt" : 3,
-               "headerValue" : [
-                  "user1@xxx.net",
-                  "user2@xxx.net",
-                  "=?ISO-8859-1?B?Qw==?==?ISO-8859-1?B?YW4=?==?ISO-8859-1?B?IHRoaXMgMTAgU2Vjb25kIFRyaWNrIEhlbA==?==?ISO-8859-1?B??==?ISO-8859-1?B?cCBQcmV2ZW50IFlPVVIgSGVhcnQgQQ==?==?ISO-8859-1?B?dHRhY2s/?="
-               ],
-               "headerValueCnt" : 3,
                "src" : [
                   "user1@xxx.net"
                ],

@@ -143,13 +143,12 @@
                   "accept-encoding",
                   "accept-language"
                ],
-               "requestHeaderFieldCnt" : 5,
                "requestHeaderValue" : [
                   "keep-alive",
-                  "ShockwaveFlash/24.0.0.186",
+                  "shockwaveflash/24.0.0.186",
                   "*/*",
                   "gzip, deflate, sdch",
-                  "en-US,en;q=0.8"
+                  "en-us,en;q=0.8"
                ],
                "requestHeaderValueCnt" : 5,
                "responseHeader" : [
@@ -175,15 +174,14 @@
                   "connection",
                   "access-control-allow-origin"
                ],
-               "responseHeaderFieldCnt" : 9,
                "responseHeaderValue" : [
                   "bytes",
                   "video/mp2t",
                   "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:1111111111.222222\"",
-                  "Mon, 26 Dec 2016 00:45:01 GMT",
-                  "AkamaiNetStorage",
+                  "mon, 26 dec 2016 00:45:01 gmt",
+                  "akamainetstorage",
                   "104528",
-                  "Wed, 04 Jan 2017 15:36:04 GMT",
+                  "wed, 04 jan 2017 15:36:04 gmt",
                   "keep-alive",
                   "*"
                ],

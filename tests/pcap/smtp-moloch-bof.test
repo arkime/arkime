@@ -37,22 +37,6 @@
                   "subject"
                ],
                "headerCnt" : 5,
-               "headerField" : [
-                  "from",
-                  "to",
-                  "subject",
-                  "mime-version",
-                  "content-type"
-               ],
-               "headerFieldCnt" : 5,
-               "headerValue" : [
-                  "matt@zpdt.example.com",
-                  "mattenuttall@example.com",
-                  "MIME test",
-                  "1.0",
-                  "multipart/mixed; boundary=\"=_frontier\""
-               ],
-               "headerValueCnt" : 5,
                "mimeVersion" : [
                   "1.0"
                ],

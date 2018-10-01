@@ -52,33 +52,14 @@
                ],
                "headerCnt" : 10,
                "headerField" : [
-                  "received",
-                  "received",
                   "date",
-                  "from",
-                  "to",
-                  "subject",
-                  "message-id",
-                  "mime-version",
-                  "content-type",
-                  "content-disposition",
-                  "user-agent"
+                  "content-disposition"
                ],
-               "headerFieldCnt" : 11,
                "headerValue" : [
-                  "from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1]) by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBC38jeK000728 for <xxxxxxxxx@xxxxxxx.com>; Wed, 11 Dec 2013 22:08:45 -0500",
-                  "(from xxxxx@localhost) by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4/Submit) id rBC38jIS000725 for xxxxxxxxx@xxxxxxx.com; Wed, 11 Dec 2013 22:08:45 -0500",
                   "Wed, 11 Dec 2013 22:08:45 -0500",
-                  "xxxxxxxxx <xxxxx@xxx.net>",
-                  "xxxxxxxxx@xxxxxxx.com",
-                  "=?iso-8859-1?Q?=E9_=EE_=F8_=FC____________?= =?iso-8859-1?Q?_________________________________________________________?= =?iso-8859-1?Q?_________________________________________________________?= =?iso-8859-1?Q?_____?= =?iso-8859-1?Q?_?=                                                     test",
-                  "<20131212030845.GA715@xxx.net>",
-                  "1.0",
-                  "text/plain; charset=us-ascii",
-                  "inline",
-                  "Mutt/1.5.20 (2009-12-10)"
+                  "inline"
                ],
-               "headerValueCnt" : 11,
+               "headerValueCnt" : 2,
                "host" : [
                   "localhost",
                   "xxxxxxxxxxxxx.xxx.com"

@@ -53,7 +53,6 @@
                "requestHeaderField" : [
                   "accept"
                ],
-               "requestHeaderFieldCnt" : 1,
                "requestHeaderValue" : [
                   "*/*"
                ],
@@ -85,17 +84,16 @@
                   "x-ec-custom-error",
                   "content-length"
                ],
-               "responseHeaderFieldCnt" : 11,
                "responseHeaderValue" : [
                   "bytes",
                   "max-age=604800",
                   "text/html",
-                  "Mon, 02 Dec 2013 17:11:46 GMT",
+                  "mon, 02 dec 2013 17:11:46 gmt",
                   "\"359670651\"",
-                  "Mon, 09 Dec 2013 17:11:46 GMT",
-                  "Fri, 09 Aug 2013 23:54:35 GMT",
-                  "ECS (iad/1984)",
-                  "HIT",
+                  "mon, 09 dec 2013 17:11:46 gmt",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "ecs (iad/1984)",
+                  "hit",
                   "1",
                   "1270"
                ],
@@ -262,7 +260,6 @@
                "requestHeaderField" : [
                   "accept"
                ],
-               "requestHeaderFieldCnt" : 1,
                "requestHeaderValue" : [
                   "*/*"
                ],
@@ -294,17 +291,16 @@
                   "x-ec-custom-error",
                   "content-length"
                ],
-               "responseHeaderFieldCnt" : 11,
                "responseHeaderValue" : [
                   "bytes",
                   "max-age=604800",
                   "text/html",
-                  "Mon, 02 Dec 2013 17:11:49 GMT",
+                  "mon, 02 dec 2013 17:11:49 gmt",
                   "\"359670651\"",
-                  "Mon, 09 Dec 2013 17:11:49 GMT",
-                  "Fri, 09 Aug 2013 23:54:35 GMT",
-                  "ECS (iad/1984)",
-                  "HIT",
+                  "mon, 09 dec 2013 17:11:49 gmt",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "ecs (iad/1984)",
+                  "hit",
                   "1",
                   "1270"
                ],
@@ -470,7 +466,6 @@
                "requestHeaderField" : [
                   "accept"
                ],
-               "requestHeaderFieldCnt" : 1,
                "requestHeaderValue" : [
                   "*/*"
                ],
@@ -502,17 +497,16 @@
                   "x-ec-custom-error",
                   "content-length"
                ],
-               "responseHeaderFieldCnt" : 11,
                "responseHeaderValue" : [
                   "bytes",
                   "max-age=604800",
                   "text/html",
-                  "Mon, 02 Dec 2013 17:11:55 GMT",
+                  "mon, 02 dec 2013 17:11:55 gmt",
                   "\"359670651\"",
-                  "Mon, 09 Dec 2013 17:11:55 GMT",
-                  "Fri, 09 Aug 2013 23:54:35 GMT",
-                  "ECS (iad/1984)",
-                  "HIT",
+                  "mon, 09 dec 2013 17:11:55 gmt",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "ecs (iad/1984)",
+                  "hit",
                   "1",
                   "1270"
                ],

@@ -67,13 +67,12 @@
                   "connection",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 5,
                "requestHeaderValue" : [
                   "text/html, application/xhtml+xml, image/jxr, */*",
-                  "en-US",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive",
-                  "IDE=AHWqTUmq5vKag4U1NoZpmbEiY1PYuAYVT8bFXA1KRM6sqXH_QR5G3_2xSz7V6E3B"
+                  "keep-alive",
+                  "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b"
                ],
                "requestHeaderValueCnt" : 5,
                "uri" : [
@@ -236,14 +235,13 @@
                   "connection",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 6,
                "requestHeaderValue" : [
                   "application/json, text/javascript, */*; q=0.01",
-                  "XMLHttpRequest",
-                  "en-US",
+                  "xmlhttprequest",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive",
-                  "_ga=GA1.2.349209205.1532525440; _gid=GA1.2.1042544967.1532525440; _gat=1; AMCV_A70E15F354E99A260A4C98A4%40AdobeOrg=-330454231%7CMCIDTS%7C17738%7CMCMID%7C00834244270283740751404491874386840551%7CMCAAMLH-1533130240%7C3%7CMCAAMB-1533130240%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1532532640s%7CNONE%7CMCSYNCSOP%7C411-17745%7CMCAID%7CNONE%7CvVersion%7C3.1.2; AMCVS_A70E15F354E99A260A4C98A4%40AdobeOrg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|PC#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2C52%2C52%2C499%2C1350%2C498%2C1350%2C615%2C1%2CL; s_ppv=www.shangri-la.com%2C48%2C48%2C498%2C1350%2C498%2C1350%2C615%2C1%2CL; s_sq=%5B%5BB%5D%5D; segmentid=segment%3DC%2Csegment%3Dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1"
+                  "keep-alive",
+                  "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1"
                ],
                "requestHeaderValueCnt" : 6,
                "uri" : [
@@ -375,12 +373,11 @@
                   "accept-encoding",
                   "connection"
                ],
-               "requestHeaderFieldCnt" : 4,
                "requestHeaderValue" : [
                   "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
-                  "en-US",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive"
+                  "keep-alive"
                ],
                "requestHeaderValueCnt" : 4,
                "uri" : [
@@ -532,16 +529,15 @@
                   "cache-control",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 8,
                "requestHeaderValue" : [
                   "text/html, application/xhtml+xml, image/jxr, */*",
-                  "en-US",
+                  "en-us",
                   "application/x-www-form-urlencoded",
                   "gzip, deflate",
                   "43",
-                  "Keep-Alive",
+                  "keep-alive",
                   "no-cache",
-                  "RT=%1%enc%3Atg%2FlU7zufFPUle8wLxga3M9JuU9Wqi9L5JCsWOqGF5aUK4qCG413AHFq%2BvIG1jhcNox8JbUSTxk%3D; ServerPool=R"
+                  "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r"
                ],
                "requestHeaderValueCnt" : 8,
                "sha256" : [
@@ -696,14 +692,13 @@
                   "connection",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 6,
                "requestHeaderValue" : [
                   "*/*",
-                  "XMLHttpRequest",
-                  "en-US",
+                  "xmlhttprequest",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive",
-                  "CFID=77281563; CFTOKEN=64733241d30c35e0-304F31D8-AA72-F50C-3869AA2C5D0DFF17; unescomap=open; _ga=GA1.2.1751603294.1532525413; _gid=GA1.2.775336169.1532525413; _gat=1"
+                  "keep-alive",
+                  "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1"
                ],
                "requestHeaderValueCnt" : 6,
                "uri" : [
@@ -857,12 +852,11 @@
                   "accept-encoding",
                   "connection"
                ],
-               "requestHeaderFieldCnt" : 4,
                "requestHeaderValue" : [
                   "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
-                  "en-US",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive"
+                  "keep-alive"
                ],
                "requestHeaderValueCnt" : 4,
                "uri" : [
@@ -1014,12 +1008,11 @@
                   "accept-encoding",
                   "connection"
                ],
-               "requestHeaderFieldCnt" : 4,
                "requestHeaderValue" : [
                   "application/javascript, */*;q=0.8",
-                  "en-US",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive"
+                  "keep-alive"
                ],
                "requestHeaderValueCnt" : 4,
                "uri" : [
@@ -1172,12 +1165,11 @@
                   "connection",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 5,
                "requestHeaderValue" : [
                   "application/javascript, */*;q=0.8",
-                  "en-US",
+                  "en-us",
                   "gzip, deflate",
-                  "Keep-Alive",
+                  "keep-alive",
                   "visitor_id413862=286585660; visitor_id413862-hash=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b; pardot=tee2foreb3fefpgvk8u1056vt3"
                ],
                "requestHeaderValueCnt" : 5,
@@ -1294,7 +1286,6 @@
                   "connection",
                   "content-type"
                ],
-               "requestHeaderFieldCnt" : 3,
                "requestHeaderValue" : [
                   "no-cache",
                   "close",

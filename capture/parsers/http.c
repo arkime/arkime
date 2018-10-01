@@ -28,6 +28,7 @@ typedef struct {
     GString         *authString;
 
     GString         *valueString[2];
+    gboolean        isValueStringLowerCase[2];
 
     char             header[2][40];
     short            pos[2];
@@ -238,9 +239,10 @@ LOCAL int moloch_hp_cb_on_message_complete (http_parser *parser)
 /******************************************************************************/
 LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
 {
-    int                    pos  = http->pos[http->which];
-    char                  *s    = http->valueString[http->which]->str;
-    int                    l    = http->valueString[http->which]->len;
+    int                     pos  = http->pos[http->which];
+    char                    *s   = http->valueString[http->which]->str;
+    int                     l    = http->valueString[http->which]->len;
+    gboolean                c    = http->isValueStringLowerCase[http->which];
 
     while (isspace(*s)) {
         s++;
@@ -258,7 +260,10 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
     case MOLOCH_FIELD_TYPE_STR_HASH:
     case MOLOCH_FIELD_TYPE_STR_GHASH:
-        moloch_field_string_add(pos, session, s, l, TRUE);
+        if (c == TRUE)
+            moloch_field_string_add_lower(pos, session, s, l);
+        else
+            moloch_field_string_add(pos, session, s, l, TRUE);
         break;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
@@ -285,6 +290,7 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
 
     g_string_truncate(http->valueString[http->which], 0);
     http->pos[http->which] = 0;
+    http->isValueStringLowerCase[http->which] = FALSE;
 }
 /******************************************************************************/
 LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
@@ -352,10 +358,12 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
                 moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
+                http->isValueStringLowerCase[http->which] = TRUE;
             }
             else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
                 moloch_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
+                http->isValueStringLowerCase[http->which] = TRUE;
             }
         }
 
@@ -754,27 +762,27 @@ static const char *method_strings[] =
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
-    headerReqField = moloch_field_define("http", 
-        "termfield", "http.header.request.field", 
-        "Request Header Fields", "http.requestHeaderField", "Contains Request header fields",
-        MOLOCH_FIELD_TYPE_STR_ARRAY,  MOLOCH_FIELD_FLAG_CNT,
+    headerReqField = moloch_field_define("http", "lotermfield",
+        "http.header.request.field", "Request Header Fields", "http.requestHeaderField",
+        "Contains Request header fields",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
-    headerReqValue = moloch_field_define("http",
-        "termfield", "http.header.request.value", "Request Header Values",
-        "http.requestHeaderValue", "Contains request header values",
+    headerReqValue = moloch_field_define("http","lotermfield",
+        "http.hasheader.src.value", "Request Header Values", "http.requestHeaderValue",
+        "Contains request header values",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
-    headerResField = moloch_field_define("http",
-        "termfield", "http.header.response.field",
-        "Response Header fields", "http.responseHeaderField", "Contains response header fields",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+    headerResField = moloch_field_define("http","lotermfield",
+        "http.header.response.field","Response Header fields", "http.responseHeaderField",
+        "Contains response header fields",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
-    headerResValue = moloch_field_define("http",
-        "termfield", "http.header.response.value",
-        "Response Header Values", "http.responseHeaderValue", "Contains response header values",
+    headerResValue = moloch_field_define("http","lotermfield",
+        "http.hasheader.dst.value", "Response Header Values", "http.responseHeaderValue",
+        "Contains response header values",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
@@ -782,7 +790,14 @@ static const char *method_strings[] =
         "http.hasheader", "Has Src or Dst Header", "hhall",
         "Shorthand for http.hasheader.src or http.hasheader.dst",
         0,  MOLOCH_FIELD_FLAG_FAKE,
-        "regex", "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$",
+        "regex", "^http\\\\.hasheader\\\\.(?:(?!(cnt|value)$).)*$",
+        NULL);
+
+    moloch_field_define("http", "lotermfield",
+        "http.hasheader.value", "Has Value in Src or Dst Header", "hhvalueall",
+        "Shorthand for http.hasheader.src.value or http.hasheader.dst.value",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        "regex", "^http\\\\.hasheader\\\\.(src|dst)\\\\.value$",
         NULL);
 
     md5Field = moloch_field_define("http", "lotermfield",

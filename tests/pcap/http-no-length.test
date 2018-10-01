@@ -80,12 +80,11 @@
                   "connection",
                   "cookie"
                ],
-               "requestHeaderFieldCnt" : 7,
                "requestHeaderValue" : [
                   "*/*",
                   "en-us,en;q=0.5",
                   "gzip,deflate",
-                  "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+                  "iso-8859-1,utf-8;q=0.7,*;q=0.7",
                   "115",
                   "keep-alive",
                   "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -116,17 +115,16 @@
                   "set-cookie",
                   "connection"
                ],
-               "responseHeaderFieldCnt" : 10,
                "responseHeaderValue" : [
-                  "Mon, 10 May 2010 08:31:02 GMT",
-                  "Apache",
+                  "mon, 10 may 2010 08:31:02 gmt",
+                  "apache",
                   "application/x-javascript",
-                  "Thu, 11 Jan 1973 16:00:00 GMT",
-                  "Mon, 10 May 2010 08:31:02 GMT",
+                  "thu, 11 jan 1973 16:00:00 gmt",
+                  "mon, 10 may 2010 08:31:02 gmt",
                   "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
                   "no-cache",
-                  "policyref=\"/w3c/p3p.xml\", CP=\"ALL IND DSP COR ADM CONo CUR IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
-                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Sun, 11-Jan-2037 14:00:00 GMT; path=/; domain=.xxxxxx.xx",
+                  "policyref=\"/w3c/p3p.xml\", cp=\"all ind dsp cor adm cono cur ivao ivdo psa psd tai telo our samo cnt com int nav onl phy pre pur uni\"",
+                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=sun, 11-jan-2037 14:00:00 gmt; path=/; domain=.xxxxxx.xx",
                   "close"
                ],
                "responseHeaderValueCnt" : 10,

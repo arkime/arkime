@@ -69,7 +69,6 @@
                   "accept-encoding",
                   "connection"
                ],
-               "requestHeaderFieldCnt" : 2,
                "requestHeaderValue" : [
                   "gzip",
                   "close"
@@ -96,15 +95,14 @@
                   "cf-ray",
                   "content-encoding"
                ],
-               "responseHeaderFieldCnt" : 8,
                "responseHeaderValue" : [
-                  "Wed, 03 Feb 2016 15:27:08 GMT",
+                  "wed, 03 feb 2016 15:27:08 gmt",
                   "text/html",
                   "chunked",
                   "close",
-                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Thu, 02-Feb-17 15:27:08 GMT; path=/; domain=.xxxxxxxxx.xx; HttpOnly",
+                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=thu, 02-feb-17 15:27:08 gmt; path=/; domain=.xxxxxxxxx.xx; httponly",
                   "xxxxxxxxxxxxxxxx",
-                  "xxxxxxxxxxxxxxxx-IAD",
+                  "xxxxxxxxxxxxxxxx-iad",
                   "gzip"
                ],
                "responseHeaderValueCnt" : 8,

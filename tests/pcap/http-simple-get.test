@@ -53,7 +53,6 @@
                "requestHeaderField" : [
                   "accept"
                ],
-               "requestHeaderFieldCnt" : 1,
                "requestHeaderValue" : [
                   "*/*"
                ],
@@ -75,14 +74,13 @@
                   "connection",
                   "content-type"
                ],
-               "responseHeaderFieldCnt" : 6,
                "responseHeaderValue" : [
-                  "Mon, 25 Nov 2013 14:55:52 GMT",
-                  "Apache/2.2.15 (CentOS)",
+                  "mon, 25 nov 2013 14:55:52 gmt",
+                  "apache/2.2.15 (centos)",
                   "bytes",
                   "5039",
                   "close",
-                  "text/html; charset=UTF-8"
+                  "text/html; charset=utf-8"
                ],
                "responseHeaderValueCnt" : 6,
                "serverVersion" : [

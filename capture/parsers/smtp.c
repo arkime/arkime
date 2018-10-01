@@ -544,20 +544,6 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
 
             moloch_field_string_add(hhField, session, lower, colon - line->str, TRUE);
 
-            if (config.parseSMTPHeaderAll) {
-                int colon_position = colon - line->str + 1;
-                char *header_value   = line->str + colon_position;
-                int  header_value_len =  line->len - colon_position;
-
-                while (isspace(*header_value)) {
-                    header_value++;
-                    header_value_len--;
-                }
-
-                moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
-                moloch_field_string_add(headerValue, session, header_value, header_value_len, TRUE);
-            }
-
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
 
@@ -591,7 +577,12 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 } else {
                     smtp_email_add_value(session, (long)emailHeader->uw, line->str + cpos , line->len - cpos);
                 }
-            } else {
+            } else if (config.parseSMTPHeaderAll) {
+                int cpos = colon - line->str + 1;
+                moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
+                smtp_email_add_value(session, (long)headerValue, line->str + cpos , line->len - cpos);
+            }
+            else {
                 int i;
                 for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
@@ -972,16 +963,16 @@ void moloch_parser_init()
         "requiredRight", "emailSearch",
         NULL);
 
-    headerField = moloch_field_define("email", "termfield", 
-        "email.header.field", "Header Field", "email.headerField", "Email has the header field set",
-        MOLOCH_FIELD_TYPE_STR_ARRAY,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+    headerField = moloch_field_define("email", "termfield",
+            "email.header.field", "Header Field", "email.headerField", "Email has the header field set",
+            MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
+            NULL);
 
     headerValue = moloch_field_define("email", "termfield",
-        "email.header.value", "Header Value", "email.headerValue", "Email has the header value",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        NULL);
+            "email.has-header.value", "Header Value", "email.headerValue", "Email has the header value",
+            MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+            "requiredRight", "emailSearch",
+            NULL);
 
     magicField = moloch_field_define("email", "termfield",
         "email.bodymagic", "Body Magic", "email.bodyMagic",

@@ -28,8 +28,8 @@ if (session.http)
     if (session.http.requestHeaderField && session.http.requestHeaderValue)
       div.sessionDetailMeta.bold HTTP Request Header Detail
       dl.sessionDetailMeta(suffix="http-request-header-detail")
-        +printHeader(session.http.requestHeaderField, session.http.requestHeaderValue, 'http.header.request.value')
+        +printHeader(session.http.requestHeaderField, session.http.requestHeaderValue, 'http.hasheader.src.value')
     if (session.http.responseHeaderField && session.http.responseHeaderValue)
       div.sessionDetailMeta.bold HTTP Response Header Detail
       dl.sessionDetailMeta(suffix="http-response-header-detail")
-        +printHeader(session.http.responseHeaderField, session.http.responseHeaderValue, 'http.header.response.value')
+        +printHeader(session.http.responseHeaderField, session.http.responseHeaderValue, 'http.hasheader.dst.value')

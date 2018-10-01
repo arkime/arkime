@@ -43,26 +43,13 @@
                "headerCnt" : 8,
                "headerField" : [
                   "date",
-                  "subject",
-                  "message-id",
-                  "from",
-                  "to",
-                  "mime-version",
-                  "content-type",
                   "content-transfer-encoding"
                ],
-               "headerFieldCnt" : 8,
                "headerValue" : [
                   "Fri, 06 Dec 2013 08:48:53 -0500",
-                  "Re: xxx xxx xxxxx xxxxxx...",
-                  "<xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx>",
-                  "Xxxxx Xxxxxxxx <12345678@aol.com>",
-                  "xxxx.xxxxxx@xxxxx.com",
-                  "1.0",
-                  "text/plain; charset=utf-8",
                   "base64"
                ],
-               "headerValueCnt" : 8,
+               "headerValueCnt" : 2,
                "id" : [
                   "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
                ],

@@ -31,18 +31,6 @@
                   "subject"
                ],
                "headerCnt" : 3,
-               "headerField" : [
-                  "from",
-                  "to",
-                  "subject"
-               ],
-               "headerFieldCnt" : 3,
-               "headerValue" : [
-                  "xxxxx@xxx.net",
-                  "xxxxx@xxx.net",
-                  "xxxxxxxxxxxxx:=?UTF-8?Q?=20xxxx=C3=AAxx=20xx=C3=A9xxxxxxx?=  =?UTF-8?Q?xx=20xxx=20xxx=20xxxxxxxxxx?=  =?UTF-8?Q?x=20xx=20xxxxxxxxxxxxxxx=20?==?UTF-8?Q?=2D=20xxxx?="
-               ],
-               "headerValueCnt" : 3,
                "src" : [
                   "xxxxx@xxx.net"
                ],

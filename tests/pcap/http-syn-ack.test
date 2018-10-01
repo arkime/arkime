@@ -59,12 +59,11 @@
                   "accept-encoding",
                   "accept-language"
                ],
-               "requestHeaderFieldCnt" : 4,
                "requestHeaderValue" : [
                   "keep-alive",
                   "*/*",
                   "gzip, deflate, xxxx",
-                  "xx-XX,et;q=0.8,en-US;q=0.6,en;q=0.4"
+                  "xx-xx,et;q=0.8,en-us;q=0.6,en;q=0.4"
                ],
                "requestHeaderValueCnt" : 4,
                "responseHeader" : [
@@ -94,10 +93,9 @@
                   "content-encoding",
                   "vary"
                ],
-               "responseHeaderFieldCnt" : 11,
                "responseHeaderValue" : [
                   "nginx",
-                  "Fri, 01 Jul 2016 09:42:40 GMT",
+                  "fri, 01 jul 2016 09:42:40 gmt",
                   "application/javascript",
                   "chunked",
                   "keep-alive",
@@ -106,7 +104,7 @@
                   "must-revalidate, post-check=0, pre-check=0",
                   "*",
                   "gzip",
-                  "Accept-Encoding"
+                  "accept-encoding"
                ],
                "responseHeaderValueCnt" : 11,
                "serverVersion" : [

@@ -80,14 +80,13 @@
                   "cookie",
                   "if-none-match"
                ],
-               "requestHeaderFieldCnt" : 6,
                "requestHeaderValue" : [
                   "keep-alive",
                   "*/*",
                   "gzip,deflate,sdch",
-                  "en-US,en;q=0.8",
+                  "en-us,en;q=0.8",
                   "xxxxxxxxxx=xxx",
-                  "\"vcCp3Q\""
+                  "\"vccp3q\""
                ],
                "requestHeaderValueCnt" : 6,
                "responseHeader" : [
@@ -115,14 +114,13 @@
                   "age",
                   "alternate-protocol"
                ],
-               "responseHeaderFieldCnt" : 10,
                "responseHeaderValue" : [
-                  "\"a2fyAA\"",
-                  "Tue, 05 Aug 2014 12:34:05 GMT",
-                  "Tue, 05 Aug 2014 12:44:05 GMT",
+                  "\"a2fyaa\"",
+                  "tue, 05 aug 2014 12:34:05 gmt",
+                  "tue, 05 aug 2014 12:44:05 gmt",
                   "application/xml",
                   "gzip",
-                  "Google Frontend",
+                  "google frontend",
                   "public, max-age=600",
                   "190",
                   "179",

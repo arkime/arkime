@@ -46,7 +46,6 @@
                   "accept",
                   "connection"
                ],
-               "requestHeaderFieldCnt" : 2,
                "requestHeaderValue" : [
                   "*/*",
                   "close"
@@ -65,10 +64,9 @@
                   "connection",
                   "content-type"
                ],
-               "responseHeaderFieldCnt" : 4,
                "responseHeaderValue" : [
-                  "Tue, 26 Feb 2013 15:10:21 GMT",
-                  "Apache",
+                  "tue, 26 feb 2013 15:10:21 gmt",
+                  "apache",
                   "close",
                   "text/html; charset=iso-8859-1"
                ],
