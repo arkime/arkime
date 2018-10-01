@@ -498,7 +498,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "aliases", "[\"dns.ip\"]",
         "category", "ip",
-        NULL);
+        (char *)NULL);
 
     ipNameServerField = moloch_field_define("dns", "ip",
         "ip.dns.nameserver", "IP",  "dns.nameserver.ip",
@@ -520,7 +520,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "aliases", "[\"dns.host\"]",
         "category", "host",
-        NULL);
+        (char *)NULL);
 
     hostNameServerField = moloch_field_define("dns", "lotermfield",
         "host.dns.nameserver", "Host", "dns.nameserver.host",
@@ -540,31 +540,31 @@ void moloch_parser_init()
         "dns.puny", "Puny", "dns.puny",
         "DNS lookup punycode",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
         "dns.status", "Status Code", "dns.status",
         "DNS lookup return code",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     opCodeField = moloch_field_define("dns", "uptermfield",
         "dns.opcode", "Op Code", "dns.opcode",
         "DNS lookup op code",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     queryTypeField = moloch_field_define("dns", "uptermfield",
         "dns.query.type", "Query Type", "dns.qt",
         "DNS lookup query type",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     queryClassField = moloch_field_define("dns", "uptermfield",
         "dns.query.class", "Query Class", "dns.qc",
         "DNS lookup query class",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";

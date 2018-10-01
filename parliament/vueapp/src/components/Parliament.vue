@@ -651,7 +651,7 @@
                   </span>
                 </a>
                 <span v-show="cluster.id === clusterBeingEdited && editMode">
-                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1"
                     @click="editCluster(group, cluster)"
                     title="Save cluster"
                     v-b-tooltip.hover.top>

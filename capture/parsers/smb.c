@@ -268,7 +268,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %d", which, cmd, smb->flags2[which], *state, *remlen);
+        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %u", which, cmd, smb->flags2[which], *state, *remlen);
 #endif
         break;
     }
@@ -394,7 +394,7 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags: %x newstate: %d remlen: %d", which, cmd, flags, *state, *remlen);
+        LOG("%d cmd: %x flags: %x newstate: %d remlen: %u", which, cmd, flags, *state, *remlen);
 #endif
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
         break;
@@ -465,7 +465,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
     uint32_t             *remlen       = &smb->remlen[which];
 
 #ifdef SMBDEBUG
-    LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %d", remaining, *state, *buflen, *remlen);
+    LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %u", remaining, *state, *buflen, *remlen);
 #endif
 
     while (remaining > 0) {
@@ -493,7 +493,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         while (!done && BSB_REMAINING(bsb) > 0) {
 #ifdef SMBDEBUG
-            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
             switch (*state) {
             case SMB_NETBIOS:
@@ -527,7 +527,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
             }
 
 #ifdef SMBDEBUG
-            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
         }
 
@@ -580,45 +580,46 @@ void moloch_parser_init()
         "smb.share", "Share", "smb.share",
         "SMB shares connected to",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     fnField = moloch_field_define("smb", "termfield",
         "smb.fn", "Filename", "smb.filename",
         "SMB files opened, created, deleted",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     osField = moloch_field_define("smb", "termfield",
         "smb.os", "OS", "smb.os",
         "SMB OS information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     domainField = moloch_field_define("smb", "termfield",
         "smb.domain", "Domain", "smb.domain",
         "SMB domain",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     verField = moloch_field_define("smb", "termfield",
         "smb.ver", "Version", "smb.version",
         "SMB Version information",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     userField = moloch_field_define("smb", "termfield",
         "smb.user", "User", "smb.user",
         "SMB User",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     hostField = moloch_field_define("smb", "termfield",
         "host.smb", "Hostname", "smb.host",
         "SMB Host name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "host",
-        "aliases", "[\"smb.host\"]", NULL);
+        "aliases", "[\"smb.host\"]",
+        (char *)NULL);
 
     if (config.parseSMB) {
         moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);

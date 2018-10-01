@@ -20,8 +20,18 @@
         <input type="text"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForES()"
-          placeholder="Begin typing to search for ES indices (hint: this input accepts regex)">
+          @keyup="searchForES"
+          placeholder="Begin typing to search for ES indices (hint: this input accepts regex)"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
       <table class="table table-sm table-striped text-right small mt-3">
@@ -139,10 +149,11 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsIndices',
-  props: [ 'dataInterval' ],
+  props: [ 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -182,6 +193,11 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -198,8 +214,13 @@ export default {
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
+        this.loading = true;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     columnClick (name) {
       this.query.sortField = name;
@@ -224,12 +245,17 @@ export default {
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
     },
     loadData: function () {
+      respondedAt = undefined;
+
       this.$http.get('esindices/list', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
           this.stats = response;
@@ -254,6 +280,7 @@ export default {
             }
           }
         }, (error) => {
+          respondedAt = undefined;
           this.loading = false;
           this.error = error;
         });
@@ -267,6 +294,19 @@ export default {
   }
 };
 </script>
+
+<style>
+/* remove any space between dropdown button and menu to make
+   sure the menu doesn't get hidden */
+.hover-menu .dropdown-menu {
+  margin-top: 0;
+}
+/* widen the button to make sure the user has enough space to
+   move their mouse to the menu so that it doesn't get hidden */
+.hover-menu .btn-sm {
+  padding: 1px 8px !important;
+}
+</style>
 
 <style scoped>
 td {

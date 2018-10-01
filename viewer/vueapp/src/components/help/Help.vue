@@ -858,6 +858,8 @@
             <br>
             <code>'H'</code> - jump to the Moloch Help page
             <br>
+            <code>'U'</code> - jump to the Moloch Hunt page
+            <br>
             <code>'esc'</code> - remove focus from any input and close the keyboard shortcuts help dialog
             <br>
             <code>'?'</code> - shows you the keyboard shortcuts help dialog

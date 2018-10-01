@@ -7,6 +7,10 @@ CP = /bin/cp
 
 all:
 
+check:
+	npm install
+	npm run bundle
+
 install:
 	@mkdir -p "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
 	/bin/rm -f $(VIEWERDIR)/public/style.css

@@ -104,27 +104,27 @@ void moloch_parser_init()
     userField = moloch_field_define("radius", "termfield",
         "radius.user", "User", "radius.user",
         "RADIUS user",
-        MOLOCH_FIELD_TYPE_STR_HASH,     0, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  0,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
         "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL); 
+        (char *)NULL);
 
     endpointIpField = moloch_field_define("radius", "ip",
         "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
         "Radius endpoint ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     framedIpField = moloch_field_define("radius", "ip",
         "radius.framed-ip", "Framed IP", "radius.framedIp",
         "Radius framed ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
 
     moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x01", 1, radius_udp_classify);

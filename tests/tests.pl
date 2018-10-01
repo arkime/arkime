@@ -18,6 +18,8 @@ $main::userAgent = LWP::UserAgent->new(timeout => 20);
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 #my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://elastic:changeme\@127.0.0.1:9200";
 
+$ENV{'PERL5LIB'} = getcwd();
+
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {

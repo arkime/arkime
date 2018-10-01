@@ -9,10 +9,10 @@
       :message="error">
     </moloch-error>
 
-    <div v-if="!error && !loading"
+    <div v-if="!error"
       class="shards-container mt-1">
 
-      <div class="input-group input-group-sm">
+      <div class="input-group input-group-sm mb-1">
         <div class="input-group-prepend">
           <span class="input-group-text">
             <span class="fa fa-search"></span>
@@ -21,18 +21,28 @@
         <input type="text"
           class="form-control shards-search"
           v-model="query.filter"
-          @keyup="searchForES()"
-          placeholder="Begin typing to search for ES nodes and indices">
+          @keyup="searchForES"
+          placeholder="Begin typing to search for ES nodes and indices"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
-      <div v-if="!stats.indices.length"
+      <div v-if="stats.indices && !stats.indices.length"
         class="text-danger text-center mt-4 mb-4">
         <span class="fa fa-warning"></span>&nbsp;
         No results match your search
       </div>
 
-      <table v-if="stats.indices.length"
-        class="table table-sm small scrolly-table">
+      <table v-if="stats.indices && stats.indices.length"
+        class="table table-sm small scrolly-table pt-2 pb-1">
         <thead>
           <tr>
             <th v-for="column in columns"
@@ -77,7 +87,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="stat in stats.indices"
+          <tr v-for="(stat, index) in stats.indices"
             :key="stat.name">
             <td>
               {{ stat.name }}
@@ -89,10 +99,17 @@
                 v-for="item in stat.nodes[node]">
                 <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
                   class="badge badge-pill badge-secondary cursor-help"
-                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED'}"
-                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'">
+                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
+                  @mouseenter="showDetails(item)"
+                  @mouseleave="hideDetails(item)">
                   {{ item.shard }}
-                  <span>
+                  <span v-if="item.showDetails"
+                    @mouseenter="hideDetails(item)">
+                    <div>
+                      <span>Index:</span>
+                      {{ stat.name }}
+                    </div>
                     <div>
                       <span>Node:</span>
                       {{ node }}
@@ -162,11 +179,12 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsShards',
   components: { MolochError, MolochLoading },
-  props: [ 'dataInterval' ],
+  props: [ 'dataInterval', 'refreshData' ],
   data: function () {
     return {
       loading: true,
@@ -196,6 +214,11 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -211,8 +234,13 @@ export default {
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
+        this.loading = true;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
     },
     columnClick (name) {
       if (!name) { return; }
@@ -245,15 +273,26 @@ export default {
           this.error = error.text || error;
         });
     },
+    showDetails: function (item) {
+      this.$set(item, 'showDetails', true);
+    },
+    hideDetails: function (item) {
+      this.$set(item, 'showDetails', false);
+    },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
     },
     loadData: function () {
+      respondedAt = undefined;
+
       this.$http.get('esshard/list', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
           this.stats = response.data;
@@ -279,6 +318,7 @@ export default {
             }
           }
         }, (error) => {
+          respondedAt = undefined;
           this.error = error;
           this.loading = false;
         });
@@ -341,34 +381,8 @@ table.table tbody > tr > td:first-child {
   padding-right: .5rem;
 }
 
-/* hoverable columns */
-table.table td, th {
-  position: relative;
-}
-/* apply hover background to column (only cells above the hovered cell) */
-table.table td:hover::after,
-table.table th:hover::after {
-  content: "";
-  position: absolute;
-  background-color: var(--color-gray-light) !important;
-  left: 0;
-  top: -5000px;
-  height: calc(100% + 5000px);
-  width: 100%;
-  z-index: -1;
-}
-/* apply hover background to row (only cells left of the hovered cell) */
-table.table td:hover::before {
-  content: "";
-  position: absolute;
-  background-color: var(--color-gray-light) !important;
-  z-index: -1;
-  right: 0;
-  height: 100%;
-  width: 10000px;
-}
-
 .badge {
+  padding: .1em .4em;
   font-weight: 500;
   font-size: 14px;
 }
@@ -410,8 +424,19 @@ table.table td:hover::before {
   right: -8px;
   bottom: 7px;
 }
+.badge.render-tooltip-bottom:hover > span {
+  bottom: -120px;
+}.badge.render-tooltip-bottom:hover > span:before {
+  bottom: 113px;
+}
 .badge > span span {
   color: #bbb;
+}
+.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+  border: 2px dotted #6c757d;
+}
+.badge.badge-primary {
+  border: 2px dotted var(--color-primary);
 }
 .badge-notstarted {
   border: 2px dotted var(--color-quaternary);

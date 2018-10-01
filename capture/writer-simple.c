@@ -218,7 +218,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "encoding", "xor-2048",
                                               "dek", dekhex,
                                               "kekId", simpleKEKId,
-                                              NULL);
+                                              (char *)NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -236,7 +236,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "iv", ivhex,
                                               "dek", dekhex,
                                               "kekId", simpleKEKId,
-                                              NULL);
+                                              (char *)NULL);
             break;
         }
         default:

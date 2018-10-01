@@ -4,7 +4,8 @@
     <div class="mr-1 ml-1 mt-1 mb-1">
 
       <!-- actions dropdown menu -->
-      <b-dropdown right
+      <b-dropdown v-if="!hideActions"
+        right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
         variant="theme-primary">
@@ -73,7 +74,12 @@
             @click="deleteView(key)">
             <span class="fa fa-trash-o"></span>
           </button>
-          {{ key }}
+          {{ key }}&nbsp;
+          <span v-if="value.sessionsColConfig"
+            class="fa fa-columns cursor-help"
+            v-b-tooltip.hover
+            title="This view has a sessions table column configuration and sort order associated with it. Applying this view will also update the sessions table.">
+          </span>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
@@ -93,6 +99,7 @@
       <!-- time inputs -->
       <moloch-time :timezone="timezone"
         @timeChange="timeChange"
+        :hide-interval="hideInterval"
         :updateTime="updateTime">
       </moloch-time> <!-- /time inputs -->
 
@@ -234,7 +241,9 @@ export default {
     'numMatchingSessions',
     'start',
     'timezone',
-    'fields'
+    'fields',
+    'hideActions',
+    'hideInterval'
   ],
   data: function () {
     return {

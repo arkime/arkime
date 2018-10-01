@@ -20,8 +20,18 @@
         <input type="text"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForES()"
-          placeholder="Begin typing to search for ES nodes (hint: this input accepts regex)">
+          @keyup="searchForES"
+          placeholder="Begin typing to search for ES nodes (hint: this input accepts regex)"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
       <table class="table table-sm table-striped text-right small mt-3">
@@ -147,10 +157,11 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsStats',
-  props: [ 'dataInterval' ],
+  props: [ 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -190,6 +201,11 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -212,6 +228,10 @@ export default {
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
+      this.loadData();
+    },
+    clear () {
+      this.query.filter = undefined;
       this.loadData();
     },
     exclude: function (type, column) {
@@ -241,12 +261,17 @@ export default {
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
     },
     loadData: function () {
+      respondedAt = undefined;
+
       this.$http.get('esstats.json', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
           this.stats = response.data;
@@ -268,6 +293,7 @@ export default {
             this.averageValues[columnName] = this.totalValues[columnName] / stats.length;
           }
         }, (error) => {
+          respondedAt = undefined;
           this.loading = false;
           this.error = error;
         });

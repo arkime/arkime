@@ -20,8 +20,18 @@
         <input type="text"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForNodes()"
-          placeholder="Begin typing to search for nodes by name">
+          @keyup="searchForNodes"
+          placeholder="Begin typing to search for nodes by name"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!query.filter"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
       </div>
 
       <moloch-paging v-if="stats"
@@ -180,10 +190,11 @@ import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'NodeStats',
-  props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval' ],
+  props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval', 'refreshData' ],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
   data: function () {
     return {
@@ -243,6 +254,11 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -296,6 +312,10 @@ export default {
         this.loadData();
       }, 400);
     },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
+    },
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
@@ -304,12 +324,17 @@ export default {
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
-        this.loadData();
-      }, parseInt(this.dataInterval, 10));
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
     },
     loadData: function () {
+      respondedAt = undefined;
+
       this.$http.get('stats.json', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
           this.stats = response.data;
@@ -335,6 +360,7 @@ export default {
             this.averageValues[columnName] = this.totalValues[columnName] / this.stats.data.length;
           }
         }, (error) => {
+          respondedAt = undefined;
           this.loading = false;
           this.error = error;
         });

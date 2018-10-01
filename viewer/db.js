@@ -433,9 +433,24 @@ exports.searchHistory = function(query, cb) {
 exports.numberOfLogs = function(cb) {
   return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
 };
-
 exports.deleteHistoryItem = function (id, index, cb) {
   return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: true}, cb);
+};
+
+exports.createHunt = function (doc, cb) {
+  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: "wait_for"}, cb);
+};
+exports.searchHunt = function (query, cb) {
+  return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query}, cb);
+};
+exports.numberOfHunts = function(cb) {
+  return internals.elasticSearchClient.count({index:fixIndex('hunts'), type:'hunt'}, cb);
+};
+exports.deleteHuntItem = function (id, cb) {
+  return internals.elasticSearchClient.delete({index:fixIndex('hunts'), type:'hunt', id:id, refresh:true}, cb);
+};
+exports.setHunt = function(id, doc, cb) {
+  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type: 'hunt', body:doc, id: id, refresh:true}, cb);
 };
 
 exports.molochNodeStats = function (name, cb) {

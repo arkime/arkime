@@ -75,18 +75,18 @@ void moloch_parser_init()
         "Oracle User",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     hostField = moloch_field_define("oracle", "lotermfield",
         "oracle.host", "Host", "oracle.host",
         "Oracle Host",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     serviceField = moloch_field_define("oracle", "lotermfield",
         "oracle.service", "Service", "oracle.service",
         "Oracle Service",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 }
 

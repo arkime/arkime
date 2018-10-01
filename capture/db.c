@@ -1043,7 +1043,7 @@ LOCAL uint64_t moloch_db_memory_size()
     buf[len] = 0;
 
     uint64_t size;
-    sscanf(buf, "%ld", &size);
+    sscanf(buf, "%lu", &size);
 
     if (size == 0) {
         LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);
@@ -1181,7 +1181,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     double   memMax = moloch_db_memory_max();
     float    memUse = mem/memMax*100.0;
 
-    if (memUse > config.maxMemPercentage) {
+    if (config.maxMemPercentage != 100 && memUse > config.maxMemPercentage) {
         LOG("Aborting, max memory percentage reached: %.2f > %u", memUse, config.maxMemPercentage);
         fflush(stdout);
         fflush(stderr);
@@ -1295,7 +1295,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
                 free(data);
             moloch_http_free_buffer(json);
         } else {
-            moloch_http_send(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, TRUE, NULL, NULL);
+            // Dropable if the current time isn't first 2 seconds of each minute
+            moloch_http_send(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, (cursec % 60) >= 2, NULL, NULL);
         }
     } else {
         char key[200];
@@ -1715,7 +1716,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 /******************************************************************************/
 char *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id)
 {
-    return moloch_db_create_file_full(firstPacket, name, size, locked, id, NULL);
+    return moloch_db_create_file_full(firstPacket, name, size, locked, id, (char *)NULL);
 }
 /******************************************************************************/
 LOCAL void moloch_db_check()
@@ -2161,12 +2162,17 @@ int moloch_db_can_quit()
 {
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
+        // Make sure we can lock, that means a save isn't in progress
+        MOLOCH_LOCK(dbInfo[thread].lock);
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0) {
+            MOLOCH_UNLOCK(dbInfo[thread].lock);
+
             moloch_db_flush_gfunc((gpointer)1);
             if (config.debug)
                 LOG ("Can't quit, sJson[%d] %ld", thread, BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
+        MOLOCH_UNLOCK(dbInfo[thread].lock);
     }
 
     if (moloch_http_queue_length(esServer) > 0) {
@@ -2184,6 +2190,7 @@ void moloch_db_init()
     if (config.tests) {
         MOLOCH_LOCK(outputed);
         fprintf(stderr, "{\"sessions2\": [\n");
+        fflush(stderr);
         MOLOCH_UNLOCK(outputed);
     }
     if (!config.dryRun) {
@@ -2222,7 +2229,9 @@ void moloch_db_init()
             timers[t++] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
         }
         timers[t++] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
-        timers[t++] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
+        if (moloch_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
+            timers[t++] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
+        }
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -2245,7 +2254,10 @@ void moloch_db_exit()
     }
 
     if (config.tests) {
+        MOLOCH_LOCK(outputed);
         fprintf(stderr, "]}\n");
+        fflush(stderr);
+        MOLOCH_UNLOCK(outputed);
     }
 
     if (ipTree4) {

@@ -5,7 +5,7 @@
     @keyup.stop.prevent.enter="createView">
 
     <!-- view name input -->
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="input-group input-group-sm">
         <div class="input-group-prepend">
           <span class="input-group-text">
@@ -22,7 +22,8 @@
       </div>
     </div> <!-- /view name input -->
 
-    <div class="col-md-7">
+    <div class="col-md-5 pl-0"
+      :class="{'col-md-5':sessionsPage,'col-md-6':!sessionsPage}">
 
       <!-- view expression input -->
       <div class="input-group input-group-sm">
@@ -36,23 +37,6 @@
           class="form-control"
           placeholder="Enter a query expression"
         />
-        <div class="input-group-append">
-          <button class="btn btn-theme-tertiary"
-            @click="createView"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Create View
-            </span>
-            <span v-if="loading">
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Creating View
-            </span>
-          </button>
-        </div>
       </div> <!-- /view expression input -->
 
       <!-- error -->
@@ -65,8 +49,39 @@
 
     </div>
 
+    <div v-if="sessionsPage"
+      class="col-md-1 no-wrap">
+      <div class="form-check small mt-1 pl-0"
+        v-b-tooltip.hover
+        title="Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.">
+        <input v-model="useColConfig"
+          class="form-check-input"
+          type="checkbox"
+          id="useColConfig">
+        <label class="form-check-label"
+          for="useColConfig">
+          Save Columns
+        </label>
+      </div>
+    </div>
+
     <!-- cancel button -->
-    <div class="col-md-1">
+    <div class="col-md-3">
+    <button class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+      @click="createView"
+      :class="{'disabled':loading}"
+      type="button">
+      <span v-if="!loading">
+        <span class="fa fa-plus-circle">
+        </span>&nbsp;
+        Create View
+      </span>
+      <span v-if="loading">
+        <span class="fa fa-spinner fa-spin">
+        </span>&nbsp;
+        Creating View
+      </span>
+    </button>
       <div class="btn btn-sm btn-warning pull-right"
         @click="done()">
         <span class="fa fa-ban">
@@ -94,8 +109,15 @@ export default {
       viewName: '',
       loading: false,
       error: '',
-      viewExpression: ''
+      viewExpression: '',
+      useColConfig: false
     };
+  },
+  computed: {
+    // only display the useColConfig checkbox on the sessions page
+    sessionsPage: function () {
+      return this.$route.name === 'Sessions';
+    }
   },
   methods: {
     /* exposed functions ----------------------------------------- */
@@ -116,6 +138,11 @@ export default {
         viewName: this.viewName,
         expression: this.viewExpression
       };
+
+      if (this.useColConfig) {
+        // save the current sessions table column configuration
+        data.sessionsColConfig = this.$store.state.sessionsTableState;
+      }
 
       UserService.createView(data)
         .then((response) => {

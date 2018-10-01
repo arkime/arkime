@@ -13,9 +13,18 @@
           <input type="text"
             class="form-control"
             v-model="query.filter"
-            @keyup="searchForFiles()"
+            @keyup="searchForFiles"
             placeholder="Begin typing to search for files by name"
           />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!query.filter"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
         <moloch-paging v-if="files"
           :records-total="files.recordsTotal"
@@ -70,8 +79,8 @@
                   {{ file.locked === 1 ? 'True' : 'False' }}
                 </td>
                 <td class="no-wrap">
-                  <span v-if="settings">
-                    {{ file.first | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                  <span v-if="user">
+                    {{ file.first | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
                   </span>
                 </td>
                 <td class="no-wrap text-right">
@@ -98,7 +107,6 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -112,7 +120,6 @@ export default {
     return {
       error: '',
       loading: true,
-      settings: null,
       files: null,
       query: {
         length: parseInt(this.$route.query.length) || 500,
@@ -131,8 +138,12 @@ export default {
       ]
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
+  },
   created: function () {
-    this.loadUser();
     this.loadData();
   },
   methods: {
@@ -151,20 +162,18 @@ export default {
         this.loadData();
       }, 400);
     },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
+    },
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
       this.loadData();
     },
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-        });
-    },
     loadData: function () {
+      this.loading = true;
+
       this.$http.get('file/list', { params: this.query })
         .then((response) => {
           this.error = '';

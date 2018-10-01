@@ -130,6 +130,17 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex !== 0">
+          <button type="button"
+            class="btn btn-theme-tertiary btn-sm"
+            @click="loadData()">
+            <span>
+              Refresh
+            </span>
+          </button>
+        </div>
+
         <!-- error (from child component) -->
         <div v-if="childError"
           role="alert"
@@ -167,6 +178,7 @@
           @click="tabIndexChange()">
           <capture-stats v-if="user && tabIndex === 1"
             :graph-hide="graphHide"
+            :refreshData="refreshData"
             :data-interval="dataInterval"
             :user="user">
           </capture-stats>
@@ -174,12 +186,14 @@
         <b-tab title="ES Nodes"
           @click="tabIndexChange()">
           <es-nodes v-if="user && tabIndex === 2"
+            :refreshData="refreshData"
             :data-interval="dataInterval">
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange()">
           <es-indices v-if="user && tabIndex === 3"
+            :refreshData="refreshData"
             :data-interval="dataInterval"
             @errored="onError">
           </es-indices>
@@ -188,12 +202,14 @@
           @click="tabIndexChange()">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
+            :refreshData="refreshData"
             :user="user">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
           @click="tabIndexChange()">
           <es-shards v-if="user && tabIndex === 5"
+            :refreshData="refreshData"
             :data-interval="dataInterval">
           </es-shards>
         </b-tab>
@@ -211,40 +227,34 @@ import EsTasks from './EsTasks';
 import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import UserService from '../users/UserService';
+
 export default {
   name: 'Stats',
   data: function () {
     return {
-      user: null,
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
       dataInterval: this.$route.query.refreshInterval || '5000',
+      refreshData: false,
       childError: ''
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
+  },
   components: {
     CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks
-  },
-  created: function () {
-    this.loadUser();
   },
   watch: {
     // watch for the route to change, then update the view
     '$route': 'updateParams'
   },
   methods: {
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.user = response;
-        }, (error) => {
-          this.user = { settings: { timezone: 'local' } };
-        });
-    },
     statsTypeChange: function () {
       this.$router.push({ query: { ...this.$route.query, type: this.statsType } });
     },
@@ -281,6 +291,10 @@ export default {
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
       }
+    },
+    loadData: function () {
+      this.refreshData = true;
+      setTimeout(() => { this.refreshData = false; });
     },
     onError: function (message) {
       this.childError = message;

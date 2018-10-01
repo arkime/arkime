@@ -8,7 +8,7 @@
       :num-visible-sessions="query.length"
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
@@ -32,7 +32,7 @@
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
-        :timezone="settings.timezone">
+        :timezone="user.settings.timezone">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -41,7 +41,7 @@
           class="sticky-sessions"
           v-if="stickySessions.length"
           :sessions="stickySessions"
-          :timezone="settings.timezone"
+          :timezone="user.settings.timezone"
           @closeSession="closeSession"
           @closeAllSessions="closeAllSessions">
         </moloch-sticky-sessions>
@@ -121,13 +121,13 @@
                       class="form-control"
                       v-model="newColConfigName"
                       placeholder="Enter new column configuration name"
-                      @keydown.enter="saveColumnConfiguration()"
+                      @keydown.enter="saveColumnConfiguration"
                     />
                     <div class="input-group-append">
                       <button type="button"
                         class="btn btn-theme-secondary"
                         :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration()"
+                        @click="saveColumnConfiguration"
                         v-b-tooltip.hover
                         title="Save this custom column configuration">
                         <span class="fa fa-save">
@@ -144,8 +144,13 @@
                   {{ colConfigError }}
                 </b-dropdown-item>
                 <b-dropdown-item
+                  v-if="colConfigSuccess"
+                  class="text-success">
+                  {{ colConfigSuccess }}
+                </b-dropdown-item>
+                <b-dropdown-item
                   v-b-tooltip.hover
-                  @click.stop.prevent="loadColumnConfiguration()"
+                  @click.stop.prevent="loadColumnConfiguration"
                   title="Reset table to default columns">
                   Moloch Default
                 </b-dropdown-item>
@@ -153,10 +158,18 @@
                   v-for="(config, key) in colConfigs"
                   :key="key"
                   @click.self.stop.prevent="loadColumnConfiguration(key)">
-                  <button class="btn btn-xs btn-danger pull-right"
+                  <button class="btn btn-xs btn-danger pull-right ml-1"
                     type="button"
                     @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                     <span class="fa fa-trash-o">
+                    </span>
+                  </button>
+                  <button class="btn btn-xs btn-warning pull-right"
+                    type="button"
+                    v-b-tooltip.hover
+                    title="Update this column configuration with the currently visible columns"
+                    @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                    <span class="fa fa-save">
                     </span>
                   </button>
                   {{ config.name }}
@@ -240,8 +253,8 @@
               </b-dropdown> <!-- /column dropdown menu -->
               <!-- sortable column -->
               <span v-if="(header.exp || header.sortBy) && !header.unsortable"
-                @mousedown="mouseDown()"
-                @mouseup="mouseUp()"
+                @mousedown="mouseDown"
+                @mouseup="mouseUp"
                 @click="sortBy($event, header.sortBy || header.dbField)"
                 class="cursor-pointer">
                 <div class="header-sort">
@@ -268,7 +281,7 @@
             <button type="button"
               v-if="showFitButton && !loading"
               class="btn btn-xs btn-theme-quaternary fit-btn"
-              @click="fitTable()"
+              @click="fitTable"
               v-b-tooltip.hover
               title="Fit the table to the current window size">
               <span class="fa fa-arrows-h">
@@ -311,7 +324,7 @@
                       :expr="col.exp"
                       :value="value"
                       :parse="true"
-                      :timezone="settings.timezone">
+                      :timezone="user.settings.timezone">
                     </moloch-session-field>
                   </span>
                 </span> <!-- /field value is an array -->
@@ -323,7 +336,7 @@
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :timezone="settings.timezone">
+                    :timezone="user.settings.timezone">
                   </moloch-session-field>
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
@@ -419,26 +432,28 @@ export default {
   },
   data: function () {
     return {
-      user: null,
       loading: true,
       error: '',
       sessions: {}, // page data
       stickySessions: [],
-      settings: {}, // user settings
       colWidths: {},
       colConfigs: [],
       colConfigError: '',
+      colConfigSuccess: '',
       headers: [],
       graphData: undefined,
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
-      newColConfigName: '' // name of new custom column config
+      newColConfigName: '', // name of new custom column config
+      viewChanged: false,
+      views: undefined
     };
   },
   created: function () {
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
+    this.getViews();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -467,6 +482,9 @@ export default {
         expression: this.$store.state.expression || undefined
       };
     },
+    user: function () {
+      return this.$store.state.user;
+    },
     filteredFields: function () {
       let filteredGroupedFields = {};
 
@@ -479,6 +497,11 @@ export default {
       }
 
       return filteredGroupedFields;
+    }
+  },
+  watch: {
+    'query.view': function (newView, oldView) {
+      this.viewChanged = true;
     }
   },
   methods: {
@@ -781,6 +804,29 @@ export default {
           this.colConfigError = error.text;
         });
     },
+    /**
+     * Updates a previously saved custom column configuration
+     * @param {string} name The name of the column config to udpate
+     * @param {int} index   The index in the array of the column config to udpate
+     */
+    updateColumnConfiguration: function (name, index) {
+      let data = {
+        name: name,
+        columns: this.tableState.visibleHeaders.slice(),
+        order: this.tableState.order.slice()
+      };
+
+      UserService.updateColumnConfig(data)
+        .then((response) => {
+          this.colConfigs[index] = data;
+          this.colConfigError = false;
+          this.colConfigSuccess = response.text;
+          setTimeout(() => { this.colConfigSuccess = ''; }, 5000);
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    },
     /* Fits the table to the width of the current window size */
     fitTable: function () {
       // disable resizable columns so it can be initialized after columns are resized
@@ -843,6 +889,7 @@ export default {
       SessionsService.getState('sessionsNew')
         .then((response) => {
           this.tableState = response.data;
+          this.$store.commit('setSessionsTableState', this.tableState);
           if (Object.keys(this.tableState).length === 0 ||
             !this.tableState.visibleHeaders || !this.tableState.order) {
             this.tableState = defaultTableState;
@@ -857,7 +904,7 @@ export default {
             .then((result) => {
               this.fields = result;
               this.setupFields();
-              this.getUserSettings(); // IMPORTANT: kicks off the initial search query!
+              this.setupUserSettings(); // IMPORTANT: kicks off the initial search query!
             }).catch((error) => {
               this.loading = false;
               this.error = error;
@@ -877,34 +924,26 @@ export default {
           this.colConfigError = error.text;
         });
     },
-    getUserSettings: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
+    setupUserSettings: function () {
+      // if settings has custom sort field and the custom sort field
+      // exists in the table headers, apply it
+      if (this.user.settings && this.user.settings.sortColumn !== 'last' &&
+         this.tableState.visibleHeaders.indexOf(this.user.settings.sortColumn) > -1) {
+        this.query.sorts = [[this.user.settings.sortColumn, this.user.settings.sortDirection]];
+        this.tableState.order = this.query.sorts;
+      }
 
-          // if settings has custom sort field and the custom sort field
-          // exists in the table headers, apply it
-          if (this.settings && this.settings.sortColumn !== 'last' &&
-             this.tableState.visibleHeaders.indexOf(this.settings.sortColumn) > -1) {
-            this.query.sorts = [[this.settings.sortColumn, this.settings.sortDirection]];
-            this.tableState.order = this.query.sorts;
-          }
+      // IMPORTANT: kicks off the initial search query
+      if (!this.user.settings.manualQuery ||
+        !JSON.parse(this.user.settings.manualQuery) ||
+        componentInitialized) {
+        this.loadData();
+      } else {
+        this.loading = false;
+        this.error = 'Now, issue a query!';
+      }
 
-          // IMPORTANT: kicks off the initial search query
-          if (!this.settings.manualQuery ||
-            !JSON.parse(this.settings.manualQuery) ||
-            componentInitialized) {
-            this.loadData();
-          } else {
-            this.loading = false;
-            this.error = 'Now, issue a query!';
-          }
-
-          componentInitialized = true;
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-          this.error = error;
-        });
+      componentInitialized = true;
     },
     /**
      * Makes a request to the Session Service to get the list of sessions
@@ -938,6 +977,18 @@ export default {
 
       this.query.sorts = this.tableState.order || defaultTableState.order;
 
+      if (this.viewChanged) {
+        for (let view in this.views) {
+          if (view === this.query.view && this.views[view].sessionsColConfig) {
+            this.tableState = this.views[view].sessionsColConfig;
+            this.mapHeadersToFields();
+            this.query.sorts = this.tableState.order;
+            this.saveTableState();
+          }
+        }
+        this.viewChanged = false;
+      }
+
       SessionsService.get(this.query)
         .then((response) => {
           this.error = '';
@@ -969,6 +1020,7 @@ export default {
      * @param {bool} stopLoading Whether to stop the loading state when promise returns
      */
     saveTableState: function (stopLoading) {
+      this.$store.commit('setSessionsTableState', this.tableState);
       SessionsService.saveState(this.tableState, 'sessionsNew')
         .then(() => {
           if (stopLoading) { this.loading = false; }
@@ -1172,6 +1224,12 @@ export default {
         }
       }
     },
+    getViews: function () {
+      UserService.getViews()
+        .then((response) => {
+          this.views = response;
+        });
+    },
 
     /* event handlers ------------------------------------------------------ */
     /**
@@ -1202,6 +1260,10 @@ export default {
 </script>
 
 <style>
+.col-config-menu .dropdown-menu {
+  min-width: 250px;
+  max-width: 350px;
+}
 .col-config-menu > button.btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;;
@@ -1342,9 +1404,6 @@ table.sessions-table tbody tr td {
 }
 
 /* custom column configurations menu --------- */
-.col-config-menu {
-  max-width: 280px;
-}
 .col-config-menu .dropdown-header {
   padding: .25rem .5rem 0;
 }

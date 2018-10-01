@@ -148,13 +148,13 @@ void moloch_parser_init()
         "ssh.ver", "Version", "ssh.version",
         "SSH Software Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     keyField = moloch_field_define("ssh", "termfield",
         "ssh.key", "Key", "ssh.key",
         "SSH Key",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     moloch_parsers_classifier_register_tcp("ssh", NULL, 0, (unsigned char*)"SSH", 3, ssh_classify);
 }

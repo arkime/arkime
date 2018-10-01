@@ -141,31 +141,31 @@ void moloch_parser_init()
         "dhcp.type", "Type", "dhcp.type",
         "DHCP Type",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL); 
+        (char *)NULL);
 
     hostField = moloch_field_define("dhcp", "lotermfield",
         "dhcp.host", "Host", "dhcp.host",
         "DHCP Host",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL); 
+        (char *)NULL);
 
     macField = moloch_field_define("dhcp", "lotermfield",
         "dhcp.mac", "Client MAC", "dhcp.mac",
         "Client ethernet MAC ",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     ouiField = moloch_field_define("dhcp", "termfield",
         "dhcp.oui", "Client OUI", "dhcp.oui",
         "Client ethernet OUI ",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     idField = moloch_field_define("dhcp", "lotermfield",
         "dhcp.id", "Transaction id", "dhcp.id",
         "DHCP Transaction Id",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
 
     moloch_parsers_classifier_register_port("dhcpv6",  NULL, 547, MOLOCH_PARSERS_PORT_UDP, dhcpv6_udp_classify);

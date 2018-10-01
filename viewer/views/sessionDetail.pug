@@ -327,6 +327,11 @@ dl
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")
 
+  if (session.huntId && session.huntId.length > 0)
+    +arrayList(session, "huntId", "Hunt Ids", "huntId")
+  if (session.huntName && session.huntName.length > 0)
+    +arrayList(session, "huntName", "Hunt Names", "huntName")
+
   if (session.scrubby)
     dt
       +clickableLabel('scrubbed.by', 'Scrubbed')

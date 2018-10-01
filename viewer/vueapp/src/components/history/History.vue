@@ -19,12 +19,21 @@
           <input type="text"
             class="form-control"
             v-model="query.searchTerm"
-            @keyup="debounceSearch()"
+            @keyup="debounceSearch"
             placeholder="Search for history in the table below"
           />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!query.searchTerm"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
         <div class="form-inline mt-1">
-          <moloch-time :timezone="settings.timezone"
+          <moloch-time :timezone="user.settings.timezone"
             @timeChange="loadData"
             :hide-bounding="true"
             :hide-interval="true">
@@ -71,7 +80,7 @@
               v-model="filters[column.sort]"
               :placeholder="`Filter by ${column.name}`"
               class="form-control form-control-sm input-filter"
-              @keyup="debounceSearch()"
+              @keyup="debounceSearch"
               @click.stop
             />
             <div v-if="column.hasOwnProperty('exists')"
@@ -104,7 +113,7 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="history.data">
         <!-- no results -->
         <tr v-if="!history.data.length">
           <td :colspan="colSpan"
@@ -119,7 +128,7 @@
         <template v-for="(item, index) of history.data">
           <!-- history item -->
           <tr :key="item.id">
-            <td class="nowrap">
+            <td class="no-wrap">
               <toggle-btn class="mt-1"
                 :opened="item.expanded"
                 @toggle="toggleLogDetail(item)">
@@ -142,7 +151,7 @@
               </a>
             </td>
             <td class="no-wrap">
-              {{ item.timestamp | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+              {{ item.timestamp | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
             </td>
             <td class="no-wrap text-right">
               {{ item.range*1000 | readableTime }}
@@ -174,6 +183,15 @@
             v-if="expandedLogs[item.id]">
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
+                <!-- forced expression -->
+                <div v-has-permission="'createEnabled'"
+                  v-if="item.forcedExpression !== undefined"
+                  class="mt-1">
+                  <span>
+                    <dt>Forced Expression</dt>
+                    <dd>{{ item.forcedExpression }}</dd>
+                  </span>
+                </div> <!-- /forced expression -->
                 <!-- count info -->
                 <div v-if="item.recordsReturned !== undefined"
                   class="mt-1">
@@ -204,7 +222,7 @@
                   <span v-for="(value, key) in item.body"
                     :key="key">
                     <dt>{{ key }}</dt>
-                    <dd>{{ value }}</dd>
+                    <dd>{{ value }}&nbsp;</dd>
                   </span>
                 </div> <!-- /req body -->
                 <!-- query params -->
@@ -222,7 +240,7 @@
                     :key="key">
                     <dt>{{ key }}</dt>
                     <dd>
-                      {{ value }}
+                      {{ value }}&nbsp;
                       <span v-if="key === 'view' && item.view && item.view.expression">
                         ({{ item.view.expression }})
                       </span>
@@ -255,6 +273,11 @@
       </tbody>
     </table>
 
+    <!-- loading overlay -->
+    <moloch-loading
+      v-if="loading && !error">
+    </moloch-loading> <!-- /loading overlay -->
+
     <!-- hack to make vue watch expanded logs -->
     <div style="display:none;">
       {{ expandedLogs }}
@@ -265,7 +288,6 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -287,21 +309,15 @@ export default {
     return {
       error: '',
       loading: true,
-      user: null,
-      history: {
-        data: [],
-        recordsTotal: undefined,
-        recordsFiltered: undefined
-      },
+      history: {},
       expandedLogs: { change: false },
       showColFilters: false,
       colSpan: 7,
       filters: {},
-      settings: { timezone: 'local' },
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 10, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', nowrap: true, width: 8, classes: 'text-right', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', nowrap: true, width: 11, filter: true, permission: 'createEnabled', help: 'The id of the user that initiated the request' },
+        { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
+        { name: 'User ID', sort: 'userId', nowrap: true, width: 8, filter: true, permission: 'createEnabled', help: 'The id of the user that initiated the request' },
         { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
         { name: 'Expression', sort: 'expression', nowrap: true, width: 27, exists: false, help: 'The query expression issued with the request' },
@@ -316,15 +332,23 @@ export default {
         start: 0,
         searchTerm: null,
         sortField: 'timestamp',
-        desc: false,
+        desc: true,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime
       };
+    },
+    user: function () {
+      return this.$store.state.user;
     }
   },
   created: function () {
-    this.loadUser();
+    // if the user is an admin, show them all the columns
+    if (this.user.createEnabled) { this.colSpan = 8; }
+    // query for the user requested or the current user
+    this.filters.userId = this.$route.query.userId || this.user.userId;
+
+    this.loadData();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -335,6 +359,10 @@ export default {
         searchInputTimeout = null;
         this.loadData();
       }, 400);
+    },
+    clear () {
+      this.query.searchTerm = undefined;
+      this.loadData();
     },
     columnClick: function (name) {
       this.query.sortField = name;
@@ -372,17 +400,6 @@ export default {
         });
     },
     /* helper functions ------------------------------------------ */
-    loadUser: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-          if (response.createEnabled) { this.colSpan = 8; }
-          this.filters.userId = this.$route.query.userId || response.userId;
-          this.loadData();
-        }, (error) => {
-          this.loadData();
-        });
-    },
     loadData: function () {
       this.loading = true;
 
@@ -470,7 +487,7 @@ export default {
   margin-top: 160px;
   table-layout: fixed;
 }
-.history-page table tbody tr td.nowrap {
+.history-page table tbody tr td.no-wrap {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

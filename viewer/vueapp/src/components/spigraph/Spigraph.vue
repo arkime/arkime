@@ -5,7 +5,7 @@
     <!-- search navbar -->
     <moloch-search
       :num-matching-sessions="filtered"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
@@ -45,7 +45,7 @@
             </span>
             <select class="form-control"
               v-model="query.size"
-              @change="changeMaxElements()">
+              @change="changeMaxElements">
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -68,7 +68,7 @@
             </span>
             <select class="form-control"
               v-model="sortBy"
-              @change="changeSortBy()">
+              @change="changeSortBy">
               <option value="name">name</option>
               <option value="graph">graph</option>
             </select>
@@ -87,7 +87,7 @@
             </span>
             <select class="form-control"
               v-model="refresh"
-              @change="changeRefreshInterval()">
+              @change="changeRefreshInterval">
               <option value="0">0</option>
               <option value="5">5</option>
               <option value="10">10</option>
@@ -124,7 +124,7 @@
           :graph-data="graphData"
           :map-data="mapData"
           :primary="true"
-          :timezone="settings.timezone">
+          :timezone="user.settings.timezone">
         </moloch-visualizations>
       </div> <!-- /main visualization -->
 
@@ -159,7 +159,7 @@
               :graph-data="item.graph"
               :map-data="item.map"
               :primary="false"
-              :timezone="settings.timezone">
+              :timezone="user.settings.timezone">
             </moloch-visualizations>
           </div>
         </div> <!-- /field visualization -->
@@ -193,8 +193,6 @@
 
 <script>
 import FieldService from '../search/FieldService';
-import UserService from '../users/UserService';
-
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
@@ -204,6 +202,7 @@ import MolochVisualizations from '../visualizations/Visualizations';
 
 let oldFieldObj;
 let refreshInterval;
+let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'Spigraph',
@@ -221,9 +220,6 @@ export default {
       fields: [],
       loading: true,
       filtered: 0,
-      settings: {
-        timezone: 'local'
-      },
       graphData: undefined,
       mapData: undefined,
       refresh: 0,
@@ -236,6 +232,9 @@ export default {
     };
   },
   computed: {
+    user: function () {
+      return this.$store.state.user;
+    },
     graphType: function () {
       return this.$store.state.graphType;
     },
@@ -247,7 +246,7 @@ export default {
       return {
         sort: sort,
         date: this.$store.state.timeRange,
-        exp: this.$route.query.field || 'node',
+        exp: this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -287,8 +286,12 @@ export default {
     }
   },
   created: function () {
-    // IMPORTANT: kicks off the initial search query
-    this.getUserSettings();
+    setTimeout(() => {
+      // wait for query to be computed
+      this.loadData();
+      this.changeRefreshInterval();
+    });
+
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
@@ -307,7 +310,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = error;
+        this.error = error.text || error;
       });
   },
   methods: {
@@ -339,8 +342,10 @@ export default {
       if (this.refresh && this.refresh > 0) {
         this.loadData();
         refreshInterval = setInterval(() => {
-          this.loadData();
-        }, this.refresh * 1000);
+          if (respondedAt && Date.now() - respondedAt >= parseInt(this.refresh * 1000)) {
+            this.loadData();
+          }
+        }, 500);
       }
     },
     /* event functions ----------------------------------------------------- */
@@ -355,39 +360,24 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    getUserSettings: function () {
-      UserService.getCurrent()
-        .then((response) => {
-          this.settings = response.settings;
-          // IMPORTANT: kicks off the initial search query
-          this.loadData();
-        }, (error) => {
-          this.settings = { timezone: 'local' };
-          this.error = error;
-        });
-    },
     loadData: function () {
+      respondedAt = undefined;
       this.loading = true;
       this.error = false;
 
-      this.items = []; // clear items
-
-      if (!this.$route.query.field) {
-        this.query.exp = this.settings.spiGraph;
-      }
-
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {
+          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.items = []; // clear items
           this.processData(response.data);
           this.recordsTotal = response.data.recordsTotal;
           this.recordsFiltered = response.data.recordsFiltered;
-
-          this.changeRefreshInterval();
         }, (error) => {
+          respondedAt = undefined;
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     processData: function (json) {
@@ -471,4 +461,4 @@ export default {
 .spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
   background-color: var(--color-quaternary-lightest);
 }
-</style>
+</style> -->

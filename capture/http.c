@@ -684,9 +684,8 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
 /******************************************************************************/
 LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
 {
-    MolochHttpRequest_t       *request;
-
     while (1) {
+        MolochHttpRequest_t *request;
         MOLOCH_LOCK(requests);
         DLL_POP_HEAD(rqt_, &requests, request);
         if (!request) {

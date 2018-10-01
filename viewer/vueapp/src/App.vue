@@ -1,7 +1,7 @@
 <template>
   <div>
     <moloch-navbar></moloch-navbar>
-    <router-view />
+    <router-view v-if="user" />
     <transition name="shortcuts-slide">
       <moloch-keyboard-shortcuts
         v-if="displayKeyboardShortcutsHelp">
@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import UserService from './components/users/UserService';
 import MolochNavbar from './components/utils/Navbar';
 import MolochFooter from './components/utils/Footer';
 import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
@@ -33,9 +34,26 @@ export default {
       set: function (newValue) {
         this.$store.commit('setDisplayKeyboardShortcutsHelp', newValue);
       }
+    },
+    user: {
+      get: function () {
+        return this.$store.state.user;
+      },
+      set: function (newValue) {
+        this.$store.commit('setUser', newValue);
+      }
     }
   },
   mounted: function () {
+    // get the current user for the entire app
+    // the rest of the app should compute the user with $store.state.user
+    UserService.getCurrent()
+      .then((response) => {
+        this.user = response;
+      }, (error) => {
+        this.user = { settings: { timezone: 'local' } };
+      });
+
     const inputs = ['input', 'select', 'textarea'];
 
     window.addEventListener('keyup', (event) => {
@@ -90,6 +108,12 @@ export default {
           // open help page if not on help page
           if (this.$route.name !== 'Help') {
             this.routeTo('/help');
+          }
+          break;
+        case 85: // u
+          // open hunt page if not on hunt page
+          if (this.$route.name !== 'Hunt') {
+            this.routeTo('/hunt');
           }
           break;
         case 191: // /
@@ -186,6 +210,12 @@ a.no-decoration { text-decoration: none; }
 }
 
 /* themed buttons */
+.btn-clear-input {
+  color: var(--color-foreground, #555) !important;
+  background-color: var(--color-background, #EEE) !important;
+  border-color: var(--color-gray) !important;
+}
+
 .btn.btn-theme-primary {
   color           : #FFFFFF;
   background-color: var(--color-primary);
@@ -308,6 +338,14 @@ label.btn-radio:disabled, button.btn-checkbox:disabled {
   display         : flex;
   align-items     : center;
   justify-content : center;
+  flex-direction  : column;
+}
+
+.horizontal-center {
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  text-align      : center;
   flex-direction  : column;
 }
 

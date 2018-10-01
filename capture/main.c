@@ -114,6 +114,7 @@ LOCAL  GOptionEntry entries[] =
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
+    { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -662,13 +663,13 @@ void moloch_mlockall_init()
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (long)l.rlim_max/1024);
+        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max/1024);
         return;
     }
 
     if (l.rlim_cur != l.rlim_max) {
         if (config.debug)
-            LOG("Setting memlock soft to %lu", (long)l.rlim_max);
+            LOG("Setting memlock soft to %lu", (unsigned long)l.rlim_max);
         l.rlim_cur = l.rlim_max;
         setrlimit(RLIMIT_MEMLOCK, &l);
     }
@@ -677,7 +678,7 @@ void moloch_mlockall_init()
     if (result != 0) {
         LOG("WARNING: Failed to mlockall - %s", strerror(errno));
     } else if (config.debug) {
-        LOG("mlockall with max of %lu", (long)l.rlim_max);
+        LOG("mlockall with max of %lu", (unsigned long)l.rlim_max);
     }
 #endif
 }

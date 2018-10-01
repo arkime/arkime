@@ -428,6 +428,8 @@
               <tr>
                 <th>Name</th>
                 <th>Expression</th>
+                <th width="30%">Sessions Columns</th>
+                <th>Sessions Sort</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -451,6 +453,31 @@
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
                   />
+                </td>
+                <td>
+                  <span v-if="item.sessionsColConfig">
+                    <label class="badge badge-secondary mr-1 mb-0 help-cursor"
+                      v-if="col && fieldsMap[col]"
+                      v-for="col in item.sessionsColConfig.visibleHeaders"
+                      v-b-tooltip.hover
+                      :title="fieldsMap[col].help"
+                      :key="col">
+                      {{ fieldsMap[col].friendlyName }}
+                    </label>
+                  </span>
+                </td>
+                <td>
+                  <span v-if="item.sessionsColConfig">
+                    <label class="badge badge-secondary mr-1 help-cursor"
+                      :title="fieldsMap[order[0]].help"
+                      v-for="order in item.sessionsColConfig.order"
+                      v-if="fieldsMap[order[0]]"
+                      v-b-tooltip.hover
+                      :key="order[0]">
+                      {{ fieldsMap[order[0]].friendlyName }}&nbsp;
+                      ({{ order[1] }})
+                    </label>
+                  </span>
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm pull-right"
@@ -502,13 +529,14 @@
                     placeholder="Enter a new view name (20 chars or less)"
                   />
                 </td>
-                <td>
+                <td colspan="2">
                   <input type="text"
                     v-model="newViewExpression"
                     class="form-control form-control-sm"
                     placeholder="Enter a new view expression"
                   />
                 </td>
+                <td>&nbsp;</td>
                 <td>
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"

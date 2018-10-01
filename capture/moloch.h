@@ -40,17 +40,20 @@
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("unsigned-integer-overflow")))
 #define SUPPRESS_SHIFT __attribute__((no_sanitize("shift")))
+#define SUPPRESS_ALIGNMENT __attribute__((no_sanitize("alignment")))
 #elif __GNUC__ >= 5
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_SHIFT __attribute__((no_sanitize_undefined()))
+#define SUPPRESS_ALIGNMENT
 #else
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_SHIFT
+#define SUPPRESS_ALIGNMENT
 #endif
 
-#define MOLOCH_API_VERSION 102
+#define MOLOCH_API_VERSION 160
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -336,6 +339,7 @@ typedef struct moloch_config {
     gboolean  flushBetween;
     gboolean  noLoadTags;
     gboolean  trackESP;
+    gboolean  noLockPcap;
     gint      pktsToRead;
 
     GHashTable *override;
@@ -481,6 +485,7 @@ typedef struct molochpacket_t
     uint16_t       pktlen;         // length of packet
     uint16_t       payloadLen;     // length of ip payload
     uint16_t       payloadOffset;  // offset to ip payload from start
+    uint16_t       vlan;           // non zero if the reader gets the vlan
     uint8_t        ipOffset;       // offset to ip header from start
     uint8_t        vpnIpOffset;    // offset to vpn ip header from start
     uint8_t        protocol;       // ip protocol
@@ -608,6 +613,7 @@ typedef struct moloch_session {
     uint16_t               midSave:1;
     uint16_t               outOfOrder:2;
     uint16_t               ackedUnseenSegment:2;
+    uint16_t               stopYara:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -620,8 +626,6 @@ typedef struct moloch_session_head {
     int                    h_count;
 } MolochSessionHead_t;
 
-
-//#define MOLOCH_USE_MALLOC
 
 #ifdef MOLOCH_USE_MALLOC
 #define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
@@ -931,7 +935,6 @@ uint32_t moloch_session_monitoring();
 void     moloch_session_process_commands(int thread);
 
 int      moloch_session_need_save_outstanding();
-int      moloch_session_thread_outstanding(int thread);
 int      moloch_session_cmd_outstanding();
 
 typedef enum {

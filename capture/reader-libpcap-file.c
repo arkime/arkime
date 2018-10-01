@@ -92,7 +92,6 @@ LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 LOCAL gboolean reader_libpcapfile_monitor_read()
 {
     char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__ ((aligned(8)));
-    struct inotify_event *event;
 
     int rc = read (monitorFd, buf, sizeof(buf));
     if (rc == 0)
@@ -103,7 +102,7 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
 
     char *p;
     for (p = buf; p < buf + rc; ) {
-        event = (struct inotify_event *) p;
+        struct inotify_event *event = (struct inotify_event *) p;
         reader_libpcapfile_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;
      }

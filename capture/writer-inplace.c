@@ -30,7 +30,7 @@ extern MolochConfig_t        config;
 
 LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
 
-char                       *readerFileName[256];
+extern char                *readerFileName[256];
 LOCAL uint32_t              outputIds[256];
 
 /******************************************************************************/
@@ -54,7 +54,7 @@ LOCAL long writer_inplace_create(MolochPacket_t * const packet)
     if (config.pcapReprocess) {
         moloch_db_file_exists(readerName, &outputId);
     } else {
-        char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, 1, &outputId);
+        char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId);
         g_free(filename);
     }
     outputIds[packet->readerPos] = outputId;

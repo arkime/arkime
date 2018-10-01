@@ -10,7 +10,7 @@
       <!-- map open button -->
       <div class="map-btn"
         v-if="!showMap && primary"
-        @click="toggleMap()"
+        @click="toggleMap"
         v-b-tooltip.hover
         title="View map"
         placement="left">
@@ -31,7 +31,7 @@
             <button type="button"
               v-if="primary"
               class="btn btn-xs btn-default btn-close-map btn-fw"
-              @click="toggleMap()"
+              @click="toggleMap"
               v-b-tooltip.hover
               title="Close map">
               <span class="fa fa-close">
@@ -40,7 +40,7 @@
             <button type="button"
               class="btn btn-xs btn-default btn-fw"
               :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
-              @click="toggleMapSize()"
+              @click="toggleMapSize"
               title="Expand/Collapse Map">
               <span class="fa"
                 :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
@@ -94,14 +94,14 @@
         <!-- zoom in/out -->
         <div class="btn-group btn-group-xs">
           <label class="btn btn-default"
-            @click="zoomOut()"
+            @click="zoomOut"
             v-b-tooltip.hover
             title="Zoom out">
             <span class="fa fa-search-minus">
             </span>
           </label>
           <label class="btn btn-default"
-            @click="zoomIn()"
+            @click="zoomIn"
             v-b-tooltip.hover
             title="Zoom in">
             <span class="fa fa-search-plus">
@@ -111,14 +111,14 @@
         <!-- pan left/right -->
         <div class="btn-group btn-group-xs ml-1">
           <label class="btn btn-default"
-            @click="panLeft()"
+            @click="panLeft"
             v-b-tooltip.hover
             title="Pan left">
             <span class="fa fa-chevron-left">
             </span>
           </label>
           <label class="btn btn-default"
-            @click="panRight()"
+            @click="panRight"
             v-b-tooltip.hover
             title="Pan right">
             <span class="fa fa-chevron-right">
@@ -230,21 +230,11 @@ export default {
       plot: undefined,
       plotArea: undefined,
       graph: undefined,
-      graphOptions: {}
+      graphOptions: {},
+      showMap: undefined
     };
   },
   computed: {
-    showMap: {
-      get: function (value) {
-        return this.$store.state.showMaps;
-      },
-      set: function (newValue) {
-        if (this.primary) {
-          this.$store.commit('toggleMaps', newValue);
-          localStorage[`${basePath}-open-map`] = newValue;
-        }
-      }
-    },
     src: {
       get: function (value) {
         return this.$store.state.mapSrc;
@@ -294,10 +284,18 @@ export default {
       this.setupMapData(this.mapData);
     },
     graphType: function (newVal, oldVal) {
-      this.setupGraphData();
-      this.plot.setData(this.graph);
-      this.plot.setupGrid();
-      this.plot.draw();
+      function changeGraphType (that) {
+        that.setupGraphData();
+        that.plot.setData(that.graph);
+        that.plot.setupGrid();
+        that.plot.draw();
+      }
+      if (this.primary) {
+        changeGraphType(this);
+      } else { // wait for the plot to be accessible
+        let id = parseInt(this.id);
+        setTimeout(() => { changeGraphType(this); }, id * 100);
+      }
     },
     seriesType: function (newVal, oldVal) {
       this.setupGraphData();
@@ -312,6 +310,14 @@ export default {
     mapData: function (newVal, oldVal) {
       if (newVal && oldVal) {
         this.setupMapData(); // setup this.mapData
+      }
+    },
+    '$store.state.showMaps': function (newVal, oldVal) {
+      if (this.id !== 'primary') {
+        let id = parseInt(this.id);
+        setTimeout(() => { // show/hide maps one at a time
+          this.showMap = newVal;
+        }, id * 100);
       }
     }
   },
@@ -334,13 +340,24 @@ export default {
     }
   },
   mounted: function () {
+    function setupMapAndGraph (that) {
+      // create map
+      that.displayMap();
+      // create graph
+      // setup the graph data and options
+      that.setupGraphData();
+      // create flot graph
+      that.setupGraphElement();
+    }
+
     basePath = this.$route.path.split('/')[1];
 
     let showMap = localStorage && localStorage[`${basePath}-open-map`] &&
       localStorage[`${basePath}-open-map`] !== 'false';
 
+    this.showMap = showMap;
+
     if (this.primary) {
-      this.showMap = showMap;
       this.$store.commit('toggleMaps', showMap);
 
       this.graphType = this.$route.query.graphType || 'lpHisto';
@@ -348,16 +365,12 @@ export default {
 
       this.seriesType = this.$route.query.seriesType || 'bars';
       this.$store.commit('updateSeriesType', this.seriesType);
+
+      setupMapAndGraph(this);
+    } else { // wait for values in store to be accessible
+      let id = parseInt(this.id);
+      setTimeout(() => { setupMapAndGraph(this); }, id * 100);
     }
-
-    // create map
-    this.displayMap();
-
-    // create graph
-    // setup the graph data and options
-    this.setupGraphData();
-    // create flot graph
-    this.setupGraphElement();
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
@@ -365,6 +378,8 @@ export default {
     toggleMap: function () {
       if (this.primary) {
         this.showMap = !this.showMap;
+        this.$store.commit('toggleMaps', this.showMap);
+        localStorage[`${basePath}-open-map`] = this.showMap;
       }
     },
     toggleMapSize: function () {
@@ -837,7 +852,7 @@ export default {
 
 <style scoped>
 .inline-map {
-  width: 400px;
+  width: 24%;
   float: right;
   position: relative;
 }
@@ -904,7 +919,7 @@ export default {
 .map-visible .plot-container {
   position: relative;
   display: inline-block;
-  width: calc(100% - 425px);
+  width: 75%;
 }
 .map-invisible .plot-container {
   position: relative;
@@ -926,7 +941,7 @@ export default {
 
 /* center timeline buttons on timeline graph if the map is collapsed */
 .map-visible .session-graph-btn-container {
-  left: calc(50% - 425px);
+  left: 25%;
 }
 .map-visible .session-graph-btn-container > div {
   left: 0;
