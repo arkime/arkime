@@ -62,12 +62,12 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.5.9
+        image: andywick/moloch-build-7:1.6.1
         steps:
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh
+            - build: scl enable devtoolset-6 "./easybutton-build.sh"
             - yum -y install libasan-static
-            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address' sanitize)
+            - build-sanitize: (cd capture; scl enable devtoolset-6 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
