@@ -2162,12 +2162,17 @@ int moloch_db_can_quit()
 {
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
+        // Make sure we can lock, that means a save isn't in progress
+        MOLOCH_LOCK(dbInfo[thread].lock);
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0) {
+            MOLOCH_UNLOCK(dbInfo[thread].lock);
+
             moloch_db_flush_gfunc((gpointer)1);
             if (config.debug)
                 LOG ("Can't quit, sJson[%d] %ld", thread, BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
+        MOLOCH_UNLOCK(dbInfo[thread].lock);
     }
 
     if (moloch_http_queue_length(esServer) > 0) {
