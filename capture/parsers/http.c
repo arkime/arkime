@@ -766,39 +766,39 @@ static const char *method_strings[] =
         "http.header.request.field", "Request Header Fields", "http.requestHeaderField",
         "Contains Request header fields",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
-        NULL);
+        (char *)NULL);
 
     headerReqValue = moloch_field_define("http","lotermfield",
         "http.hasheader.src.value", "Request Header Values", "http.requestHeaderValue",
         "Contains request header values",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     headerResField = moloch_field_define("http","lotermfield",
         "http.header.response.field","Response Header fields", "http.responseHeaderField",
         "Contains response header fields",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
-        NULL);
+        (char *)NULL);
 
     headerResValue = moloch_field_define("http","lotermfield",
         "http.hasheader.dst.value", "Response Header Values", "http.responseHeaderValue",
         "Contains response header values",
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("http", "lotermfield",
         "http.hasheader", "Has Src or Dst Header", "hhall",
         "Shorthand for http.hasheader.src or http.hasheader.dst",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^http\\\\.hasheader\\\\.(?:(?!(cnt|value)$).)*$",
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("http", "lotermfield",
         "http.hasheader.value", "Has Value in Src or Dst Header", "hhvalueall",
         "Shorthand for http.hasheader.src.value or http.hasheader.dst.value",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^http\\\\.hasheader\\\\.(src|dst)\\\\.value$",
-        NULL);
+        (char *)NULL);
 
     md5Field = moloch_field_define("http", "lotermfield",
         "http.md5", "Body MD5", "http.md5",
