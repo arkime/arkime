@@ -4,54 +4,57 @@
          "body" : {
             "dns" : {
                "ASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "---",
-                  "AS4713 NTT Communications Corporation",
-                  "---"
+                  "AS4713 NTT Communications Corporation"
                ],
                "GEO" : [
+                  "JP"
+               ],
+               "RIR" : [
+                  "APNIC"
+               ],
+               "host" : [
+                  "itojun.org"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "210.160.95.97"
+               ],
+               "ipCnt" : 1,
+               "nameserver.ASN" : [
+                  "AS4713 NTT Communications Corporation",
+                  "AS4713 NTT Communications Corporation",
+                  "---",
+                  "AS4713 NTT Communications Corporation",
+                  "---"
+               ],
+               "nameserver.GEO" : [
+                  "JP",
                   "JP",
                   "---",
                   "JP",
                   "---"
                ],
-               "RIR" : [
+               "nameserver.RIR" : [
+                  "APNIC",
                   "APNIC",
                   "",
                   "APNIC",
                   ""
                ],
-               "host" : [
-                  "coconut.itojun.org",
-                  "itojun.org",
-                  "kiwi.itojun.org"
-               ],
-               "hostCnt" : 3,
-               "ip" : [
-                  "210.160.95.97",
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "210.160.95.99",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "ipCnt" : 4,
-               "nameserver.ASN" : [
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserver.GEO" : [
-                  "JP"
-               ],
-               "nameserver.RIR" : [
-                  "APNIC"
-               ],
                "nameserver.host" : [
                   "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
+                  "tiger.hiroo.oshokuji.org",
+                  "kiwi.itojun.org"
                ],
-               "nameserver.hostCnt" : 2,
+               "nameserver.hostCnt" : 3,
                "nameserver.ip" : [
-                  "210.145.33.242"
+                  "210.160.95.97",
+                  "210.145.33.242",
+                  "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                  "210.160.95.99",
+                  "3ffe:501:410:100:5254:ff:feda:48bf"
                ],
-               "nameserver.ipCnt" : 1,
+               "nameserver.ipCnt" : 5,
                "opcode" : [
                   "QUERY"
                ],
@@ -331,37 +334,26 @@
       {
          "body" : {
             "dns" : {
-               "ASN" : [
-                  "AS11590 Cumberland Technologies International"
-               ],
-               "GEO" : [
-                  "US"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
                "host" : [
-                  "www.yahoo.com",
-                  "mr1.yahoo.com"
+                  "www.yahoo.com"
                ],
-               "hostCnt" : 2,
-               "ip" : [
-                  "206.251.17.77"
-               ],
-               "ipCnt" : 1,
+               "hostCnt" : 1,
                "nameserver.ASN" : [
+                  "AS11590 Cumberland Technologies International",
                   "AS3301 Telia Company AB",
                   "AS3561 Savvis",
                   "AS3561 Savvis",
                   "AS3561 Savvis"
                ],
                "nameserver.GEO" : [
+                  "US",
                   "SE",
                   "US",
                   "US",
                   "US"
                ],
                "nameserver.RIR" : [
+                  "ARIN",
                   "RIPE",
                   "ARIN",
                   "ARIN",
@@ -371,16 +363,18 @@
                   "ns.europe.yahoo.com",
                   "ns2.dca.yahoo.com",
                   "ns1.yahoo.com",
+                  "mr1.yahoo.com",
                   "ns5.dcx.yahoo.com"
                ],
-               "nameserver.hostCnt" : 4,
+               "nameserver.hostCnt" : 5,
                "nameserver.ip" : [
+                  "206.251.17.77",
                   "195.67.49.25",
                   "204.71.200.33",
                   "209.143.200.34",
                   "216.32.74.10"
                ],
-               "nameserver.ipCnt" : 4,
+               "nameserver.ipCnt" : 5,
                "opcode" : [
                   "QUERY"
                ],

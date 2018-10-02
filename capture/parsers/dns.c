@@ -340,7 +340,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
                         moloch_field_ip4_add(ipField, session, in.s_addr);
                     }
-                    else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                    else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server or mail-exchange
                         moloch_field_ip4_add(ipNameServerField, session, in.s_addr);
                     }
                 }
@@ -389,7 +389,10 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                     continue;
 
-                dns_add_host(hostField, session, (char*)name, namelen);
+                if (config.parseDNSRecordAll)
+                    dns_add_host(hostNameServerField, session, (char *)name, namelen);
+                else
+                    dns_add_host(hostField, session, (char*)name, namelen);
 
                 break;
             }
@@ -524,7 +527,7 @@ void moloch_parser_init()
 
     hostNameServerField = moloch_field_define("dns", "lotermfield",
         "host.dns.nameserver", "Host", "dns.nameserver.host",
-        "Hostnames for nameservers",
+        "Hostnames for Name Server or Mail Exchange Server",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
         NULL);

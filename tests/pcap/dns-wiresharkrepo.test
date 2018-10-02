@@ -4,24 +4,12 @@
          "body" : {
             "dns" : {
                "ASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
                   "AS1280 Internet Systems Consortium, Inc.",
                   "AS1280 Internet Systems Consortium, Inc.",
                   "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
+                  "AS1280 Internet Systems Consortium, Inc."
                ],
                "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
                   "US",
                   "US",
                   "US",
@@ -29,46 +17,70 @@
                ],
                "RIR" : [
                   "ARIN",
-                  "ARIN",
                   "",
-                  "ARIN",
-                  "ARIN",
                   "",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
                   "ARIN"
                ],
                "host" : [
                   "www.isc.org",
                   "www.example.notginh",
-                  "smtp1.google.com",
                   "www.google.com",
                   "www.netbsd.org",
                   "google.com",
+                  "104.9.192.66.in-addr.arpa",
+                  "www.example.com",
+                  "www.l.google.com"
+               ],
+               "hostCnt" : 8,
+               "ip" : [
+                  "204.152.190.12",
+                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                  "2001:04f8:0000:0002:0000:0000:0000:000d",
+                  "204.152.184.88"
+               ],
+               "ipCnt" : 4,
+               "nameserver.ASN" : [
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
+               ],
+               "nameserver.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserver.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "nameserver.host" : [
+                  "smtp1.google.com",
                   "smtp6.google.com",
                   "smtp5.google.com",
                   "smtp4.google.com",
-                  "104.9.192.66.in-addr.arpa",
                   "smtp3.google.com",
-                  "www.example.com",
-                  "smtp2.google.com",
-                  "www.l.google.com"
+                  "smtp2.google.com"
                ],
-               "hostCnt" : 14,
-               "ip" : [
-                  "216.239.57.25",
+               "nameserver.hostCnt" : 6,
+               "nameserver.ip" : [
                   "216.239.57.26",
-                  "2001:04f8:0000:0002:0000:0000:0000:000d",
-                  "204.152.190.12",
-                  "204.152.184.88",
-                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
-                  "66.102.9.25",
                   "64.233.167.25",
+                  "66.102.9.25",
                   "216.239.37.25",
-                  "216.239.37.26"
+                  "216.239.37.26",
+                  "216.239.57.25"
                ],
-               "ipCnt" : 10,
+               "nameserver.ipCnt" : 6,
                "opcode" : [
                   "QUERY"
                ],
