@@ -39,6 +39,10 @@ LOCAL int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
     BSB_LIMPORT_u16(dbsb, tagLen);
     BSB_LIMPORT_skip(dbsb, 2);
 
+    if (BSB_IS_ERROR(dbsb)) {
+        return 0;
+    }
+
     moloch_session_add_protocol(session, "quic");
 
     if (!tag || memcmp(tag, "CHLO", 4) != 0) {

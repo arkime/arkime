@@ -56,7 +56,7 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
     if (ssh->done)
         return 0;
 
-    if (memcmp("SSH", data, 3) == 0) {
+    if (remaining > 3 && memcmp("SSH", data, 3) == 0) {
         unsigned char *n = memchr(data, 0x0a, remaining);
         if (n && *(n-1) == 0x0d)
             n--;
