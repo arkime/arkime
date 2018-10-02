@@ -597,6 +597,7 @@ void moloch_config_load()
                 LOGEXIT("Not sure what %s is", s);
             }
         }
+        g_strfreev(saveUnknownPackets);
     }
 
 }
