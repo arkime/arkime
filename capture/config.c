@@ -535,9 +535,13 @@ void moloch_config_load()
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
     config.logHTTPConnections    = moloch_config_boolean(keyfile, "logHTTPConnections", TRUE);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
+    config.parseSMTPHeaderAll    = moloch_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
+    config.parseDNSRecordAll     = moloch_config_boolean(keyfile, "parseDNSRecordAll", FALSE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
+    config.parseHTTPHeaderRequestAll      = moloch_config_boolean(keyfile, "parseHTTPHeaderRequestAll", FALSE);
+    config.parseHTTPHeaderResponseAll      = moloch_config_boolean(keyfile, "parseHTTPHeaderResponseAll", FALSE);
     config.supportSha256         = moloch_config_boolean(keyfile, "supportSha256", FALSE);
     config.reqBodyOnlyUtf8       = moloch_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);

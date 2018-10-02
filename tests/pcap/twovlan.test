@@ -49,6 +49,15 @@
                   "host"
                ],
                "requestHeaderCnt" : 4,
+               "requestHeaderField" : [
+                  "accept",
+                  "connection"
+               ],
+               "requestHeaderValue" : [
+                  "*/*",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 2,
                "responseHeader" : [
                   "content-type",
                   "x-cache",
@@ -71,6 +80,51 @@
                   "age"
                ],
                "responseHeaderCnt" : 19,
+               "responseHeaderField" : [
+                  "x-servedbyhost",
+                  "cache-control",
+                  "x-xss-protection",
+                  "content-security-policy",
+                  "access-control-allow-origin",
+                  "content-type",
+                  "via",
+                  "fastly-debug-digest",
+                  "content-length",
+                  "accept-ranges",
+                  "date",
+                  "via",
+                  "age",
+                  "connection",
+                  "set-cookie",
+                  "x-served-by",
+                  "x-cache",
+                  "x-cache-hits",
+                  "x-timer",
+                  "vary"
+               ],
+               "responseHeaderValue" : [
+                  "prd-10-00-000-01.xxxxx.xxx.xxxxx.xxx",
+                  "max-age=60",
+                  "1; mode=block",
+                  "default-src 'self' http://*.xxx.xxx:* https://*.xxx.com:* *.xxx.net:* *.xxxxxx.com:* *.xxxxxxxxx.com:* *.xxxx.net:*; script-src 'unsafe-inline' 'unsafe-eval' 'self' *; style-src 'unsafe-inline' 'self' *; frame-src 'self' *; object-src 'self' *; img-src 'self' * data:; media-src 'self' *; font-src 'self' *; connect-src 'self' *;",
+                  "*",
+                  "text/html; charset=utf-8",
+                  "1.1 varnish",
+                  "9e523fa72b6a1185e15653a90e0ae5026a5c5a2b0b708f448b65bf55c62b08bc",
+                  "104548",
+                  "bytes",
+                  "sun, 21 feb 2016 07:56:09 gmt",
+                  "1.1 varnish",
+                  "134",
+                  "keep-alive",
+                  "countrycode=il; domain=.xxx.xxx",
+                  "cache-iad2140-iad, cache-ams4122-ams",
+                  "hit, hit",
+                  "2, 21",
+                  "s1456041369.500557,vs0,ve0",
+                  "accept-encoding"
+               ],
+               "responseHeaderValueCnt" : 20,
                "serverVersion" : [
                   "1.1"
                ],

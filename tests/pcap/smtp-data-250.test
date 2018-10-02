@@ -41,6 +41,15 @@
                   "subject"
                ],
                "headerCnt" : 8,
+               "headerField" : [
+                  "date",
+                  "content-transfer-encoding"
+               ],
+               "headerValue" : [
+                  "Fri, 06 Dec 2013 08:48:53 -0500",
+                  "base64"
+               ],
+               "headerValueCnt" : 2,
                "id" : [
                   "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
                ],

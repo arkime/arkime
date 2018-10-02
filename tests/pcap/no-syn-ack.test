@@ -136,6 +136,21 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "connection",
+                  "x-requested-with",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language"
+               ],
+               "requestHeaderValue" : [
+                  "keep-alive",
+                  "shockwaveflash/24.0.0.186",
+                  "*/*",
+                  "gzip, deflate, sdch",
+                  "en-us,en;q=0.8"
+               ],
+               "requestHeaderValueCnt" : 5,
                "responseHeader" : [
                   "content-type",
                   "access-control-allow-origin",
@@ -148,6 +163,29 @@
                   "server"
                ],
                "responseHeaderCnt" : 9,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "content-type",
+                  "etag",
+                  "last-modified",
+                  "server",
+                  "content-length",
+                  "date",
+                  "connection",
+                  "access-control-allow-origin"
+               ],
+               "responseHeaderValue" : [
+                  "bytes",
+                  "video/mp2t",
+                  "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:1111111111.222222\"",
+                  "mon, 26 dec 2016 00:45:01 gmt",
+                  "akamainetstorage",
+                  "104528",
+                  "wed, 04 jan 2017 15:36:04 gmt",
+                  "keep-alive",
+                  "*"
+               ],
+               "responseHeaderValueCnt" : 9,
                "serverVersion" : [
                   "1.1"
                ],

@@ -21,6 +21,26 @@
                   "192.30.252.128"
                ],
                "ipCnt" : 1,
+               "nameserver.ASN" : [
+                  "---"
+               ],
+               "nameserver.GEO" : [
+                  "---"
+               ],
+               "nameserver.RIR" : [
+                  ""
+               ],
+               "nameserver.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
+                  "10.2.95.12"
+               ],
+               "nameserver.ipCnt" : 1,
                "opcode" : [
                   "QUERY"
                ],
@@ -122,6 +142,26 @@
                   "192.30.252.130"
                ],
                "ipCnt" : 1,
+               "nameserver.ASN" : [
+                  "---"
+               ],
+               "nameserver.GEO" : [
+                  "---"
+               ],
+               "nameserver.RIR" : [
+                  ""
+               ],
+               "nameserver.host" : [
+                  "ns3.p16.dynect.net",
+                  "ns4.p16.dynect.net",
+                  "ns1.p16.dynect.net",
+                  "ns2.p16.dynect.net"
+               ],
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
+                  "10.2.95.12"
+               ],
+               "nameserver.ipCnt" : 1,
                "opcode" : [
                   "QUERY"
                ],
