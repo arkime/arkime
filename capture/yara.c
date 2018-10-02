@@ -230,18 +230,19 @@ void moloch_yara_init()
 /******************************************************************************/
 int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
 {
+    if (message != CALLBACK_MSG_RULE_MATCHING)
+        return CALLBACK_CONTINUE;
+
     char tagname[256];
     const char* tag;
 
-    if (message == CALLBACK_MSG_RULE_MATCHING) {
-        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+    snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+    moloch_session_add_tag(session, tagname);
+    tag = rule->tags;
+    while(tag != NULL && *tag) {
+        snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         moloch_session_add_tag(session, tagname);
-        tag = rule->tags;
-        while(tag != NULL && *tag) {
-            snprintf(tagname, sizeof(tagname), "yara:%s", tag);
-            moloch_session_add_tag(session, tagname);
-            tag += strlen(tag) + 1;
-        }
+        tag += strlen(tag) + 1;
     }
 
     return CALLBACK_CONTINUE;
@@ -323,18 +324,19 @@ void moloch_yara_init()
 /******************************************************************************/
 int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
 {
+    if (message == CALLBACK_MSG_RULE_MATCHING)
+        return CALLBACK_CONTINUE;
+
     char tagname[256];
     char* tag;
 
-    if (message == CALLBACK_MSG_RULE_MATCHING) {
-        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+    snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+    moloch_session_add_tag(session, tagname);
+    tag = rule->tags;
+    while(tag != NULL && *tag) {
+        snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         moloch_session_add_tag(session, tagname);
-        tag = rule->tags;
-        while(tag != NULL && *tag) {
-            snprintf(tagname, sizeof(tagname), "yara:%s", tag);
-            moloch_session_add_tag(session, tagname);
-            tag += strlen(tag) + 1;
-        }
+        tag += strlen(tag) + 1;
     }
 
     return CALLBACK_CONTINUE;
