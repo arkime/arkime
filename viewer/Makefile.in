@@ -8,19 +8,18 @@ CP = /bin/cp
 all:
 
 check:
-	npm install
+	npm ci
 	npm run bundle
 
 install:
 	@mkdir -p "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json package-lock.json $(VIEWERDIR)
-	npm install
-	(cd vueapp ; npm install)
+	npm ci
 	npm run bundle:min
 	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
-	(cd $(VIEWERDIR) ; npm install --production)
+	(cd $(VIEWERDIR) ; npm ci --production)
 	rm -f $(VIEWERDIR)/package-lock.json
 
 distclean realclean clean:

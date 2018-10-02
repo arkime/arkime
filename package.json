@@ -11,7 +11,6 @@
     "async": "^2.5.0",
     "axios": "^0.18.0",
     "body-parser": "^1.18.2",
-    "bootstrap": "^4.1.2",
     "bson": "^1.0.5",
     "connect-timeout": "^1.7.0",
     "console-stamp": "^0.2.2",

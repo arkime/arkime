@@ -8,18 +8,18 @@ CP = /bin/cp
 all:
 
 check:
-	npm install
+	npm ci
 	npm run build
 
 install:
 	@mkdir -p "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
 	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)
-	npm install
+	npm ci
 	npm run build
 	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
 	$(CP) -pr notifiers $(PARLIAMENTDIR)
 	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
-	(cd $(PARLIAMENTDIR) ; npm install --production)
+	(cd $(PARLIAMENTDIR) ; npm ci --production)
 	rm -f $(PARLIAMENTDIR)/package-lock.json
 
 distclean realclean clean:
