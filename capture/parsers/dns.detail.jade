@@ -1,7 +1,7 @@
 mixin ipArrayListDNS(container, field, title, expr, max)
   if (!max)
     - max = 25
-  if (container[field+ ".ip"])
+  if (container[field+ "Ip"])
     dt
       b-dropdown.clickable-label(text=title, size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
@@ -32,11 +32,11 @@ mixin ipArrayListDNS(container, field, title, expr, max)
         b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
           | Open #{title} RIR SPI Graph
     dd
-      each ip,i in container[field + ".ip"]
+      each ip,i in container[field + "Ip"]
         if (i == max)
           |<span style="display:none">
-        +ipPrint(container, container[field + ".ip"][i], undefined, (container[field + ".GEO"]?container[field + ".GEO"][i]:null), (container[field+".ASN"]?container[field + ".ASN"][i]:null), (container[field + ".RIR"]?container[field + ".RIR"][i]:null), expr)
-      if (container[field + ".ip"].length > max)
+        +ipPrint(container, container[field + "Ip"][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field+"ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr)
+      if (container[field + "Ip"].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip
 
@@ -46,9 +46,9 @@ if (session.dns)
     +ipArrayList(session.dns, "ip", "IPs", "dns")
     +arrayList(session.dns, 'host', "Hosts", "host.dns")
     +arrayList(session.dns, 'puny', "Puny", "dns.puny")
-    +arrayList(session.dns, "nameserver.host","Name Servers","host.dns.nameserver")
+    +arrayList(session.dns, "nameserverHost","Name Servers","host.dns.nameserver")
     +ipArrayListDNS(session.dns, "nameserver","Name Server IPs","dns.nameserver")
-    +arrayList(session.dns, "mailserver.host","Mail Servers","host.dns.mailserver")
+    +arrayList(session.dns, "mailserverHost","Mail Servers","host.dns.mailserver")
     +ipArrayListDNS(session.dns, "mailserver","Mail Server IPs","dns.mailserver")
     +arrayList(session.dns, 'opcode', "Op Code", "dns.opcode")
     +arrayList(session.dns, 'status', "Status Code", "dns.status")
