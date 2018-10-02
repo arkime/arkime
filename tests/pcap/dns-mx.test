@@ -7,6 +7,11 @@
                   "mx.com"
                ],
                "hostCnt" : 1,
+               "mailserver.host" : [
+                  "cluster5.us.messagelabs.com",
+                  "cluster5a.us.messagelabs.com"
+               ],
+               "mailserver.hostCnt" : 2,
                "nameserver.ASN" : [
                   "AS15395 Rackspace Ltd.",
                   "AS27357 Rackspace Hosting"
@@ -21,11 +26,9 @@
                ],
                "nameserver.host" : [
                   "dns2.stabletransit.com",
-                  "dns1.stabletransit.com",
-                  "cluster5.us.messagelabs.com",
-                  "cluster5a.us.messagelabs.com"
+                  "dns1.stabletransit.com"
                ],
-               "nameserver.hostCnt" : 4,
+               "nameserver.hostCnt" : 2,
                "nameserver.ip" : [
                   "65.61.188.4",
                   "69.20.95.4"

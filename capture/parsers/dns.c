@@ -23,8 +23,10 @@ LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "N
 
 LOCAL  int                   ipField;
 LOCAL  int                   ipNameServerField;
+LOCAL  int                   ipMailServerField;
 LOCAL  int                   hostField;
 LOCAL  int                   hostNameServerField;
+LOCAL  int                   hostMailServerField;
 LOCAL  int                   punyField;
 LOCAL  int                   queryTypeField;
 LOCAL  int                   queryClassField;
@@ -263,7 +265,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
         BSB_IMPORT_u16(bsb, qtype);
         BSB_IMPORT_u16(bsb, qclass);
 
-        if (opcode == 5)/* Skip Zone records in UPDATE query*/ 
+        if (opcode == 5)/* Skip Zone records in UPDATE query*/
           continue;
 
         if (qclass <= 255 && qclasses[qclass]) {
@@ -342,8 +344,15 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
                         moloch_field_ip4_add(ipField, session, in.s_addr);
                     }
-                    else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server or mail-exchange
-                        moloch_field_ip4_add(ipNameServerField, session, in.s_addr);
+
+                    if (config.parseDNSRecordAll) {
+                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                            moloch_field_ip4_add(ipNameServerField, session, in.s_addr);
+                        }
+
+                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-exchange
+                            moloch_field_ip4_add(ipMailServerField, session, in.s_addr);
+                        }
                     }
                 }
                 break;
@@ -392,7 +401,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                     continue;
 
                 if (config.parseDNSRecordAll)
-                    dns_add_host(hostNameServerField, session, (char *)name, namelen);
+                    dns_add_host(hostMailServerField, session, (char *)name, namelen);
                 else
                     dns_add_host(hostField, session, (char*)name, namelen);
 
@@ -409,8 +418,16 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
                         moloch_field_ip6_add(ipField, session, ptr);
-                    } else if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
-                        moloch_field_ip6_add(ipNameServerField, session, ptr);
+                    }
+
+                    if (config.parseDNSRecordAll) {
+                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                            moloch_field_ip6_add(ipNameServerField, session, ptr);
+                        }
+
+                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-server
+                            moloch_field_ip6_add(ipMailServerField, session, ptr);
+                        }
                     }
                 }
                 break;
@@ -512,6 +529,13 @@ void moloch_parser_init()
         "category", "ip",
         (char *)NULL);
 
+    ipMailServerField = moloch_field_define("dns", "ip",
+        "ip.dns.mailserver", "IP",  "dns.mailserver.ip",
+        "IPs for mailservers",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "category", "ip",
+        (char *)NULL);
+
     moloch_field_define("dns", "ip",
         "ip.dns.all", "IP", "dnsipall",
         "Shorthand for ip.dns or ip.dns.nameserver",
@@ -528,14 +552,21 @@ void moloch_parser_init()
         (char *)NULL);
 
     hostNameServerField = moloch_field_define("dns", "lotermfield",
-        "host.dns.nameserver", "Host", "dns.nameserver.host",
-        "Hostnames for Name Server or Mail Exchange Server",
+        "host.dns.nameserver", "NS Host", "dns.nameserver.host",
+        "Hostnames for Name Server",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
+        "category", "host",
+        (char *)NULL);
+
+    hostMailServerField = moloch_field_define("dns", "lotermfield",
+        "host.dns.mailserver", "MX Host", "dns.mailserver.host",
+        "Hostnames for Mail Exchange Server",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
         (char *)NULL);
 
     moloch_field_define("dns", "lotermfield",
-        "host.dns.all", "Host", "dnshostall",
+        "host.dns.all", "All Host", "dnshostall",
         "Shorthand for host.dns or host.dns.nameserver",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",

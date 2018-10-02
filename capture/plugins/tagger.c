@@ -46,6 +46,7 @@ LOCAL  int                   emailMd5Field;
 LOCAL  int                   emailSrcField;
 LOCAL  int                   emailDstField;
 LOCAL  int                   dnsHostField;
+LOCAL  int                   dnsMailServerField;
 
 /******************************************************************************/
 
@@ -205,8 +206,24 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             }
         );
     }
+
     if (dnsHostField != -1 && session->fields[dnsHostField]) {
         MolochStringHashStd_t *shash = session->fields[dnsHostField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_process_match(session, tstring->infos);
+            char *dot = strchr(hstring->str, '.');
+            if (dot && *(dot+1)) {
+                HASH_FIND(s_, allDomains, dot+1, tstring);
+                if (tstring)
+                    tagger_process_match(session, tstring->infos);
+            }
+        );
+    }
+
+    if (dnsMailServerField != -1 && session->fields[dnsMailServerField]) {
+        MolochStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -679,6 +696,10 @@ void moloch_plugin_init()
     emailSrcField  = moloch_field_by_db("email.src");
     emailDstField  = moloch_field_by_db("email.dst");
     dnsHostField   = moloch_field_by_db("dns.host");
+
+    if (config.parseDNSRecordAll) {
+        dnsMailServerField = moloch_field_by_db("dns.mailserver.host");
+    }
 
     /* Call right away sync, and schedule every 60 seconds async */
     tagger_fetch_files((gpointer)1);
