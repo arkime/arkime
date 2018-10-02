@@ -14,7 +14,12 @@
         class="cursor-pointer">
         <img src="../../assets/logo.png"
           class="moloch-logo"
-          alt="hoot">
+          alt="hoot"
+        />
+        <small class="help-shortcut"
+          :class="{'holding-shift': holdingShiftKey}">
+          H
+        </small>
       </a>
     </b-navbar-brand>
 
@@ -30,7 +35,14 @@
               <router-link
                 :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }"
                 :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-                {{ menu[item].title }}
+                <span v-if="menu[item].hotkey">
+                  <p v-for="(text, index) in menu[item].hotkey"
+                    :key="text"
+                    :class="{'holding-shift':holdingShiftKey && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+                </span>
+                <p v-else>
+                  {{ menu[item].title }}
+                </p>
               </router-link>
             </b-nav-item>
           </template>
@@ -60,6 +72,7 @@ export default {
   components: { ESHealth },
   data: function () {
     return {
+      holdingShiftKey: false,
       molochVersion: this.$constants.MOLOCH_VERSION,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
@@ -70,17 +83,17 @@ export default {
   computed: {
     menu: function () {
       let menu = {
-        sessions: { title: 'Sessions', link: 'sessions' },
-        spiview: { title: 'SPI View', link: 'spiview' },
-        spigraph: { title: 'SPI Graph', link: 'spigraph' },
-        connections: { title: 'Connections', link: 'connections' },
+        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'] },
+        spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'] },
+        spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'] },
+        connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'] },
         files: { title: 'Files', link: 'files' },
         stats: { title: 'Stats', link: 'stats' },
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
       };
 
       if (!this.$constants.MOLOCH_MULTIVIEWER) {
-        menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch' };
+        menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] };
       }
 
       if (!this.$constants.MOLOCH_DEMO_MODE) {
@@ -122,6 +135,27 @@ export default {
       return this.$store.state.user;
     }
   },
+  mounted: function () {
+    window.addEventListener('keydown', (event) => {
+      const activeElement = document.activeElement;
+      const inputs = ['input', 'select', 'textarea'];
+
+      // quit if the user is in an input
+      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+        return;
+      }
+
+      if (event.keyCode === 16) { // shift
+        this.holdingShiftKey = true;
+      }
+    });
+
+    window.addEventListener('keyup', (event) => {
+      if (event.keyCode === 16) { // shift
+        this.holdingShiftKey = false;
+      }
+    });
+  },
   methods: {
     isActive: function (link) {
       return link === this.$route.path.split('/')[1];
@@ -160,5 +194,39 @@ a.nav-link > a.router-link-active {
 .navbar-dark {
   background-color: var(--color-primary-dark);
   border-color: var(--color-primary-darker);
+}
+
+/* shortcut letter styles */
+p { /* ::first-letter only works on blocks */
+  margin-top: 16px;
+  display: inline-block;
+}
+/* need this so that styled first letters don't expand the text */
+p.shortcut-letter::first-letter {
+  color: rgba(255, 255, 255, 0.5);
+}
+a.nav-link > a.router-link-active p.shortcut-letter::first-letter {
+  color: #FFFFFF !important;
+}
+/* make sure hover still works */
+.nav-link:hover p.shortcut-letter::first-letter {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+/* style the sortcut letter */
+p.shortcut-letter.holding-shift::first-letter {
+  color: var(--color-tertiary-lighter) !important;
+}
+
+/* add an H by the owl */
+.help-shortcut {
+  visibility: hidden;
+  position: absolute;
+  top: 0px;
+  color: var(--color-tertiary-lighter);
+  left: 4px;
+  font-size: 18px;
+}
+.help-shortcut.holding-shift {
+  visibility: visible;
 }
 </style>
