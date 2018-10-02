@@ -22,14 +22,17 @@
             "email" : {
                "ASN" : [
                   "---",
+                  "---",
                   "---"
                ],
                "GEO" : [
                   "---",
-                  "US"
+                  "US",
+                  "---"
                ],
                "RIR" : [
                   "ARIN",
+                  "",
                   ""
                ],
                "contentType" : [
@@ -66,8 +69,7 @@
                   "accept-language",
                   "content-language",
                   "x-ms-has-attach",
-                  "x-ms-tnef-correlator",
-                  "x-originating-ip"
+                  "x-ms-tnef-correlator"
                ],
                "headerValue" : [
                   "=?iso-8859-1?B?dGVzdCDlIOkg7iD4IPw=?=",
@@ -76,10 +78,9 @@
                   "en-US",
                   "en-US",
                   "",
-                  "",
-                  "[10.00.00.004]"
+                  ""
                ],
-               "headerValueCnt" : 8,
+               "headerValueCnt" : 7,
                "host" : [
                   "xxxxxxxxxxxxxxxxx2.xxxxx.net",
                   "xxxxxxxxxxxxxxxxx1.xxxxx.net"
@@ -91,9 +92,10 @@
                "idCnt" : 1,
                "ip" : [
                   "169.254.4.195",
-                  "10.180.121.108"
+                  "10.180.121.108",
+                  "10.0.0.4"
                ],
-               "ipCnt" : 2,
+               "ipCnt" : 3,
                "mimeVersion" : [
                   "1.0"
                ],

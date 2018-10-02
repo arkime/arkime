@@ -19,14 +19,17 @@
             "email" : {
                "ASN" : [
                   "AS0001 Cool Beans!",
-                  "AS0002 Hmm!@#$%^&*()"
+                  "AS0002 Hmm!@#$%^&*()",
+                  "---"
                ],
                "GEO" : [
                   "CA",
+                  "---",
                   "---"
                ],
                "RIR" : [
                   "TEST",
+                  "",
                   ""
                ],
                "contentType" : [
@@ -59,16 +62,14 @@
                "headerField" : [
                   "domainkey-signature",
                   "content-transfer-encoding",
-                  "date",
-                  "x-originating-ip"
+                  "date"
                ],
                "headerValue" : [
                   "a=rsa-sha1; q=dns; c=nofws;  s=xxxxxxxxxx; d=xxxxxxxxx.net;  b=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;  h=Received:From:Content-Type:Content-Transfer-Encoding:Subject:Date:Message-Id:To:Mime-Version:X-Mailer:X-ELNK-Trace:X-Originating-IP;",
                   "quoted-printable",
-                  "Mon, 13 Jan 2014 07:01:01 -0800",
-                  "10.000.000.004"
+                  "Mon, 13 Jan 2014 07:01:01 -0800"
                ],
-               "headerValueCnt" : 4,
+               "headerValueCnt" : 3,
                "host" : [
                   "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
                ],
@@ -79,9 +80,10 @@
                "idCnt" : 1,
                "ip" : [
                   "10.0.0.2",
-                  "10.0.0.3"
+                  "10.0.0.3",
+                  "10.0.0.4"
                ],
-               "ipCnt" : 2,
+               "ipCnt" : 3,
                "mimeVersion" : [
                   "1.0 (Apple Message framework v1283)"
                ],

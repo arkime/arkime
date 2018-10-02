@@ -55,7 +55,7 @@ countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$
 # dns ip v6 tests
     SKIP: {
         skip "Upgrade test", 6 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have ipv6 dns
-        countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410::2c0:dfff:fe47:33e"));
-        countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
-        countTest(16, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
+        countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410::2c0:dfff:fe47:33e"));
+        countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&dns.ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
+        countTest(17, "date=-1&expression=" . uri_escape("file=$pwd/v6.pcap&&ip==3ffe:501:410:0:2c0:dfff:fe47:33e"));
     }
