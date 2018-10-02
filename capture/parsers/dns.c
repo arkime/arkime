@@ -523,14 +523,14 @@ void moloch_parser_init()
         (char *)NULL);
 
     ipNameServerField = moloch_field_define("dns", "ip",
-        "ip.dns.nameserver", "IP",  "dns.nameserver.ip",
+        "ip.dns.nameserver", "IP",  "dns.nameserverIp",
         "IPs for nameservers",
         MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "category", "ip",
         (char *)NULL);
 
     ipMailServerField = moloch_field_define("dns", "ip",
-        "ip.dns.mailserver", "IP",  "dns.mailserver.ip",
+        "ip.dns.mailserver", "IP",  "dns.mailserverIp",
         "IPs for mailservers",
         MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "category", "ip",
@@ -552,14 +552,14 @@ void moloch_parser_init()
         (char *)NULL);
 
     hostNameServerField = moloch_field_define("dns", "lotermfield",
-        "host.dns.nameserver", "NS Host", "dns.nameserver.host",
+        "host.dns.nameserver", "NS Host", "dns.nameserverHost",
         "Hostnames for Name Server",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
         (char *)NULL);
 
     hostMailServerField = moloch_field_define("dns", "lotermfield",
-        "host.dns.mailserver", "MX Host", "dns.mailserver.host",
+        "host.dns.mailserver", "MX Host", "dns.mailserverHost",
         "Hostnames for Mail Exchange Server",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "category", "host",

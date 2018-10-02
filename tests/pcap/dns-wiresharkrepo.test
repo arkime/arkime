@@ -39,7 +39,7 @@
                   "204.152.184.88"
                ],
                "ipCnt" : 4,
-               "mailserver.ASN" : [
+               "mailserverASN" : [
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
@@ -47,7 +47,7 @@
                   "AS15169 Google LLC",
                   "AS15169 Google LLC"
                ],
-               "mailserver.GEO" : [
+               "mailserverGEO" : [
                   "US",
                   "US",
                   "US",
@@ -55,15 +55,7 @@
                   "US",
                   "US"
                ],
-               "mailserver.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "mailserver.host" : [
+               "mailserverHost" : [
                   "smtp1.google.com",
                   "smtp6.google.com",
                   "smtp5.google.com",
@@ -71,8 +63,8 @@
                   "smtp3.google.com",
                   "smtp2.google.com"
                ],
-               "mailserver.hostCnt" : 6,
-               "mailserver.ip" : [
+               "mailserverHostCnt" : 6,
+               "mailserverIp" : [
                   "216.239.57.26",
                   "64.233.167.25",
                   "66.102.9.25",
@@ -80,7 +72,15 @@
                   "216.239.37.26",
                   "216.239.57.25"
                ],
-               "mailserver.ipCnt" : 6,
+               "mailserverIpCnt" : 6,
+               "mailserverRIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
                "opcode" : [
                   "QUERY"
                ],
@@ -304,13 +304,13 @@
                   "isc.org"
                ],
                "hostCnt" : 1,
-               "nameserver.host" : [
+               "nameserverHost" : [
                   "ns-ext.nrt1.isc.org",
                   "ns-ext.isc.org",
                   "ns-ext.lga1.isc.org",
                   "ns-ext.sth1.isc.org"
                ],
-               "nameserver.hostCnt" : 4,
+               "nameserverHostCnt" : 4,
                "opcode" : [
                   "QUERY"
                ],

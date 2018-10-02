@@ -60,38 +60,38 @@
                   "74.125.228.46"
                ],
                "ipCnt" : 11,
-               "nameserver.ASN" : [
+               "nameserverASN" : [
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC",
                   "AS15169 Google LLC"
                ],
-               "nameserver.GEO" : [
+               "nameserverGEO" : [
                   "US",
                   "US",
                   "US",
                   "US"
                ],
-               "nameserver.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "nameserver.host" : [
+               "nameserverHost" : [
                   "ns1.google.com",
                   "ns4.google.com",
                   "ns3.google.com",
                   "ns2.google.com"
                ],
-               "nameserver.hostCnt" : 4,
-               "nameserver.ip" : [
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
                   "216.239.38.10",
                   "216.239.34.10",
                   "216.239.36.10",
                   "216.239.32.10"
                ],
-               "nameserver.ipCnt" : 4,
+               "nameserverIpCnt" : 4,
+               "nameserverRIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
                "opcode" : [
                   "QUERY"
                ],
@@ -234,38 +234,38 @@
                   "64.12.79.57"
                ],
                "ipCnt" : 5,
-               "nameserver.ASN" : [
+               "nameserverASN" : [
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network",
                   "AS1668 AOL Transit Data Network"
                ],
-               "nameserver.GEO" : [
+               "nameserverGEO" : [
                   "US",
                   "US",
                   "US",
                   "US"
                ],
-               "nameserver.RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "nameserver.host" : [
+               "nameserverHost" : [
                   "dns-02.ns.aol.com",
                   "dns-01.ns.aol.com",
                   "dns-07.ns.aol.com",
                   "dns-06.ns.aol.com"
                ],
-               "nameserver.hostCnt" : 4,
-               "nameserver.ip" : [
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
                   "64.236.1.107",
                   "207.200.73.80",
                   "64.12.51.132",
                   "205.188.157.232"
                ],
-               "nameserver.ipCnt" : 4,
+               "nameserverIpCnt" : 4,
+               "nameserverRIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
                "opcode" : [
                   "QUERY"
                ],

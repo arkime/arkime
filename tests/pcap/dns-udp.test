@@ -21,26 +21,26 @@
                   "192.30.252.128"
                ],
                "ipCnt" : 1,
-               "nameserver.ASN" : [
+               "nameserverASN" : [
                   "---"
                ],
-               "nameserver.GEO" : [
+               "nameserverGEO" : [
                   "---"
                ],
-               "nameserver.RIR" : [
-                  ""
-               ],
-               "nameserver.host" : [
+               "nameserverHost" : [
                   "ns3.p16.dynect.net",
                   "ns4.p16.dynect.net",
                   "ns1.p16.dynect.net",
                   "ns2.p16.dynect.net"
                ],
-               "nameserver.hostCnt" : 4,
-               "nameserver.ip" : [
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
                   "10.2.95.12"
                ],
-               "nameserver.ipCnt" : 1,
+               "nameserverIpCnt" : 1,
+               "nameserverRIR" : [
+                  ""
+               ],
                "opcode" : [
                   "QUERY"
                ],
@@ -142,26 +142,26 @@
                   "192.30.252.130"
                ],
                "ipCnt" : 1,
-               "nameserver.ASN" : [
+               "nameserverASN" : [
                   "---"
                ],
-               "nameserver.GEO" : [
+               "nameserverGEO" : [
                   "---"
                ],
-               "nameserver.RIR" : [
-                  ""
-               ],
-               "nameserver.host" : [
+               "nameserverHost" : [
                   "ns3.p16.dynect.net",
                   "ns4.p16.dynect.net",
                   "ns1.p16.dynect.net",
                   "ns2.p16.dynect.net"
                ],
-               "nameserver.hostCnt" : 4,
-               "nameserver.ip" : [
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
                   "10.2.95.12"
                ],
-               "nameserver.ipCnt" : 1,
+               "nameserverIpCnt" : 1,
+               "nameserverRIR" : [
+                  ""
+               ],
                "opcode" : [
                   "QUERY"
                ],

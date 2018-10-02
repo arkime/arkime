@@ -770,7 +770,7 @@ LOCAL void wise_load_config()
     types[INTEL_TYPE_DOMAIN].fields[1] = moloch_field_by_db("dns.host");
 
     if (config.parseDNSRecordAll) {
-        types[INTEL_TYPE_DOMAIN].fields[2] = moloch_field_by_db("dns.mailserver.host");
+        types[INTEL_TYPE_DOMAIN].fields[2] = moloch_field_by_db("dns.mailserverHost");
         // Not sending nameserver for now
         types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
     } else {

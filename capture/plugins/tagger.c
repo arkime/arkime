@@ -698,7 +698,7 @@ void moloch_plugin_init()
     dnsHostField   = moloch_field_by_db("dns.host");
 
     if (config.parseDNSRecordAll) {
-        dnsMailServerField = moloch_field_by_db("dns.mailserver.host");
+        dnsMailServerField = moloch_field_by_db("dns.mailserverHost");
     }
 
     /* Call right away sync, and schedule every 60 seconds async */
