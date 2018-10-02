@@ -196,6 +196,8 @@ LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len
     field = session->fields[pos];
     HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(host, len), host, hstring);
 
+    g_free(host);
+
     if (hstring) // hostname found
         return TRUE;
 
