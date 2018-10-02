@@ -39,8 +39,13 @@ LOCAL enum MolochMagicMode magicMode;
 
 /******************************************************************************/
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
+#define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
+
 #define MAGIC_MEMSTR(offset, needle) moloch_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
+#define MAGIC_MEMSTR_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (moloch_memstr(data+offset, len-offset, needle, sizeof(needle)-1)))
+
 #define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
+#define MAGIC_STRCASE_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (strncasecmp(data+offset, needle, sizeof(needle)-1) == 0))
 
 #define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE)
 const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
@@ -60,10 +65,10 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         break;
     case '\032':
         if (MAGIC_MATCH(0, "\x1a\x45\xdf\xa3")) {
-            if (MAGIC_MEMSTR(4, "webm")) {
+            if (MAGIC_MEMSTR_LEN(4, "webm")) {
                 return MAGIC_RESULT("video/webm");
             }
-            if (MAGIC_MEMSTR(4, "matroska")) {
+            if (MAGIC_MEMSTR_LEN(4, "matroska")) {
                 return MAGIC_RESULT("video/x-matroska");
             }
         }
@@ -104,13 +109,13 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
 #endif
     case '#':
         if (data[1] == '!') {
-            if (MAGIC_MEMSTR(3, "node")) {
+            if (MAGIC_MEMSTR_LEN(3, "node")) {
                 return MAGIC_RESULT("application/javascript");
-            } else if (MAGIC_MEMSTR(3, "perl")) {
+            } else if (MAGIC_MEMSTR_LEN(3, "perl")) {
                 return MAGIC_RESULT("text/x-perl");
-            } else if (MAGIC_MEMSTR(3, "ruby")) {
+            } else if (MAGIC_MEMSTR_LEN(3, "ruby")) {
                 return MAGIC_RESULT("text/x-ruby");
-            } else if (MAGIC_MEMSTR(3, "python")) {
+            } else if (MAGIC_MEMSTR_LEN(3, "python")) {
                 return MAGIC_RESULT("text/x-python");
             }
             return MAGIC_RESULT("text/x-shellscript");
@@ -124,21 +129,21 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
     case '<':
         switch(data[1]) {
         case '!':
-            if (len > 14 && MAGIC_STRCASE(0, "<!doctype html")) {
+            if (MAGIC_STRCASE_LEN(0, "<!doctype html")) {
                 return MAGIC_RESULT("text/html");
             }
-            if (len > 13 && MAGIC_STRCASE(0, "<!doctype svg")) {
+            if (MAGIC_STRCASE_LEN(0, "<!doctype svg")) {
                 return MAGIC_RESULT("text/svg+xml");
             }
             break;
         case '?':
             if (MAGIC_STRCASE(0, "<?xml")) {
-                if (MAGIC_MEMSTR(5, "<svg")) {
+                if (MAGIC_MEMSTR_LEN(5, "<svg")) {
                     return MAGIC_RESULT("image/svg+xml");
                 }
                 return MAGIC_RESULT("text/xml");
             }
-            if (MAGIC_STRCASE(2, "php") || MAGIC_STRCASE(2, " php")) {
+            if (MAGIC_STRCASE_LEN(2, "php") || MAGIC_STRCASE_LEN(2, " php")) {
                 return MAGIC_RESULT("text/x-php");
             }
             break;
@@ -213,7 +218,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         if (data[1] == 'Z') {
             return MAGIC_RESULT("application/x-dosexec");
         }
-        if (MAGIC_MATCH(0, "MSCF\000\000")) {
+        if (MAGIC_MATCH_LEN(0, "MSCF\000\000")) {
             return MAGIC_RESULT("application/vnd.ms-cab-compressed");
         }
         break;
@@ -285,7 +290,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         }
         break;
     case '\375':
-        if (MAGIC_MATCH(0, "\3757zXZ")) {
+        if (MAGIC_MATCH_LEN(0, "\3757zXZ")) {
             return MAGIC_RESULT("application/x-xz");
         }
         break;
@@ -301,11 +306,11 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         break;
     } /* switch */
 
-    if (len > 257+5 && MAGIC_MATCH(257, "ustar")) {
+    if (MAGIC_MATCH_LEN(257, "ustar")) {
         return MAGIC_RESULT("application/x-tar");
     }
-    if (MAGIC_MEMSTR(0, "document.write") ||
-        MAGIC_MEMSTR(0, "'use strict'")) {
+    if (MAGIC_MEMSTR_LEN(0, "document.write") ||
+        MAGIC_MEMSTR_LEN(0, "'use strict'")) {
         return MAGIC_RESULT("text/javascript");
     }
     return NULL;

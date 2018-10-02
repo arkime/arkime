@@ -2254,6 +2254,7 @@ void moloch_db_exit()
     }
 
     if (config.tests) {
+        usleep(10000);
         MOLOCH_LOCK(outputed);
         fprintf(stderr, "]}\n");
         fflush(stderr);
