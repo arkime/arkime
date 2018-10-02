@@ -17,7 +17,7 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:1.6.0
+        image: andywick/moloch-build-6:1.6.2
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-6 python27 "./easybutton-build.sh --daq --pfring"
@@ -39,7 +39,7 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.5.9
+        image: andywick/moloch-build-7:1.6.2
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
@@ -62,7 +62,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.6.1
+        image: andywick/moloch-build-7:1.6.2
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-6 "./easybutton-build.sh"
@@ -87,7 +87,7 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:1.5.9
+        image: andywick/moloch-build-14:1.6.2
         steps:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
@@ -109,7 +109,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.5.9
+        image: andywick/moloch-build-16:1.6.2
         steps:
             #- useradd -u 2000 elasticsearch
             - ln -s /thirdparty .
@@ -137,7 +137,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:1.5.9
+        image: andywick/moloch-build-18:1.6.2
         steps:
             - apt-get update
             - ln -s /thirdparty .
