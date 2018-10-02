@@ -18,7 +18,7 @@
     "bundle:min": "node vueapp/build/build.js"
   },
   "dependencies": {
-    "bcrypt": "^3.0.0",
+    "bcrypt": "^3.0.1",
     "jsonwebtoken": "^8.3.0",
     "notifme-sdk": "^1.7.1",
     "serve-favicon": "^2.5.0"
