@@ -508,14 +508,14 @@ void moloch_parser_init()
         "IPs for nameservers",
         MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "category", "ip",
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("dns", "ip",
         "ip.dns.all", "IP", "dnsipall",
         "Shorthand for ip.dns or ip.dns.nameserver",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^ip\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
-        NULL);
+        (char *)NULL);
 
     hostField = moloch_field_define("dns", "lotermfield",
         "host.dns", "Host", "dns.host",
@@ -530,14 +530,14 @@ void moloch_parser_init()
         "Hostnames for Name Server or Mail Exchange Server",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
-        NULL);
+        (char *)NULL);
 
     moloch_field_define("dns", "lotermfield",
         "host.dns.all", "Host", "dnshostall",
         "Shorthand for host.dns or host.dns.nameserver",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
-        NULL);
+        (char *)NULL);
 
     punyField = moloch_field_define("dns", "lotermfield",
         "dns.puny", "Puny", "dns.puny",

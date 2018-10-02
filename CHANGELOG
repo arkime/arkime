@@ -27,6 +27,14 @@ NOTICE: Restart wiseService before capture when upgrading
   - parliament - add --debug option
   - parliament - add --dasboardOnly flag
   - capture - set vlan field for afpacket
+  - capture - new setting parseHTTPRequestHeaderAll, which will parse ALL request
+              headers not already parsed into 1 ES field (pr #914)
+  - capture - new setting parseHTTPResponseHeaderAll, which will parse ALL response
+              headers not already parsed into 1 ES field (pr #914)
+  - capture - new setting parseSMTPHeaderAll, which will parse ALL email headers
+              not already parsed into 1 ES field (pr #914)
+  - capture - new setting parseDNSRecordAll, which will parse a full DNS record
+              into multiple new ES fields (pr #914)
 
 
 1.5.3 2018/09/10
