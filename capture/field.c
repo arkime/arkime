@@ -793,7 +793,7 @@ void *moloch_field_parse_ip(const char *str) {
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
 
-    if (strchr(str, '.', 4)) {
+    if (strchr(str, '.')) {
         struct in_addr addr;
         if (inet_aton(str, &addr) == 0) {
             g_free(v);
