@@ -18,3 +18,7 @@ if (user.emailSearch && session.email)
     if (session.email.header)
       each value,i in session.email.header
         +arrayList(session.email, "header-" + value, value + " Header", "email." + value)
+    if (session.email.headerField && session.email.headerValue)
+      div.sessionDetailMeta.bold Email Header Detail
+      dl.sessionDetailMeta(suffix="email-header-detail")
+        +printHeader(session.email.headerField, session.email.headerValue, 'email.has-header.value')

@@ -60,6 +60,38 @@
                   "74.125.228.46"
                ],
                "ipCnt" : 11,
+               "nameserver.ASN" : [
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
+               ],
+               "nameserver.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserver.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "nameserver.host" : [
+                  "ns1.google.com",
+                  "ns4.google.com",
+                  "ns3.google.com",
+                  "ns2.google.com"
+               ],
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
+                  "216.239.38.10",
+                  "216.239.34.10",
+                  "216.239.36.10",
+                  "216.239.32.10"
+               ],
+               "nameserver.ipCnt" : 4,
                "opcode" : [
                   "QUERY"
                ],
@@ -202,6 +234,38 @@
                   "64.12.79.57"
                ],
                "ipCnt" : 5,
+               "nameserver.ASN" : [
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network",
+                  "AS1668 AOL Transit Data Network"
+               ],
+               "nameserver.GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserver.RIR" : [
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "nameserver.host" : [
+                  "dns-02.ns.aol.com",
+                  "dns-01.ns.aol.com",
+                  "dns-07.ns.aol.com",
+                  "dns-06.ns.aol.com"
+               ],
+               "nameserver.hostCnt" : 4,
+               "nameserver.ip" : [
+                  "64.236.1.107",
+                  "207.200.73.80",
+                  "64.12.51.132",
+                  "205.188.157.232"
+               ],
+               "nameserver.ipCnt" : 4,
                "opcode" : [
                   "QUERY"
                ],

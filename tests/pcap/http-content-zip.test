@@ -55,6 +55,19 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 6,
+               "requestHeaderField" : [
+                  "connection",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language"
+               ],
+               "requestHeaderValue" : [
+                  "keep-alive",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "gzip,deflate,sdch",
+                  "en-us,en;q=0.8"
+               ],
+               "requestHeaderValueCnt" : 4,
                "responseHeader" : [
                   "content-type",
                   "accept-ranges",
@@ -66,6 +79,27 @@
                   "server"
                ],
                "responseHeaderCnt" : 8,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "last-modified",
+                  "etag",
+                  "accept-ranges",
+                  "content-length",
+                  "connection",
+                  "content-type"
+               ],
+               "responseHeaderValue" : [
+                  "mon, 30 dec 2013 18:36:25 gmt",
+                  "apache/2.2.15 (centos)",
+                  "mon, 30 dec 2013 18:32:48 gmt",
+                  "\"b42ffc-136-4eec4abac18db\"",
+                  "bytes",
+                  "310",
+                  "close",
+                  "application/zip"
+               ],
+               "responseHeaderValueCnt" : 8,
                "serverVersion" : [
                   "1.1"
                ],

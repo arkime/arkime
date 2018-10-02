@@ -60,6 +60,21 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 8,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "text/html, application/xhtml+xml, image/jxr, */*",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive",
+                  "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b"
+               ],
+               "requestHeaderValueCnt" : 5,
                "uri" : [
                   "4378683.fls.doubleclick.net/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F?"
                ],
@@ -212,6 +227,23 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 9,
+               "requestHeaderField" : [
+                  "accept",
+                  "x-requested-with",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "application/json, text/javascript, */*; q=0.01",
+                  "xmlhttprequest",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive",
+                  "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1"
+               ],
+               "requestHeaderValueCnt" : 6,
                "uri" : [
                   "www.shangri-la.com/HotelBookableDateJson.json?dt=2018072521&hj=1"
                ],
@@ -335,6 +367,19 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection"
+               ],
+               "requestHeaderValue" : [
+                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 4,
                "uri" : [
                   "rtb.gumgum.com/usersync?b=ada&i=407182987561"
                ],
@@ -474,6 +519,27 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 11,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "content-type",
+                  "accept-encoding",
+                  "content-length",
+                  "connection",
+                  "cache-control",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "text/html, application/xhtml+xml, image/jxr, */*",
+                  "en-us",
+                  "application/x-www-form-urlencoded",
+                  "gzip, deflate",
+                  "43",
+                  "keep-alive",
+                  "no-cache",
+                  "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r"
+               ],
+               "requestHeaderValueCnt" : 8,
                "sha256" : [
                   "0142144c65451fa7271bf7ad30f535706fa1df9d05b8dac160bb6833ad83f72c"
                ],
@@ -618,6 +684,23 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 9,
+               "requestHeaderField" : [
+                  "accept",
+                  "x-requested-with",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "*/*",
+                  "xmlhttprequest",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive",
+                  "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1"
+               ],
+               "requestHeaderValueCnt" : 6,
                "uri" : [
                   "whc.unesco.org/?cid=31&l=en&&mode=json&_dc=1532525525462"
                ],
@@ -763,6 +846,19 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection"
+               ],
+               "requestHeaderValue" : [
+                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 4,
                "uri" : [
                   "www.google-analytics.com/r/collect?v=1&_v=j68&a=975770366&t=pageview&_s=1&dl=http%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&ul=en-us&de=utf-8&dt=UNESCO%20World%20Heritage%20Centre%20-%20Interactive%20Maps&sd=24-bit&sr=1350x615&vp=1350x498&je=1&fl=18.0%20r0&_u=AACAAAQ~&jid=1247892784&gjid=163867201&cid=1751603294.1532525413&tid=UA-6025718-3&_gid=775336169.1532525413&_r=1&z=687894861"
                ],
@@ -906,6 +1002,19 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection"
+               ],
+               "requestHeaderValue" : [
+                  "application/javascript, */*;q=0.8",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 4,
                "uri" : [
                   "maps.googleapis.com/maps/api/js/QuotaService.RecordEvent?1shttp%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&7s164tbp&10e1&callback=_xdc_._iqnmv1&token=71150"
                ],
@@ -1049,6 +1158,21 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 8,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-language",
+                  "accept-encoding",
+                  "connection",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "application/javascript, */*;q=0.8",
+                  "en-us",
+                  "gzip, deflate",
+                  "keep-alive",
+                  "visitor_id413862=286585660; visitor_id413862-hash=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b; pardot=tee2foreb3fefpgvk8u1056vt3"
+               ],
+               "requestHeaderValueCnt" : 5,
                "uri" : [
                   "build.usgbc.org/analytics?conly=true&visitor_id=286585660&pi_opt_in=&campaign_id=20694&account_id=414862&title=SITES%20%7C%20Developing%20sustainable%20landscapes&url=http%3A%2F%2Fwww.sustainablesites.org%2F&referrer=&visitor_id_sign=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b"
                ],
@@ -1157,6 +1281,17 @@
                   "connection"
                ],
                "requestHeaderCnt" : 3,
+               "requestHeaderField" : [
+                  "cache-control",
+                  "connection",
+                  "content-type"
+               ],
+               "requestHeaderValue" : [
+                  "no-cache",
+                  "close",
+                  "text/html"
+               ],
+               "requestHeaderValueCnt" : 3,
                "serverVersion" : [
                   "1.0"
                ],

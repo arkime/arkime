@@ -29,6 +29,13 @@
                   "subject"
                ],
                "headerCnt" : 5,
+               "headerField" : [
+                  "date"
+               ],
+               "headerValue" : [
+                  "Wed, 19 Oct 2016 13:08:05 +0100"
+               ],
+               "headerValueCnt" : 1,
                "host" : [
                   "testhost.test.ex",
                   "root"

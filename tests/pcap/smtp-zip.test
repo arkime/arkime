@@ -59,6 +59,15 @@
                   "subject"
                ],
                "headerCnt" : 10,
+               "headerField" : [
+                  "date",
+                  "content-disposition"
+               ],
+               "headerValue" : [
+                  "Tue, 17 Dec 2013 09:50:16 -0500",
+                  "inline"
+               ],
+               "headerValueCnt" : 2,
                "host" : [
                   "localhost",
                   "xxxxxxxxxxxxx.xxx.com"

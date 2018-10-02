@@ -77,7 +77,7 @@ my $json;
 
     $json = mesPost("/MULTIPREFIX_fields/field/_search", "{\"size\":1000}");
     cmp_ok($json->{hits}->{total}, '>=', 190, "fields count is at least 190");
-    cmp_ok($json->{hits}->{total}, '<',  300, "fields count is less then 300");
+    cmp_ok($json->{hits}->{total}, '<',  315, "fields count is less then 300");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v2", "Correct fields index name");
 
     $json = mesGet("/MULTIPREFIX_sessions2-141015/session/_search?preference=_primary_first&ignore_unavailable=true");

@@ -43,6 +43,8 @@ LOCAL  int uaField;
 LOCAL  int mvField;
 LOCAL  int fctField;
 LOCAL  int magicField;
+LOCAL  int headerField;
+LOCAL  int headerValue;
 
 typedef struct {
     MolochStringHead_t boundaries;
@@ -172,7 +174,6 @@ LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
         ipos++;
     }
 
-
     *olen = opos;
     str[opos] = 0;
     return start;
@@ -183,7 +184,6 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
 {
     /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
     /* =?charset?encoding?encoded-text?= */
-
 
     char  output[0xfff];
     char *str = string;
@@ -544,6 +544,8 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
 
             moloch_field_string_add(hhField, session, lower, colon - line->str, TRUE);
 
+            gboolean is_header_value_consumed = FALSE;
+
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
 
@@ -577,15 +579,26 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 } else {
                     smtp_email_add_value(session, (long)emailHeader->uw, line->str + cpos , line->len - cpos);
                 }
-            } else {
+                is_header_value_consumed = TRUE;
+            }
+
+            if (config.smtpIpHeaders && is_header_value_consumed == FALSE) {
                 int i;
                 for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
                         char *ip = smtp_remove_matching(line->str+l+1, '[', ']');
                         moloch_field_ip_add_str(ipField, session, ip);
+                        is_header_value_consumed = TRUE;
                     }
                 }
+            }
+
+            if (config.parseSMTPHeaderAll && is_header_value_consumed == FALSE) {
+                int cpos = colon - line->str + 1;
+                moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
+                smtp_email_add_value(session, (long)headerValue, line->str + cpos , line->len - cpos);
+                is_header_value_consumed = TRUE;
             }
 
             if (pluginsCbs & MOLOCH_PLUGIN_SMTP_OH) {
@@ -957,6 +970,17 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
         (char *)NULL);
+
+    headerField = moloch_field_define("email", "termfield",
+            "email.has-header.name", "Header Field", "email.headerField", "Email has the header field set",
+            MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
+            (char *)NULL);
+
+    headerValue = moloch_field_define("email", "termfield",
+            "email.has-header.value", "Header Value", "email.headerValue", "Email has the header value",
+            MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+            "requiredRight", "emailSearch",
+            (char *)NULL);
 
     magicField = moloch_field_define("email", "termfield",
         "email.bodymagic", "Body Magic", "email.bodyMagic",

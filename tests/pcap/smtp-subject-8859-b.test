@@ -62,6 +62,25 @@
                   "thread-topic"
                ],
                "headerCnt" : 16,
+               "headerField" : [
+                  "thread-topic",
+                  "thread-index",
+                  "date",
+                  "accept-language",
+                  "content-language",
+                  "x-ms-has-attach",
+                  "x-ms-tnef-correlator"
+               ],
+               "headerValue" : [
+                  "=?iso-8859-1?B?dGVzdCDlIOkg7iD4IPw=?=",
+                  "AQHO8rm3qDteILz53Uu2U8DmQ4nDRg==",
+                  "Fri, 6 Dec 2013 19:31:10 +0000",
+                  "en-US",
+                  "en-US",
+                  "",
+                  ""
+               ],
+               "headerValueCnt" : 7,
                "host" : [
                   "xxxxxxxxxxxxxxxxx2.xxxxx.net",
                   "xxxxxxxxxxxxxxxxx1.xxxxx.net"

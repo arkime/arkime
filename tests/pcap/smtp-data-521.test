@@ -40,6 +40,15 @@
                   "subject"
                ],
                "headerCnt" : 7,
+               "headerField" : [
+                  "reply-to",
+                  "date"
+               ],
+               "headerValue" : [
+                  "\"1234567899@aol.com\" <1234567899@aol.com>",
+                  "Thu, 5 Dec 2013 14:56:55 +0100"
+               ],
+               "headerValueCnt" : 2,
                "mimeVersion" : [
                   "1.0"
                ],

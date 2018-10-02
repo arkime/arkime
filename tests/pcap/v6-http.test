@@ -454,6 +454,17 @@
                   "accept-language"
                ],
                "requestHeaderCnt" : 5,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-encoding",
+                  "accept-language"
+               ],
+               "requestHeaderValue" : [
+                  "text/html, text/plain, text/css, text/sgml, */*;q=0.01",
+                  "gzip, bzip2",
+                  "en"
+               ],
+               "requestHeaderValueCnt" : 3,
                "responseHeader" : [
                   "content-type",
                   "content-length",
@@ -462,6 +473,21 @@
                   "server"
                ],
                "responseHeaderCnt" : 5,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "content-length",
+                  "connection",
+                  "content-type"
+               ],
+               "responseHeaderValue" : [
+                  "sun, 05 aug 2007 19:16:44 gmt",
+                  "apache",
+                  "2121",
+                  "close",
+                  "text/html"
+               ],
+               "responseHeaderValueCnt" : 5,
                "serverVersion" : [
                   "1.1"
                ],
@@ -558,3 +584,4 @@
       }
    ]
 }
+
