@@ -16,5 +16,12 @@ rm -rf moloch; \
 gem install --no-ri --no-rdoc fpm; \
 curl https://bootstrap.pypa.io/get-pip.py | python; \
 pip install awscli; \
+useradd -u 2000 elasticsearch; \
+(cd / ; \
+ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-6.3.1.tar.gz; \
+ tar xf elasticsearch-oss-6.3.1.tar.gz; \
+ chown -R elasticsearch elasticsearch-6.3.1; \
+ rm -f elasticsearch-oss-6.3.1.tar.gz \
+); \
 yum -y clean all; \
 rm -rf /var/cache/yum

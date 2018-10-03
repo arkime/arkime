@@ -45,7 +45,7 @@
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_SHIFT __attribute__((no_sanitize_undefined()))
-#define SUPPRESS_ALIGNMENT
+#define SUPPRESS_ALIGNMENT __attribute__((no_sanitize_undefined()))
 #else
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
