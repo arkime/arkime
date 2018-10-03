@@ -66,7 +66,7 @@ jobs:
         steps:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-6 "./easybutton-build.sh"
-            - yum -y install libasan-static devtoolset-6-libasan-devel libasan3
+            - yum -y install libasan-static devtoolset-6-libasan-devel libasan3 devtoolset-6-libubsan-devel libubsan
             - build-sanitize: (cd capture; scl enable devtoolset-6 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
