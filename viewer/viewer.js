@@ -4518,12 +4518,12 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
 });
 
 /**
- * Get a file given md5 hash of that file
+ * Get a file given a hash of that file
  */
 
-app.get('/huntfile/md5/:md5', logAction('huntfile'), function(req, res) {
+app.get('/huntfile/hash/:hash', logAction('huntfile'), function(req, res) {
 
-  var md5 = null;
+  var hash = null;
   var nodeName = null;
   var sessionID = null;
 
@@ -4553,10 +4553,10 @@ app.get('/huntfile/md5/:md5', logAction('huntfile'), function(req, res) {
 
             nodeName = sessions.hits.hits[0]._source.node;
             sessionID = sessions.hits.hits[0]._id;
-            md5 = req.params.md5;
+            hash = req.params.hash;
 
             isLocalView(nodeName, function () { // get file from the local disk
-              localGetItemByHash (nodeName, sessionID, md5, (err, item) => {
+              localGetItemByHash (nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
                   return res.end(err);
@@ -4575,8 +4575,8 @@ app.get('/huntfile/md5/:md5', logAction('huntfile'), function(req, res) {
               var preq = util._extend({},req);
               preq.params['nodeName'] = nodeName;
               preq.params['id'] = sessionID;
-              preq.params['md5'] = md5;
-              preq.url ='/' + nodeName + '/' + sessionID + '/huntfile/md5/' + md5;
+              preq.params['hash'] = hash;
+              preq.url ='/' + nodeName + '/' + sessionID + '/huntfile/hash/' + hash;
               return proxyRequest(preq, res);
             });
           }
@@ -4589,8 +4589,8 @@ app.get('/huntfile/md5/:md5', logAction('huntfile'), function(req, res) {
   });
 });
 
-app.get('/:nodeName/:id/huntfile/md5/:md5', checkProxyRequest, function(req, res) {
-  localGetItemByHash (req.params.nodeName, req.params.id, req.params.md5, (err, item) => {
+app.get('/:nodeName/:id/huntfile/hash/:hash', checkProxyRequest, function(req, res) {
+  localGetItemByHash (req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
     if (err) {
        res.status(400);
        return res.end(err);
@@ -4606,7 +4606,7 @@ app.get('/:nodeName/:id/huntfile/md5/:md5', checkProxyRequest, function(req, res
   });
 });
 
-function localGetItemByHash(nodeName, sessionID, md5, cb) {
+function localGetItemByHash(nodeName, sessionID, hash, cb) {
   processSessionIdAndDecode(sessionID, 10000, function(err, session, incoming) {
     if (err) {
       return cb(err);
@@ -4625,7 +4625,7 @@ function localGetItemByHash(nodeName, sessionID, md5, cb) {
         order: ["BODY-UNBASE64"]
       },
       "ITEM-HASH": {
-        md5: md5
+        hash: hash
       },
       "ITEM-CB": {
       }

@@ -743,8 +743,11 @@ exports.register("ITEM-BYTES", through.ctor({objectMode: true}, function(item, e
   callback(null, item);
 }));
 exports.register("ITEM-HASH", through.ctor({objectMode: true}, function(item, encoding, callback) {
-  if (item.data !== undefined && (crypto.createHash('md5').update(item.data).digest('hex') === this.options["ITEM-HASH"].md5)) {
-    return callback(null, item);
+  if (item.data !== undefined) {
+    var md5 = crypto.createHash('md5').update(item.data).digest('hex');
+    var sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    if (this.options["ITEM-HASH"].hash === md5 || this.options["ITEM-HASH"].hash === sha256)
+      return callback(null, item);
   }
   return callback();
 }));
