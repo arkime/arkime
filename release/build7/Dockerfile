@@ -5,7 +5,7 @@ RUN \
 yum -y update; \
 yum -y install centos-release-scl scl-utils centos-release-scl-rh wget; \
 yum -y update; \
-yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build python-devel pango libXcomposite gtk3 gdk2 atk libXtst GConf2 libXScrnSaver alsa-lib ; \
+yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build python-devel pango libXcomposite gtk3 gdk2 atk libXtst GConf2 libXScrnSaver alsa-lib java-1.8.0-openjdk-headless which; \
 (cd /etc/yum.repos.d/; wget http://packages.ntop.org/centos-stable/ntop.repo); \
 yum -y update; \
 yum -y install devtoolset-6-gcc-c++ pfring; \
