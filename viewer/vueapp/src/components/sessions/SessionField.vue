@@ -77,6 +77,13 @@
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
+             <b-dropdown-item
+              v-if="url"
+              :href="url"
+              target="_blank">
+              <span class="fa fa-folder-open-o"></span>&nbsp;
+              Download File
+            </b-dropdown-item>
             <b-dropdown-item
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
@@ -162,6 +169,7 @@ export default {
     'field', // the field object that describes the field
     'expr', // the query expression to be put in the search expression
     'value', // the value of the session field (undefined if the field has children)
+    'url', // the url to be used for a rigth-click on a Menu item
     'session', // the session object
     'parse', // whether to parse the value
     'timezone', // what timezone date fields should be in ('gmt' or 'local')
