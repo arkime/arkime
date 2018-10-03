@@ -271,7 +271,7 @@
                 <!-- spiview field -->
                 <div v-for="(value, key) in categoryObjects[category].spi"
                   :key="key"
-                  class="spi-buckets pr-1 pl-1"
+                  class="spi-buckets pr-1 pl-1 pb-1"
                   v-if="value.active">
                   <!-- spiview field label button -->
                   <b-dropdown
@@ -1252,8 +1252,8 @@ export default {
 /* btn drawer for toggling values -- */
 .spiview-page .btn-drawer-toggle {
   background-color: var(--color-gray-lighter);
-  margin-right: -15px;
-  margin-left: -15px;
+  margin-right: -4px;
+  margin-left: -4px;
 }
 .spiview-page .btn-drawer .form-control-sm {
   height: 22px;
