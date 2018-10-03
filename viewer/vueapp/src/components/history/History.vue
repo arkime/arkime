@@ -5,32 +5,44 @@
     <!-- search navbar -->
     <form class="history-search">
       <div class="mr-1 ml-1 mt-1 mb-1">
-        <span class="pull-right fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2"
-          title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
-          v-b-tooltip.hover>
-        </span>
-        <div class="input-group input-group-sm input-search">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search">
+        <div class="row">
+          <div class="col-sm-9 col-md-9 col-lg-10 col-xl-11 mr-0 pr-0">
+            <div class="input-group input-group-sm input-search">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <span class="fa fa-search fa-fw">
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                @keyup.enter="loadData"
+                @input="debounceSearch"
+                class="form-control"
+                v-model="query.searchTerm"
+                placeholder="Search for history in the table below"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!query.searchTerm"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
               </span>
-            </span>
+            </div>
           </div>
-          <input type="text"
-            class="form-control"
-            v-model="query.searchTerm"
-            @keyup="debounceSearch"
-            placeholder="Search for history in the table below"
-          />
-          <span class="input-group-append">
+          <div class="col-sm-3 col-md-3 col-lg-2 col-xl-1 ml-0 pl-0">
+            <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right"
+              title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
+              v-b-tooltip.hover>
+            </span>
             <button type="button"
-              @click="clear"
-              :disabled="!query.searchTerm"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
+              class="btn btn-sm btn-theme-tertiary pull-left ml-1 pl-1 pr-1"
+              @click="loadData">
+              Search
             </button>
-          </span>
+          </div>
         </div>
         <div class="form-inline mt-1">
           <moloch-time :timezone="user.settings.timezone"
@@ -461,10 +473,6 @@ export default {
 
 .history-page form .time-range-control {
   -webkit-appearance: none;
-}
-
-.history-page form .input-search {
-  width: 97%
 }
 
 /* navbar with pagination */
