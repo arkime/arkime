@@ -989,7 +989,7 @@ export default {
 }
 .connections-page form.connections-form {
   position: relative;
-  top: 79px;
+  top: 74px;
   left: 0;
   right: 0;
   background-color: var(--color-quaternary-lightest);

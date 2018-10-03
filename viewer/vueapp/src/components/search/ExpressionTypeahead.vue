@@ -4,12 +4,18 @@
 
     <!-- typeahead input -->
     <div class="input-group input-group-sm">
-      <span class="input-group-prepend cursor-help"
+      <span class="input-group-prepend input-group-prepend-fw cursor-help"
         v-b-tooltip.hover
         placement="bottomright"
         title="Search Expression">
-        <span class="input-group-text">
-          <span class="fa fa-search"></span>
+        <span class="input-group-text input-group-text-fw">
+          <span v-if="!shiftKeyHold"
+            class="fa fa-search fa-fw">
+          </span>
+          <span v-else
+            class="query-shortcut">
+            Q
+          </span>
         </span>
       </span>
       <input type="text"
@@ -118,6 +124,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setFocusSearch', newValue);
       }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
   },
   watch: {
@@ -587,10 +596,14 @@ export default {
   margin-left: 30px;
 }
 
-/* make sure corners are rounded even
- * when the clear input button is present */
-input.search-control {
-  border-radius: 0 3px 3px 0 !important;
+/* make the shortcut the same size/position as the icon */
+.query-shortcut {
+  color: var(--color-tertiary-lighter);
+  font-size: 18px;
+  width: 20px;
+}
+.input-group-prepend-fw, .input-group-text-fw {
+  width: 36px;
 }
 
 @media screen and (max-height: 600px) {

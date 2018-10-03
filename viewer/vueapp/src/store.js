@@ -18,6 +18,7 @@ const store = new Vuex.Store({
     seriesType: undefined,
     focusSearch: undefined,
     focusTimeRange: undefined,
+    shiftKeyHold: false,
     displayKeyboardShortcutsHelp: undefined,
     user: undefined,
     responseTime: undefined,
@@ -78,6 +79,9 @@ const store = new Vuex.Store({
     },
     setFocusTimeRange (state, value) {
       this.state.focusTimeRange = value;
+    },
+    setShiftKeyHold (state, value) {
+      this.state.shiftKeyHold = value;
     },
     setDisplayKeyboardShortcutsHelp (state, value) {
       this.state.displayKeyboardShortcutsHelp = value;

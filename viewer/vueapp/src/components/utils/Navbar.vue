@@ -11,16 +11,23 @@
 
     <b-navbar-brand>
       <a :href="'help#' + activePage"
-        class="cursor-pointer">
+        class="cursor-pointer"
+        id="helpTooltipContainer">
         <img src="../../assets/logo.png"
           class="moloch-logo"
           alt="hoot"
+          v-b-tooltip.hover
+          title="HOOT! Can I help you? Click me to see the help page"
+          id="tooltipHelp"
         />
-        <small class="help-shortcut"
-          :class="{'holding-shift': holdingShiftKey}">
-          H
-        </small>
       </a>
+      <b-tooltip :show="shiftKeyHold"
+        triggers=""
+        target="tooltipHelp"
+        placement="rightbottom"
+        container="helpTooltipContainer">
+        <strong class="help-shortcut">H</strong>
+      </b-tooltip>
     </b-navbar-brand>
 
     <b-collapse is-nav
@@ -38,7 +45,7 @@
                 <span v-if="menu[item].hotkey">
                   <p v-for="(text, index) in menu[item].hotkey"
                     :key="text"
-                    :class="{'holding-shift':holdingShiftKey && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+                    :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
                 </span>
                 <p v-else>
                   {{ menu[item].title }}
@@ -72,7 +79,6 @@ export default {
   components: { ESHealth },
   data: function () {
     return {
-      holdingShiftKey: false,
       molochVersion: this.$constants.MOLOCH_VERSION,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
@@ -133,28 +139,10 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
-  },
-  mounted: function () {
-    window.addEventListener('keydown', (event) => {
-      const activeElement = document.activeElement;
-      const inputs = ['input', 'select', 'textarea'];
-
-      // quit if the user is in an input
-      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
-        return;
-      }
-
-      if (event.keyCode === 16) { // shift
-        this.holdingShiftKey = true;
-      }
-    });
-
-    window.addEventListener('keyup', (event) => {
-      if (event.keyCode === 16) { // shift
-        this.holdingShiftKey = false;
-      }
-    });
   },
   methods: {
     isActive: function (link) {
@@ -163,6 +151,19 @@ export default {
   }
 };
 </script>
+
+<style>
+/* add an H tooltip by the owl but move it down a bit so
+   that the links in the navbar are not covered up */
+#helpTooltipContainer > div.tooltip {
+  top: 16px !important;
+}
+/* move the arrow up to line up with the owl (since the
+   tooltip was moved down) */
+#helpTooltipContainer > div.tooltip > div.arrow {
+  top: 2px !important;
+}
+</style>
 
 <style scoped>
 nav.navbar {
@@ -198,7 +199,7 @@ a.nav-link > a.router-link-active {
 
 /* shortcut letter styles */
 p { /* ::first-letter only works on blocks */
-  margin-top: 16px;
+  margin-bottom: -16px;
   display: inline-block;
 }
 /* need this so that styled first letters don't expand the text */
@@ -216,17 +217,8 @@ a.nav-link > a.router-link-active p.shortcut-letter::first-letter {
 p.shortcut-letter.holding-shift::first-letter {
   color: var(--color-tertiary-lighter) !important;
 }
-
-/* add an H by the owl */
+/* color the help shortcut letter in the tooltip */
 .help-shortcut {
-  visibility: hidden;
-  position: absolute;
-  top: 0px;
   color: var(--color-tertiary-lighter);
-  left: 4px;
-  font-size: 18px;
-}
-.help-shortcut.holding-shift {
-  visibility: visible;
 }
 </style>

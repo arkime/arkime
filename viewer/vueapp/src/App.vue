@@ -6,6 +6,11 @@
       <moloch-keyboard-shortcuts
         v-if="displayKeyboardShortcutsHelp">
       </moloch-keyboard-shortcuts>
+      <div v-if="shiftKeyHold"
+        class="shortcut-help">
+        <span class="fa fa-question fa-fw">
+        </span>
+      </div>
     </transition>
     <moloch-footer></moloch-footer>
   </div>
@@ -17,8 +22,6 @@ import MolochNavbar from './components/utils/Navbar';
 import MolochFooter from './components/utils/Footer';
 import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
 
-let holdingShiftKey = false;
-
 export default {
   name: 'App',
   components: {
@@ -27,6 +30,14 @@ export default {
     MolochKeyboardShortcuts
   },
   computed: {
+    shiftKeyHold: {
+      get: function () {
+        return this.$store.state.shiftKeyHold;
+      },
+      set: function (newValue) {
+        this.$store.commit('setShiftKeyHold', newValue);
+      }
+    },
     displayKeyboardShortcutsHelp: {
       get: function () {
         return this.$store.state.displayKeyboardShortcutsHelp;
@@ -56,6 +67,9 @@ export default {
 
     const inputs = ['input', 'select', 'textarea'];
 
+    // watch for keyup/down events for the entire app
+    // the rest of the app should compute necessary values with:
+    // $store.state.shiftKeyHold, focusSearch, and focusTimeRange
     window.addEventListener('keyup', (event) => {
       const activeElement = document.activeElement;
 
@@ -64,10 +78,13 @@ export default {
         this.$store.commit('setFocusSearch', false);
         this.$store.commit('setFocusTimeRange', false);
         return;
+      } else if (event.keyCode === 16) { // shift
+        this.shiftKeyHold = false;
+        return;
       }
 
-      // quit if the user is in an input or not holding the shift key
-      if (!holdingShiftKey || (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
+      // quit if the user is in an input
+      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
         return;
       }
 
@@ -117,19 +134,20 @@ export default {
           }
           break;
         case 191: // /
-          // display the keyboard shortcut dialog
-          this.$store.commit('setDisplayKeyboardShortcutsHelp', true);
-          break;
-        case 16: // shift
-          // keyup on shift key, user is no longer holding shift
-          holdingShiftKey = false;
+          // toggle display of the the keyboard shortcut dialog
+          this.$store.commit('setDisplayKeyboardShortcutsHelp', !this.displayKeyboardShortcutsHelp);
           break;
       }
     });
 
     window.addEventListener('keydown', (event) => {
+      const activeElement = document.activeElement;
+      // quit if the user is in an input or not holding the shift key
+      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+        return;
+      }
       if (event.keyCode === 16) { // shift
-        holdingShiftKey = true;
+        this.shiftKeyHold = true;
       }
     });
   },
@@ -420,6 +438,20 @@ dl.dl-horizontal dt {
 dl.dl-horizontal dd {
   margin-left: 205px;
   margin-bottom: 0;
+}
+
+.shortcut-help {
+  position: fixed;
+  top: 155px;
+  z-index: 1;
+  color: var(--color-tertiary-lighter);
+  background: var(--color-background, white);
+  border: 1px solid var(--color-gray);
+  border-left: none;
+  border-radius: 0 4px 4px 0 ;
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
 }
 
 /* keyboard shortcuts help animation */

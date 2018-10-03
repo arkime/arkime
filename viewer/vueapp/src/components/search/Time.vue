@@ -5,12 +5,18 @@
     <!-- time range select -->
     <div class="form-group">
       <div class="input-group input-group-sm">
-        <span class="input-group-prepend cursor-help"
+        <span class="input-group-prepend input-group-prepend-fw cursor-help"
           placement="topright"
           v-b-tooltip.hover
           title="Time Range">
-          <span class="input-group-text">
-            <span class="fa fa-clock-o"></span>
+          <span class="input-group-text input-group-text-fw">
+            <span v-if="!shiftKeyHold"
+              class="fa fa-clock-o fa-fw">
+            </span>
+            <span v-else
+              class="time-shortcut">
+              T
+            </span>
           </span>
         </span>
         <select class="form-control time-range-control"
@@ -279,6 +285,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setFocusTimeRange', newValue);
       }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
   },
   methods: {
@@ -532,5 +541,15 @@ select.form-control {
 
 .time-range-control {
   -webkit-appearance: none;
+}
+
+/* make the shortcut the same size/position as the icon */
+.time-shortcut {
+  color: var(--color-tertiary-lighter);
+  font-size: 18px;
+  width: 20px;
+}
+.input-group-prepend-fw, .input-group-text-fw {
+  width: 36px;
 }
 </style>
