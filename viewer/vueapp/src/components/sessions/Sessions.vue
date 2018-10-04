@@ -150,7 +150,7 @@
                 </b-dropdown-item>
                 <b-dropdown-item
                   v-b-tooltip.hover
-                  @click.stop.prevent="loadColumnConfiguration"
+                  @click.stop.prevent="loadColumnConfiguration(-1)"
                   title="Reset table to default columns">
                   Moloch Default
                 </b-dropdown-item>
@@ -773,7 +773,7 @@ export default {
     loadColumnConfiguration: function (index) {
       this.loading = true;
 
-      if (!index && index !== 0) {
+      if (index === -1) {
         this.tableState.visibleHeaders = defaultTableState.visibleHeaders.slice();
         this.tableState.order = defaultTableState.order.slice();
       } else {
