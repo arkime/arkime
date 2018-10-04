@@ -11,7 +11,7 @@
 
 .axis text {
   -webkit-transition: fill-opacity 250ms linear;
-  stroke : var(--color-foreground);
+  fill: var(--color-foreground);
 }
 
 .axis path {

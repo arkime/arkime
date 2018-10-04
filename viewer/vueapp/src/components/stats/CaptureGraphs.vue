@@ -20,7 +20,7 @@
         <input type="search"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForNodes()"
+          @keyup="searchForNodes"
           placeholder="Begin typing to search for nodes by name"
         />
         <span class="input-group-append">
@@ -189,12 +189,12 @@ export default {
         .size(1440);
 
       var context = self.context;
-      var nodes = self.stats.data.map(function (item) {
+      var nodes = self.stats.data.map((item) => {
         return item.nodeName;
       });
 
       function metric (name) {
-        return context.metric(function (startV, stopV, stepV, callback) {
+        return context.metric((startV, stopV, stepV, callback) => {
           let config = {
             method: 'GET',
             url: 'dstats.json',
@@ -223,7 +223,7 @@ export default {
         }
       }
 
-      d3.select('#statsGraph').call(function (div) {
+      d3.select('#statsGraph').call((div) => {
         var metrics = [];
         for (var i = 0, ilen = nodes.length; i < ilen; i++) {
           metrics.push(metric(nodes[i]));
@@ -231,6 +231,7 @@ export default {
 
         if (div[0][0]) {
           let axis = context.axis();
+          let axisBottom = context.axis();
 
           let timeStr = self.graphInterval >= 600 ? '%m/%d %H:%M:%S' : '%H:%M:%S';
 
@@ -254,6 +255,15 @@ export default {
           div.append('div')
             .attr('class', 'rule')
             .call(context.rule());
+
+          div.append('div')
+            .attr('class', 'axis')
+            .attr('height', 28)
+            .call(
+              axisBottom.orient('bottom')
+                .tickFormat(timeFormat)
+                .focusFormat(timeFormat)
+            );
         }
       });
     },

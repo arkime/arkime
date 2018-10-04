@@ -159,7 +159,7 @@
     <!-- stats content -->
     <div class="pt-5">
       <span v-if="tabIndex === 0"
-        v-b-tooltip.hover
+        v-b-tooltip.hover.left
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
         title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
