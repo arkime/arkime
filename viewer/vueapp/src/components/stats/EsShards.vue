@@ -14,13 +14,21 @@
 
       <div class="input-group input-group-sm mb-1">
         <div class="input-group-prepend">
-          <span class="input-group-text">
-            <span class="fa fa-search"></span>
+          <span class="input-group-text input-group-text-fw">
+            <span v-if="!shiftKeyHold"
+              class="fa fa-search fa-fw">
+            </span>
+            <span v-else
+              class="query-shortcut">
+              Q
+            </span>
           </span>
         </div>
         <input type="text"
           class="form-control shards-search"
           v-model="query.filter"
+          v-focus-input="focusInput"
+          @blur="onOffFocus"
           @keyup="searchForES"
           placeholder="Begin typing to search for ES nodes and indices"
         />
@@ -176,6 +184,7 @@
 <script>
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
@@ -184,6 +193,7 @@ let respondedAt; // the time that the last data load succesfully responded
 export default {
   name: 'EsShards',
   components: { MolochError, MolochLoading },
+  directives: { FocusInput },
   props: [ 'dataInterval', 'refreshData' ],
   data: function () {
     return {
@@ -200,6 +210,19 @@ export default {
         { name: 'Index', sort: 'index', doClick: false, hasDropdown: false }
       ]
     };
+  },
+  computed: {
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
+    }
   },
   watch: {
     dataInterval: function () {
@@ -241,6 +264,9 @@ export default {
     clear () {
       this.query.filter = undefined;
       this.loadData();
+    },
+    onOffFocus: function () {
+      this.focusInput = false;
     },
     columnClick (name) {
       if (!name) { return; }

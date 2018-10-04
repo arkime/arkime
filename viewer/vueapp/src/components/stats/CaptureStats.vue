@@ -13,14 +13,22 @@
 
       <div class="input-group input-group-sm node-search pull-right mt-1">
         <div class="input-group-prepend">
-          <span class="input-group-text">
-            <span class="fa fa-search"></span>
+          <span class="input-group-text input-group-text-fw">
+            <span v-if="!shiftKeyHold"
+              class="fa fa-search fa-fw">
+            </span>
+            <span v-else
+              class="query-shortcut">
+              Q
+            </span>
           </span>
         </div>
         <input type="text"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForNodes"
+          v-focus-input="focusInput"
+          @blur="onOffFocus"
+          @input="searchForNodes"
           placeholder="Begin typing to search for nodes by name"
         />
         <span class="input-group-append">
@@ -187,6 +195,7 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
@@ -196,6 +205,7 @@ export default {
   name: 'NodeStats',
   props: [ 'user', 'graphType', 'graphInterval', 'graphHide', 'dataInterval', 'refreshData' ],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
+  directives: { FocusInput },
   data: function () {
     return {
       error: '',
@@ -230,6 +240,32 @@ export default {
         { name: 'ES Drops/s', sort: 'deltaESDropped', field: 'deltaESDroppedPerSec', doStats: true }
       ]
     };
+  },
+  computed: {
+    colors: function () {
+      // build colors array from css variables
+      let styles = window.getComputedStyle(document.body);
+      let primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
+      let primaryLight = styles.getPropertyValue('--color-primary').trim();
+      let primary = styles.getPropertyValue('--color-primary-dark').trim();
+      let primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
+      let secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
+      let secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
+      let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
+      let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
+    },
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
+    }
   },
   watch: {
     graphType: function () {
@@ -281,21 +317,6 @@ export default {
       document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
   },
-  computed: {
-    colors: function () {
-      // build colors array from css variables
-      let styles = window.getComputedStyle(document.body);
-      let primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      let primaryLight = styles.getPropertyValue('--color-primary').trim();
-      let primary = styles.getPropertyValue('--color-primary-dark').trim();
-      let primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      let secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      let secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
-      return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
-    }
-  },
   methods: {
     /* exposed page functions ------------------------------------ */
     changePaging (pagingValues) {
@@ -321,7 +342,10 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
-    /* helper functions ------------------------------------------ */
+    onOffFocus: function () {
+      this.focusInput = false;
+    },
+    /* helper functions ---------------------------------------------------- */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
         if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {

@@ -24,7 +24,7 @@
       <b-tooltip :show="shiftKeyHold"
         triggers=""
         target="tooltipHelp"
-        placement="rightbottom"
+        placement="leftbottom"
         container="helpTooltipContainer">
         <strong class="help-shortcut">H</strong>
       </b-tooltip>
@@ -162,6 +162,10 @@ export default {
    tooltip was moved down) */
 #helpTooltipContainer > div.tooltip > div.arrow {
   top: 2px !important;
+}
+/* make the tooltip smaller */
+#helpTooltipContainer > div.tooltip > div.tooltip-inner {
+  padding: 0 0.2rem !important;
 }
 </style>
 

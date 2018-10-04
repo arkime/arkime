@@ -83,8 +83,8 @@ export default {
         return;
       }
 
-      // quit if the user is in an input
-      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+      // quit if the user is in an input or not holding the shift key
+      if (!this.shiftKeyHold || (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
         return;
       }
 
@@ -460,5 +460,21 @@ dl.dl-horizontal dd {
 }
 .shortcuts-slide-enter, .shortcuts-slide-leave-to {
   transform: translateX(-465px);
+}
+
+/* make the shortcut letter the same size/position as the icon */
+.query-shortcut {
+  color: var(--color-tertiary-lighter);
+  font-size: 18px;
+  width: 20px;
+}
+.time-shortcut {
+  color: var(--color-tertiary-lighter);
+  font-size: 18px;
+  width: 20px;
+}
+/* make sure the width of the input prepend doesn't change */
+.input-group-prepend-fw, .input-group-text-fw {
+  width: 36px;
 }
 </style>

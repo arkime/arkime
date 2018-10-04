@@ -13,14 +13,22 @@
 
       <div class="input-group input-group-sm mt-1">
         <div class="input-group-prepend">
-          <span class="input-group-text">
-            <span class="fa fa-search"></span>
+          <span class="input-group-text input-group-text-fw">
+            <span v-if="!shiftKeyHold"
+              class="fa fa-search fa-fw">
+            </span>
+            <span v-else
+              class="query-shortcut">
+              Q
+            </span>
           </span>
         </div>
         <input type="text"
           class="form-control"
           v-model="query.filter"
-          @keyup="searchForES"
+          v-focus-input="focusInput"
+          @blur="onOffFocus"
+          @input="searchForES"
           placeholder="Begin typing to search for ES indices (hint: this input accepts regex)"
         />
         <span class="input-group-append">
@@ -146,6 +154,7 @@
 <script>
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
@@ -155,6 +164,7 @@ export default {
   name: 'EsIndices',
   props: [ 'dataInterval', 'refreshData' ],
   components: { MolochError, MolochLoading },
+  directives: { FocusInput },
   data: function () {
     return {
       stats: {},
@@ -179,6 +189,19 @@ export default {
         { name: 'Status', sort: 'status', doStats: false }
       ]
     };
+  },
+  computed: {
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
+    }
   },
   watch: {
     dataInterval: function () {
@@ -221,6 +244,9 @@ export default {
     clear () {
       this.query.filter = undefined;
       this.loadData();
+    },
+    onOffFocus: function () {
+      this.focusInput = false;
     },
     columnClick (name) {
       this.query.sortField = name;

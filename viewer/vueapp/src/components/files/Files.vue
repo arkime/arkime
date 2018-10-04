@@ -6,14 +6,22 @@
       <div class="mr-1 ml-1 mt-1 mb-1">
         <div class="input-group input-group-sm pull-right" style="max-width:50%;">
           <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search"></span>
+            <span class="input-group-text input-group-text-fw">
+              <span v-if="!shiftKeyHold"
+                class="fa fa-search fa-fw">
+              </span>
+              <span v-else
+                class="query-shortcut">
+                Q
+              </span>
             </span>
           </div>
           <input type="text"
             class="form-control"
             v-model="query.filter"
-            @keyup="searchForFiles"
+            v-focus-input="focusInput"
+            @blur="onOffFocus"
+            @input="searchForFiles"
             placeholder="Begin typing to search for files by name"
           />
           <span class="input-group-append">
@@ -110,12 +118,14 @@
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import FocusInput from '../utils/FocusInput';
 
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'Files',
   components: { MolochPaging, MolochError, MolochLoading },
+  directives: { FocusInput },
   data: function () {
     return {
       error: '',
@@ -141,6 +151,17 @@ export default {
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
   },
   created: function () {
@@ -171,6 +192,10 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
+    onOffFocus: function () {
+      this.focusInput = false;
+    },
+    /* helper functions ---------------------------------------------------- */
     loadData: function () {
       this.loading = true;
 

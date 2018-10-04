@@ -596,16 +596,6 @@ export default {
   margin-left: 30px;
 }
 
-/* make the shortcut the same size/position as the icon */
-.query-shortcut {
-  color: var(--color-tertiary-lighter);
-  font-size: 18px;
-  width: 20px;
-}
-.input-group-prepend-fw, .input-group-text-fw {
-  width: 36px;
-}
-
 @media screen and (max-height: 600px) {
   .typeahead-results {
     max-height: 250px;

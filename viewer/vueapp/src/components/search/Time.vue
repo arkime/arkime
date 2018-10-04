@@ -542,14 +542,4 @@ select.form-control {
 .time-range-control {
   -webkit-appearance: none;
 }
-
-/* make the shortcut the same size/position as the icon */
-.time-shortcut {
-  color: var(--color-tertiary-lighter);
-  font-size: 18px;
-  width: 20px;
-}
-.input-group-prepend-fw, .input-group-text-fw {
-  width: 36px;
-}
 </style>
