@@ -1,0 +1,405 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dns" : {
+               "ASN" : [
+                  "---"
+               ],
+               "GEO" : [
+                  "---"
+               ],
+               "RIR" : [
+                  "ARIN"
+               ],
+               "host" : [
+                  "sentitlement.mobile.att.net"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "172.26.39.3"
+               ],
+               "ipCnt" : 1,
+               "nameserverASN" : [
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
+               ],
+               "nameserverGEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserverHost" : [
+                  "wycu.wy.br.np.els-gms.att.net",
+                  "ohcu.oh.mt.np.els-gms.att.net",
+                  "orcu.or.br.np.els-gms.att.net",
+                  "macu.ma.mt.np.els-gms.att.net"
+               ],
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
+                  "2001:1890:1ff:9f1:99:99:99:128",
+                  "2001:1890:1ff:9f1:99:99:99:130",
+                  "99.99.99.128",
+                  "99.99.99.130"
+               ],
+               "nameserverIpCnt" : 4,
+               "nameserverRIR" : [
+                  "",
+                  "",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 334,
+            "dstDataBytes" : 326,
+            "dstIp" : "192.168.168.1",
+            "dstPackets" : 1,
+            "dstPayload8" : "d333818000010001",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1415985409420,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985409420,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               141,
+               350
+            ],
+            "packetPos" : [
+               24,
+               165
+            ],
+            "protocol" : [
+               "udp",
+               "gtp",
+               "dns"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 125,
+            "srcDataBytes" : 117,
+            "srcIp" : "192.168.3.129",
+            "srcPackets" : 1,
+            "srcPayload8" : "d333010000010000",
+            "srcPort" : 57801,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 459,
+            "totDataBytes" : 443,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "ASN" : [
+                  "---"
+               ],
+               "GEO" : [
+                  "---"
+               ],
+               "RIR" : [
+                  "ARIN"
+               ],
+               "host" : [
+                  "sentitlement.mobile.att.net"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "172.26.39.3"
+               ],
+               "ipCnt" : 1,
+               "nameserverASN" : [
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
+               ],
+               "nameserverGEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserverHost" : [
+                  "wycu.wy.br.np.els-gms.att.net",
+                  "ohcu.oh.mt.np.els-gms.att.net",
+                  "orcu.or.br.np.els-gms.att.net",
+                  "macu.ma.mt.np.els-gms.att.net"
+               ],
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
+                  "2001:1890:1ff:9f1:99:99:99:128",
+                  "2001:1890:1ff:9f1:99:99:99:130",
+                  "99.99.99.128",
+                  "99.99.99.130"
+               ],
+               "nameserverIpCnt" : 4,
+               "nameserverRIR" : [
+                  "",
+                  "",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 334,
+            "dstDataBytes" : 326,
+            "dstIp" : "192.168.168.1",
+            "dstPackets" : 1,
+            "dstPayload8" : "7442818000010001",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1415985410140,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985410140,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               141,
+               350
+            ],
+            "packetPos" : [
+               787,
+               928
+            ],
+            "protocol" : [
+               "udp",
+               "gtp",
+               "dns"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 125,
+            "srcDataBytes" : 117,
+            "srcIp" : "192.168.3.129",
+            "srcPackets" : 1,
+            "srcPayload8" : "7442010000010000",
+            "srcPort" : 58364,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 459,
+            "totDataBytes" : 443,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "192.168.168.1",
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1415985410172,
+            "icmp" : {
+               "code" : [
+                  3
+               ],
+               "type" : [
+                  3
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1415985410172,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               124
+            ],
+            "packetPos" : [
+               1278
+            ],
+            "protocol" : [
+               "gtp",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 108,
+            "srcDataBytes" : 0,
+            "srcIp" : "192.168.3.129",
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 108,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "ASN" : [
+                  "---"
+               ],
+               "GEO" : [
+                  "---"
+               ],
+               "RIR" : [
+                  "ARIN"
+               ],
+               "host" : [
+                  "sentitlement.mobile.att.net"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "172.26.39.3"
+               ],
+               "ipCnt" : 1,
+               "nameserverASN" : [
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
+               ],
+               "nameserverGEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "nameserverHost" : [
+                  "wycu.wy.br.np.els-gms.att.net",
+                  "ohcu.oh.mt.np.els-gms.att.net",
+                  "orcu.or.br.np.els-gms.att.net",
+                  "macu.ma.mt.np.els-gms.att.net"
+               ],
+               "nameserverHostCnt" : 4,
+               "nameserverIp" : [
+                  "2001:1890:1ff:9f1:99:99:99:128",
+                  "2001:1890:1ff:9f1:99:99:99:130",
+                  "99.99.99.128",
+                  "99.99.99.130"
+               ],
+               "nameserverIpCnt" : 4,
+               "nameserverRIR" : [
+                  "",
+                  "",
+                  "ARIN",
+                  "ARIN"
+               ],
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 334,
+            "dstDataBytes" : 326,
+            "dstIp" : "192.168.168.1",
+            "dstPackets" : 1,
+            "dstPayload8" : "c2b1818000010001",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1415985490220,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985490220,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               141,
+               350
+            ],
+            "packetPos" : [
+               18555,
+               18696
+            ],
+            "protocol" : [
+               "udp",
+               "gtp",
+               "dns"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 125,
+            "srcDataBytes" : 117,
+            "srcIp" : "192.168.3.129",
+            "srcPackets" : 1,
+            "srcPayload8" : "c2b1010000010000",
+            "srcPort" : 60716,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 459,
+            "totDataBytes" : 443,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -468,10 +468,11 @@ struct moloch_pcap_sf_pkthdr {
 };
 
 /******************************************************************************/
-#define MOLOCH_PACKET_TUNNEL_GRE    0x1
-#define MOLOCH_PACKET_TUNNEL_PPPOE  0x2
-#define MOLOCH_PACKET_TUNNEL_MPLS   0x4
-#define MOLOCH_PACKET_TUNNEL_PPP    0x8
+#define MOLOCH_PACKET_TUNNEL_GRE    0x01
+#define MOLOCH_PACKET_TUNNEL_PPPOE  0x02
+#define MOLOCH_PACKET_TUNNEL_MPLS   0x04
+#define MOLOCH_PACKET_TUNNEL_PPP    0x08
+#define MOLOCH_PACKET_TUNNEL_GTP    0x10
 
 typedef struct molochpacket_t
 {
@@ -495,7 +496,7 @@ typedef struct molochpacket_t
     uint8_t        v6:1;           // v6 or not
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
-    uint8_t        tunnel:4;       // tunnel type
+    uint8_t        tunnel:5;       // tunnel type
 } MolochPacket_t;
 
 typedef struct

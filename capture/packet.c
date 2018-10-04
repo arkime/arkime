@@ -713,26 +713,28 @@ LOCAL void *moloch_packet_thread(void *threadp)
             }
         }
 
-        if (pcapFileHeader.linktype == 1 && session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
+        if (session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
             const uint8_t *pcapData = packet->pkt;
 
-            if (packet->direction == 1) {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
-            } else {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
-            }
+            if (pcapFileHeader.linktype == 1) {
+                if (packet->direction == 1) {
+                    moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
+                    moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
+                } else {
+                    moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
+                    moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
+                }
 
-            int n = 12;
-            while (pcapData[n] == 0x81 && pcapData[n+1] == 0x00) {
-                uint16_t vlan = ((uint16_t)(pcapData[n+2] << 8 | pcapData[n+3])) & 0xfff;
-                moloch_field_int_add(vlanField, session, vlan);
-                n += 4;
-            }
+                int n = 12;
+                while (pcapData[n] == 0x81 && pcapData[n+1] == 0x00) {
+                    uint16_t vlan = ((uint16_t)(pcapData[n+2] << 8 | pcapData[n+3])) & 0xfff;
+                    moloch_field_int_add(vlanField, session, vlan);
+                    n += 4;
+                }
 
-            if (packet->vlan)
-                moloch_field_int_add(vlanField, session, packet->vlan);
+                if (packet->vlan)
+                    moloch_field_int_add(vlanField, session, packet->vlan);
+            }
 
             if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
                 ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
@@ -751,6 +753,10 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
             if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_MPLS) {
                 moloch_session_add_protocol(session, "mpls");
+            }
+
+            if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_GTP) {
+                moloch_session_add_protocol(session, "gtp");
             }
         }
 
@@ -1143,6 +1149,49 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
+LOCAL int moloch_packet_ip4_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 12) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+    uint8_t  flags = 0;
+    uint8_t  next = 0;
+
+
+    BSB_IMPORT_u08(bsb, flags);
+    BSB_IMPORT_skip(bsb, 1); // mtype
+    BSB_IMPORT_skip(bsb, 2); // mlen
+    BSB_IMPORT_skip(bsb, 4); // teid
+    if (flags & 0x7) {
+        BSB_IMPORT_skip(bsb, 3);
+        BSB_IMPORT_u08(bsb, next);
+    }
+
+    while (next != 0 && !BSB_IS_ERROR(bsb)) {
+        uint8_t extlen = 0;
+        BSB_IMPORT_u08(bsb, extlen);
+        BSB_IMPORT_skip(bsb, extlen*4-2);
+        BSB_IMPORT_u08(bsb, next);
+    }
+
+    if (BSB_IS_ERROR(bsb)) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GTP;
+
+    // Should check for v4 vs v6 here
+    BSB_IMPORT_u08(bsb, flags);
+    BSB_IMPORT_rewind(bsb, 1);
+
+    if ((flags & 0x80) == 0x60)
+        return moloch_packet_ip6(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
@@ -1238,6 +1287,15 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         }
 
         udphdr = (struct udphdr *)((char*)ip4 + ip_hdr_len);
+
+        // See if this is really GTP
+        if (udphdr->uh_dport == 0x6808 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
+            int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+            uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
+            if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
+                return moloch_packet_ip4_gtp(batch, packet, buf, rem);
+            }
+        }
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
