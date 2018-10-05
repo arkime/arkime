@@ -167,6 +167,16 @@ export default {
 </script>
 
 <style>
+/* styles for bottom footer */
+html {
+  position: relative;
+  min-height: 100%;
+}
+#app {
+  padding-bottom: 25px;
+}
+
+/* global font, colors, and vars */
 body {
   color: var(--color-foreground);
   background-color: var(--color-background);

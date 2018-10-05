@@ -157,4 +157,7 @@ export default {
   max-height: 300px;
   overflow-y: auto;
 }
+.input-group input {
+  border-radius: 0 .2rem .2rem 0;
+}
 </style>
