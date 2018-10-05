@@ -47,7 +47,7 @@ LOCAL enum MolochMagicMode magicMode;
 #define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_STRCASE_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (strncasecmp(data+offset, needle, sizeof(needle)-1) == 0))
 
-#define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE)
+#define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
 const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {

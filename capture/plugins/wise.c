@@ -390,7 +390,6 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
         return;
 
     static int lookups = 0;
-    WiseItem_t *wi;
 
     lookups++;
     if (logEvery != 0 && (lookups % logEvery) == 0)
@@ -402,6 +401,7 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
     gettimeofday(&currentTime, NULL);
 
     MOLOCH_LOCK(item);
+    WiseItem_t *wi;
     HASH_FIND(wih_, types[type].itemHash, value, wi);
 
     if (wi) {
