@@ -708,7 +708,28 @@ exports.deleteFile = function(node, id, path, cb) {
   });
 };
 
-exports.id2Index = function (id) {
+exports.session2Sid = function (item) {
+  if (item._id.length < 31) {
+    return item._index.substring(internals.prefix.length) + ':' + item._id;
+  }
+
+  return item._id;
+};
+
+exports.sid2Id = function (id) {
+  let pound = id.indexOf(':');
+  if (pound > 0) {
+    return id.substr(pound+1);
+  }
+
+  return id;
+};
+
+exports.sid2Index = function (id) {
+  let pound = id.indexOf(':');
+  if (pound > 0) {
+    return id.substr(0,pound);
+  }
   return 'sessions2-' + id.substr(0,id.indexOf('-'));
 };
 

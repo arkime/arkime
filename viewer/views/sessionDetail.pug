@@ -50,7 +50,7 @@ div.mb-2
 dl
   dt Id
   dd
-    +clickableValue('id', session.id)
+    +clickableValue('id', Db.sid2Id(session.id))
     if (session.rootId)
       strong.ml-4 Root Id:
       +clickableValue('rootId', session.rootId)

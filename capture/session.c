@@ -235,7 +235,7 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     g_array_free(session->fileLenArray, TRUE);
     g_array_free(session->fileNumArray, TRUE);
 
-    if (session->rootId && session->rootId[0] != 'R')
+    if (session->rootId && session->rootId != (void *)1L)
         g_free(session->rootId);
 
     if (session->parserInfo) {
@@ -312,7 +312,7 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     moloch_rules_run_before_save(session, 0);
 
     if (!session->rootId) {
-        session->rootId = "ROOT";
+        session->rootId = (void *)1L;
     }
 
     moloch_db_save_session(session, FALSE);

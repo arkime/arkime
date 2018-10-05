@@ -278,6 +278,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 {
     uint32_t               i;
     char                   id[100];
+    uint32_t               id_len;
     uuid_t                 uuid;
     MolochString_t        *hstring;
     MolochInt_t           *hint;
@@ -360,18 +361,24 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         }
     }
-    uint32_t id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
-    uuid_generate(uuid);
-    gint state = 0, save = 0;
-    id_len += g_base64_encode_step((guchar*)&myPid, 2, FALSE, id + id_len, &state, &save);
-    id_len += g_base64_encode_step(uuid, sizeof(uuid_t), FALSE, id + id_len, &state, &save);
-    id_len += g_base64_encode_close(FALSE, id + id_len, &state, &save);
-    id[id_len] = 0;
+    if (!config.autoGenerateId || session->rootId == (void *)1L) {
+        id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
-    for (i = 0; i < id_len; i++) {
-        if (id[i] == '+') id[i] = '-';
-        else if (id[i] == '/') id[i] = '_';
+        uuid_generate(uuid);
+        gint state = 0, save = 0;
+        id_len += g_base64_encode_step((guchar*)&myPid, 2, FALSE, id + id_len, &state, &save);
+        id_len += g_base64_encode_step(uuid, sizeof(uuid_t), FALSE, id + id_len, &state, &save);
+        id_len += g_base64_encode_close(FALSE, id + id_len, &state, &save);
+        id[id_len] = 0;
+
+        for (i = 0; i < id_len; i++) {
+            if (id[i] == '+') id[i] = '-';
+            else if (id[i] == '/') id[i] = '_';
+        }
+
+        if (session->rootId == (void*)1L)
+            session->rootId = g_strdup(id);
     }
 
     struct timeval currentTime;
@@ -402,7 +409,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB jbsb = dbInfo[thread].bsb;
 
     startPtr = BSB_WORK_PTR(jbsb);
-    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+
+    if (config.autoGenerateId) {
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"session\"}}\n", config.prefix, dbInfo[thread].prefix);
+    } else {
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+    }
 
     dataPtr = BSB_WORK_PTR(jbsb);
 
@@ -542,8 +554,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       config.nodeName);
 
     if (session->rootId) {
-        if (session->rootId[0] == 'R')
-            session->rootId = g_strdup(id);
         BSB_EXPORT_sprintf(jbsb, "\"rootId\":\"%s\",", session->rootId);
     }
     BSB_EXPORT_cstr(jbsb, "\"packetPos\":[");

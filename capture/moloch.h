@@ -427,6 +427,7 @@ typedef struct moloch_config {
     char      yaraEveryPacket;
     char     *pcapDirAlgorithm;
     char      corruptSavePcap;
+    char      autoGenerateId;
 } MolochConfig_t;
 
 typedef struct {

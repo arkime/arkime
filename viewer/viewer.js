@@ -2252,7 +2252,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
   }
 
   async.eachLimit(ids, 10, function(id, nextCb) {
-    Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: fields.join(",")}, function(err, session) {
+    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: fields.join(",")}, function(err, session) {
       if (err) {
         return nextCb(null);
       }
@@ -3254,8 +3254,8 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, function(re
         if (fields === undefined) {
           return hitCb(null);
         }
-        fields.index = hit._index;
-        fields.id = hit._id;
+        //fields.index = hit._index;
+        fields.id = Db.session2Sid(hit);
 
         if (req.query.flatten === '1') {
           fields = flattenFields(fields);
@@ -4016,7 +4016,7 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     options  = {_source: "node,totPackets,packetPos,packetLen,srcIp,srcPort"};
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function(err, session) {
     if (err || !session.found) {
       console.log("session get error", err, session);
       return endCb("Session not found", null);
@@ -4384,7 +4384,7 @@ function localSessionDetail(req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
-  Db.getWithOptions(Db.id2Index(req.params.id), 'session', req.params.id, {}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
     }
@@ -4401,6 +4401,7 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
         filename    : "sessionDetail",
         user        : req.user,
         session     : session,
+        Db          : Db,
         query       : req.query,
         basedir     : "/",
         hidePackets : hidePackets,
@@ -5039,7 +5040,7 @@ function addTagsList(allTagNames, list, doneCb) {
       }
     };
 
-    Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
+    Db.update(session._index, 'session', session._id, document, function(err, data) {
       if (err) {
         console.log("addTagsList error", session, err, data);
       }
@@ -5080,7 +5081,7 @@ function removeTagsList(res, allTagNames, list) {
 
     }
 
-    Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
+    Db.update(session._index, 'session', session._id, document, function(err, data) {
       if (err) {
         console.log("removeTagsList error", err);
       }
@@ -5316,7 +5317,7 @@ function updateSessionWithHunt (session, sessionId, hunt, huntId) {
     }
   };
 
-  Db.update(Db.id2Index(sessionId), 'session', sessionId, document, function (err, data) {
+  Db.update(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId), document, function (err, data) {
     if (err) {
       console.log('add hunt info error', session, err, data);
     }
@@ -5366,7 +5367,7 @@ function runHuntJob (huntId, hunt, query, user) {
     async.forEachLimit(hits, 3, function (hit, cb) {
       searchedSessions++;
       let session = hit._source;
-      let sessionId = hit._id;
+      let sessionId = Db.session2Sid(hit);
       let node = session.node;
 
       isLocalView(node, function () {
@@ -5752,7 +5753,7 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
 
   // fetch hunt and session
   Promise.all([Db.get('hunts', 'hunt', huntId),
-               Db.get(Db.id2Index(sessionId), 'session', sessionId)])
+               Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))])
     .then(([hunt, session]) => {
       if (hunt.error || session.error) { res.send({ matched: false }); }
 
@@ -5784,7 +5785,7 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
 //// Pcap Delete/Scrub
 //////////////////////////////////////////////////////////////////////////////////
 
-function pcapScrub(req, res, id, entire, endCb) {
+function pcapScrub(req, res, sid, entire, endCb) {
   if (pcapScrub.scrubbingBuffers === undefined) {
     pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
     pcapScrub.scrubbingBuffers[0].fill(0);
@@ -5820,7 +5821,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "node,ipProtocol,packetPos,packetLen"}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), {_source: "node,ipProtocol,packetPos,packetLen"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
@@ -5858,7 +5859,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     },
     function (pcapErr, results) {
       if (entire) {
-        Db.deleteDocument(Db.id2Index(session._id), 'session', session._id, function(err, data) {
+        Db.deleteDocument(session._index, 'session', session._id, function(err, data) {
           endCb(pcapErr, fields);
         });
       } else {
@@ -5869,7 +5870,7 @@ function pcapScrub(req, res, id, entire, endCb) {
             scrubat: new Date().getTime()
           }
         };
-        Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
+        Db.update(session._index, 'session', session._id, document, function(err, data) {
           endCb(pcapErr, fields);
         });
       }
@@ -5877,24 +5878,24 @@ function pcapScrub(req, res, id, entire, endCb) {
   });
 }
 
-app.get('/:nodeName/scrub/:id', checkProxyRequest, function(req, res) {
+app.get('/:nodeName/scrub/:sid', checkProxyRequest, function(req, res) {
   if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   noCache(req, res);
   res.statusCode = 200;
 
-  pcapScrub(req, res, req.params.id, false, function(err) {
+  pcapScrub(req, res, req.params.sid, false, function(err) {
     res.end();
   });
 });
 
-app.get('/:nodeName/delete/:id', checkProxyRequest, function(req, res) {
+app.get('/:nodeName/delete/:sid', checkProxyRequest, function(req, res) {
   if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
 
   noCache(req, res);
   res.statusCode = 200;
 
-  pcapScrub(req, res, req.params.id, true, function(err) {
+  pcapScrub(req, res, req.params.sid, true, function(err) {
     res.end();
   });
 });
@@ -5908,7 +5909,7 @@ function scrubList(req, res, entire, list) {
 
     isLocalView(fields.node, function () {
       // Get from our DISK
-      pcapScrub(req, res, item._id, entire, nextCb);
+      pcapScrub(req, res, Db.session2Sid(item), entire, nextCb);
     },
     function () {
       // Get from remote DISK
@@ -6271,7 +6272,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
   function saveSession() {
     var id = session.id;
     delete session.id;
-    Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
+    Db.indexNow(Db.sid2Index(id), "session", Db.sid2Id(id), session, function(err, info) {
     });
   }
 
