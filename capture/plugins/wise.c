@@ -466,9 +466,9 @@ LOCAL void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, 
 {
     // Skip leading http
     if (*domain == 'h') {
-        if (memcmp(domain, "http://", 7) == 0)
+        if (strncmp(domain, "http://", 7) == 0)
             domain += 7;
-        else if (memcmp(domain, "https://", 8) == 0)
+        else if (strncmp(domain, "https://", 8) == 0)
             domain += 8;
     }
 
