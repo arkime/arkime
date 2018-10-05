@@ -1144,6 +1144,9 @@ export default {
           return !event.related.classList.contains('ignore-element');
         },
         onEnd: (event) => { // dragged col header was dropped
+          // nothing has changed, so don't do stuff
+          if (event.oldIndex === event.newIndex) { return; }
+
           this.loading = true;
 
           // update the headers to the new order
