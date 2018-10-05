@@ -330,6 +330,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
     gettimeofday(&currentTime, NULL);
 
     for (i = 0; i < request->numItems; i++) {
+        MOLOCH_LOCK(item);
         WiseItem_t    *wi = request->items[i];
         int numOps = 0;
         BSB_IMPORT_u08(bsb, numOps);
@@ -368,7 +369,6 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         wi->sessions = 0;
         wi->numSessions = 0;
 
-        MOLOCH_LOCK(item);
         DLL_PUSH_HEAD(wil_, &types[(int)wi->type].itemList, wi);
         // Cache needs to be reduced
         if (types[(int)wi->type].itemList.wil_count > maxCache) {
