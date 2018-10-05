@@ -411,6 +411,7 @@ let timeout;
 let colResizeInitialized;
 let colDragDropInitialized;
 let draggableColumns;
+let tableDestroyed;
 
 // window/table resize variables
 let resizeTimeout;
@@ -1164,29 +1165,35 @@ export default {
     },
     /* Initializes resizable columns */
     initializeColResizable: function () {
-      colResizeInitialized = true;
-      $('#sessionsTable').colResizable({
-        minWidth: 50,
-        headerOnly: true,
-        resizeMode: 'overflow',
-        disabledColumns: [0],
-        hoverCursor: 'col-resize',
-        onResize: (event, column, colIdx) => {
-          this.loading = true;
+      if (tableDestroyed) {
+        $('#sessionsTable').colResizable({ disable: true });
+        colResizeInitialized = false;
+        tableDestroyed = false;
+      }
 
-          let header = this.headers[colIdx - 1];
-          if (header) {
-            header.width = column.w;
-            this.colWidths[header.dbField] = column.w;
+      setTimeout(() => {
+        colResizeInitialized = true;
+        $('#sessionsTable').colResizable({
+          minWidth: 50,
+          headerOnly: true,
+          resizeMode: 'overflow',
+          disabledColumns: [0],
+          hoverCursor: 'col-resize',
+          onResize: (event, column, colIdx) => {
+            this.loading = true;
 
-            this.saveColumnWidths();
-            this.mapHeadersToFields();
-          }
+            let header = this.headers[colIdx - 1];
+            if (header) {
+              header.width = column.w;
+              this.colWidths[header.dbField] = column.w;
 
-          setTimeout(() => {
+              this.saveColumnWidths();
+              this.mapHeadersToFields();
+            }
+
             this.loading = false;
-          });
-        }
+          }
+        });
       });
     },
     /* Saves the column widths */
@@ -1243,6 +1250,7 @@ export default {
     }
   },
   beforeDestroy: function () {
+    tableDestroyed = true;
     holdingClick = false;
     componentInitialized = false;
     colResizeInitialized = false;
