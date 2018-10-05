@@ -167,7 +167,7 @@ LOCAL void dns_add_host(int field, MolochSession_t *session, char *string, int l
 /******************************************************************************/
 LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len) {
 
-    char *host =0;
+    char *host = 0;
     MolochField_t *field = 0;
     MolochString_t *hstring = 0;
 
@@ -196,7 +196,7 @@ LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len
     }
 
     field = session->fields[pos];
-    HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(host, len), host, hstring);
+    HASH_FIND(s_, *(field->shash), host, hstring);
 
     g_free(host);
 
