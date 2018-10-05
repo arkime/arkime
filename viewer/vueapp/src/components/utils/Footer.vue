@@ -33,8 +33,13 @@ export default {
 <style scoped>
 .footer {
   text-align: center;
-  margin-top: var(--px-md);
-  color     : var(--color-gray-dark);
+  color: var(--color-gray-dark);
   border-top: 1px solid var(--color-gray-light);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 25px;
+  line-height: 25px;
+  overflow: hidden;
 }
 </style>

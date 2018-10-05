@@ -9,10 +9,9 @@
       :message="error">
     </moloch-error>
 
-    <div v-if="!error"
-      class="shards-container mt-1">
+    <div v-if="!error">
 
-      <div class="input-group input-group-sm mb-1">
+      <div class="input-group input-group-sm mt-1">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
@@ -50,7 +49,7 @@
       </div>
 
       <table v-if="stats.indices && stats.indices.length"
-        class="table table-sm small scrolly-table pt-2 pb-1">
+        class="table table-sm small block-table mt-1">
         <thead>
           <tr>
             <th v-for="column in columns"
@@ -358,6 +357,7 @@ export default {
   }
 };
 </script>
+
 <style>
 table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
   padding: 1px 4px;
@@ -367,11 +367,8 @@ table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
 </style>
 
 <style scoped>
-table.table.scrolly-table {
+table.table.block-table {
   display: block;
-  overflow-y: auto;
-  height: calc(100vh - 210px);
-  margin-bottom: 0;
 }
 
 table > thead > tr > th {
@@ -397,7 +394,6 @@ table.table .hover-menu .btn-group {
 
 table.table .hover-menu .header-text {
   display: inline-block;
-  width: 100%;
   word-break: break-word;
 }
 

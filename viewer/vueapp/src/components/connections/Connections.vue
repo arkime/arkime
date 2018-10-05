@@ -174,7 +174,7 @@
       </div>
     </form>
 
-    <div class="connections-content ml-2 mr-2">
+    <div class="connections-content">
 
       <!-- loading overlay -->
       <moloch-loading
@@ -305,12 +305,9 @@ export default {
 
     this.startD3();
     this.loadData();
-
-    $('.footer').hide();
   },
   beforeDestroy: function () {
     this.endD3();
-    $('.footer').show();
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -985,11 +982,11 @@ export default {
 }
 
 .connections-page {
-  margin-top: 39px;
+  margin-top: 36px;
 }
 .connections-page form.connections-form {
-  position: relative;
-  top: 74px;
+  position: fixed;
+  top: 110px;
   left: 0;
   right: 0;
   background-color: var(--color-quaternary-lightest);
@@ -998,9 +995,6 @@ export default {
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
-.connections-page form.connections-form .form-inline {
-  margin-top: -3px;
-}
 
 .connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
   font-weight: 700;
@@ -1008,6 +1002,6 @@ export default {
 }
 
 .connections-page .connections-content {
-  margin-top: 80px;
+  padding-top: 95px;
 }
 </style>
