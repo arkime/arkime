@@ -531,15 +531,11 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             return NULL;
         }
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
-        if (copy) {
-            hstring->str = g_strndup(string, len);
-            hstring->len = len;
-            hstring->utf8 = 0;
-        } else {
-            hstring->str = (char*)string;
-            hstring->len = len;
-            hstring->utf8 = 0;
-        }
+        if (copy)
+            string = g_strndup(string, len);
+        hstring->str = (char*)string;
+        hstring->len = len;
+        hstring->utf8 = 0;
         hstring->uw = 0;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
         goto added;
@@ -680,11 +676,9 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             return NULL;
         }
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
-        if (copy) {
-            hstring->str = g_strndup(string, len);
-        } else {
-            hstring->str = (char*)string;
-        }
+        if (copy)
+            string = g_strndup(string, len);
+        hstring->str = (char*)string;
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = uw;

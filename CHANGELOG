@@ -37,6 +37,7 @@ NOTICE: Restart wiseService before capture when upgrading
               into multiple new ES fields (pr #914)
   - viewer - show shortcuts on shift
   - capture - initial gtp tunnel support (issue #926)
+  - wise - new wiseLogEvery to control how often plugin logs (0 disables)
 
 
 1.5.3 2018/09/10

@@ -33,6 +33,7 @@ LOCAL uint32_t              maxCache;
 LOCAL uint32_t              cacheSecs;
 LOCAL char                  tcpTuple;
 LOCAL char                  udpTuple;
+LOCAL uint32_t              logEvery;
 
 
 LOCAL int                   protocolField;
@@ -226,7 +227,14 @@ LOCAL void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer 
     moloch_session_decr_outstanding(session);
 }
 /******************************************************************************/
-LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
+LOCAL void wise_free_item(WiseItem_t *wi)
+{
+    g_free(wi->key);
+    moloch_field_ops_free(&wi->ops);
+    MOLOCH_TYPE_FREE(WiseItem_t, wi);
+}
+/******************************************************************************/
+LOCAL void wise_remove_item_locked(WiseItem_t *wi)
 {
     HASH_REMOVE(wih_, types[(int)wi->type].itemHash, wi);
     if (wi->sessions) {
@@ -236,9 +244,7 @@ LOCAL void wise_free_item_unlocked(WiseItem_t *wi)
         g_free(wi->sessions);
         wi->sessions = 0;
     }
-    g_free(wi->key);
-    moloch_field_ops_free(&wi->ops);
-    MOLOCH_TYPE_FREE(WiseItem_t, wi);
+    moloch_free_later(wi, (GDestroyNotify) wise_free_item);
 }
 /******************************************************************************/
 LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
@@ -259,7 +265,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
     if (BSB_IS_ERROR(bsb) || (ver != 0 && ver != 2)) {
         MOLOCH_LOCK(item);
         for (i = 0; i < request->numItems; i++) {
-            wise_free_item_unlocked(request->items[i]);
+            wise_remove_item_locked(request->items[i]);
         }
         MOLOCH_UNLOCK(item);
         MOLOCH_TYPE_FREE(WiseRequest_t, request);
@@ -367,7 +373,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         // Cache needs to be reduced
         if (types[(int)wi->type].itemList.wil_count > maxCache) {
             DLL_POP_TAIL(wil_, &types[(int)wi->type].itemList, wi);
-            wise_free_item_unlocked(wi);
+            wise_remove_item_locked(wi);
         }
         MOLOCH_UNLOCK(item);
     }
@@ -387,7 +393,7 @@ LOCAL void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *v
     WiseItem_t *wi;
 
     lookups++;
-    if ((lookups % 10000) == 0)
+    if (logEvery != 0 && (lookups % logEvery) == 0)
         wise_print_stats();
 
     stats[type][INTEL_STAT_LOOKUP]++;
@@ -724,7 +730,7 @@ LOCAL void wise_plugin_exit()
     for (int type = 0; type < INTEL_TYPE_SIZE; type++) {
         WiseItem_t *wi;
         while (DLL_POP_TAIL(wil_, &types[type].itemList, wi)) {
-            wise_free_item_unlocked(wi);
+            wise_remove_item_locked(wi);
         }
     }
 
@@ -866,6 +872,7 @@ void moloch_plugin_init()
     cacheSecs = moloch_config_int(NULL, "wiseCacheSecs", 600, 1, 5000);
     tcpTuple = moloch_config_boolean(NULL, "wiseTcpTupleLookups", FALSE);
     udpTuple = moloch_config_boolean(NULL, "wiseUdpTupleLookups", FALSE);
+    logEvery = moloch_config_int(NULL, "wiseLogEvery", 10000, 0, 10000000);
 
     wiseURL  = moloch_config_str(NULL, "wiseURL", NULL);
     wisePort = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
