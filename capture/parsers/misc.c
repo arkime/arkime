@@ -292,6 +292,13 @@ LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, in
     }
 }
 /******************************************************************************/
+LOCAL void hdfs_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 10 || data[5] != 0xa)
+        return;
+    moloch_session_add_protocol(session, "hdfs");
+}
+/******************************************************************************/
 LOCAL void hsrp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port1 != session->port2 || len < 3)
@@ -328,6 +335,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x33\x0d\x0a\x24", 5, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x34\x0d\x0a\x24", 5, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x35\x0d\x0a\x24", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"-NOAUTH ", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:a", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:r", 4, misc_add_protocol_classify);
@@ -442,7 +450,14 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("memcached", "memcached", 0, (unsigned char*)"END\r\n", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("hbase", "hbase", 0, (unsigned char*)"HBas\x00", 5, misc_add_protocol_classify);
-    moloch_parsers_classifier_register_tcp("hrpc", "hrpc", 0, (unsigned char*)"hrpc\x09", 5, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("hdfs", NULL, 0, (unsigned char*)"\x00\x1c\x50", 3, hdfs_classify);
+    moloch_parsers_classifier_register_tcp("hdfs", NULL, 0, (unsigned char*)"\x00\x1c\x51", 3, hdfs_classify);
+    moloch_parsers_classifier_register_tcp("hdfs", NULL, 0, (unsigned char*)"\x00\x1c\x55", 3, hdfs_classify);
+
+    moloch_parsers_classifier_register_tcp("zookeeper", "zookeeper", 0, (unsigned char*)"mntr\n", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("zookeeper", "zookeeper", 0, (unsigned char*)"\x00\x00\x00\x2c\x00\x00\x00\x00", 8, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("zookeeper", "zookeeper", 0, (unsigned char*)"\x00\x00\x00\x2d\x00\x00\x00\x00", 8, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00stats", 7, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00gets ", 7, misc_add_protocol_classify);

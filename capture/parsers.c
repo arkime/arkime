@@ -876,7 +876,7 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
         LOGEXIT("Parser '%s' has empty type", name);
     }
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
+    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->func     = func;
@@ -908,7 +908,7 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     if (!match)
         LOGEXIT("Can't have a null match for %s", name);
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
+    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->offset   = offset;
@@ -940,7 +940,7 @@ void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw,
         LOGEXIT("Parser '%s' built with different version of moloch.h", name);
     }
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
+    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->offset   = offset;
