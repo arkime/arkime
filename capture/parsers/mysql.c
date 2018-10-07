@@ -39,7 +39,7 @@ LOCAL int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *
         return 0;
     }
 
-    if (len < 35 || data[1] != 0 || data[2] != 0 || data[3] > 2) {
+    if ((len < 35 && len != 8) || data[1] != 0 || data[2] != 0 || data[3] > 2) {
         moloch_parsers_unregister(session, info);
         return 0;
     }
@@ -106,6 +106,7 @@ LOCAL void mysql_classify(MolochSession_t *session, const unsigned char *data, i
         return;
     }
 
+    LOG("E");
     Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
     info->versionLen = ptr - (data + 5);
     info->version = g_strndup((char*)data + 5, info->versionLen);

@@ -429,7 +429,7 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_tcp("nzsql", "nzsql", 0, (unsigned char*)"\x00\x00\x00\x08\x00\x01\x00\x03", 8, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_tcp("splunk", "splunk", 0, (unsigned char*)"--splunk-cooked-mode-v3--", 25, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("splunk", "splunk", 0, (unsigned char*)"--splunk-cooked-mode", 20, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_port("isakmp",  NULL, 500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
 
@@ -440,6 +440,9 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("memcached", "memcached", 0, (unsigned char*)"flush_all", 9, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("memcached", "memcached", 0, (unsigned char*)"STORED\r\n", 8, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("memcached", "memcached", 0, (unsigned char*)"END\r\n", 5, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("hbase", "hbase", 0, (unsigned char*)"HBas\x00", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("hrpc", "hrpc", 0, (unsigned char*)"hrpc\x09", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00stats", 7, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("memcached", "memcached", 6, (unsigned char*)"\x00\x00gets ", 7, misc_add_protocol_classify);
