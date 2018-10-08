@@ -38,6 +38,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - show shortcuts on shift
   - capture - initial gtp tunnel support (issue #926)
   - wise - new wiseLogEvery to control how often plugin logs (0 disables)
+  - capture - experimental autoGenerateId config to use ES auto generated ids
+  - viewer - Ability to download files based on hash (pr #927)
 
 
 1.5.3 2018/09/10

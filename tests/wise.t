@@ -101,7 +101,7 @@ eq_or_diff($wise, '[{field: "email.dst", len: 11, value: "wiseadded1"},
 ', "ALL 12345678\@aol.com");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/rightClicks")->content;
-eq_or_diff(from_json($wise), from_json('{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}, "BODYHASHMD5":{"url":"/%NODE%/%ID%/bodyHash/%TEXT%","name":"Download File","category":"md5"}, "BODYHASHSHA256":{"url":"/%NODE%/%ID%/bodyHash/%TEXT%","name":"Download File","category":"sha256"}}'), "right clicks");
+eq_or_diff(from_json($wise), from_json('{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'), "right clicks");
 
 my $pwd = "*/pcap";
 

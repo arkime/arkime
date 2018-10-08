@@ -293,6 +293,8 @@ app.use(function(req, res, next) {
       return {name: "Decoded:", value: atob(value.substring(6))};
     return undefined;
   }`};
+  mrc.bodyHashMd5 = {category: "md5", url: "/%NODE%/%ID%/bodyHash/%TEXT%", name: "Download File"};
+  mrc.bodyHashSha256 = {category: "sha256", url: "/%NODE%/%ID%/bodyHash/%TEXT%", name: "Download File"};
 
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];
@@ -4523,7 +4525,6 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
  */
 
 app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
-
   var hash = null;
   var nodeName = null;
   var sessionID = null;
@@ -4552,12 +4553,12 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
         res.end(sessions.error);
       } else {
           if (Config.debug) {
-            console.log("sessions.json result", util.inspect(sessions, false, 50));
+            console.log("bodyHash result", util.inspect(sessions, false, 50));
           }
           if (sessions.hits.hits.length > 0) {
 
             nodeName = sessions.hits.hits[0]._source.node;
-            sessionID = sessions.hits.hits[0]._id;
+            sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 
             isLocalView(nodeName, function () { // get file from the local disk

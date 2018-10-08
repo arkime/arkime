@@ -1,4 +1,4 @@
-use Test::More tests => 19;
+use Test::More tests => 26;
 
 use Cwd;
 use URI::Escape;
@@ -80,3 +80,29 @@ my $pwd = "*/pcap";
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test\/$id\/body\/file\/1\/a.zip.pellet")->content;
     ok(bin2hex($sd) eq "504b03040a0000000000274e914304f729e2060000000600000005001c0066696c653155540900036964b0526964b05275780b0001044c060000040204000066696c65310a504b03040a0000000000294e9143c7a404c9060000000600000005001c0066696c653255540900036e64b0526e64b05275780b0001044c060000040204000066696c65320a504b01021e030a0000000000274e914304f729e20600000006000000050018000000000001000000a4810000000066696c653155540500036964b05275780b0001044c0600000402040000504b01021e030a0000000000294e9143c7a404c90600000006000000050018000000000001000000a4814500000066696c653255540500036e64b05275780b0001044c0600000402040000504b05060000000002000200960000008a0000000000", "smtp zip file");
+
+# bodyHash in session
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/80211http.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/$id/bodyHash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec")->content;
+    is($sd, "Username=Qggh&Passwd=Bhhhh&Section=Auuu", "Right sha256");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/$id/bodyHash/a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "Username=Q&Passwd=B&Section=A", "Right md5");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/$id/bodyHash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a")->content;
+    is($sd, "No match", "No Match");
+
+# Global bodyHash
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/bodyHash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec?date=-1&expression=http.sha256=87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec")->content;
+    is($sd, "Username=Qggh&Passwd=Bhhhh&Section=Auuu", "Global Right sha256");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/bodyHash/a4a7b8b5eaf4c2cf356b1052133c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "Username=Q&Passwd=B&Section=A", "Global Right md5");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/bodyHash/a4a7b8b5eaf4c2cf356b1052133c6cdb?date=-1&expression=http.md5=1")->content;
+    is($sd, "No Match Found", "No Match Found");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/bodyHash/a4a7b8b5eaf4c2cf356b105c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "No match", "No Match");
