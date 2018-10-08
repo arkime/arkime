@@ -106,7 +106,6 @@ LOCAL void mysql_classify(MolochSession_t *session, const unsigned char *data, i
         return;
     }
 
-    LOG("E");
     Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
     info->versionLen = ptr - (data + 5);
     info->version = g_strndup((char*)data + 5, info->versionLen);
