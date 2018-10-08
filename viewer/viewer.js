@@ -4521,7 +4521,7 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
  * Get a file given a hash of that file
  */
 
-app.get('/huntfile/hash/:hash', logAction('huntfile'), function(req, res) {
+app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
 
   var hash = null;
   var nodeName = null;
@@ -4532,10 +4532,14 @@ app.get('/huntfile/hash/:hash', logAction('huntfile'), function(req, res) {
       res.status(400);
       return res.end(bsqErr);
     }
+
+    query.size = 1;
+    query.sort = { lastPacket: { order: 'desc' } };
+    query._source = ["node"];
+
     if (Config.debug) {
       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
-
     Db.searchPrimary(indices, 'session', query, function(err, sessions) {
       if (err ) {
         console.log ("Error -> Db Search ", err);
@@ -4576,7 +4580,7 @@ app.get('/huntfile/hash/:hash', logAction('huntfile'), function(req, res) {
               preq.params['nodeName'] = nodeName;
               preq.params['id'] = sessionID;
               preq.params['hash'] = hash;
-              preq.url ='/' + nodeName + '/' + sessionID + '/huntfile/hash/' + hash;
+              preq.url ='/' + nodeName + '/' + sessionID + '/bodyHash/' + hash;
               return proxyRequest(preq, res);
             });
           }
@@ -4589,7 +4593,7 @@ app.get('/huntfile/hash/:hash', logAction('huntfile'), function(req, res) {
   });
 });
 
-app.get('/:nodeName/:id/huntfile/hash/:hash', checkProxyRequest, function(req, res) {
+app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function(req, res) {
   localGetItemByHash (req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
     if (err) {
        res.status(400);
@@ -4630,6 +4634,7 @@ function localGetItemByHash(nodeName, sessionID, hash, cb) {
       "ITEM-CB": {
       }
     };
+
     options.order.push("ITEM-HTTP");
     options.order.push("ITEM-SMTP");
     options.order.push("ITEM-HASH");

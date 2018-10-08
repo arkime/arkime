@@ -77,13 +77,6 @@
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
-             <b-dropdown-item
-              v-if="url"
-              :href="url"
-              target="_blank">
-              <span class="fa fa-folder-open-o"></span>&nbsp;
-              Download File
-            </b-dropdown-item>
             <b-dropdown-item
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
@@ -169,7 +162,6 @@ export default {
     'field', // the field object that describes the field
     'expr', // the query expression to be put in the search expression
     'value', // the value of the session field (undefined if the field has children)
-    'url', // the url to be used for a rigth-click on a Menu item
     'session', // the session object
     'parse', // whether to parse the value
     'timezone', // what timezone date fields should be in ('gmt' or 'local')
@@ -375,15 +367,34 @@ export default {
 
       return `${field} ${op} ${value}`;
     },
+    /**
+     * Gets Session object
+     * @returns {Object} The Session object
+     */
+    getSession: function () {
+      if (!this.session) { return {}; }
+
+      if (this.session instanceof Object) {
+        return this.session;
+      } else {
+        try {
+          return JSON.parse(this.session);
+        } catch (err) {
+          return {};
+        }
+      }
+    },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
       if (!this.parsed[0].value || !this.molochClickables) { return; }
-
       let info = this.getInfo();
+      let session = this.getSession();
       let text = this.parsed[0].queryVal.toString();
       let url = text.indexOf('?') === -1 ? text : text.substring(0, text.indexOf('?'));
       let host = url;
       let pos = url.indexOf('//');
+      let nodename = session.node || '';
+      let sessionid = session.id || '';
 
       if (pos >= 0) { host = url.substring(pos + 2); }
       pos = host.indexOf('/');
@@ -409,7 +420,6 @@ export default {
         }
         dateparams = `date=${urlParams.date}`;
       }
-
       for (let key in this.molochClickables) {
         if (this.molochClickables.hasOwnProperty(key)) {
           let rc = this.molochClickables[key];
@@ -435,7 +445,9 @@ export default {
             .replace('%TEXT%', text)
             .replace('%UCTEXT%', text.toUpperCase())
             .replace('%HOST%', host)
-            .replace('%URL%', encodeURIComponent('http:' + url));
+            .replace('%URL%', encodeURIComponent('http:' + url))
+            .replace('%NODE%', nodename)
+            .replace('%ID%', sessionid);
 
           let name = this.molochClickables[key].name || key;
 
