@@ -90,7 +90,8 @@
             </span>&nbsp;
             Themes
           </a>
-          <a class="nav-link cursor-pointer"
+          <a v-if="!multiviewer"
+            class="nav-link cursor-pointer"
             @click="openView('password')"
             :class="{'active':visibleTab === 'password'}">
             <span class="fa fa-fw fa-lock">
@@ -1470,7 +1471,7 @@
         </form> <!-- /theme settings -->
 
         <!-- password settings -->
-        <form v-if="visibleTab === 'password'"
+        <form v-if="visibleTab === 'password' && !multiviewer"
           class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
@@ -1643,7 +1644,8 @@ export default {
       currentPassword: '',
       newPassword: '',
       confirmNewPassword: '',
-      changePasswordError: ''
+      changePasswordError: '',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   created: function () {
@@ -1655,6 +1657,11 @@ export default {
         tab === 'col' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview') {
         this.visibleTab = tab;
+      }
+
+      if (tab === 'password' && this.multiviewer) {
+        // multiviewer user can't change password
+        this.openView('general');
       }
     }
 
