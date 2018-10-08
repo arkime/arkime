@@ -678,6 +678,9 @@ function proxyRequest (req, res, errCb) {
       if (pres.headers['content-type']) {
         res.setHeader('content-type', pres.headers['content-type']);
       }
+      if (pres.headers['content-disposition']) {
+        res.setHeader('content-disposition', pres.headers['content-disposition']);
+      }
       pres.on('data', function (chunk) {
         res.write(chunk);
       });
@@ -4514,6 +4517,141 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
     res.send(PNG.sync.write(png, {inputColorType:0, colorType: 0, bitDepth:8, inputHasAlpha:false}));
   });
 });
+
+/**
+ * Get a file given a hash of that file
+ */
+
+app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
+
+  var hash = null;
+  var nodeName = null;
+  var sessionID = null;
+
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      res.status(400);
+      return res.end(bsqErr);
+    }
+
+    query.size = 1;
+    query.sort = { lastPacket: { order: 'desc' } };
+    query._source = ["node"];
+
+    if (Config.debug) {
+      console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
+    }
+    Db.searchPrimary(indices, 'session', query, function(err, sessions) {
+      if (err ) {
+        console.log ("Error -> Db Search ", err);
+        res.status(400);
+        res.end(err);
+      } else if (sessions.error) {
+        console.log ("Error -> Db Search ", sessions.error);
+        res.status(400);
+        res.end(sessions.error);
+      } else {
+          if (Config.debug) {
+            console.log("sessions.json result", util.inspect(sessions, false, 50));
+          }
+          if (sessions.hits.hits.length > 0) {
+
+            nodeName = sessions.hits.hits[0]._source.node;
+            sessionID = sessions.hits.hits[0]._id;
+            hash = req.params.hash;
+
+            isLocalView(nodeName, function () { // get file from the local disk
+              localGetItemByHash (nodeName, sessionID, hash, (err, item) => {
+                if (err) {
+                  res.status(400);
+                  return res.end(err);
+                } else if (item) {
+                  noCache(req, res);
+                  res.setHeader("content-type", "application/force-download");
+                  res.setHeader("content-disposition", "attachment; filename="+ item.bodyName+".pellet");
+                  return res.end(item.data);
+                } else {
+                  res.status(400);
+                  return res.end("No Match");
+                }
+              });
+            },
+            function () { // get file from the remote disk
+              var preq = util._extend({},req);
+              preq.params['nodeName'] = nodeName;
+              preq.params['id'] = sessionID;
+              preq.params['hash'] = hash;
+              preq.url ='/' + nodeName + '/' + sessionID + '/bodyHash/' + hash;
+              return proxyRequest(preq, res);
+            });
+          }
+          else {
+            res.status(400);
+            res.end ("No Match Found");
+          }
+      }
+    });
+  });
+});
+
+app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function(req, res) {
+  localGetItemByHash (req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
+    if (err) {
+       res.status(400);
+       return res.end(err);
+    } else if (item) {
+      noCache(req, res);
+      res.setHeader("content-type", "application/force-download");
+      res.setHeader("content-disposition", "attachment; filename="+ item.bodyName+".pellet");
+      return res.end(item.data);
+    } else {
+      res.status(400);
+      return res.end("No Match");
+    }
+  });
+});
+
+function localGetItemByHash(nodeName, sessionID, hash, cb) {
+  processSessionIdAndDecode(sessionID, 10000, function(err, session, incoming) {
+    if (err) {
+      return cb(err);
+    }
+    if (incoming.length === 0) {
+      return cb(null, null);
+    }
+    var options = {
+      id: sessionID,
+      nodeName: nodeName,
+      order: [],
+      "ITEM-HTTP": {
+        order: []
+      },
+      "ITEM-SMTP": {
+        order: ["BODY-UNBASE64"]
+      },
+      "ITEM-HASH": {
+        hash: hash
+      },
+      "ITEM-CB": {
+      }
+    };
+
+    options.order.push("ITEM-HTTP");
+    options.order.push("ITEM-SMTP");
+    options.order.push("ITEM-HASH");
+    options.order.push("ITEM-CB");
+    options["ITEM-CB"].cb = function(err, items) {
+      if (err) {
+        return cb(err, null);
+      }
+      if (items === undefined || items.length === 0) {
+        return cb("No match", null);
+      }
+      return cb(err, items[0]);
+    };
+    decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
+  });
+}
 
 function writePcap(res, id, options, doneCb) {
   var b = Buffer.alloc(0xfffe);

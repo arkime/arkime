@@ -1,6 +1,6 @@
 //- Display a clickable value
-mixin clickableValue(expr, value, parse)
-  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, pull-left=true)
+mixin clickableValue(expr, value, parse, session)
+  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
 
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
@@ -21,7 +21,7 @@ mixin arrayPrint(container, field, expr)
         +clickableValue(expr, value)
 
 //- Standard method to print an array of values
-mixin arrayList(container, field, title, expr, extra, max)
+mixin arrayList(container, field, title, expr, extra, max, session)
   if (!max)
     - max = 25
   if ((container && container[field]) || extra)
@@ -36,7 +36,7 @@ mixin arrayList(container, field, title, expr, extra, max)
           if (value.length == 0)
             span &lt;empty&gt;
           else
-            +clickableValue(expr, value)
+            +clickableValue(expr, value, null, session)
         if (container[field].length > max)
           |<a class="cursor-pointer show-more-items" @click="showFewerItems($event)">less...</a></span>
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
