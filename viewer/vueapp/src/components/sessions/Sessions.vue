@@ -471,7 +471,7 @@ export default {
   computed: {
     query: function () {
       return { // query defaults
-        length: this.$route.query.length || 50, // page length
+        length: parseInt(this.$route.query.length || 50), // page length
         start: 0, // first item index
         facets: 1,
         date: this.$store.state.timeRange,
