@@ -8,30 +8,31 @@
         right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
+        boundary="body"
         variant="theme-primary">
-        <b-dropdown-item @click="exportPCAP()">
+        <b-dropdown-item @click="exportPCAP">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
           Export PCAP
         </b-dropdown-item>
-        <b-dropdown-item @click="exportCSV()">
+        <b-dropdown-item @click="exportCSV">
           <span class="fa fa-fw fa-file-excel-o"></span>&nbsp;
           Export CSV
         </b-dropdown-item>
-        <b-dropdown-item @click="addTags()">
+        <b-dropdown-item @click="addTags">
           <span class="fa fa-fw fa-tags"></span>&nbsp;
           Add Tags
         </b-dropdown-item>
-        <b-dropdown-item @click="removeTags()"
+        <b-dropdown-item @click="removeTags"
           v-has-permission="'removeEnabled'">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Remove Tags
         </b-dropdown-item>
-        <b-dropdown-item @click="scrubPCAP()"
+        <b-dropdown-item @click="scrubPCAP"
           v-has-permission="'removeEnabled'">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Scrub PCAP Storage
         </b-dropdown-item>
-        <b-dropdown-item @click="deleteSession()"
+        <b-dropdown-item @click="deleteSession"
           v-has-permission="'removeEnabled'">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Delete SPI & PCAP
@@ -56,7 +57,7 @@
           <span v-if="view">{{ view }}</span>
           <span class="sr-only">Views</span>
         </template>
-        <b-dropdown-item @click="createView()">
+        <b-dropdown-item @click="createView">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
         </b-dropdown-item>
@@ -85,7 +86,7 @@
 
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1"
-        @click="applyParams()"
+        @click="applyParams"
         tabindex="2">
         Search
       </a> <!-- /search button -->

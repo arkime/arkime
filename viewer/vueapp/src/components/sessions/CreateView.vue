@@ -83,7 +83,7 @@
       </span>
     </button>
       <div class="btn btn-sm btn-warning pull-right"
-        @click="done()">
+        @click="done(null)">
         <span class="fa fa-ban">
         </span>&nbsp;
         Cancel

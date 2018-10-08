@@ -16,7 +16,7 @@
       <a class="cursor-pointer"
         style="text-decoration:none;"
         v-if="session['http.uri'].length > initialLimit"
-        @click="toggleShowAll()">
+        @click="toggleShowAll">
         <span v-if="!showAll">
           more...
         </span>
@@ -94,7 +94,7 @@
       <a class="cursor-pointer"
         style="text-decoration:none;"
         v-if="session['dns.host'].length > initialLimit"
-        @click="toggleShowAll()">
+        @click="toggleShowAll">
         <span v-if="!showAll">
           more...
         </span>
@@ -131,7 +131,7 @@
             <a class="cursor-pointer"
               style="text-decoration:none;"
               v-if="cert.alt.length > initialLimit"
-              @click="toggleShowAll()">
+              @click="toggleShowAll">
               <span v-if="!showAll">
                 more...
               </span>

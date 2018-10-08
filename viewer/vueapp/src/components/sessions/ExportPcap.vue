@@ -2,7 +2,7 @@
 
   <!-- export pcap form -->
   <div class="row"
-    @keyup.stop.prevent.enter="exportPcap()">
+    @keyup.stop.prevent.enter="exportPcap">
 
     <!-- segments select input -->
     <div class="col-md-4">
@@ -44,7 +44,7 @@
         />
         <div class="input-group-append">
           <button class="btn btn-theme-tertiary"
-            @click="exportPcap()"
+            @click="exportPcap"
             type="button">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;
@@ -66,7 +66,7 @@
     <!-- cancel button -->
     <div class="col-md-1">
       <div class="btn btn-sm btn-warning pull-right"
-        @click="done()">
+        @click="done(null)">
         <span class="fa fa-ban">
         </span>&nbsp;
         Cancel

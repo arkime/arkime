@@ -540,7 +540,7 @@
                 <td>
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
-                    @click="createView()">
+                    @click="createView">
                     <span class="fa fa-plus-circle">
                     </span>&nbsp;
                     Create
@@ -678,7 +678,7 @@
                 </td>
               </tr> <!-- /cron query form error -->
               <!-- new cron query form -->
-              <tr @keyup.enter="createCronQuery()">
+              <tr @keyup.enter="createCronQuery">
                 <td>&nbsp;</td>
                 <td>
                   <select class="form-control form-control-sm"
@@ -737,12 +737,13 @@
                   />
                 </td>
                 <td>
-                  <a class="btn btn-theme-tertiary btn-sm pull-right"
+                  <button type="button"
+                    class="btn btn-theme-tertiary btn-sm pull-right"
                     @click="createCronQuery">
                     <span class="fa fa-plus-circle">
                     </span>&nbsp;
                     Create
-                  </a>
+                  </button>
                 </td>
               </tr> <!-- /new cron query form -->
               <!-- cron query form error -->
@@ -1454,7 +1455,7 @@
                     </button>
                     <button class="btn btn-theme-primary"
                       type="button"
-                      @click="updateThemeString()">
+                      @click="updateThemeString">
                       <span class="fa fa-check">
                       </span>&nbsp;
                       Apply
@@ -1471,7 +1472,7 @@
         <!-- password settings -->
         <form v-if="visibleTab === 'password'"
           class="form-horizontal"
-          @keyup.enter="changePassword()"
+          @keyup.enter="changePassword"
           id="password">
 
           <h3>Change Password</h3>
@@ -1527,7 +1528,7 @@
             <div class="col-sm-9">
               <button type="button"
                 class="btn btn-theme-tertiary"
-                @click="changePassword()">
+                @click="changePassword">
                 Change Password
               </button>
               <span v-if="changePasswordError"

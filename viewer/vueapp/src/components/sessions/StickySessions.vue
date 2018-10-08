@@ -5,7 +5,7 @@
 
     <!-- toggle button -->
     <div class="sticky-session-btn"
-      @click="toggleStickySessions()"
+      @click="toggleStickySessions"
       v-if="sessions && sessions.length > 0"
       v-b-tooltip.hover
       title="Toggle view of expanded sessions">
@@ -26,7 +26,7 @@
         <ul class="list-group">
           <li class="list-group-item list-group-header">
             <a v-b-tooltip.hover
-              @click="closeAll()"
+              @click="closeAll"
               title="Close all open sessions"
               class="btn btn-default btn-sm pull-right ml-1">
               <span class="fa fa-close">
@@ -35,7 +35,7 @@
             <span v-if="sortBy">
               <a v-if="sortOrder === 'asc'"
                 v-b-tooltip.hover
-                @click="toggleSortOrder()"
+                @click="toggleSortOrder"
                 title="Sorting ascending, click to sort descending"
                 class="btn btn-default btn-sm pull-right ml-1">
                 <span class="fa fa-sort-asc">
@@ -43,7 +43,7 @@
               </a>
               <a v-if="sortOrder === 'desc'"
                 v-b-tooltip.hover
-                @click="toggleSortOrder()"
+                @click="toggleSortOrder"
                 title="Sorting descending, click to sort ascending"
                 class="btn btn-default btn-sm pull-right ml-1">
                 <span class="fa fa-sort-desc">
@@ -51,7 +51,7 @@
               </a>
             </span>
             <select v-model="sortBy"
-              @change="sort()"
+              @change="sort"
               class="form-control form-control-sm pull-right sort-by-select">
               <option disabled value="">
                 Sort by...

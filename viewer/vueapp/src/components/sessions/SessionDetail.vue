@@ -39,7 +39,7 @@
               <select class="form-control"
                 style="-webkit-appearance:none;"
                 v-model="params.packets"
-                @change="getPackets()">
+                @change="getPackets">
                 <option value="50">50</option>
                 <option value="200">200</option>
                 <option value="500">500</option>
@@ -192,7 +192,7 @@
       </span>&nbsp;
       Loading session packets&nbsp;
       <button type="button"
-        @click="cancelPacketLoad()"
+        @click="cancelPacketLoad"
         class="btn btn-warning btn-xs">
         <span class="fa fa-ban">
         </span>&nbsp;
@@ -217,7 +217,7 @@
         {{ errorPackets }}&nbsp;
       </span>
       <button type="button"
-        @click="getPackets()"
+        @click="getPackets"
         class="btn btn-success btn-xs">
         <span class="fa fa-refresh">
         </span>&nbsp;
@@ -250,7 +250,7 @@
               <select class="form-control"
                 style="-webkit-appearance:none;"
                 v-model="params.packets"
-                @change="getPackets()">
+                @change="getPackets">
                 <option value="50">50</option>
                 <option value="200">200</option>
                 <option value="500">500</option>

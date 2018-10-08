@@ -17,7 +17,7 @@
       hide-ellipsis
       :per-page="length"
       :total-rows="recordsFiltered"
-      @input="notifyParent()">
+      @input="notifyParent">
     </b-pagination> <!-- paging -->
     <!-- page info -->
     <div class="pagination-info cursor-help"

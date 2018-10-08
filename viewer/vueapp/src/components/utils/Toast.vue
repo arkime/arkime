@@ -21,7 +21,7 @@
     <!-- dismiss alert button -->
     <button type="button"
       class="close"
-      @click="done()">
+      @click="done(null)">
       <span>
         &times;
       </span>

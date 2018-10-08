@@ -22,7 +22,7 @@
         <select class="form-control time-range-control"
           tabindex="3"
           v-model="timeRange"
-          @change="changeTimeRange()"
+          @change="changeTimeRange"
           @blur="onOffTimeRangeFocus"
           v-focus-input="focusTimeRange">
           <option value="1">Last hour</option>
@@ -116,7 +116,7 @@
         <select class="form-control time-range-control"
           v-model="timeBounding"
           tabindex="6"
-          @change="changeTimeBounding()">
+          @change="changeTimeBounding">
           <option value="first">First Packet</option>
           <option value="last">Last Packet</option>
           <option value="both">Bounded</option>
@@ -141,7 +141,7 @@
         <select class="form-control time-range-control"
           v-model="timeInterval"
           tabindex="6"
-          @change="changeTimeInterval()">
+          @change="changeTimeInterval">
           <option value="auto">Auto</option>
           <option value="second">Seconds</option>
           <option value="minute">Minutes</option>

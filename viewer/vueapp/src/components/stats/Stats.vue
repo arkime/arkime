@@ -18,7 +18,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="statsType"
-            v-on:change="statsTypeChange()">
+            v-on:change="statsTypeChange">
             <option value="deltaPacketsPerSec">Packets/Sec</option>
             <option value="deltaBytesPerSec">Bytes/Sec</option>
             <option value="deltaBitsPerSec">Bits/Sec</option>
@@ -64,7 +64,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="graphInterval"
-            v-on:change="graphIntervalChange()">
+            v-on:change="graphIntervalChange">
             <option value="5">Seconds</option>
             <option value="60">Minutes</option>
             <option value="600">10 Minutes</option>
@@ -83,7 +83,7 @@
          </div>
           <select class="form-control input-sm"
             v-model="graphHide"
-            v-on:change="graphHideChange()">
+            v-on:change="graphHideChange">
             <option value="none">None</option>
             <option value="old">Out of date</option>
             <option value="nosession">No sessions</option>
@@ -120,7 +120,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="dataInterval"
-            v-on:change="dataIntervalChange()" >
+            v-on:change="dataIntervalChange" >
             <option value="5000">5 seconds</option>
             <option value="15000">15 seconds</option>
             <option value="30000">30 seconds</option>
@@ -134,7 +134,7 @@
           v-if="tabIndex !== 0">
           <button type="button"
             class="btn btn-theme-tertiary btn-sm"
-            @click="loadData()">
+            @click="loadData">
             <span>
               Refresh
             </span>
@@ -165,7 +165,7 @@
       </span>
       <b-tabs v-model="tabIndex">
         <b-tab title="Capture Graphs"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <capture-graphs v-if="user && tabIndex === 0"
             :graph-type="statsType"
             :graph-interval="graphInterval"
@@ -175,7 +175,7 @@
           </capture-graphs>
         </b-tab>
         <b-tab title="Capture Stats"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <capture-stats v-if="user && tabIndex === 1"
             :graph-hide="graphHide"
             :refreshData="refreshData"
@@ -184,14 +184,14 @@
           </capture-stats>
         </b-tab>
         <b-tab title="ES Nodes"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <es-nodes v-if="user && tabIndex === 2"
             :refreshData="refreshData"
             :data-interval="dataInterval">
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -199,7 +199,7 @@
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -207,7 +207,7 @@
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
-          @click="tabIndexChange()">
+          @click="tabIndexChange">
           <es-shards v-if="user && tabIndex === 5"
             :refreshData="refreshData"
             :data-interval="dataInterval">

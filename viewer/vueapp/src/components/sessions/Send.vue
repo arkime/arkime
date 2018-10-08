@@ -2,7 +2,7 @@
 
   <!-- send sessions form -->
   <div class="row"
-    @keyup.stop.prevent.enter="send()">
+    @keyup.stop.prevent.enter="send">
 
     <!-- segments select input -->
     <div class="col-md-4">
@@ -44,7 +44,7 @@
         />
         <div class="input-group-append">
           <button class="btn btn-theme-tertiary"
-            @click="send()"
+            @click="send"
             :class="{'disabled':loading}"
             type="button">
             <span v-if="!loading">
@@ -74,7 +74,7 @@
     <!-- cancel button -->
     <div class="col-md-1">
       <div class="btn btn-sm btn-warning pull-right"
-        @click="done()">
+        @click="done(null)">
         <span class="fa fa-ban">
         </span>&nbsp;
         Cancel

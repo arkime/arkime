@@ -44,7 +44,7 @@
         />
         <div class="input-group-append">
           <button class="btn btn-theme-tertiary"
-            @click="exportCsv()"
+            @click="exportCsv"
             type="button">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;
@@ -66,7 +66,7 @@
     <!-- cancel button -->
     <div class="col-md-1">
       <div class="btn btn-sm btn-warning pull-right"
-        @click="done()">
+        @click="done(null)">
         <span class="fa fa-ban">
         </span>&nbsp;
         Cancel

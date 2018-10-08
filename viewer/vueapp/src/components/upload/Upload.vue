@@ -30,7 +30,7 @@
           <div class="form-group">
             <div class="custom-file">
               <input type="file"
-                @change="handleFile()"
+                @change="handleFile"
                 class="custom-file-input"
                 id="customFile"
                 ref="file"
@@ -69,7 +69,7 @@
               <button class="btn btn-theme-primary pull-right ml-1"
                 type="submit"
                 :disabled="!this.file"
-                @click="uploadFile()">
+                @click="uploadFile">
                 <span v-if="!uploading">
                   <span class="fa fa-upload">
                   </span>&nbsp;
@@ -83,7 +83,7 @@
               </button>
               <button class="btn btn-warning pull-right"
                 :disabled="!this.file"
-                @click="cancel()">
+                @click="cancel">
                 <span class="fa fa-ban">
                 </span>&nbsp;
                 Cancel
