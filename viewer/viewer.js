@@ -5050,6 +5050,10 @@ function addTagsList(allTagNames, list, doneCb) {
 }
 
 function removeTagsList(res, allTagNames, list) {
+  if (!list.length) {
+    return res.molochError(200, 'No sessions to remove tags from');
+  }
+
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
 
@@ -5104,12 +5108,18 @@ app.post('/addTags', logAction(), function(req, res) {
     var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to add tags to');
+      }
       addTagsList(tags, list, function () {
         return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
     });
   } else {
     sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to add tags to');
+      }
       addTagsList(tags, list, function () {
         return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
