@@ -2422,6 +2422,15 @@ export default {
   },
   beforeDestroy: function () {
     if (clockInterval) { clearInterval(clockInterval); }
+
+    // remove userId route query parameter so that when a user
+    // comes back to this page, they are on their own settings
+    this.$router.replace({
+      query: {
+        ...this.$route.query,
+        userId: undefined
+      }
+    });
   }
 };
 </script>
