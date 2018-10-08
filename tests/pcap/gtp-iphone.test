@@ -118,6 +118,106 @@
       },
       {
          "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0002",
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1415985409932,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  133
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1415985409932,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               116
+            ],
+            "packetPos" : [
+               515
+            ],
+            "protocol" : [
+               "gtp",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 100,
+            "srcDataBytes" : 0,
+            "srcIp" : "fe80:0000:0000:0000:fd00:0183:0001:0001",
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 100,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "fe80:0000:0000:0000:fd00:0183:0001:0001",
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1415985409932,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  134
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1415985409932,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               156
+            ],
+            "packetPos" : [
+               631
+            ],
+            "protocol" : [
+               "gtp",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 140,
+            "srcDataBytes" : 0,
+            "srcIp" : "fe80:0000:0000:0000:018f:54ea:5196:2546",
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 140,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
             "dns" : {
                "ASN" : [
                   "---"
@@ -286,6 +386,461 @@
       },
       {
          "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0016",
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1415985411060,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  143
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1415985414100,
+            "length" : 3040,
+            "node" : "test",
+            "packetLen" : [
+               204,
+               204
+            ],
+            "packetPos" : [
+               1402,
+               5692
+            ],
+            "protocol" : [
+               "gtp",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 376,
+            "srcDataBytes" : 0,
+            "srcIp" : "fe80:0000:0000:0000:0045:f337:32b9:ac9b",
+            "srcPackets" : 2,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 376,
+            "totDataBytes" : 0,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 1317,
+            "dstDataBytes" : 689,
+            "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "dstPackets" : 5,
+            "dstPayload8" : "5349502f322e3020",
+            "dstPort" : 5060,
+            "fileId" : [],
+            "firstPacket" : 1415985412100,
+            "ipProtocol" : 6,
+            "lastPacket" : 1415985444983,
+            "length" : 32883,
+            "node" : "test",
+            "packetLen" : [
+               152,
+               148,
+               140,
+               1478,
+               140,
+               499,
+               140,
+               829,
+               140,
+               140,
+               140,
+               140,
+               152
+            ],
+            "packetPos" : [
+               1606,
+               1758,
+               1906,
+               2046,
+               3524,
+               3664,
+               4163,
+               4303,
+               5132,
+               5272,
+               5412,
+               5552,
+               5896
+            ],
+            "protocol" : [
+               "sip",
+               "gtp",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 2713,
+            "srcDataBytes" : 1697,
+            "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "srcPackets" : 8,
+            "srcPayload8" : "5245474953544552",
+            "srcPort" : 5060,
+            "tcpflags" : {
+               "ack" : 6,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 4030,
+            "totDataBytes" : 2386,
+            "totPackets" : 13
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 1359,
+            "dstDataBytes" : 731,
+            "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "dstPackets" : 5,
+            "dstPayload8" : "5349502f322e3020",
+            "dstPort" : 5060,
+            "fileId" : [],
+            "firstPacket" : 1415985444984,
+            "ipProtocol" : 6,
+            "lastPacket" : 1415985484900,
+            "length" : 39917,
+            "node" : "test",
+            "packetLen" : [
+               148,
+               140,
+               1478,
+               140,
+               596,
+               140,
+               871,
+               140,
+               140,
+               140,
+               140,
+               152
+            ],
+            "packetPos" : [
+               6048,
+               6196,
+               6336,
+               7814,
+               7954,
+               8550,
+               8690,
+               9561,
+               10575,
+               10715,
+               11405,
+               11545
+            ],
+            "protocol" : [
+               "sip",
+               "gtp",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 2674,
+            "srcDataBytes" : 1794,
+            "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "srcPackets" : 7,
+            "srcPayload8" : "5245474953544552",
+            "srcPort" : 5060,
+            "tcpflags" : {
+               "ack" : 6,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 4033,
+            "totDataBytes" : 2525,
+            "totPackets" : 12
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 1103,
+            "dstDataBytes" : 1087,
+            "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "dstPackets" : 2,
+            "dstPayload8" : "5349502f322e3020",
+            "dstPort" : 5060,
+            "fileId" : [],
+            "firstPacket" : 1415985445984,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985512445,
+            "length" : 66461,
+            "node" : "test",
+            "packetLen" : [
+               874,
+               550,
+               787,
+               585
+            ],
+            "packetPos" : [
+               9701,
+               10855,
+               24837,
+               25624
+            ],
+            "protocol" : [
+               "udp",
+               "sip",
+               "gtp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 1629,
+            "srcDataBytes" : 1613,
+            "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "srcPackets" : 2,
+            "srcPayload8" : "5355425343524942",
+            "srcPort" : 5060,
+            "timestamp" : "SET",
+            "totBytes" : 2732,
+            "totDataBytes" : 2700,
+            "totPackets" : 4
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 3131,
+            "dstDataBytes" : 1883,
+            "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "dstPackets" : 10,
+            "dstPayload8" : "5349502f322e3020",
+            "dstPort" : 5060,
+            "fileId" : [],
+            "firstPacket" : 1415985484900,
+            "ipProtocol" : 6,
+            "lastPacket" : 1415985559780,
+            "length" : 74880,
+            "node" : "test",
+            "packetLen" : [
+               148,
+               140,
+               1478,
+               476,
+               140,
+               140,
+               446,
+               140,
+               587,
+               140,
+               821,
+               140,
+               802,
+               140,
+               589,
+               140,
+               738,
+               140,
+               140,
+               140,
+               140,
+               152
+            ],
+            "packetPos" : [
+               11697,
+               11845,
+               11985,
+               13463,
+               13939,
+               14079,
+               14219,
+               14665,
+               14805,
+               15392,
+               15532,
+               16833,
+               16973,
+               18095,
+               22226,
+               23501,
+               23641,
+               24379,
+               26209,
+               26349,
+               26489,
+               26629
+            ],
+            "protocol" : [
+               "sip",
+               "gtp",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 4434,
+            "srcDataBytes" : 2934,
+            "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "srcPackets" : 12,
+            "srcPayload8" : "494e564954452074",
+            "srcPort" : 5060,
+            "tcpflags" : {
+               "ack" : 11,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 7,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 7565,
+            "totDataBytes" : 4817,
+            "totPackets" : 22
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 1822,
+            "dstDataBytes" : 1718,
+            "dstIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "dstPackets" : 13,
+            "dstPayload8" : "80660000000000a0",
+            "dstPort" : 49120,
+            "fileId" : [],
+            "firstPacket" : 1415985490121,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985500820,
+            "length" : 10698,
+            "node" : "test",
+            "packetLen" : [
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               160,
+               135,
+               135
+            ],
+            "packetPos" : [
+               16353,
+               16513,
+               16673,
+               17775,
+               17935,
+               18235,
+               18395,
+               19046,
+               19206,
+               19366,
+               19526,
+               19686,
+               19846,
+               20006,
+               20166,
+               20326,
+               20822,
+               20982,
+               21142,
+               21302,
+               21462,
+               21622,
+               21782,
+               21942,
+               22815,
+               22975,
+               24519
+            ],
+            "protocol" : [
+               "udp",
+               "gtp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 2016,
+            "srcDataBytes" : 1904,
+            "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "srcPackets" : 14,
+            "srcPayload8" : "80e652d84bcad9ca",
+            "srcPort" : 19956,
+            "timestamp" : "SET",
+            "totBytes" : 3838,
+            "totDataBytes" : 3622,
+            "totPackets" : 27
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
             "dns" : {
                "ASN" : [
                   "---"
@@ -392,6 +947,183 @@
             "totBytes" : 459,
             "totDataBytes" : 443,
             "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "dstPackets" : 0,
+            "dstPort" : 49121,
+            "fileId" : [],
+            "firstPacket" : 1415985494581,
+            "ipProtocol" : 17,
+            "lastPacket" : 1415985500710,
+            "length" : 6128,
+            "node" : "test",
+            "packetLen" : [
+               168,
+               168,
+               124
+            ],
+            "packetPos" : [
+               20486,
+               20654,
+               22102
+            ],
+            "protocol" : [
+               "udp",
+               "gtp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 412,
+            "srcDataBytes" : 388,
+            "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "srcPackets" : 3,
+            "srcPayload8" : "81c8000c6399bbc1",
+            "srcPort" : 19957,
+            "timestamp" : "SET",
+            "totBytes" : 412,
+            "totDataBytes" : 388,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1415985500740,
+            "icmp" : {
+               "code" : [
+                  4
+               ],
+               "type" : [
+                  1
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1415985500820,
+            "length" : 79,
+            "node" : "test",
+            "packetLen" : [
+               208,
+               183,
+               183
+            ],
+            "packetPos" : [
+               23110,
+               23318,
+               24654
+            ],
+            "protocol" : [
+               "gtp",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 526,
+            "srcDataBytes" : 0,
+            "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "srcPackets" : 3,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 526,
+            "totDataBytes" : 0,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-141114",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 1053,
+            "dstDataBytes" : 425,
+            "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
+            "dstPackets" : 5,
+            "dstPayload8" : "5349502f322e3020",
+            "dstPort" : 5060,
+            "fileId" : [],
+            "firstPacket" : 1415985559780,
+            "ipProtocol" : 6,
+            "lastPacket" : 1415985559931,
+            "length" : 151,
+            "node" : "test",
+            "packetLen" : [
+               148,
+               140,
+               1478,
+               140,
+               555,
+               140,
+               565,
+               140,
+               140,
+               140,
+               140
+            ],
+            "packetPos" : [
+               26781,
+               26929,
+               27069,
+               28547,
+               28687,
+               29242,
+               29382,
+               29947,
+               30087,
+               30227,
+               30367
+            ],
+            "protocol" : [
+               "sip",
+               "gtp",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 2497,
+            "srcDataBytes" : 1753,
+            "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
+            "srcPackets" : 6,
+            "srcPayload8" : "5245474953544552",
+            "srcPort" : 5060,
+            "tcpflags" : {
+               "ack" : 6,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 3550,
+            "totDataBytes" : 2178,
+            "totPackets" : 11
          },
          "header" : {
             "index" : {

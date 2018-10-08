@@ -1187,7 +1187,7 @@ LOCAL int moloch_packet_ip4_gtp(MolochPacketBatch_t *batch, MolochPacket_t * con
     BSB_IMPORT_u08(bsb, flags);
     BSB_IMPORT_rewind(bsb, 1);
 
-    if ((flags & 0x80) == 0x60)
+    if ((flags & 0xf0) == 0x60)
         return moloch_packet_ip6(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
 }
