@@ -633,6 +633,28 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.nflog = function (buffer, obj, pos) {
+  var offset = 4;
+  while (offset + 4 < buffer.length) {
+    var length = buffer.readUInt16LE(offset);
+    if (buffer[offset+3] === 0 && buffer[offset+2] == 9) {
+      if (buffer[0] === 2)
+        return this.ip4(buffer.slice(offset+4), obj, pos + offset + 4);
+      else
+        return this.ip6(buffer.slice(offset+4), obj, pos + offset + 4);
+    } else {
+      offset += (length + 3) & 0xfffc;
+    }
+  }
+
+  var l = buffer[2] + 24;
+  if (buffer[l+6] === 0x08 && buffer[l+7] === 0x00) {
+    this.ip4(buffer.slice(l+8), obj, pos + l+8);
+  } else if (buffer[l+6] === 0x86 && buffer[l+7] === 0xdd) {
+    this.ip6(buffer.slice(l+8), obj, pos + l+8);
+  }
+};
+
 Pcap.prototype.framerelay = function (buffer, obj, pos) {
   if (buffer[2] == 0x03 || buffer[3] == 0xcc) {
     this.ip4(buffer.slice(4), obj, pos + 4);
@@ -680,6 +702,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
     break;
   case 127: // radiotap
     this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 239: // NFLOG
+    this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   default:
     console.log("Unsupported pcap file", this.filename, "link type", this.linkType);
