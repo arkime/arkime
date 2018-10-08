@@ -587,7 +587,7 @@ LOCAL gboolean writerExit   = TRUE;
 void moloch_quit()
 {
     config.quitting = TRUE;
-    g_timeout_add(config.tests?10:100, moloch_quit_gfunc, 0);
+    g_timeout_add(100, moloch_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*
