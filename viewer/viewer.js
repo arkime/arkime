@@ -4579,9 +4579,9 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
             },
             function () { // get file from the remote disk
               var preq = util._extend({},req);
-              preq.params['nodeName'] = nodeName;
-              preq.params['id'] = sessionID;
-              preq.params['hash'] = hash;
+              preq.params.nodeName = nodeName;
+              preq.params.id = sessionID;
+              preq.params.hash = hash;
               preq.url ='/' + nodeName + '/' + sessionID + '/bodyHash/' + hash;
               return proxyRequest(preq, res);
             });
