@@ -296,6 +296,7 @@ sub sequenceCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 10,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -347,6 +348,7 @@ sub filesCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 9,
     "number_of_shards": 2,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -412,6 +414,7 @@ sub statsCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 10,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -467,6 +470,7 @@ sub dstatsCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 5,
     "number_of_shards": 2,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -531,6 +535,7 @@ sub fieldsCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 8,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -947,6 +952,7 @@ sub queriesCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 7,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1198,6 +1204,7 @@ sub huntsCreate
   my $settings = '
 {
   "settings": {
+    "index.priority": 7,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1288,6 +1295,7 @@ sub usersCreate
     my $settings = '
 {
   "settings": {
+    "index.priority": 9,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
