@@ -157,7 +157,14 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
   - headerObject(inHeaderNames, inHeaderValues, headers)
   - headerNames = Object.keys(headers)
   for headerName in headerNames
-    dt #{headerName}
+    dt
+      b-dropdown.clickable-label(size="sm", text=headerName, variant="default")
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 0)")
+          | Export Unique Header Value
+        b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
+          | Export Unique Header Value with counts
+        b-dropdown-item(@click="openSpiGraph('" + expr  + "')")
+          | Open Header Value SPI Graph
     - var headerValues = Array.from (headers[headerName]);
     each headerValue,i in headerValues
       dd
