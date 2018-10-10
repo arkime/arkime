@@ -814,6 +814,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
     if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
+    int len = strlen(str);
     struct in6_addr *v = moloch_field_parse_ip(str);
 
     if (!v) {
@@ -823,7 +824,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + len + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
@@ -838,7 +839,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + 10 + 100);
+    field->jsonSize += (3 + len + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -846,7 +847,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
         goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + 10 + 100;
+            field->jsonSize -= 3 + len + 100;
             return FALSE;
         } else {
             goto added;
@@ -878,7 +879,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 15 + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
@@ -893,7 +894,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + 10 + 100);
+    field->jsonSize += (3 + 15 + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -901,7 +902,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
         goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + 10 + 100;
+            field->jsonSize -= 3 + 15 + 100;
             return FALSE;
         } else {
             goto added;
@@ -929,7 +930,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 10 + 100;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 30 + 100;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
@@ -944,7 +945,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + 10 + 100);
+    field->jsonSize += (3 + 30 + 100);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -952,7 +953,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
         goto added;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + 10 + 100;
+            field->jsonSize -= 3 + 30 + 100;
             return FALSE;
         } else {
             goto added;
@@ -1028,7 +1029,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + len;
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 100 + len;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_CERTSINFO:
             hash = MOLOCH_TYPE_ALLOC(MolochCertsInfoHashStd_t);
@@ -1047,7 +1048,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
         HASH_FIND(t_, *(field->cihash), certs, hci);
         if (hci)
             return FALSE;
-        field->jsonSize += 3 + len;
+        field->jsonSize += 3 + 100 + len;
         HASH_ADD(t_, *(field->cihash), certs, certs);
         return TRUE;
     default:
