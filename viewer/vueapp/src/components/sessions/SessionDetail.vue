@@ -1109,6 +1109,10 @@ export default {
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px 1px 5px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .session-detail .clickable-label button.btn:hover {
