@@ -1191,12 +1191,14 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     double   memMax = moloch_db_memory_max();
     float    memUse = mem/memMax*100.0;
 
+#ifndef __SANITIZE_ADDRESS__
     if (config.maxMemPercentage != 100 && memUse > config.maxMemPercentage) {
         LOG("Aborting, max memory percentage reached: %.2f > %u", memUse, config.maxMemPercentage);
         fflush(stdout);
         fflush(stderr);
         kill(getpid(), SIGSEGV);
     }
+#endif
 
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
