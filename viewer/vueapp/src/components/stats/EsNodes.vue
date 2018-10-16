@@ -1,6 +1,6 @@
 <template>
 
-  <div class="ml-1 mr-1">
+  <div class="container-fluid">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -42,116 +42,44 @@
         </span>
       </div>
 
-      <table class="table table-sm table-striped text-right small mt-3">
-        <thead>
-          <tr>
-            <th v-for="column of columns"
-              :key="column.name"
-              class="cursor-pointer"
-              :class="{'text-left':!column.doStats}"
-              @click="columnClick(column.sort)">
-              {{ column.name }}
-              <span v-if="column.sort !== undefined">
-                <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody v-if="stats">
-          <template v-if="averageValues && totalValues && stats.data.length > 9">
-            <tr class="bold average-row">
-              <td class="text-left">Average</td>
-              <td>{{ averageValues.docs | round(0) | commaString }}</td>
-              <td>{{ averageValues.storeSize | humanReadableBytes }}</td>
-              <td>{{ averageValues.heapSize | humanReadableBytes }}</td>
-              <td>{{ averageValues.load | round(2) | commaString }}</td>
-              <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
-              <td>{{ averageValues.read | humanReadableBytes }}</td>
-              <td>{{ averageValues.write | humanReadableBytes }}</td>
-              <td>{{ averageValues.searches | round(0) | commaString }}</td>
-            </tr>
-            <tr class="border-bottom-bold bold total-row">
-              <td class="text-left">Total</td>
-              <td>{{ totalValues.docs | round(0) | commaString }}</td>
-              <td>{{ totalValues.storeSize | humanReadableBytes }}</td>
-              <td>{{ totalValues.heapSize | humanReadableBytes }}</td>
-              <td>{{ totalValues.load | round(2) | commaString }}</td>
-              <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
-              <td>{{ totalValues.read | humanReadableBytes }}</td>
-              <td>{{ totalValues.write | humanReadableBytes }}</td>
-              <td>{{ totalValues.searches | round(0) | commaString }}</td>
-            </tr>
-          </template>
-          <tr v-for="stat of stats.data"
-            :key="stat.name">
-            <td class="hover-menu text-left">
-              {{ stat.name }}
-              <!-- column dropdown menu -->
-              <b-dropdown size="sm"
-                class="row-actions-btn ml-1"
-                v-has-permission="'createEnabled'">
-                <b-dropdown-item v-if="!stat.nodeExcluded"
-                  @click="exclude('name', stat)">
-                  Exclude node {{ stat.name }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="stat.nodeExcluded"
-                  @click="include('name', stat)">
-                  Include node {{ stat.name }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="!stat.ipExcluded"
-                  @click="exclude('ip', stat)">
-                  Exclude IP {{ stat.ip }}
-                </b-dropdown-item>
-                <b-dropdown-item v-if="stat.ipExcluded"
-                  @click="include('ip', stat)">
-                  Include IP {{ stat.ip }}
-                </b-dropdown-item>
-              </b-dropdown> <!-- /column dropdown menu -->
-            </td>
-            <td>{{ stat.docs | round(0) | commaString }}</td>
-            <td>{{ stat.storeSize | humanReadableBytes }}</td>
-            <td>{{ stat.heapSize | humanReadableBytes }}</td>
-            <td>{{ stat.load | round(2) | commaString }}</td>
-            <td>{{ stat.cpu | round(1) | commaString }}%</td>
-            <td>{{ stat.read | humanReadableBytes }}</td>
-            <td>{{ stat.write | humanReadableBytes }}</td>
-            <td>{{ stat.searches | round(0) | commaString }}</td>
-          </tr>
-          <tr v-if="stats.data && !stats.data.length">
-            <td :colspan="columns.length"
-              class="text-danger text-center">
-              <span class="fa fa-warning"></span>&nbsp;
-              No results match your search
-            </td>
-          </tr>
-        </tbody>
-        <tfoot v-if="stats && averageValues && totalValues && stats.data.length > 1">
-          <tr class="bold average-row">
-            <td class="text-left">Average</td>
-            <td>{{ averageValues.docs | round(0) | commaString }}</td>
-            <td>{{ averageValues.storeSize | humanReadableBytes }}</td>
-            <td>{{ averageValues.heapSize | humanReadableBytes }}</td>
-            <td>{{ averageValues.load | round(2) | commaString }}</td>
-            <td>{{ averageValues.cpu | round(1) | commaString }}%</td>
-            <td>{{ averageValues.read | humanReadableBytes }}</td>
-            <td>{{ averageValues.write | humanReadableBytes }}</td>
-            <td>{{ averageValues.searches | round(0) | commaString }}</td>
-          </tr>
-          <tr class="border-bottom-bold bold total-row">
-            <td class="text-left">Total</td>
-            <td>{{ totalValues.docs | round(0) | commaString }}</td>
-            <td>{{ totalValues.storeSize | humanReadableBytes }}</td>
-            <td>{{ totalValues.heapSize | humanReadableBytes }}</td>
-            <td>{{ totalValues.load | round(2) | commaString }}</td>
-            <td>{{ totalValues.cpu | round(1) | commaString }}%</td>
-            <td>{{ totalValues.read | humanReadableBytes }}</td>
-            <td>{{ totalValues.write | humanReadableBytes }}</td>
-            <td>{{ totalValues.searches | round(0) | commaString }}</td>
-          </tr>
-        </tfoot>
-      </table>
+      <moloch-table
+        id="esNodesTable"
+        :data="stats"
+        :loadData="loadData"
+        :columns="columns"
+        :no-results="true"
+        :show-avg-tot="true"
+        :action-column="true"
+        :desc="query.desc"
+        :sortField="query.sortField"
+        table-animation="list"
+        table-classes="table-sm text-right small mt-3"
+        table-state-name="esNodesCols"
+        table-widths-state-name="esNodesColWidths">
+        <template slot="actions"
+          slot-scope="{ item }">
+          <b-dropdown size="sm"
+            class="row-actions-btn"
+            v-has-permission="'createEnabled'">
+            <b-dropdown-item v-if="!item.nodeExcluded"
+              @click="exclude('name', item)">
+              Exclude node {{ item.name }}
+            </b-dropdown-item>
+            <b-dropdown-item v-else
+              @click="include('name', item)">
+              Include node {{ item.name }}
+            </b-dropdown-item>
+            <b-dropdown-item v-if="!item.ipExcluded"
+              @click="exclude('ip', item)">
+              Exclude IP {{ item.ip }}
+            </b-dropdown-item>
+            <b-dropdown-item v-else
+              @click="include('ip', item)">
+              Include IP {{ item.ip }}
+            </b-dropdown-item>
+          </b-dropdown>
+        </template>
+      </moloch-table>
 
     </div>
 
@@ -160,41 +88,54 @@
 </template>
 
 <script>
+import Vue from 'vue';
+
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+import MolochTable from '../utils/Table';
 import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let searchInputTimeout; // timeout to debounce the search input
 let respondedAt; // the time that the last data load succesfully responded
 
+function roundCommaString (val) {
+  let result = Vue.options.filters.commaString(Vue.options.filters.round(val, 0));
+  return result;
+};
+
 export default {
   name: 'EsStats',
   props: [ 'dataInterval', 'refreshData' ],
-  components: { MolochError, MolochLoading },
+  components: { MolochError, MolochLoading, MolochTable },
   directives: { FocusInput },
   data: function () {
     return {
-      stats: {},
       error: '',
       loading: true,
-      totalValues: null,
-      averageValues: null,
+      stats: null,
       query: {
         filter: null,
         sortField: 'nodeName',
         desc: false
       },
       columns: [ // es stats table columns
-        { name: 'Name', sort: 'nodeName', doStats: false },
-        { name: 'Documents', sort: 'docs', doStats: true },
-        { name: 'Disk Storage', sort: 'storeSize', doStats: true },
-        { name: 'Heap Size', sort: 'heapSize', doStats: true },
-        { name: 'OS Load', sort: 'load', doStats: true },
-        { name: 'CPU', sort: 'cpu', doStats: true },
-        { name: 'Read/s', sort: 'read', doStats: true },
-        { name: 'Write/s', sort: 'write', doStats: true },
-        { name: 'Searches/s', sort: 'searches', doStats: true }
+        // default columns
+        { id: 'nodeName', name: 'Name', sort: 'nodeName', dataField: 'name', doStats: false, default: true, width: 80 },
+        { id: 'docs', name: 'Documents', sort: 'docs', dataField: 'docs', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
+        { id: 'storeSize', name: 'Disk Storage', sort: 'storeSize', dataField: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'heapSize', name: 'Heap Size', sort: 'heapSize', dataField: 'heapSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'load', name: 'OS Load', sort: 'load', dataField: 'load', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 2)); } },
+        { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', doStats: true, default: true, width: 80, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 1)) + '%'; } },
+        { id: 'read', name: 'Read/s', sort: 'read', dataField: 'read', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'write', name: 'Write/s', sort: 'write', dataField: 'write', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'searches', name: 'Searches/s', sort: 'searches', dataField: 'searches', doStats: true, width: 120, default: true, dataFunction: roundCommaString },
+        // all the rest of the available stats
+        { id: 'ip', name: 'IP', sort: 'ip', dataField: 'ip', doStats: false, width: 120 },
+        { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', dataField: 'ipExcluded', doStats: false, width: 120 },
+        { id: 'nodeExcluded', name: 'Node Excluded', sort: 'nodeExcluded', dataField: 'nodeExcluded', doStats: false, width: 120 },
+        { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', dataField: 'nonHeapSize', doStats: false, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'searchesTime', name: 'Searches timeout', sort: 'searchesTime', dataField: 'searchesTime', doStats: true, width: 120, dataFunction: roundCommaString }
       ]
     };
   },
@@ -232,7 +173,6 @@ export default {
     }
   },
   created: function () {
-    this.loadData();
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -247,11 +187,6 @@ export default {
         searchInputTimeout = null;
         this.loadData();
       }, 400);
-    },
-    columnClick (name) {
-      this.query.sortField = name;
-      this.query.desc = !this.query.desc;
-      this.loadData();
     },
     clear () {
       this.query.filter = undefined;
@@ -292,32 +227,18 @@ export default {
         }
       }, 500);
     },
-    loadData: function () {
+    loadData: function (sortField, desc) {
       respondedAt = undefined;
+
+      if (desc !== undefined) { this.query.desc = desc; }
+      if (sortField) { this.query.sortField = sortField; }
 
       this.$http.get('esstats.json', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';
           this.loading = false;
-          this.stats = response.data;
-
-          this.totalValues = {};
-          this.averageValues = {};
-          let stats = this.stats.data;
-
-          let columnNames = this.columns.map(function (item) {
-            return item.field || item.sort;
-          });
-
-          for (let i = 1; i < columnNames.length; i++) {
-            const columnName = columnNames[i];
-            this.totalValues[columnName] = 0;
-            for (let s = 0; s < stats.length; s++) {
-              this.totalValues[columnName] += stats[s][columnName];
-            }
-            this.averageValues[columnName] = this.totalValues[columnName] / stats.length;
-          }
+          this.stats = response.data.data;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;

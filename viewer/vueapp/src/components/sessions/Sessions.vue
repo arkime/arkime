@@ -880,14 +880,14 @@ export default {
     },
     /* Gets the column widths of the table if they exist */
     getColumnWidths: function () {
-      SessionsService.getState('sessionsColWidths')
+      UserService.getState('sessionsColWidths')
         .then((response) => {
           this.colWidths = response.data || {};
         });
     },
     /* Gets the state of the table (sort order and column order/visibility) */
     getTableState: function () {
-      SessionsService.getState('sessionsNew')
+      UserService.getState('sessionsNew')
         .then((response) => {
           this.tableState = response.data;
           this.$store.commit('setSessionsTableState', this.tableState);
@@ -1022,7 +1022,7 @@ export default {
      */
     saveTableState: function (stopLoading) {
       this.$store.commit('setSessionsTableState', this.tableState);
-      SessionsService.saveState(this.tableState, 'sessionsNew')
+      UserService.saveState(this.tableState, 'sessionsNew')
         .then(() => {
           if (stopLoading) { this.loading = false; }
         })
@@ -1201,7 +1201,7 @@ export default {
     },
     /* Saves the column widths */
     saveColumnWidths: function () {
-      SessionsService.saveState(this.colWidths, 'sessionsColWidths')
+      UserService.saveState(this.colWidths, 'sessionsColWidths')
         .catch((error) => { this.error = error; });
     },
     /**
@@ -1409,9 +1409,6 @@ table.sessions-table tbody tr td {
   padding: .2rem;
   font-size: 120%;
   font-weight: bold;
-}
-.col-vis-menu .dropdown-typeahead {
-  width: 200px;
 }
 
 /* custom column configurations menu --------- */

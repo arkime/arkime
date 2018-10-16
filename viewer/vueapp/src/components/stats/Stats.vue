@@ -195,7 +195,8 @@
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
             :data-interval="dataInterval"
-            @errored="onError">
+            @errored="onError"
+            :user="user">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"

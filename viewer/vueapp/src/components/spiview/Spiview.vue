@@ -434,7 +434,7 @@ export default {
   mounted: function () {
     if (!this.spiQuery) {
       // get what's saved in the db
-      SessionsService.getState('spiview')
+      UserService.getState('spiview')
         .then((response) => {
           this.spiQuery = response.data.visibleFields || defaultSpi;
           this.issueQueries();
@@ -1149,7 +1149,7 @@ export default {
     },
     /* saves the visible fields */
     saveFieldState: function () {
-      SessionsService.saveState({ visibleFields: this.spiQuery }, 'spiview');
+      UserService.saveState({ visibleFields: this.spiQuery }, 'spiview');
     }
   },
   beforeDestroy: function () {

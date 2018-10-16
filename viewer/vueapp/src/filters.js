@@ -6,7 +6,7 @@ import moment from 'moment-timezone';
  *
  * @example
  * '{{ 123456789 | commaString }}'
- * this.options.$filters.commaString(123456789);
+ * this.$options.filters.commaString(123456789);
  *
  * @param {int} input The number to add commas to
  * @returns {string}  The number string with commas
@@ -21,7 +21,7 @@ Vue.filter('commaString', (input) => {
  *
  * @example
  * '{{ ipv6 | extractIPv6String }}'
- * this.options.$filters.extractIPv6String(ipv6);
+ * this.$options.filters.extractIPv6String(ipv6);
  *
  * @param {int} ipv6  The ipv6 value
  * @returns {string}  The human understandable ipv6 string
@@ -55,7 +55,7 @@ Vue.filter('extractIPv6String', (ipv6) => {
  *
  * @example
  * '{{ 1 | protocol }}'
- * this.options.$filters.protocol(1);
+ * this.$options.filters.protocol(1);
  *
  * @param {int} protocolCode  The protocol code
  * @returns {string}          The human understandable protocol string
@@ -74,7 +74,7 @@ Vue.filter('protocol', (protocolCode) => {
  *
  * @example
  * '{{ 1524680821 | humanReadableBytes }}'
- * this.options.$filters.humanReadableBytes(1524680821);
+ * this.$options.filters.humanReadableBytes(1524680821);
  *
  * @param {int} fileSizeInBytes The number to make human readable
  * @returns {string}            The <=4 char human readable number
@@ -101,7 +101,7 @@ Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
  *
  * @example
  * '{{ 1524680821 | humanReadableNumber }}'
- * this.options.$filters.humanReadableNumber(1524680821);
+ * this.$options.filters.humanReadableNumber(1524680821);
  *
  * @param {int} num   The number to make human readable
  * @returns {string}  The <=4 char human readable number
@@ -126,7 +126,7 @@ Vue.filter('humanReadableNumber', (num) => {
  *
  * @example
  * '{{ 1524680821 | timezoneDateString("local", "YYYY/MM/DD HH:mm:ss z") }}'
- * this.options.$filters.timezoneDateString(1524680821, "local", "YYYY/MM/DD HH:mm:ss z");
+ * this.$options.filters.timezoneDateString(1524680821, "local", "YYYY/MM/DD HH:mm:ss z");
  *
  * @param {int} seconds      The time in seconds from epoch
  * @param {string} timezone  The timezone to use ('gmt' or 'local'), default = 'local'
@@ -148,7 +148,7 @@ Vue.filter('timezoneDateString', (seconds, timezone, format) => {
  *
  * @example
  * '{{ 1234.56 | round(0) }}'
- * this.options.$filters.round(1234.56, 0);
+ * this.$options.filters.round(1234.56, 0);
  *
  * @param {number} value  The number to round
  * @param {int} decimals  The number of decimals to preserve, default = 0
@@ -167,7 +167,7 @@ Vue.filter('round', function (value, decimals) {
  *
  * @example
  * '{{ 1524680821790 | readableTime }}'
- * this.options.$filters.timezoneDateString(1524680821790);
+ * this.$options.filters.timezoneDateString(1524680821790);
  *
  * @param {int} ms    The time in ms from epoch
  * @returns {string}  The human readable time range
