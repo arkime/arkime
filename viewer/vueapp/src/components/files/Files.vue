@@ -109,11 +109,11 @@ export default {
       },
       columns: [ // node stats table columns
         { id: 'fileNum', name: 'File #', sort: 'num', dataField: 'num', help: 'Internal file number, unique per node', width: 140, default: true },
-        { id: 'node', name: 'Node', sort: 'node', dataField: 'node', help: 'What moloch capture node this file lives on', width: 80, default: true },
+        { id: 'node', name: 'Node', sort: 'node', dataField: 'node', help: 'What moloch capture node this file lives on', width: 120, default: true },
         { id: 'name', name: 'Name', sort: 'name', dataField: 'name', help: 'The complete file path', width: 500, default: true },
         { id: 'locked', name: 'Locked', sort: 'locked', dataField: 'locked', dataFunction: (val) => { return val === 1 ? 'True' : 'False'; }, help: 'If locked Moloch viewer won\'t delete this file to free space', width: 100, default: true },
-        { id: 'firstDate', name: 'First Date', sort: 'first', dataField: 'first', dataFunction: (val) => { return this.$options.filters.timezoneDateString(val, this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); }, help: 'Timestamp of the first packet in the file', width: 200, default: true },
-        { id: 'fileSize', name: 'File Size', sort: 'filesize', dataField: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true }
+        { id: 'firstDate', name: 'First Date', sort: 'first', dataField: 'first', dataFunction: (val) => { return this.$options.filters.timezoneDateString(val, this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
+        { id: 'fileSize', name: 'File Size', sort: 'filesize', dataField: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (val) => { return this.$options.filters.commaString(val); } }
       ]
     };
   },

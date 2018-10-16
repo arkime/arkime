@@ -11,7 +11,7 @@
 
     <div v-show="!error">
 
-      <div class="input-group input-group-sm mt-1">
+      <div class="input-group input-group-sm mt-1 mb-1">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
@@ -53,7 +53,7 @@
         :desc="query.desc"
         :sortField="query.sortField"
         table-animation="list"
-        table-classes="table-sm text-right small mt-3"
+        table-classes="table-sm text-right small"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths">
         <template slot="actions"

@@ -166,20 +166,6 @@
                     hex
                   </label>
                 </div>
-                <!-- <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'wildcard'"
-                    @click="setJobSearchType('wildcard')"
-                    type="radio"
-                    id="wildcard"
-                    value="wildcard"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="wildcard">
-                    wildcard
-                  </label>
-                </div> -->
                 <div class="form-check form-check-inline">
                   <input class="form-check-input"
                     :checked="jobSearchType === 'regex'"

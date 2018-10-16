@@ -129,11 +129,11 @@ export default {
       },
       columns: [ // node stats table columns
         // default columns
-        { id: 'node', name: 'Node', sort: 'nodeName', dataField: 'nodeName', width: 80, default: true, doStats: false },
-        { id: 'time', name: 'Time', sort: 'currentTime', dataField: 'currentTime', width: 150, dataFunction: (val) => { return this.$options.filters.timezoneDateString(val, this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); }, default: true, doStats: false },
+        { id: 'node', name: 'Node', sort: 'nodeName', dataField: 'nodeName', width: 120, default: true, doStats: false },
+        { id: 'time', name: 'Time', sort: 'currentTime', dataField: 'currentTime', width: 200, dataFunction: (val) => { return this.$options.filters.timezoneDateString(val, this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); }, default: true, doStats: false },
         { id: 'sessions', name: 'Sessions', sort: 'monitoring', dataField: 'monitoring', width: 100, dataFunction: roundCommaString, default: true, doStats: true },
         { id: 'freeSpace', name: 'Free Space', sort: 'freeSpaceM', width: 120, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + this.$options.filters.round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (val) => { return this.$options.filters.humanReadableBytes(val * 1000000); }, default: true, doStats: true },
-        { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', width: 80, dataFunction: (val) => { return this.$options.filters.round(val / 100.0, 1); }, default: true, doStats: true },
+        { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', width: 80, dataFunction: (val) => { return this.$options.filters.round(val / 100.0, 1) + '%'; }, default: true, doStats: true },
         { id: 'memory', name: 'Memory', sort: 'memory', width: 120, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memory) + ' (' + this.$options.filters.round(item.memoryP, 1) + '%)'; }, avgTotFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, default: true, doStats: true },
         { id: 'packetQ', name: 'Packet Q', sort: 'packetQueue', dataField: 'packetQueue', width: 100, dataFunction: roundCommaString, default: true, doStats: true },
         { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', dataField: 'deltaPacketsPerSec', width: 100, dataFunction: roundCommaString, default: true, doStats: true },

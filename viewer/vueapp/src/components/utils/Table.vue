@@ -42,6 +42,12 @@
             <b-dropdown-divider>
             </b-dropdown-divider>
             <b-dropdown-item
+              @click="resetDefault">
+              Reset default columns
+            </b-dropdown-item>
+            <b-dropdown-divider>
+            </b-dropdown-divider>
+            <b-dropdown-item
               v-for="column in filteredColumns"
               :key="column.id"
               v-b-tooltip.hover.top
@@ -75,7 +81,7 @@
         <tr class="border-top-bold bold average-row"
           key="averageRow">
           <td v-if="actionColumn">
-            Average
+            Avg
           </td>
           <td v-for="(column, index) in computedColumns"
             :key="column.id + index + 'avg'">
@@ -170,7 +176,7 @@
     <tfoot v-if="showAvgTot && data && data.length > 1">
       <tr class="border-top-bold bold average-row">
         <td v-if="actionColumn">
-          Average
+          Avg
         </td>
         <td v-for="(column, index) in computedColumns"
           :key="column.id + index + 'avg'">
@@ -260,7 +266,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // TODO maybe have infoRowHTML for simpler info rows
     infoRowFunction: { // function to call to render content for more info row
       type: Function
     },
@@ -432,6 +437,17 @@ export default {
 
       this.saveTableState();
     },
+    resetDefault: function () {
+      this.displayDefaultColumns();
+
+      this.columnWidths = {};
+      for (let column in this.computedColumns) {
+        this.columnWidths[column.id] = column.width;
+      }
+
+      this.saveColumnWidths();
+      this.saveTableState();
+    },
     /* helper functions ------------------------------------------ */
     initializeColDragDrop: function () {
       setTimeout(() => { // wait for columns to render
@@ -528,15 +544,8 @@ export default {
               }
             }
           } else {
-            // this table has not been saved, so use the passed in vars
-            this.tableDesc = this.desc;
-            this.tableSortField = this.sortField;
-            // display only the default columns
-            for (let column of this.columns) {
-              if (column.default) {
-                this.computedColumns.push(column);
-              }
-            }
+            // this table has not been saved, so use the defaults
+            this.displayDefaultColumns();
           }
 
           this.loadData(this.tableSortField, this.tableDesc);
@@ -544,8 +553,8 @@ export default {
         })
         .catch(() => {
           // if there's an error getting the table state,
-          // just use the passed in columns
-          this.computedColumns = this.columns;
+          // just use the default columns
+          this.displayDefaultColumns();
           this.initializeColDragDrop();
         });
     },
@@ -588,6 +597,17 @@ export default {
     },
     saveColumnWidths: function () {
       UserService.saveState(this.columnWidths, this.tableWidthsStateName);
+    },
+    displayDefaultColumns: function () {
+      this.computedColumns = [];
+      this.tableDesc = this.desc;
+      this.tableSortField = this.sortField;
+      // display only the default columns
+      for (let column of this.columns) {
+        if (column.default) {
+          this.computedColumns.push(column);
+        }
+      }
     }
   },
   beforeDestroy: function () {
@@ -653,6 +673,14 @@ table .list-enter, .list-leave-to {
 }
 table .list-move {
   transition: transform .5s;
+}
+
+/* slider grips indicator -------------------- */
+table thead tr th {
+  border-right: 1px dotted var(--color-gray);
+}
+table thead tr th.ignore-element {
+  border-right: none;
 }
 
 /* remove terrible padding applied by the column resize lib */

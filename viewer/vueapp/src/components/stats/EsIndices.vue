@@ -11,7 +11,7 @@
 
     <div v-show="!error">
 
-      <div class="input-group input-group-sm mt-1">
+      <div class="input-group input-group-sm mt-1 mb-1">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
@@ -53,7 +53,7 @@
         :desc="query.desc"
         :sortField="query.sortField"
         table-animation="list"
-        table-classes="table-sm text-right small mt-3"
+        table-classes="table-sm text-right small"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths">
         <template slot="actions"
@@ -125,9 +125,9 @@ export default {
         { id: 'health', name: 'Health', sort: 'health', dataField: 'health', doStats: false, default: true, width: 100 },
         { id: 'status', name: 'Status', sort: 'status', dataField: 'status', doStats: false, default: true, width: 100 },
         // all the rest of the available stats
-        { id: 'cd', name: 'Created Date', sort: 'cd', dataField: 'cd', doStats: false, default: true, width: 150, dataFunction: (val) => { return this.$options.filters.timezoneDateString(Math.floor(val / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
-        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', sort: 'pri.search.query_current', dataField: 'pri.search.query_current', doStats: false, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'uuid', name: 'UUID', sort: 'uuid', dataField: 'uuid', doStats: false, default: true, width: 100 }
+        { id: 'cd', name: 'Created Date', sort: 'cd', dataField: 'cd', doStats: false, width: 150, dataFunction: (val) => { return this.$options.filters.timezoneDateString(Math.floor(val / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
+        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', sort: 'pri.search.query_current', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: roundCommaString },
+        { id: 'uuid', name: 'UUID', sort: 'uuid', dataField: 'uuid', doStats: false, width: 100 }
       ]
     };
   },

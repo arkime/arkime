@@ -48,7 +48,6 @@
         :loadData="loadData"
         :columns="columns"
         :no-results="true"
-        :show-avg-tot="true"
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
