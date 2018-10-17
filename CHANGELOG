@@ -22,6 +22,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - packet search (hunt)
   - viewer - admins can see forced expression for users in history
   - viewer - option to add sessions table column configuration to a view
+  - viewer - files and stats tables can be customized
   - suricata - parse severity
   - capture - new _dontCheckYara rule ops
   - parliament - add --debug option
