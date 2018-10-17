@@ -110,17 +110,17 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'action', name: 'Action', sort: 'action', dataField: 'action', doStats: false, default: true },
-        { id: 'description', name: 'Description', sort: 'description', dataField: 'description', doStats: false, default: true },
-        { id: 'start_time_in_millis', name: 'Start Time', sort: 'start_time_in_millis', dataField: 'start_time_in_millis', doStats: true, default: true, dataFunction: (val) => { return this.$options.filters.timezoneDateString(Math.floor(val / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
-        { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', dataField: 'running_time_in_nanos', doStats: true, default: true, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val / 1000000, 1)); } },
-        { id: 'childrenCount', name: 'Children', sort: 'childrenCount', dataField: 'childrenCount', doStats: true, default: true, dataFunction: roundCommaString },
+        { id: 'action', name: 'Action', sort: 'action', dataField: 'action', default: true, width: 200 },
+        { id: 'description', name: 'Description', sort: 'description', dataField: 'description', default: true, width: 300 },
+        { id: 'start_time_in_millis', name: 'Start Time', sort: 'start_time_in_millis', dataField: 'start_time_in_millis', width: 180, default: true, dataFunction: (val) => { return this.$options.filters.timezoneDateString(Math.floor(val / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
+        { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', dataField: 'running_time_in_nanos', width: 120, default: true, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val / 1000000, 1)); } },
+        { id: 'childrenCount', name: 'Children', sort: 'childrenCount', dataField: 'childrenCount', default: true, width: 100, dataFunction: roundCommaString },
         // all the rest of the available stats
-        { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', dataField: 'cancellable', doStats: false },
-        { id: 'id', name: 'ID', sort: 'id', dataField: 'id', doStats: false },
-        { id: 'node', name: 'Node', sort: 'node', dataField: 'node', doStats: false },
-        { id: 'taskid', name: 'Task ID', sort: 'taskid', dataField: 'taskid', doStats: false },
-        { id: 'type', name: 'Type', sort: 'type', dataField: 'type', doStats: false }
+        { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', dataField: 'cancellable', width: 100 },
+        { id: 'id', name: 'ID', sort: 'id', dataField: 'id', width: 80 },
+        { id: 'node', name: 'Node', sort: 'node', dataField: 'node', width: 180 },
+        { id: 'taskid', name: 'Task ID', sort: 'taskid', dataField: 'taskid', width: 150 },
+        { id: 'type', name: 'Type', sort: 'type', dataField: 'type', width: 100 }
       ]
     };
   },
