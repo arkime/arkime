@@ -366,6 +366,14 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    issueSearch: function () {
+      return this.$store.state.issueSearch;
+    }
+  },
+  watch: {
+    issueSearch: function (newVal, oldVal) {
+      if (newVal) { this.loadData(); }
     }
   },
   created: function () {

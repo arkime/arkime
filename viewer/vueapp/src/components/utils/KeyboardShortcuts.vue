@@ -28,6 +28,8 @@
       <br>
       <code>'U'</code> - jump to the Moloch Hunt page
       <br>
+      <code>'shift + enter'</code> - issue search/refresh
+      <br>
       <code>'esc'</code> - remove focus from any input and close this dialog
       <br>
       <code>'?'</code> - shows you this dialog, but I guess you already knew that

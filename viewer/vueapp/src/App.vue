@@ -133,6 +133,10 @@ export default {
             this.routeTo('/hunt');
           }
           break;
+        case 13: // enter
+          // trigger search/refresh
+          this.$store.commit('setIssueSearch', true);
+          break;
         case 191: // /
           // toggle display of the the keyboard shortcut dialog
           this.$store.commit('setDisplayKeyboardShortcutsHelp', !this.displayKeyboardShortcutsHelp);

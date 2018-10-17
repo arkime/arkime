@@ -246,6 +246,9 @@ export default {
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    issueSearch: function () {
+      return this.$store.state.issueSearch;
     }
   },
   components: {
@@ -253,7 +256,10 @@ export default {
   },
   watch: {
     // watch for the route to change, then update the view
-    '$route': 'updateParams'
+    '$route': 'updateParams',
+    issueSearch: function (newVal, oldVal) {
+      if (newVal) { this.loadData(); }
+    }
   },
   methods: {
     statsTypeChange: function () {

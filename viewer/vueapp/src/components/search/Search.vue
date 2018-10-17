@@ -273,6 +273,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setExpression', newValue);
       }
+    },
+    issueSearch: function () {
+      return this.$store.state.issueSearch;
     }
   },
   watch: {
@@ -285,6 +288,9 @@ export default {
         expression: this.expression,
         view: this.view
       });
+    },
+    issueSearch: function (newVal, oldVal) {
+      if (newVal) { this.applyExpression(); }
     }
   },
   created: function () {

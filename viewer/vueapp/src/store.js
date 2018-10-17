@@ -17,6 +17,7 @@ const store = new Vuex.Store({
     graphType: undefined,
     seriesType: undefined,
     focusSearch: undefined,
+    issueSearch: undefined,
     focusTimeRange: undefined,
     shiftKeyHold: false,
     displayKeyboardShortcutsHelp: undefined,
@@ -76,6 +77,14 @@ const store = new Vuex.Store({
     },
     setFocusSearch (state, value) {
       this.state.focusSearch = value;
+    },
+    setIssueSearch (state, value) {
+      this.state.issueSearch = value;
+      if (value) {
+        setTimeout(() => {
+          this.state.issueSearch = false;
+        });
+      }
     },
     setFocusTimeRange (state, value) {
       this.state.focusTimeRange = value;
