@@ -97,7 +97,7 @@ export default {
   directives: { FocusInput },
   data: function () {
     return {
-      stats: {},
+      stats: [],
       error: '',
       loading: true,
       totalValues: null,

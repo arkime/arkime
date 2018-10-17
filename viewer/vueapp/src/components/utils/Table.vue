@@ -438,15 +438,24 @@ export default {
       this.saveTableState();
     },
     resetDefault: function () {
+      tableDestroyed = true;
       this.displayDefaultColumns();
 
       this.columnWidths = {};
-      for (let column in this.computedColumns) {
-        this.columnWidths[column.id] = column.width;
+      for (let column of this.columns) {
+        for (let col of this.computedColumns) {
+          if (col.id === column.id) {
+            col.width = JSON.parse(JSON.stringify(column.width));
+          }
+        }
       }
 
+      // space out these calls so saving the column widths table state
+      // doesn't overwrite the column order table state or vice versa
       this.saveColumnWidths();
-      this.saveTableState();
+      setTimeout(() => { this.saveTableState(); }, 1000);
+
+      this.initializeColResizable();
     },
     /* helper functions ------------------------------------------ */
     initializeColDragDrop: function () {
@@ -539,7 +548,8 @@ export default {
             for (let c of response.data.visibleHeaders) {
               for (let column of this.columns) {
                 if (column.id === c) {
-                  this.computedColumns.push(column);
+                  let newCol = this.cloneColumn(column);
+                  this.computedColumns.push(newCol);
                 }
               }
             }
@@ -578,7 +588,7 @@ export default {
           for (let column of this.computedColumns) {
             for (let c in this.columnWidths) {
               if (column.id === c) {
-                column.width = this.columnWidths[c];
+                column.width = JSON.parse(JSON.stringify(this.columnWidths[c]));
               }
             }
             tableWidth += column.width;
@@ -605,9 +615,20 @@ export default {
       // display only the default columns
       for (let column of this.columns) {
         if (column.default) {
-          this.computedColumns.push(column);
+          let newCol = this.cloneColumn(column);
+          this.computedColumns.push(newCol);
         }
       }
+    },
+    cloneColumn: function (column) {
+      let newCol = JSON.parse(JSON.stringify(column));
+      if (column.dataFunction) {
+        newCol.dataFunction = column.dataFunction;
+      }
+      if (column.avgTotFunction) {
+        newCol.avgTotFunction = column.avgTotFunction;
+      }
+      return newCol;
     }
   },
   beforeDestroy: function () {
