@@ -139,7 +139,7 @@
       },
       {
          "body" : {
-            "dstASN" : "AS4657 StarHub Internet Exchange",
+            "dstASN" : "AS4657 StarHub Ltd",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "SG",
