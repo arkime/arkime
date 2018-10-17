@@ -89,13 +89,13 @@
               &nbsp;
             </template>
             <template v-else-if="column.avgTotFunction">
-              {{ column.avgTotFunction(averageValues[index]) }}
+              {{ column.avgTotFunction(averageValues[column.id]) }}
             </template>
             <template v-else-if="!column.avgTotFunction && column.dataFunction && column.dataField">
-              {{ column.dataFunction(averageValues[index]) }}
+              {{ column.dataFunction(averageValues[column.id]) }}
             </template>
             <template v-else>
-              {{ averageValues[index] }}
+              {{ averageValues[column.id] }}
             </template>
           </td>
         </tr>
@@ -110,13 +110,13 @@
               &nbsp;
             </template>
             <template v-else-if="column.avgTotFunction">
-              {{ column.avgTotFunction(totalValues[index]) }}
+              {{ column.avgTotFunction(totalValues[column.id]) }}
             </template>
             <template v-else-if="!column.avgTotFunction && column.dataFunction && column.dataField">
-              {{ column.dataFunction(totalValues[index]) }}
+              {{ column.dataFunction(totalValues[column.id]) }}
             </template>
             <template v-else>
-              {{ totalValues[index] }}
+              {{ totalValues[column.id] }}
             </template>
           </td>
         </tr>
@@ -184,13 +184,13 @@
             &nbsp;
           </template>
           <template v-else-if="column.avgTotFunction">
-            {{ column.avgTotFunction(averageValues[index]) }}
+            {{ column.avgTotFunction(averageValues[column.id]) }}
           </template>
           <template v-else-if="!column.avgTotFunction && column.dataFunction && column.dataField">
-            {{ column.dataFunction(averageValues[index]) }}
+            {{ column.dataFunction(averageValues[column.id]) }}
           </template>
           <template v-else>
-            {{ averageValues[index] }}
+            {{ averageValues[column.id] }}
           </template>
         </td>
       </tr>
@@ -204,13 +204,13 @@
             &nbsp;
           </template>
           <template v-else-if="column.avgTotFunction">
-            {{ column.avgTotFunction(totalValues[index]) }}
+            {{ column.avgTotFunction(totalValues[column.id]) }}
           </template>
           <template v-else-if="!column.avgTotFunction && column.dataFunction && column.dataField">
-            {{ column.dataFunction(totalValues[index]) }}
+            {{ column.dataFunction(totalValues[column.id]) }}
           </template>
           <template v-else>
-            {{ totalValues[index] }}
+            {{ totalValues[column.id] }}
           </template>
         </td>
       </tr>
@@ -315,8 +315,8 @@ export default {
       showFitButton: false, // whether to show the table fit button (if the table is >||< 15px of the inner window width)
       colQuery: '', // the search string for columns to add/remove from the table
       openedRows: {}, // save the opened rows so they don't get unopened when the table data refreshes
-      averageValues: [], // list of total values
-      totalValues: [] // list of total values
+      averageValues: {}, // list of total values
+      totalValues: {} // list of total values
     };
   },
   computed: {
@@ -351,8 +351,8 @@ export default {
             for (let item of this.data) {
               totalValue += parseInt(item[column.dataField || column.sort]);
             }
-            this.totalValues.push(totalValue);
-            this.averageValues.push(totalValue / this.data.length);
+            this.totalValues[column.id] = totalValue;
+            this.averageValues[column.id] = totalValue / this.data.length;
           }
         }
       }
