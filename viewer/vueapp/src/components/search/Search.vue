@@ -290,7 +290,7 @@ export default {
       });
     },
     issueSearch: function (newVal, oldVal) {
-      if (newVal) { this.applyExpression(); }
+      if (newVal) { this.applyParams(); }
     }
   },
   created: function () {
