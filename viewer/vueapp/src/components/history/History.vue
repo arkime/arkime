@@ -30,7 +30,7 @@
             @keyup.enter="loadData"
             @input="debounceSearch"
             class="form-control"
-            v-model="query.searchTerm"
+            v-model="searchTerm"
             v-focus-input="focusInput"
             @blur="onOffFocus"
             placeholder="Search for history in the table below"
@@ -38,7 +38,7 @@
           <span class="input-group-append">
             <button type="button"
               @click="clear"
-              :disabled="!query.searchTerm"
+              :disabled="!searchTerm"
               class="btn btn-outline-secondary btn-clear-input">
               <span class="fa fa-close">
               </span>
@@ -109,9 +109,9 @@
             <div class="header-div"
               @click="columnClick(column.sort)">
               <span v-if="column.sort !== undefined">
-                <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                <span v-show="sortField === column.sort && !desc" class="fa fa-sort-asc"></span>
+                <span v-show="sortField === column.sort && desc" class="fa fa-sort-desc"></span>
+                <span v-show="sortField !== column.sort" class="fa fa-sort"></span>
               </span>
               {{ column.name }}
             </div>
@@ -329,6 +329,9 @@ export default {
       showColFilters: false,
       colSpan: 7,
       filters: {},
+      sortField: 'timestamp',
+      searchTerm: '',
+      desc: true,
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 10, help: 'The time of the request' },
         { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
@@ -345,9 +348,6 @@ export default {
       return { // query defaults
         length: parseInt(this.$route.query.length) || 50,
         start: 0,
-        searchTerm: null,
-        sortField: 'timestamp',
-        desc: true,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime
@@ -387,15 +387,15 @@ export default {
       }, 400);
     },
     clear () {
-      this.query.searchTerm = undefined;
+      this.searchTerm = undefined;
       this.loadData();
     },
     onOffFocus: function () {
       this.focusInput = false;
     },
     columnClick: function (name) {
-      this.query.sortField = name;
-      this.query.desc = !this.query.desc;
+      this.sortField = name;
+      this.desc = !this.desc;
       this.loadData();
     },
     toggleLogDetail: function (log) {
@@ -450,6 +450,10 @@ export default {
           }
         }
       }
+
+      this.query.desc = this.desc;
+      this.query.sortField = this.sortField;
+      this.query.searchTerm = this.searchTerm;
 
       this.$http.get('history/list', { params: this.query })
         .then((response) => {
