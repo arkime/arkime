@@ -491,4 +491,21 @@ dl.dl-horizontal dd {
 .input-group-prepend-fw, .input-group-text-fw {
   width: 36px;
 }
+
+/* enter icon for search/refresh button to be displayed on shift hold */
+.search-btn { width: 62px; }
+.refresh-btn { width: 66px; }
+.enter-icon > .fa-long-arrow-left {
+  position: relative;
+  top: 2px;
+}
+.enter-icon > .enter-arm {
+  display: inline-block;
+  height: 9px;
+  width: 3px;
+  background-color: #FFFFFF;
+  position: relative;
+  top: -2px;
+  right: 6px;
+}
 </style>

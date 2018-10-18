@@ -133,10 +133,17 @@
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex !== 0">
           <button type="button"
-            class="btn btn-theme-tertiary btn-sm"
+            class="btn btn-theme-tertiary btn-sm refresh-btn"
             @click="loadData">
-            <span>
+            <span v-if="!shiftKeyHold">
               Refresh
+            </span>
+            <span v-else
+              class="enter-icon">
+              <span class="fa fa-long-arrow-left fa-lg">
+              </span>
+              <div class="enter-arm">
+              </div>
             </span>
           </button>
         </div>
@@ -249,6 +256,9 @@ export default {
     },
     issueSearch: function () {
       return this.$store.state.issueSearch;
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
   },
   components: {

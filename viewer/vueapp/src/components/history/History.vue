@@ -10,9 +10,18 @@
           v-b-tooltip.hover>
         </span>
         <button type="button"
-          class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+          class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
           @click="loadData">
-          Search
+          <span v-if="!shiftKeyHold">
+            Search
+          </span>
+          <span v-else
+            class="enter-icon">
+            <span class="fa fa-long-arrow-left fa-lg">
+            </span>
+            <div class="enter-arm">
+            </div>
+          </span>
         </button>
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">

@@ -85,10 +85,19 @@
       </b-dropdown> <!-- /views dropdown menu -->
 
       <!-- search button -->
-      <a class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+      <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
         @click="applyParams"
         tabindex="2">
-        Search
+        <span v-if="!shiftKeyHold">
+          Search
+        </span>
+        <span v-else
+          class="enter-icon">
+          <span class="fa fa-long-arrow-left fa-lg">
+          </span>
+          <div class="enter-arm">
+          </div>
+        </span>
       </a> <!-- /search button -->
 
       <!-- search box typeahead -->
@@ -276,6 +285,9 @@ export default {
     },
     issueSearch: function () {
       return this.$store.state.issueSearch;
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
     }
   },
   watch: {
