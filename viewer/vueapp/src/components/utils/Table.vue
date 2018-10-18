@@ -377,12 +377,21 @@ export default {
       // disable resizable columns so it can be initialized after columns are resized
       $(this.tableDiv).colResizable({ disable: true });
 
+      if (!this.tableWidth) {
+        this.tableWidth = $(this.tableDiv).width();
+      }
+
       let windowWidth = window.innerWidth;
       let leftoverWidth = windowWidth - this.tableWidth;
       let percentChange = 1 + (leftoverWidth / this.tableWidth);
 
-      for (let i = 0, len = this.computedColumns.length; i < len; ++i) {
-        let column = this.computedColumns[i];
+      for (let column of this.computedColumns) {
+        if (!column.width || isNaN(column.width)) {
+          // column has no width so use the default
+          for (let col of this.columns) {
+            column.width = parseInt(JSON.parse(JSON.stringify(col.width)));
+          }
+        }
         let newWidth = Math.floor(column.width * percentChange);
         column.width = newWidth;
         this.columnWidths[column.id] = newWidth;
@@ -598,6 +607,11 @@ export default {
           if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
             this.showFitButton = true;
           }
+
+          if (!this.tableWidth) {
+            this.tableWidth = $(this.tableDiv).width();
+          }
+
           this.initializeColResizable();
         })
         .catch(() => {
