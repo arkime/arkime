@@ -221,7 +221,6 @@
 
 <script>
 import Sortable from 'sortablejs';
-import '../../../../public/colResizable.js';
 
 import UserService from '../users/UserService';
 import ToggleBtn from '../utils/ToggleBtn';
