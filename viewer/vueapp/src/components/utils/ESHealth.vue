@@ -27,7 +27,8 @@
     <b-tooltip
       :showTooltip.sync="showTooltip"
       target="infoTooltip"
-      placement="left">
+      placement="left"
+      boundary="viewport">
       <div v-if="!error && esHealth">
         <strong>Elasticsearch</strong><br>
         ES Version: <strong>{{ esHealth.version }}</strong><br>
