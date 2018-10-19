@@ -2508,9 +2508,9 @@ app.get('/esindices/list', recordResponseTime, function(req, res) {
     var sortField = req.query.sortField || "index";
     if (sortField === "index" || sortField === "status" || sortField === "health") {
       if (req.query.desc === "true") {
-        indices = indices.sort(function(a,b){ return b.index.localeCompare(a.index); });
+        indices = indices.sort(function(a,b){ return b[sortField].localeCompare(a[sortField]); });
       } else {
-        indices = indices.sort(function(a,b){ return a.index.localeCompare(b.index); });
+        indices = indices.sort(function(a,b){ return a[sortField].localeCompare(b[sortField]); });
       }
     } else {
       if (req.query.desc === "true") {
