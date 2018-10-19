@@ -53,9 +53,17 @@
         toggle-class="rounded"
         variant="theme-secondary">
         <template slot="button-content">
-          <span class="fa fa-eye"></span>
-          <span v-if="view">{{ view }}</span>
-          <span class="sr-only">Views</span>
+          <div v-if="view"
+            v-b-tooltip.hover.left
+            :title="views[view].expression">
+            <span class="fa fa-eye"></span>
+            <span v-if="view">{{ view }}</span>
+            <span class="sr-only">Views</span>
+          </div>
+          <div v-else>
+            <span class="fa fa-eye"></span>
+            <span class="sr-only">Views</span>
+          </div>
         </template>
         <b-dropdown-item @click="createView">
           <span class="fa fa-plus-circle"></span>&nbsp;
@@ -69,7 +77,9 @@
         <b-dropdown-item v-for="(value, key) in views"
           :key="key"
           :class="{'active':view === key}"
-          @click.self="setView(key)">
+          @click.self="setView(key)"
+          v-b-tooltip.hover.left
+          :title="value.expression">
           <button class="btn btn-xs btn-default pull-right"
             type="button"
             @click="deleteView(key)">
