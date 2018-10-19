@@ -718,6 +718,14 @@
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
                     might take a minute to show up.
                   </b-tooltip>
+                  <button type="button"
+                    @click="rerunJob(job)"
+                    v-b-tooltip.hover
+                    title="Rerun this hunt job using the current time frame and search criteria."
+                    class="ml-1 pull-right btn btn-sm btn-theme-secondary">
+                    <span class="fa fa-refresh fa-fw">
+                    </span>
+                  </button>
                 </span>
               </td>
             </tr>
@@ -1043,6 +1051,16 @@ export default {
       this.query.start = args.start;
       this.query.length = args.length;
       this.loadData();
+    },
+    rerunJob: function (job) {
+      this.jobSrc = job.src;
+      this.jobDst = job.dst;
+      this.jobSize = job.size;
+      this.jobType = job.type;
+      this.jobName = job.name;
+      this.jobSearch = job.search;
+      this.jobSearchType = job.searchType;
+      this.createFormOpened = true;
     },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
