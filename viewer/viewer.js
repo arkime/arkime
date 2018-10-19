@@ -7005,7 +7005,7 @@ processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                prefix: Config.get("prefix", ""),
-               usersHost: Config.get("usersElasticsearch"),
+               usersHost: Config.get("usersElasticsearch").split(","),
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                dontMapTags: Config.get("multiES", false),
