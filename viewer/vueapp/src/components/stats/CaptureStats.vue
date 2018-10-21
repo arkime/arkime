@@ -135,13 +135,13 @@ export default {
         { id: 'freeSpace', name: 'Free Space', sort: 'freeSpaceM', width: 120, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + this.$options.filters.round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (val) => { return this.$options.filters.humanReadableBytes(val * 1000000); }, default: true, doStats: true },
         { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', width: 80, dataFunction: (val) => { return this.$options.filters.round(val / 100.0, 1) + '%'; }, default: true, doStats: true },
         { id: 'memory', name: 'Memory', sort: 'memory', width: 120, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memory) + ' (' + this.$options.filters.round(item.memoryP, 1) + '%)'; }, avgTotFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, default: true, doStats: true },
-        { id: 'packetQ', name: 'Packet Q', sort: 'packetQueue', dataField: 'packetQueue', width: 100, dataFunction: roundCommaString, default: true, doStats: true },
+        { id: 'packetQ', name: 'Packet Q', sort: 'packetQueue', dataField: 'packetQueue', width: 85, dataFunction: roundCommaString, default: true, doStats: true },
+        { id: 'diskQ', name: 'Disk Q', sort: 'diskQueue', dataField: 'diskQueue', width: 85, dataFunction: roundCommaString, doStats: true },
+        { id: 'esQueue', name: 'ES Q', sort: 'esQueue', dataField: 'esQueue', width: 85, dataFunction: roundCommaString, doStats: true },
         { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', dataField: 'deltaPacketsPerSec', width: 100, dataFunction: roundCommaString, default: true, doStats: true },
         { id: 'deltaBytes', name: 'Bytes/s', sort: 'deltaBytes', dataField: 'deltaBytesPerSec', width: 80, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, default: true, doStats: true },
         { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessions', dataField: 'deltaSessionsPerSec', width: 100, dataFunction: roundCommaString, default: true, doStats: true },
         { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', dataField: 'deltaDroppedPerSec', width: 130, dataFunction: roundCommaString, default: true, doStats: true },
-        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', dataField: 'deltaOverloadDroppedPerSec', width: 140, dataFunction: roundCommaString, default: true, doStats: true },
-        { id: 'deltaESDropped', name: 'ES Drops/s', sort: 'deltaESDropped', dataField: 'deltaESDroppedPerSec', width: 120, dataFunction: roundCommaString, default: true, doStats: true },
         // all the rest of the available stats
         { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', dataField: 'deltaBitsPerSec', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', dataField: 'tcpSessions', width: 100, dataFunction: roundCommaString, doStats: true },
@@ -150,8 +150,6 @@ export default {
         { id: 'sctpSessions', name: 'Active SCTP Sessions', sort: 'sctpSessions', dataField: 'sctpSessions', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'espSessions', name: 'Active ESP Sessions', sort: 'espSessions', dataField: 'espSessions', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'usedSpaceM', name: 'Used Space', sort: 'usedSpaceM', dataField: 'usedSpaceM', width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val * 1000000); }, doStats: true },
-        { id: 'diskQ', name: 'Disk Q', sort: 'diskQueue', dataField: 'diskQueue', width: 100, dataFunction: roundCommaString, doStats: true },
-        { id: 'esQueue', name: 'ES Q', sort: 'esQueue', dataField: 'esQueue', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'esHealthMS', name: 'ES Health Response MS', sort: 'esHealthMS', dataField: 'esHealthMS', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'closeQueue', name: 'Closing Q', sort: 'closeQueue', dataField: 'closeQueue', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'needSave', name: 'Waiting Q', sort: 'needSave', dataField: 'needSave', width: 100, dataFunction: roundCommaString, doStats: true },
@@ -159,6 +157,8 @@ export default {
         { id: 'deltaFragsDroppedPerSec', name: 'Fragments Dropped/Sec', sort: 'deltaFragsDroppedPerSec', dataField: 'deltaFragsDroppedPerSec', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', dataField: 'deltaTotalDroppedPerSec', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', dataField: 'deltaSessionBytesPerSec', width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, doStats: true },
+        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', dataField: 'deltaOverloadDroppedPerSec', width: 140, dataFunction: roundCommaString, doStats: true },
+        { id: 'deltaESDropped', name: 'ES Drops/s', sort: 'deltaESDropped', dataField: 'deltaESDroppedPerSec', width: 120, dataFunction: roundCommaString, doStats: true },
         { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', dataField: 'sessionSizePerSec', width: 100, dataFunction: roundCommaString, doStats: true }
       ]
     };
