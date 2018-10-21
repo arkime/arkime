@@ -68,9 +68,9 @@ Moloch is a complex system to build and install manually. The following are roug
 Installing Elasticsearch
 ------------------------
 
-Recommended version **6.3.x** for Moloch 1.5 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
+Recommended version **6.4.x** for Moloch 1.5 and later.  `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   6.3.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-6-3-1>`_.
+   6.4.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-6-4-2>`_.
 
 Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.

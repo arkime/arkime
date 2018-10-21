@@ -123,7 +123,8 @@ export default {
         // default columns
         { id: 'nodeName', name: 'Name', sort: 'nodeName', dataField: 'name', doStats: false, default: true, width: 80 },
         { id: 'docs', name: 'Documents', sort: 'docs', dataField: 'docs', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'storeSize', name: 'Disk Storage', sort: 'storeSize', dataField: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'storeSize', name: 'Disk Used', sort: 'storeSize', dataField: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
+        { id: 'freeSize', name: 'Disk Free', sort: 'freeSize', dataField: 'freeSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
         { id: 'heapSize', name: 'Heap Size', sort: 'heapSize', dataField: 'heapSize', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
         { id: 'load', name: 'OS Load', sort: 'load', dataField: 'load', doStats: true, default: true, width: 120, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 2)); } },
         { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', doStats: true, default: true, width: 80, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 1)) + '%'; } },

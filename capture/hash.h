@@ -119,25 +119,19 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 #define HASH_BUCKET_COUNT(name, varname, h) ((varname).buckets[((uint32_t)h) % (varname).size].name##count)
 
 #define HASH_FORALL_POP_HEAD(name, varname, element, code) \
-  do { \
-      int  _##name##b; \
-      for ( _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
-          while((varname).buckets[_##name##b].name##count) { \
-              DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); \
-              (varname).count--; \
-              code \
-          } \
+  for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
+      while((varname).buckets[_##name##b].name##count) { \
+          DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); \
+          (varname).count--; \
+          code \
       } \
-  } while(0)
+  }
 
 #define HASH_FORALL(name, varname, element, code) \
-  do { \
-      int  _##name##b; \
-      for ( _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
-          for (element = (varname).buckets[_##name##b].name##next; element != (void*)&((varname).buckets[_##name##b]); element = element->name##next) { \
-              code \
-          } \
+  for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
+      for (element = (varname).buckets[_##name##b].name##next; element != (void*)&((varname).buckets[_##name##b]); element = element->name##next) { \
+          code \
       } \
-  } while(0)
+  }
 
 #endif

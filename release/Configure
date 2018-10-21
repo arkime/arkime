@@ -139,7 +139,7 @@ chmod 0700 $MOLOCH_INSTALL_DIR/raw
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
-    ES_VERSION=6.3.1
+    ES_VERSION=6.4.2
     if [ -f "/etc/redhat-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}.rpm
     else
