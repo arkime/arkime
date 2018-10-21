@@ -262,6 +262,12 @@ app.get("/users/user/:user", (req, res) => {
   });
 });
 
+app.post("/users/user/:user", (req, res) => {
+  clients[nodes[0]].index({index: "users", type: "user", id: req.params.user, body: req.body, refresh: true}, (err, result) => {
+    res.send(result);
+  });
+});
+
 app.get("/:index/:type/_search", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
