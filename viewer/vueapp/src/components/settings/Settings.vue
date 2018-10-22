@@ -427,6 +427,7 @@
           <table class="table table-striped table-sm">
             <thead>
               <tr>
+                <th>Share</th>
                 <th>Name</th>
                 <th>Expression</th>
                 <th width="30%">Sessions Columns</th>
@@ -440,6 +441,13 @@
                 @keyup.enter="updateView(key)"
                 @keyup.esc="cancelViewChange(key)"
                 :key="key">
+                <td>
+                  <input type="checkbox"
+                    v-model="item.shared"
+                    @input="viewChanged(key)"
+                    class="form-check mt-2"
+                  />
+                </td>
                 <td>
                   <input type="text"
                     maxlength="20"
@@ -522,6 +530,12 @@
               </tr> <!-- /view list error -->
               <!-- new view form -->
               <tr @keyup.enter="createView">
+                <td>
+                  <input type="checkbox"
+                    v-model="newViewShared"
+                    class="form-check mt-2"
+                  />
+                </td>
                 <td>
                   <input type="text"
                     maxlength="20"
@@ -1611,6 +1625,7 @@ export default {
       viewFormError: '',
       newViewName: '',
       newViewExpression: '',
+      newViewShared: false,
       // cron settings vars
       cronQueries: undefined,
       cronQueryListError: '',
@@ -1886,6 +1901,7 @@ export default {
       }
 
       let data = {
+        shared: this.newViewShared,
         viewName: this.newViewName,
         expression: this.newViewExpression
       };
@@ -1895,12 +1911,14 @@ export default {
           // add the view to the view list
           this.views[data.viewName] = {
             expression: data.expression,
-            name: data.viewName
+            name: data.viewName,
+            shared: data.shared
           };
           this.viewFormError = false;
           // clear the inputs
           this.newViewName = null;
           this.newViewExpression = null;
+          this.newViewShared = false;
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';

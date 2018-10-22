@@ -1160,9 +1160,20 @@ app.post('/user/settings/update', [checkCookieToken, logAction(), postSettingUse
 
 // gets a user's views
 app.get('/user/views', getSettingUser, function(req, res) {
-  if (!req.settingUser) {return res.send({});}
+  if (!req.settingUser) { return res.send({}); }
 
-  return res.send(req.settingUser.views || {});
+  Db.getUser('shared', (err, sharedUser) => {
+    if (sharedUser) {
+      sharedUser = sharedUser._source;
+      if (!req.settingUser.views) { req.settingUser.views = {}; }
+      for (let viewName in sharedUser.views) {
+        // TODO check for views with the same name as a shared view so user specific views don't get overwritten
+        req.settingUser.views[viewName] = sharedUser.views[viewName];
+      }
+    }
+
+    return res.send(req.settingUser.views || {});
+  });
 });
 
 // creates a new view for a user
@@ -1202,20 +1213,60 @@ app.post('/user/views/create', [checkCookieToken, logAction(), postSettingUser],
     container[req.body.viewName].sessionsColConfig = undefined;
   }
 
-  Db.setUser(user.userId, user, function(err, info) {
-    if (err) {
-      console.log('/user/views/create error', err, info);
-      return res.molochError(500, 'Create view failed');
-    }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Created view successfully',
-      viewName: req.body.viewName,
-      views   : user.views
-    }));
-  });
+  // TODO don't show shared user in user endpoint
+  // TODO don't allow someone to create a user with the username 'shared'
+  // TODO only allow admins to create shared views? or associate a user with a shared view?
+  // TODO only allow admins to alter shared views? or only let user that created the view to alter the view?
+  if (req.body.shared) {
+    Db.getUser('shared', (err, sharedUser) => {
+      if (!sharedUser || !sharedUser.found) {
+        // sharing for the first time
+        console.log('new shared user');
+        sharedUser = {
+          userId: 'shared',
+          userName: 'shared',
+          enabled: false,
+          webEnabled: false,
+          emailSearch: false,
+          headerAuthEnabled: false,
+          createEnabled: false,
+          removeEnabled: false,
+          packetSearch: false,
+          views: {}
+        };
+      } else {
+        sharedUser = sharedUser._source;
+      }
+
+      // TODO check if the view already exists, then what to do?
+      if (!sharedUser.views) { sharedUser.views = {}; }
+      sharedUser.views[req.body.viewName] = {
+        expression: req.body.expression,
+        shared: true
+      };
+
+      Db.setUser('shared', sharedUser, (err, info) => {
+        if (err) { console.log('error saving shared user', err, info); }
+      });
+    });
+  } else {
+    // TODO should this still happen if it is being shared or should we only save the view on the shared user?
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/user/views/create error', err, info);
+        return res.molochError(500, 'Create view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created view successfully',
+        viewName: req.body.viewName,
+        views   : user.views
+      }));
+    });
+  }
 });
 
+// TODO delete shared views
 // deletes a user's specified view
 app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {
@@ -1242,6 +1293,7 @@ app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser],
   });
 });
 
+// TODO updating a view as shared/unshared
 // updates a user's specified view
 app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
 
