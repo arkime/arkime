@@ -1356,19 +1356,23 @@ sub usersUpdate
       },
       "views": {
         "type": "object",
-        "dynamic": "true"
+        "dynamic": "true",
+        "enabled": "false"
       },
       "columnConfigs": {
         "type": "object",
-        "dynamic": "true"
+        "dynamic": "true",
+        "enabled": "false"
       },
       "spiviewFieldConfigs": {
         "type": "object",
-        "dynamic": "true"
+        "dynamic": "true",
+        "enabled": "false"
       },
       "tableStates": {
         "type": "object",
-        "dynamic": "true"
+        "dynamic": "true",
+        "enabled": "false"
       }
     }
   }

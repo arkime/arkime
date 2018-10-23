@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS36040 Google LLC",
+            "dstASN" : "AS43515 Google Ireland Limited",
             "dstBytes" : 119,
             "dstDataBytes" : 111,
             "dstGEO" : "US",
