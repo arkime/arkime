@@ -444,7 +444,7 @@
                 <td>
                   <input type="checkbox"
                     v-model="item.shared"
-                    @input="viewChanged(key)"
+                    @change="toggleShared(item)"
                     class="form-check mt-2"
                   />
                 </td>
@@ -511,7 +511,7 @@
                   <button v-else
                     type="button"
                     class="btn btn-sm btn-danger pull-right"
-                    @click="deleteView(key)">
+                    @click="deleteView(item, key)">
                     <span class="fa fa-trash-o">
                     </span>&nbsp;
                     Delete
@@ -1909,13 +1909,15 @@ export default {
       UserService.createView(data, this.userId)
         .then((response) => {
           // add the view to the view list
-          this.views[data.viewName] = {
+          let newView = {
             expression: data.expression,
             name: data.viewName,
             shared: data.shared
           };
+          if (data.shared) { newView.user = this.userId; }
+          this.views[data.viewName] = newView;
+          // clear the inputs and any error
           this.viewFormError = false;
-          // clear the inputs
           this.newViewName = null;
           this.newViewExpression = null;
           this.newViewShared = false;
@@ -1931,10 +1933,11 @@ export default {
     },
     /**
      * Deletes a view given its name
+     * @param {Object} view The view to delete
      * @param {string} name The name of the view to delete
      */
-    deleteView: function (name) {
-      UserService.deleteView(name, this.userId)
+    deleteView: function (view, name) {
+      UserService.deleteView(view, this.userId)
         .then((response) => {
           // remove the view from the view list
           this.views[name] = null;
@@ -1992,13 +1995,29 @@ export default {
 
       UserService.updateView(data, this.userId)
         .then((response) => {
-          // update view list
-          this.views = response.views;
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
           // set the view as unchanged
           data.changed = false;
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    // TODO
+    /**
+     * Shares or unshares a view given its name
+     * @param {Object} view The view to share/unshare
+     */
+    toggleShared: function (view) {
+      UserService.toggleShareView(view, this.userId, view.shared)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
         })
         .catch((error) => {
           // display error message to user

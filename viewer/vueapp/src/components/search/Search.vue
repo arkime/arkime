@@ -82,7 +82,7 @@
           :title="value.expression">
           <button class="btn btn-xs btn-default pull-right"
             type="button"
-            @click="deleteView(key)">
+            @click="deleteView(value, key)">
             <span class="fa fa-trash-o"></span>
           </button>
           {{ key }}&nbsp;
@@ -398,7 +398,7 @@ export default {
         }
       });
     },
-    deleteView: function (view) {
+    deleteView: function (view, name) {
       UserService.deleteView(view)
         .then((response) => {
           // display success message
@@ -409,12 +409,12 @@ export default {
 
           if (response.success) {
             // remove the deleted view if it was selected
-            if (this.view === view) {
+            if (this.view === name) {
               this.setView(undefined);
             }
 
-            this.views[view] = null;
-            delete this.views[view];
+            this.views[name] = null;
+            delete this.views[name];
           }
         })
         .catch((error) => {

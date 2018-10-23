@@ -147,7 +147,7 @@ export default {
 
   /**
    * Deletes a user's specified view
-   * @param {string} view       The name of the view to be removed
+   * @param {Object} view       The view object to be deleted
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
@@ -158,11 +158,11 @@ export default {
       let url = 'user/views/delete';
       if (userId) { url += `?userId=${userId}`; }
 
-      Vue.axios.post(url, { view: view })
+      Vue.axios.post(url, view)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
-          reject(error.data);
+          reject(error);
         });
     });
   },
@@ -190,7 +190,38 @@ export default {
           response.data.views = this.parseViews(response.data.views);
           resolve(response.data);
         }, (error) => {
-          reject(error.data);
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * TODO
+   * Shares/unshares a specified view for a user
+   * @param {Object} data       The view data to pass to the server
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @param {boolean} share     Whether this view is being shared or unshared
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  toggleShareView: function (data, userId, share) {
+    return new Promise((resolve, reject) => {
+      let url = share ? 'user/views/share' : 'user/views/unshare';
+
+      let options = {
+        url: url,
+        method: 'POST',
+        data: data
+      };
+
+      if (userId) { options.url += `?userId=${userId}`; }
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
         });
     });
   },
