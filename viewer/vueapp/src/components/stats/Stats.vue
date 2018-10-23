@@ -198,7 +198,8 @@
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
-          @click="tabIndexChange">
+          @click="tabIndexChange"
+          v-if="!multiviewer">
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -207,7 +208,8 @@
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
-          @click="tabIndexChange">
+          @click="tabIndexChange"
+          v-if="!multiviewer">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -215,7 +217,8 @@
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
-          @click="tabIndexChange">
+          @click="tabIndexChange"
+          v-if="!multiviewer">
           <es-shards v-if="user && tabIndex === 5"
             :refreshData="refreshData"
             :data-interval="dataInterval">
@@ -247,7 +250,8 @@ export default {
       graphSort: this.$route.query.sort || 'asc',
       dataInterval: this.$route.query.refreshInterval || '5000',
       refreshData: false,
-      childError: ''
+      childError: '',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
