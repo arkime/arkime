@@ -85,6 +85,9 @@
             @click="deleteView(value, key)">
             <span class="fa fa-trash-o"></span>
           </button>
+          <span v-if="value.shared"
+            class="fa fa-share-square">
+          </span>
           {{ key }}&nbsp;
           <span v-if="value.sessionsColConfig"
             class="fa fa-columns cursor-help"

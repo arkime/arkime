@@ -446,6 +446,7 @@
                     v-model="item.shared"
                     @change="toggleShared(item)"
                     class="form-check mt-2"
+                    :disabled="!user.createEnabled && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -454,6 +455,7 @@
                     v-model="item.name"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
+                    :disabled="!user.createEnabled && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -461,6 +463,7 @@
                     v-model="item.expression"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
+                    :disabled="!user.createEnabled && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -489,38 +492,40 @@
                   </span>
                 </td>
                 <td>
-                  <div class="btn-group btn-group-sm pull-right"
-                    v-if="item.changed">
-                    <button type="button"
-                      v-b-tooltip.hover
-                      @click="updateView(key)"
-                      title="Save changes to this view"
-                      class="btn btn-theme-tertiary">
-                      <span class="fa fa-save">
-                      </span>
-                    </button>
-                    <button type="button"
-                      v-b-tooltip.hover
-                      class="btn btn-warning"
-                      @click="cancelViewChange(key)"
-                      title="Undo changes to this view">
-                      <span class="fa fa-ban">
-                      </span>
+                  <div v-if="user.createEnabled || item.user === user.userId">
+                    <div class="btn-group btn-group-sm pull-right"
+                      v-if="item.changed">
+                      <button type="button"
+                        v-b-tooltip.hover
+                        @click="updateView(key)"
+                        title="Save changes to this view"
+                        class="btn btn-theme-tertiary">
+                        <span class="fa fa-save">
+                        </span>
+                      </button>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        class="btn btn-warning"
+                        @click="cancelViewChange(key)"
+                        title="Undo changes to this view">
+                        <span class="fa fa-ban">
+                        </span>
+                      </button>
+                    </div>
+                    <button v-else
+                      type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteView(item, key)">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
                     </button>
                   </div>
-                  <button v-else
-                    type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    @click="deleteView(item, key)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
                 </td>
               </tr> <!-- /views -->
               <!-- view list error -->
               <tr v-if="viewListError">
-                <td colspan="3">
+                <td colspan="6">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -564,7 +569,7 @@
               </tr> <!-- /new view form -->
               <!-- view form error -->
               <tr v-if="viewFormError">
-                <td colspan="3">
+                <td colspan="6">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -1663,6 +1668,11 @@ export default {
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
+  },
   created: function () {
     // does the url specify a tab in hash
     let tab = window.location.hash;
@@ -1902,7 +1912,7 @@ export default {
 
       let data = {
         shared: this.newViewShared,
-        viewName: this.newViewName,
+        name: this.newViewName,
         expression: this.newViewExpression
       };
 
@@ -1911,11 +1921,11 @@ export default {
           // add the view to the view list
           let newView = {
             expression: data.expression,
-            name: data.viewName,
+            name: data.name,
             shared: data.shared
           };
           if (data.shared) { newView.user = this.userId; }
-          this.views[data.viewName] = newView;
+          this.views[data.name] = newView;
           // clear the inputs and any error
           this.viewFormError = false;
           this.newViewName = null;
@@ -2007,7 +2017,6 @@ export default {
           this.msgType = 'danger';
         });
     },
-    // TODO
     /**
      * Shares or unshares a view given its name
      * @param {Object} view The view to share/unshare

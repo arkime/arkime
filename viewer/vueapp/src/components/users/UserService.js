@@ -125,7 +125,7 @@ export default {
   /**
    * Creates a specified view for a user
    * @param {Object} params     The params to pass as data to the server
-   *                            { viewName: 'specialview', expression: 'something == somethingelse'}
+   *                            { name: 'specialview', expression: 'something == somethingelse'}
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
@@ -140,7 +140,7 @@ export default {
         .then((response) => {
           resolve(response.data);
         }, (error) => {
-          reject(error.data);
+          reject(error);
         });
     });
   },
@@ -196,7 +196,6 @@ export default {
   },
 
   /**
-   * TODO
    * Shares/unshares a specified view for a user
    * @param {Object} data       The view data to pass to the server
    * @param {string} userId     The unique identifier for a user
