@@ -5152,26 +5152,18 @@ app.get('/state/:name', function(req, res) {
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
 
-function addTagsList(allTagNames, list, doneCb) {
-  async.eachLimit(list, 10, function(session, nextCb) {
+function localAddTags(allTagNames, session, doneCb) {
     var fields = session._source || session.fields;
-
     if (!fields) {
-      console.log("No Fields", session);
-      return nextCb(null);
+    console.log("localAddTags - No Fields", session);
+    return doneCb("No Fields");
     }
-
-    if (fields.tags === undefined) {
-      fields.tags = [];
-    }
-
-
+  if (fields.tags === undefined) { fields.tags = []; }
     for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
       if (fields.tags.indexOf(allTagNames[i]) === -1) {
         fields.tags.push(allTagNames[i]);
       }
     }
-
     // Do the ES update
     var document = {
       doc: {
@@ -5179,35 +5171,62 @@ function addTagsList(allTagNames, list, doneCb) {
         tagsCnt: fields.tags.length
       }
     };
-
     Db.update(session._index, 'session', session._id, document, function(err, data) {
       if (err) {
-        console.log("addTagsList error", session, err, data);
+      console.log("localAddTags error", session, err, data);
+      return doneCb (err);
       }
-      nextCb(null);
+    return doneCb(null);
     });
-  }, doneCb);
-}
-
-function removeTagsList(res, allTagNames, list) {
-  if (!list.length) {
-    return res.molochError(200, 'No sessions to remove tags from');
   }
 
+function addTagsList(user, allTagNames, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var fields = session._source || session.fields;
-
-    if (!fields || !fields.tags) {
+    if (!fields) {
+      console.log("No Fields", session);
       return nextCb(null);
     }
+    isLocalView (fields.node, function() { // local node
+      localAddTags (allTagNames, session, () => {
+        nextCb(null);
+      });
+    }, function () { // proxy the request to a remote node
+        getViewUrl(fields.node, function(err, viewUrl, client) {
+          var info = url.parse(viewUrl);
+          info.method = "POST";
+          info.path = Config.basePath(fields.node) + fields.node + '/addTags/'+ session._id + '?' + 'tags=' + allTagNames.join(',');
+          info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+          addAuth(info, user, fields.node);
+          addCaTrust(info, fields.node);
+          var preq = client.request(info, function(pres) {
+            pres.on('data', function (chunk) {
+              if (Config.debug > 1)
+                console.log("addTagsList proxy respone: ", chunk.toString());
+            });
+            pres.on('end', function () {
+              setImmediate(nextCb);
+            });
+          });
+          preq.on('error', function (e) {
+            console.log("ERROR - Couldn't proxy addTags request=", info, "\nerror=", e);
+            setImmediate(nextCb);
+          });
+          preq.end();
+        });
+    });
+  }, doneCb); // end Async
+}
 
+function localRemoveTags(allTagNames, session, doneCb) {
+  var fields = session._source || session.fields;
+  if (!fields || !fields.tags) { return doneCb('No fields or no tags'); }
     for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
       let pos = fields.tags.indexOf(allTagNames[i]);
       if (pos !== -1) {
         fields.tags.splice(pos, 1);
       }
     }
-
     let document;
     if (fields.tags.length === 0) {
       // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
@@ -5222,18 +5241,51 @@ function removeTagsList(res, allTagNames, list) {
           tagsCnt: fields.tags.length
         }
       };
-
     }
-
     Db.update(session._index, 'session', session._id, document, function(err, data) {
       if (err) {
-        console.log("removeTagsList error", err);
+      console.log("localRemoveTags error", session, err, data);
+      return doneCb (err);
+    }
+    return doneCb(null);
+  });
+}
+
+function removeTagsList(user, allTagNames, list, doneCb) {
+  async.eachLimit(list, 10, function(session, nextCb) {
+    var fields = session._source || session.fields;
+    if (!fields || !fields.tags) {
+      return nextCb(null);
       }
+    isLocalView (fields.node, function() { // local node
+      localRemoveTags (allTagNames, session, () => {
       nextCb(null);
     });
-  }, function (err) {
-    return res.send(JSON.stringify({success: true, text: "Tags removed successfully"}));
+    }, function () { // proxy the request to a remote node
+        getViewUrl(fields.node, function(err, viewUrl, client) {
+          var info = url.parse(viewUrl);
+          info.method = "POST";
+          info.path = Config.basePath(fields.node) + fields.node + '/removeTags/'+ session._id + '?' + 'tags=' + allTagNames.join(',');
+          info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+          addAuth(info, user, fields.node);
+          addCaTrust(info, fields.node);
+          var preq = client.request(info, function(pres) {
+            pres.on('data', function (chunk) {
+              if (Config.debug > 1)
+                console.log("removeTagsList proxy respone: ", chunk.toString());
+            });
+            pres.on('end', function () {
+              setImmediate(nextCb);
+            });
+          });
+          preq.on('error', function (e) {
+            console.log("ERROR - Couldn't proxy removeTags request=", info, "\nerror=", e);
+            setImmediate(nextCb);
+          });
+          preq.end();
+        });
   });
+  }, doneCb); // end Async
 }
 
 app.post('/addTags', logAction(), function(req, res) {
@@ -5241,17 +5293,14 @@ app.post('/addTags', logAction(), function(req, res) {
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
-
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
-
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
-
     sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
-      addTagsList(tags, list, function () {
+      addTagsList(req.user, tags, list, function () {
         return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
     });
@@ -5260,34 +5309,85 @@ app.post('/addTags', logAction(), function(req, res) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
-      addTagsList(tags, list, function () {
+      addTagsList(req.user, tags, list, function () {
         return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
       });
     });
   }
 });
 
+app.post('/:nodeName/addTags/:id', checkProxyRequest, function(req, res) {
+  var tags = [];
+  var id = req.params.id;
+  if (req.query.tags) { tags = queryValueToArray(req.query.tags); }
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
+  Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: "tags,node"}, function(err, session) {
+    if (err || !session.found) {
+      console.log("Session get error", err, session);
+      return res.molochError(200, 'No sessions to add tags to');
+    }
+    localAddTags(tags, session, function (err) {
+        if (err) {
+          console.log("Session tagging error", err);
+          return res.molochError(200, 'No sessions to add tags to');
+        }
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
+    });
+  });
+});
+
 app.post('/removeTags', logAction(), function(req, res) {
   if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
-
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
   }
-
   if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
-      removeTagsList(res, tags, list);
+    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to remove tags from');
+      }
+      removeTagsList(req.user, tags, list, ()=> {
+        return res.send(JSON.stringify({success: true, text: "Tags removed successfully"}));
+      });
     });
   } else {
-    sessionsListFromQuery(req, res, ["tags"], function(err, list) {
-      removeTagsList(res, tags, list);
+    sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to remove tags from');
+      }
+      removeTagsList(req.user, tags, list, ()=> {
+        return res.send(JSON.stringify({success: true, text: "Tags removed successfully"}));
+      });
     });
   }
+});
+
+app.post('/:nodeName/removeTags/:id', checkProxyRequest, function(req, res) {
+  var tags = [];
+  var id = req.params.id;
+
+  if (req.query.tags) { tags = queryValueToArray(req.query.tags); }
+
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
+
+  Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: "tags,node"}, function(err, session) {
+    if (err || !session.found) {
+      console.log("Session get error", err, session);
+      return res.molochError(200, 'No sessions to remove tags from');
+    }
+    localRemoveTags(tags, session, function (err) {
+      if (err) {
+        console.log("Session tag removal error", err);
+        return res.molochError(200, 'No sessions to remove tags from');
+      }
+      return res.send(JSON.stringify({success: true, text: "Tags removed successfully"}));
+    });
+  });
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -6762,7 +6862,6 @@ function processCronQuery(cq, options, query, endTime, cb) {
         for (i = 0, ilen = hits.length; i < ilen; i++) {
           ids.push({id: hits[i]._id, node: hits[i]._source.node});
         }
-
         sendSessionsListQL(options, ids, doNext);
       } else if (cq.action.indexOf("tag") === 0) {
         for (i = 0, ilen = hits.length; i < ilen; i++) {
@@ -6775,7 +6874,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
 
         var tags = options.tags.split(",");
         sessionsListFromIds(null, ids, ["tags", "node"], function(err, list) {
-          addTagsList(tags, list, doNext);
+          addTagsList(options.user, tags, list, doNext);
         });
       } else {
         console.log("Unknown action", cq);
