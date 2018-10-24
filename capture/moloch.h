@@ -208,6 +208,7 @@ typedef struct moloch_field_info {
     uint16_t                  type;
     uint16_t                  flags;
     char                      ruleEnabled;
+    char                     *transform;
 } MolochFieldInfo_t;
 
 typedef struct {

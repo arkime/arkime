@@ -771,6 +771,10 @@ global.moloch.utf8ToHex = function (utf8) {
     return hex;
 }
 
+global.moloch.dash2Colon = function (str) {
+  return str.replace(/-/g, ':');
+}
+
 var protocols = {
     icmp:   1,
     tcp:    6,
