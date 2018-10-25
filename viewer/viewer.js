@@ -2248,22 +2248,14 @@ function sessionsListFromQuery(req, res, fields, cb) {
 
 function sessionsListFromIds(req, ids, fields, cb) {
   var processSegments = false;
-  if (req && req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
-    fields.push("rootId");
-    processSegments = true;
-  } else if (req && req.body.segments && req.body.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
-    fields.push("rootId");
+  if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
+    if (fields.indexOf("rootId") === -1) { fields.push("rootId"); }
     processSegments = true;
   }
 
   var list = [];
   var nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
-
-  // ES treats _source=no as turning off _source, very sad :(
-  if (fields.length === 1 && fields[0] === "node") {
-    fields.push("lastPacket");
-  }
 
   async.eachLimit(ids, 10, function(id, nextCb) {
     Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: fields.join(",")}, function(err, session) {
