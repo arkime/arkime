@@ -2247,6 +2247,15 @@ function sessionsListFromQuery(req, res, fields, cb) {
 }
 
 function sessionsListFromIds(req, ids, fields, cb) {
+  var processSegments = false;
+  if (req && req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
+    fields.push("rootId");
+    processSegments = true;
+  } else if (req && req.body.segments && req.body.segments.match(/^(time|all)$/) && fields.indexOf("rootId") === -1) {
+    fields.push("rootId");
+    processSegments = true;
+  }
+
   var list = [];
   var nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
@@ -2273,7 +2282,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
       nextCb(null);
     });
   }, function(err) {
-    if (req && req.query.segments && req.query.segments.match(/^(time|all)$/)) {
+    if (processSegments) {
       buildSessionQuery(req, function(err, query, indices) {
         query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
