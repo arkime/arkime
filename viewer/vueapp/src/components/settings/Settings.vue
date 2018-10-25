@@ -446,7 +446,7 @@
                     v-model="item.shared"
                     @change="toggleShared(item)"
                     class="form-check mt-2"
-                    :disabled="!user.createEnabled && item.user !== user.userId"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -455,7 +455,7 @@
                     v-model="item.name"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
-                    :disabled="!user.createEnabled && item.user !== user.userId"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -463,7 +463,7 @@
                     v-model="item.expression"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
-                    :disabled="!user.createEnabled && item.user !== user.userId"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -2022,7 +2022,7 @@ export default {
      * @param {Object} view The view to share/unshare
      */
     toggleShared: function (view) {
-      UserService.toggleShareView(view, this.userId, view.shared)
+      UserService.toggleShareView(view, view.user, view.shared)
         .then((response) => {
           // display success message to user
           this.msg = response.text;

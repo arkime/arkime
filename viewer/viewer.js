@@ -1091,6 +1091,7 @@ function getSettingUser (req, res, next) {
 
 // express middleware to set req.settingUser to who to work on, depending if admin or not
 function postSettingUser (req, res, next) {
+  console.log('post setting user', req.query.userId);
   var userId;
 
   if (req.query.userId === undefined || req.query.userId === req.user.userId) {
@@ -1167,8 +1168,12 @@ app.get('/user/views', getSettingUser, function(req, res) {
       sharedUser = sharedUser._source;
       if (!req.settingUser.views) { req.settingUser.views = {}; }
       for (let viewName in sharedUser.views) {
-        // TODO check for views with the same name as a shared view so user specific views don't get overwritten
-        req.settingUser.views[viewName] = sharedUser.views[viewName];
+        // check for views with the same name as a shared view so user specific views don't get overwritten
+        let sharedViewName = viewName;
+        if (req.settingUser.views[sharedViewName] && !req.settingUser.views[sharedViewName].shared) {
+          sharedViewName += '-shared';
+        }
+        req.settingUser.views[sharedViewName] = sharedUser.views[viewName];
       }
     }
 
@@ -1196,8 +1201,13 @@ function saveSharedView(req, res, user, endpoint, successMessage, errorMessage) 
       sharedUser = sharedUser._source;
     }
 
-    // TODO check if the view already exists, then what to do?
     sharedUser.views = sharedUser.views || {};
+
+    if (sharedUser.views[req.body.name]) {
+      console.log('Trying to add duplicate shared view', sharedUser);
+      return res.molochError(403, 'Shared view already exists');
+    }
+
     let newView = {
       expression: req.body.expression,
       user: user.userId,
@@ -1324,6 +1334,7 @@ app.post('/user/views/share', [checkCookieToken, logAction(), postSettingUser], 
   user.views = user.views || {};
   req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
+  // TODO make sure not sharing view with same name as a shared view before deleting the view
   if (user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
   delete user.views[req.body.name];
 
@@ -1339,6 +1350,7 @@ app.post('/user/views/share', [checkCookieToken, logAction(), postSettingUser], 
   });
 });
 
+// TODO combine share/unshare endpoints
 // if going from shared to unshared, delete it from shared user and add it to user
 app.post('/user/views/unshare', [checkCookieToken, logAction(), postSettingUser], function (req, res) {
   if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
@@ -1371,45 +1383,20 @@ app.post('/user/views/unshare', [checkCookieToken, logAction(), postSettingUser]
         return res.molochError(500, 'Usharing view failed');
       }
 
-      if (view.user === user.userId) {
-        // the user that created the view is unsharing the view
-        // TODO make sure no duplicates
-        user.views[req.body.name] = { expression: req.body.expression };
-        Db.setUser(user.userId, user, (err, info) => {
-          if (err) {
-            console.log('/user/views/unshare failed', err, info);
-            return res.molochError(500, 'Unshare view failed');
-          }
-          return res.send(JSON.stringify({
-            success : true,
-            text    : 'Unshared view successfully'
-          }));
-        });
-      } else { // an admin is unsharing the view
-        // so we need to find the user who created the view and update that user
-        Db.getUser(view.user, (err, viewUser) => {
-          if (!viewUser || !viewUser.found) {
-            console.log('/user/views/unshare unknown user created this view');
-            return res.molochError(403, 'Unknown user created this view');
-          }
-
-          viewUser = viewUser._source;
-          viewUser.views = viewUser.views || {};
-          // TODO check for duplicates?
-          viewUser.views[req.body.name] = { expression: req.body.expression };
-          Db.setUser(viewUser.userId, viewUser, (err, info) => {
-            if (err) {
-              console.log('/user/views/unshare failed', err, info);
-              return res.molochError(500, 'Unshare view failed');
-            }
-            return res.send(JSON.stringify({
-              success : true,
-              text    : 'Unshared view successfully'
-            }));
-          });
-        });
-      }
+      // TODO make sure no duplicates
+      user.views[req.body.name] = { expression: req.body.expression };
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log('/user/views/unshare failed', err, info);
+          return res.molochError(500, 'Unshare view failed');
+        }
+        return res.send(JSON.stringify({
+          success : true,
+          text    : 'Unshared view successfully'
+        }));
+      });
     });
+
   });
 });
 
@@ -2322,16 +2309,52 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-  if (!err && req.query.view && req.user.views && req.user.views[req.query.view]) {
+  if (!err && req.query.view) {
+    addViewToQuery(req, query, continueBuildQuery, buildCb);
+  } else {
+    continueBuildQuery(req, query, err, buildCb);
+  }
+}
+
+function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
+  let err;
+  let viewExpression;
+  if (req.user.views && req.user.views[req.query.view]) { // it's a user's view
     try {
-      var viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
+      viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
       query.query.bool.filter.push(viewExpression);
     } catch (e) {
-      console.log("ERR - User expression doesn't compile", req.user.views[req.query.view], e);
+      console.log('ERR - User expression doesn\'t compile', viewExpression, e);
       err = e;
     }
+    continueBuildQueryCb(req, query, err, finalCb);
+  } else { // it's a shared view
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        sharedUser.views = sharedUser.views || {};
+        for (let viewName in sharedUser.views) {
+          if (viewName === req.query.view) {
+            viewExpression = sharedUser.views[viewName].expression;
+            break;
+          }
+        }
+        if (sharedUser.views[req.query.view]) {
+          try {
+            viewExpression = molochparser.parse(sharedUser.views[req.query.view].expression);
+            query.query.bool.filter.push(viewExpression);
+          } catch (e) {
+            console.log('ERR - Shared user view expression doesn\'t compile', viewExpression, e);
+            err = e;
+          }
+        }
+        continueBuildQueryCb(req, query, err, finalCb);
+      }
+    });
   }
+}
 
+function continueBuildQuery(req, query, err, finalCb) {
   if (!err && req.user.expression && req.user.expression.length > 0) {
     try {
       // Expression was set by admin, so assume email search ok
@@ -2348,14 +2371,14 @@ function buildSessionQuery(req, buildCb) {
     if (req.query.date === '-1' ||                                      // An all query
         (req.query.bounding || "last") !== "last" ||                    // Not a last bounded query
         Config.get("queryAllIndices", Config.get("multiES", false))) {  // queryAllIndices (default: multiES)
-      return buildCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
+      return finalCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 
     Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
       if (indices.length > 3000) { // Will url be too long
-        return buildCb(err || lerr, query, "sessions2-*");
+        return finalCb(err || lerr, query, "sessions2-*");
       } else {
-        return buildCb(err || lerr, query, indices);
+        return finalCb(err || lerr, query, indices);
       }
     });
   });

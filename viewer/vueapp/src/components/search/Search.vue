@@ -48,7 +48,7 @@
       <!-- views dropdown menu -->
       <b-dropdown right
         size="sm"
-        class="pull-right ml-1"
+        class="pull-right ml-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
         variant="theme-secondary">
@@ -468,6 +468,12 @@ export default {
   }
 };
 </script>
+
+<style>
+.view-menu-dropdown .dropdown-menu {
+  width: 234px;
+}
+</style>
 
 <style scoped>
 form {
