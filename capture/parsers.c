@@ -254,7 +254,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         if (MAGIC_MATCH(0, "PK\005\006")) {
             return MAGIC_RESULT("application/zip");
         }
-        if (MAGIC_MATCH(0, "PK\007\008PK")) {
+        if (MAGIC_MATCH_LEN(0, "PK\007\008PK")) {
             return MAGIC_RESULT("application/zip");
         }
         break;
@@ -272,7 +272,7 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         }
         break;
     case 'd':
-        if (len > 20 && MAGIC_MATCH(0, "d8:announce")) {
+        if (MAGIC_MATCH_LEN(0, "d8:announce")) {
             return MAGIC_RESULT("application/x-bittorrent");
         }
         break;

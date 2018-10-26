@@ -14,7 +14,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.6.0 2018/09/xx
+1.6.0 2018/10/xx
   - NOTICE: db.pl upgrade is required
   - release - glib 2.56.2, yara 3.8.1, curl 7.61.1, lua 3.3.5, node 8.12.0
   - db - expire checks min lastPacket in each session2 like curator, not just
@@ -43,6 +43,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - experimental autoGenerateId config to use ES auto generated ids
   - viewer - Ability to download files based on hash (pr #927)
   - viewer - Can resize/save columns (issue #909)
+  - multiviewer - Can save user settings and such (pr #935)
   - viewer - Can share views with all other users
 
 

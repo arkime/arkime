@@ -77,6 +77,10 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             if (info->category)
                 g_free(info->category);
             info->category = g_strndup((char*)data + out[i+2], out[i+3]);
+        } else if (strncmp("transform", (char*)data + out[i], 8) == 0) {
+            if (info->transform)
+                g_free(info->transform);
+            info->transform = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
                 disabled = 1;
@@ -105,6 +109,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     char *group = 0;
     char *friendly = 0;
     char *category = 0;
+    char *transform = 0;
 
     if (config.debug)
         LOG("Parsing %s", text);
@@ -132,6 +137,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             help = colon;
         else if (strcmp(elements[e], "category") == 0)
             category = colon;
+        else if (strcmp(elements[e], "transform") == 0)
+            transform = colon;
         else if (strcmp(elements[e], "shortcut") == 0) {
             if (shortcut)
                 *shortcut = atoi(colon);
@@ -197,7 +204,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (count)
         flags |= MOLOCH_FIELD_FLAG_CNT;
 
-    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, (char *)NULL);
+    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, (char *)NULL);
     g_strfreev(elements);
     return pos;
 }
@@ -248,6 +255,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         flags |= (minfo->flags & MOLOCH_FIELD_FLAG_DISABLED);
 
         char *category = NULL;
+        char *transform = NULL;
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
         }
@@ -259,12 +267,18 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             char *value = va_arg(args, char *);
             if (strcmp(field, "category") == 0 && value) {
                 category = value;
+            } else if (strcmp(field, "transform") == 0 && value) {
+                transform = value;
             }
         }
         va_end(args);
         if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
             LOG("UPDATING - Field category in db %s doesn't match field category %s in capture for field %s", minfo->category, category, expression);
             moloch_db_update_field(expression, "category", category);
+        }
+        if (transform && (!minfo->transform || strcmp(transform, minfo->transform) != 0)) {
+            LOG("UPDATING - Field transform in db %s doesn't match field transform %s in capture for field %s", minfo->transform, transform, expression);
+            moloch_db_update_field(expression, "transform", transform);
         }
     }
 
@@ -1407,6 +1421,8 @@ void moloch_field_exit()
             g_free(info->kind);
         if (info->category)
             g_free(info->category);
+        if (info->transform)
+            g_free(info->transform);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
     );
 }

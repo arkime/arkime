@@ -1861,12 +1861,14 @@ void moloch_packet_init()
         "mac.src", "Src MAC", "srcMac",
         "Source ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "transform", "dash2Colon",
         (char *)NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
         "mac.dst", "Dst MAC", "dstMac",
         "Destination ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "transform", "dash2Colon",
         (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
@@ -1874,6 +1876,7 @@ void moloch_packet_init()
         "Shorthand for mac.src or mac.dst",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
+        "transform", "dash2Colon",
         (char *)NULL);
 
     oui1Field = moloch_field_define("general", "termfield",

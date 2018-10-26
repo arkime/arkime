@@ -3055,7 +3055,7 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
         ipExcluded: ipExcludes.includes(ip),
         nodeExcluded: nodeExcludes.includes(node.name),
         storeSize: node.indices.store.size_in_bytes,
-        freeSize: node.fs.total.available_in_bytes,
+        freeSize: node.roles.includes("data")?node.fs.total.available_in_bytes:0,
         docs: node.indices.docs.count,
         searches: node.indices.search.query_current,
         searchesTime: node.indices.search.query_time_in_millis,
