@@ -2030,10 +2030,6 @@ export default {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
-          if (view.user !== this.user.userId) {
-            // TODO remove that view from the list becuase it is no longer shared with other users
-            console.log('shared by a user that\'s not the original creator');
-          }
         })
         .catch((error) => {
           // display error message to user
