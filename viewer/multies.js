@@ -714,6 +714,7 @@ app.post("/:index/_count", simpleGatherAdd);
 app.get("/:index/:type/_count", simpleGatherAdd);
 app.post("/:index/:type/_count", simpleGatherAdd);
 
+app.post("/:index/:type/:id/_update", simpleGatherFirst);
 
 if (Config.get("regressionTests")) {
   app.post('/shutdown', function(req, res) {
