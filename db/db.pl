@@ -348,7 +348,7 @@ sub filesCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 9,
+    "index.priority": 8,
     "number_of_shards": 2,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -414,7 +414,7 @@ sub statsCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 10,
+    "index.priority": 7,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -535,7 +535,7 @@ sub fieldsCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 8,
+    "index.priority": 9,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -952,7 +952,7 @@ sub queriesCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 7,
+    "index.priority": 4,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1204,7 +1204,7 @@ sub huntsCreate
   my $settings = '
 {
   "settings": {
-    "index.priority": 7,
+    "index.priority": 3,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1295,7 +1295,7 @@ sub usersCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 9,
+    "index.priority": 6,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1380,6 +1380,18 @@ sub usersUpdate
 
     print "Setting users_v5 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}users_v5/user/_mapping?pretty", $mapping);
+}
+################################################################################
+sub setPriority
+{
+    esPut("/${PREFIX}sequence/_settings", '{"settings": {"index.priority": 10}}', 1);
+    esPut("/${PREFIX}files/_settings", '{"settings": {"index.priority": 8}}', 1);
+    esPut("/${PREFIX}stats/_settings", '{"settings": {"index.priority": 7}}', 1);
+    esPut("/${PREFIX}dstats/_settings", '{"settings": {"index.priority": 5}}', 1);
+    esPut("/${PREFIX}fields/_settings", '{"settings": {"index.priority": 9}}', 1);
+    esPut("/${PREFIX}queries/_settings", '{"settings": {"index.priority": 4}}', 1);
+    esPut("/${PREFIX}hunts/_settings", '{"settings": {"index.priority": 3}}', 1);
+    esPut("/${PREFIX}users/_settings", '{"settings": {"index.priority": 6}}', 1);
 }
 ################################################################################
 sub createAliasedFromNonAliased
@@ -2197,6 +2209,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         huntsCreate();
         checkForOld5Indices();
+        setPriority();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
@@ -2204,11 +2217,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         huntsCreate();
         sessions2Update();
         checkForOld5Indices();
+        setPriority();
     } elsif ($main::versionNumber <= 53) {
         historyUpdate();
         usersUpdate();
         sessions2Update();
         checkForOld5Indices();
+        setPriority();
     } else {
         print "db.pl is hosed\n";
     }
