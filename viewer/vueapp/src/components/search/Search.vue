@@ -80,11 +80,6 @@
           @click.self="setView(key)"
           v-b-tooltip.hover.left
           :title="value.expression">
-          <button class="btn btn-xs btn-default pull-right"
-            type="button"
-            @click="deleteView(value, key)">
-            <span class="fa fa-trash-o"></span>
-          </button>
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
@@ -385,8 +380,10 @@ export default {
       }
     },
     /* updates the views list with the included new view */
-    newView: function (views) {
-      if (views) { this.views = views; }
+    newView: function (view, viewName) {
+      if (view && viewName) {
+        this.views[viewName] = view;
+      }
     },
     setView: function (view) {
       this.view = view;
@@ -400,30 +397,6 @@ export default {
           view: view
         }
       });
-    },
-    deleteView: function (view, name) {
-      UserService.deleteView(view)
-        .then((response) => {
-          // display success message
-          if (response.text) {
-            this.message = response.text;
-            this.messageType = response.success ? 'success' : 'warning';
-          }
-
-          if (response.success) {
-            // remove the deleted view if it was selected
-            if (this.view === name) {
-              this.setView(undefined);
-            }
-
-            this.views[name] = null;
-            delete this.views[name];
-          }
-        })
-        .catch((error) => {
-          this.message = error;
-          this.messageType = 'danger';
-        });
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
@@ -471,7 +444,7 @@ export default {
 
 <style>
 .view-menu-dropdown .dropdown-menu {
-  width: 234px;
+  width: 200px;
 }
 </style>
 

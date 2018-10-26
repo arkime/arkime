@@ -492,7 +492,7 @@
                   </span>
                 </td>
                 <td>
-                  <div v-if="user.createEnabled || item.user === user.userId">
+                  <div v-if="user.createEnabled || item.user === user.userId || !item.user">
                     <div class="btn-group btn-group-sm pull-right"
                       v-if="item.changed">
                       <button type="button"
@@ -1919,13 +1919,16 @@ export default {
       UserService.createView(data, this.userId)
         .then((response) => {
           // add the view to the view list
-          let newView = {
-            expression: data.expression,
-            name: data.name,
-            shared: data.shared
-          };
-          if (data.shared) { newView.user = this.userId; }
-          this.views[data.name] = newView;
+          if (response.view && response.viewName) {
+            if (this.views[response.viewName]) {
+              // a shared view with this name already exists
+              // so just get the list of views again
+              this.getViews();
+            } else {
+              response.view.name = response.viewName;
+              this.views[response.viewName] = response.view;
+            }
+          }
           // clear the inputs and any error
           this.viewFormError = false;
           this.newViewName = null;
@@ -2022,11 +2025,15 @@ export default {
      * @param {Object} view The view to share/unshare
      */
     toggleShared: function (view) {
-      UserService.toggleShareView(view, view.user, view.shared)
+      UserService.toggleShareView(view, view.user)
         .then((response) => {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
+          if (view.user !== this.user.userId) {
+            // TODO remove that view from the list becuase it is no longer shared with other users
+            console.log('shared by a user that\'s not the original creator');
+          }
         })
         .catch((error) => {
           // display error message to user

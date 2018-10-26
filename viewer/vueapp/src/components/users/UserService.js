@@ -200,16 +200,13 @@ export default {
    * @param {Object} data       The view data to pass to the server
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
-   * @param {boolean} share     Whether this view is being shared or unshared
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  toggleShareView: function (data, userId, share) {
+  toggleShareView: function (data, userId) {
     return new Promise((resolve, reject) => {
-      let url = share ? 'user/views/share' : 'user/views/unshare';
-
       let options = {
-        url: url,
+        url: 'user/views/toggleShare',
         method: 'POST',
         data: data
       };
