@@ -5180,6 +5180,10 @@ function addTagsList(allTagNames, list, doneCb) {
       }
     };
 
+    if (Config.get('multiES', false) && session._node) {
+      document._node = session._node;  // add tag to a session using MultiES
+    }
+
     Db.update(session._index, 'session', session._id, document, function(err, data) {
       if (err) {
         console.log("addTagsList error", session, err, data);
@@ -5223,6 +5227,10 @@ function removeTagsList(res, allTagNames, list) {
         }
       };
 
+    }
+
+    if (Config.get('multiES', false) && session._node) {
+      document._node = session._node; // remove tag from a session using MultiES
     }
 
     Db.update(session._index, 'session', session._id, document, function(err, data) {

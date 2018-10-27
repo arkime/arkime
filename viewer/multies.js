@@ -521,6 +521,9 @@ function combineResults(obj, result) {
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
+    for (var i = 0; i < result.hits.hits.length; i++) {
+      result.hits.hits[i]._node = result._node;
+    }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
   if (obj.facets) {
@@ -704,6 +707,25 @@ function msearch(req, res) {
   });
 }
 
+app.post("/:index/:type/:id/_update", function(req, res) {
+  var body = JSON.parse(req.body);
+  if (body._node && clients[body._node]) {
+
+    var node = body._node;
+    delete body._node;
+
+    var prefix = node2Prefix(node);
+    var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+
+    clients[node].update({index: index, type: req.params.type, id: req.params.id, body: body}, (err, result) => {
+      return res.send(result);
+    });
+  } else {
+    console.log ('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
+    return res.end();
+  }
+})
+
 app.post("/:index/history", simpleGatherFirst);
 
 app.post("/:index/:type/_msearch", msearch);
@@ -714,7 +736,6 @@ app.post("/:index/_count", simpleGatherAdd);
 app.get("/:index/:type/_count", simpleGatherAdd);
 app.post("/:index/:type/_count", simpleGatherAdd);
 
-app.post("/:index/:type/:id/_update", simpleGatherFirst);
 
 if (Config.get("regressionTests")) {
   app.post('/shutdown', function(req, res) {
