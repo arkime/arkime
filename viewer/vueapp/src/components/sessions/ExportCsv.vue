@@ -2,7 +2,7 @@
 
   <!-- export csv form -->
   <div class="row"
-    @keyup.stop.prevent.enter="exportPcap()">
+    @keyup.stop.prevent.enter="exportCsv()">
 
     <!-- segments select input -->
     <div class="col-md-4">
