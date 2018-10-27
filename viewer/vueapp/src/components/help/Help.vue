@@ -776,8 +776,9 @@
               Views
             </h6>
             <p>
-              Here, a user can manage their saved views by updating or deleting them.
-              They can also create a new view.
+              Here, a user can manage their saved views by updating, deleting, or sharing them.
+              Sharing a view allows all other users to use that view (only admins can edit it).
+              A user can also create a new view in this section.
               See the <a href="help#views" class="no-decoration">Views</a> section for more information.
             </p>
             <h6>

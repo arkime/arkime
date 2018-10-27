@@ -12,7 +12,7 @@
             View Name
           </span>
         </div>
-        <input v-model="viewName"
+        <input v-model="name"
           v-focus-input="true"
           type="text"
           maxlength="20"
@@ -106,7 +106,7 @@ export default {
   },
   data: function () {
     return {
-      viewName: '',
+      name: '',
       loading: false,
       error: '',
       viewExpression: '',
@@ -122,7 +122,7 @@ export default {
   methods: {
     /* exposed functions ----------------------------------------- */
     createView: function () {
-      if (!this.viewName) {
+      if (!this.name) {
         this.error = 'No view name specified.';
         return;
       }
@@ -135,7 +135,7 @@ export default {
       this.loading = true;
 
       let data = {
-        viewName: this.viewName,
+        name: this.name,
         expression: this.viewExpression
       };
 
@@ -150,7 +150,7 @@ export default {
           // close the form and display success/error message
           this.done(response.text, response.success);
           // add the new view to the views dropdown
-          this.$emit('newView', response.views);
+          this.$emit('newView', response.view, response.viewName);
         })
         .catch((error) => {
           // display the error under the form so that user

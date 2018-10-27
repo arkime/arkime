@@ -1091,7 +1091,7 @@ function getSettingUser (req, res, next) {
 
 // express middleware to set req.settingUser to who to work on, depending if admin or not
 function postSettingUser (req, res, next) {
-  var userId;
+  let userId;
 
   if (req.query.userId === undefined || req.query.userId === req.user.userId) {
     userId = req.user.userId;
@@ -1158,134 +1158,353 @@ app.post('/user/settings/update', [checkCookieToken, logAction(), postSettingUse
   });
 });
 
+function saveSharedView (req, res, user, view, endpoint, successMessage, errorMessage) {
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      // sharing for the first time
+      sharedUser = {
+        userId: '_moloch_shared',
+        userName: '_moloch_shared',
+        enabled: false,
+        webEnabled: false,
+        emailSearch: false,
+        headerAuthEnabled: false,
+        createEnabled: false,
+        removeEnabled: false,
+        packetSearch: false,
+        views: {}
+      };
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    sharedUser.views = sharedUser.views || {};
+
+    if (sharedUser.views[req.body.name]) {
+      console.log('Trying to add duplicate shared view', sharedUser);
+      return res.molochError(403, 'Shared view already exists');
+    }
+
+    sharedUser.views[req.body.name] = view;
+
+    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      if (err) {
+        console.log(endpoint, 'failed', err, info);
+        return res.molochError(500, errorMessage);
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : successMessage,
+        viewName: req.body.name,
+        view    : view
+      }));
+    });
+  });
+}
+
+// remove the string, 'shared:', that is added to shared views with the same
+// name as a user's personal view in the endpoint '/user/views'
+// also remove any special characters except ('-', '_', ':', and ' ')
+function sanitizeViewName (req, res, next) {
+  if (req.body.name) {
+    req.body.name = req.body.name.replace(/(^shared:)|[^-a-zA-Z0-9_: ]/g, '');
+  }
+  next();
+}
+
+// removes a view from the user that created the view and adds it to the shared user
+function shareView (req, res, user, endpoint, successMessage, errorMessage) {
+  let view = user.views[req.body.name];
+  view.shared = true;
+
+  delete user.views[req.body.name]; // remove the view from the
+
+  Db.setUser(user.userId, user, (err, info) => {
+    if (err) {
+      console.log(endpoint, 'failed', err, info);
+      return res.molochError(500, errorMessage);
+    }
+    // save the view on the shared user
+    return saveSharedView(req, res, user, view, endpoint, successMessage, errorMessage);
+  });
+}
+
+// removes a view from the shared user and adds it to the user that created the view
+function unshareView (req, res, user, sharedUser, endpoint, successMessage, errorMessage) {
+  Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+    if (err) {
+      console.log(endpoint, 'failed', err, info);
+      return res.molochError(500, errorMessage);
+    }
+
+    if (user.views[req.body.name]) { // the user already has a view with this name
+      return res.molochError(403, 'A view already exists with this name.');
+    }
+
+    user.views[req.body.name] = {
+      expression: req.body.expression,
+      user: req.body.user, // keep the user so we know who created it
+      shared: false,
+      sessionsColConfig: req.body.sessionsColConfig
+    };
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log(endpoint, 'failed', err, info);
+        return res.molochError(500, errorMessage);
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : successMessage
+      }));
+    });
+  });
+}
+
 // gets a user's views
 app.get('/user/views', getSettingUser, function(req, res) {
-  if (!req.settingUser) {return res.send({});}
+  if (!req.settingUser) { return res.send({}); }
 
-  return res.send(req.settingUser.views || {});
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (sharedUser && sharedUser.found) {
+      sharedUser = sharedUser._source;
+      if (!req.settingUser.views) { req.settingUser.views = {}; }
+      for (let viewName in sharedUser.views) {
+        // check for views with the same name as a shared view so user specific views don't get overwritten
+        let sharedViewName = viewName;
+        if (req.settingUser.views[sharedViewName] && !req.settingUser.views[sharedViewName].shared) {
+          sharedViewName = `shared:${sharedViewName}`;
+        }
+        req.settingUser.views[sharedViewName] = sharedUser.views[viewName];
+      }
+    }
+
+    return res.send(req.settingUser.views || {});
+  });
 });
 
 // creates a new view for a user
-app.post('/user/views/create', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/views/create', [checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
   if (!req.settingUser) {
     console.log('/user/views/create unknown user');
     return res.molochError(403, 'Unknown user');
   }
 
-  if (!req.body.viewName)   { return res.molochError(403, 'Missing view name'); }
+  if (!req.body.name)   { return res.molochError(403, 'Missing view name'); }
   if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
 
-  var user = req.settingUser;
+  let user = req.settingUser;
   user.views = user.views || {};
-  var container = user.views;
-  if (req.body.groupName) {
-    req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-    if (!user.views._groups) {
-      user.views._groups = {};
-    }
-    if (!user.views._groups[req.body.groupName]) {
-      user.views._groups[req.body.groupName] = {};
-    }
-    container = user.views._groups[req.body.groupName];
-  }
 
-  req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-  if (container[req.body.viewName]) {
-    container[req.body.viewName].expression = req.body.expression;
+  let newView = {
+    expression: req.body.expression,
+    user: user.userId
+  };
+
+  if (req.body.shared) {
+    // save the view on the shared user
+    newView.shared = true;
+    saveSharedView(req, res, user, newView, '/user/views/create', 'Created shared view successfully', 'Create shared view failed');
   } else {
-    container[req.body.viewName] = {expression: req.body.expression};
-  }
-
-  if (req.body.sessionsColConfig) {
-    container[req.body.viewName].sessionsColConfig = req.body.sessionsColConfig;
-  } else if (container[req.body.viewName].sessionsColConfig && !req.body.sessionsColConfig) {
-    container[req.body.viewName].sessionsColConfig = undefined;
-  }
-
-  Db.setUser(user.userId, user, function(err, info) {
-    if (err) {
-      console.log('/user/views/create error', err, info);
-      return res.molochError(500, 'Create view failed');
+    newView.shared = false;
+    if (user.views[req.body.name]) {
+      return res.molochError(403, 'A view already exists with this name.');
+    } else {
+      user.views[req.body.name] = newView;
     }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Created view successfully',
-      viewName: req.body.viewName,
-      views   : user.views
-    }));
-  });
+
+    if (req.body.sessionsColConfig) {
+      user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
+    } else if (user.views[req.body.name].sessionsColConfig && !req.body.sessionsColConfig) {
+      user.views[req.body.name].sessionsColConfig = undefined;
+    }
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/user/views/create error', err, info);
+        return res.molochError(500, 'Create view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created view successfully',
+        viewName: req.body.name,
+        view    : newView
+      }));
+    });
+  }
 });
 
 // deletes a user's specified view
-app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function(req, res) {
   if (!req.settingUser) {
     console.log('/user/views/delete unknown user');
     return res.molochError(403, 'Unknown user');
   }
 
-  if (!req.body.view) { return res.molochError(403, 'Missing view'); }
+  if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
 
-  var user = req.settingUser;
+  let user = req.settingUser;
   user.views = user.views || {};
-  if (user.views[req.body.view] === undefined) { return res.molochError(200, "View not found"); }
-  delete user.views[req.body.view];
 
-  Db.setUser(user.userId, user, function(err, info) {
-    if (err) {
-      console.log('/user/views/delete failed', err, info);
-      return res.molochError(500, 'Delete view failed');
+  if (req.body.shared) {
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        sharedUser.views = sharedUser.views || {};
+        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+        // only admins or the user that created the view can delete the shared view
+        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          return res.molochError(401, 'Need admin privelages to delete another user\'s shared view');
+        }
+        delete sharedUser.views[req.body.name];
+      }
+
+      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+        if (err) {
+          console.log('/user/views/delete failed', err, info);
+          return res.molochError(500, 'Delete shared view failed');
+        }
+        return res.send(JSON.stringify({
+          success : true,
+          text    : 'Deleted shared view successfully'
+        }));
+      });
+    });
+  } else {
+    if (user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+    delete user.views[req.body.name];
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/user/views/delete failed', err, info);
+        return res.molochError(500, 'Delete view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted view successfully'
+      }));
+    });
+  }
+});
+
+// shares/unshares a view
+app.post('/user/views/toggleShare', [checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
+  if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
+  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
+
+  let view;
+  let share = req.body.shared;
+  let user = req.settingUser;
+  user.views = user.views || {};
+
+  if (share && user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      // the shared user has not been created yet so there is no chance of duplicate views
+      if (share) { // add the view to the shared user
+        return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
+      }
+      // if it not already a shared view and it's trying to be unshared, something went wrong, can't do it
+      return res.molochError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
     }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Deleted view successfully'
-    }));
+
+    sharedUser = sharedUser._source;
+    sharedUser.views = sharedUser.views || {};
+
+    if (share) { // if sharing, make sure the view doesn't already exist
+      if (sharedUser.views[req.body.name]) { // duplicate detected
+        return res.molochError(403, 'A shared view already exists with this name.');
+      }
+      return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
+    } else {
+      // if unsharing, remove it from shared user and add it to current user
+      if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+      // only admins or the user that created the view can update the shared view
+      if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+        return res.molochError(401, 'Need admin privelages to unshare another user\'s shared view');
+      }
+      // save the view for later to determine who the view belongs to
+      view = sharedUser.views[req.body.name];
+      // delete the shared view
+      delete sharedUser.views[req.body.name];
+      return unshareView(req, res, user, sharedUser, '/user/views/toggleShare', 'Unshared view successfully', 'Unsharing view failed');
+    }
   });
 });
 
 // updates a user's specified view
-app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
-
+app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
   if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
   if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
   if (!req.body.key)        { return res.molochError(403, 'Missing view key'); }
 
-  var user = req.settingUser;
+  let user = req.settingUser;
   user.views = user.views || {};
-  var container = user.views;
-  if (req.body.groupName) {
-    req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
-    if (!user.views._groups) {
-      user.views._groups = {};
-    }
-    if (!user.views._groups[req.body.groupName]) {
-      user.views._groups[req.body.groupName] = {};
-    }
-    container = user.views._groups[req.body.groupName];
-  }
-  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-  if (container[req.body.name]) {
-    container[req.body.name].expression = req.body.expression;
+
+  if (req.body.shared) {
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        sharedUser.views = sharedUser.views || {};
+        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+        // only admins or the user that created the view can update the shared view
+        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          return res.molochError(401, 'Need admin privelages to update another user\'s shared view');
+        }
+        sharedUser.views[req.body.name] = {
+          expression: req.body.expression,
+          user: user.userId,
+          shared: true,
+          sessionsColConfig: req.body.sessionsColConfig
+        };
+        // delete the old one if the key (view name) has changed
+        if (sharedUser.views[req.body.key] && req.body.name !== req.body.key) {
+          sharedUser.views[req.body.key] = null;
+          delete sharedUser.views[req.body.key];
+        }
+      }
+
+      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+        if (err) {
+          console.log('/user/views/delete failed', err, info);
+          return res.molochError(500, 'Update shared view failed');
+        }
+        return res.send(JSON.stringify({
+          success : true,
+          text    : 'Updated shared view successfully'
+        }));
+      });
+    });
   } else {
-    container[req.body.name] = {expression: req.body.expression};
-  }
-
-  // delete the old one if the key (view name) has changed
-  if (user.views[req.body.key] && req.body.name !== req.body.key) {
-    user.views[req.body.key] = null;
-    delete user.views[req.body.key];
-  }
-
-  Db.setUser(user.userId, user, function(err, info) {
-    if (err) {
-      console.log('/user/views/update error', err, info);
-      return res.molochError(500, 'Updating view failed');
+    if (user.views[req.body.name]) {
+      user.views[req.body.name].expression = req.body.expression;
+    } else { // the name has changed, so create a new entry
+      user.views[req.body.name] = {
+        expression: req.body.expression,
+        user: user.userId,
+        shared: false,
+        sessionsColConfig: req.body.sessionsColConfig
+      };
     }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Updated view successfully',
-      views   : user.views
-    }));
-  });
+
+    // delete the old one if the key (view name) has changed
+    if (user.views[req.body.key] && req.body.name !== req.body.key) {
+      user.views[req.body.key] = null;
+      delete user.views[req.body.key];
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/update error', err, info);
+        return res.molochError(500, 'Updating view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated view successfully'
+      }));
+    });
+  }
 });
 
 // gets a user's cron queries
@@ -2128,16 +2347,52 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-  if (!err && req.query.view && req.user.views && req.user.views[req.query.view]) {
+  if (!err && req.query.view) {
+    addViewToQuery(req, query, continueBuildQuery, buildCb);
+  } else {
+    continueBuildQuery(req, query, err, buildCb);
+  }
+}
+
+function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
+  let err;
+  let viewExpression;
+  if (req.user.views && req.user.views[req.query.view]) { // it's a user's view
     try {
-      var viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
+      viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
       query.query.bool.filter.push(viewExpression);
     } catch (e) {
-      console.log("ERR - User expression doesn't compile", req.user.views[req.query.view], e);
+      console.log('ERR - User expression doesn\'t compile', viewExpression, e);
       err = e;
     }
+    continueBuildQueryCb(req, query, err, finalCb);
+  } else { // it's a shared view
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        sharedUser.views = sharedUser.views || {};
+        for (let viewName in sharedUser.views) {
+          if (viewName === req.query.view) {
+            viewExpression = sharedUser.views[viewName].expression;
+            break;
+          }
+        }
+        if (sharedUser.views[req.query.view]) {
+          try {
+            viewExpression = molochparser.parse(sharedUser.views[req.query.view].expression);
+            query.query.bool.filter.push(viewExpression);
+          } catch (e) {
+            console.log('ERR - Shared user view expression doesn\'t compile', viewExpression, e);
+            err = e;
+          }
+        }
+        continueBuildQueryCb(req, query, err, finalCb);
+      }
+    });
   }
+}
 
+function continueBuildQuery(req, query, err, finalCb) {
   if (!err && req.user.expression && req.user.expression.length > 0) {
     try {
       // Expression was set by admin, so assume email search ok
@@ -2154,14 +2409,14 @@ function buildSessionQuery(req, buildCb) {
     if (req.query.date === '-1' ||                                      // An all query
         (req.query.bounding || "last") !== "last" ||                    // Not a last bounded query
         Config.get("queryAllIndices", Config.get("multiES", false))) {  // queryAllIndices (default: multiES)
-      return buildCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
+      return finalCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 
     Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
       if (indices.length > 3000) { // Will url be too long
-        return buildCb(err || lerr, query, "sessions2-*");
+        return finalCb(err || lerr, query, "sessions2-*");
       } else {
-        return buildCb(err || lerr, query, indices);
+        return finalCb(err || lerr, query, indices);
       }
     });
   });
@@ -4945,18 +5200,21 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
   var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch'];
 
-  var query = {_source: columns,
-               sort: {},
-               from: +req.body.start || 0,
-               size: +req.body.length || 10000
-              };
+  var query = {
+    _source: columns,
+    sort: {},
+    from: +req.body.start || 0,
+    size: +req.body.length || 10000,
+    query: { // exclude the shared user from results
+      bool: { must_not: { term: { userId: '_moloch_shared' } } }
+    }
+  };
 
   if (req.body.filter) {
-    query.query = {bool: {should: [{wildcard: {userName: '*' + req.body.filter + '*'}},
-                                   {wildcard: {userId: '*' + req.body.filter + '*'}}
-                                  ]
-                         }
-                  };
+    query.query.bool.should = [
+      { wildcard: { userName: '*' + req.body.filter + '*' } },
+      { wildcard: { userId: '*' + req.body.filter + '*' } }
+    ];
   }
 
   req.body.sortField = req.body.sortField || 'userId';
@@ -4967,10 +5225,11 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
                Db.numberOfUsers()
               ])
   .then(([users, total]) => {
-    if (users.error) {throw users.error;}
-    var results = {total: users.hits.total, results: []};
+    if (users.error) { throw users.error; }
+    let results = { total: users.hits.total, results: [] };
+    let hasSharedUser = false;
     for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
-      var fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
+      let fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
       fields.id = users.hits.hits[i]._id;
       fields.expression = fields.expression || '';
       fields.headerAuthEnabled = fields.headerAuthEnabled || false;
@@ -4981,9 +5240,11 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
       results.results.push(fields);
     }
 
-    var r = {recordsTotal: total.count,
-             recordsFiltered: results.total,
-             data: results.results};
+    let r = {
+      recordsTotal: total.count,
+      recordsFiltered: results.total,
+      data: results.results
+    };
     res.send(r);
   }).catch((err) => {
     console.log('ERROR - /user/list', err);
@@ -5000,6 +5261,10 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
 
   if (req.body.userId.match(/[^@\w.-]/)) {
     return res.molochError(403, 'User ID must be word characters');
+  }
+
+  if (req.body.userId === '_moloch_shared') {
+    return res.molochError(403, 'User ID cannot be the same as the shared moloch user');
   }
 
   Db.getUser(req.body.userId, function(err, user) {

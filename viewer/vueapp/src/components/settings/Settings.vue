@@ -427,6 +427,7 @@
           <table class="table table-striped table-sm">
             <thead>
               <tr>
+                <th>Share</th>
                 <th>Name</th>
                 <th>Expression</th>
                 <th width="30%">Sessions Columns</th>
@@ -441,11 +442,20 @@
                 @keyup.esc="cancelViewChange(key)"
                 :key="key">
                 <td>
+                  <input type="checkbox"
+                    v-model="item.shared"
+                    @change="toggleShared(item)"
+                    class="form-check mt-2"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
+                  />
+                </td>
+                <td>
                   <input type="text"
                     maxlength="20"
                     v-model="item.name"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -453,6 +463,7 @@
                     v-model="item.expression"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
+                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -481,38 +492,40 @@
                   </span>
                 </td>
                 <td>
-                  <div class="btn-group btn-group-sm pull-right"
-                    v-if="item.changed">
-                    <button type="button"
-                      v-b-tooltip.hover
-                      @click="updateView(key)"
-                      title="Save changes to this view"
-                      class="btn btn-theme-tertiary">
-                      <span class="fa fa-save">
-                      </span>
-                    </button>
-                    <button type="button"
-                      v-b-tooltip.hover
-                      class="btn btn-warning"
-                      @click="cancelViewChange(key)"
-                      title="Undo changes to this view">
-                      <span class="fa fa-ban">
-                      </span>
+                  <div v-if="user.createEnabled || item.user === user.userId || !item.user">
+                    <div class="btn-group btn-group-sm pull-right"
+                      v-if="item.changed">
+                      <button type="button"
+                        v-b-tooltip.hover
+                        @click="updateView(key)"
+                        title="Save changes to this view"
+                        class="btn btn-theme-tertiary">
+                        <span class="fa fa-save">
+                        </span>
+                      </button>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        class="btn btn-warning"
+                        @click="cancelViewChange(key)"
+                        title="Undo changes to this view">
+                        <span class="fa fa-ban">
+                        </span>
+                      </button>
+                    </div>
+                    <button v-else
+                      type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteView(item, key)">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
                     </button>
                   </div>
-                  <button v-else
-                    type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    @click="deleteView(key)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
                 </td>
               </tr> <!-- /views -->
               <!-- view list error -->
               <tr v-if="viewListError">
-                <td colspan="3">
+                <td colspan="6">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -522,6 +535,12 @@
               </tr> <!-- /view list error -->
               <!-- new view form -->
               <tr @keyup.enter="createView">
+                <td>
+                  <input type="checkbox"
+                    v-model="newViewShared"
+                    class="form-check mt-2"
+                  />
+                </td>
                 <td>
                   <input type="text"
                     maxlength="20"
@@ -550,7 +569,7 @@
               </tr> <!-- /new view form -->
               <!-- view form error -->
               <tr v-if="viewFormError">
-                <td colspan="3">
+                <td colspan="6">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -1611,6 +1630,7 @@ export default {
       viewFormError: '',
       newViewName: '',
       newViewExpression: '',
+      newViewShared: false,
       // cron settings vars
       cronQueries: undefined,
       cronQueryListError: '',
@@ -1647,6 +1667,11 @@ export default {
       changePasswordError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
+  },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    }
   },
   created: function () {
     // does the url specify a tab in hash
@@ -1886,21 +1911,29 @@ export default {
       }
 
       let data = {
-        viewName: this.newViewName,
+        shared: this.newViewShared,
+        name: this.newViewName,
         expression: this.newViewExpression
       };
 
       UserService.createView(data, this.userId)
         .then((response) => {
           // add the view to the view list
-          this.views[data.viewName] = {
-            expression: data.expression,
-            name: data.viewName
-          };
+          if (response.view && response.viewName) {
+            if (this.views[response.viewName]) {
+              // a shared view with this name already exists
+              // so just get the list of views again
+              this.getViews();
+            } else {
+              response.view.name = response.viewName;
+              this.views[response.viewName] = response.view;
+            }
+          }
+          // clear the inputs and any error
           this.viewFormError = false;
-          // clear the inputs
           this.newViewName = null;
           this.newViewExpression = null;
+          this.newViewShared = false;
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
@@ -1913,10 +1946,11 @@ export default {
     },
     /**
      * Deletes a view given its name
+     * @param {Object} view The view to delete
      * @param {string} name The name of the view to delete
      */
-    deleteView: function (name) {
-      UserService.deleteView(name, this.userId)
+    deleteView: function (view, name) {
+      UserService.deleteView(view, this.userId)
         .then((response) => {
           // remove the view from the view list
           this.views[name] = null;
@@ -1974,13 +2008,28 @@ export default {
 
       UserService.updateView(data, this.userId)
         .then((response) => {
-          // update view list
-          this.views = response.views;
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
           // set the view as unchanged
           data.changed = false;
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    /**
+     * Shares or unshares a view given its name
+     * @param {Object} view The view to share/unshare
+     */
+    toggleShared: function (view) {
+      UserService.toggleShareView(view, view.user)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
         })
         .catch((error) => {
           // display error message to user

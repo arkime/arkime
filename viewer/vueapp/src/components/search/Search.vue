@@ -48,7 +48,7 @@
       <!-- views dropdown menu -->
       <b-dropdown right
         size="sm"
-        class="pull-right ml-1"
+        class="pull-right ml-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
         variant="theme-secondary">
@@ -80,11 +80,9 @@
           @click.self="setView(key)"
           v-b-tooltip.hover.left
           :title="value.expression">
-          <button class="btn btn-xs btn-default pull-right"
-            type="button"
-            @click="deleteView(key)">
-            <span class="fa fa-trash-o"></span>
-          </button>
+          <span v-if="value.shared"
+            class="fa fa-share-square">
+          </span>
           {{ key }}&nbsp;
           <span v-if="value.sessionsColConfig"
             class="fa fa-columns cursor-help"
@@ -382,8 +380,10 @@ export default {
       }
     },
     /* updates the views list with the included new view */
-    newView: function (views) {
-      if (views) { this.views = views; }
+    newView: function (view, viewName) {
+      if (view && viewName) {
+        this.views[viewName] = view;
+      }
     },
     setView: function (view) {
       this.view = view;
@@ -397,30 +397,6 @@ export default {
           view: view
         }
       });
-    },
-    deleteView: function (view) {
-      UserService.deleteView(view)
-        .then((response) => {
-          // display success message
-          if (response.text) {
-            this.message = response.text;
-            this.messageType = response.success ? 'success' : 'warning';
-          }
-
-          if (response.success) {
-            // remove the deleted view if it was selected
-            if (this.view === view) {
-              this.setView(undefined);
-            }
-
-            this.views[view] = null;
-            delete this.views[view];
-          }
-        })
-        .catch((error) => {
-          this.message = error;
-          this.messageType = 'danger';
-        });
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
@@ -465,6 +441,12 @@ export default {
   }
 };
 </script>
+
+<style>
+.view-menu-dropdown .dropdown-menu {
+  width: 200px;
+}
+</style>
 
 <style scoped>
 form {
