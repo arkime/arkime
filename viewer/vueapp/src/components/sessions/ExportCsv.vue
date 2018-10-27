@@ -133,7 +133,7 @@ export default {
         }
       }
 
-      SessionsService.exportPcap(data, this.$route.query);
+      SessionsService.exportCsv(data, this.$route.query);
 
       this.done('CSV Exported', true);
     }
