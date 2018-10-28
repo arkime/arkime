@@ -4583,7 +4583,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url ='/' + nodeName + '/' + sessionID + '/bodyHash/' + hash;
+              preq.url = Config.basePath(nodeName) + nodeName + '/' + sessionID + '/bodyHash/' + hash;
               return proxyRequest(preq, res);
             });
           }
