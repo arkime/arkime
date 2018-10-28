@@ -48,6 +48,7 @@
 # 51 - Upgrade for ES 6.x: sequence_v2, fields_v2, queries_v2, files_v5, users_v5, dstats_v3, stats_v3
 # 52 - Hunt (packet search)
 # 53 - add forcedExpression to history
+# 54 - users_v6
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -56,7 +57,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 53;
+my $VERSION = 54;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -112,9 +113,11 @@ sub showHelp($)
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "\n";
-    print "User Commands:\n";
-    print "  users-export <fn>            - Save the users info to <fn>\n";
-    print "  users-import <fn>            - Load the users info from <fn>\n";
+    print "Backup and Restore Commands:\n";
+    print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
+    print "  restore <filename>           - Restore single index\n";
+    print "  users-export <filename>      - Save the users info to <filename>\n";
+    print "  users-import <filename>      - Load the users info from <filename>\n";
     print "\n";
     print "File Commands:\n";
     print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
@@ -264,7 +267,11 @@ sub esScroll
         }
         my $url;
         if ($id eq "") {
-            $url = "/${PREFIX}$index/$type/_search?scroll=10m&size=500";
+            if ($type eq "") {
+                $url = "/${PREFIX}$index/_search?scroll=10m&size=500";
+            } else {
+                $url = "/${PREFIX}$index/$type/_search?scroll=10m&size=500";
+            }
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
             $query = "";
@@ -1302,9 +1309,9 @@ sub usersCreate
   }
 }';
 
-    print "Creating users_v5 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v5", $settings);
-    esAlias("add", "users_v5", "users");
+    print "Creating users_v6 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v6", $settings);
+    esAlias("add", "users_v6", "users");
     usersUpdate();
 }
 ################################################################################
@@ -1378,8 +1385,8 @@ sub usersUpdate
   }
 }';
 
-    print "Setting users_v5 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v5/user/_mapping?pretty", $mapping);
+    print "Setting users_v6 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v6/user/_mapping?pretty", $mapping);
 }
 ################################################################################
 sub setPriority
@@ -1637,7 +1644,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v5", "${PREFIX}queries_v2") {
+    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
     }
@@ -1690,8 +1697,8 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node|hide-?node|unhide-?node)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
@@ -1706,12 +1713,29 @@ if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = "http://$ARGV[0]";
 }
 
-if ($ARGV[1] =~ /^users-?import$/) {
+if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     my $data = do { local $/; <$fh> };
     esPost("/_bulk", $data);
     close($fh);
     exit 0;
+} elsif ($ARGV[1] =~ /^backup$/) {
+    foreach my $index ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats") {
+        my $data = esScroll($index, "", '{"version": true}');
+        next if (scalar(@{$data}) == 0);
+        open(my $fh, ">", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
+        foreach my $hit (@{$data}) {
+            print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            if (exists $hit->{_source}) {
+                print $fh to_json($hit->{_source}) . "\n";
+            } else {
+                print $fh "{}\n";
+            }
+        }
+        close($fh);
+    }
+    exit 0;
+
 } elsif ($ARGV[1] =~ /^users-?export$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/${PREFIX}users/_search?size=1000");
@@ -1886,6 +1910,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     printIndex($status, "stats_v2");
     printIndex($status, "files_v5");
     printIndex($status, "files_v4");
+    printIndex($status, "users_v6");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
     printIndex($status, "hunts_v1");
@@ -2073,7 +2098,7 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n\n";
+print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
     print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
@@ -2143,6 +2168,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
         esDelete("/${PREFIX}users_v5", 1);
+        esDelete("/${PREFIX}users_v6", 1);
         esDelete("/${PREFIX}users", 1);
         esDelete("/${PREFIX}queries", 1);
         esDelete("/${PREFIX}queries_v1", 1);
@@ -2196,7 +2222,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("fields", "fields_v2", "fields_v1", \&fieldsCreate);
         createNewAliasesFromOld("queries", "queries_v2", "queries_v1", \&queriesCreate);
         createNewAliasesFromOld("files", "files_v5", "files_v4", \&filesCreate);
-        createNewAliasesFromOld("users", "users_v5", "users_v4", \&usersCreate);
+        createNewAliasesFromOld("users", "users_v6", "users_v4", \&usersCreate);
         createNewAliasesFromOld("dstats", "dstats_v3", "dstats_v2", \&dstatsCreate);
         createNewAliasesFromOld("stats", "stats_v3", "stats_v2", \&statsCreate);
 
@@ -2213,17 +2239,20 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
-        usersUpdate();
+        createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         huntsCreate();
         sessions2Update();
         checkForOld5Indices();
         setPriority();
     } elsif ($main::versionNumber <= 53) {
         historyUpdate();
-        usersUpdate();
+        createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         sessions2Update();
         checkForOld5Indices();
         setPriority();
+    } elsif ($main::versionNumber <= 54) {
+        sessions2Update();
+        checkForOld5Indices();
     } else {
         print "db.pl is hosed\n";
     }
