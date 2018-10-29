@@ -391,7 +391,10 @@ export default {
     // query for the user requested or the current user
     this.filters.userId = this.$route.query.userId || this.user.userId;
 
-    this.loadData();
+    setTimeout(() => {
+      // wait query to be computed
+      this.loadData();
+    });
   },
   methods: {
     /* exposed page functions ------------------------------------ */
