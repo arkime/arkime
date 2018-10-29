@@ -23,7 +23,8 @@ const store = new Vuex.Store({
     displayKeyboardShortcutsHelp: undefined,
     user: undefined,
     responseTime: undefined,
-    sessionsTableState: undefined
+    sessionsTableState: undefined,
+    views: undefined
   },
   mutations: {
     setTimeRange (state, value) {
@@ -38,15 +39,15 @@ const store = new Vuex.Store({
       }
     },
     setExpression (state, value) {
-      this.state.expression = value;
+      state.expression = value;
     },
     addToExpression (state, value) {
       let newExpr = '';
 
-      if (!this.state.expression) { this.state.expression = ''; }
+      if (!state.expression) { state.expression = ''; }
 
-      if (this.state.expression && this.state.expression !== '') {
-        if (this.state.expression[this.state.expression.length - 1] !== ' ') {
+      if (state.expression && state.expression !== '') {
+        if (state.expression[state.expression.length - 1] !== ' ') {
           // if last char is not a space, add it
           newExpr += ' ';
         }
@@ -55,57 +56,60 @@ const store = new Vuex.Store({
 
       newExpr += value.expression;
 
-      this.state.expression += newExpr;
+      state.expression += newExpr;
     },
     clearExpression (state) {
-      this.state.expression = undefined;
+      state.expression = undefined;
     },
     toggleMaps (state, value) {
-      this.state.showMaps = value;
+      state.showMaps = value;
     },
     toggleMapSrc (state, value) {
-      this.state.mapSrc = value;
+      state.mapSrc = value;
     },
     toggleMapDst (state, value) {
-      this.state.mapDst = value;
+      state.mapDst = value;
     },
     updateGraphType (state, value) {
-      this.state.graphType = value;
+      state.graphType = value;
     },
     updateSeriesType (state, value) {
-      this.state.seriesType = value;
+      state.seriesType = value;
     },
     setFocusSearch (state, value) {
-      this.state.focusSearch = value;
+      state.focusSearch = value;
     },
     setIssueSearch (state, value) {
-      this.state.issueSearch = value;
+      state.issueSearch = value;
       if (value) {
         setTimeout(() => {
-          this.state.issueSearch = false;
+          state.issueSearch = false;
         });
       }
     },
     setFocusTimeRange (state, value) {
-      this.state.focusTimeRange = value;
+      state.focusTimeRange = value;
     },
     setShiftKeyHold (state, value) {
-      this.state.shiftKeyHold = value;
+      state.shiftKeyHold = value;
     },
     setDisplayKeyboardShortcutsHelp (state, value) {
-      this.state.displayKeyboardShortcutsHelp = value;
+      state.displayKeyboardShortcutsHelp = value;
     },
     setUser (state, value) {
-      this.state.user = value;
+      state.user = value;
     },
     setUserSettings (state, value) {
-      this.state.user.settings = value;
+      state.user.settings = value;
     },
     setResponseTime (state, value) {
-      this.state.responseTime = value;
+      state.responseTime = value;
     },
     setSessionsTableState (state, value) {
-      this.state.sessionsTableState = value;
+      state.sessionsTableState = value;
+    },
+    setViews (state, value) {
+      state.views = value;
     }
   }
 });

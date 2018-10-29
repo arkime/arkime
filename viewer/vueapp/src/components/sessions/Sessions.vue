@@ -446,15 +446,13 @@ export default {
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
-      viewChanged: false,
-      views: undefined
+      viewChanged: false
     };
   },
   created: function () {
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
-    this.getViews();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -498,6 +496,9 @@ export default {
       }
 
       return filteredGroupedFields;
+    },
+    views: function () {
+      return this.$store.state.views;
     }
   },
   watch: {
@@ -731,13 +732,13 @@ export default {
 
       this.mapHeadersToFields();
 
+      this.saveTableState(true);
+
       if (reloadData) { // need data from the server
         this.loadData(true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
-
-      this.saveTableState(true);
     },
     /* Saves a custom column configuration */
     saveColumnConfiguration: function () {
@@ -893,7 +894,7 @@ export default {
           this.$store.commit('setSessionsTableState', this.tableState);
           if (Object.keys(this.tableState).length === 0 ||
             !this.tableState.visibleHeaders || !this.tableState.order) {
-            this.tableState = defaultTableState;
+            this.tableState = JSON.parse(JSON.stringify(defaultTableState));
           } else if (this.tableState.visibleHeaders[0] === '') {
             this.tableState.visibleHeaders.shift();
           }
@@ -957,9 +958,24 @@ export default {
 
       this.stickySessions = []; // clear sticky sessions
 
-      this.query.fields = ['ipProtocol']; // minimum required field
+      this.query.sorts = this.tableState.order || JSON.parse(JSON.stringify(defaultTableState.order));
 
-      this.mapHeadersToFields();
+      if (this.viewChanged && this.views) {
+        for (let view in this.views) {
+          if (view === this.query.view && this.views[view].sessionsColConfig) {
+            this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
+            this.mapHeadersToFields();
+            this.query.sorts = this.tableState.order;
+            this.saveTableState();
+          }
+        }
+        this.updateTable = true;
+        this.viewChanged = false;
+      } else {
+        this.mapHeadersToFields();
+      }
+
+      this.query.fields = ['ipProtocol']; // minimum required field
 
       // set the fields to retrieve from the server for each session
       if (this.headers) {
@@ -974,20 +990,6 @@ export default {
             this.query.fields.push(field.dbField);
           }
         }
-      }
-
-      this.query.sorts = this.tableState.order || defaultTableState.order;
-
-      if (this.viewChanged) {
-        for (let view in this.views) {
-          if (view === this.query.view && this.views[view].sessionsColConfig) {
-            this.tableState = this.views[view].sessionsColConfig;
-            this.mapHeadersToFields();
-            this.query.sorts = this.tableState.order;
-            this.saveTableState();
-          }
-        }
-        this.viewChanged = false;
       }
 
       SessionsService.get(this.query)
@@ -1234,13 +1236,6 @@ export default {
         }
       }
     },
-    getViews: function () {
-      UserService.getViews()
-        .then((response) => {
-          this.views = response;
-        });
-    },
-
     /* event handlers ------------------------------------------------------ */
     /**
      * Fired when paging changes (from utils/Pagination)

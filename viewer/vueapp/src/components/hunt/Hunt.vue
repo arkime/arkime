@@ -902,7 +902,8 @@ export default {
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        view: this.$route.query.view || undefined
       };
     },
     user: function () {

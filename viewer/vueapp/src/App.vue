@@ -6,7 +6,7 @@
       <moloch-keyboard-shortcuts
         v-if="displayKeyboardShortcutsHelp">
       </moloch-keyboard-shortcuts>
-      <div v-if="shiftKeyHold"
+      <div v-else-if="shiftKeyHold && !displayKeyboardShortcutsHelp"
         class="shortcut-help">
         <span class="fa fa-question fa-fw">
         </span>

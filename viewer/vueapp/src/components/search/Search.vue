@@ -53,7 +53,7 @@
         toggle-class="rounded"
         variant="theme-secondary">
         <template slot="button-content">
-          <div v-if="view"
+          <div v-if="view && views && views[view]"
             v-b-tooltip.hover.left
             :title="views[view].expression">
             <span class="fa fa-eye"></span>
@@ -265,7 +265,6 @@ export default {
   ],
   data: function () {
     return {
-      views: {},
       molochClusters: {},
       actionFormItemRadio: 'visible',
       actionFormItemRadioOptions: [
@@ -296,6 +295,14 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    views: {
+      get: function () {
+        return this.$store.state.views;
+      },
+      set: function (newValue) {
+        this.$store.commit('setViews', newValue);
+      }
     }
   },
   watch: {
@@ -314,8 +321,8 @@ export default {
     }
   },
   created: function () {
-    this.getMolochClusters();
     this.getViews();
+    this.getMolochClusters();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -381,7 +388,7 @@ export default {
     },
     /* updates the views list with the included new view */
     newView: function (view, viewName) {
-      if (view && viewName) {
+      if (view && viewName && this.views) {
         this.views[viewName] = view;
       }
     },

@@ -1574,7 +1574,6 @@
 import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
-import SessionsService from '../sessions/SessionsService';
 import customCols from '../sessions/customCols.json';
 import MolochToast from '../utils/Toast';
 import MolochError from '../utils/Error';
@@ -1625,7 +1624,6 @@ export default {
       connDstField: undefined,
       connDstFieldTypeahead: undefined,
       // view settings vars
-      views: {},
       viewListError: '',
       viewFormError: '',
       newViewName: '',
@@ -1671,6 +1669,14 @@ export default {
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    views: {
+      get: function () {
+        return this.$store.state.views;
+      },
+      set: function (newValue) {
+        this.$store.commit('setViews', newValue);
+      }
     }
   },
   created: function () {
@@ -1768,7 +1774,7 @@ export default {
           this.fieldsMap[field.dbField] = field;
         }
 
-        SessionsService.getState('sessionsNew')
+        UserService.getState('sessionsNew')
           .then((response) => {
             this.setupColumns(response.data.visibleHeaders);
             // if the sort column setting does not match any of the visible
