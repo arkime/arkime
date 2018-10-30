@@ -14,6 +14,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.6.l 2018/11/xx
+
 1.6.0 2018/10/29
   - NOTICE: db.pl upgrade is required
   - release - glib 2.56.2, yara 3.8.1, curl 7.61.1, lua 3.3.5, node 8.12.0
