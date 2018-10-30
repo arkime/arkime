@@ -5879,7 +5879,7 @@ function processHuntJob (huntId, hunt) {
     var query = {
       from: 0,
       size: 100, // Only fetch 100 items at a time
-      query: { bool: { filter: [{}] } },
+      query: { bool: { must: [{ exists: { field: 'fileId' } }], filter: [{}] } },
       _source: ['_id', 'node'],
       sort: { lastPacket: { order: 'asc' } }
     };
