@@ -528,13 +528,16 @@
               Capture Stats
             </h6>
             <p>
-              The Capture Stats tab displays a table containing the following information for each capture node:
+              The Capture Stats tab displays a table containing information for each capture node.
+              Please use the column config drop down to change which fields are shown.
             </p>
             <dl class="dl-horizontal">
               <dt>Node</dt>
               <dd>The name of the capture node</dd>
               <dt>Time</dt>
               <dd>The time reported by the capture node</dd>
+              <dt>Sessions</dt>
+              <dd>The number of sessions currently being monitored in memory</dd>
               <dt>Free Space</dt>
               <dd>Percentage of free space across all configured disks</dd>
               <dt>CPU</dt>
@@ -555,9 +558,9 @@
               <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
               <dt>ES Drops/s</dt>
               <dd>Number of elasticsearch requests that were dropped because of queue overflow per second</dd>
-              <!-- <dt>Bits/Sec</dt>
+              <dt>Bits/Sec</dt>
               <dd>Same as Bytes/Sec but in bits per second</dd>
-              <dt>Active Sessions</dt>
+              <dt>Sessions</dt>
               <dd>Number of sessions Moloch is currently monitoring</dd>
               <dt>Active TCP Sessions</dt>
               <dd>Number of TCP sessions Moloch is currently monitoring</dd>
@@ -565,24 +568,24 @@
               <dd>Number of UDP sessions Moloch is currently monitoring</dd>
               <dt>Active ICMP Sessions</dt>
               <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
-              <dt>Free Space MB</dt>
-              <dd>Free space in MB across all configured disks</dd>
+              <dt>Free Space</dt>
+              <dd>Free space across all configured disks</dd>
               <dt>Memory</dt>
               <dd>Amount of memory that Moloch is using</dd>
-              <dt>Disk Queue</dt>
+              <dt>Disk Q</dt>
               <dd>Number of blocks of data that are waiting to be written to disk</dd>
-              <dt>ES Queue</dt>
+              <dt>ES Q</dt>
               <dd>Number of elasticsearch requests that are waiting to be sent</dd>
-              <dt>Closing Queue</dt>
+              <dt>Closing Q</dt>
               <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
-              <dt>Waiting Queue</dt>
+              <dt>Waiting Q</dt>
               <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
               <dt>Active Fragments</dt>
               <dd>Number of packets that are waiting on remaining IP fragments to show up</dd>
               <dt>Fragments Dropped/Sec</dt>
               <dd>Number of packets that were dropped because frag overload or timeouts</dd>
               <dt>Total Dropped/Sec</dt>
-              <dd>Sum of the inputs dropped and overload metrics</dd> -->
+              <dd>Sum of the inputs dropped and overload metrics</dd>
             </dl>
             <p>
               <em>
@@ -595,15 +598,18 @@
               ES Nodes
             </h6>
             <p>
-              The ES Nodes tab displays a table containing the following information for each ES node:
+              The ES Nodes tab displays a table containing information for each Elasticsearch node.
+              Please use the column config drop down to change which fields are shown.
             </p>
             <dl class="dl-horizontal">
               <dt>Name</dt>
               <dd>The name of the ES node</dd>
               <dt>Documents</dt>
               <dd>The total number of documents that this node has ingested</dd>
-              <dt>Disk Storage</dt>
-              <dd>The size of the Elasticsearch store</dd>
+              <dt>Disk Used</dt>
+              <dd>The disk used for Elasticsearch store</dd>
+              <dt>Disk Free</dt>
+              <dd>The disk free for Elasticsearch store</dd>
               <dt>Heap Size</dt>
               <dd>JVM heap used in bytes</dd>
               <dt>OS Load</dt>
@@ -616,13 +622,22 @@
               <dd>The number of bytes written across all devices used by Elasticsearch per second</dd>
               <dt>Searches/s</dt>
               <dd>Current query phase operations per second</dd>
+              <dt>IP</dt>
+              <dd>IP of the node</dd>
+              <dt>IP Excluded</dt>
+              <dd>Is the node currently excluded by IP</dd>
+              <dt>Node Excluded</dt>
+              <dd>Is the node currently excluded by node name</dd>
+              <dt>Non Heap Size</dt>
+              <dd>Memory being used that isn't on the heap</dd>
             </dl>
             <h6>
               <span class="fa fa-fw fa-line-chart"></span>&nbsp;
               ES Indices
             </h6>
             <p>
-              The ES Indices tab displays a table containing the following information for each ES index:
+              The ES Indices tab displays a table containing information for each Elasticsearch index.
+              Please use the column config drop down to change which fields are shown.
             </p>
             <dl class="dl-horizontal">
               <dt>Name</dt>
@@ -643,13 +658,18 @@
               <dd>The health of the index (green, yellow, or red)</dd>
               <dt>Status</dt>
               <dd>Whether an index is open or closed</dd>
+              <dt>Create Date</dt>
+              <dd>When the index was created</dd>
+              <dt>UUID</dt>
+              <dd>The internal UUID for the index</dd>
             </dl>
             <h6>
               <span class="fa fa-fw fa-line-chart"></span>&nbsp;
               ES Tasks
             </h6>
             <p>
-              The ES Tasks tab displays a table containing the following information for each ES task:
+              The ESs Task tab displays a table containing information for each Elasticsearch task.
+              Please use the column config drop down to change which fields are shown.
             </p>
             <dl class="dl-horizontal">
               <dt>Action</dt>
@@ -662,6 +682,12 @@
               <dd>The amount of time that the task has taken</dd>
               <dt>Children</dt>
               <dd>The number of child tasks associated with this task</dd>
+              <dt>Cancellable</dt>
+              <dd>Can the task be stopped</dd>
+              <dt>ID</dt>
+              <dd>The task id</dd>
+              <dt>Type</dt>
+              <dd>The type of task</dd>
             </dl>
             <p>
               <em>
