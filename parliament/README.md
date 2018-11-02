@@ -1,8 +1,47 @@
 # Moloch Parliament
 
-Moloch Parliament is an [Vue.js][vue] web app to view multiple Moloch clusters.
+Moloch Parliament is an [Vue.js][vue] web app to view and monitor multiple Moloch clusters.
 
 This project was generated with [Vue CLI][vuecli].
+
+## What is Parliament and how can I use it?
+
+The Parliament dashboard contains a grouped list of your Moloch clusters with links, ES health, and issues for each. You can search for Molochs in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
+
+The app can be run in three ways: 
+1. with a password
+2. read only mode (without a password, but it can be configured later)
+3. dashboard only mode (no password or ability to configure one)
+
+_**If your Parliament has a password (via option 1 or 2), you can interact with it in the ways enumerated below.**_
+
+#### Parliament Page
+The main Parliament page allows a user to view and interact with the Molochs in your Parliament. Once logged in, a user can acknowledge and ignore issues for each cluster as well as update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
+
+#### Issues Page
+The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues. 
+
+Acknowledged issues will not show up on the main Parliament page, but will remain here (but grayed out) to be removed (via the trashcan button or waiting 15 minutes for them to be removed automatically).
+
+Ignored issues will not show up on the main Parliament page, but will remain here (but grayed out) to be unignored (via the ignore dropdown button or automatically after the set ignore time has expired).
+
+#### Settings Page
+The settings page has 3 sections as described below:
+
+**General:** this section has a few settings that pertain to issues in your Parliament.
+1. The `capture nodes must check in this often` setting controls how behind a node's cluster's timestamp can be from the current time. If the timestamp exceeds this time setting, an `Out Of Date` issue is added to the cluster. _The default for this setting is 30 seconds._
+2. The `Elasticsearch query timeout` setting controls the maxiumum Elasticsearch status query duration. If the query exceeds this time setting, an `ES Down` issue is added to the cluster. _The default for this setting is 5 seconds._
+3. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
+4. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
+
+**Password:** this section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+
+**Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
+1. Slack
+2. Twilio
+3. Email
+
+Each different notifier can alert on different types of issues.
 
 
 ## Running from RPM/DEB
