@@ -97,6 +97,14 @@
             "srcPayload8" : "5353482d322e302d",
             "srcPort" : 61672,
             "ssh" : {
+               "hassh" : [
+                  "21b457a327ce7a2d4fce5ef2c42400bd"
+               ],
+               "hasshCnt" : 1,
+               "hasshServer" : [
+                  "f430cd6761697a6a658ee1d45ed22e49"
+               ],
+               "hasshServerCnt" : 1,
                "key" : [
                   "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
                ],

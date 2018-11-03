@@ -315,6 +315,14 @@
             "srcPort" : 40264,
             "srcRIR" : "ARIN",
             "ssh" : {
+               "hassh" : [
+                  "5ef6678a6b060094834599ca16581b05"
+               ],
+               "hasshCnt" : 1,
+               "hasshServer" : [
+                  "6e3242d64766f4154c11858bbd654415"
+               ],
+               "hasshServerCnt" : 1,
                "key" : [
                   "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
                ],
