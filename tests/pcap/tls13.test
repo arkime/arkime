@@ -89,6 +89,10 @@
                   "4826a90ec2daf4f7b4b64cc1c8bd343b"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "986ae432c402479fe7a0c6fbe02164c1"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1.3-draft-18"
                ],

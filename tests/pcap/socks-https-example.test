@@ -331,6 +331,10 @@
                   "06a92bf69b367389d2feb0d70501ddfe"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "280ca4511bfaa384b2e931c058e8816e"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1"
                ],
@@ -675,6 +679,10 @@
                   "06a92bf69b367389d2feb0d70501ddfe"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "280ca4511bfaa384b2e931c058e8816e"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1"
                ],
@@ -1028,6 +1036,10 @@
                   "06a92bf69b367389d2feb0d70501ddfe"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "280ca4511bfaa384b2e931c058e8816e"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1"
                ],

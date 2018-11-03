@@ -235,6 +235,10 @@
                   "0358fddc04b374f06c17e363499cf6fb"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "40782769a91ecfe9e529e86ca4cc5020"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1.1"
                ],

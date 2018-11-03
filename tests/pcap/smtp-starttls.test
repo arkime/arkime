@@ -236,6 +236,10 @@
                   "TLS_RSA_WITH_RC4_128_SHA"
                ],
                "cipherCnt" : 1,
+               "ja3s" : [
+                  "6b96cf9c27b0223177b0e9f135fe4899"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1"
                ],

@@ -116,6 +116,10 @@
                   "03e697d7655911e630ee3ee8e2a02ba4"
                ],
                "ja3Cnt" : 1,
+               "ja3s" : [
+                  "9f527afa113542d92a2c3b08c525ee1d"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "SSLv3"
                ],

@@ -156,6 +156,10 @@
                "dstSessionId" : [
                   "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
                ],
+               "ja3s" : [
+                  "280ca4511bfaa384b2e931c058e8816e"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "TLSv1"
                ],

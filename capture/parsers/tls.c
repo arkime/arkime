@@ -21,6 +21,7 @@ LOCAL  int                   hostField;
 LOCAL  int                   verField;
 LOCAL  int                   cipherField;
 LOCAL  int                   ja3Field;
+LOCAL  int                   ja3sField;
 LOCAL  int                   srcIdField;
 LOCAL  int                   dstIdField;
 
@@ -129,6 +130,18 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
     return;
 }
 /******************************************************************************/
+// https://tools.ietf.org/html/draft-davidben-tls-grease-00
+LOCAL int tls_is_grease_value(uint32_t val)
+{
+    if ((val & 0x0f) != 0x0a)
+        return 0;
+
+    if ((val & 0xff) != ((val >> 8) & 0xff))
+        return 0;
+
+    return 1;
+}
+/******************************************************************************/
 LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
 {
     BSB bsb;
@@ -197,6 +210,50 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     else {
         snprintf(str, sizeof(str), "0x%04x", cipher);
         moloch_field_string_add(cipherField, session, str, 6, TRUE);
+    }
+
+    BSB_IMPORT_skip(bsb, 1);
+
+
+    char ja3[30000];
+    BSB ja3bsb;
+    char eja3[10000];
+    BSB eja3bsb;
+
+    BSB_INIT(ja3bsb, ja3, sizeof(ja3));
+    BSB_INIT(eja3bsb, eja3, sizeof(eja3));
+
+    if (BSB_REMAINING(bsb) > 2) {
+        int etotlen = 0;
+        BSB_IMPORT_u16(bsb, etotlen);  // Extensions Length
+
+        etotlen = MIN(etotlen, BSB_REMAINING(bsb));
+
+        BSB ebsb;
+        BSB_INIT(ebsb, BSB_WORK_PTR(bsb), etotlen);
+
+        while (BSB_REMAINING(ebsb) > 0) {
+            int etype = 0, elen = 0;
+
+            BSB_IMPORT_u16 (ebsb, etype);
+            BSB_IMPORT_u16 (ebsb, elen);
+
+            if (etype != 10 && etype != 11)
+                BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
+
+            if (elen > BSB_REMAINING(ebsb))
+                break;
+
+            BSB_IMPORT_skip (ebsb, elen);
+        }
+        BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
+    }
+
+    BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
+
+    gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
+    if (!moloch_field_string_add(ja3sField, session, md5, 32, FALSE)) {
+        g_free(md5);
     }
 }
 
@@ -452,18 +509,6 @@ LOCAL int tls_process_server_handshake_record(MolochSession_t *session, const un
         BSB_IMPORT_skip(rbsb, hlen);
     }
     return 0;
-}
-/******************************************************************************/
-// https://tools.ietf.org/html/draft-davidben-tls-grease-00
-LOCAL int tls_is_grease_value(uint32_t val)
-{
-    if ((val & 0x0f) != 0x0a)
-        return 0;
-
-    if ((val & 0xff) != ((val >> 8) & 0xff))
-        return 0;
-
-    return 1;
 }
 /******************************************************************************/
 LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
@@ -806,6 +851,12 @@ void moloch_parser_init()
     ja3Field = moloch_field_define("tls", "lotermfield",
         "tls.ja3", "JA3", "tls.ja3",
         "SSL/TLS JA3 field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    ja3sField = moloch_field_define("tls", "lotermfield",
+        "tls.ja3s", "JA3S", "tls.ja3s",
+        "SSL/TLS JA3S field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 

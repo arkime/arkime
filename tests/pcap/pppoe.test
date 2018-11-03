@@ -141,6 +141,10 @@
                "dstSessionId" : [
                   "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
                ],
+               "ja3s" : [
+                  "1f8f5a3d2fd435e36084db890693eafd"
+               ],
+               "ja3sCnt" : 1,
                "version" : [
                   "SSLv3"
                ],
