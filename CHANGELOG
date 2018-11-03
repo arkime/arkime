@@ -15,6 +15,9 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.6.l 2018/11/xx
+  - ja3s support (issue #949)
+  - hassh support (issue #950)
+  - simpleKEKId can be a template
 
 1.6.0 2018/10/29
   - NOTICE: db.pl upgrade is required

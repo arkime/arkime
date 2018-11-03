@@ -395,6 +395,91 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
+LOCAL gboolean writer_simple_get_kek (gpointer UNUSED(user_data))
+{
+    char *kek = moloch_config_str(NULL, "simpleKEKId", NULL);
+
+    if(!kek) {
+        return FALSE;
+    }
+
+    if (!kek[0]) {
+        g_free(kek);
+        simpleKEKId = NULL;
+        return FALSE;
+    }
+
+    if (strchr(kek, '%') == 0) {
+        simpleKEKId = kek;
+        return TRUE;
+    }
+
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    struct tm tmp;
+    gmtime_r(&now.tv_sec, &tmp);
+
+    char okek[2000];
+    int i,j;
+
+    for (i = j = 0; kek[i] && j+2 < 1999; i++) {
+        if (kek[i] != '%') {
+            okek[j] = kek[i];
+            j++;
+            continue;
+        }
+        i++;
+        switch(kek[i]) {
+        case '%':
+            okek[j] = '%';
+            j++;
+            break;
+        case 'y':
+            okek[j] = '0' + (tmp.tm_year % 100)/10;
+            okek[j+1] = '0' + tmp.tm_year%10;
+            j += 2;
+            break;
+        case 'm':
+            okek[j] = '0' + (tmp.tm_mon+1)/10;
+            okek[j+1] = '0' + (tmp.tm_mon+1)%10;
+            j += 2;
+            break;
+        case 'd':
+            okek[j] = '0' + tmp.tm_mday/10;
+            okek[j+1] = '0' + tmp.tm_mday%10;
+            j += 2;
+            break;
+        case 'H':
+            okek[j] = '0' + tmp.tm_hour/10;
+            okek[j+1] = '0' + tmp.tm_hour%10;
+            j += 2;
+            break;
+        case 'N':
+            memcpy(okek+j, config.nodeName, strlen(config.nodeName));
+            j += strlen(config.nodeName);
+            break;
+        }
+    }
+    g_free(kek);
+    if (simpleKEKId)
+        g_free(simpleKEKId);
+
+    simpleKEKId = g_strndup(okek, j);
+
+    if (simpleKEKId) {
+       char *key = moloch_config_section_str(NULL, "keks", simpleKEKId, NULL);
+       if (!key) {
+           LOGEXIT("No kek with id '%s' found in keks config section", simpleKEKId);
+       }
+
+        simpleKEKLen = EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)key, strlen(key), 1, simpleKEK, simpleIV);
+        g_free(key);
+    }
+
+    return TRUE;
+}
+
+/******************************************************************************/
 void writer_simple_init(char *name)
 {
     moloch_writer_queue_length = writer_simple_queue_length;
@@ -407,20 +492,10 @@ void writer_simple_init(char *name)
         g_free(mode);
         mode = NULL;
     } else {
-        simpleKEKId = moloch_config_str(NULL, "simpleKEKId", NULL);
-        if (simpleKEKId && !simpleKEKId[0]) {
-            g_free(simpleKEKId);
-            simpleKEKId = NULL;
+        writer_simple_get_kek(0);
+        if (simpleKEKId) {
+            g_timeout_add_seconds(600, writer_simple_get_kek, 0);
         }
-    }
-
-    if (simpleKEKId) {
-       char *key = moloch_config_section_str(NULL, "keks", simpleKEKId, NULL);
-       if (!key) {
-           LOGEXIT("No kek with id '%s' found in keks config section", simpleKEKId);
-       }
-
-        simpleKEKLen = EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)key, strlen(key), 1, simpleKEK, simpleIV);
     }
 
     if (mode == NULL) {
