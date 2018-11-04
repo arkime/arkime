@@ -1860,7 +1860,7 @@ LOCAL void moloch_db_load_rir(char *name)
                     break;
             } else if (*start && cnt == 3) {
                 gchar **parts = g_strsplit(start, ".", 0);
-                if (parts[1] && *parts[1]) {
+                if (parts[0] && parts[1] && *parts[1]) {
                     if (rirs[num])
                         moloch_free_later(rirs[num], g_free);
                     rirs[num] = g_ascii_strup(parts[1], -1);
@@ -1910,6 +1910,10 @@ LOCAL void moloch_db_load_oui(char *name)
 
         // Break into pieces
         gchar **parts = g_strsplit(line, "\t", 0);
+        if (!parts[0] || !parts[1]) {
+            LOGEXIT("ERROR - OUI file %s bad line '%s'", name, line);
+        }
+
         char *str = NULL;
         if (parts[2]) {
             if (parts[2][0])
