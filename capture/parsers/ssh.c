@@ -14,8 +14,11 @@
  */
 #include "moloch.h"
 
+#define MAX_SSH_BUFFER 8192
+
 typedef struct {
-    uint32_t   sshLen;
+    char       buf[2][MAX_SSH_BUFFER];
+    int32_t    len[2];
     uint16_t   packets[2];
     uint16_t   counts[2][2];
     uint16_t   done;
@@ -101,8 +104,6 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 }
 
 /******************************************************************************/
-// SSH Parsing currently assumes the parts we want from a SSH Packet will be
-// in a single TCP packet.  Kind of sucks.
 LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
@@ -127,10 +128,11 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
         }
     }
 
-    // ssh->done is set when are finished looking for version string and keys
+    // ssh->done is set when are finished decoding
     if (ssh->done)
         return 0;
 
+    // Version handshake
     if (remaining > 3 && memcmp("SSH", data, 3) == 0) {
         unsigned char *n = memchr(data, 0x0a, remaining);
         if (n && *(n-1) == 0x0d)
@@ -144,56 +146,47 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
         return 0;
     }
 
-    BSB bsb;
-    BSB_INIT(bsb, data, remaining);
+    // Actual messages
+    memcpy(ssh->buf[which] + ssh->len[which], data, MIN(remaining, (int)sizeof(ssh->buf[which]) - ssh->len[which]));
+    ssh->len[which] += MIN(remaining, (int)sizeof(ssh->buf[which]) - ssh->len[which]);
 
-    while (BSB_REMAINING(bsb) > 6) {
-        uint32_t loopRemaining = BSB_REMAINING(bsb);
+    while (ssh->len[which] > 4) {
+        BSB bsb;
+        BSB_INIT(bsb, ssh->buf[which], ssh->len[which]);
 
-        // If 0 looking for a ssh packet, otherwise in the middle of ssh packet
-        if (ssh->sshLen == 0) {
-            BSB_IMPORT_u32(bsb, ssh->sshLen);
+        int sshLen = 0;
+        BSB_IMPORT_u32(bsb, sshLen);
 
-            // Can't have a ssh packet > 35000 bytes.
-            if (ssh->sshLen >= 35000) {
-                ssh->done = 1;
-                return 0;
-            }
-            ssh->sshLen += 4;
-
-            uint8_t    sshCode = 0;
-            BSB_IMPORT_skip(bsb, 1); // padding length
-            BSB_IMPORT_u08(bsb, sshCode);
-
-            if (sshCode == 20) {
-                ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), ssh->sshLen - 2, which);
-
-            } else if (sshCode == 33) {
-                ssh->done = 1;
-
-                uint32_t keyLen = 0;
-                BSB_IMPORT_u32(bsb, keyLen);
-
-                if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
-                    char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
-                    if (!moloch_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
-                        g_free(str);
-                    }
-                }
-                break;
-            }
+        if (sshLen > MAX_SSH_BUFFER) {
+            ssh->done = 1;
+            return 0;
         }
 
-        if (loopRemaining > ssh->sshLen) {
-            // Processed all, looking for another packet
-            BSB_IMPORT_skip(bsb, loopRemaining);
-            ssh->sshLen = 0;
-            continue;
-        } else {
-            // Waiting on more data then in this callback
-            ssh->sshLen -= loopRemaining;
+        if (sshLen > ssh->len[which])
+            return 0;
+
+        uint8_t    sshCode = 0;
+        BSB_IMPORT_skip(bsb, 1); // padding length
+        BSB_IMPORT_u08(bsb, sshCode);
+
+        if (sshCode == 20) {
+            ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), which);
+        } else if (sshCode == 33) {
+            ssh->done = 1;
+
+            uint32_t keyLen = 0;
+            BSB_IMPORT_u32(bsb, keyLen);
+
+            if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
+                char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
+                if (!moloch_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
+                    g_free(str);
+                }
+            }
             break;
         }
+        ssh->len[which] -= 4 + sshLen;
+        memmove(ssh->buf[which], ssh->buf[which] + sshLen + 4, ssh->len[which]);
     }
     return 0;
 }
