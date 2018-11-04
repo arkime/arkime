@@ -150,14 +150,14 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
     memcpy(ssh->buf[which] + ssh->len[which], data, MIN(remaining, (int)sizeof(ssh->buf[which]) - ssh->len[which]));
     ssh->len[which] += MIN(remaining, (int)sizeof(ssh->buf[which]) - ssh->len[which]);
 
-    while (ssh->len[which] > 4) {
+    while (ssh->len[which] > 6) {
         BSB bsb;
         BSB_INIT(bsb, ssh->buf[which], ssh->len[which]);
 
         int sshLen = 0;
         BSB_IMPORT_u32(bsb, sshLen);
 
-        if (sshLen > MAX_SSH_BUFFER) {
+        if (sshLen < 2 || sshLen > MAX_SSH_BUFFER) {
             ssh->done = 1;
             return 0;
         }
