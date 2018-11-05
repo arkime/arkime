@@ -1,0 +1,142 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstBytes" : 1196,
+            "dstDataBytes" : 576,
+            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "dstPackets" : 8,
+            "dstPayload8" : "485454502f312e30",
+            "dstPort" : 9200,
+            "fileId" : [],
+            "firstPacket" : 1541428878195,
+            "http" : {
+               "clientVersion" : [
+                  "1.0"
+               ],
+               "clientVersionCnt" : 1,
+               "md5" : [
+                  "ab925c3fe55e60dc86b048ff2d1f13c9"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "requestHeader" : [
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 1,
+               "responseHeader" : [
+                  "content-type",
+                  "content-length"
+               ],
+               "responseHeaderCnt" : 2,
+               "responseHeaderField" : [
+                  "content-type",
+                  "content-length"
+               ],
+               "responseHeaderValue" : [
+                  "application/json; charset=utf-8",
+                  "489"
+               ],
+               "responseHeaderValueCnt" : 2,
+               "serverVersion" : [
+                  "1.0"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "cef4d8426a3e233b8558f5028c3b572486b871482fbef30bb51857e5e9b9674f"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  ""
+               ],
+               "useragentCnt" : 1
+            },
+            "ipProtocol" : 6,
+            "lastPacket" : 1541428878555,
+            "length" : 359,
+            "node" : "test",
+            "packetLen" : [
+               104,
+               104,
+               92,
+               92,
+               107,
+               92,
+               104,
+               92,
+               93,
+               92,
+               668,
+               92,
+               92,
+               92,
+               92,
+               92
+            ],
+            "packetPos" : [
+               24,
+               128,
+               232,
+               324,
+               416,
+               523,
+               615,
+               719,
+               811,
+               904,
+               996,
+               1664,
+               1756,
+               1848,
+               1940,
+               2032
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 648,
+            "srcDataBytes" : 28,
+            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
+            "srcPackets" : 8,
+            "srcPayload8" : "474554202f204854",
+            "srcPort" : 57722,
+            "tcpflags" : {
+               "ack" : 8,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 4,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1844,
+            "totDataBytes" : 604,
+            "totPackets" : 16
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-181105",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
