@@ -2190,7 +2190,7 @@ void moloch_db_init()
         moloch_http_set_print_errors(esServer);
         moloch_db_health_check((gpointer)1L);
     }
-    myPid = getpid();
+    myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
     if (!config.dryRun) {
         moloch_db_check();
