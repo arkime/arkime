@@ -1,12 +1,14 @@
 [Unit]
-Description=Moloch WISE
+Description=Moloch Parliament
 After=network.target
 
 [Service]
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/node parliament.js -c MOLOCH_INSTALL_DIR/etc/parliament.json >> MOLOCH_INSTALL_DIR/logs/parliament.log 2>&1'
+EnvironmentFile=-/etc/default/molochparliament
+EnvironmentFile=-/etc/sysconfig/molochparliament
+ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/node parliament.js -c MOLOCH_INSTALL_DIR/etc/parliament.json ${OPTIONS} >> MOLOCH_INSTALL_DIR/logs/parliament.log 2>&1'
 WorkingDirectory=MOLOCH_INSTALL_DIR/parliament
 
 [Install]
