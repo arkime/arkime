@@ -1754,9 +1754,12 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
 
     switch(pcapFileHeader.linktype) {
     case 0: // NULL
-        if (packet->pktlen > 4)
-            rc = moloch_packet_ip4(batch, packet, packet->pkt+4, packet->pktlen-4);
-        else {
+        if (packet->pktlen > 4) {
+            if (packet->pkt[0] == 30)
+                rc = moloch_packet_ip6(batch, packet, packet->pkt+4, packet->pktlen-4);
+            else
+                rc = moloch_packet_ip4(batch, packet, packet->pkt+4, packet->pktlen-4);
+        } else {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Too short %d", packet->pktlen);
 #endif
