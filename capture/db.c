@@ -422,8 +422,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_INIT(dbInfo[thread].bsb, dbInfo[thread].json, size);
     }
 
-    uint32_t timediff = (session->lastPacket.tv_sec - session->firstPacket.tv_sec)*1000 +
-                        (session->lastPacket.tv_usec - session->firstPacket.tv_usec)/1000;
+    uint32_t timediff = (uint32_t) ((session->lastPacket.tv_sec - session->firstPacket.tv_sec)*1000 +
+                                    (session->lastPacket.tv_usec - session->firstPacket.tv_usec)/1000);
 
     BSB jbsb = dbInfo[thread].bsb;
 
