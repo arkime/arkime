@@ -75,6 +75,7 @@ var internals = {
   pluginEmitter: new EventEmitter(),
   writers: {},
   oldDBFields: {},
+  isLocalViewRegExp: Config.get("isLocalViewRegExp")?new RegExp(Config.get("isLocalViewRegExp")):undefined,
 
   cronTimeout: +Config.get("dbFlushTimeout", 5) + // How long capture holds items
                60 +                               // How long before ES reindexs
@@ -727,6 +728,10 @@ function makeRequest (node, path, user, cb) {
 }
 
 function isLocalView (node, yesCb, noCb) {
+  if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
+    return yesCb();
+  }
+
   var pcapWriteMethod = Config.getFull(node, "pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
   if (writer && writer.localNode === false) {
