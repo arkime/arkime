@@ -22,6 +22,7 @@ var dns            = require('dns')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   ;
+var resolver       = dns;
 //////////////////////////////////////////////////////////////////////////////////
 function removeArray(arr, value) {
   var pos = 0;
@@ -35,6 +36,11 @@ function ReverseDNSSource (api, section) {
   ReverseDNSSource.super_.call(this, api, section);
   this.field        = api.getConfig("reversedns", "field");
   this.ips          = api.getConfig("reversedns", "ips");
+  this.servers      = api.getConfig("reversedns", "servers");
+  if (this.servers !== undefined) {
+    resolver = new Resolver();
+    resolver.setServers(this.servers.split(";"));
+  }
   this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";").map(item => item.trim()), "");
 
   if (this.field === undefined) {
@@ -66,7 +72,7 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
     return cb(null, undefined);
   }
 
-  dns.reverse(ip, (err, domains) => {
+  resolver.reverse(ip, (err, domains) => {
     //console.log("answer", ip, err, domains);
     if (err || domains.length === 0) {
       return cb(null, wiseSource.emptyResult);

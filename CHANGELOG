@@ -15,10 +15,11 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.6.l 2018/11/xx
-  - ja3s support (issue #949)
-  - hassh support (issue #950)
-  - simpleKEKId can be a template
-  - Certificate org names can be an array now
+  - capture - ja3s support (issue #949)
+  - capture - hassh support (issue #950)
+  - capture - simpleKEKId can be a template
+  - all - Certificate org names can be an array now
+  - wise - reverse dns supports servers setting
 
 1.6.0 2018/10/29
   - NOTICE: db.pl upgrade is required
