@@ -1452,7 +1452,7 @@ app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser, 
       if (sharedUser && sharedUser.found) {
         sharedUser = sharedUser._source;
         sharedUser.views = sharedUser.views || {};
-        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+        if (sharedUser.views[req.body.key] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
         if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
           return res.molochError(401, 'Need admin privelages to update another user\'s shared view');
