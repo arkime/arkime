@@ -160,20 +160,22 @@
               </td>
               <td class="no-wrap">
                 <span class="pull-right">
-                  <a class="btn btn-sm btn-theme-primary"
-                    :href="`settings?userId=${user.userId}`"
+                  <button type="button"
+                    class="btn btn-sm btn-theme-primary"
+                    @click="openSettings(user.userId)"
                     v-b-tooltip.hover
                     :title="`Settings for ${user.userId}`">
                     <span class="fa fa-gear">
                     </span>
-                  </a>
-                  <a class="btn btn-sm btn-theme-secondary"
-                    :href="`history?userId=${user.userId}`"
+                  </button>
+                  <button type="button"
+                    class="btn btn-sm btn-theme-secondary"
+                    @click="openHistory(user.userId)"
                     v-b-tooltip.hover
                     :title="`History for ${user.userId}`">
                     <span class="fa fa-history">
                     </span>
-                  </a>
+                  </button>
                   <button type="button"
                     class="btn btn-sm btn-danger"
                     @click="deleteUser(user, index)"
@@ -523,6 +525,24 @@ export default {
         .catch((error) => {
           this.createError = error.text;
         });
+    },
+    openSettings: function (userId) {
+      this.$router.push({
+        path: '/settings',
+        query: {
+          ...this.$route.query,
+          userId: userId
+        }
+      });
+    },
+    openHistory: function (userId) {
+      this.$router.push({
+        path: '/history',
+        query: {
+          ...this.$route.query,
+          userId: userId
+        }
+      });
     },
     /* helper functions ------------------------------------------ */
     loadUser: function () {
