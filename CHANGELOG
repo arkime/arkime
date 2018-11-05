@@ -18,6 +18,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - ja3s support (issue #949)
   - hassh support (issue #950)
   - simpleKEKId can be a template
+  - Certificate org names can be an array now
 
 1.6.0 2018/10/29
   - NOTICE: db.pl upgrade is required

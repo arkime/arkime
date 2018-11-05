@@ -67,12 +67,10 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
                     element->str = g_ascii_strdown((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
-                if (ci->orgName) {
-                    LOG("Multiple orgName %s => %.*s", ci->orgName, alen, value);
-                    free(ci->orgName);
-                }
-                ci->orgUtf8 = atag == 12;
-                ci->orgName = g_strndup((char*)value, alen);
+                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                element->utf8 = atag == 12;
+                element->str = g_strndup((char*)value, alen);
+                DLL_PUSH_TAIL(s_, &ci->orgName, element);
             }
         }
     }
@@ -123,6 +121,7 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
             MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
             element->str = g_ascii_strdown((char*)value, alen);
             element->len = alen;
+            element->utf8 = 1;
             DLL_PUSH_TAIL(s_, &certs->alt, element);
         }
     }
@@ -362,7 +361,9 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
         DLL_INIT(s_, &certs->subject.commonName);
+        DLL_INIT(s_, &certs->subject.orgName);
         DLL_INIT(s_, &certs->issuer.commonName);
+        DLL_INIT(s_, &certs->issuer.orgName);
 
         uint32_t       atag, alen, apc;
         unsigned char *value;
@@ -456,8 +457,8 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
         if (!session->fields[certsField] &&
             !certs->isCA &&
-            ((certs->subject.orgName && certs->issuer.orgName && strcmp(certs->subject.orgName, certs->issuer.orgName) == 0) ||
-             (certs->subject.orgName == NULL && certs->issuer.orgName == NULL)) &&
+            ((certs->subject.orgName.s_count == 1 && certs->issuer.orgName.s_count == 1 && strcmp(certs->subject.orgName.s_next->str, certs->issuer.orgName.s_next->str) == 0) ||
+             (certs->subject.orgName.s_count == 0 && certs->issuer.orgName.s_count == 0)) &&
             certs->subject.commonName.s_count == 1 &&
             certs->issuer.commonName.s_count == 1 &&
             strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {

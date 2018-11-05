@@ -4,6 +4,25 @@
          "body" : {
             "cert" : [
                {
+                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "notAfter" : 1636502400000,
+                  "notBefore" : 1194609600000,
+                  "serial" : "0337b928347c60a6aec5adb1217f3860",
+                  "subjectCN" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
+                  "validDays" : 5114
+               },
+               {
                   "alt" : [
                      "github.com",
                      "www.github.com"
@@ -13,30 +32,19 @@
                   "issuerCN" : [
                      "digicert high assurance ev ca-1"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1441195200000,
                   "notBefore" : 1370822400000,
                   "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "subjectCN" : [
                      "github.com"
                   ],
-                  "subjectON" : "GitHub, Inc.",
+                  "subjectON" : [
+                     "GitHub, Inc."
+                  ],
                   "validDays" : 814
-               },
-               {
-                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
-                  "issuerCN" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "issuerON" : "DigiCert Inc",
-                  "notAfter" : 1636502400000,
-                  "notBefore" : 1194609600000,
-                  "serial" : "0337b928347c60a6aec5adb1217f3860",
-                  "subjectCN" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "subjectON" : "DigiCert Inc",
-                  "validDays" : 5114
                }
             ],
             "certCnt" : 2,

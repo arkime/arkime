@@ -274,6 +274,25 @@ LOCAL struct {
 
 LOCAL MOLOCH_LOCK_DEFINE(outputed);
 
+
+#define SAVE_STRING_HEAD(HEAD, CNT, STR) \
+if (HEAD.s_count > 0) { \
+    if (CNT[0]) \
+        BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", certs->alt.s_count); \
+    BSB_EXPORT_cstr(jbsb, "\"" STR "\":["); \
+    while (HEAD.s_count > 0) { \
+	DLL_POP_HEAD(s_, &HEAD, string); \
+	moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8); \
+	BSB_EXPORT_u08(jbsb, ','); \
+	g_free(string->str); \
+	MOLOCH_TYPE_FREE(MolochString_t, string); \
+    } \
+    BSB_EXPORT_rewind(jbsb, 1); \
+    BSB_EXPORT_u08(jbsb, ']'); \
+    BSB_EXPORT_u08(jbsb, ','); \
+}
+
+
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
     uint32_t               i;
@@ -833,47 +852,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             HASH_FORALL_POP_HEAD(t_, *cihash, certs,
                 BSB_EXPORT_u08(jbsb, '{');
 
-                if (certs->issuer.commonName.s_count > 0) {
-                    BSB_EXPORT_cstr(jbsb, "\"issuerCN\":[");
-                    while (certs->issuer.commonName.s_count > 0) {
-                        DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
-                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                        BSB_EXPORT_u08(jbsb, ',');
-                        g_free(string->str);
-                        MOLOCH_TYPE_FREE(MolochString_t, string);
-                    }
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_u08(jbsb, ']');
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
 
                 BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
 
-                if (certs->issuer.orgName) {
-                    BSB_EXPORT_cstr(jbsb, "\"issuerON\":");
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
-
-                if (certs->subject.commonName.s_count) {
-                    BSB_EXPORT_cstr(jbsb, "\"subjectCN\":[");
-                    while (certs->subject.commonName.s_count > 0) {
-                        DLL_POP_HEAD(s_, &certs->subject.commonName, string);
-                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                        BSB_EXPORT_u08(jbsb, ',');
-                        g_free(string->str);
-                        MOLOCH_TYPE_FREE(MolochString_t, string);
-                    }
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_u08(jbsb, ']');
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
-
-                if (certs->subject.orgName) {
-                    BSB_EXPORT_cstr(jbsb, "\"subjectON\":");
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
+                SAVE_STRING_HEAD(certs->issuer.commonName, "", "issuerCN");
+                SAVE_STRING_HEAD(certs->issuer.orgName, "", "issuerON");
+                SAVE_STRING_HEAD(certs->subject.commonName, "", "subjectCN");
+                SAVE_STRING_HEAD(certs->subject.orgName, "", "subjectON");
 
                 if (certs->serialNumber) {
                     int k;
@@ -885,20 +870,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_u08(jbsb, ',');
                 }
 
-                if (certs->alt.s_count) {
-                    BSB_EXPORT_sprintf(jbsb, "\"altCnt\":%d,", certs->alt.s_count);
-                    BSB_EXPORT_cstr(jbsb, "\"alt\":[");
-                    while (certs->alt.s_count > 0) {
-                        DLL_POP_HEAD(s_, &certs->alt, string);
-                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
-                        BSB_EXPORT_u08(jbsb, ',');
-                        g_free(string->str);
-                        MOLOCH_TYPE_FREE(MolochString_t, string);
-                    }
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_u08(jbsb, ']');
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
+                SAVE_STRING_HEAD(certs->alt, "altCnt", "alt");
 
                 BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore*1000);
                 BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter*1000);

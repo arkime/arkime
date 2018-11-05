@@ -160,14 +160,18 @@
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1418212800000,
                   "notBefore" : 1317600000000,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
-                  "subjectON" : "EdgeCast Networks, Inc.",
+                  "subjectON" : [
+                     "EdgeCast Networks, Inc."
+                  ],
                   "validDays" : 1164
                },
                {
@@ -175,14 +179,18 @@
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "subjectON" : "DigiCert Inc",
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
                   "validDays" : 5113
                }
             ],
@@ -511,14 +519,18 @@
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1418212800000,
                   "notBefore" : 1317600000000,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
-                  "subjectON" : "EdgeCast Networks, Inc.",
+                  "subjectON" : [
+                     "EdgeCast Networks, Inc."
+                  ],
                   "validDays" : 1164
                },
                {
@@ -526,14 +538,18 @@
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "subjectON" : "DigiCert Inc",
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
                   "validDays" : 5113
                }
             ],
@@ -859,14 +875,18 @@
                   "issuerCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1418212800000,
                   "notBefore" : 1317600000000,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
-                  "subjectON" : "EdgeCast Networks, Inc.",
+                  "subjectON" : [
+                     "EdgeCast Networks, Inc."
+                  ],
                   "validDays" : 1164
                },
                {
@@ -874,14 +894,18 @@
                   "issuerCN" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "issuerON" : "DigiCert Inc",
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
                   ],
-                  "subjectON" : "DigiCert Inc",
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
                   "validDays" : 5113
                }
             ],

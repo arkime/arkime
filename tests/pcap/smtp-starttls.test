@@ -4,31 +4,39 @@
          "body" : {
             "cert" : [
                {
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "issuerON" : "Equifax",
-                  "notAfter" : 1534824000000,
-                  "notBefore" : 1021953600000,
-                  "serial" : "12bbe6",
-                  "subjectCN" : [
-                     "geotrust global ca"
-                  ],
-                  "subjectON" : "GeoTrust Inc.",
-                  "validDays" : 5936
-               },
-               {
                   "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
                   "issuerCN" : [
                      "geotrust global ca"
                   ],
-                  "issuerON" : "GeoTrust Inc.",
+                  "issuerON" : [
+                     "GeoTrust Inc."
+                  ],
                   "notAfter" : 1428160555000,
                   "notBefore" : 1365174955000,
                   "serial" : "023a69",
                   "subjectCN" : [
                      "google internet authority g2"
                   ],
-                  "subjectON" : "Google Inc",
+                  "subjectON" : [
+                     "Google Inc"
+                  ],
                   "validDays" : 729
+               },
+               {
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "issuerON" : [
+                     "Equifax"
+                  ],
+                  "notAfter" : 1534824000000,
+                  "notBefore" : 1021953600000,
+                  "serial" : "12bbe6",
+                  "subjectCN" : [
+                     "geotrust global ca"
+                  ],
+                  "subjectON" : [
+                     "GeoTrust Inc."
+                  ],
+                  "validDays" : 5936
                },
                {
                   "alt" : [
@@ -58,14 +66,18 @@
                   "issuerCN" : [
                      "google internet authority g2"
                   ],
-                  "issuerON" : "Google Inc",
+                  "issuerON" : [
+                     "Google Inc"
+                  ],
                   "notAfter" : 1410262355000,
                   "notBefore" : 1378726355000,
                   "serial" : "325d8297987d50b0",
                   "subjectCN" : [
                      "mx.google.com"
                   ],
-                  "subjectON" : "Google Inc",
+                  "subjectON" : [
+                     "Google Inc"
+                  ],
                   "validDays" : 365
                }
             ],

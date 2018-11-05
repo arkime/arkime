@@ -4,21 +4,6 @@
          "body" : {
             "cert" : [
                {
-                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
-                  "issuerCN" : [
-                     "entrust.net certification authority (2048)"
-                  ],
-                  "issuerON" : "Entrust.net",
-                  "notAfter" : 1636685477000,
-                  "notBefore" : 1321026040000,
-                  "serial" : "4c0e8c39",
-                  "subjectCN" : [
-                     "entrust certification authority - l1c"
-                  ],
-                  "subjectON" : "Entrust, Inc.",
-                  "validDays" : 3653
-               },
-               {
                   "alt" : [
                      "toshiba.aol.ca",
                      "main-w.welcomescreen.aol.com",
@@ -88,15 +73,38 @@
                   "issuerCN" : [
                      "entrust certification authority - l1c"
                   ],
-                  "issuerON" : "Entrust, Inc.",
+                  "issuerON" : [
+                     "Entrust, Inc."
+                  ],
                   "notAfter" : 1497242632000,
                   "notBefore" : 1402510723000,
                   "serial" : "4c235548",
                   "subjectCN" : [
                      "www.aol.com"
                   ],
-                  "subjectON" : "AOL Inc.",
+                  "subjectON" : [
+                     "AOL Inc."
+                  ],
                   "validDays" : 1096
+               },
+               {
+                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
+                  "issuerCN" : [
+                     "entrust.net certification authority (2048)"
+                  ],
+                  "issuerON" : [
+                     "Entrust.net"
+                  ],
+                  "notAfter" : 1636685477000,
+                  "notBefore" : 1321026040000,
+                  "serial" : "4c0e8c39",
+                  "subjectCN" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "subjectON" : [
+                     "Entrust, Inc."
+                  ],
+                  "validDays" : 3653
                }
             ],
             "certCnt" : 2,

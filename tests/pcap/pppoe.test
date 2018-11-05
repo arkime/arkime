@@ -8,14 +8,18 @@
                   "issuerCN" : [
                      "aol member ca"
                   ],
-                  "issuerON" : "America Online Inc.",
+                  "issuerON" : [
+                     "America Online Inc."
+                  ],
                   "notAfter" : 1231995540000,
                   "notBefore" : 1168837200000,
                   "serial" : "0119",
                   "subjectCN" : [
                      "kdc.uas.aol.com"
                   ],
-                  "subjectON" : "AOL LLC",
+                  "subjectON" : [
+                     "AOL LLC"
+                  ],
                   "validDays" : 730
                },
                {
@@ -23,14 +27,18 @@
                   "issuerCN" : [
                      "america online root certification authority 1"
                   ],
-                  "issuerON" : "America Online Inc.",
+                  "issuerON" : [
+                     "America Online Inc."
+                  ],
                   "notAfter" : 2142276180000,
                   "notBefore" : 1022565600000,
                   "serial" : "01",
                   "subjectCN" : [
                      "america online root certification authority 1"
                   ],
-                  "subjectON" : "America Online Inc.",
+                  "subjectON" : [
+                     "America Online Inc."
+                  ],
                   "validDays" : 12959
                },
                {
@@ -38,14 +46,18 @@
                   "issuerCN" : [
                      "america online root certification authority 1"
                   ],
-                  "issuerON" : "America Online Inc.",
+                  "issuerON" : [
+                     "America Online Inc."
+                  ],
                   "notAfter" : 1875288399000,
                   "notBefore" : 1086369999000,
                   "serial" : "07",
                   "subjectCN" : [
                      "aol member ca"
                   ],
-                  "subjectON" : "America Online Inc.",
+                  "subjectON" : [
+                     "America Online Inc."
+                  ],
                   "validDays" : 9131
                }
             ],
