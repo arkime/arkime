@@ -1063,11 +1063,11 @@ sub sessions2Update
       "lastPacket": {
         "type": "date"
       },
-      "packetPosArray": {
+      "packetPos": {
         "type": "long",
         "index": false
       },
-      "packetLenArray": {
+      "packetLen": {
         "type": "integer",
         "index": false
       },
