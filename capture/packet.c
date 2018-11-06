@@ -1111,8 +1111,8 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
             initialDropped = stats.dropped;
         }
         initialPacket = packet->ts;
-        LOG("Initial Packet = %ld", initialPacket.tv_sec);
-        LOG("%" PRIu64 " Initial Dropped = %d", totalPackets, initialDropped);
+        if (!config.pcapReadOffline)
+            LOG("Initial Packet = %ld Initial Dropped = %d", initialPacket.tv_sec, initialDropped);
     }
 
     MOLOCH_THREAD_INCR(totalPackets);

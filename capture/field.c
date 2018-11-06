@@ -73,10 +73,6 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             if (info->kind)
                 g_free(info->kind);
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (strncmp("type2", (char*)data + out[i], 5) == 0) {
-            if (info->kind)
-                g_free(info->kind);
-            info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
             if (info->category)
                 g_free(info->category);

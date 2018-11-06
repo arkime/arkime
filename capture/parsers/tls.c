@@ -815,18 +815,16 @@ void moloch_parser_init()
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "seconds",
+    moloch_field_define("cert", "date",
         "cert.notbefore", "Not Before", "cert.notBefore",
         "Certificate is not valid before this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        "type2", "date",
         (char *)NULL);
 
-    moloch_field_define("cert", "seconds",
+    moloch_field_define("cert", "date",
         "cert.notafter", "Not After", "cert.notAfter",
         "Certificate is not valid after this date",
         0, MOLOCH_FIELD_FLAG_FAKE,
-        "type2", "date",
         (char *)NULL);
 
     moloch_field_define("cert", "integer",

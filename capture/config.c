@@ -533,7 +533,7 @@ void moloch_config_load()
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
-    config.logHTTPConnections    = moloch_config_boolean(keyfile, "logHTTPConnections", TRUE);
+    config.logHTTPConnections    = moloch_config_boolean(keyfile, "logHTTPConnections", config.debug || !config.pcapReadOffline);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMTPHeaderAll    = moloch_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
