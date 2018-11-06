@@ -39,6 +39,8 @@ LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
 LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
+extern uint64_t         writtenBytes;
+extern uint64_t         unwrittenBytes;
 
 LOCAL struct timeval    startTime;
 LOCAL char             *rirs[256];
@@ -1105,6 +1107,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
 {
     static uint64_t       lastPackets[NUMBER_OF_STATS];
     static uint64_t       lastBytes[NUMBER_OF_STATS];
+    static uint64_t       lastWrittenBytes[NUMBER_OF_STATS];
+    static uint64_t       lastUnwrittenBytes[NUMBER_OF_STATS];
     static uint64_t       lastSessions[NUMBER_OF_STATS];
     static uint64_t       lastSessionBytes[NUMBER_OF_STATS];
     static uint64_t       lastDropped[NUMBER_OF_STATS];
@@ -1208,6 +1212,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"espSessions\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
+        "\"deltaWrittenBytes\": %" PRIu64 ", "
+        "\"deltaUnwrittenBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
         "\"deltaSessionBytes\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
@@ -1247,6 +1253,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         moloch_session_watch_count(SESSION_ESP),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
+        (writtenBytes - lastWrittenBytes[n]),
+        (unwrittenBytes - lastUnwrittenBytes[n]),
         (totalSessions - lastSessions[n]),
         (totalSessionBytes - lastSessionBytes[n]),
         (totalDropped - lastDropped[n]),
@@ -1258,6 +1266,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;
+    lastWrittenBytes[n]    = writtenBytes;
+    lastUnwrittenBytes[n]  = unwrittenBytes;
     lastPackets[n]         = totalPackets;
     lastSessions[n]        = totalSessions;
     lastSessionBytes[n]    = totalSessionBytes;

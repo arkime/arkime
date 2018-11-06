@@ -36,6 +36,9 @@ struct timeval               initialPacket; // Don't make LOCAL for now because 
 extern void                 *esServer;
 extern uint32_t              pluginsCbs;
 
+uint64_t                     writtenBytes;
+uint64_t                     unwrittenBytes;
+
 LOCAL int                    mac1Field;
 LOCAL int                    mac2Field;
 LOCAL int                    oui1Field;
@@ -692,6 +695,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
         uint32_t packets = session->packets[0] + session->packets[1];
 
         if (session->stopSaving == 0 || packets < session->stopSaving) {
+            MOLOCH_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
             moloch_writer_write(session, packet);
 
             int16_t len;
@@ -711,6 +715,8 @@ LOCAL void *moloch_packet_thread(void *threadp)
             if (packets >= config.maxPackets || session->midSave) {
                 moloch_session_mid_save(session, packet->ts.tv_sec);
             }
+        } else {
+            MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
         }
 
         if (session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {

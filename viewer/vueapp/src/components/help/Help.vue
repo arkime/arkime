@@ -586,6 +586,10 @@
               <dd>Number of packets that were dropped because frag overload or timeouts</dd>
               <dt>Total Dropped/Sec</dt>
               <dd>Sum of the inputs dropped and overload metrics</dd>
+              <dt>Written Bytes/Sec</dt>
+              <dd>The size of all the packets that Moloch is going write to disk</dd>
+              <dt>Unritten Bytes/Sec</dt>
+              <dd>The size of all the packets that Moloch isn't going to write to disk, but that we processed</dd>
             </dl>
             <p>
               <em>

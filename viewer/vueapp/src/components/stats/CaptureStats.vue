@@ -144,6 +144,8 @@ export default {
         { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', dataField: 'deltaDroppedPerSec', width: 130, dataFunction: roundCommaString, default: true, doStats: true },
         // all the rest of the available stats
         { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', dataField: 'deltaBitsPerSec', width: 100, dataFunction: roundCommaString, doStats: true },
+        { id: 'deltaWrittenBytes', name: 'Written Bytes/s', sort: 'deltaWrittenBytes', dataField: 'deltaWrittenBytesPerSec', width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, doStats: true },
+        { id: 'deltaUnwrittenBytes', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytes', dataField: 'deltaUnwrittenBytesPerSec', width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); }, doStats: true },
         { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', dataField: 'tcpSessions', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'udpSessions', name: 'Active UDP Sessions', sort: 'udpSessions', dataField: 'udpSessions', width: 100, dataFunction: roundCommaString, doStats: true },
         { id: 'icmpSessions', name: 'Active ICMP Sessions', sort: 'icmpSessions', dataField: 'icmpSessions', width: 100, dataFunction: roundCommaString, doStats: true },

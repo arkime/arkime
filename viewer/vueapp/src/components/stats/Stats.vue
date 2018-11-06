@@ -49,6 +49,8 @@
             <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
             <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
             <option value="sessionSizePerSec">ES Session Size/Sec</option>
+            <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
+            <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
           </select>
         </div> <!-- /graph type select -->
 

@@ -20,6 +20,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - simpleKEKId can be a template
   - all - Certificate org names can be an array now
   - wise - reverse dns supports servers setting
+  - all - new written/unwritten stats to see how much Moloch has written or
+          not written to disk
+  - all - don't index packet positions or packet lengths in ES
 
 1.6.0 2018/10/29
   - NOTICE: db.pl upgrade is required
