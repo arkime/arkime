@@ -3250,7 +3250,7 @@ app.get('/dstats.json', function(req, res) {
     deltaBytesPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS);}},
     deltaBitsPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS * 8);}},
     deltaWrittenBytesPerSec: {_source: ["deltaWrittenBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaWrittenBytes * 1000.0/item.deltaMS);}},
-    deltaUnwrittenBytesPerSec: {_source: ["deltaUnwrittenBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaUnrittenBytes * 1000.0/item.deltaMS);}},
+    deltaUnwrittenBytesPerSec: {_source: ["deltaUnwrittenBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaUnwrittenBytes * 1000.0/item.deltaMS);}},
     deltaPacketsPerSec: {_source: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets * 1000.0/item.deltaMS);}},
     deltaSessionsPerSec: {_source: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions * 1000.0/item.deltaMS);}},
     deltaSessionBytesPerSec: {_source: ["deltaSessionBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessionBytes * 1000.0/item.deltaMS);}},
