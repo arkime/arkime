@@ -635,7 +635,8 @@ void moloch_session_exit()
         }
     }
 
-    LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
+    if (!config.pcapReadOffline || config.debug)
+        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],

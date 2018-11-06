@@ -730,7 +730,8 @@ int main(int argc, char **argv)
 
     g_main_loop_run(mainLoop);
 
-    LOG("Final cleanup");
+    if (!config.pcapReadOffline || config.debug)
+        LOG("Final cleanup");
     moloch_plugins_exit();
     moloch_parsers_exit();
     moloch_db_exit();
