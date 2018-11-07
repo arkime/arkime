@@ -202,3 +202,31 @@ Vue.filter('readableTime', function (ms) {
 
   return result || '0';
 });
+
+/**
+ * Searches fields for a term
+ * Looks for the term in field friendlyName, exp, and aliases
+ *
+ * @example
+ * '{{ searchTerm | searchFields(fields) }}'
+ * this.$options.filters.searchFields('test', this.fields);
+ *
+ * @param {string} searchTerm The string to search for within the fields
+ * @param {array} fields      The list of fields to search
+ * @returns {array}           An array of fields that match the search term
+ */
+Vue.filter('searchFields', function (searchTerm, fields) {
+  if (!searchTerm) { return fields; }
+  return fields.filter((field) => {
+    if (field.regex !== undefined || field.noFacet === 'true') {
+      return false;
+    }
+
+    searchTerm = searchTerm.toLowerCase();
+    return field.friendlyName.toLowerCase().includes(searchTerm) ||
+      field.exp.toLowerCase().includes(searchTerm) ||
+      (field.aliases && field.aliases.some(item => {
+        return item.toLowerCase().includes(searchTerm);
+      }));
+  });
+});

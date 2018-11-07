@@ -988,13 +988,13 @@
             </transition-group>
           </table>
           <div v-if="!filteredFields || !filteredFields.length"
-            class="text-danger text-center">
+            class="text-danger text-center mb-4">
             <span class="fa fa-warning">
             </span>&nbsp;
             No results match your search
           </div>
           <div v-if="error"
-            class="alert alert-warning mt-3">
+            class="alert alert-warning mt-3 mb-4">
             <span class="fa fa-warning">
             </span>&nbsp;
             Error retrieving fields:
@@ -1056,23 +1056,7 @@ export default {
 
         this.sortFields(this.fieldQuery.sortField);
 
-        this.filteredFields = this.fields.filter((field) => {
-          let hasMatch = field.exp.toLowerCase().includes(
-            this.searchFields.toLowerCase()
-          ) ||
-          field.friendlyName.toLowerCase().includes(
-            this.searchFields.toLowerCase()
-          );
-
-          if (this.showDBFields) {
-            hasMatch = hasMatch ||
-            field.dbField.toLowerCase().includes(
-              this.searchFields.toLowerCase()
-            );
-          }
-
-          return hasMatch;
-        });
+        this.filteredFields = this.$options.filters.searchFields(this.searchFields, this.fields);
       }, 400);
     },
     toggleDBFields: function () {

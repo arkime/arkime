@@ -488,11 +488,10 @@ export default {
       let filteredGroupedFields = {};
 
       for (let group in this.groupedFields) {
-        filteredGroupedFields[group] = this.groupedFields[group].filter((field) => {
-          return field.regex === undefined &&
-                 field.noFacet !== 'true' &&
-                 field.friendlyName.toLowerCase().includes(this.colQuery.toLowerCase());
-        });
+        filteredGroupedFields[group] = this.$options.filters.searchFields(
+          this.colQuery,
+          this.groupedFields[group]
+        );
       }
 
       return filteredGroupedFields;

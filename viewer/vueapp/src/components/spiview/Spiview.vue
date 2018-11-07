@@ -461,12 +461,7 @@ export default {
         let category = this.categoryObjects[categoryName];
         let fields = category.fields;
 
-        fields = fields.filter((field) => {
-          return field.friendlyName.toLowerCase().includes(
-            searchFilter.toLowerCase()
-          );
-        });
-
+        fields = this.$options.filters.searchFields(searchFilter, fields);
         fields = this.sortFields(fields);
 
         Vue.set(this.categoryObjects[categoryName], 'filteredFields', fields);
