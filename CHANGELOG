@@ -14,7 +14,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.6.l 2018/11/xx
+1.6.1 2018/11/06
+  - NOTICE: db.pl upgrade is required
   - capture - ja3s support (issue #949)
   - capture - hassh support (issue #950)
   - capture - simpleKEKId can be a template
