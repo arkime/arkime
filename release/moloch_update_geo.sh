@@ -2,7 +2,7 @@
 
 # Variables
 DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
-TIMEOUT=${WGET_TIMEOUT:-3}
+TIMEOUT=${WGET_TIMEOUT:-30}
 
 # Work on temp dir to not affect current working files
 cd /tmp
