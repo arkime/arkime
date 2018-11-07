@@ -724,7 +724,7 @@ app.post("/:index/:type/:id/_update", function(req, res) {
     console.log ('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
     return res.end();
   }
-})
+});
 
 app.post("/:index/history", simpleGatherFirst);
 
