@@ -181,10 +181,21 @@ export default {
         this.changeExpression();
       }, 500);
     },
+    /* fired when enter is clicked from the expression typeahead input */
     enterClick: function () {
-      // only apply the expression on enter click when not selecting
-      // something inside the typeahead dropdown results list
-      if (this.activeIdx < 0) { this.$emit('applyExpression'); }
+      // if the activeIdx >= 0, an item in the dropdown is selected
+      if (this.activeIdx >= 0) { return; }
+      // only apply the expression and clear the results on enter click when
+      // not selecting something inside the typeahead dropdown results list
+      this.$emit('applyExpression');
+      // clear the timeout for the expression input change so it
+      // doesn't update the results which opens the results dropdown
+      if (timeout) { clearTimeout(timeout); }
+      // cancel any queries to get values for fields so that the
+      // dropdown isn't populated with more results
+      this.cancelPromise();
+      // clear out the results to close the dropdown
+      this.results = null;
     },
     /**
      * Watches for keyup events for escape, tab, enter, down, and up keys
