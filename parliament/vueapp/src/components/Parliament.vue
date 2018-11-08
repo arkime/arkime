@@ -30,8 +30,17 @@
             v-model="searchTerm"
             class="form-control"
             placeholder="Search clusters"
-            @keyup="debounceSearch()"
+            @keyup="debounceSearch"
           />
+          <span class="input-group-append">
+            <button type="button"
+              @click="clear"
+              :disabled="!searchTerm"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
         </div>
       </div> <!-- /search -->
       <div v-if="loggedIn"
@@ -771,6 +780,11 @@ export default {
       this.initializeGroupDragDrop();
       this.initializeClusterDragDrop();
     }, 400);
+
+    if (this.$route.query.searchTerm) {
+      this.searchTerm = this.$route.query.searchTerm;
+      this.filterClusters();
+    }
   },
   methods: {
     /* page functions -------------------------------------------------------- */
@@ -788,6 +802,15 @@ export default {
       timeout = setTimeout(() => {
         this.filterClusters();
       }, 400);
+    },
+    clear: function () {
+      this.searchTerm = undefined;
+      this.$router.replace({
+        query: {
+          ...this.$route.query,
+          searchTerm: undefined
+        }
+      });
     },
     openNewGroupForm: function () {
       this.showNewGroupForm = true;
@@ -1283,6 +1306,12 @@ export default {
 </script>
 
 <style scoped>
+.btn-clear-input {
+  color: #555;
+  background-color: #EEE;
+  border-color: #CCC;
+}
+
 /* drag/drop handle styles */
 .group-handle {
   color: #C3C3C3;

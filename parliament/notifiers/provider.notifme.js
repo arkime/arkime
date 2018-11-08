@@ -4,6 +4,7 @@ const Notifme = require('notifme-sdk');
 
 exports.init = function (api) {
   api.register('slack', {
+    name: 'slack',
     fields: [{
       name: 'slackWebhookUrl',
       required: true,
@@ -14,6 +15,7 @@ exports.init = function (api) {
   });
 
   api.register('twilio', {
+    name: 'twilio',
     fields: [{
       name: 'accountSid',
       required: true,
@@ -37,6 +39,7 @@ exports.init = function (api) {
   });
 
   api.register('email', {
+    name: 'email',
     fields: [{
       name: 'secure',
       type: 'checkbox',
@@ -75,7 +78,7 @@ exports.init = function (api) {
 };
 
 // Slack
-exports.sendSlackAlert = function (config, message) {
+exports.sendSlackAlert = function (config, message, links) {
   if (!config.slackWebhookUrl) {
     console.error('Please add a Slack webhook URL on the Settings page to enable Slack notifications');
     return;
@@ -92,11 +95,27 @@ exports.sendSlackAlert = function (config, message) {
     }
   });
 
-  slackNotifier.send({ slack: { text: message } });
+  // add links to the slack alert
+  let slackMsgObj = { slack: { text: message } };
+  if (links && links.length) {
+    slackMsgObj.slack.attachments = [];
+    for (let link of links) {
+      slackMsgObj.slack.attachments.push({
+        fallback: `${link.text}: <${link.link}>`,
+        actions: [{
+          type: 'button',
+          text: link.text,
+          url: link.url
+        }]
+      });
+    }
+  }
+
+  slackNotifier.send(slackMsgObj);
 };
 
 // Twilio
-exports.sendTwilioAlert = function (config, message) {
+exports.sendTwilioAlert = function (config, message, links) {
   if (!config.accountSid || !config.authToken || !config.toNumber || !config.fromNumber) {
     console.error('Please fill out the required fields for Twilio notifications on the Settings page.');
     return;
@@ -114,6 +133,12 @@ exports.sendTwilioAlert = function (config, message) {
     }
   });
 
+  if (links && links.length) {
+    for (let link of links) {
+      message += `\n${link.text}: ${link.url}`;
+    }
+  }
+
   twilioNotifier.send({
     sms: {
       from: config.fromNumber,
@@ -124,7 +149,7 @@ exports.sendTwilioAlert = function (config, message) {
 };
 
 // Email
-exports.sendEmailAlert = function (config, message) {
+exports.sendEmailAlert = function (config, message, links) {
   if (!config.host || !config.port || !config.user || !config.password || !config.to || !config.from) {
     console.error('Please fill out the required fields for Email notifications on the Settings page.');
     return;
@@ -150,6 +175,12 @@ exports.sendEmailAlert = function (config, message) {
       }
     }
   });
+
+  if (links && links.length) {
+    for (let link of links) {
+      message += `<br><a href="${link.url}">${link.text}</a>`;
+    }
+  }
 
   emailNotifier.send({
     email: {

@@ -226,7 +226,7 @@
             <span v-if="passwordChanged"
               class="pull-right">
               <!-- cancel password update button -->
-              <a @click="cancelChangePassword()"
+              <a @click="cancelChangePassword"
                 class="btn btn-outline-warning cursor-pointer">
                 <span class="fa fa-ban">
                 </span>&nbsp;
@@ -234,7 +234,7 @@
               </a> <!-- /cancel password update button -->
               <!-- update/create password button -->
               <a v-if="(hasAuth && loggedIn) || !hasAuth"
-                @click="updatePassword()"
+                @click="updatePassword"
                 class="btn btn-outline-success cursor-pointer mr-1 ml-1">
                 <span class="fa fa-key"></span>
                 <span v-if="hasAuth && loggedIn">
@@ -256,7 +256,7 @@
               </span>
             </span>
             <input class="form-control"
-              @keyup.enter="updatePassword()"
+              @keyup.enter="updatePassword"
               name="currentPassword"
               @input="passwordChanged = true"
               v-model="currentPassword"
@@ -271,7 +271,7 @@
             </span>
             <input class="form-control"
               name="newPassword"
-              @keyup.enter="updatePassword()"
+              @keyup.enter="updatePassword"
               @input="passwordChanged = true"
               v-model="newPassword"
               type="password"
@@ -285,7 +285,7 @@
             </span>
             <input class="form-control"
               name="newPasswordConfirm"
-              @keyup.enter="updatePassword()"
+              @keyup.enter="updatePassword"
               @input="passwordChanged = true"
               v-model="newPasswordConfirm"
               type="password"
@@ -293,13 +293,44 @@
           </div>
         </div> <!-- /password -->
 
-        <!-- notifiers -->
+        <!-- notifiers tab -->
         <div v-if="visibleTab === 'notifiers' && hasAuth && loggedIn && settings"
           class="col">
           <h3>
             Notifiers
           </h3>
           <hr>
+          <!-- hostname -->
+          <div class="row form-group">
+            <div class="col-12">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Parliament Hostname
+                  </span>
+                </span>
+                <input type="text"
+                  class="form-control"
+                  id="hostname"
+                  @input="debounceInput"
+                  v-model="settings.general.hostname"
+                />
+                <span class="input-group-append">
+                  <span class="input-group-text">
+                    <input type="checkbox"
+                      @input="debounceInput"
+                      v-model="settings.general.includeUrl"
+                    />
+                    &nbsp; include parliament dashboard url in notifications
+                  </span>
+                </span>
+              </div>
+              <p class="form-text small text-muted">
+                Configure the Parliament's hostname to add a link to the Parliament Dashbaord to every alert
+              </p>
+            </div>
+          </div> <!-- /hostname -->
+          <!-- notifiers -->
           <div class="row"
             v-if="settings.notifiers">
             <div class="col-12 col-xl-6"
@@ -399,8 +430,8 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div> <!-- /notifiers -->
+          </div> <!-- notifiers -->
+        </div> <!-- /notifiers tab -->
 
       </div> <!-- /page content -->
 

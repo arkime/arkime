@@ -14,6 +14,7 @@ const logger  = require('morgan');
 const jwt     = require('jsonwebtoken');
 const bcrypt  = require('bcrypt');
 const glob    = require('glob');
+const os      = require('os');
 
 /* app setup --------------------------------------------------------------- */
 const app     = express();
@@ -282,7 +283,14 @@ async function sendAlerts () {
         // timeout so that alerts are alerted in order
         setTimeout(() => {
           let alert = alerts[i];
-          alert.notifier.sendAlert(alert.config, alert.message);
+          let links = [];
+          if (parliament.settings.general.includeUrl) {
+            links.push({
+              text: 'Parliament Dashboard',
+              url: `${parliament.settings.general.hostname}?searchTerm=${alert.cluster}`
+            });
+          }
+          alert.notifier.sendAlert(alert.config, alert.message, links);
           if (app.get('debug')) {
             console.log('Sending alert:', alert.message, JSON.stringify(alert.config, null, 2));
           }
@@ -366,7 +374,8 @@ function buildAlert (cluster, issue) {
     alerts.push({
       config: config,
       message: message,
-      notifier: notifier
+      notifier: notifier,
+      cluster: cluster.title
     });
   }
 }
@@ -695,6 +704,9 @@ function initializeParliament () {
     }
     if (!parliament.settings.general.removeAcknowledgedAfter) {
       parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
+    }
+    if (!parliament.settings.general.hostname) {
+      parliament.settings.general.hostname = os.hostname();
     }
 
     if (app.get('debug')) {
@@ -1049,13 +1061,14 @@ router.put('/settings', verifyToken, (req, res, next) => {
 
   // save general settings
   for (let s in req.body.settings.general) {
-    const setting = req.body.settings.general[s];
-    if (isNaN(setting)) {
+    let setting = req.body.settings.general[s];
+    if (s !== 'hostname' && s !== 'includeUrl' && isNaN(setting)) {
       const error = new Error(`${s} must be a number.`);
       error.httpStatusCode = 422;
       return next(error);
     }
-    parliament.settings.general[s] = parseInt(setting);
+    if (s !== 'hostname' && s !== 'includeUrl') { setting = parseInt(setting); }
+    parliament.settings.general[s] = setting;
   }
 
   let successObj  = { success: true, text: 'Successfully updated your settings.' };
