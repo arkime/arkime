@@ -1646,6 +1646,11 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
         return moloch_packet_pppoe(batch, packet, data+16, len - 16);
     case 0x8847:
         return moloch_packet_mpls(batch, packet, data+16, len - 16);
+    case 0x8100:
+        if ((data[20] & 0xf0) == 0x60)
+            return moloch_packet_ip6(batch, packet, data+20, len - 20);
+        else
+            return moloch_packet_ip4(batch, packet, data+20, len - 20);
     default:
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown ethertype %x", ethertype);
