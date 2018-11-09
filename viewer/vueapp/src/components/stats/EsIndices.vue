@@ -62,7 +62,7 @@
             class="row-actions-btn"
             v-has-permission="'createEnabled'">
             <b-dropdown-item
-              @click="deleteIndex(item.index)">
+              @click.stop.prevent="confirmDeleteIndex(item.index)">
               Delete Index {{ item.index }}
             </b-dropdown-item>
             <b-dropdown-item
@@ -98,7 +98,7 @@ function roundCommaString (val) {
 
 export default {
   name: 'EsIndices',
-  props: [ 'user', 'dataInterval', 'refreshData' ],
+  props: [ 'user', 'dataInterval', 'refreshData', 'confirm', 'issueConfirmation' ],
   components: { MolochError, MolochLoading, MolochTable },
   directives: { FocusInput },
   data: function () {
@@ -162,6 +162,11 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    issueConfirmation: function () {
+      if (this.issueConfirmation) {
+        this.deleteIndex(this.issueConfirmation);
+      }
     }
   },
   created: function () {
@@ -187,6 +192,9 @@ export default {
     },
     onOffFocus: function () {
       this.focusInput = false;
+    },
+    confirmDeleteIndex: function (indexName) {
+      this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
     deleteIndex (indexName) {
       this.$http.delete(`esindices/${indexName}`)

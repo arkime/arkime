@@ -104,7 +104,7 @@
            </span>
          </div>
           <select class="form-control input-sm"
-                  v-model="graphSort">
+            v-model="graphSort">
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
@@ -132,6 +132,7 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <!-- refresh button -->
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex !== 0">
           <button type="button"
@@ -148,7 +149,31 @@
               </div>
             </span>
           </button>
-        </div>
+        </div> <!-- /refresh button -->
+
+        <!-- confirm button -->
+        <transition name="buttons">
+          <button v-if="confirmMessage"
+            type="button"
+            class="btn btn-sm btn-danger ml-2"
+            @click="confirmed">
+            <span class="fa fa-check">
+            </span>&nbsp;
+            {{ confirmMessage }}
+          </button>
+        </transition> <!-- /confirm button -->
+
+        <!-- cancel confirm button -->
+        <transition name="buttons">
+          <button v-if="confirmMessage"
+            type="button"
+            class="btn btn-sm btn-warning ml-2"
+            @click="cancelConfirm">
+            <span class="fa fa-ban">
+            </span>&nbsp;
+            Cancel
+          </button>
+        </transition> <!-- /cancel confirm button -->
 
         <!-- error (from child component) -->
         <div v-if="childError"
@@ -206,6 +231,8 @@
             :refreshData="refreshData"
             :data-interval="dataInterval"
             @errored="onError"
+            @confirm="confirm"
+            :issueConfirmation="issueConfirmation"
             :user="user">
           </es-indices>
         </b-tab>
@@ -253,7 +280,10 @@ export default {
       dataInterval: this.$route.query.refreshInterval || '5000',
       refreshData: false,
       childError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      confirmMessage: '',
+      itemToConfirm: undefined,
+      issueConfirmation: undefined
     };
   },
   computed: {
@@ -321,6 +351,23 @@ export default {
     },
     onError: function (message) {
       this.childError = message;
+    },
+    confirm: function (message, itemToConfirm) {
+      this.confirmMessage = message;
+      this.itemToConfirm = itemToConfirm;
+    },
+    cancelConfirm: function () {
+      this.issueConfirmation = undefined;
+      this.itemToConfirm = undefined;
+      this.confirmMessage = '';
+    },
+    confirmed: function () {
+      this.issueConfirmation = this.itemToConfirm;
+      setTimeout(() => {
+        this.issueConfirmation = undefined;
+        this.itemToConfirm = undefined;
+        this.confirmMessage = '';
+      });
     }
   }
 };
@@ -360,5 +407,27 @@ select {
 .stats-info {
   position: absolute;
   right: 4px;
+}
+
+/* confirm button animations */
+.buttons-enter-active {
+  animation: bounce-in .5s;
+}
+.buttons-leave-active {
+  transition: all .3s ease;
+}
+.buttons-enter, .buttons-leave-to {
+  opacity: 0;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
