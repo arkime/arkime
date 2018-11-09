@@ -84,7 +84,7 @@
                   <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
                 </span>
               </th>
-              <th>&nbsp;</th>
+              <th width="180px">&nbsp;</th>
             </tr>
           </thead>
           <transition-group name="list"
@@ -106,60 +106,78 @@
                 <input v-model="user.userName"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user, 'userName')"
+                  @input="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input v-model="user.expression"
                   class="form-control form-control-sm"
                   type="text"
-                  @change="userChanged(user, 'expression')"
+                  @input="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.enabled"
-                  @change="userChanged(user, 'enabled')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.createEnabled"
-                  @change="userChanged(user, 'createEnabled')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.webEnabled"
-                  @change="userChanged(user, 'webEnabled')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.headerAuthEnabled"
-                  @change="userChanged(user, 'headerAuthEnabled');"
+                  @change="userChanged(user);"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.emailSearch"
-                  @change="userChanged(user, 'emailSearch')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.removeEnabled"
-                  @change="userChanged(user, 'removeEnabled')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <input type="checkbox"
                   v-model="user.packetSearch"
-                  @change="userChanged(user, 'packetSearch')"
+                  @change="userChanged(user)"
                 />
               </td>
               <td class="no-wrap">
                 <span class="pull-right">
+                  <button v-if="user.changed"
+                    type="button"
+                    class="btn btn-sm btn-theme-tertiary"
+                    @click="updateUser(user)"
+                    v-b-tooltip.hover
+                    :title="`Save the updated settings for ${user.userId}`">
+                    <span class="fa fa-save">
+                    </span>
+                  </button>
+                  <button v-if="user.changed"
+                    type="button"
+                    class="btn btn-sm btn-warning"
+                    @click="loadData"
+                    v-b-tooltip.hover
+                    :title="`Cancel changed settings for ${user.userId}`">
+                    <span class="fa fa-ban">
+                    </span>
+                  </button>
                   <button type="button"
                     class="btn btn-sm btn-theme-primary"
                     @click="openSettings(user.userId)"
@@ -471,15 +489,24 @@ export default {
       this.msg = null;
       this.msgType = null;
     },
-    userChanged: function (user, field) {
+    userChanged: function (user) {
+      this.$set(user, 'changed', true);
+    },
+    updateUser: function (user) {
       this.$http.post('user/update', user)
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
-            this.user[field] = user[field];
+            // update all the fields
+            for (let field in user) {
+              if (this.user.hasOwnProperty(field)) {
+                this.user[field] = user[field];
+              }
+            }
           }
+          this.$set(user, 'changed', false);
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';
