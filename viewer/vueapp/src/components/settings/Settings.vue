@@ -130,6 +130,11 @@
                       class="btn-radio">
                       Local
                     </b-radio>
+                    <b-radio value="localtz"
+                      v-b-tooltip.hover
+                      class="btn-radio">
+                      Local + Timezone
+                    </b-radio>
                     <b-radio value="gmt"
                       v-b-tooltip.hover
                       class="btn-radio">
