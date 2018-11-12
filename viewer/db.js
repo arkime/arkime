@@ -794,6 +794,12 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       if (aliases[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
         indices.push(iname);
       }
+
+      // Check for shrink version
+      iname += '-shrink';
+      if (aliases[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
+        indices.push(iname);
+      }
     }
 
     if (indices.length === 0) {
