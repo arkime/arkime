@@ -1,6 +1,6 @@
 <template>
 
-  <div class="ml-1 mr-1">
+  <div class="container-fluid">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -11,36 +11,10 @@
 
     <div v-show="!error">
 
-      <div class="input-group input-group-sm node-search pull-right mt-1">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
-              class="fa fa-search fa-fw">
-            </span>
-            <span v-else
-              class="query-shortcut">
-              Q
-            </span>
-          </span>
-        </div>
-        <input type="search"
-          class="form-control"
-          v-model="query.filter"
-          v-focus-input="focusInput"
-          @blur="onOffFocus"
-          @input="searchForNodes"
-          placeholder="Begin typing to search for nodes by name"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            :disabled="!query.filter"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
-          </button>
-        </span>
-      </div>
+      <span v-b-tooltip.hover.left
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
+        title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
+      </span>
 
       <moloch-paging v-if="stats"
         class="mt-1"
@@ -68,17 +42,22 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
-import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
-let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'NodeStats',
-  props: ['user', 'graphType', 'graphInterval', 'graphHide', 'graphSort'],
+  props: [
+    'user',
+    'graphType',
+    'graphInterval',
+    'graphHide',
+    'graphSort',
+    'searchTerm',
+    'refreshData'
+  ],
   components: { ToggleBtn, MolochPaging, MolochError, MolochLoading },
-  directives: { FocusInput },
   data: function () {
     return {
       error: '',
@@ -88,7 +67,7 @@ export default {
       query: {
         length: parseInt(this.$route.query.length) || 100,
         start: 0,
-        filter: null,
+        filter: this.searchTerm || undefined,
         desc: this.graphSort === 'desc',
         hide: this.graphHide || 'none'
       }
@@ -107,14 +86,6 @@ export default {
       let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
       let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
-    },
-    focusInput: {
-      get: function () {
-        return this.$store.state.focusSearch;
-      },
-      set: function (newValue) {
-        this.$store.commit('setFocusSearch', newValue);
-      }
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
@@ -138,6 +109,11 @@ export default {
       initialized = false;
       this.query.desc = this.graphSort === 'desc';
       this.loadData();
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
     }
   },
   created: function () {
@@ -170,24 +146,12 @@ export default {
       initialized = false;
       this.loadData();
     },
-    searchForNodes () {
-      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
-      // debounce the input so it only issues a request after keyups cease for 400ms
-      searchInputTimeout = setTimeout(() => {
-        searchInputTimeout = null;
-        initialized = false;
-        this.loadData();
-      }, 400);
-    },
-    clear () {
-      this.query.filter = undefined;
-      this.loadData();
-    },
-    onOffFocus: function () {
-      this.focusInput = false;
-    },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      initialized = false;
+
+      this.query.filter = this.searchTerm;
+
       this.$http.get('stats.json', { params: this.query })
         .then((response) => {
           this.error = '';

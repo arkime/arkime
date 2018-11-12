@@ -191,16 +191,44 @@
     </form> <!-- /stats sub navbar -->
 
     <!-- stats content -->
-    <div class="pt-5">
-      <span v-if="tabIndex === 0"
-        v-b-tooltip.hover.left
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 stats-info"
-        title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
-      </span>
+    <div class="stats-tabs">
+      <div class="input-group input-group-sm pull-right mr-1">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-fw">
+            <span v-if="!shiftKeyHold"
+              class="fa fa-search fa-fw">
+            </span>
+            <span v-else
+              class="query-shortcut">
+              Q
+            </span>
+          </span>
+        </div>
+        <input type="search"
+          class="form-control"
+          v-model="searchTerm"
+          v-focus-input="focusInput"
+          @blur="onOffFocus"
+          @input="debounceSearchInput"
+          @keyup.enter="debounceSearchInput"
+          placeholder="Begin typing to search for items below"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            :disabled="!searchTerm"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
+      </div>
       <b-tabs v-model="tabIndex">
         <b-tab title="Capture Graphs"
           @click="tabIndexChange">
           <capture-graphs v-if="user && tabIndex === 0"
+            :refreshData="refreshData"
+            :searchTerm="searchTerm"
             :graph-type="statsType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
@@ -213,6 +241,7 @@
           <capture-stats v-if="user && tabIndex === 1"
             :graph-hide="graphHide"
             :refreshData="refreshData"
+            :searchTerm="searchTerm"
             :data-interval="dataInterval"
             :user="user">
           </capture-stats>
@@ -221,6 +250,7 @@
           @click="tabIndexChange">
           <es-nodes v-if="user && tabIndex === 2"
             :refreshData="refreshData"
+            :searchTerm="searchTerm"
             :data-interval="dataInterval">
           </es-nodes>
         </b-tab>
@@ -232,6 +262,7 @@
             :data-interval="dataInterval"
             @errored="onError"
             @confirm="confirm"
+            :searchTerm="searchTerm"
             :issueConfirmation="issueConfirmation"
             :user="user">
           </es-indices>
@@ -242,6 +273,7 @@
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :refreshData="refreshData"
+            :searchTerm="searchTerm"
             :user="user">
           </es-tasks>
         </b-tab>
@@ -250,6 +282,7 @@
           v-if="!multiviewer">
           <es-shards v-if="user && tabIndex === 5"
             :refreshData="refreshData"
+            :searchTerm="searchTerm"
             :data-interval="dataInterval">
           </es-shards>
         </b-tab>
@@ -267,9 +300,16 @@ import EsTasks from './EsTasks';
 import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
+import FocusInput from '../utils/FocusInput';
+
+let searchInputTimeout;
 
 export default {
   name: 'Stats',
+  components: {
+    CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks
+  },
+  directives: { FocusInput },
   data: function () {
     return {
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
@@ -283,7 +323,8 @@ export default {
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       confirmMessage: '',
       itemToConfirm: undefined,
-      issueConfirmation: undefined
+      issueConfirmation: undefined,
+      searchTerm: undefined
     };
   },
   computed: {
@@ -295,10 +336,15 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
     }
-  },
-  components: {
-    CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks
   },
   watch: {
     // watch for the route to change, then update the view
@@ -345,6 +391,21 @@ export default {
         this.dataInterval = queryParams.refreshInterval;
       }
     },
+    clear: function () {
+      this.searchTerm = undefined;
+      this.loadData();
+    },
+    onOffFocus: function () {
+      this.focusInput = false;
+    },
+    debounceSearchInput () {
+      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      searchInputTimeout = setTimeout(() => {
+        searchInputTimeout = null;
+        this.loadData();
+      }, 400);
+    },
     loadData: function () {
       this.refreshData = true;
       setTimeout(() => { this.refreshData = false; });
@@ -379,6 +440,19 @@ table .btn-group.row-actions-btn > .btn-sm {
   font-size: 13px;
   line-height: 1.2;
 }
+
+/* fix the nav tabs to the top and scroll the content */
+.stats-tabs .nav-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  padding-top: 10px;
+  background-color: var(--color-background, #FFFFFF);
+}
+.stats-tabs .tab-content {
+  padding-top: 50px;
+}
 </style>
 
 <style scoped>
@@ -391,7 +465,7 @@ form.stats-form {
   position: fixed;
   left: 0;
   right: 0;
-  z-index : 4;
+  z-index : 5;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
@@ -404,9 +478,15 @@ select {
   -webkit-appearance: none;
 }
 
-.stats-info {
-  position: absolute;
-  right: 4px;
+.stats-tabs {
+  margin-top: 35px;
+}
+.stats-tabs .input-group {
+  max-width: 333px;
+  position: fixed;
+  right: 0;
+  z-index: 5;
+  margin-top: 10px;
 }
 
 /* confirm button animations */

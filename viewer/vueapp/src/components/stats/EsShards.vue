@@ -1,6 +1,6 @@
 <template>
 
-  <div class="ml-1 mr-1">
+  <div class="container-fluid mt-2">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -10,37 +10,6 @@
     </moloch-error>
 
     <div v-if="!error">
-
-      <div class="input-group input-group-sm mt-1">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
-              class="fa fa-search fa-fw">
-            </span>
-            <span v-else
-              class="query-shortcut">
-              Q
-            </span>
-          </span>
-        </div>
-        <input type="text"
-          class="form-control shards-search"
-          v-model="query.filter"
-          v-focus-input="focusInput"
-          @blur="onOffFocus"
-          @keyup="searchForES"
-          placeholder="Begin typing to search for ES nodes and indices"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            :disabled="!query.filter"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
-          </button>
-        </span>
-      </div>
 
       <div v-if="stats.indices && !stats.indices.length"
         class="text-danger text-center mt-4 mb-4">
@@ -183,17 +152,18 @@
 <script>
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
-import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
-let searchInputTimeout; // timeout to debounce the search input
 let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsShards',
   components: { MolochError, MolochLoading },
-  directives: { FocusInput },
-  props: [ 'dataInterval', 'refreshData' ],
+  props: [
+    'dataInterval',
+    'refreshData',
+    'searchTerm'
+  ],
   data: function () {
     return {
       loading: true,
@@ -201,7 +171,7 @@ export default {
       stats: {},
       nodes: {},
       query: {
-        filter: null,
+        filter: this.searchTerm || undefined,
         sortField: 'index',
         desc: false
       },
@@ -211,14 +181,6 @@ export default {
     };
   },
   computed: {
-    focusInput: {
-      get: function () {
-        return this.$store.state.focusSearch;
-      },
-      set: function (newValue) {
-        this.$store.commit('setFocusSearch', newValue);
-      }
-    },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     }
@@ -251,22 +213,6 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    searchForES () {
-      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
-      // debounce the input so it only issues a request after keyups cease for 400ms
-      searchInputTimeout = setTimeout(() => {
-        searchInputTimeout = null;
-        this.loading = true;
-        this.loadData();
-      }, 400);
-    },
-    clear () {
-      this.query.filter = undefined;
-      this.loadData();
-    },
-    onOffFocus: function () {
-      this.focusInput = false;
-    },
     columnClick (name) {
       if (!name) { return; }
 
@@ -314,6 +260,8 @@ export default {
     },
     loadData: function () {
       respondedAt = undefined;
+
+      this.query.filter = this.searchTerm;
 
       this.$http.get('esshard/list', { params: this.query })
         .then((response) => {
@@ -433,6 +381,7 @@ table.table tbody > tr > td:first-child {
   border-radius: 5px;
   font-size: 90%;
   line-height: 1.2;
+  min-height: 133px;
 }
 .badge > span:before {
   content: '';
@@ -448,7 +397,8 @@ table.table tbody > tr > td:first-child {
 }
 .badge.render-tooltip-bottom:hover > span {
   bottom: -120px;
-}.badge.render-tooltip-bottom:hover > span:before {
+}
+.badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
 }
 .badge > span span {

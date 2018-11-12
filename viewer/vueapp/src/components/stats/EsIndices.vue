@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container-fluid">
+  <div class="container-fluid mt-2">
 
     <moloch-loading v-if="loading && !error">
     </moloch-loading>
@@ -10,37 +10,6 @@
     </moloch-error>
 
     <div v-show="!error">
-
-      <div class="input-group input-group-sm mt-1 mb-1">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
-              class="fa fa-search fa-fw">
-            </span>
-            <span v-else
-              class="query-shortcut">
-              Q
-            </span>
-          </span>
-        </div>
-        <input type="text"
-          class="form-control"
-          v-model="query.filter"
-          v-focus-input="focusInput"
-          @blur="onOffFocus"
-          @input="searchForES"
-          placeholder="Begin typing to search for ES indices (hint: this input accepts regex)"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            :disabled="!query.filter"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
-          </button>
-        </span>
-      </div>
 
       <moloch-table
         id="esIndicesTable"
@@ -85,10 +54,8 @@ import Vue from 'vue';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
-import FocusInput from '../utils/FocusInput';
 
 let reqPromise; // promise returned from setInterval for recurring requests
-let searchInputTimeout; // timeout to debounce the search input
 let respondedAt; // the time that the last data load succesfully responded
 
 function roundCommaString (val) {
@@ -98,9 +65,15 @@ function roundCommaString (val) {
 
 export default {
   name: 'EsIndices',
-  props: [ 'user', 'dataInterval', 'refreshData', 'confirm', 'issueConfirmation' ],
+  props: [
+    'user',
+    'dataInterval',
+    'refreshData',
+    'confirm',
+    'issueConfirmation',
+    'searchTerm'
+  ],
   components: { MolochError, MolochLoading, MolochTable },
-  directives: { FocusInput },
   data: function () {
     return {
       stats: null,
@@ -109,7 +82,7 @@ export default {
       totalValues: null,
       averageValues: null,
       query: {
-        filter: null,
+        filter: this.searchTerm || undefined,
         sortField: 'index',
         desc: false
       },
@@ -132,14 +105,6 @@ export default {
     };
   },
   computed: {
-    focusInput: {
-      get: function () {
-        return this.$store.state.focusSearch;
-      },
-      set: function (newValue) {
-        this.$store.commit('setFocusSearch', newValue);
-      }
-    },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     }
@@ -177,22 +142,6 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    searchForES () {
-      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
-      // debounce the input so it only issues a request after keyups cease for 400ms
-      searchInputTimeout = setTimeout(() => {
-        searchInputTimeout = null;
-        this.loading = true;
-        this.loadData();
-      }, 400);
-    },
-    clear () {
-      this.query.filter = undefined;
-      this.loadData();
-    },
-    onOffFocus: function () {
-      this.focusInput = false;
-    },
     confirmDeleteIndex: function (indexName) {
       this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
@@ -226,6 +175,8 @@ export default {
     },
     loadData: function (sortField, desc) {
       respondedAt = undefined;
+
+      this.query.filter = this.searchTerm;
 
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
