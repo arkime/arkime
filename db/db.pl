@@ -68,6 +68,7 @@ my $SEGMENTS = 1;
 my $NOOPTIMIZE = 0;
 my $FULL = 0;
 my $REVERSE = 0;
+my $SHARDSPERNODE = 1;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -98,10 +99,12 @@ sub showHelp($)
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -110,6 +113,7 @@ sub showHelp($)
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "\n";
@@ -1089,6 +1093,7 @@ sub sessions2Update
 
 $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+$shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
 
     my $template = '
 {
@@ -1674,6 +1679,14 @@ sub parseArgs {
 	    $FULL = 1;
         } elsif ($ARGV[$pos] eq "--reverse") {
 	    $REVERSE = 1;
+        } elsif ($ARGV[$pos] eq "--shardsPerNode") {
+            $pos++;
+            if ($ARGV[$pos] eq "null") {
+                $SHARDSPERNODE = "null";
+            } else {
+                $SHARDSPERNODE = int($ARGV[$pos]);
+            }
+            print "ALW $SHARDSPERNODE\n";
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }
@@ -1794,6 +1807,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     my $nodes = esGet("/_nodes");
     $main::numberOfNodes = dataNodes($nodes->{nodes});
     my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+    $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
 
     dbESVersion();
     $main::userAgent->timeout(7200);
