@@ -118,6 +118,15 @@ export default {
           expression: this.$store.state.expression
         };
 
+        // update the start/stop time if they have not been updated
+        if ((this.$store.state.time.startTime !== this.$route.query.startTime ||
+          this.$store.state.time.stopTime !== this.$route.query.stopTime) &&
+          this.$store.state.timeRange === '0') {
+          item.query.startTime = this.$store.state.time.startTime;
+          item.query.stopTime = this.$store.state.time.stopTime;
+          item.query.date = undefined;
+        }
+
         // determine if user can view menu item
         // this can't be done with the has-permission directive because
         // a sibling of this component might update the user (Users.vue)

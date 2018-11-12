@@ -117,8 +117,7 @@
       <!-- time inputs -->
       <moloch-time :timezone="timezone"
         @timeChange="timeChange"
-        :hide-interval="hideInterval"
-        :updateTime="updateTime">
+        :hide-interval="hideInterval">
       </moloch-time> <!-- /time inputs -->
 
       <!-- form message -->
@@ -277,8 +276,7 @@ export default {
       cluster: {},
       view: this.$route.query.view,
       message: undefined,
-      messageType: undefined,
-      updateTime: false
+      messageType: undefined
     };
   },
   computed: {
@@ -419,15 +417,22 @@ export default {
         });
     },
     /**
-     * update the stop/start times in time component, which in turn
-     * notifies this controller (using the 'changeTime' event), then
-     * updates the time params and emits a 'changeSearch' event to parent
+     * If the start/stop time has changed:
+     * Applies the date start/stop time url parameters and removes the date url parameter
+     * Updating the url parameter triggers updateParams in Time.vue
      */
     timeUpdate: function () {
-      this.updateTime = true;
-      setTimeout(() => {
-        this.updateTime = false;
-      }, 1000);
+      if (this.$store.state.timeRange === '0' &&
+        this.$store.state.time.startTime && this.$store.state.time.stopTime) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            date: undefined,
+            stopTime: this.$store.state.time.stopTime,
+            startTime: this.$store.state.time.startTime
+          }
+        });
+      }
     },
     /* event functions ------------------------------------------- */
     /**
