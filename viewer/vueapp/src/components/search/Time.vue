@@ -185,7 +185,7 @@ export default {
   name: 'MolochTime',
   components: { flatPickr },
   directives: { FocusInput },
-  props: [ 'timezone', 'hideBounding', 'hideInterval' ],
+  props: [ 'timezone', 'hideBounding', 'hideInterval', 'updateTime' ],
   data: function () {
     return {
       deltaTime: null,
@@ -233,6 +233,14 @@ export default {
           dateChanged = true;
           this.validateDate();
         }
+      }
+    },
+    'updateTime': function (newVal, oldVal) {
+      if (newVal) {
+        // calculate new stop/start time
+        this.updateStartStopTime();
+        // tell the parent the time params have changed
+        this.$emit('timeChange');
       }
     }
   },

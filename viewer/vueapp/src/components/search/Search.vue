@@ -117,7 +117,8 @@
       <!-- time inputs -->
       <moloch-time :timezone="timezone"
         @timeChange="timeChange"
-        :hide-interval="hideInterval">
+        :hide-interval="hideInterval"
+        :updateTime="updateTime">
       </moloch-time> <!-- /time inputs -->
 
       <!-- form message -->
@@ -276,7 +277,8 @@ export default {
       cluster: {},
       view: this.$route.query.view,
       message: undefined,
-      messageType: undefined
+      messageType: undefined,
+      updateTime: false
     };
   },
   computed: {
@@ -420,6 +422,9 @@ export default {
      * If the start/stop time has changed:
      * Applies the date start/stop time url parameters and removes the date url parameter
      * Updating the url parameter triggers updateParams in Time.vue
+     * If just a search was issued:
+     * Update the start/stop time in the time component so that the query that is
+     * issued has the correct start/stop time (date only sent if -1)
      */
     timeUpdate: function () {
       if (this.$store.state.timeRange === '0' &&
@@ -432,6 +437,11 @@ export default {
             startTime: this.$store.state.time.startTime
           }
         });
+      } else {
+        this.updateTime = true;
+        setTimeout(() => {
+          this.updateTime = false;
+        }, 1000);
       }
     },
     /* event functions ------------------------------------------- */
