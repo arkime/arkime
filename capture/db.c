@@ -154,15 +154,18 @@ LOCAL void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
                 if ((*in & 0xf0) == 0xf0) {
+                    if (!in[1] || !in[2] || !in[3]) goto end;
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *in);
                 } else if ((*in & 0xf0) == 0xe0) {
+                    if (!in[1] || !in[2]) goto end;
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *in);
                 } else if ((*in & 0xf0) == 0xd0) {
+                    if (!in[1]) goto end;
                     BSB_EXPORT_u08(*bsb, *(in++));
                     BSB_EXPORT_u08(*bsb, *in);
                 } else {
@@ -181,6 +184,7 @@ LOCAL void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
         in++;
     }
 
+end:
     BSB_EXPORT_u08(*bsb, '"');
 }
 

@@ -215,37 +215,38 @@ LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, 
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
 #endif
 
-    if (data[len-1] == 0)  {
-        SocksInfo_t *socks;
+    if (len < 8 || data[len-1] != 0)
+        return;
 
-        socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
-        socks->which = which;
-        socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
-        if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
-            socks->ip = 0;
-        } else {
-            memcpy(&socks->ip, data+4, 4);
-        }
+    SocksInfo_t *socks;
 
-        int i;
-        for(i = 8; i < len && data[i]; i++);
-        if (i > 8 && i != len ) {
-            socks->user = g_strndup((char *)data+8, i-8);
-            socks->userlen = i - 8;
-        }
-
-        if (socks->ip == 0) {
-            i++;
-            int start;
-            for(start = i; i < len && data[i]; i++);
-            if (i > start && i != len ) {
-                socks->hostlen = i-start;
-                socks->host = g_ascii_strdown((char*)data+start, i-start);
-            }
-        }
-
-        moloch_parsers_register(session, socks4_parser, socks, socks_free);
+    socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
+    socks->which = which;
+    socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
+    if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
+        socks->ip = 0;
+    } else {
+        memcpy(&socks->ip, data+4, 4);
     }
+
+    int i;
+    for(i = 8; i < len && data[i]; i++);
+    if (i > 8 && i != len ) {
+        socks->user = g_strndup((char *)data+8, i-8);
+        socks->userlen = i - 8;
+    }
+
+    if (socks->ip == 0) {
+        i++;
+        int start;
+        for(start = i; i < len && data[i]; i++);
+        if (i > start && i != len ) {
+            socks->hostlen = i-start;
+            socks->host = g_ascii_strdown((char*)data+start, i-start);
+        }
+    }
+
+    moloch_parsers_register(session, socks4_parser, socks, socks_free);
 }
 
 /******************************************************************************/
