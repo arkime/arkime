@@ -451,7 +451,7 @@ uint32_t moloch_session_monitoring()
     int      t, s;
 
     for (t = 0; t < config.packetThreads; t++) {
-        for (s = 0; s < config.packetThreads; s++) {
+        for (s = 0; s < SESSION_MAX; s++) {
             count += HASH_COUNT(h_, sessions[t][s]);
         }
     }
