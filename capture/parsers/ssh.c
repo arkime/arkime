@@ -14,7 +14,7 @@
  */
 #include "moloch.h"
 
-#define MAX_SSH_BUFFER 8192
+#define MAX_SSH_BUFFER 8196
 
 typedef struct {
     char       buf[2][MAX_SSH_BUFFER];
@@ -162,7 +162,7 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
             return 0;
         }
 
-        if (sshLen > ssh->len[which])
+        if (sshLen > BSB_REMAINING(bsb))
             return 0;
 
         uint8_t    sshCode = 0;
