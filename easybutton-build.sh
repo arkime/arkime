@@ -282,7 +282,7 @@ fi
 
 if [ $DOINSTALL -eq 1 ]; then
     export PATH=$TDIR/bin:$PATH
-    sudo make install
+    make install
     echo "MOLOCH: Installed, now type sudo make config'"
 else
     echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"
