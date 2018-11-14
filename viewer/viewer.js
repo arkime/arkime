@@ -3887,7 +3887,7 @@ function buildConnections(req, res, cb) {
     }
 
     if (nodesHash[vsrc] === undefined) {
-      nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+      nodesHash[vsrc] = { id: ""+vsrc, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vsrc].sessions++;
@@ -3900,7 +3900,7 @@ function buildConnections(req, res, cb) {
     }
 
     if (nodesHash[vdst] === undefined) {
-      nodesHash[vdst] = {id: ""+vdst, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+      nodesHash[vdst] = { id: ""+vdst, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vdst].sessions++;
@@ -3914,13 +3914,12 @@ function buildConnections(req, res, cb) {
 
     var n = "" + vsrc + "->" + vdst;
     if (connects[n] === undefined) {
-      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, node: {}};
+      connects[n] = { value: 0, source: vsrc, target: vdst, node: {} };
       nodesHash[vsrc].cnt++;
       nodesHash[vdst].cnt++;
     }
 
     connects[n].value++;
-    connects[n].node[f.node] = 1;
     for (let i in fields) {
       let dbField = fields[i];
       if (f.hasOwnProperty(dbField)) {
@@ -4045,16 +4044,36 @@ app.get('/connections.csv', logAction(), function(req, res) {
       return res.send(err);
     }
 
-    // TODO ECR - write out the fields requested
-    res.write("Source, Destination, Sessions, Packets, Bytes, Databytes\r\n");
+    // write out the fields requested
+    let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    if (req.query.fields) { fields = req.query.fields.split(','); }
+
+    res.write("Source, Destination, Sessions");
+    let displayFields = {};
+    for (let field of fields) {
+      let fieldsMap = JSON.parse(app.locals.fieldsMap);
+      for (let f in fieldsMap) {
+        if (fieldsMap[f].dbField === field) {
+          let friendlyName = fieldsMap[f].friendlyName;
+          displayFields[field] = fieldsMap[f];
+          res.write(`, ${friendlyName}`);
+        }
+      }
+    }
+    res.write('\r\n');
+
     for (let i = 0, ilen = links.length; i < ilen; i++) {
       res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +
                 "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
-                     links[i].value + seperator +
-                     links[i].totPackets + seperator +
-                     links[i].totBytes + seperator +
-                     links[i].totDataBytes + "\r\n");
+                     links[i].value + seperator);
+      for (let f = 0, flen = fields.length; f < flen; f++) {
+        console.log(links[i][displayFields[fields[f]].dbField]);
+        res.write(links[i][displayFields[fields[f]].dbField].toString());
+        if (f !== flen - 1) { res.write(seperator); }
+      }
+      res.write('\r\n');
     }
+
     res.end();
   });
 });

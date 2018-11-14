@@ -377,7 +377,6 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
-    // TODO
     filteredFields: function () {
       let filteredGroupedFields = {};
 
@@ -390,11 +389,9 @@ export default {
 
       return filteredGroupedFields;
     },
-    // TODO
     nodeFields: function () {
       return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
     },
-    // TODO
     linkFields: function () {
       return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
     }
@@ -479,6 +476,23 @@ export default {
     closePopups: function () {
       $('.connections-popup').hide();
     },
+    isFieldVisible: function (id, list) {
+      return list.indexOf(id);
+    },
+    toggleFieldVisibility: function (id, list) {
+      let index = this.isFieldVisible(id, list);
+
+      if (index >= 0) { // it's visible
+        // remove it from the visible node fields list
+        list.splice(index, 1);
+      } else { // it's hidden
+        // add it to the visible headers list
+        list.push(id);
+        this.loadData(true);
+      }
+
+      this.saveVisibleFields();
+    },
     /* event functions ----------------------------------------------------- */
     changeSrcField: function (field) {
       this.srcFieldTypeahead = field.friendlyName;
@@ -501,12 +515,14 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    loadData: function (dataReloadOnly) {
       this.loading = true;
       this.error = false;
 
-      this.svg.selectAll('.link').remove();
-      this.svg.selectAll('.node').remove();
+      if (!dataReloadOnly) {
+        this.svg.selectAll('.link').remove();
+        this.svg.selectAll('.node').remove();
+      }
 
       if (!this.$route.query.srcField) {
         this.query.srcField = this.user.settings.connSrcField;
@@ -529,8 +545,12 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.getFields();
-          this.processData(response.data);
+          if (!dataReloadOnly) {
+            this.getFields();
+            this.processData(response.data);
+          } else {
+            this.updateData(response.data);
+          }
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           this.loading = false;
@@ -583,6 +603,16 @@ export default {
       }
 
       return undefined;
+    },
+    updateData: function (json) {
+      this.closePopups();
+      force.nodes(json.nodes).links(json.links).start();
+      for (let i = json.nodes.length * json.nodes.length; i > 0; --i) {
+        force.tick();
+      }
+      force.stop();
+      this.node.data(json.nodes);
+      this.link.data(json.links);
     },
     processData: function (json) {
       if (!json.nodes) {
@@ -799,7 +829,9 @@ export default {
 
                 <span v-for="field in nodeFields"
                   :key="field">
-                  <dt>{{ fields[field].friendlyName }}</dt>
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].friendlyName }}
+                  </dt>
                   <dd>{{ node[field] }}&nbsp;</dd>
                 </span>
 
@@ -884,21 +916,26 @@ export default {
 
                 <span v-for="field in linkFields"
                   :key="field">
-                  <dt>{{ fields[field].friendlyName }}</dt>
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].friendlyName }}
+                  </dt>
                   <dd>{{ link[field] }}&nbsp;</dd>
                 </span>
 
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
+                    href="#"
                     @click="addExpression('&&')">AND</a>&nbsp;
                   <a class="cursor-pointer no-decoration"
+                    href="#"
                     @click="addExpression('||')">OR</a>
                 </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
-                 @click="hideLink">
+                href="#"
+                @click="hideLink">
                 <span class="fa fa-eye-slash"></span>&nbsp;
                 Hide Link
               </a>
@@ -1061,13 +1098,14 @@ export default {
       const translate = this.zoom.translate();
       return [(point[0] - translate[0]) / scale, (point[1] - translate[1]) / scale];
     },
-    // TODO
     setupFields: function () {
       // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
       let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
       for (let field of this.fields) {
+        // don't include fields with regex
+        if (field.hasOwnProperty('regex')) { continue; }
         if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
           this.fieldsMap[field.dbField] = field;
           existingFieldsLookup[field.exp] = field;
@@ -1078,25 +1116,6 @@ export default {
         }
       }
     },
-    // TODO
-    isFieldVisible: function (id, list) {
-      return list.indexOf(id);
-    },
-    // TODO
-    toggleFieldVisibility: function (id, list) {
-      let index = this.isFieldVisible(id, list);
-
-      if (index >= 0) { // it's visible
-        // remove it from the visible node fields list
-        list.splice(index, 1);
-      } else { // it's hidden
-        // add it to the visible headers list
-        list.push(id);
-      }
-
-      this.saveVisibleFields();
-    },
-    // TODO
     saveVisibleFields: function () {
       this.user.settings.connNodeFields = this.nodeFields;
       this.user.settings.connLinkFields = this.linkFields;
@@ -1108,7 +1127,6 @@ export default {
 </script>
 
 <style>
-/* TODO */
 .field-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;;
