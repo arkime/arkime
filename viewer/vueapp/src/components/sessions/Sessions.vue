@@ -50,7 +50,7 @@
       <!-- sessions results -->
       <table v-if="headers && headers.length"
         class="table-striped sessions-table"
-        style="{width: tableWidth + 'px'}"
+        :style="{width: tableWidth + 'px', 'margin-bottom': '300px'}"
         id="sessionsTable">
         <thead>
           <tr ref="draggableColumns">

@@ -86,9 +86,16 @@
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
-              :title="'Open in new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
+              :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
               <span class="fa fa-external-link-square"></span>&nbsp;
-              Open New Sessions Tab
+              New Sessions Tab
+            </b-dropdown-item>
+            <b-dropdown-item
+              v-if="expression"
+              @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
+              :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' as the root search expression'">
+              <span class="fa fa-external-link"></span>&nbsp;
+              New Sessions Tab (with only this value)
             </b-dropdown-item>
             <b-dropdown-item
               @click="isOpen = false"
@@ -315,16 +322,22 @@ export default {
      * @param {string} field  The field name
      * @param {string} value  The field value
      * @param {string} op     The relational operator
+     * @param {boolean} root  Whether the expression should be added as the root expression
      */
-    newTabSessions: function (field, value, op) {
+    newTabSessions: function (field, value, op, root) {
       this.isOpen = false; // close the dropdown
 
       let appendExpression = this.buildExpression(field, value, op);
 
       // build new expression
-      let newExpression = this.expression || '';
-      if (newExpression) { newExpression += ' && '; }
-      newExpression += appendExpression;
+      let newExpression;
+      if (!root) {
+        newExpression = this.expression || '';
+        if (newExpression) { newExpression += ' && '; }
+        newExpression += appendExpression;
+      } else {
+        newExpression = appendExpression;
+      }
 
       let routeData = this.$router.resolve({
         path: '/sessions',
