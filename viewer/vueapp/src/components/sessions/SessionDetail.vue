@@ -23,7 +23,7 @@
     </div> <!-- /detail -->
 
     <!-- packet options -->
-    <div v-show="!loading && !hidePackets"
+    <div v-show="!loading && !hidePackets && !user.hidePcap"
       class="packet-options mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
         <fieldset :disabled="hidePackets || loading || loadingPackets || errorPackets || renderingPackets">
@@ -186,7 +186,7 @@
     </div> <!-- /packet options -->
 
     <!-- packets loading -->
-    <div v-if="!loading && loadingPackets && !hidePackets"
+    <div v-if="!loading && loadingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
@@ -201,7 +201,7 @@
     </div> <!-- /packets loading -->
 
     <!-- packets rendering -->
-    <div v-if="!loading && renderingPackets && !hidePackets"
+    <div v-if="!loading && renderingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ml-2 mr-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
@@ -226,7 +226,7 @@
     </div> <!-- /packets error -->
 
     <!-- packets -->
-    <div v-if="!loadingPackets && !errorPackets && !hidePackets"
+    <div v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
       class="inner packet-container mr-1 ml-1"
       v-html="packetHtml"
       ref="packetContainer"
@@ -234,7 +234,7 @@
     </div> <!-- packets -->
 
     <!-- packet options -->
-    <div v-show="!loading && !loadingPackets && !errorPackets && !hidePackets"
+    <div v-show="!loading && !loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
       class="mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
         <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
@@ -807,6 +807,9 @@ export default {
     },
     /* Gets the packets for the session from the server */
     getPackets: function () {
+      // if the user is not allowed to view packets, don't request them
+      if (this.user.hidePcap) { return; }
+
       // already loading, don't load again!
       if (this.loadingPackets || this.hidePackets) { return; }
 
@@ -904,7 +907,7 @@ export default {
         })
         .catch((error) => {
           this.loadingPackets = false;
-          this.errorPackets = error;
+          this.errorPackets = error.text || error;
           this.packetPromise = undefined;
         });
     },

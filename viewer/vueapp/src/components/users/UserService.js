@@ -26,7 +26,8 @@ export default {
    * Determines whether a user has permission to perform a specific task
    * @param {string} priv The privilege in question. Values include:
    *                      'createEnabled', 'emailSearch', 'enabled', 'packetSearch',
-   *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled'
+   *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled',
+   *                      '!hideStats', '!hideFiles', '!hidePcap', '!disablePcapDownload'
    * @returns {boolean}   A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -34,8 +35,14 @@ export default {
     let user = store.state.user;
     if (!user) { return false; }
     let privs = priv.split(',');
-    for (let priv of privs) {
-      if (!user[priv]) {
+    for (let p of privs) {
+      let reverse = false;
+      if (p.startsWith('!')) {
+        reverse = true;
+        p = p.substr(1);
+      }
+      if ((!reverse && !user[p]) ||
+        (reverse && user[p])) {
         return false;
       }
     }

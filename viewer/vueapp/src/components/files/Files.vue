@@ -172,7 +172,7 @@ export default {
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     onError: function (message) {

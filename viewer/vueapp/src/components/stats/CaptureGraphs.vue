@@ -166,7 +166,7 @@ export default {
           }
         }, (error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     makeStatsGraph: function (metricName, interval) {

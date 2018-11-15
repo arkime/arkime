@@ -292,7 +292,7 @@ export default {
           }
         }, (error) => {
           respondedAt = undefined;
-          this.error = error;
+          this.error = error.text || error;
           this.loading = false;
         });
     }
