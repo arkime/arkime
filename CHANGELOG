@@ -59,7 +59,11 @@ NOTICE: Restart wiseService before capture when upgrading
   - multiviewer - Can save user settings and such (pr #935)
   - viewer - Can share views with all other users
   - db.pl - New backup/restore commands, saves everything but sessions
-
+  - viewer - don't issue search when closing the date/time pickers
+  - viewer - download packets src/dst bytes img
+  - viewer - option to show timezone with every timestamp
+  - viewer - added new user permissions (hideStats, hideFiles, hidePcap, and disablePcapDownload)
+  - parliament - add option to provide link to dashboard in alert notifications
 
 1.5.3 2018/09/10
   - release - libpcap 1.9.0
