@@ -38,11 +38,11 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check Update #1");
-    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false }', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 1, "Check Update #2");
-    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Add User 2
     my $json = viewerPostToken2("/user/create", '{"userId": "test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -92,22 +92,22 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #1");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #2");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Reverse settings
     $json = viewerPostToken2("/user/update", '{"userId":"test2","userName":"UserNameUpdated3", "enabled":false, "removeEnabled":true, "headerAuthEnabled":false, "expression":"foo3", "emailSearch":false, "webEnabled":false, "createEnabled": false, "packetSearch": false}', $token2);
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #1");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #2");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Column
     my $info = viewerGet("/user/columns?molochRegressionUser=test1");
