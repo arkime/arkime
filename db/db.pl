@@ -49,6 +49,7 @@
 # 52 - Hunt (packet search)
 # 53 - add forcedExpression to history
 # 54 - users_v6
+# 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -57,7 +58,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 54;
+my $VERSION = 55;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1356,6 +1357,18 @@ sub usersUpdate
       "packetSearch": {
         "type": "boolean"
       },
+      "hideStats": {
+        "type": "boolean"
+      },
+      "hideFiles": {
+        "type": "boolean"
+      },
+      "hidePcap": {
+        "type": "boolean"
+      },
+      "disablePcapDownload": {
+        "type": "boolean"
+      },
       "passStore": {
         "type": "keyword"
       },
@@ -2264,9 +2277,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
-    } elsif ($main::versionNumber <= 54) {
+    } elsif ($main::versionNumber <= 55) {
         sessions2Update();
         checkForOld5Indices();
+        usersUpdate();
     } else {
         print "db.pl is hosed\n";
     }

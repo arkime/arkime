@@ -70,6 +70,7 @@
           class="table table-sm table-striped small">
           <thead>
             <tr>
+              <th width="50px;">&nbsp;</th>
               <th v-for="column of columns"
                 :key="column.name"
                 class="cursor-pointer"
@@ -89,122 +90,195 @@
           </thead>
           <transition-group name="list"
             tag="tbody">
+            <!-- no results -->
             <tr v-if="!users.data.length"
               key="noUsers"
               class="text-danger text-center">
-              <td colspan="11"
+              <td colspan="12"
                 class="pt-2">
                 <h6>No users match your search</h6>
               </td>
-            </tr>
-            <tr v-for="(user, index) of users.data"
-              :key="user.id">
-              <td class="no-wrap">
-                {{ user.userId }}
-              </td>
-              <td class="no-wrap">
-                <input v-model="user.userName"
-                  class="form-control form-control-sm"
-                  type="text"
-                  @input="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input v-model="user.expression"
-                  class="form-control form-control-sm"
-                  type="text"
-                  @input="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.enabled"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.createEnabled"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.webEnabled"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.headerAuthEnabled"
-                  @change="userChanged(user);"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.emailSearch"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.removeEnabled"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <input type="checkbox"
-                  v-model="user.packetSearch"
-                  @change="userChanged(user)"
-                />
-              </td>
-              <td class="no-wrap">
-                <span class="pull-right">
-                  <button v-if="user.changed"
-                    type="button"
-                    class="btn btn-sm btn-theme-tertiary"
-                    @click="updateUser(user)"
-                    v-b-tooltip.hover
-                    :title="`Save the updated settings for ${user.userId}`">
-                    <span class="fa fa-save">
+            </tr> <!-- /no results -->
+            <!-- user -->
+            <template v-for="(user, index) of users.data">
+              <!-- user settings -->
+              <tr :key="user.id + 'user'">
+                <!-- /toggle settings button -->
+                <td>
+                  <toggle-btn :opened="user.expanded"
+                    @toggle="toggleAdvSettings(user)">
+                  </toggle-btn>
+                </td> <!-- /toggle advanced settings button -->
+                <td class="no-wrap">
+                  {{ user.userId }}
+                </td>
+                <td class="no-wrap">
+                  <input v-model="user.userName"
+                    class="form-control form-control-sm"
+                    type="text"
+                    @input="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input v-model="user.expression"
+                    class="form-control form-control-sm"
+                    type="text"
+                    @input="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.enabled"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.createEnabled"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.webEnabled"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.headerAuthEnabled"
+                    @change="userChanged(user);"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.emailSearch"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.removeEnabled"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input type="checkbox"
+                    v-model="user.packetSearch"
+                    @change="userChanged(user)"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <span class="pull-right">
+                    <button v-if="user.changed"
+                      type="button"
+                      class="btn btn-sm btn-theme-tertiary"
+                      @click="updateUser(user)"
+                      v-b-tooltip.hover
+                      :title="`Save the updated settings for ${user.userId}`">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                    <button v-if="user.changed"
+                      type="button"
+                      class="btn btn-sm btn-warning"
+                      @click="loadData"
+                      v-b-tooltip.hover
+                      :title="`Cancel changed settings for ${user.userId}`">
+                      <span class="fa fa-ban">
+                      </span>
+                    </button>
+                    <button type="button"
+                      class="btn btn-sm btn-theme-primary"
+                      @click="openSettings(user.userId)"
+                      v-b-tooltip.hover
+                      :title="`Settings for ${user.userId}`">
+                      <span class="fa fa-gear">
+                      </span>
+                    </button>
+                    <button type="button"
+                      class="btn btn-sm btn-theme-secondary"
+                      @click="openHistory(user.userId)"
+                      v-b-tooltip.hover
+                      :title="`History for ${user.userId}`">
+                      <span class="fa fa-history">
+                      </span>
+                    </button>
+                    <button type="button"
+                      class="btn btn-sm btn-danger"
+                      @click="deleteUser(user, index)"
+                      v-b-tooltip.hover
+                      :title="`Delete ${user.userId}`">
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </button>
+                  </span>
+                </td>
+              </tr> <!-- /user settings -->
+              <!-- advanced user settings -->
+              <tr :key="user.id + 'adv'"
+                v-if="user.expanded">
+                <td colspan="12">
+                  <div class="form-check form-check-inline mt-1 mb-1">
+                    <strong>
+                      Configure additional user permissions:
+                    </strong>
+                    <span v-b-tooltip.hover
+                      title="Hide the Stats page from this user">
+                      <input class="form-check-input ml-3"
+                        type="checkbox"
+                        :id="user.id + 'stats'"
+                        v-model="user.hideStats"
+                        @change="userChanged(user);"
+                      />
+                      <label class="form-check-label"
+                        :for="user.id + 'stats'">
+                        Hide Stats Page
+                      </label>
                     </span>
-                  </button>
-                  <button v-if="user.changed"
-                    type="button"
-                    class="btn btn-sm btn-warning"
-                    @click="loadData"
-                    v-b-tooltip.hover
-                    :title="`Cancel changed settings for ${user.userId}`">
-                    <span class="fa fa-ban">
+                    <span v-b-tooltip.hover
+                      title="Hide the Stats page from this user">
+                      <input class="form-check-input ml-3"
+                        type="checkbox"
+                        :id="user.id + 'files'"
+                        v-model="user.hideFiles"
+                        @change="userChanged(user);"
+                      />
+                      <label class="form-check-label"
+                        :for="user.id + 'files'">
+                        Hide Files Page
+                      </label>
                     </span>
-                  </button>
-                  <button type="button"
-                    class="btn btn-sm btn-theme-primary"
-                    @click="openSettings(user.userId)"
-                    v-b-tooltip.hover
-                    :title="`Settings for ${user.userId}`">
-                    <span class="fa fa-gear">
+                    <span v-b-tooltip.hover
+                      title="Hide packets from this user">
+                      <input class="form-check-input ml-3"
+                        type="checkbox"
+                        :id="user.id + 'pcap'"
+                        v-model="user.hidePcap"
+                        @change="userChanged(user);"
+                      />
+                      <label class="form-check-label"
+                        :for="user.id + 'pcap'">
+                        Hide PCAP
+                      </label>
                     </span>
-                  </button>
-                  <button type="button"
-                    class="btn btn-sm btn-theme-secondary"
-                    @click="openHistory(user.userId)"
-                    v-b-tooltip.hover
-                    :title="`History for ${user.userId}`">
-                    <span class="fa fa-history">
+                    <span v-b-tooltip.hover
+                      title="Disable PCAP download for this user">
+                      <input class="form-check-input ml-3"
+                        type="checkbox"
+                        :id="user.id + 'pcapDownload'"
+                        v-model="user.disablePcapDownload"
+                        @change="userChanged(user);"
+                      />
+                      <label class="form-check-label"
+                        :for="user.id + 'pcapDownload'">
+                        Disable PCAP Download
+                      </label>
                     </span>
-                  </button>
-                  <button type="button"
-                    class="btn btn-sm btn-danger"
-                    @click="deleteUser(user, index)"
-                    v-b-tooltip.hover
-                    :title="`Delete ${user.userId}`">
-                    <span class="fa fa-trash-o">
-                    </span>
-                  </button>
-                </span>
-              </td>
-            </tr>
+                  </div>
+                </td>
+              </tr> <!-- /advanced user settings -->
+            </template> <!-- /user -->
           </transition-group>
         </table> <!-- /user table -->
 
@@ -392,12 +466,19 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochToast from '../utils/Toast';
 import FocusInput from '../utils/FocusInput';
+import ToggleBtn from '../utils/ToggleBtn';
 
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'Users',
-  components: { MolochPaging, MolochError, MolochLoading, MolochToast },
+  components: {
+    MolochPaging,
+    MolochError,
+    MolochLoading,
+    MolochToast,
+    ToggleBtn
+  },
   directives: { FocusInput },
   data: function () {
     return {
@@ -493,6 +574,7 @@ export default {
       this.$set(user, 'changed', true);
     },
     updateUser: function (user) {
+      this.$set(user, 'expanded', undefined);
       this.$http.post('user/update', user)
         .then((response) => {
           this.msg = response.data.text;
@@ -501,7 +583,8 @@ export default {
           if (this.user.userId === user.userId) {
             // update all the fields
             for (let field in user) {
-              if (this.user.hasOwnProperty(field)) {
+              if (this.user.hasOwnProperty(field) &&
+                this.user[field] !== undefined) {
                 this.user[field] = user[field];
               }
             }
@@ -570,6 +653,9 @@ export default {
           userId: userId
         }
       });
+    },
+    toggleAdvSettings: function (user) {
+      this.$set(user, 'expanded', !user.expanded);
     },
     /* helper functions ------------------------------------------ */
     loadUser: function () {

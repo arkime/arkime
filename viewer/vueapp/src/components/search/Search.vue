@@ -10,7 +10,8 @@
         class="pull-right ml-1 action-menu-dropdown"
         boundary="body"
         variant="theme-primary">
-        <b-dropdown-item @click="exportPCAP">
+        <b-dropdown-item @click="exportPCAP"
+          v-has-permission="'!disablePcapDownload'">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
           Export PCAP
         </b-dropdown-item>

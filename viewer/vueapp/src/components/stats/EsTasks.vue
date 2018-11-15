@@ -159,7 +159,7 @@ export default {
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     }
   },

@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 53;
+var MIN_DB_VERSION = 55;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -191,8 +191,8 @@ if (Config.get("passwordSecret")) {
       return res.end();
     }
 
-    // No auth for stats.json, dstats.json, esstats.json, eshealth.json
-    if (req.url.match(/^\/([e]*[ds]*stats|eshealth).json/)) {
+    // No auth for eshealth.json
+    if (req.url.includes('eshealth.json')) {
       return next();
     }
 
@@ -1043,10 +1043,11 @@ var settingDefaults = {
 // gets the current user
 app.get('/user/current', function(req, res) {
 
-  var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'packetSearch'];
+  let userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'packetSearch',
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
 
-  var clone     = {};
+  let clone = {};
 
   for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
     var prop = userProps[i];
@@ -1058,11 +1059,13 @@ app.get('/user/current', function(req, res) {
   clone.canUpload = app.locals.allowUploads;
 
   // If no settings, use defaults
-  if (clone.settings === undefined) {clone.settings = settingDefaults;}
+  if (clone.settings === undefined) { clone.settings = settingDefaults; }
 
   // Use settingsDefaults for any settings that are missing
   for (let item in settingDefaults) {
-    if (clone.settings[item] === undefined) {clone.settings[item] = settingDefaults[item];}
+    if (clone.settings[item] === undefined) {
+      clone.settings[item] = settingDefaults[item];
+    }
   }
 
   return res.send(clone);
@@ -2686,6 +2689,8 @@ app.get('/fields', function(req, res) {
 });
 
 app.get('/file/list', logAction('files'), recordResponseTime, function(req, res) {
+  if (req.user.hideFiles) { return res.molochError(403, 'Need permission to view files'); }
+
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -2753,6 +2758,8 @@ app.get('/eshealth.json', function(req, res) {
 });
 
 app.get('/esindices/list', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   Db.indicesCache(function(err, indices) {
     // Implement filtering
     if (req.query.filter !== undefined) {
@@ -2818,6 +2825,8 @@ app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(r
 });
 
 app.get('/estask/list', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   Db.tasks(function(err, tasks) {
     tasks = tasks.tasks;
 
@@ -2881,6 +2890,8 @@ app.post('/estask/cancel', logAction(), function(req, res) {
 });
 
 app.get('/esshard/list', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   Promise.all([Db.shards(),
                Db.getClusterSettings({flatSettings: true})
               ]).then(([shards, settings]) => {
@@ -3009,6 +3020,8 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 });
 
 app.get('/esstats.json', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   var stats = [];
   var r;
 
@@ -3119,6 +3132,8 @@ function mergeUnarray(to, from) {
   }
 }
 app.get('/stats.json', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   noCache(req, res);
 
   var query = {from: +req.query.start || 0,
@@ -3217,6 +3232,8 @@ app.get('/stats.json', recordResponseTime, function(req, res) {
 });
 
 app.get('/dstats.json', function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
   noCache(req, res);
 
   var nodeName = req.query.nodeName;
@@ -4698,6 +4715,8 @@ app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
  * Get Session Packets
  */
 app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
+  if (req.user.hidePcap) { return res.molochError(403, 'Need permission to view packets'); }
+
   isLocalView(req.params.nodeName, function () {
     noCache(req, res);
     req.packetsOnly = true;
@@ -5029,6 +5048,8 @@ function writePcapNg(res, id, options, doneCb) {
 }
 
 app.get('/:nodeName/pcapng/:id.pcapng', checkProxyRequest, function(req, res) {
+  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
+
   noCache(req, res, "application/vnd.tcpdump.pcap");
   writePcapNg(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
     res.end();
@@ -5036,6 +5057,8 @@ app.get('/:nodeName/pcapng/:id.pcapng', checkProxyRequest, function(req, res) {
 });
 
 app.get('/:nodeName/pcap/:id.pcap', checkProxyRequest, function(req, res) {
+  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
+
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   writePcap(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
@@ -5089,6 +5112,8 @@ app.get('/:nodeName/raw/:id', checkProxyRequest, function(req, res) {
 });
 
 app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) {
+  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
+
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   var options = {writeHeader: true};
@@ -5187,10 +5212,12 @@ function sessionsPcap(req, res, pcapWriter, extension) {
 }
 
 app.get(/\/sessions.pcapng.*/, logAction(), function(req, res) {
+  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
   return sessionsPcap(req, res, writePcapNg, "pcapng");
 });
 
 app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
+  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
@@ -5209,7 +5236,8 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
   var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
-    'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch'];
+    'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
 
   var query = {
     _source: columns,
@@ -5370,6 +5398,10 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     user.headerAuthEnabled = req.body.headerAuthEnabled === true;
     user.removeEnabled = req.body.removeEnabled === true;
     user.packetSearch = req.body.packetSearch === true;
+    user.hideStats = req.body.hideStats === true;
+    user.hideFiles = req.body.hideFiles === true;
+    user.hidePcap = req.body.hidePcap === true;
+    user.disablePcapDownload = req.body.disablePcapDownload === true;
 
     // Can only change createEnabled if it is currently turned on
     if (req.body.createEnabled !== undefined && req.user.createEnabled) {

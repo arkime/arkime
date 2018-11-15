@@ -93,8 +93,8 @@ export default {
         spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'] },
         spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'] },
         connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'] },
-        files: { title: 'Files', link: 'files' },
-        stats: { title: 'Stats', link: 'stats' },
+        files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true },
+        stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true },
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
       };
 
@@ -132,7 +132,8 @@ export default {
         // a sibling of this component might update the user (Users.vue)
         if (this.user) {
           item.hasPermission = !item.permission ||
-            (this.user.hasOwnProperty(item.permission) && this.user[item.permission]);
+            (this.user.hasOwnProperty(item.permission) && this.user[item.permission] && !item.reverse) ||
+            (this.user.hasOwnProperty(item.permission) && !this.user[item.permission] && item.reverse);
         }
       }
 

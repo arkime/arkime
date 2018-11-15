@@ -8,7 +8,7 @@ ul.nav.nav-pills.mb-3
       a.nav-link(href=session.node + '/entirePcap/' + session.rootId + '.pcap', target="_blank") Download Entire Pcap
   else
     li.nav-item
-      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank") Download Pcap
+      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank", v-has-permission="'!disablePcapDownload'") Download Pcap
   li.nav-item
     a.nav-link(href=session.node + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
   li.nav-item
@@ -16,7 +16,7 @@ ul.nav.nav-pills.mb-3
   li.nav-item
     a.nav-link.cursor-pointer(@click="openPermalink()") Permalink
   b-dropdown.nav-item(text="Actions", size="sm")
-    b-dropdown-item(@click="exportPCAP()")
+    b-dropdown-item(@click="exportPCAP()", v-has-permission="'!disablePcapDownload'")
       | Export PCAP
     b-dropdown-item(@click="addTags()")
       | Add Tags
