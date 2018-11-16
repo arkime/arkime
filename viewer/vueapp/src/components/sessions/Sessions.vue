@@ -50,7 +50,7 @@
       <!-- sessions results -->
       <table v-if="headers && headers.length"
         class="table-striped sessions-table"
-        :style="{width: tableWidth + 'px', 'margin-bottom': '300px'}"
+        :style="tableStyle"
         id="sessionsTable">
         <thead>
           <tr ref="draggableColumns">
@@ -498,6 +498,16 @@ export default {
     },
     views: function () {
       return this.$store.state.views;
+    },
+    tableStyle: function () {
+      let style = { width: this.tableWidth + 'px' };
+      // pad the bottom of the table so that opening a field
+      // dropdowns at the bottom doesn't make the table scrolly
+      if (this.sessions && this.sessions.data &&
+        this.sessions.data.length) {
+        style['margin-bottom'] = '300px';
+      }
+      return style;
     }
   },
   watch: {
