@@ -3136,8 +3136,9 @@ app.get('/parliament.json', function (req, res) {
   noCache(req, res);
 
   let query = {
+    size: 500,
     _source: [
-      'ver', 'nodeName', 'currentTime', 'deltaBytes', 'deltaPackets', 'deltaMS',
+      'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes', 'deltaPackets', 'deltaMS',
       'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
     ]
   }

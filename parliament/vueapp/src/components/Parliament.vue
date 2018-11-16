@@ -546,7 +546,7 @@
                       href="javascript:void(0)"
                       class="no-decoration"
                       @click="showLessIssues(cluster)">
-                      show less issues...
+                      show fewer issues...
                     </a>
                   </template>
                   <template v-else>
