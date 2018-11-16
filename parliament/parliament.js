@@ -510,7 +510,7 @@ function getStats (cluster) {
     let timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
     let options = {
-      url: `${cluster.localUrl || cluster.url}/stats.json`,
+      url: `${cluster.localUrl || cluster.url}/parliament.json`,
       method: 'GET',
       rejectUnauthorized: false,
       timeout: timeout

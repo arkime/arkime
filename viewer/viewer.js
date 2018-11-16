@@ -191,8 +191,8 @@ if (Config.get("passwordSecret")) {
       return res.end();
     }
 
-    // No auth for eshealth.json
-    if (req.url.includes('eshealth.json')) {
+    // No auth for eshealth.json or parliament.json
+    if (req.url.match(/^\/(parliament|eshealth).json/)) {
       return next();
     }
 
@@ -3131,6 +3131,48 @@ function mergeUnarray(to, from) {
     }
   }
 }
+
+app.get('/parliament.json', function (req, res) {
+  noCache(req, res);
+
+  Promise.all([Db.search('stats', 'stat'), Db.numberOfDocuments('stats')])
+    .then(([stats, total]) => {
+      if (stats.error) { throw stats.error; }
+
+      let results = { total: stats.hits.total, results: [] };
+
+      for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
+        let fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+        if (stats.hits.hits[i]._source) {
+          mergeUnarray(fields, stats.hits.hits[i].fields);
+        }
+        fields.id = stats.hits.hits[i]._id;
+
+        // make sure necessary fields are not undefined
+        let keys = [ 'deltaOverloadDropped', 'monitoring', 'deltaESDropped' ];
+        for (const key of keys) {
+          fields[key] = fields[key] || 0;
+        }
+
+        fields.deltaBytesPerSec         = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+        fields.deltaPacketsPerSec       = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+        fields.deltaESDroppedPerSec     = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
+        fields.deltaTotalDroppedPerSec  = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
+
+        results.results.push(fields);
+      }
+
+      res.send({
+        data: results.results,
+        recordsTotal: total.count,
+        recordsFiltered: results.total
+      });
+    }).catch((err) => {
+      console.log('ERROR - /parliament.json', err);
+      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+    });
+});
+
 app.get('/stats.json', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
