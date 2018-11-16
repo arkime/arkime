@@ -152,7 +152,19 @@ export default {
       }
       if (event.keyCode === 16) { // shift
         this.shiftKeyHold = true;
+      } else if (event.keyCode === 27) { // esc
+        this.shiftKeyHold = false;
       }
+    });
+
+    // if the user clicks something, remove shift hold
+    window.addEventListener('mousedown', (event) => {
+      this.shiftKeyHold = false;
+    });
+
+    // if the user focus is not in the web page, remove shift hold
+    window.addEventListener('blur', (event) => {
+      this.shiftKeyHold = false;
     });
   },
   methods: {
