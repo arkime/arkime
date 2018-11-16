@@ -3135,7 +3135,14 @@ function mergeUnarray(to, from) {
 app.get('/parliament.json', function (req, res) {
   noCache(req, res);
 
-  Promise.all([Db.search('stats', 'stat'), Db.numberOfDocuments('stats')])
+  let query = {
+    _source: [
+      'ver', 'nodeName', 'currentTime', 'deltaBytes', 'deltaPackets', 'deltaMS',
+      'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
+    ]
+  }
+
+  Promise.all([Db.search('stats', 'stat', query), Db.numberOfDocuments('stats')])
     .then(([stats, total]) => {
       if (stats.error) { throw stats.error; }
 
@@ -3143,6 +3150,7 @@ app.get('/parliament.json', function (req, res) {
 
       for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
         let fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+
         if (stats.hits.hits[i]._source) {
           mergeUnarray(fields, stats.hits.hits[i].fields);
         }

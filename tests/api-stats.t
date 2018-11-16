@@ -1,4 +1,4 @@
-use Test::More tests => 55;
+use Test::More tests => 56;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -53,7 +53,7 @@ my $test1Token = getTokenCookie("test1");
 
 # estasks
     my $tasks = viewerGet("/estask/list");
-    cmp_ok (@{$tasks}, ">=", 1, "tasks array size");
+    cmp_ok (@{$tasks}, ">=", , "tasks array size");
 
 # esshards
     my $shards = viewerGet("/esshard/list");
@@ -109,3 +109,5 @@ my $test1Token = getTokenCookie("test1");
     foreach my $i ("deltaBytesPerSec", "deltaPacketsPerSec", "deltaESDroppedPerSec", "deltaTotalDroppedPerSec") {
         is (exists $stats->{data}->[0]->{$i}, 1, "parliament.json $i");
     }
+
+    is (exists $stats->{data}->[0]->{"totalPackets"}, "", "parliament.json doesn't have unnecessary fields");
