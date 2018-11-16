@@ -584,7 +584,7 @@ export default {
             // update all the fields
             for (let field in user) {
               if (this.user.hasOwnProperty(field) &&
-                this.user[field] !== undefined) {
+                user[field] !== undefined) {
                 this.user[field] = user[field];
               }
             }
