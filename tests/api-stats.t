@@ -53,7 +53,7 @@ my $test1Token = getTokenCookie("test1");
 
 # estasks
     my $tasks = viewerGet("/estask/list");
-    cmp_ok (@{$tasks}, ">=", , "tasks array size");
+    cmp_ok (@{$tasks}, ">=", 1, "tasks array size");
 
 # esshards
     my $shards = viewerGet("/esshard/list");
