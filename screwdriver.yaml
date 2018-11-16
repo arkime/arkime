@@ -13,6 +13,7 @@ shared:
     environment:
         MOLOCH_COPY_BRANCH: "origin/master"
         MOLOCH_FILE_NAME: "master"
+        GIT_SHALLOW_CLONE: false
 
 jobs:
     centos-6:
