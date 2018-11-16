@@ -192,7 +192,7 @@
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <div class="input-group input-group-sm pull-right mr-1">
+      <div class="input-group input-group-sm pull-right mr-1 pt-1">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
