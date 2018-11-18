@@ -37,7 +37,7 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
     char  hbuf[30000];
     BSB   hbsb;
 
-    int   len = 0;
+    uint32_t       len = 0;
     unsigned char *value = 0;
 
     BSB_INIT(bsb, data, remaining);

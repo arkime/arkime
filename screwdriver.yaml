@@ -195,6 +195,9 @@ jobs:
     slack:
         requires: [centos-6, centos-7, ubuntu-14, ubuntu-16, ubuntu-18]
         image: andywick/moloch-build-7:6
+        annotations:
+            beta.screwdriver.cd/cpu: LOW
+            beta.screwdriver.cd/ram: LOW
         steps:
             - slack-success: |
                 export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)'.*$/\1/"`
