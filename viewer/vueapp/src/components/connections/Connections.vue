@@ -828,7 +828,14 @@ export default {
                   <dt :title="fields[field].friendlyName">
                     {{ fields[field].exp }}
                   </dt>
-                  <dd>{{ node[field] }}&nbsp;</dd>
+                  <dd>
+                    <span v-if="!Array.isArray(node[field])">
+                      {{ node[field] }}
+                    </span>
+                    <span v-else>
+                      {{ node[field].join(', ') }}
+                    </span>&nbsp;
+                  </dd>
                 </span>
 
                 <dt>Expressions</dt>
@@ -915,7 +922,14 @@ export default {
                   <dt :title="fields[field].friendlyName">
                     {{ fields[field].exp }}
                   </dt>
-                  <dd>{{ link[field] }}&nbsp;</dd>
+                  <dd>
+                    <span v-if="!Array.isArray(link[field])">
+                      {{ link[field] }}
+                    </span>
+                    <span v-else>
+                      {{ link[field].join(', ') }}
+                    </span>&nbsp;
+                  </dd>
                 </span>
 
                 <dt>Expressions</dt>
@@ -1156,7 +1170,7 @@ export default {
   display: none;
   font-size: smaller;
   padding: 4px 8px;
-  width: 230px;
+  width: 250px;
   z-index: 9999;
   border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
@@ -1181,6 +1195,7 @@ export default {
 }
 .connections-page .connections-popup .dl-horizontal dd {
   margin-left: 105px !important;
+  white-space: normal;
 }
 
 /* apply theme colors */

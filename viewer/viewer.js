@@ -3141,7 +3141,7 @@ app.get('/parliament.json', function (req, res) {
       'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes', 'deltaPackets', 'deltaMS',
       'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
     ]
-  }
+  };
 
   Promise.all([Db.search('stats', 'stat', query), Db.numberOfDocuments('stats')])
     .then(([stats, total]) => {
@@ -3926,25 +3926,53 @@ app.get('/dns.json', logAction(), function(req, res) {
 });
 
 function buildConnections(req, res, cb) {
-  if (req.query.dstField === "ip.dst:port") {
-    var dstipport = true;
-    req.query.dstField = "dstIp";
+  let dstipport;
+  if (req.query.dstField === 'ip.dst:port') {
+    dstipport = true;
+    req.query.dstField = 'dstIp';
   }
 
-  req.query.srcField       = req.query.srcField || "srcIp";
-  req.query.dstField       = req.query.dstField || "dstIp";
-  var fsrc                 = req.query.srcField;
-  var fdst                 = req.query.dstField;
-  var minConn              = req.query.minConn  || 1;
-  req.query.iDisplayLength = req.query.iDisplayLength || "5000";
+  req.query.srcField       = req.query.srcField || 'srcIp';
+  req.query.dstField       = req.query.dstField || 'dstIp';
+  req.query.iDisplayLength = req.query.iDisplayLength || '5000';
+  let fsrc                 = req.query.srcField;
+  let fdst                 = req.query.dstField;
+  let minConn              = req.query.minConn || 1;
 
-  var srcIsIp              = fsrc.match(/(\.ip|Ip)$/);
-  var dstIsIp              = fdst.match(/(\.ip|Ip)$/);
+  let srcIsIp = fsrc.match(/(\.ip|Ip)$/);
+  let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
-  var nodesHash = {};
-  var connects = {};
+  let nodesHash = {};
+  let connects = {};
 
-  function process(vsrc, vdst, f, fields) {
+  let dbFieldsMap = Config.getDBFieldsMap();
+  function updateValues (data, property, fields) {
+    for (let i in fields) {
+      let dbField = fields[i];
+      let field = dbFieldsMap[dbField];
+      if (data.hasOwnProperty(dbField)) {
+        // sum integers
+        if (field.type === 'integer' && field.category !== 'port') {
+          property[dbField] = (property[dbField] || 0) + data[dbField];
+        } else { // make a list of values
+          if (!property[dbField]) { property[dbField] = []; }
+          // make all values an array (because sometimes they are by default)
+          let values = [ data[dbField] ];
+          if (Array.isArray(data[dbField])) {
+            values = data[dbField];
+          }
+          for (let value of values) {
+            property[dbField].push(value);
+          }
+          if (property[dbField] && Array.isArray(property[dbField])) {
+            property[dbField] = [ ...new Set(property[dbField]) ]; // unique only
+          }
+        }
+      }
+    }
+  }
+
+  function process (vsrc, vdst, f, fields) {
     // ES 6 is returning formatted timestamps instead of ms like pre 6 did
     // https://github.com/elastic/elasticsearch/issues/27740
     if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
@@ -3955,45 +3983,30 @@ function buildConnections(req, res, cb) {
     }
 
     if (nodesHash[vsrc] === undefined) {
-      nodesHash[vsrc] = { id: ""+vsrc, cnt: 0, sessions: 0 };
+      nodesHash[vsrc] = { id: `${vsrc}`, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vsrc].sessions++;
     nodesHash[vsrc].type |= 1;
-    for (let i in fields) {
-      let dbField = fields[i];
-      if (f.hasOwnProperty(dbField)) {
-        nodesHash[vsrc][dbField] = f[dbField];
-      }
-    }
+    updateValues(f, nodesHash[vsrc], fields);
 
     if (nodesHash[vdst] === undefined) {
-      nodesHash[vdst] = { id: ""+vdst, cnt: 0, sessions: 0 };
+      nodesHash[vdst] = { id: `${vdst}`, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vdst].sessions++;
     nodesHash[vdst].type |= 2;
-    for (let i in fields) {
-      let dbField = fields[i];
-      if (f.hasOwnProperty(dbField)) {
-        nodesHash[vdst][dbField] = f[dbField];
-      }
-    }
+    updateValues(f, nodesHash[vdst], fields);
 
-    var n = "" + vsrc + "->" + vdst;
-    if (connects[n] === undefined) {
-      connects[n] = { value: 0, source: vsrc, target: vdst, node: {} };
+    let linkId = `${vsrc}->${vdst}`;
+    if (connects[linkId] === undefined) {
+      connects[linkId] = { value: 0, source: vsrc, target: vdst };
       nodesHash[vsrc].cnt++;
       nodesHash[vdst].cnt++;
     }
 
-    connects[n].value++;
-    for (let i in fields) {
-      let dbField = fields[i];
-      if (f.hasOwnProperty(dbField)) {
-        connects[n][dbField] = f[dbField];
-      }
-    }
+    connects[linkId].value++;
+    updateValues(f, connects[linkId], fields);
   }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -4004,35 +4017,35 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
     // get the requested fields
-    let fields = ["totBytes", "totDataBytes", "totPackets", "node"];
+    let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
     if (req.query.fields) { fields = req.query.fields.split(','); }
     query._source = fields;
     query.docvalue_fields = [fsrc, fdst];
 
     if (dstipport) {
-      query._source.push("dstPort");
+      query._source.push('dstPort');
     }
 
     if (Config.debug) {
-      console.log("buildConnections query", JSON.stringify(query, null, 2));
+      console.log('buildConnections query', JSON.stringify(query, null, 2));
     }
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
       if (Config.debug) {
-        console.log("buildConnections result", JSON.stringify(graph, null, 2));
+        console.log('buildConnections result', JSON.stringify(graph, null, 2));
       }
 
       if (err || graph.error) {
-        console.log("Build Connections ERROR", err, graph.error);
+        console.log('Build Connections ERROR', err, graph.error);
         return cb(err || graph.error);
       }
-      var i;
 
-      async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {
-        var f = hit._source;
+      async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
+        let f = hit._source;
+        f = flattenFields(f);
 
-        var asrc = hit.fields[fsrc];
-        var adst = hit.fields[fdst];
+        let asrc = hit.fields[fsrc];
+        let adst = hit.fields[fdst];
 
         if (asrc === undefined || adst === undefined) {
           return setImmediate(hitCb);
@@ -4049,20 +4062,20 @@ function buildConnections(req, res, cb) {
         for (let vsrc of asrc) {
           for (let vdst of adst) {
             if (dstIsIp && dstipport) {
-              if (vdst.includes(":")) {vdst = '[' + vdst + ']';}
-              vdst += ":" + f.dstPort;
+              if (vdst.includes(':')) { vdst = `[${vdst}]`; }
+              vdst += ':' + f.dstPort;
             }
             process(vsrc, vdst, f, fields);
           }
         }
         setImmediate(hitCb);
       }, function (err) {
-        var nodes = [];
-        var nodeKeys = Object.keys(nodesHash);
-        if (Config.get("regressionTests", false)) {
-          nodeKeys = nodeKeys.sort(function(a,b){return nodesHash[a].id.localeCompare(nodesHash[b].id);});
+        let nodes = [];
+        let nodeKeys = Object.keys(nodesHash);
+        if (Config.get('regressionTests', false)) {
+          nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
         }
-        for (var node of nodeKeys) {
+        for (let node of nodeKeys) {
           if (nodesHash[node].cnt < minConn) {
             nodesHash[node].pos = -1;
           } else {
@@ -4071,9 +4084,8 @@ function buildConnections(req, res, cb) {
           }
         }
 
-
-        var links = [];
-        for (var key in connects) {
+        let links = [];
+        for (let key in connects) {
           var c = connects[key];
           c.source = nodesHash[c.source].pos;
           c.target = nodesHash[c.target].pos;
@@ -4083,10 +4095,10 @@ function buildConnections(req, res, cb) {
         }
 
         if (Config.debug) {
-          console.log("nodesHash", nodesHash);
-          console.log("connects", connects);
-          console.log("nodes", nodes.length, nodes);
-          console.log("links", links.length, links);
+          console.log('nodesHash', nodesHash);
+          console.log('connects', connects);
+          console.log('nodes', nodes.length, nodes);
+          console.log('links', links.length, links);
         }
 
         return cb(null, nodes, links, graph.hits.total);
@@ -4095,12 +4107,12 @@ function buildConnections(req, res, cb) {
   });
 }
 
-app.get('/connections.json', logAction('connections'), recordResponseTime, function(req, res) {
-  var health;
-  Db.healthCache(function(err, h) {health = h;});
+app.get('/connections.json', logAction('connections'), recordResponseTime, function (req, res) {
+  let health;
+  Db.healthCache(function (err, h) { health = h; });
   buildConnections(req, res, function (err, nodes, links, total) {
     if (err) { return res.molochError(403, err.toString()); }
-    res.send({health: health, nodes: nodes, links: links, recordsFiltered: total});
+    res.send({ health: health, nodes: nodes, links: links, recordsFiltered: total });
   });
 });
 
@@ -4135,7 +4147,6 @@ app.get('/connections.csv', logAction(), function(req, res) {
                 "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
                      links[i].value + seperator);
       for (let f = 0, flen = fields.length; f < flen; f++) {
-        console.log(links[i][displayFields[fields[f]].dbField]);
         res.write(links[i][displayFields[fields[f]].dbField].toString());
         if (f !== flen - 1) { res.write(seperator); }
       }
