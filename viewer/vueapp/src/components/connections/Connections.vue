@@ -607,10 +607,6 @@ export default {
     updateData: function (json) {
       this.closePopups();
       force.nodes(json.nodes).links(json.links).start();
-      for (let i = json.nodes.length * json.nodes.length; i > 0; --i) {
-        force.tick();
-      }
-      force.stop();
       this.node.data(json.nodes);
       this.link.data(json.links);
     },
