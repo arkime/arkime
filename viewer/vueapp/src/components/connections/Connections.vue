@@ -62,7 +62,7 @@
           <div class="input-group input-group-sm">
             <span class="input-group-prepend legend cursor-help"
               v-b-tooltip.hover
-              title="Select a field for the source nodes">
+              title="Select a field for the destination nodes">
               <span class="input-group-text"
                 :style="{'background-color': tertiaryColor + '!important'}">
                 Dst:
@@ -171,6 +171,98 @@
           </button>
         </div> <!-- /zoom in/out -->
 
+        <!-- node fields button -->
+        <b-dropdown
+          size="sm"
+          no-flip
+          no-caret
+          class="field-vis-menu ml-1"
+          variant="theme-primary"
+          v-if="fields && groupedFields && nodeFields">
+          <template slot="button-content">
+            <span class="fa fa-circle-o"
+              v-b-tooltip.hover
+              title="Toggle visible fields in the node popups">
+            </span>
+          </template>
+          <b-dropdown-header>
+            <input type="text"
+              v-model="fieldQuery"
+              class="form-control form-control-sm dropdown-typeahead"
+              placeholder="Search for fields..."
+            />
+          </b-dropdown-header>
+          <b-dropdown-divider>
+          </b-dropdown-divider>
+          <template
+            v-for="(group, key) in filteredFields">
+            <b-dropdown-header
+              :key="key"
+              v-if="group.length"
+              class="group-header">
+              {{ key }}
+            </b-dropdown-header>
+            <!-- TODO fix tooltip placement -->
+            <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
+            <b-dropdown-item
+              v-for="(field, k) in group"
+              :key="key + k"
+              :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+              v-b-tooltip.hover.top
+              :title="field.help"
+              @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+              {{ field.friendlyName }}
+              <small>({{ field.exp }})</small>
+            </b-dropdown-item>
+          </template>
+        </b-dropdown> <!-- /node fields button -->
+
+        <!-- link fields button -->
+        <b-dropdown
+          size="sm"
+          no-flip
+          no-caret
+          class="field-vis-menu ml-1"
+          variant="theme-primary"
+          v-if="fields && groupedFields && linkFields">
+          <template slot="button-content">
+            <span class="fa fa-link"
+              v-b-tooltip.hover
+              title="Toggle visible fields in the link popups">
+            </span>
+          </template>
+          <b-dropdown-header>
+            <input type="text"
+              v-model="fieldQuery"
+              class="form-control form-control-sm dropdown-typeahead"
+              placeholder="Search for fields..."
+            />
+          </b-dropdown-header>
+          <b-dropdown-divider>
+          </b-dropdown-divider>
+          <template
+            v-for="(group, key) in filteredFields">
+            <b-dropdown-header
+              :key="key"
+              v-if="group.length"
+              class="group-header">
+              {{ key }}
+            </b-dropdown-header>
+            <!-- TODO fix tooltip placement -->
+            <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
+            <b-dropdown-item
+              v-for="(field, k) in group"
+              :key="key + k"
+              :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+              v-b-tooltip.hover.top
+              :title="field.help"
+              @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+              {{ field.friendlyName }}
+              <small>({{ field.exp }})</small>
+            </b-dropdown-item>
+          </template>
+        </b-dropdown> <!-- /link fields button -->
+
       </div>
     </form>
 
@@ -218,8 +310,10 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import UserService from '../users/UserService';
 
 import d3 from '../../../../public/d3.min.js';
+const saveSvgAsPng = require('save-svg-as-png');
 
 // save frequently accessed elements
 let networkElem;
@@ -229,7 +323,9 @@ let linkPopupVue;
 // save visualization data
 let force, svgMain;
 
-const saveSvgAsPng = require('save-svg-as-png');
+// default fields to display in the node/link popups
+const defaultLinkFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
+const defaultNodeFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
 
 export default {
   name: 'Connections',
@@ -254,7 +350,10 @@ export default {
       tertiaryColor: null,
       fields: [],
       srcFieldTypeahead: undefined,
-      dstFieldTypeahead: undefined
+      dstFieldTypeahead: undefined,
+      fieldQuery: '',
+      groupedFields: undefined,
+      fieldsMap: {}
     };
   },
   computed: {
@@ -277,6 +376,24 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    filteredFields: function () {
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.$options.filters.searchFields(
+          this.fieldQuery,
+          this.groupedFields[group]
+        );
+      }
+
+      return filteredGroupedFields;
+    },
+    nodeFields: function () {
+      return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+    },
+    linkFields: function () {
+      return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
     }
   },
   watch: {
@@ -359,6 +476,23 @@ export default {
     closePopups: function () {
       $('.connections-popup').hide();
     },
+    isFieldVisible: function (id, list) {
+      return list.indexOf(id);
+    },
+    toggleFieldVisibility: function (id, list) {
+      let index = this.isFieldVisible(id, list);
+
+      if (index >= 0) { // it's visible
+        // remove it from the visible node fields list
+        list.splice(index, 1);
+      } else { // it's hidden
+        // add it to the visible headers list
+        list.push(id);
+        this.loadData(true);
+      }
+
+      this.saveVisibleFields();
+    },
     /* event functions ----------------------------------------------------- */
     changeSrcField: function (field) {
       this.srcFieldTypeahead = field.friendlyName;
@@ -381,12 +515,14 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    loadData: function (dataReloadOnly) {
       this.loading = true;
       this.error = false;
 
-      this.svg.selectAll('.link').remove();
-      this.svg.selectAll('.node').remove();
+      if (!dataReloadOnly) {
+        this.svg.selectAll('.link').remove();
+        this.svg.selectAll('.node').remove();
+      }
 
       if (!this.$route.query.srcField) {
         this.query.srcField = this.user.settings.connSrcField;
@@ -395,12 +531,26 @@ export default {
         this.query.dstField = this.user.settings.connDstField;
       }
 
+      // send the requested fields with the query
+      let fields = this.nodeFields;
+      // combine fields from nodes and links
+      for (let f in this.linkFields) {
+        let id = this.linkFields[f];
+        if (fields.indexOf(id) > -1) { continue; }
+        fields.push(id);
+      }
+      this.query.fields = fields.join(',');
+
       this.$http.get('connections.json', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.getFields();
-          this.processData(response.data);
+          if (!dataReloadOnly) {
+            this.getFields();
+            this.processData(response.data);
+          } else {
+            this.updateData(response.data);
+          }
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           this.loading = false;
@@ -427,6 +577,8 @@ export default {
               this.dstFieldTypeahead = field.friendlyName;
             }
           }
+
+          this.setupFields();
         }).catch((error) => {
           this.loading = false;
           this.error = error.text || error;
@@ -451,6 +603,12 @@ export default {
       }
 
       return undefined;
+    },
+    updateData: function (json) {
+      this.closePopups();
+      force.nodes(json.nodes).links(json.links).start();
+      this.node.data(json.nodes);
+      this.link.data(json.links);
     },
     processData: function (json) {
       if (!json.nodes) {
@@ -664,12 +822,15 @@ export default {
                 <dd>{{node.weight}}</dd>
                 <dt>Sessions</dt>
                 <dd>{{node.sessions}}</dd>
-                <dt>Bytes</dt>
-                <dd>{{node.by}}</dd>
-                <dt>Databytes</dt>
-                <dd>{{node.db}}</dd>
-                <dt>Packets</dt>
-                <dd>{{node.pa}}</dd>
+
+                <span v-for="field in nodeFields"
+                  :key="field">
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].exp }}
+                  </dt>
+                  <dd>{{ node[field] }}&nbsp;</dd>
+                </span>
+
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
@@ -687,7 +848,7 @@ export default {
 
               <a class="cursor-pointer no-decoration"
                 href="#"
-                @click.stop.prevent="hideNode()">
+                @click.stop.prevent="hideNode">
                 <span class="fa fa-eye-slash">
                 </span>&nbsp;
                 Hide Node
@@ -696,7 +857,9 @@ export default {
           `,
           parent: this,
           data: {
-            node: node
+            node: node,
+            nodeFields: this.nodeFields,
+            fields: this.fieldsMap
           },
           methods: {
             hideNode: function () {
@@ -736,7 +899,7 @@ export default {
               <div class="margined-bottom">
                 <strong>Link</strong>
                 <a class="pull-right cursor-pointer no-decoration"
-                   @click="closePopup()">
+                   @click="closePopup">
                   <span class="fa fa-close"></span>
                 </a>
               </div>
@@ -746,23 +909,29 @@ export default {
               <dl class="dl-horizontal">
                 <dt>Sessions</dt>
                 <dd>{{link.value}}</dd>
-                <dt>Bytes</dt>
-                <dd>{{link.by}}</dd>
-                <dt>Databytes</dt>
-                <dd>{{link.db}}</dd>
-                <dt>Packets</dt>
-                <dd>{{link.pa}}</dd>
+
+                <span v-for="field in linkFields"
+                  :key="field">
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].exp }}
+                  </dt>
+                  <dd>{{ link[field] }}&nbsp;</dd>
+                </span>
+
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
+                    href="#"
                     @click="addExpression('&&')">AND</a>&nbsp;
                   <a class="cursor-pointer no-decoration"
+                    href="#"
                     @click="addExpression('||')">OR</a>
                 </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
-                 @click="hideLink()">
+                href="#"
+                @click="hideLink">
                 <span class="fa fa-eye-slash"></span>&nbsp;
                 Hide Link
               </a>
@@ -771,7 +940,9 @@ export default {
           `,
           parent: this,
           data: {
-            link: link
+            link: link,
+            linkFields: this.linkFields,
+            fields: this.fieldsMap
           },
           methods: {
             hideLink: function () {
@@ -922,12 +1093,58 @@ export default {
       const scale = this.zoom.scale();
       const translate = this.zoom.translate();
       return [(point[0] - translate[0]) / scale, (point[1] - translate[1]) / scale];
+    },
+    setupFields: function () {
+      // group fields map by field group
+      // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
+      let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
+      this.groupedFields = {};
+      for (let field of this.fields) {
+        // don't include fields with regex
+        if (field.hasOwnProperty('regex')) { continue; }
+        if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
+          this.fieldsMap[field.dbField] = field;
+          existingFieldsLookup[field.exp] = field;
+          if (!this.groupedFields[field.group]) {
+            this.groupedFields[field.group] = [];
+          }
+          this.groupedFields[field.group].push(field);
+        }
+      }
+    },
+    saveVisibleFields: function () {
+      this.user.settings.connNodeFields = this.nodeFields;
+      this.user.settings.connLinkFields = this.linkFields;
+
+      UserService.saveSettings(this.user.settings, this.user.userId);
     }
   }
 };
 </script>
 
 <style>
+.field-vis-menu > button.btn {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;;
+}
+.field-vis-menu .dropdown-menu input {
+  width: 100%;
+}
+.field-vis-menu .dropdown-menu {
+  max-height: 300px;
+  overflow: auto;
+}
+.field-vis-menu .dropdown-header {
+  padding: .25rem .5rem 0;
+}
+.field-vis-menu .dropdown-header.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  font-size: 120%;
+  font-weight: bold;
+}
+
 .connections-page {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -939,7 +1156,7 @@ export default {
   display: none;
   font-size: smaller;
   padding: 4px 8px;
-  width: 200px;
+  width: 230px;
   z-index: 9999;
   border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
@@ -959,11 +1176,11 @@ export default {
   margin-bottom: var(--px-md) !important;
 }
 .connections-page .connections-popup .dl-horizontal dt {
-  width: 80px !important;
+  width: 100px !important;
   text-align: left;
 }
 .connections-page .connections-popup .dl-horizontal dd {
-  margin-left: 85px !important;
+  margin-left: 105px !important;
 }
 
 /* apply theme colors */

@@ -3944,8 +3944,7 @@ function buildConnections(req, res, cb) {
   var nodesHash = {};
   var connects = {};
 
-  function process(vsrc, vdst, f) {
-
+  function process(vsrc, vdst, f, fields) {
     // ES 6 is returning formatted timestamps instead of ms like pre 6 did
     // https://github.com/elastic/elasticsearch/issues/27740
     if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
@@ -3956,37 +3955,45 @@ function buildConnections(req, res, cb) {
     }
 
     if (nodesHash[vsrc] === undefined) {
-      nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+      nodesHash[vsrc] = { id: ""+vsrc, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vsrc].sessions++;
-    nodesHash[vsrc].by += f.totBytes;
-    nodesHash[vsrc].db += f.totDataBytes;
-    nodesHash[vsrc].pa += f.totPackets;
     nodesHash[vsrc].type |= 1;
+    for (let i in fields) {
+      let dbField = fields[i];
+      if (f.hasOwnProperty(dbField)) {
+        nodesHash[vsrc][dbField] = f[dbField];
+      }
+    }
 
     if (nodesHash[vdst] === undefined) {
-      nodesHash[vdst] = {id: ""+vdst, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+      nodesHash[vdst] = { id: ""+vdst, cnt: 0, sessions: 0 };
     }
 
     nodesHash[vdst].sessions++;
-    nodesHash[vdst].by += f.totBytes;
-    nodesHash[vdst].db += f.totDataBytes;
-    nodesHash[vdst].pa += f.totPackets;
     nodesHash[vdst].type |= 2;
+    for (let i in fields) {
+      let dbField = fields[i];
+      if (f.hasOwnProperty(dbField)) {
+        nodesHash[vdst][dbField] = f[dbField];
+      }
+    }
 
     var n = "" + vsrc + "->" + vdst;
     if (connects[n] === undefined) {
-      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, node: {}};
+      connects[n] = { value: 0, source: vsrc, target: vdst, node: {} };
       nodesHash[vsrc].cnt++;
       nodesHash[vdst].cnt++;
     }
 
     connects[n].value++;
-    connects[n].by += f.totBytes;
-    connects[n].db += f.totDataBytes;
-    connects[n].pa += f.totPackets;
-    connects[n].node[f.node] = 1;
+    for (let i in fields) {
+      let dbField = fields[i];
+      if (f.hasOwnProperty(dbField)) {
+        connects[n][dbField] = f[dbField];
+      }
+    }
   }
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -3996,17 +4003,25 @@ function buildConnections(req, res, cb) {
     query.query.bool.filter.push({exists: {field: req.query.srcField}});
     query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
-    query._source = ["totBytes", "totDataBytes", "totPackets", "node"];
+    // get the requested fields
+    let fields = ["totBytes", "totDataBytes", "totPackets", "node"];
+    if (req.query.fields) { fields = req.query.fields.split(','); }
+    query._source = fields;
     query.docvalue_fields = [fsrc, fdst];
 
     if (dstipport) {
       query._source.push("dstPort");
     }
 
-    //console.log("buildConnections query", JSON.stringify(query, null, 2));
+    if (Config.debug) {
+      console.log("buildConnections query", JSON.stringify(query, null, 2));
+    }
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
-    //console.log("buildConnections result", JSON.stringify(graph, null, 2));
+      if (Config.debug) {
+        console.log("buildConnections result", JSON.stringify(graph, null, 2));
+      }
+
       if (err || graph.error) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);
@@ -4018,7 +4033,6 @@ function buildConnections(req, res, cb) {
 
         var asrc = hit.fields[fsrc];
         var adst = hit.fields[fdst];
-
 
         if (asrc === undefined || adst === undefined) {
           return setImmediate(hitCb);
@@ -4038,7 +4052,7 @@ function buildConnections(req, res, cb) {
               if (vdst.includes(":")) {vdst = '[' + vdst + ']';}
               vdst += ":" + f.dstPort;
             }
-            process(vsrc, vdst, f);
+            process(vsrc, vdst, f, fields);
           }
         }
         setImmediate(hitCb);
@@ -4068,10 +4082,12 @@ function buildConnections(req, res, cb) {
           }
         }
 
-        //console.log("nodesHash", nodesHash);
-        //console.log("connects", connects);
-        //console.log("nodes", nodes.length, nodes);
-        //console.log("links", links.length, links);
+        if (Config.debug) {
+          console.log("nodesHash", nodesHash);
+          console.log("connects", connects);
+          console.log("nodes", nodes.length, nodes);
+          console.log("links", links.length, links);
+        }
 
         return cb(null, nodes, links, graph.hits.total);
       });
@@ -4096,15 +4112,36 @@ app.get('/connections.csv', logAction(), function(req, res) {
       return res.send(err);
     }
 
-    res.write("Source, Destination, Sessions, Packets, Bytes, Databytes\r\n");
+    // write out the fields requested
+    let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    if (req.query.fields) { fields = req.query.fields.split(','); }
+
+    res.write("Source, Destination, Sessions");
+    let displayFields = {};
+    for (let field of fields) {
+      let fieldsMap = JSON.parse(app.locals.fieldsMap);
+      for (let f in fieldsMap) {
+        if (fieldsMap[f].dbField === field) {
+          let friendlyName = fieldsMap[f].friendlyName;
+          displayFields[field] = fieldsMap[f];
+          res.write(`, ${friendlyName}`);
+        }
+      }
+    }
+    res.write('\r\n');
+
     for (let i = 0, ilen = links.length; i < ilen; i++) {
       res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +
                 "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
-                     links[i].value + seperator +
-                     links[i].pa + seperator +
-                     links[i].by + seperator +
-                     links[i].db + "\r\n");
+                     links[i].value + seperator);
+      for (let f = 0, flen = fields.length; f < flen; f++) {
+        console.log(links[i][displayFields[fields[f]].dbField]);
+        res.write(links[i][displayFields[fields[f]].dbField].toString());
+        if (f !== flen - 1) { res.write(seperator); }
+      }
+      res.write('\r\n');
     }
+
     res.end();
   });
 });
