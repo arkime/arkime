@@ -15,12 +15,12 @@ my ($json, $mjson);
 # srcIp to dstIp
     $json = viewerGet("/connections.json?date=-1&expression=" . uri_escape("$files"));
     delete $json->{health};
-    eq_or_diff($json, from_json('{ "nodes": [ 
-            { "id": "10.0.0.1", "db": 26034, "by": 30979, "pa": 86, "cnt": 2, "sessions": 3, "type": 3, "pos": 0 }, 
-            { "id": "10.0.0.2", "db": 26119, "by": 31647, "pa": 96, "cnt": 3, "sessions": 4, "type": 3, "pos": 1 }, 
-            { "id": "10.0.0.3", "db": 85, "by": 668, "pa": 10, "cnt": 1, "sessions": 1, "type": 1, "pos": 2 }, 
-            { "id": "10.180.156.185", "db": 33866, "by": 46190, "pa": 184, "cnt": 1, "sessions": 9, "type": 1, "pos": 3 }, 
-            { "id": "10.180.156.249", "db": 33866, "by": 46190, "pa": 184, "cnt": 1, "sessions": 9, "type": 2, "pos": 4 } ], "links": [ { "value": 2, "source": 0, "target": 1, "by": 29487, "db": 25707, "pa": 66, "node": { "test": 1 } }, { "value": 1, "source": 1, "target": 0, "by": 1492, "db": 327, "pa": 20, "node": { "test": 1 } }, { "value": 9, "source": 3, "target": 4, "by": 46190, "db": 33866, "pa": 184, "node": { "test": 1 } }, { "value": 1, "source": 2, "target": 1, "by": 668, "db": 85, "pa": 10, "node": { "test": 1 } } ], "recordsFiltered": 13 }', {relaxed => 1}), "srcIp to dstIp", { context => 3 });
+    eq_or_diff($json, from_json('{ "nodes": [
+            { "id": "10.0.0.1", "totDataBytes": 26034, "totBytes": 30979, "totPackets": 86, "cnt": 2, "sessions": 3, "type": 3, "pos": 0, "node": [ "test" ] },
+            { "id": "10.0.0.2", "totDataBytes": 26119, "totBytes": 31647, "totPackets": 96, "cnt": 3, "sessions": 4, "type": 3, "pos": 1, "node": [ "test" ] },
+            { "id": "10.0.0.3", "totDataBytes": 85, "totBytes": 668, "totPackets": 10, "cnt": 1, "sessions": 1, "type": 1, "pos": 2, "node": [ "test" ] },
+            { "id": "10.180.156.185", "totDataBytes": 33866, "totBytes": 46190, "totPackets": 184, "cnt": 1, "sessions": 9, "type": 1, "pos": 3, "node": [ "test" ] },
+            { "id": "10.180.156.249", "totDataBytes": 33866, "totBytes": 46190, "totPackets": 184, "cnt": 1, "sessions": 9, "type": 2, "pos": 4, "node": [ "test" ] } ], "links": [ { "value": 2, "source": 0, "target": 1, "totBytes": 29487, "totDataBytes": 25707, "totPackets": 66, "node": [ "test" ] }, { "value": 1, "source": 1, "target": 0, "totBytes": 1492, "totDataBytes": 327, "totPackets": 20, "node": [ "test" ] }, { "value": 9, "source": 3, "target": 4, "totBytes": 46190, "totDataBytes": 33866, "totPackets": 184, "node": [ "test" ] }, { "value": 1, "source": 2, "target": 1, "totBytes": 668, "totDataBytes": 85, "totPackets": 10, "node": [ "test" ] } ], "recordsFiltered": 13 }', {relaxed => 1}), "srcIp to dstIp", { context => 3 });
 
     $mjson = multiGet("/connections.json?date=-1&expression=" . uri_escape("$files"));
     delete $mjson->{health};
@@ -30,17 +30,17 @@ my ($json, $mjson);
 # srcIp to ip.dst
     $json = viewerGet("/connections.json?date=-1&dstField=ip.dst:port&expression=" . uri_escape("$files"));
     delete $json->{health};
-    eq_or_diff($json, from_json('{ "nodes": [ 
-            { "id": "10.0.0.1", "db": 25707, "by": 29487, "pa": 66, "cnt": 2, "sessions": 2, "type": 1, "pos": 0 }, 
-            { "id": "10.0.0.1:1080", "db": 327, "by": 1492, "pa": 20, "cnt": 1, "sessions": 1, "type": 2, "pos": 1 }, 
-            { "id": "10.0.0.2", "db": 327, "by": 1492, "pa": 20, "cnt": 1, "sessions": 1, "type": 1, "pos": 2 }, 
-            { "id": "10.0.0.2:21477", "db": 1361, "by": 2176, "pa": 14, "cnt": 1, "sessions": 1, "type": 2, "pos": 3 }, 
-            { "id": "10.0.0.2:42356", "db": 85, "by": 668, "pa": 10, "cnt": 1, "sessions": 1, "type": 2, "pos": 4 }, 
-            { "id": "10.0.0.2:8855", "db": 24346, "by": 27311, "pa": 52, "cnt": 1, "sessions": 1, "type": 2, "pos": 5 },
-            { "id": "10.0.0.3", "db": 85, "by": 668, "pa": 10, "cnt": 1, "sessions": 1, "type": 1, "pos": 6 }, 
-            { "id": "10.180.156.185", "db": 33866, "by": 46190, "pa": 184, "cnt": 1, "sessions": 9, "type": 1, "pos": 7 },
-            { "id": "10.180.156.249:1080", "db": 33866, "by": 46190, "pa": 184, "cnt": 1, "sessions": 9, "type": 2, "pos": 8 } 
-            ], "links": [ { "value": 1, "source": 0, "target": 3, "by": 2176, "db": 1361, "pa": 14, "node": { "test": 1 } }, { "value": 1, "source": 2, "target": 1, "by": 1492, "db": 327, "pa": 20, "node": { "test": 1 } }, { "value": 9, "source": 7, "target": 8, "by": 46190, "db": 33866, "pa": 184, "node": { "test": 1 } }, { "value": 1, "source": 6, "target": 4, "by": 668, "db": 85, "pa": 10, "node": { "test": 1 } }, { "value": 1, "source": 0, "target": 5, "by": 27311, "db": 24346, "pa": 52, "node": { "test": 1 } } ], "recordsFiltered": 13 }', {relaxed => 1}), "srcIp to ip.dst", { context => 3 });
+    eq_or_diff($json, from_json('{ "nodes": [
+            { "id": "10.0.0.1", "dstPort": [21477, 8855], "node": [ "test" ], "totDataBytes": 25707, "totBytes": 29487, "totPackets": 66, "cnt": 2, "sessions": 2, "type": 1, "pos": 0 },
+            { "id": "10.0.0.1:1080", "dstPort": [1080], "node": [ "test" ], "totDataBytes": 327, "totBytes": 1492, "totPackets": 20, "cnt": 1, "sessions": 1, "type": 2, "pos": 1 },
+            { "id": "10.0.0.2", "dstPort": [1080], "node": [ "test" ], "totDataBytes": 327, "totBytes": 1492, "totPackets": 20, "cnt": 1, "sessions": 1, "type": 1, "pos": 2 },
+            { "id": "10.0.0.2:21477", "dstPort": [21477], "node": [ "test" ], "totDataBytes": 1361, "totBytes": 2176, "totPackets": 14, "cnt": 1, "sessions": 1, "type": 2, "pos": 3 },
+            { "id": "10.0.0.2:42356", "dstPort": [42356], "node": [ "test" ], "totDataBytes": 85, "totBytes": 668, "totPackets": 10, "cnt": 1, "sessions": 1, "type": 2, "pos": 4 },
+            { "id": "10.0.0.2:8855", "dstPort": [8855], "node": [ "test" ], "totDataBytes": 24346, "totBytes": 27311, "totPackets": 52, "cnt": 1, "sessions": 1, "type": 2, "pos": 5 },
+            { "id": "10.0.0.3", "dstPort": [42356], "node": [ "test" ], "totDataBytes": 85, "totBytes": 668, "totPackets": 10, "cnt": 1, "sessions": 1, "type": 1, "pos": 6 },
+            { "id": "10.180.156.185", "dstPort": [1080], "node": [ "test" ], "totDataBytes": 33866, "totBytes": 46190, "totPackets": 184, "cnt": 1, "sessions": 9, "type": 1, "pos": 7 },
+            { "id": "10.180.156.249:1080", "dstPort": [1080], "node": [ "test" ], "totDataBytes": 33866, "totBytes": 46190, "totPackets": 184, "cnt": 1, "sessions": 9, "type": 2, "pos": 8 }
+            ], "links": [ { "dstPort": [21477], "value": 1, "source": 0, "target": 3, "totBytes": 2176, "totDataBytes": 1361, "totPackets": 14, "node": [ "test" ] }, { "dstPort": [1080], "value": 1, "source": 2, "target": 1, "totBytes": 1492, "totDataBytes": 327, "totPackets": 20, "node": [ "test" ] }, { "dstPort": [1080], "value": 9, "source": 7, "target": 8, "totBytes": 46190, "totDataBytes": 33866, "totPackets": 184, "node": [ "test" ] }, { "dstPort": [42356], "value": 1, "source": 6, "target": 4, "totBytes": 668, "totDataBytes": 85, "totPackets": 10, "node": [ "test" ] }, { "dstPort": [8855], "value": 1, "source": 0, "target": 5, "totBytes": 27311, "totDataBytes": 24346, "totPackets": 52, "node": [ "test" ] } ], "recordsFiltered": 13 }', {relaxed => 1}), "srcIp to ip.dst", { context => 3 });
 
     $mjson = multiGet("/connections.json?date=-1&dstField=ip.dst:port&expression=" . uri_escape("$files"));
     delete $mjson->{health};
@@ -49,11 +49,11 @@ my ($json, $mjson);
 # srcIp to cert.notAfter
     $json = viewerGet("/connections.json?date=-1&dstField=cert.notAfter&expression=" . uri_escape("$files"));
     delete $json->{health};
-    eq_or_diff($json, from_json('{ "nodes": [ 
-            { "id": "10.180.156.185", "db": 53520, "by": 65916, "pa": 186, "cnt": 2, "sessions": 6, "type": 1, "pos": 0 },
-            { "id": "1418212800000", "db": 26760, "by": 32958, "pa": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 1 }, 
-            { "id": "1648944000000", "db": 26760, "by": 32958, "pa": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 2 } 
-            ], "links": [ { "value": 3, "source": 0, "target": 1, "by": 32958, "db": 26760, "pa": 93, "node": { "test": 1 } }, { "value": 3, "source": 0, "target": 2, "by": 32958, "db": 26760, "pa": 93, "node": { "test": 1 } } ], "recordsFiltered": 3 }', {relaxed => 1}), "srcIp to cert.notAfter", { context => 3 });
+    eq_or_diff($json, from_json('{ "nodes": [
+            { "id": "10.180.156.185", "totDataBytes": 53520, "totBytes": 65916, "totPackets": 186, "cnt": 2, "sessions": 6, "type": 1, "pos": 0, "node": [ "test" ] },
+            { "id": "1418212800000", "totDataBytes": 26760, "totBytes": 32958, "totPackets": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 1, "node": [ "test" ] },
+            { "id": "1648944000000", "totDataBytes": 26760, "totBytes": 32958, "totPackets": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 2, "node": [ "test" ] }
+            ], "links": [ { "value": 3, "source": 0, "target": 1, "totBytes": 32958, "totDataBytes": 26760, "totPackets": 93, "node": [ "test" ] }, { "value": 3, "source": 0, "target": 2, "totBytes": 32958, "totDataBytes": 26760, "totPackets": 93, "node": [ "test" ] } ], "recordsFiltered": 3 }', {relaxed => 1}), "srcIp to cert.notAfter", { context => 3 });
 
     $mjson = multiGet("/connections.json?date=-1&dstField=cert.notAfter&expression=" . uri_escape("$files"));
     delete $mjson->{health};
