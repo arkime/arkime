@@ -93,7 +93,8 @@ do {                                              \
 
 #define BSB_EXPORT_skip(b, size)                  \
 do {                                              \
-    if ((b).ptr + size <= (b).end) {              \
+    if ((b).ptr + size <= (b).end &&              \
+        (b).ptr + size >= (b).buf) {              \
         (b).ptr += size;                          \
         if ((b).ptr < (b).buf)                    \
             (b).end = 0;                          \
@@ -103,7 +104,8 @@ do {                                              \
 
 #define BSB_EXPORT_rewind(b, size)                \
 do {                                              \
-    if ((b).ptr - size >= (b).buf) {              \
+    if ((b).ptr - size <= (b).end &&              \
+        (b).ptr - size >= (b).buf) {              \
         (b).ptr -= size;                          \
         if ((b).ptr < (b).buf)                    \
             (b).end = 0;                          \
