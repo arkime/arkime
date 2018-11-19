@@ -62,7 +62,8 @@ do {                                              \
 
 #define BSB_EXPORT_ptr(b, x, size)                \
 do {                                              \
-    if ((b).ptr + size <= (b).end) {              \
+    if ((b).ptr + size <= (b).end &&              \
+        (b).ptr + size >= (b).buf) {              \
         memcpy((b).ptr, x, size);                 \
         (b).ptr += size;                          \
     } else                                        \
@@ -246,7 +247,8 @@ do {                                              \
 
 #define BSB_IMPORT_ptr(b, x, size)                \
 do {                                              \
-    if ((b).ptr + size <= (b).end) {              \
+    if ((b).ptr + size <= (b).end &&              \
+        (b).ptr + size >= (b).buf) {              \
         (x) = (b).ptr;                            \
         (b).ptr += size;                          \
     } else {                                      \
