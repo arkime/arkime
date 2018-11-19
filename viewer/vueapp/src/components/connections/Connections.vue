@@ -1156,7 +1156,7 @@ export default {
   display: none;
   font-size: smaller;
   padding: 4px 8px;
-  width: 200px;
+  width: 230px;
   z-index: 9999;
   border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
@@ -1176,11 +1176,11 @@ export default {
   margin-bottom: var(--px-md) !important;
 }
 .connections-page .connections-popup .dl-horizontal dt {
-  width: 80px !important;
+  width: 100px !important;
   text-align: left;
 }
 .connections-page .connections-popup .dl-horizontal dd {
-  margin-left: 85px !important;
+  margin-left: 105px !important;
 }
 
 /* apply theme colors */
