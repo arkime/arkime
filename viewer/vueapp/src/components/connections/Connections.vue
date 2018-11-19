@@ -826,7 +826,7 @@ export default {
                 <span v-for="field in nodeFields"
                   :key="field">
                   <dt :title="fields[field].friendlyName">
-                    {{ fields[field].friendlyName }}
+                    {{ fields[field].exp }}
                   </dt>
                   <dd>{{ node[field] }}&nbsp;</dd>
                 </span>
@@ -913,7 +913,7 @@ export default {
                 <span v-for="field in linkFields"
                   :key="field">
                   <dt :title="fields[field].friendlyName">
-                    {{ fields[field].friendlyName }}
+                    {{ fields[field].exp }}
                   </dt>
                   <dd>{{ link[field] }}&nbsp;</dd>
                 </span>
