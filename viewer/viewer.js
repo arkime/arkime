@@ -759,7 +759,7 @@ function checkCookieToken(req, res, next) {
 
   req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
   var diff = Math.abs(Date.now() - req.token.date);
-  if (diff > 2400000 || req.token.pid !== process.pid ||
+  if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
 
     console.trace('bad token', req.token);
