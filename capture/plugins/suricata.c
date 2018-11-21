@@ -262,7 +262,7 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
         } else if (MATCH(data, "signature")) {
             item->signature = g_strndup(data + out[i+2], out[i+3]);
             item->signature_len = out[i+3];
-        } else if (MATCH(line, "severity")) {
+        } else if (MATCH(data, "severity")) {
             item->severity = atoi(data + out[i+2]);
         } else if (MATCH(data, "category")) {
             item->category = g_strndup(data + out[i+2], out[i+3]);
