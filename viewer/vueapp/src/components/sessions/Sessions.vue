@@ -181,7 +181,7 @@
               :key="header.dbField"
               class="moloch-col-header"
               :style="{'width': header.width + 'px'}"
-              :class="{'active':isSorted(header.sortBy || header.dbField) >= 0}">
+              :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
               <!-- column dropdown menu -->
               <b-dropdown
                 right
@@ -276,6 +276,51 @@
               <div v-if="header.dbField === 'info'"
                 class="cursor-pointer">
                 {{ header.friendlyName }}
+                <!-- info field visibility button -->
+                <b-dropdown
+                  size="sm"
+                  no-flip
+                  no-caret
+                  right
+                  class="col-vis-menu info-vis-menu pull-right mr-3"
+                  variant="theme-primary">
+                  <template slot="button-content">
+                    <span class="fa fa-th-list"
+                      v-b-tooltip.hover
+                      title="Toggle visible fields">
+                    </span>
+                  </template>
+                  <b-dropdown-header>
+                    <input type="text"
+                      v-model="colQuery"
+                      class="form-control form-control-sm dropdown-typeahead"
+                      placeholder="Search for fields..."
+                    />
+                  </b-dropdown-header>
+                  <b-dropdown-divider>
+                  </b-dropdown-divider>
+                  <template
+                    v-for="(group, key) in filteredFields">
+                    <b-dropdown-header
+                      :key="key"
+                      v-if="group.length"
+                      class="group-header">
+                      {{ key }}
+                    </b-dropdown-header>
+                    <!-- TODO fix tooltip placement -->
+                    <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
+                    <b-dropdown-item
+                      v-for="(field, k) in group"
+                      :key="key + k"
+                      :class="{'active':isVisibleInInfo(field.dbField) >= 0}"
+                      @click.stop.prevent="toggleInfoVisibility(field.dbField)"
+                      v-b-tooltip.hover.top
+                      :title="field.help">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                    </b-dropdown-item>
+                  </template>
+                </b-dropdown> <!-- /info field visibility button -->
               </div> <!-- /non-sortable column -->
             </th> <!-- /table headers -->
             <button type="button"
@@ -336,7 +381,8 @@
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :timezone="user.settings.timezone">
+                    :timezone="user.settings.timezone"
+                    :info-fields="infoFields">
                   </moloch-session-field>
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
@@ -446,7 +492,9 @@ export default {
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
-      viewChanged: false
+      viewChanged: false,
+      // TODO
+      infoFields: JSON.parse(JSON.stringify(customCols.info.children))
     };
   },
   created: function () {
@@ -741,7 +789,7 @@ export default {
 
       this.mapHeadersToFields();
 
-      this.saveTableState(true);
+      this.saveInfoFields(true);
 
       if (reloadData) { // need data from the server
         this.loadData(true);
@@ -837,6 +885,48 @@ export default {
         .catch((error) => {
           this.colConfigError = error.text;
         });
+    },
+    /**
+     * TODO Determines a field's visibility in the info column given its id
+     * @param {string} id       The id of the column
+     * @return {number} number  The index of the visible header
+     */
+    isVisibleInInfo: function (id) {
+      return this.infoFields.indexOf(id);
+    },
+    /**
+     * TODO Toggles the visibility of a field in the info column given its id
+     * @param {string} id The id of the column to show/hide (toggle)
+     */
+    toggleInfoVisibility: function (id) {
+      let reloadData = false;
+
+      let index = this.isVisibleInInfo(id);
+
+      if (index >= 0) { // it's visible
+        // remove it from the info fields list
+        this.infoFields.splice(index, 1);
+      } else { // it's hidden
+        reloadData = true; // requires a data reload
+        // add it to the info fields list
+        this.infoFields.push(id);
+      }
+
+      // TODO need this:
+      this.saveInfoFields();
+      this.mapHeadersToFields();
+
+      if (reloadData) { // need data from the server
+        this.loadData(true);
+      } else { // have all the data, just need to reload the table
+        this.reloadTable();
+      }
+    },
+    /* TODO Saves the info fields on the user settings */
+    saveInfoFields: function () {
+      this.user.settings.infoFields = this.infoFields;
+      customCols.info.children = this.infoFields;
+      UserService.saveSettings(this.user.settings);
     },
     /* Fits the table to the width of the current window size */
     fitTable: function () {
@@ -942,6 +1032,11 @@ export default {
          this.tableState.visibleHeaders.indexOf(this.user.settings.sortColumn) > -1) {
         this.query.sorts = [[this.user.settings.sortColumn, this.user.settings.sortDirection]];
         this.tableState.order = this.query.sorts;
+      }
+
+      // TODO if user had infoFields set
+      if (this.user.settings && this.user.settings.infoFields) {
+        this.infoFields = this.user.settings.infoFields;
       }
 
       // IMPORTANT: kicks off the initial search query
@@ -1292,6 +1387,10 @@ export default {
   overflow: auto;
 }
 
+.info-vis-menu .dropdown-menu {
+  width: 360px;
+}
+
 /* small dropdown buttons in column headers */
 .moloch-col-header .btn-group button.btn {
   padding: 0 6px;
@@ -1387,7 +1486,7 @@ table.sessions-table tbody tr td {
   visibility: visible;
 }
 
-.moloch-col-header .btn-group {
+.moloch-col-header:not(.info-col-header) .btn-group {
   visibility: hidden;
   margin-left: -25px;
 }
@@ -1402,6 +1501,11 @@ table.sessions-table tbody tr td {
   width: 8px;
   vertical-align: top;
 }
+
+/* info field visibility menu */
+/* .info-vis-menu {
+  margin-right: 40px;
+} */
 
 /* column visibility menu -------------------- */
 .col-vis-menu .dropdown-header {

@@ -3478,28 +3478,42 @@ function fixFields(fields, fixCb) {
  *
  * @example
  * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
+ * @example
+ * { cert: [ { alt: ["test.com"] } ] } => { "cert.alt": ["test.com"] }
  *
  * @param {object} fields The object containing fields to be flattened
  * @returns {object} fields The object with fields flattened
  */
 function flattenFields(fields) {
-  var newFields = {};
+  let newFields = {};
 
   for (let key in fields) {
     if (fields.hasOwnProperty(key)) {
-      var field = fields[key];
+      let field = fields[key];
+      let baseKey = key + '.';
       if (typeof field === 'object' && !field.length) {
-        var baseKey = key + '.';
-        for (var nestedKey in field) {
+        // flatten out object
+        for (let nestedKey in field) {
           if (field.hasOwnProperty(nestedKey)) {
-            var nestedField = field[nestedKey];
-            var newKey = baseKey + nestedKey;
+            let nestedField = field[nestedKey];
+            let newKey = baseKey + nestedKey;
             newFields[newKey] = nestedField;
           }
         }
         fields[key] = null;
         delete fields[key];
+      } else if (Array.isArray(field)) {
+        // flatten out list
+        for (let nestedField of field) {
+          for (let nestedKey in nestedField) {
+            let newKey = baseKey + nestedKey;
+            newFields[newKey] = nestedField[nestedKey];
+          }
+          fields[key] = null;
+          delete fields[key];
+        }
       }
+
     }
   }
 
