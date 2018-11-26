@@ -49,11 +49,11 @@ struct suricataitem_t {
     char           *category;
     uint32_t        severity;
     uint32_t        hash;
+    uint16_t        flow_id_len;
+    uint16_t        action_len;
+    uint16_t        signature_len;
+    uint16_t        category_len;
     char            ses;
-    char            flow_id_len;
-    char            action_len;
-    char            signature_len;
-    char            category_len;
 };
 
 #define SURICATA_HASH_SIZE 7919
