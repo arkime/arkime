@@ -20,7 +20,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-6:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-6 python27 "./easybutton-build.sh --daq --pfring"
             - test-capture: (cd tests ; ./tests.pl)
@@ -43,7 +43,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-7:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
             - test-capture: (cd tests ; ./tests.pl)
@@ -67,7 +67,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-7:1.6.4
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-6 "./easybutton-build.sh"
             - yum -y install libasan-static devtoolset-6-libasan-devel libasan3 devtoolset-6-libubsan-devel libubsan which java-1.8.0-openjdk-headless
@@ -96,7 +96,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-14:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
             - test-capture: (cd tests ; ./tests.pl)
@@ -119,7 +119,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-16:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
             - export PATH=/data/moloch/bin:$PATH
@@ -147,7 +147,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-16:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
@@ -176,7 +176,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-18:1.6.3
         steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -xvf -)
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
