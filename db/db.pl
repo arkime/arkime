@@ -1699,7 +1699,6 @@ sub parseArgs {
             } else {
                 $SHARDSPERNODE = int($ARGV[$pos]);
             }
-            print "ALW $SHARDSPERNODE\n";
         } else {
             print "Unknown option '", $ARGV[$pos], "'\n";
         }

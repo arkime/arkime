@@ -182,7 +182,6 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     uint8_t ciphertext[1024];
     int     len, ciphertext_len;
     uint8_t kek[EVP_MAX_KEY_LENGTH];
-    int     keklen;
     uint8_t kekiv[EVP_MAX_IV_LENGTH];
 
     if (!kekId)
@@ -192,7 +191,7 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
    if (!kekstr)
        LOGEXIT("No kek with id '%s' found in keks config section", kekId);
 
-    keklen = EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
+    EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
     g_free(kekstr);
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();

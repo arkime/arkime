@@ -15,6 +15,19 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.6.2 2018/11/XX
+  - NOTICE: db.pl upgrade is required
+  - suricata - fix crash when signature name > 128 characters long
+  - suricata - fix severity parsing (again)
+  - capture - fix possible crash when exporting invalid utf8
+  - db - support new --shardsPerNode option
+  - viewer - don't issue search when closing the date/time pickers
+  - viewer - download packets src/dst bytes img
+  - viewer - option to show timezone with every timestamp
+  - viewer - added new user permissions (hideStats, hideFiles, hidePcap, and disablePcapDownload)
+  - parliament - add option to provide link to dashboard in alert notifications
+  - viewer - configure connection node/link popup data
+  - release - build snf plugin with screwdriver
+
 
 1.6.1 2018/11/06
   - NOTICE: db.pl upgrade is required
@@ -59,12 +72,6 @@ NOTICE: Restart wiseService before capture when upgrading
   - multiviewer - Can save user settings and such (pr #935)
   - viewer - Can share views with all other users
   - db.pl - New backup/restore commands, saves everything but sessions
-  - viewer - don't issue search when closing the date/time pickers
-  - viewer - download packets src/dst bytes img
-  - viewer - option to show timezone with every timestamp
-  - viewer - added new user permissions (hideStats, hideFiles, hidePcap, and disablePcapDownload)
-  - parliament - add option to provide link to dashboard in alert notifications
-  - viewer - configure connection node/link popup data
 
 1.5.3 2018/09/10
   - release - libpcap 1.9.0
