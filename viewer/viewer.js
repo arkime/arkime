@@ -3505,15 +3505,16 @@ function flattenFields(fields) {
       } else if (Array.isArray(field)) {
         // flatten out list
         for (let nestedField of field) {
-          for (let nestedKey in nestedField) {
-            let newKey = baseKey + nestedKey;
-            newFields[newKey] = nestedField[nestedKey];
+          if (typeof nestedField === 'object') {
+            for (let nestedKey in nestedField) {
+              let newKey = baseKey + nestedKey;
+              newFields[newKey] = nestedField[nestedKey];
+            }
+            fields[key] = null;
+            delete fields[key];
           }
-          fields[key] = null;
-          delete fields[key];
         }
       }
-
     }
   }
 

@@ -3,31 +3,41 @@
   <div>
 
     <div v-for="field in infoFields"
-      :key="field">
-      <div v-if="session[field]">
+      :key="field.dbField">
+      <div v-if="session[field.dbField]">
         <strong>
-          {{ fieldMap[field].friendlyName }}:
+          {{ field.friendlyName }}:
         </strong>
-        <span v-for="value in limitArrayLength(session[field], limit)"
-          :key="value">
+        <span v-if="Array.isArray(session[field.dbField])">
+          <span v-for="value in limitArrayLength(session[field.dbField], limit)"
+            :key="value">
+            <moloch-session-field
+              :value="value"
+              :session="session"
+              :expr="field.exp"
+              :field="field.dbField">
+            </moloch-session-field>
+          </span>
+          <a class="cursor-pointer"
+            style="text-decoration:none;"
+            v-if="session[field.dbField].length > initialLimit"
+            @click="toggleShowAll">
+            <span v-if="!showAll">
+              more...
+            </span>
+            <span v-else>
+              ...less
+            </span>
+          </a>
+        </span>
+        <span v-else>
           <moloch-session-field
-            :value="value"
+            :value="session[field.dbField]"
             :session="session"
-            :expr="field"
-            :field="fieldMap[field]">
+            :expr="field.exp"
+            :field="field.dbField">
           </moloch-session-field>
         </span>
-        <a class="cursor-pointer"
-          style="text-decoration:none;"
-          v-if="session[field].length > initialLimit"
-          @click="toggleShowAll">
-          <span v-if="!showAll">
-            more...
-          </span>
-          <span v-else>
-            ...less
-          </span>
-        </a>
       </div>
     </div>
 
@@ -49,23 +59,6 @@ export default {
       initialLimit: 3,
       showAll: false
     };
-  },
-  computed: {
-    fieldMap: function () {
-      if (!this.field || !this.field.children) { return {}; }
-
-      let map = {};
-      for (let field of this.field.children) {
-        map[field.exp] = field;
-        if (field.aliases) { // map aliases too
-          for (let f of field.aliases) {
-            map[f] = field;
-          }
-        }
-      }
-
-      return map;
-    }
   },
   methods: {
     toggleShowAll: function () {
