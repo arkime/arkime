@@ -438,12 +438,12 @@ export default {
             startTime: this.$store.state.time.startTime
           }
         });
-      } else {
-        this.updateTime = true;
-        setTimeout(() => {
-          this.updateTime = false;
-        }, 1000);
       }
+
+      this.updateTime = true;
+      setTimeout(() => {
+        this.updateTime = false;
+      }, 1000);
     },
     /* event functions ------------------------------------------- */
     /**
