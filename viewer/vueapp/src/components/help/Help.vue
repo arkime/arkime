@@ -73,6 +73,12 @@
             </span>&nbsp;
             Connections
           </a>
+          <a href="help#hunt"
+            class="nav-link">
+            <span class="fa fa-fw fa-eye">
+            </span>&nbsp;
+            Hunt
+          </a>
           <a href="help#files"
             class="nav-link">
             <span class="fa fa-fw fa-files-o">
@@ -487,6 +493,50 @@
             The Connections page allows a user to view a tree force graph based on a source node and destination node of their choosing. Relationships may be visually determined using this method.
             For example, set your Src node to ip.src, Dst node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
             Those who prefer to analyze session data visually may rely heavily on these graphs. The default settings for this page may be set in the settings page.
+          </p>
+
+          <hr>
+
+          <h3 id="hunt">
+            <span class="fa fa-fw fa-eye"></span>&nbsp;
+            Hunt
+          </h3>
+          <p>
+            The Hunt page allows users to search within session packets for text.
+            To perform a hunt, users should start by narrowing down their search on the Sessions page.
+            Then, switch to the Hunt tab where any new hunt will only search within the sessions searched for earlier.
+            Underneath the search bar, the Hunt page will display the number of sessions that will be searched.
+            To begin your hunt, click on the "Create a packet search job" button on the top right of the page (under the search bar).
+            The form that is presented is described below:
+          </p>
+            <dl class="dl-horizontal dl-horizontal-wide">
+              <dt>Name</dt>
+              <dd>The name of the hunt (multiple hunts can have the same name)</dd>
+              <dt>Max number of packets to examine per session</dt>
+              <dd>The maximum number of packets that the hunt will search within each session</dd>
+              <dt>Search</dt>
+              <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
+              <dt>Search src/dst packets</dt>
+              <dd>Whether to search source or destination packets, or both</dd>
+              <dt>Search raw/reassembled packets</dt>
+              <dd>Whether to search raw or reassembled packets</dd>
+            </dl>
+          <p>
+            Once the hunt has been created, it will be added to the <strong>hunt job queue</strong>. Hunts run one at a time and
+            can be paused so that another hunt can run. After a hunt has completed, it will be added to
+            the <strong>hunt job history</strong>. Here, you can rerun a hunt on a different set of sessions, open the
+            sessions that matched the hunt, or delete the hunt job from the history.
+          </p>
+          <p>
+            Hunts add <code>huntName</code> and <code>huntId</code> fields to the sessions as they match.
+            You can search for these fields in the sessions search bar at any time. Deleting a hunt from the history
+            does not remove these fields from the sessions.
+          </p>
+          <p>
+            <strong>Info:</strong> A normal user can only view/pause/delete their own hunts, but an admin can view/pause/delete all hunts.<br>
+            <strong>Warning:</strong> The packet search will take a long time and possibly slow down viewer if you search many sessions.
+            Users will be alerted if they are trying to search for more than 100,000 sessions. Normal users cannot search more than 1,000,000
+            sessions, and admins cannot search more than 10,000,000 sessions (these values can be overwritten in the config).
           </p>
 
           <hr>

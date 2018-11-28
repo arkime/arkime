@@ -11,7 +11,7 @@
 
     <b-navbar-brand>
       <router-link
-        :to="{ path: helpLink.href + `#${activePage || ''}`, query: helpLink.query, params: { nav: true } }">
+        :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
         <div id="helpTooltipContainer">
           <img src="../../assets/logo.png"
             class="moloch-logo"
@@ -141,13 +141,17 @@ export default {
       return menu;
     },
     helpLink: function () {
-      return {
+      let helpLink = {
         href: `help?${qs.stringify(this.$route.query)}`,
         query: {
           ...this.$route.query,
           expression: this.$store.state.expression
         }
       };
+      if (this.activePage) {
+        helpLink.href += `#${this.activePage}`;
+      }
+      return helpLink;
     },
     activePage: function () {
       for (let page in this.menu) {

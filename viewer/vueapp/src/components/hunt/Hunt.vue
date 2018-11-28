@@ -73,7 +73,7 @@
                 <div class="input-group input-group-sm">
                   <span class="input-group-prepend"
                     v-b-tooltip.hover
-                    title="Give your packet search job a short, unique name">
+                    title="Give your packet search job a short name (multiple jobs can have the same name)">
                     <span class="input-group-text">
                       Name
                     </span>

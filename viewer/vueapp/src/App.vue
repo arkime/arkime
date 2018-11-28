@@ -465,6 +465,13 @@ dl.dl-horizontal dd {
   margin-left: 205px;
   margin-bottom: 0;
 }
+dl.dl-horizontal.dl-horizontal-wide dt {
+  width: 400px;
+}
+dl.dl-horizontal.dl-horizontal-wide dd {
+  margin-left: 410px;
+  margin-bottom: 0;
+}
 
 .shortcut-help {
   position: fixed;
