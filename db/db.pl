@@ -157,6 +157,23 @@ sub waitFor
 }
 
 ################################################################################
+sub esIndexExists
+{
+    my ($index) = @_;
+    print "HEAD ${main::elasticsearch}/$index\n" if ($verbose > 2);
+    my $response = $main::userAgent->head("${main::elasticsearch}/$index");
+    print "HEAD RESULT:", $response->code, "\n" if ($verbose > 3);
+    return $response->code == 200;
+}
+################################################################################
+sub esCheckAlias
+{
+    my ($alias, $index) = @_;
+    my $result = esGet("/_alias/$alias", 1);
+
+    return (exists $result->{$index} && exists $result->{$index}->{aliases}->{$alias});
+}
+################################################################################
 sub esGet
 {
     my ($url, $dontcheck) = @_;
@@ -251,7 +268,7 @@ sub esCopy
     my $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} > $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
         print $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
-        die "ERROR - Copy failed from $srci to $dsti\n";
+        die "\nERROR - Copy failed from $srci to $dsti, you will probably need to delete $dsti and run upgrade again.  Make sure to not change the index while upgrading.\n\n";
     }
 
     print "\n";
@@ -339,6 +356,12 @@ sub sequenceUpdate
 ################################################################################
 sub sequenceUpgrade
 {
+
+    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v2") && esIndexExists("${PREFIX}sequence_v2")) {
+        print ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v2\n");
+        return;
+    }
+
     $main::userAgent->timeout(7200);
     sequenceCreate();
     esAlias("remove", "sequence_v1", "sequence");
@@ -1419,37 +1442,19 @@ sub setPriority
     esPut("/${PREFIX}users/_settings", '{"settings": {"index.priority": 6}}', 1);
 }
 ################################################################################
-sub createAliasedFromNonAliased
-{
-    my ($name, $newName, $createFunction) = @_;
-
-    my $indices = esGet("/${PREFIX}{$newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
-
-    # Need to create new name
-    if (!exists $indices->{"${PREFIX}{$newName}"}) {
-        $createFunction->();
-        sleep 1;
-        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
-    }
-
-    # Copy old index to new index
-    if (exists $indices->{"${PREFIX}${newName}"} && exists $indices->{"${PREFIX}${name}"}) {
-        esCopy("${name}", "${newName}");
-    }
-
-    # Delete old index and add alias.  Do in a loop since there is a race condition of capture
-    # processes trying to save their information.
-    $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
-    while (exists $indices->{"${PREFIX}${name}"} || ! exists $indices->{"${PREFIX}${newName}"}->{aliases}->{"${PREFIX}${name}"}) {
-        esDelete("/${PREFIX}${name}", 1);
-        esAlias("add", "${newName}", "${name}");
-        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_alias?ignore_unavailable=1", 1);
-    }
-}
-################################################################################
 sub createNewAliasesFromOld
 {
     my ($alias, $newName, $oldName, $createFunction) = @_;
+
+    if (esCheckAlias("${PREFIX}$alias", "${PREFIX}$newName") && esIndexExists("${PREFIX}$newName")) {
+        print ("SKIPPING - ${PREFIX}$alias already points to ${PREFIX}$newName\n");
+        return;
+    }
+
+    if (!esIndexExists("${PREFIX}$oldName")) {
+        die "ERROR - ${PREFIX}$oldName doesn't exist!";
+    }
+
     $createFunction->();
     esAlias("remove", $oldName, $alias);
     esCopy($oldName, $newName);
