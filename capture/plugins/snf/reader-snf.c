@@ -78,7 +78,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
 
         packet->pkt           = (u_char *)req.pkt_addr;
         packet->ts.tv_sec     = req.timestamp / 1000000000;
-        packet->ts.tv_usec    = req.timestamp % 1000000000000;
+        packet->ts.tv_usec    = (req.timestamp / 1000) % 1000000;
         packet->pktlen        = req.length;
         packet->readerPos     = pos;
 
