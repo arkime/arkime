@@ -130,7 +130,8 @@
       <span v-if="field.dbField === 'info'">
         <moloch-session-info
           :session="session"
-          :field="field">
+          :field="field"
+          :info-fields="infoFields">
         </moloch-session-info>
       </span> <!-- /info column -->
       <!-- recurse on child fields -->
@@ -173,7 +174,8 @@ export default {
     'parse', // whether to parse the value
     'timezone', // what timezone date fields should be in ('gmt' or 'local')
     'sessionBtn', // whether to display a button to add the value to the expression and go to sessions page
-    'pullLeft' // whether the dropdown should drop down from the left
+    'pullLeft', // whether the dropdown should drop down from the left
+    'infoFields' // info fields to display
   ],
   data: function () {
     return {
