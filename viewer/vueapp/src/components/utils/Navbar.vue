@@ -10,17 +10,18 @@
     </b-navbar-toggle>
 
     <b-navbar-brand>
-      <a :href="'help#' + activePage"
-        class="cursor-pointer"
-        id="helpTooltipContainer">
-        <img src="../../assets/logo.png"
-          class="moloch-logo"
-          alt="hoot"
-          v-b-tooltip.hover
-          title="HOOT! Can I help you? Click me to see the help page"
-          id="tooltipHelp"
-        />
-      </a>
+      <router-link
+        :to="{ path: helpLink.href + `#${activePage || ''}`, query: helpLink.query, params: { nav: true } }">
+        <div id="helpTooltipContainer">
+          <img src="../../assets/logo.png"
+            class="moloch-logo"
+            alt="hoot"
+            v-b-tooltip.hover
+            title="HOOT! Can I help you? Click me to see the help page"
+            id="tooltipHelp"
+          />
+        </div>
+      </router-link>
       <b-tooltip :show="shiftKeyHold"
         triggers=""
         target="tooltipHelp"
@@ -138,6 +139,15 @@ export default {
       }
 
       return menu;
+    },
+    helpLink: function () {
+      return {
+        href: `help?${qs.stringify(this.$route.query)}`,
+        query: {
+          ...this.$route.query,
+          expression: this.$store.state.expression
+        }
+      };
     },
     activePage: function () {
       for (let page in this.menu) {
