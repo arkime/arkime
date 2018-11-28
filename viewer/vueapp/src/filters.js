@@ -220,7 +220,7 @@ Vue.filter('readableTime', function (ms) {
  * @returns {array}           An array of fields that match the search term
  */
 Vue.filter('searchFields', function (searchTerm, fields) {
-  if (!searchTerm) { return fields; }
+  if (!searchTerm) { searchTerm = ''; }
   return fields.filter((field) => {
     if (field.regex !== undefined || field.noFacet === 'true') {
       return false;
