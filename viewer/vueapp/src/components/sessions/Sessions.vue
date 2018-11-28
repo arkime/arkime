@@ -209,6 +209,14 @@
                   </b-dropdown-header>
                   <b-dropdown-divider>
                   </b-dropdown-divider>
+                  <b-dropdown-item
+                    @click.stop.prevent="resetInfoVisibility"
+                    v-b-tooltip.hover.top
+                    title="Reset info column to default fields">
+                    Moloch Default
+                  </b-dropdown-item>
+                  <b-dropdown-divider>
+                  </b-dropdown-divider>
                   <template
                     v-for="(group, key) in filteredFields">
                     <b-dropdown-header
@@ -449,6 +457,8 @@ const defaultTableState = {
   order: [['firstPacket', 'asc']],
   visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
 };
+
+let defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
 let componentInitialized = false;
 let holdingClick = false;
@@ -928,6 +938,19 @@ export default {
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
+    },
+    /* Resets the visible fields in the info column to the default */
+    resetInfoVisibility: function () {
+      this.infoFields = defaultInfoFields;
+      customCols.info.children = defaultInfoFields;
+      this.user.settings.infoFields = undefined;
+
+      // make sure children of fields are field objects
+      this.setupFields();
+      // unset the user setting for info fields
+      this.saveInfoFields();
+      // load the table data (assume missing fields)
+      this.loadData(true);
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
@@ -1525,7 +1548,7 @@ table.sessions-table tbody tr td {
   margin-right: 4px;
 }
 .info-vis-menu {
-  margin-right: 40px;
+  margin-right: 35px;
 }
 
 /* column visibility menu -------------------- */
