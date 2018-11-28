@@ -781,7 +781,6 @@ export default {
      * @param {string} sort Option sort id for columns that have sortBy
      */
     toggleVisibility: function (id, sort) {
-      // this.loading = true;
       let reloadData = false;
 
       let index = this.isVisible(id);
