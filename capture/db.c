@@ -1077,8 +1077,9 @@ LOCAL uint64_t moloch_db_used_space()
         if (!dir || error) {
             if (dir)
                 g_dir_close(dir);
-            if (error)
+            if (error) {
                 g_free(error);
+            }
             continue;
         }
 

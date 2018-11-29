@@ -49,15 +49,15 @@ MOLOCH_LOCK_DEFINE(LOG);
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
 
-typedef struct molochfreelater_t MolochFreeLater_t;
-struct molochfreelater_t {
-    MolochFreeLater_t *fl_next, *fl_prev;
+#define FREE_LATER_SIZE 32768
+LOCAL int freeLaterFront;
+LOCAL int freeLaterBack;
+typedef struct {
     void              *ptr;
     GDestroyNotify     cb;
     uint32_t           sec;
-    uint32_t           fl_count;
-};
-MolochFreeLater_t freeLaterList;
+} MolochFreeLater_t;
+MolochFreeLater_t  freeLaterList[FREE_LATER_SIZE];
 MOLOCH_LOCK_DEFINE(freeLaterList);
 
 /******************************************************************************/
@@ -244,29 +244,31 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     struct timespec currentTime;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 
-    MolochFreeLater_t *fl = MOLOCH_TYPE_ALLOC(MolochFreeLater_t);
-    fl->sec = currentTime.tv_sec + 5;
-    fl->ptr = ptr;
-    fl->cb  = cb;
     MOLOCH_LOCK(freeLaterList);
-    DLL_PUSH_TAIL(fl_, &freeLaterList, fl);
+    if ((freeLaterBack + 1 ) % FREE_LATER_SIZE == freeLaterFront) {
+        freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
+        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
+    }
+
+    freeLaterList[freeLaterBack].sec = currentTime.tv_sec + 7;
+    freeLaterList[freeLaterBack].ptr = ptr;
+    freeLaterList[freeLaterBack].cb  = cb;
+    freeLaterBack = (freeLaterBack + 1 ) % FREE_LATER_SIZE;
     MOLOCH_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
 LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
 {
-    if (freeLaterList.fl_count == 0)
+    if (freeLaterFront == freeLaterBack)
         return TRUE;
 
     struct timespec currentTime;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
     MOLOCH_LOCK(freeLaterList);
-    while (freeLaterList.fl_count > 0 &&
-           freeLaterList.fl_next->sec < currentTime.tv_sec) {
-        MolochFreeLater_t *fl;
-        DLL_POP_HEAD(fl_, &freeLaterList, fl);
-        fl->cb(fl->ptr);
-        MOLOCH_TYPE_FREE(MolochFreeLater_t, fl);
+    while (freeLaterFront != freeLaterBack &&
+           freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
+        freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
+        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
     }
     MOLOCH_UNLOCK(freeLaterList);
     return TRUE;
@@ -274,7 +276,6 @@ LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
 /******************************************************************************/
 LOCAL void moloch_free_later_init()
 {
-    DLL_INIT(fl_, &freeLaterList);
     g_timeout_add_seconds(1, moloch_free_later_check, 0);
 }
 
