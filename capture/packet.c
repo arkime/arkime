@@ -489,6 +489,8 @@ LOCAL void *moloch_packet_thread(void *threadp)
 {
     MolochPacket_t  *packet;
     int thread = (long)threadp;
+    const uint32_t maxPackets75 = config.maxPackets*0.75;
+    uint32_t skipCount = 0;
 
     while (1) {
         MOLOCH_LOCK(packetQ[thread].lock);
@@ -503,10 +505,15 @@ LOCAL void *moloch_packet_thread(void *threadp)
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
         MOLOCH_UNLOCK(packetQ[thread].lock);
 
-        moloch_session_process_commands(thread);
+        // Only process commands if the packetQ is less then 75% full or every 8 packets
+        if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
+            moloch_session_process_commands(thread);
+            if (!packet)
+                continue;
+        } else {
+            skipCount++;
+        }
 
-        if (!packet)
-            continue;
 #ifdef DEBUG_PACKET
         LOG("Processing %p %d", packet, packet->pktlen);
 #endif
