@@ -68,8 +68,10 @@
       <div class="btn btn-sm btn-warning pull-right"
         @click="done(null)">
         <span class="fa fa-ban">
-        </span>&nbsp;
-        Cancel
+        </span>
+        <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
+          &nbsp;Cancel
+        </span>
       </div>
     </div> <!-- /cancel button -->
 

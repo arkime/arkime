@@ -195,7 +195,7 @@ export default {
       return false;
     },
     parsed: function () {
-      if (!this.field || !this.value) { return; }
+      if (!this.field || this.value === '') { return; }
 
       let result = {
         queryVal: this.value,
