@@ -130,7 +130,6 @@
       <span v-if="field.dbField === 'info'">
         <moloch-session-info
           :session="session"
-          :field="field"
           :info-fields="infoFields">
         </moloch-session-info>
       </span> <!-- /info column -->
@@ -196,7 +195,7 @@ export default {
       return false;
     },
     parsed: function () {
-      if (!this.field || this.value === undefined) { return; }
+      if (!this.field || !this.value) { return; }
 
       let result = {
         queryVal: this.value,

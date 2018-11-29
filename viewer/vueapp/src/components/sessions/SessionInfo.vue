@@ -2,27 +2,28 @@
 
   <div>
 
-    <div v-for="field in infoFields"
-      :key="field.dbField">
-      <div v-if="session[field.dbField]">
+    <div v-for="(infoField, index) in infoFieldsClone"
+      :key="infoField.dbField + index">
+      <div v-if="session[infoField.dbField]">
         <strong>
-          {{ field.friendlyName }}:
+          {{ infoField.friendlyName }}:
         </strong>
-        <span v-if="Array.isArray(session[field.dbField])">
-          <span v-for="value in limitArrayLength(session[field.dbField], limit)"
-            :key="value">
+        <span v-if="Array.isArray(session[infoField.dbField])">
+          <span v-for="(value, index) in limitArrayLength(session[infoField.dbField], infoField.limit)"
+            :key="value + index">
             <moloch-session-field
               :value="value"
               :session="session"
-              :expr="field.exp"
-              :field="field.dbField">
+              :expr="infoField.exp"
+              :field="infoField.dbField">
             </moloch-session-field>
           </span>
           <a class="cursor-pointer"
+            href="javascript:void(0)"
             style="text-decoration:none;"
-            v-if="session[field.dbField].length > initialLimit"
-            @click="toggleShowAll">
-            <span v-if="!showAll">
+            v-if="session[infoField.dbField].length > initialLimit"
+            @click="toggleShowAll(infoField)">
+            <span v-if="!infoField.showAll">
               more...
             </span>
             <span v-else>
@@ -32,10 +33,10 @@
         </span>
         <span v-else>
           <moloch-session-field
-            :value="session[field.dbField]"
+            :value="session[infoField.dbField]"
             :session="session"
-            :expr="field.exp"
-            :field="field.dbField">
+            :expr="infoField.exp"
+            :field="infoField.dbField">
           </moloch-session-field>
         </span>
       </div>
@@ -49,33 +50,31 @@
 export default {
   name: 'MolochSessionInfo',
   props: [
-    'field', // the field object that describes the field
     'session', // the session object
     'infoFields' // the fields to display as info
   ],
   data: function () {
     return {
-      limit: 3,
       initialLimit: 3,
-      showAll: false
+      infoFieldsClone: JSON.parse(JSON.stringify(this.infoFields))
     };
   },
   methods: {
-    toggleShowAll: function () {
-      this.showAll = !this.showAll;
+    toggleShowAll: function (infoField) {
+      this.$set(infoField, 'showAll', !infoField.showAll);
 
-      if (this.showAll) {
-        this.limit = 9999;
+      if (infoField.showAll) {
+        this.$set(infoField, 'limit', 9999);
       } else {
-        this.limit = 3;
+        this.$set(infoField, 'limit', this.initialLimit);
       }
     },
     limitArrayLength: function (array, length) {
+      if (!length) { length = this.initialLimit; }
+
       let limitCount = parseInt(length, 10);
 
-      if (limitCount <= 0) {
-        return array;
-      }
+      if (limitCount <= 0) { return array; }
 
       return array.slice(0, limitCount);
     }
