@@ -11,6 +11,10 @@ mixin clickableLabel(field, title)
       | Export Unique #{title} with counts
     b-dropdown-item(@click="openSpiGraph('" + field  + "')")
       | Open #{title} SPI Graph
+    b-dropdown-item(@click="toggleColVis('" + field  + "')")
+      | Toggle #{title} column
+    b-dropdown-item(@click="toggleInfoVis('" + field  + "')")
+      | Toggle #{title} in Info column
 
 mixin arrayPrint(container, field, expr)
   if ((container && container[field]))

@@ -401,7 +401,9 @@
               class="session-detail-row">
               <td :colspan="headers.length + 1">
                 <moloch-session-detail
-                  :session="session">
+                  :session="session"
+                  @toggleColVis="toggleVisibility"
+                  @toggleInfoVis="toggleInfoVisibility">
                 </moloch-session-detail>
               </td>
             </tr> <!-- /session detail -->
@@ -1096,7 +1098,11 @@ export default {
       this.loading = true;
       this.error = '';
 
-      this.stickySessions = []; // clear sticky sessions
+      // save expanded sessions
+      let expandedSessions = [];
+      for (let session of this.stickySessions) {
+        expandedSessions.push(session.id);
+      }
 
       this.query.sorts = this.tableState.order || JSON.parse(JSON.stringify(defaultTableState.order));
 
@@ -1139,6 +1145,7 @@ export default {
 
       SessionsService.get(this.query)
         .then((response) => {
+          this.stickySessions = []; // clear sticky sessions
           this.error = '';
           this.loading = false;
           this.sessions = response.data;
@@ -1149,6 +1156,15 @@ export default {
 
           if (parseInt(this.$route.query.openAll) === 1) {
             this.openAll();
+          } else { // open the previously opened sessions
+            for (let sessionId of expandedSessions) {
+              for (let session of this.sessions.data) {
+                if (session.id === sessionId) {
+                  session.expanded = true;
+                  this.stickySessions.push(session);
+                }
+              }
+            }
           }
 
           // initialize resizable columns now that there is data

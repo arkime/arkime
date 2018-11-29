@@ -710,6 +710,20 @@ export default {
               showFewerItems: function (e) {
                 e.target.parentElement.style.display = 'none';
                 e.target.parentElement.nextElementSibling.style.display = 'inline-block';
+              },
+              /**
+               * Toggles a column in the sessions table
+               * @param {string} fieldID  The field id to toggle in the sessions table
+               */
+              toggleColVis: function (fieldID) {
+                this.$parent.toggleColVis(fieldID);
+              },
+              /**
+               * Toggles a field's visibility in the info column
+               * @param {string} fieldID  The field id to toggle in the info column
+               */
+              toggleInfoVis: function (fieldID) {
+                this.$parent.toggleInfoVis(fieldID);
               }
             },
             components: {
@@ -726,6 +740,12 @@ export default {
           this.loading = false;
           this.error = error;
         });
+    },
+    toggleColVis: function (fieldID) {
+      this.$emit('toggleColVis', fieldID);
+    },
+    toggleInfoVis: function (fieldID) {
+      this.$emit('toggleInfoVis', fieldID);
     },
     getMolochClusters: function () {
       ConfigService.getMolochClusters()
@@ -859,6 +879,7 @@ export default {
 
           setTimeout(() => { // wait until session packets are rendered
             // tooltips for src/dst byte images
+            if (!this.$refs.packetContainer) { return; }
             let tss = this.$refs.packetContainer.getElementsByClassName('session-detail-ts');
             for (let i = 0; i < tss.length; ++i) {
               let timeEl = tss[i];

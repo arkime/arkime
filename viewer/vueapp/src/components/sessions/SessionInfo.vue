@@ -59,6 +59,11 @@ export default {
       infoFieldsClone: JSON.parse(JSON.stringify(this.infoFields))
     };
   },
+  watch: {
+    infoFields: function (newVal, oldVal) {
+      this.infoFieldsClone = JSON.parse(JSON.stringify(newVal));
+    }
+  },
   methods: {
     toggleShowAll: function (infoField) {
       this.$set(infoField, 'showAll', !infoField.showAll);
