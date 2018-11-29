@@ -1487,6 +1487,9 @@ table.sessions-table thead tr th {
   border-bottom: 2px solid var(--color-gray);
   border-right: 1px dotted var(--color-gray);
 }
+table.sessions-table thead tr th:last-child:not(.info-col-header) {
+  padding-right: 35px;
+}
 table.sessions-table thead tr th:first-child {
   border-right: none;
 }
@@ -1548,6 +1551,9 @@ table.sessions-table tbody tr td {
 }
 .info-vis-menu {
   margin-right: 35px;
+}
+.moloch-col-header:not(:last-child) .info-vis-menu {
+  margin-right: 5px;
 }
 
 /* column visibility menu -------------------- */
