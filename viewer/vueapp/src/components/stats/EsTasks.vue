@@ -68,7 +68,7 @@ export default {
   components: { MolochError, MolochLoading, MolochTable },
   data: function () {
     return {
-      stats: [],
+      stats: null,
       error: '',
       loading: true,
       totalValues: null,
