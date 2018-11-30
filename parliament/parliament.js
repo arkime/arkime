@@ -27,11 +27,12 @@ const issueTypes = {
   esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
   esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
-  noPackets: { on: true, name: 'No Packets', text: 'is not receiving packets', severity: 'red', description: 'the capture node is not receiving packets' }
+  noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
 };
 
 const settingsDefault = {
   general : {
+    noPackets: 0,
     outOfDate: 30,
     esQueryTimeout: 5,
     removeIssuesAfter: 60,
@@ -324,7 +325,7 @@ function formatIssueMessage (cluster, issue) {
 
   message += `${issue.text}`;
 
-  if (issue.value) {
+  if (issue.value !== undefined) {
     let value = ': ';
 
     if (issue.type === 'esDropped') {
@@ -575,10 +576,11 @@ function getStats (cluster) {
             });
           }
 
-          if (stat.deltaPacketsPerSec === 0) {
+          if (stat.deltaPacketsPerSec < getGeneralSetting('noPackets')) {
             setIssue(cluster, {
               type: 'noPackets',
-              node: stat.nodeName
+              node: stat.nodeName,
+              value: stat.deltaPacketsPerSec
             });
           }
 
@@ -695,6 +697,9 @@ function initializeParliament () {
     }
     if (!parliament.settings.general.outOfDate) {
       parliament.settings.general.outOfDate = settingsDefault.general.outOfDate;
+    }
+    if (!parliament.settings.general.noPackets) {
+      parliament.settings.general.noPackets = settingsDefault.general.noPackets;
     }
     if (!parliament.settings.general.esQueryTimeout) {
       parliament.settings.general.esQueryTimeout = settingsDefault.general.esQueryTimeout;

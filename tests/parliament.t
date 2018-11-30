@@ -1,4 +1,4 @@
-use Test::More tests => 25;
+use Test::More tests => 32;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -69,6 +69,13 @@ eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permis
 # Get settings good token
 $result = parliamentGetToken("/parliament/api/settings", $token);
 ok (exists $result->{notifiers});
+ok (exists $result->{general});
+ok (exists $result->{general}->{hostname});
+ok (exists $result->{general}->{outOfDate});
+ok (exists $result->{general}->{noPackets});
+ok (exists $result->{general}->{esQueryTimeout});
+ok (exists $result->{general}->{removeIssuesAfter});
+ok (exists $result->{general}->{removeAcknowledgedAfter});
 
 # Create second group
 $result = parliamentPost("/parliament/api/groups", '{"token": "' . $token . '", "title": "the second title", "description": "description for 2"}');

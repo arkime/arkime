@@ -113,6 +113,7 @@
           </div>
           <div class="row"
             v-if="settings.general">
+            <!-- out of date -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-prepend">
@@ -138,7 +139,8 @@
                 <strong>Out Of Date</strong>
                 issue will be added to the node's cluster.
               </p>
-            </div>
+            </div> <!-- /out of date -->
+            <!-- es query timeout -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-prepend">
@@ -164,7 +166,37 @@
                 <strong>ES Down</strong>
                 issue if no response is received within the specified time.
               </p>
-            </div>
+            </div> <!-- /es query timeout -->
+            <!-- low packets -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Low Packets Threshold
+                  </span>
+                </span>
+                <input type="number"
+                  class="form-control"
+                  id="noPackets"
+                  @input="debounceInput"
+                  v-model="settings.general.noPackets"
+                  max="1000"
+                  min="0"
+                />
+                <span class="input-group-append">
+                  <span class="input-group-text">
+                    packets
+                  </span>
+                </span>
+              </div>
+              <p class="form-text small text-muted">
+                Adds a
+                <strong>Low Packets</strong>
+                issue to the cluster if the capture node is receiving
+                fewer packets than this value.
+              </p>
+            </div> <!-- /low packets -->
+            <!-- remove issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-prepend">
@@ -188,7 +220,8 @@
               <p class="form-text small text-muted">
                 Removes issues that have not been seen again after the specified time.
               </p>
-            </div>
+            </div> <!-- /remove issues after -->
+            <!-- remove acknowledged issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-prepend">
@@ -213,7 +246,7 @@
                 Removes <strong>acknowledged</strong>
                 issues that have not been seen again after the specified time.
               </p>
-            </div>
+            </div> <!-- /remove acknowledged issues after -->
           </div>
         </div>
         <!-- /general -->
