@@ -180,8 +180,8 @@
                   id="noPackets"
                   @input="debounceInput"
                   v-model="settings.general.noPackets"
-                  max="1000"
-                  min="0"
+                  max="100000"
+                  min="-1"
                 />
                 <span class="input-group-append">
                   <span class="input-group-text">
@@ -194,6 +194,9 @@
                 <strong>Low Packets</strong>
                 issue to the cluster if the capture node is receiving
                 fewer packets than this value.
+                <strong>
+                  Set this to -1 if you wish to ignore this issue.
+                </strong>
               </p>
             </div> <!-- /low packets -->
             <!-- remove issues after -->
@@ -558,6 +561,10 @@ export default {
       this.success = '';
       if (successCloseTimeout) { clearTimeout(successCloseTimeout); }
 
+      if (!this.settings.general.noPackets || this.settings.general.noPackets > 100000 || this.settings.general.noPackets < -1) {
+        this.settingsError = 'Low packets threshold must contain a number between -1 and 100,000.';
+        return;
+      }
       if (!this.settings.general.outOfDate || this.settings.general.outOfDate > 3600) {
         this.settingsError = 'Capture node\'s checkin must contain a number less than or equal to 3600 seconds (1 hour)';
         return;
