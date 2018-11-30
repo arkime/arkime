@@ -28,7 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - configure connection node/link popup data
   - release - build snf plugin with screwdriver
   - capture - fix tls parser inifite loop
-
+  - viewer - can customize fields in the info column
 
 1.6.1 2018/11/06
   - NOTICE: db.pl upgrade is required
