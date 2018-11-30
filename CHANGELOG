@@ -27,6 +27,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - parliament - add option to provide link to dashboard in alert notifications
   - viewer - configure connection node/link popup data
   - release - build snf plugin with screwdriver
+  - capture - fix tls parser inifite loop
 
 
 1.6.1 2018/11/06

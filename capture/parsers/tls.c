@@ -584,7 +584,7 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                 BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
                 BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
 
-                if (BSB_REMAINING(cbsb) > 2) {
+                if (BSB_REMAINING(cbsb) > 6) {
                     int etotlen = 0;
                     BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
 
@@ -593,8 +593,8 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                     BSB ebsb;
                     BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
 
-                    while (BSB_REMAINING(ebsb) > 0) {
-                        int etype = 0, elen = 0;
+                    while (BSB_REMAINING(ebsb) > 4) {
+                        uint16_t etype = 0, elen = 0;
 
                         BSB_IMPORT_u16 (ebsb, etype);
                         BSB_IMPORT_u16 (ebsb, elen);
@@ -629,9 +629,9 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                             BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
                             BSB_IMPORT_skip (ebsb, elen);
 
-                            int len = 0;
+                            uint16_t len = 0;
                             BSB_IMPORT_u16(bsb, len); // list len
-                            while (len) {
+                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
                                 uint16_t c = 0;
                                 BSB_IMPORT_u16(bsb, c);
                                 if (!tls_is_grease_value(c)) {
