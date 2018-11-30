@@ -92,8 +92,8 @@
                   <b-dropdown-item
                     v-for="(field, k) in group"
                     :key="key + k"
-                    :class="{'active':isVisible(field.dbField) >= 0}"
-                    @click.stop.prevent="toggleVisibility(field.dbField)"
+                    :class="{'active':isColVisible(field.dbField) >= 0}"
+                    @click.stop.prevent="toggleColVis(field.dbField)"
                     v-b-tooltip.hover.top
                     :title="field.help">
                     {{ field.friendlyName }}
@@ -230,8 +230,8 @@
                     <b-dropdown-item
                       v-for="(field, k) in group"
                       :key="key + k"
-                      :class="{'active':isVisibleInInfo(field.dbField) >= 0}"
-                      @click.stop.prevent="toggleInfoVisibility(field.dbField)"
+                      :class="{'active':isInfoVisible(field.dbField) >= 0}"
+                      @click.stop.prevent="toggleInfoVis(field.dbField)"
                       v-b-tooltip.hover.top
                       :title="field.help">
                       {{ field.friendlyName }}
@@ -247,7 +247,7 @@
                 size="sm"
                 class="pull-right">
                 <b-dropdown-item
-                  @click="toggleVisibility(header.dbField, header.sortBy)">
+                  @click="toggleColVis(header.dbField, header.sortBy)">
                   Hide Column
                 </b-dropdown-item>
                 <!-- single field column -->
@@ -402,8 +402,8 @@
               <td :colspan="headers.length + 1">
                 <moloch-session-detail
                   :session="session"
-                  @toggleColVis="toggleVisibility"
-                  @toggleInfoVis="toggleInfoVisibility">
+                  @toggleColVis="toggleColVis"
+                  @toggleInfoVis="toggleInfoVis">
                 </moloch-session-detail>
               </td>
             </tr> <!-- /session detail -->
@@ -774,18 +774,18 @@ export default {
      * @param {string} id       The id of the column
      * @return {number} number  The index of the visible header
      */
-    isVisible: function (id) {
-      return this.tableState.visibleHeaders.indexOf(id);
+    isColVisible: function (id) {
+      return this.isVisible(id, this.tableState.visibleHeaders);
     },
     /**
      * Toggles the visibility of a column given its id
      * @param {string} id   The id of the column to show/hide (toggle)
      * @param {string} sort Option sort id for columns that have sortBy
      */
-    toggleVisibility: function (id, sort) {
+    toggleColVis: function (id, sort) {
       let reloadData = false;
 
-      let index = this.isVisible(id);
+      let index = this.isColVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
@@ -897,30 +897,54 @@ export default {
         });
     },
     /**
-     * Determines a field's visibility in the info column given its id
+     * Determines a field's visibility in the array provided
      * @param {string} id       The id of the column
+     * @param {array} array     The array to search for the field
      * @return {number} number  The index of the visible header
      */
-    isVisibleInInfo: function (id) {
+    isVisible: function (id, array) {
       let index = 0;
 
-      for (let field of this.infoFields) {
+      for (let field of array) {
+        if (typeof field !== 'object') {
+          field = this.getField(field);
+        }
+
+        if (!field) { return -1; }
+
         if (field.dbField === id || field.exp === id) {
           return index;
         }
+
+        if (field.aliases) { // check aliases too
+          for (let alias of field.aliases) {
+            if (id === alias) {
+              return index;
+            }
+          }
+        }
+
         index++;
       }
 
       return -1;
     },
     /**
+     * Determines a field's visibility in the info column given its id
+     * @param {string} id       The id of the column
+     * @return {number} number  The index of the visible header
+     */
+    isInfoVisible: function (id) {
+      return this.isVisible(id, this.infoFields);
+    },
+    /**
      * Toggles the visibility of a field in the info column given its id
      * @param {string} id The id of the column to show/hide (toggle)
      */
-    toggleInfoVisibility: function (id) {
+    toggleInfoVis: function (id) {
       let reloadData = false;
 
-      let index = this.isVisibleInInfo(id);
+      let index = this.isInfoVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the info fields list
@@ -1237,9 +1261,16 @@ export default {
     getField: function (fieldId) {
       for (let key in this.fields) {
         if (this.fields.hasOwnProperty(key)) {
-          let item = this.fields[key];
-          if (item.dbField === fieldId) {
-            return item;
+          let field = this.fields[key];
+          if (field.dbField === fieldId || field.exp === fieldId) {
+            return field;
+          }
+          if (field.aliases) {
+            for (let alias of field.aliases) {
+              if (alias === fieldId) {
+                return field;
+              }
+            }
           }
         }
       }
