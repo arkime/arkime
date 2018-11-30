@@ -1633,7 +1633,6 @@ button.fit-btn {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 360px;
 }
 .leave-enter-active, .leave-leave-active {
   transition: all 0.5s ease;
