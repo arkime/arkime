@@ -567,7 +567,6 @@ function getStats (cluster) {
           }
 
           // Look for issues
-
           if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
               type  : 'outOfDate',
@@ -576,7 +575,7 @@ function getStats (cluster) {
             });
           }
 
-          if (stat.deltaPacketsPerSec < getGeneralSetting('noPackets')) {
+          if (stat.deltaPacketsPerSec <= getGeneralSetting('noPackets')) {
             setIssue(cluster, {
               type: 'noPackets',
               node: stat.nodeName,
