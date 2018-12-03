@@ -157,9 +157,6 @@ export default {
       let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
       let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
-    },
-    shiftKeyHold: function () {
-      return this.$store.state.shiftKeyHold;
     }
   },
   watch: {

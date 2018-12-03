@@ -95,11 +95,6 @@ export default {
       ]
     };
   },
-  computed: {
-    shiftKeyHold: function () {
-      return this.$store.state.shiftKeyHold;
-    }
-  },
   watch: {
     dataInterval: function () {
       if (reqPromise) { // cancel the interval and reset it if necessary

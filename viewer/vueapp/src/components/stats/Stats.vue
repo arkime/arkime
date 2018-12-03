@@ -204,7 +204,7 @@
             </span>
           </span>
         </div>
-        <input type="search"
+        <input type="text"
           class="form-control"
           v-model="searchTerm"
           v-focus-input="focusInput"
