@@ -233,7 +233,7 @@ export default {
             }
             break;
           case 'integer':
-            if (this.field.category !== 'port') {
+            if (this.field.category !== 'port' && this.field.exp !== 'vlan') {
               qVal = val; // save original value as the query value
               val = this.$options.filters.commaString(val);
             }
