@@ -84,6 +84,13 @@ sub commify {
 }
 
 ################################################################################
+sub logmsg
+{
+  local $| = 1;
+  print (scalar localtime() . " ") if ($verbose > 0);
+  print ("@_");
+}
+################################################################################
 sub showHelp($)
 {
     my ($str) = @_;
@@ -160,9 +167,9 @@ sub waitFor
 sub esIndexExists
 {
     my ($index) = @_;
-    print "HEAD ${main::elasticsearch}/$index\n" if ($verbose > 2);
+    logmsg "HEAD ${main::elasticsearch}/$index\n" if ($verbose > 2);
     my $response = $main::userAgent->head("${main::elasticsearch}/$index");
-    print "HEAD RESULT:", $response->code, "\n" if ($verbose > 3);
+    logmsg "HEAD RESULT:", $response->code, "\n" if ($verbose > 3);
     return $response->code == 200;
 }
 ################################################################################
@@ -177,13 +184,13 @@ sub esCheckAlias
 sub esGet
 {
     my ($url, $dontcheck) = @_;
-    print "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
+    logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init") || ($response->code != 200 && !$dontcheck)) {
       die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
-    print "GET RESULT:", Dumper($json), "\n" if ($verbose > 3);
+    logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -193,20 +200,20 @@ sub esPost
     my ($url, $content, $dontcheck) = @_;
 
     if ($NOCHANGES && $url !~ /_search/) {
-      print "NOCHANGE: POST ${main::elasticsearch}$url\n";
+      logmsg "NOCHANGE: POST ${main::elasticsearch}$url\n";
       return;
     }
 
-    print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
-    print "POST DATA:", Dumper($content), "\n" if ($verbose > 3);
+    logmsg "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
+    logmsg "POST DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json");
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
-      print "POST RESULT:", $response->content, "\n" if ($verbose > 3);
+      logmsg "POST RESULT:", $response->content, "\n" if ($verbose > 3);
       die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
 
     my $json = from_json($response->content);
-    print "POST RESULT:", Dumper($json), "\n" if ($verbose > 3);
+    logmsg "POST RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -216,20 +223,20 @@ sub esPut
     my ($url, $content, $dontcheck) = @_;
 
     if ($NOCHANGES) {
-      print "NOCHANGE: PUT ${main::elasticsearch}$url\n";
+      logmsg "NOCHANGE: PUT ${main::elasticsearch}$url\n";
       return;
     }
 
-    print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
-    print "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
+    logmsg "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
+    logmsg "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
-      print Dumper($response);
+      logmsg Dumper($response);
       die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     }
 
     my $json = from_json($response->content);
-    print "PUT RESULT:", Dumper($json), "\n" if ($verbose > 3);
+    logmsg "PUT RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -239,11 +246,11 @@ sub esDelete
     my ($url, $dontcheck) = @_;
 
     if ($NOCHANGES) {
-      print "NOCHANGE: DELETE ${main::elasticsearch}$url\n";
+      logmsg "NOCHANGE: DELETE ${main::elasticsearch}$url\n";
       return;
     }
 
-    print "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
+    logmsg "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
       die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
@@ -260,18 +267,18 @@ sub esCopy
     $main::userAgent->timeout(7200);
 
     my $status = esGet("/_stats/docs", 1);
-    print "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
+    logmsg "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
 
     esPost("/_reindex", to_json({"source" => {"index" => $PREFIX.$srci}, "dest" => {"index" => $PREFIX.$dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
     my $status = esGet("/${PREFIX}${dsti}/_refresh", 1);
     my $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} > $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
-        print $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
+        logmsg $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
         die "\nERROR - Copy failed from $srci to $dsti, you will probably need to delete $dsti and run upgrade again.  Make sure to not change the index while upgrading.\n\n";
     }
 
-    print "\n";
+    logmsg "\n";
     $main::userAgent->timeout(60);
 }
 ################################################################################
@@ -315,7 +322,7 @@ sub esAlias
 {
     my ($cmd, $index, $alias) = @_;
 
-    print "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
+    logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
 }
 
@@ -332,7 +339,7 @@ sub sequenceCreate
   }
 }';
 
-    print "Creating sequence_v2 index\n" if ($verbose > 0);
+    logmsg "Creating sequence_v2 index\n" if ($verbose > 0);
     esPut("/${PREFIX}sequence_v2", $settings, 1);
     esAlias("add", "sequence_v2", "sequence");
     sequenceUpdate();
@@ -350,7 +357,7 @@ sub sequenceUpdate
   }
 }';
 
-    print "Setting sequence_v2 mapping\n" if ($verbose > 0);
+    logmsg "Setting sequence_v2 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}sequence_v2/sequence/_mapping", $mapping);
 }
 ################################################################################
@@ -358,7 +365,7 @@ sub sequenceUpgrade
 {
 
     if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v2") && esIndexExists("${PREFIX}sequence_v2")) {
-        print ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v2\n");
+        logmsg ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v2\n");
         return;
     }
 
@@ -367,7 +374,7 @@ sub sequenceUpgrade
     esAlias("remove", "sequence_v1", "sequence");
     my $results = esGet("/${PREFIX}sequence_v1/_search?version=true&size=10000", 0);
 
-    print "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v1 to ${PREFIX}sequence_v2\n";
+    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v1 to ${PREFIX}sequence_v2\n";
 
     return if ($results->{hits}->{total} == 0);
 
@@ -390,7 +397,7 @@ sub filesCreate
   }
 }';
 
-    print "Creating files_v5 index\n" if ($verbose > 0);
+    logmsg "Creating files_v5 index\n" if ($verbose > 0);
     esPut("/${PREFIX}files_v5", $settings);
     esAlias("add", "files_v5", "files");
     filesUpdate();
@@ -440,7 +447,7 @@ sub filesUpdate
   }
 }';
 
-    print "Setting files_v5 mapping\n" if ($verbose > 0);
+    logmsg "Setting files_v5 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}files_v5/file/_mapping", $mapping);
 }
 ################################################################################
@@ -456,7 +463,7 @@ sub statsCreate
   }
 }';
 
-    print "Creating stats index\n" if ($verbose > 0);
+    logmsg "Creating stats index\n" if ($verbose > 0);
     esPut("/${PREFIX}stats_v3", $settings);
     esAlias("add", "stats_v3", "stats");
     statsUpdate();
@@ -496,7 +503,7 @@ my $mapping = '
   }
 }';
 
-    print "Setting stats mapping\n" if ($verbose > 0);
+    logmsg "Setting stats mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}stats_v3/stat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
@@ -512,7 +519,7 @@ sub dstatsCreate
   }
 }';
 
-    print "Creating dstats_v3 index\n" if ($verbose > 0);
+    logmsg "Creating dstats_v3 index\n" if ($verbose > 0);
     esPut("/${PREFIX}dstats_v3", $settings);
     esAlias("add", "dstats_v3", "dstats");
     dstatsUpdate();
@@ -561,7 +568,7 @@ my $mapping = '
   }
 }';
 
-    print "Setting dstats_v3 mapping\n" if ($verbose > 0);
+    logmsg "Setting dstats_v3 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}dstats_v3/dstat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
@@ -577,7 +584,7 @@ sub fieldsCreate
   }
 }';
 
-    print "Creating fields index\n" if ($verbose > 0);
+    logmsg "Creating fields index\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v2", $settings);
     esAlias("add", "fields_v2", "fields");
     fieldsUpdate();
@@ -603,7 +610,7 @@ sub fieldsUpdate
   }
 }';
 
-    print "Setting fields_v2 mapping\n" if ($verbose > 0);
+    logmsg "Setting fields_v2 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v2/field/_mapping", $mapping);
 
     esPost("/${PREFIX}fields_v2/field/ip", '{
@@ -994,7 +1001,7 @@ sub queriesCreate
   }
 }';
 
-    print "Creating queries index\n" if ($verbose > 0);
+    logmsg "Creating queries index\n" if ($verbose > 0);
     esPut("/${PREFIX}queries_v2", $settings);
     queriesUpdate();
 }
@@ -1039,7 +1046,7 @@ sub queriesUpdate
   }
 }';
 
-    print "Setting queries mapping\n" if ($verbose > 0);
+    logmsg "Setting queries mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}queries_v2/query/_mapping?pretty", $mapping);
     esAlias("add", "queries_v2", "queries");
 }
@@ -1133,18 +1140,18 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
   "mappings":' . $mapping . '
 }';
 
-    print "Creating sessions template\n" if ($verbose > 0);
+    logmsg "Creating sessions template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions2_template", $template);
 
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
-    print "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+    logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
         esPut("/$i/session/_mapping", $mapping, 1);
     }
 
-    print "\n";
+    logmsg "\n";
 }
 
 ################################################################################
@@ -1219,18 +1226,18 @@ sub historyUpdate
   "mappings":' . $mapping . '
 }';
 
-print "Creating history template\n" if ($verbose > 0);
+logmsg "Creating history template\n" if ($verbose > 0);
 esPut("/_template/${PREFIX}history_v1_template", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
-print "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
 foreach my $i (keys %{$indices}) {
     progress("$i ");
     esPut("/$i/history/_mapping", $mapping, 1);
 }
 
-print "\n";
+logmsg "\n";
 }
 ################################################################################
 
@@ -1317,10 +1324,10 @@ sub huntsCreate
   }
 }';
 
-print "Setting hunts mapping\n" if ($verbose > 0);
+logmsg "Setting hunts mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}hunts_v1", $settings);
 esAlias("add", "hunts_v1", "hunts");
-print "Setting hunts_v1 mapping\n" if ($verbose > 0);
+logmsg "Setting hunts_v1 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}hunts_v1/hunt/_mapping?pretty", $mapping);
 }
 ################################################################################
@@ -1338,7 +1345,7 @@ sub usersCreate
   }
 }';
 
-    print "Creating users_v6 index\n" if ($verbose > 0);
+    logmsg "Creating users_v6 index\n" if ($verbose > 0);
     esPut("/${PREFIX}users_v6", $settings);
     esAlias("add", "users_v6", "users");
     usersUpdate();
@@ -1426,7 +1433,7 @@ sub usersUpdate
   }
 }';
 
-    print "Setting users_v6 mapping\n" if ($verbose > 0);
+    logmsg "Setting users_v6 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}users_v6/user/_mapping?pretty", $mapping);
 }
 ################################################################################
@@ -1447,7 +1454,7 @@ sub createNewAliasesFromOld
     my ($alias, $newName, $oldName, $createFunction) = @_;
 
     if (esCheckAlias("${PREFIX}$alias", "${PREFIX}$newName") && esIndexExists("${PREFIX}$newName")) {
-        print ("SKIPPING - ${PREFIX}$alias already points to ${PREFIX}$newName\n");
+        logmsg ("SKIPPING - ${PREFIX}$alias already points to ${PREFIX}$newName\n");
         return;
     }
 
@@ -1521,7 +1528,7 @@ my ($loud) = @_;
     my $found = $version->{found};
 
     if (!defined $found) {
-        print "This is a fresh Moloch install\n" if ($loud);
+        logmsg "This is a fresh Moloch install\n" if ($loud);
         $main::versionNumber = -1;
         if ($loud && $ARGV[1] !~ "init") {
             die "Looks like moloch wasn't installed, must do init"
@@ -1534,7 +1541,7 @@ my ($loud) = @_;
 }
 ################################################################################
 sub dbCheckForActivity {
-    print "This upgrade requires all capture nodes to be stopped.  Checking\n";
+    logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
     my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000");
     sleep(6);
     my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000");
@@ -1558,7 +1565,7 @@ sub dbCheckForActivity {
 sub dbCheckHealth {
     my $health = esGet("/_cluster/health");
     if ($health->{status} ne "green") {
-        print("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
+        logmsg("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
     return $health;
 }
@@ -1571,7 +1578,7 @@ sub dbCheck {
     if ($main::esVersion < 50500 ||
         $main::esVersion >= 70000)
     {
-        print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* < 5.5.0 are not supported\n",
               "* 5.6.x is recommended\n",
               "* >= 6.x is supported but not well tested\n",
@@ -1606,18 +1613,18 @@ sub dbCheck {
 
         if ($errstr) {
             $error = 1;
-            print ("\nERROR: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
-            print($errstr);
+            logmsg ("\nERROR: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
+            logmsg($errstr);
         }
 
         if ($warnstr) {
-            print ("\nWARNING: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
-            print($warnstr);
+            logmsg ("\nWARNING: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
+            logmsg($warnstr);
         }
     }
 
     if ($error) {
-        print "\nFix above errors before proceeding\n";
+        logmsg "\nFix above errors before proceeding\n";
         exit (1);
     }
 }
@@ -1628,13 +1635,13 @@ sub checkForOld2Indices {
 
     while ( my ($key, $value) = each (%{$result})) {
         if ($value->{settings}->{index}->{version}->{created} < 2000000) {
-            print "WARNING: You must delete index '$key' before upgrading to ES 5\n";
+            logmsg "WARNING: You must delete index '$key' before upgrading to ES 5\n";
             $found = 1;
         }
     }
 
     if ($found) {
-        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 2.x otherwise ES 5.x will NOT start.\n\n";
+        logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 2.x otherwise ES 5.x will NOT start.\n\n";
     }
 }
 ################################################################################
@@ -1644,13 +1651,13 @@ sub checkForOld5Indices {
 
     while ( my ($key, $value) = each (%{$result})) {
         if ($value->{settings}->{index}->{version}->{created} < 5000000) {
-            print "WARNING: You must delete index '$key' before upgrading to ES 6\n";
+            logmsg "WARNING: You must delete index '$key' before upgrading to ES 6\n";
             $found = 1;
         }
     }
 
     if ($found) {
-        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 5.x otherwise ES 6.x will NOT start.\n\n";
+        logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 5.x otherwise ES 6.x will NOT start.\n\n";
     }
 }
 ################################################################################
@@ -1658,21 +1665,21 @@ sub progress {
     my ($msg) = @_;
     if ($verbose == 1) {
         local $| = 1;
-        print ".";
+        logmsg ".";
     } elsif ($verbose == 2) {
         local $| = 1;
-        print "$msg";
+        logmsg "$msg";
     }
 }
 ################################################################################
 sub optimizeOther {
-    print "Optimizing Admin Indices\n";
+    logmsg "Optimizing Admin Indices\n";
     foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
     }
-    print "\n";
-    print "\n" if ($verbose > 0);
+    logmsg "\n";
+    logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
 sub parseArgs {
@@ -1705,7 +1712,7 @@ sub parseArgs {
                 $SHARDSPERNODE = int($ARGV[$pos]);
             }
         } else {
-            print "Unknown option '", $ARGV[$pos], "'\n";
+            logmsg "Unknown option '", $ARGV[$pos], "'\n";
         }
     }
 }
@@ -1829,7 +1836,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     dbESVersion();
     $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
-    printf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     esPost("/_flush/synced", "", 1);
 
     @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
@@ -1838,7 +1845,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
-                esGet("/$i/_flush", 1);
+                esPost("/$i/_flush/synced", "", 1);
                 esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
             }
         } else {
@@ -1865,7 +1872,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         $startTime += 24*60*60;
     }
 
-    printf ("Expiring %s history indices, %s optimizing %s\n", commify(scalar(keys %{$hindices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    logmsg sprintf ("Expiring %s history indices, %s optimizing %s\n", commify(scalar(keys %{$hindices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$hindices})) {
         progress("$i ");
         if (exists $hindices->{$i}->{OPTIMIZEIT}) {
@@ -1883,13 +1890,13 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     $main::userAgent->timeout(7200);
     esPost("/_flush/synced", "", 1);
     optimizeOther();
-    printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
+    logmsg sprintf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1);
     }
     esPost("/_flush/synced", "", 1);
-    print "\n";
+    logmsg "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
@@ -1959,7 +1966,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
         esPost("/${PREFIX}files/file/" . $hit->{_id} . "/_update", $script);
     }
-    print "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] eq "rm") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -1969,21 +1976,21 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
     }
-    print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    logmsg "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?missing$/) {
     my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
-    print "Need to remove references to these files from database:\n";
+    logmsg "Need to remove references to these files from database:\n";
     my $cnt = 0;
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if (! -f $hit->{_source}->{name}) {
-            print $hit->{_source}->{name}, "\n";
+            logmsg $hit->{_source}->{name}, "\n";
             $cnt++;
         }
     }
     die "Nothing found to remove." if ($cnt == 0);
-    print "\n";
+    logmsg "\n";
     waitFor("YES", "Do you want to remove file references from database?");
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if (! -f $hit->{_source}->{name}) {
@@ -1993,13 +2000,13 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?node$/) {
     my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
-    print "Deleting ", $results->{hits}->{total}, " files\n";
+    logmsg "Deleting ", $results->{hits}->{total}, " files\n";
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
     }
     esDelete("/${PREFIX}stats/stat/" . $ARGV[2], 1);
     my $results = esGet("/${PREFIX}dstats/_search?size=10000&q=nodeName:$ARGV[2]");
-    print "Deleting ", $results->{hits}->{total}, " stats\n";
+    logmsg "Deleting ", $results->{hits}->{total}, " stats\n";
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
     }
@@ -2025,14 +2032,14 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
     my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
     closedir $dh;
-    print "Checking ", scalar @files, " files, this may take a while.\n";
+    logmsg "Checking ", scalar @files, " files, this may take a while.\n";
     foreach my $file (@files) {
         $file =~ /(\d+)-(\d+).pcap/;
         my $filenum = int($2);
         my $ctime = (stat("$dir/$file"))[10];
         my $info = esGet("/${PREFIX}files/file/$ARGV[2]-$filenum", 1);
         if (!$info->{found}) {
-            print "Adding $dir/$file $filenum $ctime\n";
+            logmsg "Adding $dir/$file $filenum $ctime\n";
             esPost("/${PREFIX}files/file/$ARGV[2]-$filenum", to_json({
                          'locked' => 0,
                          'first' => $ctime,
@@ -2040,7 +2047,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
                          'name' => "$dir/$file",
                          'node' => $ARGV[2]}), 1);
         } elsif ($verbose > 0) {
-            print "Ok $dir/$file\n";
+            logmsg "Ok $dir/$file\n";
         }
     }
     exit 0;
@@ -2097,7 +2104,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
           esPost("/${PREFIX}files/file/$node-$filenum", to_json($remotefileshash{$file}), 1);
         }
     }
-    print("\n") if ($verbose > 0);
+    logmsg("\n") if ($verbose > 0);
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
     my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
@@ -2129,11 +2136,11 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
+logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
-    print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
-    print "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
 if (int($SHARDS) > $main::numberOfNodes) {
@@ -2141,7 +2148,7 @@ if (int($SHARDS) > $main::numberOfNodes) {
 } elsif ($SHARDS == -1) {
     $SHARDS = $main::numberOfNodes;
     if ($SHARDS > 24) {
-        print "Setting # of shards to 24, use --shards for a different number\n";
+        logmsg "Setting # of shards to 24, use --shards for a different number\n";
         $SHARDS = 24;
     }
 }
@@ -2157,15 +2164,15 @@ dbCheck();
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        print "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
-        print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
+        logmsg "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
         waitFor("WIPE", "do you want to wipe everything?");
     } elsif ($ARGV[1] eq "clean") {
         waitFor("CLEAN", "do you want to clean everything?");
     }
-    print "Erasing\n";
+    logmsg "Erasing\n";
     esDelete("/${PREFIX}tags_v3", 1);
     esDelete("/${PREFIX}tags_v2", 1);
     esDelete("/${PREFIX}tags", 1);
@@ -2211,7 +2218,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     exit 0 if ($ARGV[1] =~ "clean");
 
-    print "Creating\n";
+    logmsg "Creating\n";
     sequenceCreate();
     filesCreate();
     statsCreate();
@@ -2230,19 +2237,19 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
 # For really old versions don't support upgradenoprompt
     if ($main::versionNumber < 50) {
-        print "Can not upgrade directly, please upgrade to Moloch 1.0 or 1.1 first. (Db version $main::VersionNumber)\n\n";
+        logmsg "Can not upgrade directly, please upgrade to Moloch 1.0 or 1.1 first. (Db version $main::VersionNumber)\n\n";
         exit 1;
     }
 
     if ($health->{status} eq "red") {
-        print "Not auto upgrading when elasticsearch status is red.\n\n";
+        logmsg "Not auto upgrading when elasticsearch status is red.\n\n";
         waitFor("RED", "do you want to really want to upgrade?");
     } elsif ($ARGV[1] ne "upgradenoprompt") {
-        print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
+        logmsg "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
         waitFor("UPGRADE", "do you want to upgrade?");
     }
 
-    print "Starting Upgrade\n";
+    logmsg "Starting Upgrade\n";
 
     esDelete("/${PREFIX}dstats_v2/version/version", 1);
     esDelete("/${PREFIX}dstats_v3/version/version", 1);
@@ -2286,10 +2293,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         checkForOld5Indices();
         usersUpdate();
     } else {
-        print "db.pl is hosed\n";
+        logmsg "db.pl is hosed\n";
     }
 }
 
-print "Finished\n";
+logmsg "Finished\n";
 
 sleep 1;
