@@ -290,8 +290,9 @@
       <div class="network-container"
         v-show="!error && recordsFiltered !== 0">
         <div id="network"></div>
-        <div class="node-popup connections-popup" ref="nodePopup"></div>
-        <div class="link-popup connections-popup" ref="linkPopup"></div>
+        <div ref="infoPopup">
+          <div class="connections-popup"></div>
+        </div>
       </div>
 
     </div>
@@ -317,11 +318,12 @@ const saveSvgAsPng = require('save-svg-as-png');
 
 // save frequently accessed elements
 let networkElem;
-let nodePopupVue;
-let linkPopupVue;
+let popupVue;
 
 // save visualization data
 let force, svgMain;
+
+let fieldsInitialized = false;
 
 // default fields to display in the node/link popups
 const defaultLinkFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
@@ -474,6 +476,8 @@ export default {
       saveSvgAsPng.saveSvgAsPng(document.getElementById('graphSvg'), 'connections.png', {backgroundColor: '#FFFFFF'});
     },
     closePopups: function () {
+      if (popupVue) { popupVue.$destroy(); }
+      popupVue = undefined;
       $('.connections-popup').hide();
     },
     isFieldVisible: function (id, list) {
@@ -561,13 +565,16 @@ export default {
       FieldService.get(true)
         .then((result) => {
           this.fields = result;
-          this.fields.push({
-            dbField: 'ip.dst:port',
-            exp: 'ip.dst:port',
-            help: 'Destination IP:Destination Port',
-            group: 'general',
-            friendlyName: 'Dst IP:Dst Port'
-          });
+          if (!fieldsInitialized) {
+            this.fields.push({
+              dbField: 'ip.dst:port',
+              exp: 'ip.dst:port',
+              help: 'Destination IP:Destination Port',
+              group: 'general',
+              friendlyName: 'Dst IP:Dst Port'
+            });
+            fieldsInitialized = true;
+          }
 
           for (let field of this.fields) {
             if (field.dbField === this.query.srcField) {
@@ -729,8 +736,8 @@ export default {
         .data(json.nodes)
         .enter().append('g')
         .attr('class', 'node')
-        .attr('id', function (d) { return 'id' + d.id.replace(/[:.]/g, '_'); })
-        // .attr('y', function (d,i) {return i; })
+        /* eslint-disable no-useless-escape */
+        .attr('id', function (d) { return 'id' + d.id.replace(/[\[\]:.]/g, '_'); })
         .call(self.drag)
         .on('mouseover', function (d) {
           if (d3.select(this).classed('dragging')) {
@@ -803,11 +810,11 @@ export default {
       }
 
       this.closePopups();
-      if (!nodePopupVue) {
-        nodePopupVue = new Vue({
+      if (!popupVue) {
+        popupVue = new Vue({
           template: `
-            <div class="node-popup connections-popup">
-              <div class="margined-bottom">
+            <div class="connections-popup">
+              <div class="mb-2">
                 <strong>{{node.id}}</strong>
                 <a class="pull-right cursor-pointer no-decoration"
                   @click="closePopup()">
@@ -830,10 +837,23 @@ export default {
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(node[field])">
-                      {{ node[field] }}
+                      <moloch-session-field
+                        :value="node[field]"
+                        :session="node"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
                     </span>
-                    <span v-else>
-                      {{ node[field].join(', ') }}
+                    <span v-else
+                      v-for="value in node[field]">
+                      <moloch-session-field
+                        :value="value"
+                        :session="node"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
                     </span>&nbsp;
                   </dd>
                 </span>
@@ -841,12 +861,12 @@ export default {
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
-                    href="#"
+                    href="javascript:void(0)"
                     @click.stop.prevent="addExpression('&&')">
                     AND
                   </a>&nbsp;
                   <a class="cursor-pointer no-decoration"
-                    href="#"
+                    href="javascript:void(0)"
                     @click.stop.prevent="addExpression('||')">
                     OR
                   </a>
@@ -854,7 +874,7 @@ export default {
               </dl>
 
               <a class="cursor-pointer no-decoration"
-                href="#"
+                href="javascript:void(0)"
                 @click.stop.prevent="hideNode">
                 <span class="fa fa-eye-slash">
                 </span>&nbsp;
@@ -872,7 +892,8 @@ export default {
             hideNode: function () {
               let self = this;
               self.$parent.closePopups();
-              self.$parent.svg.select('#id' + self.node.id.replace(/[:.]/g, '_')).remove();
+              /* eslint-disable no-useless-escape */
+              self.$parent.svg.select('#id' + self.node.id.replace(/[\[\]:.]/g, '_')).remove();
               self.$parent.svg.selectAll('.link')
                 .filter(function (d, i) {
                   return d.source.id === self.node.id || d.target.id === self.node.id;
@@ -887,23 +908,23 @@ export default {
               this.$parent.closePopups();
             }
           }
-        }).$mount(this.$refs.nodePopup);
+        }).$mount($(this.$refs.infoPopup)[0].firstChild);
       }
 
-      nodePopupVue.node = node;
+      popupVue.node = node;
 
-      that.positionPopup('.node-popup', node.px, node.py);
+      $('.connections-popup').show();
     },
     showLinkPopup: function (that, link, mouse) {
       link.dstExp = that.dbField2Exp(that.query.dstField);
       link.srcExp = that.dbField2Exp(that.query.srcField);
 
       this.closePopups();
-      if (!linkPopupVue) {
-        linkPopupVue = new Vue({
+      if (!popupVue) {
+        popupVue = new Vue({
           template: `
-            <div class="link-popup connections-popup">
-              <div class="margined-bottom">
+            <div class="connections-popup">
+              <div class="mb-2">
                 <strong>Link</strong>
                 <a class="pull-right cursor-pointer no-decoration"
                    @click="closePopup">
@@ -911,7 +932,9 @@ export default {
                 </a>
               </div>
               <div>{{link.source.id}}</div>
-              <div class="margined-bottom">{{link.target.id}}</div>
+              <div class="mb-2">
+                {{link.target.id}}
+              </div>
 
               <dl class="dl-horizontal">
                 <dt>Sessions</dt>
@@ -924,10 +947,23 @@ export default {
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(link[field])">
-                      {{ link[field] }}
+                      <moloch-session-field
+                        :value="link[field]"
+                        :session="link"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
                     </span>
-                    <span v-else>
-                      {{ link[field].join(', ') }}
+                    <span v-else
+                      v-for="value in link[field]">
+                      <moloch-session-field
+                        :value="value"
+                        :session="link"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
                     </span>&nbsp;
                   </dd>
                 </span>
@@ -935,16 +971,16 @@ export default {
                 <dt>Expressions</dt>
                 <dd>
                   <a class="cursor-pointer no-decoration"
-                    href="#"
+                    href="javascript:void(0)"
                     @click="addExpression('&&')">AND</a>&nbsp;
                   <a class="cursor-pointer no-decoration"
-                    href="#"
+                    href="javascript:void(0)"
                     @click="addExpression('||')">OR</a>
                 </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
-                href="#"
+                href="javascript:void(0)"
                 @click="hideLink">
                 <span class="fa fa-eye-slash"></span>&nbsp;
                 Hide Link
@@ -976,30 +1012,12 @@ export default {
               this.$parent.closePopups();
             }
           }
-        }).$mount(this.$refs.linkPopup);
+        }).$mount($(this.$refs.infoPopup)[0].firstChild);
       }
 
-      linkPopupVue.link = link;
+      popupVue.link = link;
 
-      that.positionPopup('.link-popup', mouse[0], mouse[1]);
-    },
-    /**
-     * Positions and displays a popup on the connections graph within the view
-     * @param {num} px      The x coordinate of the mouse/node
-     * @param {num} py      The y coordinate of the mouse/node
-     * @param {obj} content The content to display in the popup
-     */
-    positionPopup: function (name, px, py) {
-      let x = -180; // 180 = width of popup + 10 padding
-
-      // if the position node is too far to the left to accommodate the popup,
-      // render it on the right of the node instead of the left
-      if (this.trans[0] + (px * this.scale) < 180) { x = 10; }
-
-      $(name).css({
-        left: this.trans[0] + (px * this.scale) + x,
-        top: this.trans[1] + (py * this.scale) - 20
-      }).show();
+      $('.connections-popup').show();
     },
     startD3: function () {
       let self = this;
@@ -1089,8 +1107,9 @@ export default {
       this.svg.selectAll('.link').remove();
       this.svg.selectAll('.node').remove();
 
-      $('.node-popup').remove();
-      $('.link-popup').remove();
+      if (popupVue) { popupVue.$destroy(); }
+      popupVue = undefined;
+      $('.connections-popup').remove();
 
       svgMain.remove();
       svgMain = null;
@@ -1167,24 +1186,19 @@ export default {
 
 .connections-page .connections-popup {
   position: absolute;
+  left: 0;
+  top: 148px;
+  bottom: 24px;
   display: none;
   font-size: smaller;
   padding: 4px 8px;
-  width: 250px;
-  z-index: 9999;
+  max-width: 300px;
   border: solid 1px var(--color-gray);
   background: var(--color-primary-lightest);
   white-space: nowrap;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: auto;
   text-overflow: ellipsis;
-
-  -webkit-border-radius: var(--px-sm);
-     -moz-border-radius: var(--px-sm);
-          border-radius: var(--px-sm);
-
-  -webkit-box-shadow: 6px 6px 16px -4px black;
-     -moz-box-shadow: 6px 6px 16px -4px black;
-          box-shadow: 6px 6px 16px -4px black;
 }
 .connections-page .connections-popup .dl-horizontal {
   margin-bottom: var(--px-md) !important;
@@ -1221,6 +1235,7 @@ export default {
   top: 110px;
   left: 0;
   right: 0;
+  z-index: 4;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: 0 0 16px -2px black;
