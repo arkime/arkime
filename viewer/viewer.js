@@ -3019,6 +3019,46 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
   });
 });
 
+app.get('/esrecovery/list', recordResponseTime, function(req, res) {
+  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
+
+  Promise.all([Db.recovery()]).then(([recoveries]) => {
+
+    var regex;
+    if (req.query.filter !== undefined) {
+      regex = new RegExp(req.query.filter);
+    }
+
+    let all = req.query.all === 'true' || req.query.all === true;
+
+    let result = [];
+
+    for (var recovery of recoveries) {
+      if (recovery.stage === 'done' && !all) { continue; }
+      if (regex && !recovery.index.match(regex) && !recovery.target_node.match(regex) && !recovery.source_node.match(regex)) { continue; }
+
+      result.push(recovery);
+    }
+
+    var sortField = req.query.sortField || "index";
+    if (sortField.match(/(index|type|stage|source_host|source.*|target.*)/)) {
+      if (req.query.desc === "true") {
+        result = result.sort(function(a,b){ return b[sortField].localeCompare(a[sortField]); });
+      } else {
+        result = result.sort(function(a,b){ return a[sortField].localeCompare(b[sortField]); });
+      }
+    } else {
+      if (req.query.desc === "true") {
+        result = result.sort(function(a,b){ return b[sortField] - a[sortField]; });
+      } else {
+        result = result.sort(function(a,b){ return a[sortField] - b[sortField]; });
+      }
+    }
+
+    res.send(result);
+  });
+});
+
 app.get('/esstats.json', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 

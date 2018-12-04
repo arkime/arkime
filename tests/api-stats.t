@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 58;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -99,6 +99,13 @@ my $test1Token = getTokenCookie("test1");
     $shards = viewerGet("/esshard/list");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
+
+# esrecovery
+    my $recovery = viewerGet("/esrecovery/list?all=true");
+    cmp_ok (@{$recovery}, ">=", 100, "tasks array size");
+
+    $recovery = viewerGet("/esrecovery/list");
+    cmp_ok (@{$recovery}, "==", 0, "tasks array size");
 
 # parliament.json
     my $stats = viewerGet("/parliament.json");

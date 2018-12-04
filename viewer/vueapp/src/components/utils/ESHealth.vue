@@ -39,6 +39,7 @@
         Shards: <strong>{{ esHealth.active_shards }}</strong><br>
         Relocating Shards: <strong>{{ esHealth.relocating_shards }}</strong><br>
         Unassigned Shards: <strong>{{ esHealth.unassigned_shards }}</strong>
+        Initializing Shards: <strong>{{ esHealth.initializing_shards }}</strong>
       </div>
       <div v-if="error">
 

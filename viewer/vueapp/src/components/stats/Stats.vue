@@ -286,6 +286,16 @@
             :data-interval="dataInterval">
           </es-shards>
         </b-tab>
+        <b-tab title="ES Recovery"
+          @click="tabIndexChange"
+          v-if="!multiviewer">
+          <es-recovery v-if="user && tabIndex === 6"
+            :data-interval="dataInterval"
+            :refreshData="refreshData"
+            :searchTerm="searchTerm"
+            :user="user">
+          </es-recovery>
+        </b-tab>
       </b-tabs>
     </div> <!-- /stats content -->
 
@@ -297,6 +307,7 @@
 import EsShards from './EsShards';
 import EsNodes from './EsNodes';
 import EsTasks from './EsTasks';
+import EsRecovery from './EsRecovery';
 import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
@@ -307,7 +318,7 @@ let searchInputTimeout;
 export default {
   name: 'Stats',
   components: {
-    CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks
+    CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks, EsRecovery
   },
   directives: { FocusInput },
   data: function () {

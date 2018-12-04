@@ -29,6 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - build snf plugin with screwdriver
   - capture - fix tls parser inifite loop
   - viewer - can customize fields in the info column
+  - viewer - new es recovery tab
 
 1.6.1 2018/11/06
   - NOTICE: db.pl upgrade is required

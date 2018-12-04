@@ -319,6 +319,10 @@ exports.shards = function(cb) {
   return internals.elasticSearchClient.cat.shards({format: "json", bytes: "b", h: "index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm"}, cb);
 };
 
+exports.recovery = function(cb) {
+  return internals.elasticSearchClient.cat.recovery({format: "json", bytes: "b", time: "ms"}, cb);
+};
+
 exports.getClusterSettings = function(options, cb) {
   return internals.elasticSearchClient.cluster.getSettings(options, cb);
 };
