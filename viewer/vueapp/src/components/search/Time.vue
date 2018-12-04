@@ -205,7 +205,8 @@ export default {
         allowInput: true, // let user edit the input manually
         enableTime: true, // display time picker
         enableSeconds: true, // display seconds in time picker
-        minuteIncrement: 1 // increment minutes by 1 instead of 5 (default)
+        minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
+        time_24hr: true // show 24 hour time instead of am/pm
       },
       stopTimeConfig: {
         dateFormat: 'U', // seconds from Jan 1, 1970
@@ -215,7 +216,8 @@ export default {
         allowInput: true, // let user edit the input manually
         enableTime: true, // display time picker
         enableSeconds: true, // display seconds in time picker
-        minuteIncrement: 1 // increment minutes by 1 instead of 5 (default)
+        minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
+        time_24hr: true // show 24 hour time instead of am/pm
       }
     };
   },
