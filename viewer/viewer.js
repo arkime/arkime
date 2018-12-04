@@ -2908,7 +2908,7 @@ app.get('/esshard/list', recordResponseTime, function(req, res) {
 
     var regex;
     if (req.query.filter !== undefined) {
-      regex = new RegExp(req.query.filter);
+      regex = new RegExp(req.query.filter.toLowerCase());
     }
 
     let result = {};
@@ -2917,7 +2917,7 @@ app.get('/esshard/list', recordResponseTime, function(req, res) {
     for (var shard of shards) {
       if (shard.node === null || shard.node === "null") { shard.node = "Unassigned"; }
 
-      if (regex && !shard.index.match(regex) && !shard.node.match(regex)) { continue; }
+      if (regex && !shard.index.toLowerCase().match(regex) && !shard.node.toLowerCase().match(regex)) { continue; }
 
       if (result[shard.index] === undefined) {
         result[shard.index] = {name: shard.index, nodes: {}};
