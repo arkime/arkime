@@ -24,7 +24,8 @@ const store = new Vuex.Store({
     user: undefined,
     responseTime: undefined,
     sessionsTableState: undefined,
-    views: undefined
+    views: undefined,
+    loadingData: false
   },
   mutations: {
     setTimeRange (state, value) {
@@ -110,6 +111,9 @@ const store = new Vuex.Store({
     },
     setViews (state, value) {
       state.views = value;
+    },
+    setLoadingData (state, value) {
+      state.loadingData = value;
     }
   }
 });

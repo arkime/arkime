@@ -213,10 +213,13 @@
       <div class="input-group input-group-sm pull-right mr-1 pt-1">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
+            <span v-if="loadingData"
+              class="fa fa-spinner fa-spin text-theme-accent">
+            </span>
+            <span v-else-if="!shiftKeyHold"
               class="fa fa-search fa-fw">
             </span>
-            <span v-else
+            <span v-else-if="shiftKeyHold"
               class="query-shortcut">
               Q
             </span>
@@ -375,6 +378,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setFocusSearch', newValue);
       }
+    },
+    loadingData: function () {
+      return this.$store.state.loadingData;
     }
   },
   watch: {

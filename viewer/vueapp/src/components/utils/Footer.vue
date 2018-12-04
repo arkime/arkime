@@ -5,8 +5,13 @@
       <small>
         Moloch v{{molochVersion}} |
         <a href="https://molo.ch">molo.ch</a>
-        <span v-if="responseTime">
+        <span v-if="responseTime && !loadingData">
           | {{ responseTime | commaString }}ms
+        </span>
+        <span v-if="loadingData">
+          |
+          <span class="fa fa-spinner fa-spin fa-lg text-theme-accent">
+          </span>
         </span>
       </small>
     </p>
@@ -25,6 +30,9 @@ export default {
   computed: {
     responseTime: function () {
       return this.$store.state.responseTime;
+    },
+    loadingData: function () {
+      return this.$store.state.loadingData;
     }
   }
 };

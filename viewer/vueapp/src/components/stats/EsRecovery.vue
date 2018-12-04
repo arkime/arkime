@@ -2,7 +2,7 @@
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="loading && !error">
+    <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -53,7 +53,7 @@ export default {
     return {
       stats: null,
       error: '',
-      loading: true,
+      initialLoading: true,
       totalValues: null,
       averageValues: null,
       query: {
@@ -86,6 +86,16 @@ export default {
         { id: 'translog_ops_percent', name: 'Translog %', sort: 'translog_ops_percent', dataField: 'translog_ops_percent', default: true, width: 100 }
       ]
     };
+  },
+  computed: {
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
+    }
   },
   watch: {
     dataInterval: function () {
@@ -127,6 +137,7 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      this.loading = true;
       respondedAt = undefined;
 
       // this.query.all = 'true';
@@ -140,10 +151,12 @@ export default {
           respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.initialLoading = false;
           this.stats = response.data;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;
+          this.initialLoading = false;
           this.error = error.text || error;
         });
     }

@@ -2,7 +2,7 @@
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="loading && !error">
+    <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -166,7 +166,7 @@ export default {
   ],
   data: function () {
     return {
-      loading: true,
+      initialLoading: true,
       error: '',
       stats: {},
       nodes: {},
@@ -179,6 +179,16 @@ export default {
         { name: 'Index', sort: 'index', doClick: false, hasDropdown: false }
       ]
     };
+  },
+  computed: {
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
+    }
   },
   watch: {
     dataInterval: function () {
@@ -254,6 +264,7 @@ export default {
       }, 500);
     },
     loadData: function () {
+      this.loading = true;
       respondedAt = undefined;
 
       this.query.filter = this.searchTerm;
@@ -263,6 +274,7 @@ export default {
           respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.initialLoading = false;
           this.stats = response.data;
 
           this.columns.splice(1);
@@ -289,6 +301,7 @@ export default {
           respondedAt = undefined;
           this.error = error.text || error;
           this.loading = false;
+          this.initialLoading = false;
         });
     }
   },

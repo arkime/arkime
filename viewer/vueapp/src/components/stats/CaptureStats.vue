@@ -2,7 +2,7 @@
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="loading && !error">
+    <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -90,7 +90,7 @@ export default {
   data: function () {
     return {
       error: '',
-      loading: true,
+      initialLoading: true,
       stats: null,
       recordsTotal: undefined,
       recordsFiltered: undefined,
@@ -157,6 +157,14 @@ export default {
       let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
       let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
+    },
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
     }
   },
   watch: {
@@ -231,6 +239,7 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      this.loading = true;
       respondedAt = undefined;
 
       this.query.filter = this.searchTerm;
@@ -243,12 +252,14 @@ export default {
           respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.initialLoading = false;
           this.stats = response.data.data;
           this.recordsTotal = response.data.recordsTotal;
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;
+          this.initialLoading = false;
           this.error = error.text || error;
         });
     },

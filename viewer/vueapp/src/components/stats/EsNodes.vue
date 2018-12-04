@@ -2,7 +2,7 @@
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="loading && !error">
+    <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -78,7 +78,7 @@ export default {
   data: function () {
     return {
       error: '',
-      loading: true,
+      initialLoading: true,
       stats: null,
       query: {
         filter: this.searchTerm || undefined,
@@ -105,6 +105,16 @@ export default {
         { id: 'searchesTime', name: 'Searches timeout', sort: 'searchesTime', dataField: 'searchesTime', doStats: true, width: 100, dataFunction: roundCommaString }
       ]
     };
+  },
+  computed: {
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
+    }
   },
   watch: {
     dataInterval: function () {
@@ -167,6 +177,7 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      this.loading = true;
       respondedAt = undefined;
 
       this.query.filter = this.searchTerm;
@@ -179,10 +190,12 @@ export default {
           respondedAt = Date.now();
           this.error = '';
           this.loading = false;
+          this.initialLoading = false;
           this.stats = response.data.data;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;
+          this.initialLoading = false;
           this.error = error.text || error;
         });
     }

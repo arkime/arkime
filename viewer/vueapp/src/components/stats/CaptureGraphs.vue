@@ -2,7 +2,7 @@
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="loading && !error">
+    <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -61,7 +61,7 @@ export default {
   data: function () {
     return {
       error: '',
-      loading: true,
+      initialLoading: true,
       context: null,
       stats: null,
       query: {
@@ -86,6 +86,14 @@ export default {
       let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
       let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
+    },
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
     }
   },
   watch: {
@@ -145,6 +153,7 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      this.loading = true;
       initialized = false;
 
       this.query.filter = this.searchTerm;
@@ -153,6 +162,7 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
+          this.initialLoading = false;
           this.stats = response.data;
 
           if (!this.stats.data) { return; }
@@ -163,6 +173,7 @@ export default {
           }
         }, (error) => {
           this.loading = false;
+          this.initialLoading = false;
           this.error = error.text || error;
         });
     },
