@@ -722,7 +722,7 @@
               ES Tasks
             </h6>
             <p>
-              The ESs Task tab displays a table containing information for each Elasticsearch task.
+              The ES Task tab displays a table containing information for each Elasticsearch task.
               Please use the column config drop down to change which fields are shown.
             </p>
             <dl class="dl-horizontal">
@@ -765,6 +765,61 @@
               <span class="badge badge-pill badge-primary">other color</span> means it's a primary shard.
               Hover over a cell to get more information.
             </p>
+            <h6>
+              <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+              ES Recoveery
+            </h6>
+            <p>
+              The ES Recovery tab displays a table containing information for each Elasticsearch index
+              recovery.  By default it only shows information about indices still waiting to be recovered.
+              It is a simple view of the <code>/_cat/recovery</code> Elasticssearch API.
+            </p>
+            <dl class="dl-horizontal">
+              <dt>Index</dt>
+              <dd>The index name</dd>
+              <dt>Shard</dt>
+              <dd>The shard number</dd>
+              <dt>Time</dt>
+              <dd>The recovery time</dd>
+              <dt>Type</dt>
+              <dd>The recovery type</dd>
+              <dt>Stage</dt>
+              <dd>The recovery stage</dd>
+              <dt>Src Host</dt>
+              <dd>The source host</dd>
+              <dt>Src Node</dt>
+              <dd>The source node name</dd>
+              <dt>Dst Host</dt>
+              <dd>The target host</dd>
+              <dt>Dst Node</dt>
+              <dd>The target node name</dd>
+              <dt>Repository</dt>
+              <dd>The repository</dd>
+              <dt>Snapshot</dt>
+              <dd>The snapshot</dd>
+              <dt>Files</dt>
+              <dd>The number of files to recover</dd>
+              <dt>Files recovered</dt>
+              <dd>The files recovered</dd>
+              <dt>Files percent</dt>
+              <dd>The percent of files recovered</dd>
+              <dt>Files total</dt>
+              <dd>The total number of files</dd>
+              <dt>Bytes</dt>
+              <dd>The number of bytes to recover</dd>
+              <dt>Bytes recovered</dt>
+              <dd>The bytes recovered</dd>
+              <dt>Bytes percent</dt>
+              <dd>The percent of bytes recovered</dd>
+              <dt>Bytes total</dt>
+              <dd>The total number of bytes</dd>
+              <dt>Translog</dt>
+              <dd>The number of translog ops to recover</dd>
+              <dt>Translog Recovered</dt>
+              <dd>The translog ops recovered</dd>
+              <dt>Translog percent</dt>
+              <dd>The percent of translog ops recovered</dd>
+            </dl>
           </div>
 
           <hr>
