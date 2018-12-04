@@ -44,6 +44,7 @@ export default {
   props: [
     'user',
     'dataInterval',
+    'recoveryShow',
     'refreshData',
     'searchTerm'
   ],
@@ -58,7 +59,8 @@ export default {
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'index',
-        desc: false
+        desc: false,
+        show: this.recoveryShow || 'notdone'
       },
       columns: [ // es indices table columns
         // default columns
@@ -98,6 +100,10 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    recoveryShow: function () {
+      this.query.show = this.recoveryShow;
+      this.loadData();
     },
     refreshData: function () {
       if (this.refreshData) {

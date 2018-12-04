@@ -132,6 +132,24 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <!-- recovery show select -->
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex === 6">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Hide rows">
+           <span class="input-group-text">
+             Show
+           </span>
+         </div>
+          <select class="form-control input-sm"
+            v-model="recoveryShow"
+            v-on:change="recoveryShowChange">
+            <option value="all">All</option>
+            <option value="notdone">Not Done</option>
+          </select>
+        </div> <!-- /graph hide select -->
+
         <!-- refresh button -->
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex !== 0">
@@ -290,6 +308,7 @@
           @click="tabIndexChange"
           v-if="!multiviewer">
           <es-recovery v-if="user && tabIndex === 6"
+            :recovery-show="recoveryShow"
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -328,6 +347,7 @@ export default {
       graphInterval: this.$route.query.gtime || '5',
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
+      recoveryShow: this.$route.query.recoveryShow || 'notdone',
       dataInterval: this.$route.query.refreshInterval || '5000',
       refreshData: false,
       childError: '',
@@ -374,6 +394,9 @@ export default {
     graphHideChange: function () {
       this.$router.push({ query: { ...this.$route.query, hide: this.graphHide } });
     },
+    recoveryShowChange: function () {
+      this.$router.push({ query: { ...this.$route.query, hide: this.recoveryShow } });
+    },
     dataIntervalChange: function () {
       this.$router.push({ query: { ...this.$route.query, refreshInterval: this.dataInterval } });
     },
@@ -394,6 +417,9 @@ export default {
       }
       if (queryParams.graphHide) {
         this.graphHide = queryParams.graphHide;
+      }
+      if (queryParams.recoveryShow) {
+        this.recoveryShow = queryParams.recoveryShow;
       }
       if (queryParams.graphSort) {
         this.graphSort = queryParams.graphSort;
