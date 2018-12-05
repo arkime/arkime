@@ -22,6 +22,7 @@
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "moment": "^2.19.1",
     "morgan": "^1.9.0",
+    "notifme-sdk": "^1.8.0",
     "on-headers": "^1.0.1",
     "pug": "^2.0.0",
     "redis": "^2.6.2",

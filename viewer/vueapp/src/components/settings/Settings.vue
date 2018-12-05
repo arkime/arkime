@@ -98,6 +98,13 @@
             </span>&nbsp;
             Password
           </a>
+          <a class="nav-link cursor-pointer"
+            @click="openView('notifiers')"
+            :class="{'active':visibleTab === 'notifiers'}">
+            <span class="fa fa-fw fa-bell">
+            </span>&nbsp;
+            Notifiers
+          </a>
         </div>
       </div> <!-- /navigation -->
 
@@ -1567,6 +1574,139 @@
 
         </form> <!-- /password settings -->
 
+        <!-- notifiers settings -->
+        <form class="form-horizontal"
+          v-if="visibleTab === 'notifiers'"
+          id="notifiers">
+
+          <h3>
+            Notifiers
+            <button v-if="notifierTypes"
+              v-for="notifier of notifierTypes"
+              :key="notifier.name"
+              class="btn btn-theme-tertiary btn-sm pull-right ml-1"
+              type="button"
+              @click="createNewNotifier(notifier)">
+              <span class="fa fa-plus-circle">
+              </span>&nbsp;
+              Create {{ notifier.name }} Notifier
+            </button>
+          </h3>
+
+          <p>
+            Configure notifiers that can be added to cron queries.
+          </p>
+
+          <hr>
+
+          <!-- v-if="!colConfigs || !colConfigs.length" -->
+          <div class="alert alert-info">
+            <span class="fa fa-info-circle fa-lg">
+            </span>
+            <strong>
+              You have no notifiers configured.
+            </strong>
+            <br>
+            <br>
+            Create one by clicking the create button above
+            and add it to your cron queries on the cron tab!
+          </div>
+
+          <!-- new notifier -->
+          <div class="row"
+            v-if="newNotifier">
+            <div class="col">
+              <div class="card bg-light mb-3">
+                <div class="card-body">
+                  <!-- newNotifier title -->
+                  <h4 class="mb-3">
+                    {{ newNotifier.name }}
+                    <span v-if="newNotifierError"
+                      class="alert alert-sm alert-danger pull-right">
+                      {{ newNotifierError }}
+                      <span class="fa fa-close cursor-pointer"
+                        @click="newNotifierError = ''">
+                      </span>
+                    </span>
+                  </h4> <!-- /new notifier title -->
+                  <!-- new notifier name -->
+                  <div class="input-group">
+                    <span class="input-group-prepend cursor-help"
+                      :title="`Give your ${newNotifier.name} notifier a unique name`"
+                      v-b-tooltip.hover.bottom-left>
+                      <span class="input-group-text">
+                        Name
+                        <sup>*</sup>
+                      </span>
+                    </span>
+                    <input class="form-control"
+                      v-model="newNotifier.uniqueName"
+                      type="text"
+                    />
+                  </div>
+                  <!-- /new notifier name -->
+                  <hr>
+                  <!-- new notifier fields -->
+                  <div v-for="field of newNotifier.fields"
+                    :key="field.name">
+                    <span class="mb-2"
+                      :class="{'input-group':field.type !== 'checkbox'}">
+                      <span class="input-group-prepend cursor-help"
+                        v-if="field.type !== 'checkbox'"
+                        :title="field.description"
+                        v-b-tooltip.hover.bottom-left>
+                        <span class="input-group-text">
+                          {{ field.name }}
+                          <sup v-if="field.required">*</sup>
+                        </span>
+                      </span>
+                      <input :class="{'form-control':field.type !== 'checkbox'}"
+                        v-model="field.value"
+                        :type="getFieldInputType(field)"
+                      />
+                      <span v-if="field.type === 'secret'"
+                        class="input-group-append cursor-pointer"
+                        @click="toggleVisibleSecretField(field)">
+                        <span class="input-group-text">
+                          <span class="fa"
+                            :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
+                          </span>
+                        </span>
+                      </span>
+                    </span>
+                    <label v-if="field.type === 'checkbox'">
+                      &nbsp;{{ field.name }}
+                    </label>
+                  </div> <!-- /new notifier fields -->
+                  <!-- new notifier actions -->
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <button type="button"
+                        class="btn btn-sm btn-outline-warning cursor-pointer"
+                        @click="clearNotifierFields">
+                        <span class="fa fa-ban">
+                        </span>&nbsp;
+                        Clear fields
+                      </button>
+                      <button type="button"
+                        class="btn btn-sm btn-success cursor-pointer pull-right"
+                        @click="createNotifier">
+                        <span class="fa fa-plus">
+                        </span>&nbsp;
+                        Create {{ newNotifier.name }} Notifier
+                      </button>
+                    </div>
+                  </div> <!-- /new notifier actions -->
+                </div>
+              </div>
+            </div>
+          </div> <!-- new notifier -->
+
+          <!-- TODO display existing notifiers -->
+
+        </form>
+        <!-- /notifiers settings -->
+
       </div>
 
     </div> <!-- /content -->
@@ -1668,7 +1808,13 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       changePasswordError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      // notifiers settings vars
+      notifiers: [],
+      notifierTypes: [],
+      notifiersError: '',
+      newNotifier: undefined,
+      newNotifierError: ''
     };
   },
   computed: {
@@ -1691,7 +1837,7 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview') {
+        tab === 'spiview' || tab === 'notifiers') {
         this.visibleTab = tab;
       }
 
@@ -1741,6 +1887,7 @@ export default {
         this.getCronQueries();
         this.getColConfigs();
         this.getSpiviewConfigs();
+        this.getNotifierTypes();
       })
       .catch((error) => {
         this.error = error.text;
@@ -2466,6 +2613,87 @@ export default {
         })
         .catch((error) => {
           this.spiviewConfigError = error.text;
+        });
+    },
+    /* TODO */
+    getNotifierTypes: function () {
+      this.$http.get('notifierTypes')
+        .then((response) => {
+          this.notifierTypes = response.data;
+        }, (error) => {
+          this.notifiersError = error.text || error;
+        });
+    },
+    /* TODO */
+    getNotifiers: function () {
+      this.$http.get('notifiers')
+        .then((response) => {
+          this.notifiers = response.data;
+        }, (error) => {
+          this.notifiersError = error.text || error;
+        });
+    },
+    /* TODO */
+    createNewNotifier: function (notifier) {
+      this.newNotifier = notifier;
+    },
+    /* TODO */
+    getFieldInputType: function (field) {
+      if (field.type === 'checkbox') {
+        return 'checkbox';
+      } else if (field.type === 'secret' && !field.showValue) {
+        return 'password';
+      } else {
+        return 'text';
+      }
+    },
+    /* TODO */
+    clearNotifierFields: function () {
+      this.newNotifier.uniqueName = '';
+      for (let field of this.newNotifier.fields) {
+        field.value = '';
+      }
+    },
+    /* TODO */
+    createNotifier: function () {
+      if (!this.newNotifier) {
+        this.newNotifierError = 'No notifier chosen';
+      }
+
+      if (!this.newNotifier.uniqueName) {
+        this.newNotifierError = 'Your new notifier must have a unique name';
+      }
+
+      // make sure required fields are filled
+      for (let field of this.newNotifier.fields) {
+        if (!field.value && field.required) {
+          this.newNotifierError = `${field.name} is required`;
+        }
+      }
+
+      this.$http.post('notifiers', { notifier: this.newNotifier })
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully created new notifier.';
+          this.msgType = 'success';
+          this.newNotifier = undefined;
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error creating new notifier.';
+          this.msgType = 'danger';
+        });
+    },
+    /* TODO */
+    testNotifier: function (notifier) {
+      this.$http.post('testAlert', { notifier: notifier })
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully issued alert.';
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error issuing alert.';
+          this.msgType = 'danger';
         });
     },
     /**

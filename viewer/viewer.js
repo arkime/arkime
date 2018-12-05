@@ -46,7 +46,9 @@ var Config         = require('./config.js'),
     EventEmitter   = require('events').EventEmitter,
     PNG            = require('pngjs').PNG,
     decode         = require('./decode.js'),
-    onHeaders      = require('on-headers');
+    onHeaders      = require('on-headers'),
+    glob           = require('glob'),
+    path           = require('path');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -85,7 +87,8 @@ var internals = {
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
-  proccessHuntJobsInitialized: false
+  proccessHuntJobsInitialized: false,
+  notifiers: undefined
 };
 
 if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
@@ -1125,6 +1128,73 @@ function postSettingUser (req, res, next) {
   });
 }
 
+// TODO
+function buildNotifiers () {
+  internals.notifiers = {};
+
+  let api = {
+    register: function (str, info) {
+      internals.notifiers[str] = info;
+    }
+  };
+
+  // look for all notifier providers and initialize them
+  let files = glob.sync('../notifiers/provider.*.js');
+  files.forEach((file) => {
+    let plugin = require(file);
+    plugin.init(api);
+  });
+}
+
+app.get('/notifierTypes', checkCookieToken, function (req, res) {
+  if (internals.notifiers) {
+    return res.send(internals.notifiers);
+  }
+
+  buildNotifiers();
+
+  return res.send(internals.notifiers);
+});
+
+// TODO endpoint to get created notifiers
+app.get('/notifiers', checkCookieToken, function (req, res) {
+  // TODO global or per user?
+});
+
+// TODO endpoint to create a new notifier
+app.post('/notifiers', checkCookieToken, function (req, res) {
+  // TODO global (admin only?) or per user?
+  if (!internals.notifiers) { buildNotifiers(); }
+
+  if (!req.body.notifier) {
+    return res.molochError(403, 'Missing notifier');
+  }
+
+  if (!req.body.notifier.name) {
+    return res.molochError(403, 'Missing notifier name');
+  }
+
+  let found;
+  for (let notifier in internals.notifiers) {
+    if (notifier.name === req.body.notifier.name) {
+      found = notifier;
+    }
+  }
+
+  if (!found) { return res.molochError(403, 'Unknown notifier type'); }
+
+  // TODO check that required notifier fields exist
+});
+
+// TODO endpoint to update a notifier
+app.put('/notifiers/:name', checkCookieToken, function (req, res) {
+
+});
+
+// TODO endpoint to test a notifier (make it common between parliament and viewer?)
+app.post('/notifiers/:name/test', checkCookieToken, function (req, res) {
+
+});
 
 // gets a user's settings
 app.get('/user/settings', getSettingUser, recordResponseTime, function(req, res) {
