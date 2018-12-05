@@ -188,7 +188,7 @@
         shell: bash -lc "{{item}}"
         become: false
         with_items:
-          - fpm -s dir -t rpm -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/{{moloch_name}}
+          - fpm -s dir -t rpm -n {{moloch_name}} -x data/moloch/logs -x data/moloch/raw -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/{{moloch_name}}
 
       - name: copy centos back
         fetch: src={{moloch_name}}-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
@@ -209,7 +209,7 @@
         shell: bash -lc "{{item}}"
         become: false
         with_items:
-          - fpm -s dir -t deb -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/{{moloch_name}}
+          - fpm -s dir -t deb -n {{moloch_name}} -x data/moloch/logs -x data/moloch/raw -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/{{moloch_name}}
 
       - name: copy ubuntu back
         fetch: src={{moloch_name}}_{{moloch_version}}-{{iteration}}_amd64.deb dest=./builds
