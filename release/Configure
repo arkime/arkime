@@ -132,9 +132,14 @@ else
 fi
 
 ################################################################################
-mkdir -p $MOLOCH_INSTALL_DIR/logs $MOLOCH_INSTALL_DIR/raw
-chown nobody $MOLOCH_INSTALL_DIR/logs $MOLOCH_INSTALL_DIR/raw
-chmod 0700 $MOLOCH_INSTALL_DIR/raw
+# re-create these directories after installation so they are not part of the package manifest
+CREATEDIRS="logs raw"
+for CREATEDIR in $CREATEDIRS; do
+    if [ ! -e $MOLOCH_INSTALL_DIR/$CREATEDIR ]; then
+        mkdir -m 0700 -p $MOLOCH_INSTALL_DIR/$CREATEDIR && \
+        chown nobody $MOLOCH_INSTALL_DIR/$CREATEDIR
+    fi
+done
 
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
