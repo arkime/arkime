@@ -56,6 +56,8 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (!isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
         BSB_EXPORT_u08(hbsb, ';');
@@ -63,6 +65,8 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
         BSB_EXPORT_u08(hbsb, ';');
@@ -70,6 +74,8 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (!isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
         BSB_EXPORT_u08(hbsb, ';');
@@ -77,6 +83,8 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
         BSB_EXPORT_u08(hbsb, ';');
@@ -84,12 +92,16 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (!isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
     }
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+
+    if (BSB_IS_ERROR(bsb)) return;
     if (isDst) {
         BSB_EXPORT_ptr(hbsb, value, len);
     }
@@ -154,7 +166,7 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
         BSB bsb;
         BSB_INIT(bsb, ssh->buf[which], ssh->len[which]);
 
-        int sshLen = 0;
+        uint32_t sshLen = 0;
         BSB_IMPORT_u32(bsb, sshLen);
 
         if (sshLen < 2 || sshLen > MAX_SSH_BUFFER) {
