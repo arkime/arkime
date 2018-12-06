@@ -50,6 +50,7 @@
 # 53 - add forcedExpression to history
 # 54 - users_v6
 # 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
+# 56 - notifiers
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -58,7 +59,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 55;
+my $VERSION = 56;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1414,6 +1415,11 @@ sub usersUpdate
         "dynamic": "true",
         "enabled": "false"
       },
+      "notifiers": {
+        "type": "object",
+        "dynamic": "true",
+        "enabled": "false"
+      },
       "columnConfigs": {
         "type": "object",
         "dynamic": "true",
@@ -2288,7 +2294,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
-    } elsif ($main::versionNumber <= 55) {
+    } elsif ($main::versionNumber <= 56) {
         sessions2Update();
         checkForOld5Indices();
         usersUpdate();
