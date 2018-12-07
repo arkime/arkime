@@ -1361,8 +1361,6 @@ app.post('/notifiers/:name/test', getSettingUser, checkCookieToken, function (re
     return res.molochError(401, 'Need admin privelages to test a notifier');
   }
 
-  console.log('test notifier:', req.params.name);
-
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (!sharedUser || !sharedUser.found) {
       return res.molochError(404, 'Cannot find notifer to test');
@@ -1836,9 +1834,13 @@ app.post('/user/cron/create', [checkCookieToken, logAction(), postSettingUser], 
       name    : req.body.name,
       query   : req.body.query,
       tags    : req.body.tags,
-      action  : req.body.action
+      action  : req.body.action,
     }
   };
+
+  if (req.body.notifier) {
+    document.doc.notifier = req.body.notifier;
+  }
 
   var userId = req.settingUser.userId;
 
@@ -1909,9 +1911,14 @@ app.post('/user/cron/update', [checkCookieToken, logAction(), postSettingUser], 
       name    : req.body.name,
       query   : req.body.query,
       tags    : req.body.tags,
-      action  : req.body.action
+      action  : req.body.action,
+      notifier: undefined
     }
   };
+
+  if (req.body.notifier) {
+    document.doc.notifier = req.body.notifier;
+  }
 
   Db.get('queries', 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
@@ -7632,21 +7639,82 @@ function processCronQueries() {
                 console.log("CRON - setting lpValue", new Date(lpValue*1000));
               }
               // Do the ES update
-              var document = {
+              let document = {
                 doc: {
                   lpValue: lpValue,
                   lastRun: Math.floor(Date.now()/1000),
                   count: (queries[qid].count || 0) + count
                 }
               };
-              Db.update("queries", "query", qid, document, {refresh: true}, function () {
-                // If there is more time to catch up on, repeat the loop, although other queries
-                // will get processed first to be fair
-                if (lpValue !== endTime) {
-                  repeat = true;
-                }
-                return forQueriesCb();
-              });
+
+              function continueProcess (id, doc, lp, et) {
+                Db.update('queries', 'query', id, doc, { refresh: true }, function () {
+                  // If there is more time to catch up on, repeat the loop, although other queries
+                  // will get processed first to be fair
+                  if (lp !== et) { repeat = true; }
+                  return forQueriesCb();
+                });
+              }
+
+              // issue alert via notifier if the count has changed and it has been at least 10 minutes
+              if (cq.notifier && count && queries[qid].count !== document.doc.count &&
+                (!cq.lastNotified || (Math.floor(Date.now()/1000) - cq.lastNotified >= 600))) {
+                if (!internals.notifiers) { buildNotifiers(); }
+
+                // find notifier
+                Db.getUser('_moloch_shared', (err, sharedUser) => {
+                  if (!sharedUser || !sharedUser.found) {
+                    console.log('Cannot find notifier, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  sharedUser = sharedUser._source;
+
+                  sharedUser.notifiers = sharedUser.notifiers || {};
+
+                  let notifier = sharedUser.notifiers[cq.notifier];
+
+                  if (!notifier) {
+                    console.log('Cannot find notifier, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  let notifierDefinition;
+                  for (let n in internals.notifiers) {
+                    if (internals.notifiers[n].type === notifier.type) {
+                      notifierDefinition = internals.notifiers[n];
+                    }
+                  }
+                  if (!notifierDefinition) {
+                    console.log('Cannot find notifier definition, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  let config = {};
+                  // check that required notifier fields exist
+                  for (let field of notifierDefinition.fields) {
+                    if (field.required) {
+                      for (let configuredField of notifier.fields) {
+                        if (configuredField.name === field.name && !configuredField.value) {
+                          console.log(`Cannot find notifier field value: ${field.name}, no cron alert can be issued`);
+                          continueProcess(qid, document, lpValue, endTime);
+                        }
+                        config[field.name] = configuredField.value;
+                      }
+                    }
+                  }
+
+                  let message = `${cq.name} cron query match alert: ${document.doc.count} total matches`;
+
+                  notifierDefinition.sendAlert(config, message);
+
+                  document.doc.lastNotified = Math.floor(Date.now()/1000);
+
+                  return continueProcess(qid, document, lpValue, endTime);
+                });
+              } else {
+                return continueProcess(qid, document, lpValue, endTime);
+              }
             });
           });
         });

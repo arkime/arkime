@@ -620,6 +620,7 @@
                 <th>Expression</th>
                 <th>Action</th>
                 <th>Tags</th>
+                <th>Notify</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -669,6 +670,18 @@
                     class="form-control form-control-sm"
                     @input="cronQueryChanged(key)"
                   />
+                </td>
+                <td>
+                  <select v-model="item.notifier"
+                    class="form-control form-control-sm"
+                    @input="cronQueryChanged(key)">
+                    <option value=undefined>none</option>
+                    <option v-for="notifier in notifiers"
+                      :key="notifier.name"
+                      :value="notifier.name">
+                      {{ notifier.name }} ({{ notifier.type }})
+                    </option>
+                  </select>
                 </td>
                 <td>
                   <div v-if="item.changed"
@@ -768,6 +781,17 @@
                     title="Enter a comma separated list of tags"
                     placeholder="Comma separated list of tags"
                   />
+                </td>
+                <td>
+                  <select v-model="newCronQueryNotifier"
+                    class="form-control form-control-sm">
+                    <option value=undefined>none</option>
+                    <option v-for="notifier in notifiers"
+                      :key="notifier.name"
+                      :value="notifier.name">
+                      {{ notifier.name }} ({{ notifier.type }})
+                    </option>
+                  </select>
                 </td>
                 <td>
                   <button type="button"
@@ -1709,7 +1733,6 @@
             </div>
           </div> <!-- new notifier -->
 
-          <!-- TODO display existing notifiers -->
           <!-- notifiers -->
           <div class="row"
             v-if="notifiers">
@@ -1879,6 +1902,7 @@ export default {
       newCronQueryName: '',
       newCronQueryExpression: '',
       newCronQueryTags: '',
+      newCronQueryNotifier: '',
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
       molochClusters: {},
@@ -2321,6 +2345,10 @@ export default {
         since: this.newCronQueryProcess
       };
 
+      if (this.newCronQueryNotifier) {
+        data.notifier = this.newCronQueryNotifier;
+      }
+
       UserService.createCronQuery(data, this.userId)
         .then((response) => {
           // add the cron query to the view
@@ -2331,6 +2359,7 @@ export default {
           this.newCronQueryName = '';
           this.newCronQueryTags = '';
           this.newCronQueryExpression = '';
+          this.newCronQueryNotifier = '';
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
@@ -2563,6 +2592,114 @@ export default {
           this.msgType = 'danger';
         });
     },
+    /* NOTIFIERS --------------------------------------- */
+    /* opens the form to create a new notifier */
+    createNewNotifier: function (notifier) {
+      this.newNotifier = notifier;
+    },
+    /* gets the type of input associated with a field */
+    getFieldInputType: function (field) {
+      if (field.type === 'checkbox') {
+        return 'checkbox';
+      } else if (field.type === 'secret' && !field.showValue) {
+        return 'password';
+      } else {
+        return 'text';
+      }
+    },
+    /* clears the fields of the new notifier form */
+    clearNotifierFields: function () {
+      this.newNotifier.name = '';
+      for (let field of this.newNotifier.fields) {
+        field.value = '';
+      }
+    },
+    /* creates a new notifier */
+    createNotifier: function () {
+      if (!this.newNotifier) {
+        this.newNotifierError = 'No notifier chosen';
+        return;
+      }
+
+      if (!this.newNotifier.name) {
+        this.newNotifierError = 'Your new notifier must have a unique name';
+        return;
+      }
+
+      // make sure required fields are filled
+      for (let field of this.newNotifier.fields) {
+        if (!field.value && field.required) {
+          this.newNotifierError = `${field.name} is required`;
+          return;
+        }
+      }
+
+      this.$http.post('notifiers', { notifier: this.newNotifier })
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully created new notifier.';
+          this.msgType = 'success';
+          this.notifiersError = '';
+          // add notifier to the list
+          this.notifiers[response.data.name] = this.newNotifier;
+          this.newNotifier = undefined;
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error creating new notifier.';
+          this.msgType = 'danger';
+        });
+    },
+    /* toggles the visibility of the value of secret fields */
+    toggleVisibleSecretField: function (field) {
+      this.$set(field, 'showValue', !field.showValue);
+    },
+    /* deletes a notifier */
+    removeNotifier: function (name) {
+      this.$http.delete(`notifiers/${name}`)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully deleted notifier.';
+          this.msgType = 'success';
+          delete this.notifiers[name];
+          this.notifiersError = '';
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error deleting notifier.';
+          this.msgType = 'danger';
+        });
+    },
+    /* updates a notifier */
+    updateNotifier: function (key, notifier) {
+      this.$http.put(`notifiers/${key}`, { notifier: notifier })
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully updated notifier.';
+          this.msgType = 'success';
+          this.notifiers[response.data.name] = notifier;
+          if (key !== response.data.name) {
+            // the name has changed, delete the old one
+            delete this.notifiers[key];
+          }
+          this.notifiersError = '';
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error updating notifier.';
+          this.msgType = 'danger';
+        });
+    },
+    /* tests a notifier */
+    testNotifier: function (name) {
+      this.$http.post(`notifiers/${name}/test`, {})
+        .then((response) => {
+          // display success message to user
+          this.msg = response.data.text || 'Successfully issued alert.';
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text || 'Error issuing alert.';
+          this.msgType = 'danger';
+        });
+    },
 
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
@@ -2714,7 +2851,7 @@ export default {
           this.spiviewConfigError = error.text;
         });
     },
-    /* TODO */
+    /* retrieves the types of notifiers that can be configured */
     getNotifierTypes: function () {
       this.$http.get('notifierTypes')
         .then((response) => {
@@ -2723,120 +2860,13 @@ export default {
           this.notifiersError = error.text || error;
         });
     },
-    /* TODO */
+    /* retrieves the notifiers that have been configured */
     getNotifiers: function () {
       this.$http.get('notifiers')
         .then((response) => {
           this.notifiers = response.data;
         }, (error) => {
           this.notifiersError = error.text || error;
-        });
-    },
-    /* TODO */
-    createNewNotifier: function (notifier) {
-      this.newNotifier = notifier;
-    },
-    /* TODO */
-    getFieldInputType: function (field) {
-      if (field.type === 'checkbox') {
-        return 'checkbox';
-      } else if (field.type === 'secret' && !field.showValue) {
-        return 'password';
-      } else {
-        return 'text';
-      }
-    },
-    /* TODO */
-    clearNotifierFields: function () {
-      this.newNotifier.name = '';
-      for (let field of this.newNotifier.fields) {
-        field.value = '';
-      }
-    },
-    /* TODO */
-    createNotifier: function () {
-      if (!this.newNotifier) {
-        this.newNotifierError = 'No notifier chosen';
-        return;
-      }
-
-      if (!this.newNotifier.name) {
-        this.newNotifierError = 'Your new notifier must have a unique name';
-        return;
-      }
-
-      // make sure required fields are filled
-      for (let field of this.newNotifier.fields) {
-        if (!field.value && field.required) {
-          this.newNotifierError = `${field.name} is required`;
-          return;
-        }
-      }
-
-      this.$http.post('notifiers', { notifier: this.newNotifier })
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully created new notifier.';
-          this.msgType = 'success';
-          this.notifiersError = '';
-          // add notifier to the list
-          this.notifiers[response.data.name] = this.newNotifier;
-          this.newNotifier = undefined;
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error creating new notifier.';
-          this.msgType = 'danger';
-        });
-    },
-    /* TODO */
-    toggleVisibleSecretField: function (field) {
-      this.$set(field, 'showValue', !field.showValue);
-    },
-    /* TODO */
-    removeNotifier: function (name) {
-      this.$http.delete(`notifiers/${name}`)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully deleted notifier.';
-          this.msgType = 'success';
-          delete this.notifiers[name];
-          this.notifiersError = '';
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error deleting notifier.';
-          this.msgType = 'danger';
-        });
-    },
-    /* TODO what if name has changed */
-    updateNotifier: function (key, notifier) {
-      this.$http.put(`notifiers/${key}`, { notifier: notifier })
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully updated notifier.';
-          this.msgType = 'success';
-          this.notifiers[response.data.name] = notifier;
-          if (key !== response.data.name) {
-            // the name has changed, delete the old one
-            delete this.notifiers[key];
-          }
-          this.notifiersError = '';
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error updating notifier.';
-          this.msgType = 'danger';
-        });
-    },
-    /* TODO */
-    testNotifier: function (name) {
-      this.$http.post(`notifiers/${name}/test`, {})
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully issued alert.';
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error issuing alert.';
-          this.msgType = 'danger';
         });
     },
     /**

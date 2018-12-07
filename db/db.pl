@@ -1042,6 +1042,12 @@ sub queriesUpdate
       },
       "tags": {
         "type": "keyword"
+      },
+      "notifier": {
+        "type": "keyword"
+      },
+      "lastNotified": {
+        "type": "date"
       }
     }
   }
@@ -2294,10 +2300,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
-    } elsif ($main::versionNumber <= 56) {
+    } elsif ($main::versionNumber <= 55) {
         sessions2Update();
         checkForOld5Indices();
         usersUpdate();
+    } elsif ($main::versionNumber <= 56) {
+        usersUpdate();
+        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
