@@ -1048,6 +1048,9 @@ sub queriesUpdate
       },
       "lastNotified": {
         "type": "date"
+      },
+      "lastNotifiedCount": {
+        "type": "long"
       }
     }
   }

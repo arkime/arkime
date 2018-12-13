@@ -1138,7 +1138,7 @@ function buildNotifiers () {
   };
 
   // look for all notifier providers and initialize them
-  let files = glob.sync('../notifiers/provider.*.js');
+  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
   files.forEach((file) => {
     let plugin = require(file);
     plugin.init(api);
@@ -7704,10 +7704,13 @@ function processCronQueries() {
                     }
                   }
 
-                  let message = `${cq.name} cron query match alert: ${document.doc.count} total matches`;
+                  let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+
+                  let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
 
                   notifierDefinition.sendAlert(config, message);
 
+                  document.doc.lastNotifiedCount = document.doc.count;
                   document.doc.lastNotified = Math.floor(Date.now()/1000);
 
                   return continueProcess(qid, document, lpValue, endTime);
