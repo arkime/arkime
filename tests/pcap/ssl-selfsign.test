@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1521991598000,
                   "notBefore" : 1519399598000,
+                  "remainingDays" : -1,
                   "serial" : "00b27e45d092b4dddf",
                   "subjectCN" : [
                      "molochftw"

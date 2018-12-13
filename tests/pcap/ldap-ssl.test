@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1738030709000,
                   "notBefore" : 1422670709000,
+                  "remainingDays" : 1,
                   "serial" : "008a07e08d4ab50a7b",
                   "subjectCN" : [
                      "ldap ssl test"

@@ -147,6 +147,22 @@ my ($json) = @_;
                 }
             }
         }
+        if (exists $body->{dns} && exists $body->{dns}->{nameserverIp}) {
+            for (my $i = 0; $i < @{$body->{dns}->{nameserverIp}}; $i++) {
+                if ($body->{dns}->{nameserverIp}[$i] =~ /:/) {
+                    $body->{dns}->{nameserverIp}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{nameserverIp}[$i])) =~ m/(....)/g );
+                }
+            }
+        }
+        if (exists $body->{cert}) {
+            for (my $i = 0; $i < @{$body->{cert}}; $i++) {
+                if ($body->{cert}->[$i]->{remainingDays} < 0) {
+                    $body->{cert}->[$i]->{remainingDays} = -1;
+                } elsif ($body->{cert}->[$i]->{remainingDays} > 0) {
+                    $body->{cert}->[$i]->{remainingDays} = 1;
+                }
+            }
+        }
     }
 
     @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};

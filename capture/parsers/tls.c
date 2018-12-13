@@ -829,7 +829,13 @@ void moloch_parser_init()
 
     moloch_field_define("cert", "integer",
         "cert.validfor", "Days Valid For", "cert.validDays",
-        "Certificate is valid for this may days",
+        "Certificate is valid for this many days total",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("cert", "integer",
+        "cert.remainingDays", "Days remaining", "cert.remainingDays",
+        "Certificate is still valid for this many days",
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 

@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1779463436000,
                   "notBefore" : 1464103436000,
+                  "remainingDays" : 1,
                   "serial" : "02",
                   "subjectCN" : [
                      "mysql_server_5.7.12_auto_generated_server_certificate"

@@ -13,6 +13,7 @@
                   ],
                   "notAfter" : 1636502400000,
                   "notBefore" : 1194609600000,
+                  "remainingDays" : 1,
                   "serial" : "0337b928347c60a6aec5adb1217f3860",
                   "subjectCN" : [
                      "digicert high assurance ev ca-1"
@@ -37,6 +38,7 @@
                   ],
                   "notAfter" : 1441195200000,
                   "notBefore" : 1370822400000,
+                  "remainingDays" : -1,
                   "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "subjectCN" : [
                      "github.com"
