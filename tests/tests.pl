@@ -154,6 +154,13 @@ my ($json) = @_;
                 }
             }
         }
+        if (exists $body->{dns} && exists $body->{dns}->{mailserverIp}) {
+            for (my $i = 0; $i < @{$body->{dns}->{mailserverIp}}; $i++) {
+                if ($body->{dns}->{mailserverIp}[$i] =~ /:/) {
+                    $body->{dns}->{mailserverIp}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{mailserverIp}[$i])) =~ m/(....)/g );
+                }
+            }
+        }
         if (exists $body->{cert}) {
             for (my $i = 0; $i < @{$body->{cert}}; $i++) {
                 if ($body->{cert}->[$i]->{remainingDays} < 0) {
