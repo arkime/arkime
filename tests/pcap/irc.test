@@ -23,6 +23,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1387554241634,
+            "initRTT" : 15,
             "ipProtocol" : 6,
             "irc" : {
                "channel" : [

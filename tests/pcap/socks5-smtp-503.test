@@ -22,6 +22,7 @@
             "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1385474626674,
+            "initRTT" : 1730,
             "ipProtocol" : 6,
             "lastPacket" : 1385474639455,
             "length" : 12781,

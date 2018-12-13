@@ -36,6 +36,7 @@
             "dstPort" : 3306,
             "fileId" : [],
             "firstPacket" : 1482552218498,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1482552218503,
             "length" : 4,

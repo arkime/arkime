@@ -206,6 +206,7 @@
                ],
                "valueCnt" : 7
             },
+            "initRTT" : 694,
             "ipProtocol" : 6,
             "lastPacket" : 1386790404657,
             "length" : 37537,

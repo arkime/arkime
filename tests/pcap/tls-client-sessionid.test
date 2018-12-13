@@ -27,6 +27,7 @@
                ],
                "hostCnt" : 1
             },
+            "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1420490708431,
             "length" : 91,

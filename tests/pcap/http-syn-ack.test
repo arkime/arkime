@@ -128,6 +128,7 @@
                ],
                "useragentCnt" : 1
             },
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1467366160339,
             "length" : 73,

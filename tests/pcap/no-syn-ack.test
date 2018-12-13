@@ -18,6 +18,7 @@
             "dstPort" : 3306,
             "fileId" : [],
             "firstPacket" : 1482381409512,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1482381409513,
             "length" : 0,
@@ -203,6 +204,7 @@
                ],
                "useragentCnt" : 1
             },
+            "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1483544164045,
             "length" : 13,

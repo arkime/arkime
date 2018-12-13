@@ -780,13 +780,13 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
     if (config.fields[pos]->type == MOLOCH_FIELD_TYPE_IP ||
         config.fields[pos]->type == MOLOCH_FIELD_TYPE_IP_GHASH) {
 
-        patricia_node_t *nodes[MOLOCH_RULES_MAX];
+        patricia_node_t *nodes[PATRICIA_MAXBITS];
 
         int cnt;
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)value)) {
-            cnt = patricia_search_all2(current.fieldsTree4[pos], ((u_char *)value) + 12, 32, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(current.fieldsTree4[pos], ((u_char *)value) + 12, 32, nodes, PATRICIA_MAXBITS);
         } else {
-            cnt = patricia_search_all2(current.fieldsTree6[pos], (u_char *)value, 128, nodes, MOLOCH_RULES_MAX);
+            cnt = patricia_search_all2(current.fieldsTree6[pos], (u_char *)value, 128, nodes, PATRICIA_MAXBITS);
         }
         if (cnt == 0)
             return;

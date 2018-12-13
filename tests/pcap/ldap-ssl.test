@@ -35,6 +35,7 @@
             "dstPort" : 389,
             "fileId" : [],
             "firstPacket" : 1422673532664,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1422673558484,
             "length" : 25820,

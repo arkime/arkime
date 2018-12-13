@@ -483,6 +483,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_DST_ZERO]
                            );
+
+        if (session->ackTime) {
+            BSB_EXPORT_sprintf(jbsb, "\"initRTT\": %u,", session->ackTime/2000);
+        }
+
     }
 
     if (session->firstBytesLen[0] > 0) {

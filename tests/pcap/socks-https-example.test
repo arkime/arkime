@@ -220,6 +220,7 @@
                ],
                "hostCnt" : 1
             },
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386004472629,
             "length" : 57,
@@ -581,6 +582,7 @@
                ],
                "hostCnt" : 1
             },
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386004475761,
             "length" : 69,
@@ -939,6 +941,7 @@
                ],
                "hostCnt" : 1
             },
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386004480888,
             "length" : 35,

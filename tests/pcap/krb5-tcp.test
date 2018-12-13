@@ -17,6 +17,7 @@
             "dstPort" : 88,
             "fileId" : [],
             "firstPacket" : 1466265698248,
+            "initRTT" : 1,
             "ipProtocol" : 6,
             "krb5" : {
                "cname" : [

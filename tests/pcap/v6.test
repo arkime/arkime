@@ -678,6 +678,7 @@
             "dstPort" : 22,
             "fileId" : [],
             "firstPacket" : 921159918266,
+            "initRTT" : 28,
             "ipProtocol" : 6,
             "lastPacket" : 921159923604,
             "length" : 5338,

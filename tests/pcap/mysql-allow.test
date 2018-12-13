@@ -19,6 +19,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1398217358961,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1398217359003,
             "length" : 43,

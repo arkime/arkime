@@ -69,6 +69,7 @@
             },
             "fileId" : [],
             "firstPacket" : 1386338020379,
+            "initRTT" : 36,
             "ipProtocol" : 6,
             "lastPacket" : 1386338052390,
             "length" : 32010,
