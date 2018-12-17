@@ -25,12 +25,14 @@ Moloch was created to replace commercial full packet systems for use at AOL in 2
 By having complete control of hardware and costs we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
 
 The Moloch system is comprised of 3 components
-* ``capture`` - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets and sends meta data (SPI data) to elasticsearch.
-* ``viewer`` - A `node.js <http://nodejs.org/>`_ application that runs per capture machine and handles the web interface and transfer of PCAP files.
-* ``elasticsearch`` - The search database technology powering Moloch.
+* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets and sends meta data (SPI data) to elasticsearch.
+* **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine and handles the web interface and transfer of PCAP files.
+* **elasticsearch** - The search database technology powering Moloch.
 
-![image](https://raw.github.com/wiki/aol/moloch/sessions.png "Sessions" {width=300px})
-![image](https://raw.github.com/wiki/aol/moloch/spiview.png "Spiview" {width=300px})
+
+![](https://raw.github.com/wiki/aol/moloch/sessions.png?s=300)
+
+![](https://raw.github.com/wiki/aol/moloch/spiview.png?s=300)
 
 ## Install
 
