@@ -337,6 +337,8 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     session->packets[0] = 0;
     session->packets[1] = 0;
     session->midSave = 0;
+    session->ackTime = 0;
+    session->synTime = 0;
     memset(session->tcpFlagCnt, 0, sizeof(session->tcpFlagCnt));
 }
 /******************************************************************************/

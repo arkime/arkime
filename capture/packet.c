@@ -305,6 +305,11 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
             }
         } else {
             session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]++;
+            if (session->synTime == 0) {
+                session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
+                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
+                session->ackTime = 0;
+            }
         }
 
         session->haveTcpSession = 1;
@@ -333,7 +338,7 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
         session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]++;
         if (session->ackTime == 0) {
             session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
-                               (packet->ts.tv_usec - session->firstPacket.tv_usec);
+                               (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
         }
     }
 
