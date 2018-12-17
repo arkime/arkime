@@ -100,8 +100,8 @@ Please refer to [the contributing.md file](CONTRIBUTING.md) for information abou
 
 ## Maintainers
 
-The best way to reach us is on Slack
+The best way to reach us is on Slack.  Please visit https://slackinvite.molo.ch to receive an initiation to join the Moloch FPC Slack workspace.
 
 ## License
 
-This project is licensed under the terms of the [Apache 2.0](LICENSE-Apache-2.0) open source license. Please refer to [LICENSE](LICENSE) for the full terms.
+This project is licensed under the terms of the Apache 2.0 open source license. Please refer to [LICENSE](LICENSE) for the full terms.
