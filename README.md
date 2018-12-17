@@ -21,10 +21,10 @@ Moloch is built to be deployed across many systems and can scale to handle tens 
 
 ## Background
 
-Moloch was created to replace commercial full packet systems for use at AOL in 2012.  By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
+Moloch was created to replace commercial full packet systems at AOL in 2012.  By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
 
-The Moloch system is comprised of 3 components
-* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets and sends metadata (SPI data) to elasticsearch.
+The Moloch system is comprised of 3 components:
+* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets, and sends metadata (SPI data) to elasticsearch.
 * **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine. It handles the web interface and transfer of PCAP files.
 * **[elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html)** - The search database technology powering Moloch.
 
@@ -38,7 +38,7 @@ Another way to view the data is the SPI View page, which allows the user to see 
 
 ## Install
 
-Most users should use the prebuilt binaries available at our [Downloads page](https://molo.ch/#downloads) and follow the simple install instructions on the page.
+Most users should use the prebuilt binaries available at our [Downloads page](https://molo.ch/#downloads) and follow the simple install instructions on that page.
 
 For advanced users, you can build Moloch yourself: 
 * `git clone https://github.com/aol/moloch`
@@ -58,7 +58,7 @@ Once Moloch is running, point your browser to http://localhost:8005 to access th
 
 Access to Moloch is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Moloch interface or API. Moloch is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.  
 
-Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used allowing only Moloch machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
+Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used to allow only Moloch machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
 ```
     for ip in moloches1 moloches2 moloches3 molochvieweronly1; do
       iptables -A INPUT -i eth0 -p tcp --dport 9300 -s $ip -j ACCEPT
@@ -96,7 +96,7 @@ You can learn more about the Moloch API on our [API Wiki page](https://github.co
 
 ## Contribute
 
-Please refer to [the CONTRIBUTING.md file](CONTRIBUTING.md) for information about how to get involved. We welcome issues, feature requests, pull requests, and documentation updates in GitHub.  For questions about using and troubleshooting Moloch please use the Slack channels.
+Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved. We welcome issues, feature requests, pull requests, and documentation updates in GitHub.  For questions about using and troubleshooting Moloch please use the Slack channels.
 
 ## Maintainers
 
