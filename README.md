@@ -29,14 +29,17 @@ The Moloch system is comprised of 3 components
 * **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine and handles the web interface and transfer of PCAP files.
 * **elasticsearch** - The search database technology powering Moloch.
 
+Once installed, a user can look at the data Moloch has captured using a simple to use Web interface.  Moloch provides multiple views of the data.  The default is a list of sessions, which can be opened to view the meta data for the session and the pcap data.
 
-![](https://raw.github.com/wiki/aol/moloch/sessions.png?s=300)
+<img src="https://raw.github.com/wiki/aol/moloch/sessions.png" width="300">
 
-![](https://raw.github.com/wiki/aol/moloch/spiview.png?s=300)
+Another sample interface is the spiview page, which allows the user to see all the unique values for each field that Moloch understands.
+
+<img src="https://raw.github.com/wiki/aol/moloch/spiview.png" width="300">
 
 ## Install
 
-For most users, please use the prebuilt binaries available at https://molo.ch/#downloads
+For most users, please use the prebuilt binaries available at https://molo.ch/#downloads and follow the simple install instructions on the page.
 
 For advanced users, if you wish to build Moloch yourself 
 * `git clone https://github.com/aol/moloch`
