@@ -4,9 +4,9 @@
 ![banner](https://raw.githubusercontent.com/aol/moloch/readme/viewer/public/moloch_155.png)
 
 
-Moloch augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast, indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching, and exporting. Moloch exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Moloch stores and exports all packets in standard PCAP format allow you to also use your favorite PCAP ingesting tools, such as wireshark, during your analysis workflow.
+Moloch augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast, indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching, and exporting. Moloch exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Moloch stores and exports all packets in standard PCAP format, allowing you to also use your favorite PCAP ingesting tools, such as wireshark, during your analysis workflow.
 
-Access to Moloch is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Moloch interface or API. Moloch is not meant to replace an IDS but instead work along side them to store and index all the network traffic in standard PCAP format, providing fast access.  Moloch is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Meta data retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
+Moloch is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Metadata retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
 
 ## Table of Contents
 
@@ -21,44 +21,44 @@ Access to Moloch is protected by using HTTPS with digest passwords or by using a
 
 ## Background
 
-Moloch was created to replace commercial full packet systems for use at AOL in 2012.  
-By having complete control of hardware and costs we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
+Moloch was created to replace commercial full packet systems for use at AOL in 2012.  By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
 
 The Moloch system is comprised of 3 components
-* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets and sends meta data (SPI data) to elasticsearch.
-* **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine and handles the web interface and transfer of PCAP files.
-* **elasticsearch** - The search database technology powering Moloch.
+* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets and sends metadata (SPI data) to elasticsearch.
+* **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine. It handles the web interface and transfer of PCAP files.
+* **[elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html)** - The search database technology powering Moloch.
 
-Once installed, a user can look at the data Moloch has captured using a simple to use Web interface.  Moloch provides multiple views of the data.  The default is a list of sessions, which can be opened to view the meta data for the session and the pcap data.
+Once installed, a user can look at the data Moloch has captured using a simple web interface.  Moloch provides multiple views of the data.  The primary view is the Sessions page that contains a list of sessions. Each session can be opened to view the metadata and PCAP data.
 
-<img src="https://raw.github.com/wiki/aol/moloch/sessions.png" width="300">
+<img src="https://raw.github.com/wiki/aol/moloch/sessions.png" width="500">
 
-Another sample interface is the spiview page, which allows the user to see all the unique values for each field that Moloch understands.
+Another way to view the data is the SPI View page, which allows the user to see all the unique values for each field that Moloch understands.
 
-<img src="https://raw.github.com/wiki/aol/moloch/spiview.png" width="300">
+<img src="https://raw.github.com/wiki/aol/moloch/spiview.png" width="500">
 
 ## Install
 
-For most users, please use the prebuilt binaries available at https://molo.ch/#downloads and follow the simple install instructions on the page.
+Most users should use the prebuilt binaries available at our [Downloads page](https://molo.ch/#downloads) and follow the simple install instructions on the page.
 
-For advanced users, if you wish to build Moloch yourself 
+For advanced users, you can build Moloch yourself: 
 * `git clone https://github.com/aol/moloch`
-* `./easybutton-build.sh --install` which will download all the prerequisites, build, and install
-* `make config` - which will perform a initial Moloch configuration
+* `./easybutton-build.sh --install` downloads all the prerequisites, build, and install
+* `make config` - performs an initial Moloch configuration
 
 
 ## Configuration
 
-Most of the system configuration will take place in the `/data/moloch/etc/config.ini` file.  The variables are documented in https://github.com/aol/moloch/wiki/Settings
+Most of the system configuration will take place in the `/data/moloch/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://github.com/aol/moloch/wiki/Settings).
 
 ## Usage
 
-After Moloch is running, you need to point your browser to http://localhost:8005 to access the user interface.
-You can click on the Owl to reach the Moloch help page.
+Once Moloch is running, point your browser to http://localhost:8005 to access the web interface.  **Click on the Owl to reach the Moloch help page.**
 
 ## Security
 
-Elasticsearch provides NO security by default, so ``iptables`` MUST be used allowing only Moloch machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
+Access to Moloch is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Moloch interface or API. Moloch is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.  
+
+Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used allowing only Moloch machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
 ```
     for ip in moloches1 moloches2 moloches3 molochvieweronly1; do
       iptables -A INPUT -i eth0 -p tcp --dport 9300 -s $ip -j ACCEPT
@@ -81,8 +81,8 @@ Elasticsearch provides NO security by default, so ``iptables`` MUST be used allo
 
 * It is possible to set up a Moloch ``viewer`` on a machine that doesn't capture any data that gateways all requests.
 
-  - It is also possible to place apache in front of moloch, so it can handle the authentication and pass the username on to moloch
-  - This is how we deploy it
+  - It is also possible to place Apache in front of Moloch, so it can handle the authentication and pass the username on to Moloch.
+  - This is how we deploy it.
 
 * A shared password stored in the Moloch configuration file is used to encrypt password hashes AND for inter-Moloch communication.
 
@@ -91,16 +91,16 @@ Elasticsearch provides NO security by default, so ``iptables`` MUST be used allo
 
 ## API
 
-You can learn more about the Moloch API at https://github.com/aol/moloch/wiki/API
+You can learn more about the Moloch API on our [API Wiki page](https://github.com/aol/moloch/wiki/API).
 
 
 ## Contribute
 
-Please refer to [the contributing.md file](CONTRIBUTING.md) for information about how to get involved. We welcome issues, feature requests and pull requests in github.  For questions about using Moloch please use the Slack channels.
+Please refer to [the CONTRIBUTING.md file](CONTRIBUTING.md) for information about how to get involved. We welcome issues, feature requests, pull requests, and documentation updates in GitHub.  For questions about using and troubleshooting Moloch please use the Slack channels.
 
 ## Maintainers
 
-The best way to reach us is on Slack.  Please visit https://slackinvite.molo.ch to receive an initiation to join the Moloch FPC Slack workspace.
+The best way to reach us is on Slack.  Please request an invitation to join the Moloch FPC Slack workspace [here](https://slackinvite.molo.ch).
 
 ## License
 
