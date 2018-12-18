@@ -21,7 +21,7 @@
     "glob": "^7.1.2",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "moment": "^2.19.1",
-    "morgan": "^1.9.0",
+    "morgan": "^1.9.1",
     "on-headers": "^1.0.1",
     "pug": "^2.0.0",
     "redis": "^2.6.2",

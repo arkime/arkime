@@ -90,7 +90,7 @@
     "vue-style-loader": "^3.0.1",
     "webpack": "~3.11.0",
     "webpack-bundle-analyzer": "2.11.1",
-    "webpack-dev-server": "~2.11.2",
+    "webpack-dev-server": "^3.1.10",
     "webpack-merge": "4.1.2"
   },
   "engines": {
