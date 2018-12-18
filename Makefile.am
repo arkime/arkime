@@ -1,6 +1,7 @@
 SUBDIRS = . capture db viewer parliament release tests
 install-exec-local:
 	npm ci
+	cp -pr notifiers @prefix@
 	@INSTALL@ -D package.json @prefix@/package.json
 	@INSTALL@ -D package-lock.json @prefix@/package-lock.json
 	(cd @prefix@ ; npm ci --production)
