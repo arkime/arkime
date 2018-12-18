@@ -2289,6 +2289,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         huntsCreate();
         checkForOld5Indices();
         setPriority();
+        queriesUpdate();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
@@ -2297,12 +2298,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
+        queriesUpdate();
     } elsif ($main::versionNumber <= 53) {
         historyUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         sessions2Update();
         checkForOld5Indices();
         setPriority();
+        queriesUpdate();
     } elsif ($main::versionNumber <= 56) {
         sessions2Update();
         checkForOld5Indices();
