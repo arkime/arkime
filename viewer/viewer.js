@@ -3540,7 +3540,13 @@ function flattenFields(fields) {
           if (typeof nestedField === 'object') {
             for (let nestedKey in nestedField) {
               let newKey = baseKey + nestedKey;
-              newFields[newKey] = nestedField[nestedKey];
+              if (newFields[newKey] === undefined) {
+                newFields[newKey] = nestedField[nestedKey];
+              } else if (Array.isArray(newFields[newKey])) {
+                newFields[newKey].push(nestedField[nestedKey]);
+              } else {
+                newFields[newKey] = [newFields[newKey], nestedField[nestedKey]];
+              }
             }
             fields[key] = null;
             delete fields[key];
