@@ -102,7 +102,7 @@ export default {
         { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', dataField: 'ipExcluded', doStats: false, width: 100 },
         { id: 'nodeExcluded', name: 'Node Excluded', sort: 'nodeExcluded', dataField: 'nodeExcluded', doStats: false, width: 125 },
         { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', dataField: 'nonHeapSize', doStats: false, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'searchesTime', name: 'Searches timeout', sort: 'searchesTime', dataField: 'searchesTime', doStats: true, width: 100, dataFunction: roundCommaString }
+        { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', dataField: 'searchesTime', doStats: true, width: 100, dataFunction: roundCommaString }
       ]
     };
   },
