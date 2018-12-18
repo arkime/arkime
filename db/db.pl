@@ -2303,11 +2303,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
-    } elsif ($main::versionNumber <= 55) {
+    } elsif ($main::versionNumber <= 56) {
         sessions2Update();
         checkForOld5Indices();
-        usersUpdate();
-    } elsif ($main::versionNumber <= 56) {
         usersUpdate();
         queriesUpdate();
     } else {
