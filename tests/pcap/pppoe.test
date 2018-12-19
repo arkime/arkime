@@ -13,6 +13,7 @@
                   ],
                   "notAfter" : 1231995540000,
                   "notBefore" : 1168837200000,
+                  "remainingDays" : -1,
                   "serial" : "0119",
                   "subjectCN" : [
                      "kdc.uas.aol.com"
@@ -32,6 +33,7 @@
                   ],
                   "notAfter" : 2142276180000,
                   "notBefore" : 1022565600000,
+                  "remainingDays" : 1,
                   "serial" : "01",
                   "subjectCN" : [
                      "america online root certification authority 1"
@@ -51,6 +53,7 @@
                   ],
                   "notAfter" : 1875288399000,
                   "notBefore" : 1086369999000,
+                  "remainingDays" : 1,
                   "serial" : "07",
                   "subjectCN" : [
                      "aol member ca"
@@ -81,6 +84,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1193676055856,
+            "initRTT" : 47,
             "ipProtocol" : 6,
             "lastPacket" : 1193676056235,
             "length" : 380,

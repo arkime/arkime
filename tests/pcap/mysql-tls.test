@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1779463436000,
                   "notBefore" : 1464103436000,
+                  "remainingDays" : 1,
                   "serial" : "02",
                   "subjectCN" : [
                      "mysql_server_5.7.12_auto_generated_server_certificate"
@@ -35,6 +36,7 @@
             "dstPort" : 3306,
             "fileId" : [],
             "firstPacket" : 1482552218498,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1482552218503,
             "length" : 4,

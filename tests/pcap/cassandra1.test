@@ -17,6 +17,7 @@
             "dstPort" : 9160,
             "fileId" : [],
             "firstPacket" : 1466085103886,
+            "initRTT" : 5,
             "ipProtocol" : 6,
             "lastPacket" : 1466085103897,
             "length" : 10,

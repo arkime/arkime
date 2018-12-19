@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1534824000000,
                   "notBefore" : 1021953600000,
+                  "remainingDays" : -1,
                   "serial" : "12bbe6",
                   "subjectCN" : [
                      "geotrust global ca"
@@ -81,6 +82,7 @@
                   ],
                   "notAfter" : 1419292800000,
                   "notBefore" : 1411553285000,
+                  "remainingDays" : -1,
                   "serial" : "7a5b0bd895632f87",
                   "subjectCN" : [
                      "*.google.com"
@@ -100,6 +102,7 @@
                   ],
                   "notAfter" : 1483228799000,
                   "notBefore" : 1365174955000,
+                  "remainingDays" : -1,
                   "serial" : "023a76",
                   "subjectCN" : [
                      "google internet authority g2"
@@ -132,6 +135,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1413337896106,
+            "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1413337896584,
             "length" : 477,

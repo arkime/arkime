@@ -305,6 +305,11 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
             }
         } else {
             session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]++;
+            if (session->synTime == 0) {
+                session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
+                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
+                session->ackTime = 0;
+            }
         }
 
         session->haveTcpSession = 1;
@@ -331,6 +336,10 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
 
     if ((tcphdr->th_flags & (TH_FIN | TH_RST | TH_PUSH | TH_SYN | TH_ACK)) == TH_ACK) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]++;
+        if (session->ackTime == 0) {
+            session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
+                               (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
+        }
     }
 
     if (tcphdr->th_flags & TH_PUSH) {
@@ -1988,6 +1997,12 @@ void moloch_packet_init()
     moloch_field_define("general", "integer",
         "packets.dst", "Dst Packets", "dstPackets",
         "Total number of packets sent by destination in a session",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("general", "integer",
+        "initRTT", "Initial RTT", "initRTT",
+        "Initial round trip time, difference between SYN and ACK timestamp divided by 2 in ms",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 

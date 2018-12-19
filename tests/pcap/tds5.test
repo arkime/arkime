@@ -22,6 +22,7 @@
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1465335293231,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1465335293242,
             "length" : 10,

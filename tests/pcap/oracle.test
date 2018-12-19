@@ -19,6 +19,7 @@
             "dstPort" : 1522,
             "fileId" : [],
             "firstPacket" : 1476102172344,
+            "initRTT" : 85,
             "ipProtocol" : 6,
             "lastPacket" : 1476102172528,
             "length" : 183,

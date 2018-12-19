@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1738030709000,
                   "notBefore" : 1422670709000,
+                  "remainingDays" : 1,
                   "serial" : "008a07e08d4ab50a7b",
                   "subjectCN" : [
                      "ldap ssl test"
@@ -34,6 +35,7 @@
             "dstPort" : 389,
             "fileId" : [],
             "firstPacket" : 1422673532664,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1422673558484,
             "length" : 25820,

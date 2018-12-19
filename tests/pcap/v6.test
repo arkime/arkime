@@ -39,9 +39,9 @@
                "mailserverHostCnt" : 2,
                "mailserverIp" : [
                   "210.160.95.97",
-                  "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
                   "210.160.95.99",
-                  "3ffe:501:410:100:5254:ff:feda:48bf"
+                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
                ],
                "mailserverIpCnt" : 4,
                "mailserverRIR" : [
@@ -678,6 +678,7 @@
             "dstPort" : 22,
             "fileId" : [],
             "firstPacket" : 921159918266,
+            "initRTT" : 28,
             "ipProtocol" : 6,
             "lastPacket" : 921159923604,
             "length" : 5338,
@@ -1409,7 +1410,7 @@
                "nameserverIp" : [
                   "203.178.136.188",
                   "203.178.141.212",
-                  "3ffe:501:4819:2000:5254:ff:fedc:50d2"
+                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -1762,7 +1763,7 @@
                "nameserverIp" : [
                   "203.178.136.188",
                   "203.178.141.212",
-                  "3ffe:501:4819:2000:5254:ff:fedc:50d2"
+                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -2537,7 +2538,7 @@
                "nameserverIp" : [
                   "203.178.141.212",
                   "203.178.136.188",
-                  "3ffe:501:4819:2000:5254:ff:fedc:50d2"
+                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -2647,7 +2648,7 @@
                "nameserverIp" : [
                   "203.178.136.188",
                   "203.178.141.212",
-                  "3ffe:501:4819:2000:5254:ff:fedc:50d2"
+                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -2757,7 +2758,7 @@
                "nameserverIp" : [
                   "203.178.136.188",
                   "203.178.141.212",
-                  "3ffe:501:4819:2000:5254:ff:fedc:50d2"
+                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -3006,7 +3007,7 @@
                "nameserverIp" : [
                   "202.232.15.98",
                   "202.232.2.44",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -3238,7 +3239,7 @@
                "nameserverHostCnt" : 1,
                "nameserverIp" : [
                   "202.232.15.98",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -3343,7 +3344,7 @@
                "nameserverHostCnt" : 1,
                "nameserverIp" : [
                   "202.232.15.98",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -3448,7 +3449,7 @@
                "nameserverHostCnt" : 1,
                "nameserverIp" : [
                   "202.232.15.98",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -3553,7 +3554,7 @@
                "nameserverHostCnt" : 1,
                "nameserverIp" : [
                   "202.232.15.98",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -3658,7 +3659,7 @@
                "nameserverHostCnt" : 1,
                "nameserverIp" : [
                   "202.232.15.98",
-                  "3ffe:507:0:1:260:97ff:fe07:69ea"
+                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [

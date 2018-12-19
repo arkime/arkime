@@ -22,6 +22,7 @@
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1463256456040,
+            "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1463256637560,
             "ldap" : {

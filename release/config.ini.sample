@@ -6,11 +6,9 @@
 #
 # Order of config variables:
 # 1st) [optional] The section titled with the node name is used first.
-#      Moloch will always tag sessions with node:<node name>
 # 2nd) [optional] If a node has a nodeClass variable, the section titled with
 #      the nodeClass name is used next.  Sessions will be tagged with
-#      node:<node class name> which is useful if watching different
-#      network classes.
+#      class:<node class name> which may be useful if watching different networks.
 # 3rd) The section titled "default" is used last.
 
 [default]

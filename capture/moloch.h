@@ -588,6 +588,8 @@ typedef struct moloch_session {
     uint32_t               lastFileNum;
     uint32_t               saveTime;
     uint32_t               packets[2];
+    uint32_t               synTime;
+    uint32_t               ackTime;
 
     uint16_t               port1;
     uint16_t               port2;

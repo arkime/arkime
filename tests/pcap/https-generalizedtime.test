@@ -28,6 +28,7 @@
                   ],
                   "notAfter" : 1451573263000,
                   "notBefore" : 1415717263000,
+                  "remainingDays" : -1,
                   "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
                   "subjectCN" : [
                      "mail.yandex.ru"
@@ -47,6 +48,7 @@
                   ],
                   "notAfter" : 1709470465000,
                   "notBefore" : 1236084865000,
+                  "remainingDays" : 1,
                   "serial" : "4ca5fec6617c48b056382a8280e0508c",
                   "subjectCN" : [
                      "certum level iv ca"
@@ -85,6 +87,7 @@
                ],
                "hostCnt" : 1
             },
+            "initRTT" : 54,
             "ipProtocol" : 6,
             "lastPacket" : 1421771550224,
             "length" : 188,

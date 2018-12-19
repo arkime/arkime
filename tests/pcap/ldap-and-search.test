@@ -18,6 +18,7 @@
             "dstPort" : 389,
             "fileId" : [],
             "firstPacket" : 1132019262677,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1132019262678,
             "ldap" : {

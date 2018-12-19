@@ -21,6 +21,7 @@
             "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1479719879541,
+            "initRTT" : 72,
             "ipProtocol" : 6,
             "lastPacket" : 1479719902505,
             "length" : 22965,

@@ -483,6 +483,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_DST_ZERO]
                            );
+
+        if (session->synTime && session->ackTime) {
+            BSB_EXPORT_sprintf(jbsb, "\"initRTT\": %u,", ((session->ackTime - session->synTime)/2000));
+        }
+
     }
 
     if (session->firstBytesLen[0] > 0) {
@@ -884,8 +889,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore*1000);
                 BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter*1000);
-                if (certs->notAfter >= certs->notBefore)
+                if (certs->notAfter >= certs->notBefore) {
                     BSB_EXPORT_sprintf(jbsb, "\"validDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\": %d,", (int)(certs->notAfter - currentTime.tv_sec)/(60*60*24));
+                }
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 

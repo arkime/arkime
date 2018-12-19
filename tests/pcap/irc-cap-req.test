@@ -18,6 +18,7 @@
             "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1483561576585,
+            "initRTT" : 58,
             "ipProtocol" : 6,
             "irc" : {
                "channel" : [

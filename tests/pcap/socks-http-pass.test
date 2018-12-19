@@ -19,6 +19,7 @@
             "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1386090517357,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386090517358,
             "length" : 1,
@@ -111,6 +112,7 @@
             "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1386090528538,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386090528547,
             "length" : 8,
@@ -317,6 +319,7 @@
                ],
                "useragentCnt" : 1
             },
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386090534579,
             "length" : 153,

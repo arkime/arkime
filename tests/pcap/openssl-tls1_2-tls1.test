@@ -78,6 +78,7 @@
                   ],
                   "notAfter" : 1497242632000,
                   "notBefore" : 1402510723000,
+                  "remainingDays" : -1,
                   "serial" : "4c235548",
                   "subjectCN" : [
                      "www.aol.com"
@@ -97,6 +98,7 @@
                   ],
                   "notAfter" : 1636685477000,
                   "notBefore" : 1321026040000,
+                  "remainingDays" : 1,
                   "serial" : "4c0e8c39",
                   "subjectCN" : [
                      "entrust certification authority - l1c"
@@ -128,6 +130,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1413338074954,
+            "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1413338075560,
             "length" : 606,

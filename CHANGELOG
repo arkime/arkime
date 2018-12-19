@@ -14,7 +14,11 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.6.2 2018/11/XX
+1.7.0 2019/01/XX
+  - capture - new cert remainingDays field
+  - capture - new tcp initRTT field
+
+1.6.2 2018/12/07
   - NOTICE: db.pl upgrade is required
   - suricata - fix crash when signature name > 128 characters long
   - suricata - fix severity parsing (again)
@@ -30,6 +34,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fix tls parser inifite loop
   - viewer - can customize fields in the info column
   - viewer - new es recovery tab
+  - viewer - stats page shows when data is being loaded from server
 
 1.6.1 2018/11/06
   - NOTICE: db.pl upgrade is required

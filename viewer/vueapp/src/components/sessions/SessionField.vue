@@ -210,6 +210,7 @@ export default {
         let qVal = result[i].queryVal;
 
         switch (this.field.type) {
+          case 'date':
           case 'seconds':
             qVal = val; // save original value as the query value
             val = this.$options.filters.timezoneDateString(
