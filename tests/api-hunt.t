@@ -110,11 +110,11 @@ my $hToken = getTokenCookie('huntuser');
 # If the user is not an admin they can only pause their own hunts
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   my $id3 = $json->{hunt}->{id};
-  $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", $otherToken);
+  $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
 # If the user is not an admin they can only play their own hunts
-  $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", $otherToken);
+  $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
 # Admin can delete any hunt

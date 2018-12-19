@@ -1183,6 +1183,18 @@ app.post('/notifiers', getSettingUser, checkCookieToken, function (req, res) {
     return res.molochError(403, 'Missing a unique notifier name');
   }
 
+  if (!req.body.notifier.type) {
+    return res.molochError(403, 'Missing notifier type');
+  }
+
+  if (!req.body.notifier.fields) {
+    return res.molochError(403, 'Missing notifier fields');
+  }
+
+  if (!Array.isArray(req.body.notifier.fields)) {
+    return res.molochError(403, 'Notifier fields must be an array');
+  }
+
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   if (!internals.notifiers) { buildNotifiers(); }
@@ -1272,6 +1284,26 @@ app.put('/notifiers/:name', getSettingUser, checkCookieToken, function (req, res
       return res.molochError(404, 'Cannot find notifer to udpate');
     }
 
+    if (!req.body.notifier) {
+      return res.molochError(403, 'Missing notifier');
+    }
+
+    if (!req.body.notifier.name) {
+      return res.molochError(403, 'Missing a unique notifier name');
+    }
+
+    if (!req.body.notifier.type) {
+      return res.molochError(403, 'Missing notifier type');
+    }
+
+    if (!req.body.notifier.fields) {
+      return res.molochError(403, 'Missing notifier fields');
+    }
+
+    if (!Array.isArray(req.body.notifier.fields)) {
+      return res.molochError(403, 'Notifier fields must be an array');
+    }
+
     req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
     if (!internals.notifiers) { buildNotifiers(); }
@@ -1312,7 +1344,7 @@ app.put('/notifiers/:name', getSettingUser, checkCookieToken, function (req, res
       return res.send(JSON.stringify({
         success : true,
         text    : 'Successfully updated notifier',
-        name    : req.params.name
+        name    : req.body.notifier.name
       }));
     });
   });

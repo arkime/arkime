@@ -118,8 +118,13 @@ my ($url, $content, $token, $debug) = @_;
 }
 ################################################################################
 sub viewerPutToken {
-my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("PUT", "http://$MolochTest::host:8123$url", "x-moloch-cookie" => $token));
+my ($url, $content, $token, $debug) = @_;
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+    } else {
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "x-moloch-cookie" => $token);
+    }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
