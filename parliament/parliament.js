@@ -208,7 +208,7 @@ function loadNotifiers () {
   };
 
   // look for all notifier providers and initialize them
-  let files = glob.sync(path.join(__dirname, '/notifiers/provider.*.js'));
+  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
   files.forEach((file) => {
     let plugin = require(file);
     plugin.init(api);

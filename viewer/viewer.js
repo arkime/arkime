@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 55;
+var MIN_DB_VERSION = 56;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,9 @@ var Config         = require('./config.js'),
     EventEmitter   = require('events').EventEmitter,
     PNG            = require('pngjs').PNG,
     decode         = require('./decode.js'),
-    onHeaders      = require('on-headers');
+    onHeaders      = require('on-headers'),
+    glob           = require('glob'),
+    path           = require('path');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -85,7 +87,8 @@ var internals = {
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
-  proccessHuntJobsInitialized: false
+  proccessHuntJobsInitialized: false,
+  notifiers: undefined
 };
 
 if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
@@ -1125,6 +1128,315 @@ function postSettingUser (req, res, next) {
   });
 }
 
+function buildNotifiers () {
+  internals.notifiers = {};
+
+  let api = {
+    register: function (str, info) {
+      internals.notifiers[str] = info;
+    }
+  };
+
+  // look for all notifier providers and initialize them
+  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
+  files.forEach((file) => {
+    let plugin = require(file);
+    plugin.init(api);
+  });
+}
+
+app.get('/notifierTypes', checkCookieToken, function (req, res) {
+  if (internals.notifiers) {
+    return res.send(internals.notifiers);
+  }
+
+  buildNotifiers();
+
+  return res.send(internals.notifiers);
+});
+
+// get created notifiers
+app.get('/notifiers', checkCookieToken, function (req, res) {
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      return res.send({});
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    return res.send(sharedUser.notifiers);
+  });
+});
+
+// create a new notifier
+app.post('/notifiers', getSettingUser, checkCookieToken, function (req, res) {
+  let user = req.settingUser;
+  if (!user.createEnabled) {
+    return res.molochError(401, 'Need admin privelages to create a notifier');
+  }
+
+  if (!req.body.notifier) {
+    return res.molochError(403, 'Missing notifier');
+  }
+
+  if (!req.body.notifier.name) {
+    return res.molochError(403, 'Missing a unique notifier name');
+  }
+
+  if (!req.body.notifier.type) {
+    return res.molochError(403, 'Missing notifier type');
+  }
+
+  if (!req.body.notifier.fields) {
+    return res.molochError(403, 'Missing notifier fields');
+  }
+
+  if (!Array.isArray(req.body.notifier.fields)) {
+    return res.molochError(403, 'Notifier fields must be an array');
+  }
+
+  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+  if (!internals.notifiers) { buildNotifiers(); }
+
+  let foundNotifier;
+  for (let n in internals.notifiers) {
+    let notifier = internals.notifiers[n];
+    if (notifier.type === req.body.notifier.type) {
+      foundNotifier = notifier;
+    }
+  }
+
+  if (!foundNotifier) { return res.molochError(403, 'Unknown notifier type'); }
+
+  // check that required notifier fields exist
+  for (let field of foundNotifier.fields) {
+    if (field.required) {
+      for (let sentField of req.body.notifier.fields) {
+        if (sentField.name === field.name && !sentField.value) {
+          return res.molochError(403, `Missing a value for ${field.name}`);
+        }
+      }
+    }
+  }
+
+  // save the notifier on the shared user
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      // sharing for the first time
+      sharedUser = {
+        userId: '_moloch_shared',
+        userName: '_moloch_shared',
+        enabled: false,
+        webEnabled: false,
+        emailSearch: false,
+        headerAuthEnabled: false,
+        createEnabled: false,
+        removeEnabled: false,
+        packetSearch: false,
+        views: {},
+        notifiers: {}
+      };
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    sharedUser.notifiers = sharedUser.notifiers || {};
+
+    if (sharedUser.notifiers[req.body.notifier.name]) {
+      console.log('Trying to add duplicate notifier', sharedUser);
+      return res.molochError(403, 'Notifier already exists');
+    }
+
+    sharedUser.notifiers[req.body.notifier.name] = req.body.notifier;
+
+    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      if (err) {
+        console.log('/notifiers failed', err, info);
+        return res.molochError(500, 'Creating notifier failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Successfully created notifier',
+        name    : req.body.notifier.name
+      }));
+    });
+  });
+});
+
+// update a notifier
+app.put('/notifiers/:name', getSettingUser, checkCookieToken, function (req, res) {
+  let user = req.settingUser;
+  if (!user.createEnabled) {
+    return res.molochError(401, 'Need admin privelages to update a notifier');
+  }
+
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      return res.molochError(404, 'Cannot find notifer to udpate');
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    sharedUser.notifiers = sharedUser.notifiers || {};
+
+    if (!sharedUser.notifiers[req.params.name]) {
+      return res.molochError(404, 'Cannot find notifer to udpate');
+    }
+
+    if (!req.body.notifier) {
+      return res.molochError(403, 'Missing notifier');
+    }
+
+    if (!req.body.notifier.name) {
+      return res.molochError(403, 'Missing a unique notifier name');
+    }
+
+    if (!req.body.notifier.type) {
+      return res.molochError(403, 'Missing notifier type');
+    }
+
+    if (!req.body.notifier.fields) {
+      return res.molochError(403, 'Missing notifier fields');
+    }
+
+    if (!Array.isArray(req.body.notifier.fields)) {
+      return res.molochError(403, 'Notifier fields must be an array');
+    }
+
+    req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (!internals.notifiers) { buildNotifiers(); }
+
+    let foundNotifier;
+    for (let n in internals.notifiers) {
+      let notifier = internals.notifiers[n];
+      if (notifier.type === req.body.notifier.type) {
+        foundNotifier = notifier;
+      }
+    }
+
+    if (!foundNotifier) { return res.molochError(403, 'Unknown notifier type'); }
+
+    // check that required notifier fields exist
+    for (let field of foundNotifier.fields) {
+      if (field.required) {
+        for (let sentField of req.body.notifier.fields) {
+          if (sentField.name === field.name && !sentField.value) {
+            return res.molochError(403, `Missing a value for ${field.name}`);
+          }
+        }
+      }
+    }
+
+    sharedUser.notifiers[req.body.notifier.name] = req.body.notifier;
+    // delete the old notifier if the name has changed
+    if (sharedUser.notifiers[req.params.name] && req.body.notifier.name !== req.params.name) {
+      sharedUser.notifiers[req.params.name] = null;
+      delete sharedUser.notifiers[req.params.name];
+    }
+
+    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      if (err) {
+        console.log('/notifiers update failed', err, info);
+        return res.molochError(500, 'Updating notifier failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Successfully updated notifier',
+        name    : req.body.notifier.name
+      }));
+    });
+  });
+});
+
+// delete a notifier
+app.delete('/notifiers/:name', getSettingUser, checkCookieToken, function (req, res) {
+  let user = req.settingUser;
+  if (!user.createEnabled) {
+    return res.molochError(401, 'Need admin privelages to delete a notifier');
+  }
+
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      return res.molochError(404, 'Cannot find notifer to remove');
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    sharedUser.notifiers = sharedUser.notifiers || {};
+
+    if (!sharedUser.notifiers[req.params.name]) {
+      return res.molochError(404, 'Cannot find notifer to remove');
+    }
+
+    sharedUser.notifiers[req.params.name] = undefined;
+
+    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      if (err) {
+        console.log('/notifiers delete failed', err, info);
+        return res.molochError(500, 'Deleting notifier failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Successfully deleted notifier',
+        name    : req.params.name
+      }));
+    });
+  });
+});
+
+// test a notifier
+app.post('/notifiers/:name/test', getSettingUser, checkCookieToken, function (req, res) {
+  let user = req.settingUser;
+  if (!user.createEnabled) {
+    return res.molochError(401, 'Need admin privelages to test a notifier');
+  }
+
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      return res.molochError(404, 'Cannot find notifer to test');
+    } else {
+      sharedUser = sharedUser._source;
+    }
+
+    sharedUser.notifiers = sharedUser.notifiers || {};
+
+    if (!sharedUser.notifiers[req.params.name]) {
+      return res.molochError(404, 'Cannot find notifer to test');
+    }
+
+    let config = {};
+    const notifier = sharedUser.notifiers[req.params.name];
+
+    let notifierDefinition;
+    for (let n in internals.notifiers) {
+      if (internals.notifiers[n].type === notifier.type) {
+        notifierDefinition = internals.notifiers[n];
+      }
+    }
+    if (!notifierDefinition) { return res.molochError(403, 'Unknown notifier type'); }
+
+    // check that required notifier fields exist
+    for (let field of notifierDefinition.fields) {
+      if (field.required) {
+        for (let configuredField of notifier.fields) {
+          if (configuredField.name === field.name && !configuredField.value) {
+            return res.molochError(403, `Missing a value for ${field.name}`);
+          }
+          config[field.name] = configuredField.value;
+        }
+      }
+    }
+
+    notifierDefinition.sendAlert(config, 'Test alert');
+
+    return res.send(JSON.stringify({
+      success : true,
+      text    : `Successfully issued alert using the ${req.params.name} notifier.`
+    }));
+  });
+});
 
 // gets a user's settings
 app.get('/user/settings', getSettingUser, recordResponseTime, function(req, res) {
@@ -1554,9 +1866,13 @@ app.post('/user/cron/create', [checkCookieToken, logAction(), postSettingUser], 
       name    : req.body.name,
       query   : req.body.query,
       tags    : req.body.tags,
-      action  : req.body.action
+      action  : req.body.action,
     }
   };
+
+  if (req.body.notifier) {
+    document.doc.notifier = req.body.notifier;
+  }
 
   var userId = req.settingUser.userId;
 
@@ -1627,9 +1943,14 @@ app.post('/user/cron/update', [checkCookieToken, logAction(), postSettingUser], 
       name    : req.body.name,
       query   : req.body.query,
       tags    : req.body.tags,
-      action  : req.body.action
+      action  : req.body.action,
+      notifier: undefined
     }
   };
+
+  if (req.body.notifier) {
+    document.doc.notifier = req.body.notifier;
+  }
 
   Db.get('queries', 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
@@ -7356,21 +7677,85 @@ function processCronQueries() {
                 console.log("CRON - setting lpValue", new Date(lpValue*1000));
               }
               // Do the ES update
-              var document = {
+              let document = {
                 doc: {
                   lpValue: lpValue,
                   lastRun: Math.floor(Date.now()/1000),
                   count: (queries[qid].count || 0) + count
                 }
               };
-              Db.update("queries", "query", qid, document, {refresh: true}, function () {
-                // If there is more time to catch up on, repeat the loop, although other queries
-                // will get processed first to be fair
-                if (lpValue !== endTime) {
-                  repeat = true;
-                }
-                return forQueriesCb();
-              });
+
+              function continueProcess (id, doc, lp, et) {
+                Db.update('queries', 'query', id, doc, { refresh: true }, function () {
+                  // If there is more time to catch up on, repeat the loop, although other queries
+                  // will get processed first to be fair
+                  if (lp !== et) { repeat = true; }
+                  return forQueriesCb();
+                });
+              }
+
+              // issue alert via notifier if the count has changed and it has been at least 10 minutes
+              if (cq.notifier && count && queries[qid].count !== document.doc.count &&
+                (!cq.lastNotified || (Math.floor(Date.now()/1000) - cq.lastNotified >= 600))) {
+                if (!internals.notifiers) { buildNotifiers(); }
+
+                // find notifier
+                Db.getUser('_moloch_shared', (err, sharedUser) => {
+                  if (!sharedUser || !sharedUser.found) {
+                    console.log('Cannot find notifier, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  sharedUser = sharedUser._source;
+
+                  sharedUser.notifiers = sharedUser.notifiers || {};
+
+                  let notifier = sharedUser.notifiers[cq.notifier];
+
+                  if (!notifier) {
+                    console.log('Cannot find notifier, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  let notifierDefinition;
+                  for (let n in internals.notifiers) {
+                    if (internals.notifiers[n].type === notifier.type) {
+                      notifierDefinition = internals.notifiers[n];
+                    }
+                  }
+                  if (!notifierDefinition) {
+                    console.log('Cannot find notifier definition, no cron alert can be issued');
+                    return continueProcess(qid, document, lpValue, endTime);
+                  }
+
+                  let config = {};
+                  // check that required notifier fields exist
+                  for (let field of notifierDefinition.fields) {
+                    if (field.required) {
+                      for (let configuredField of notifier.fields) {
+                        if (configuredField.name === field.name && !configuredField.value) {
+                          console.log(`Cannot find notifier field value: ${field.name}, no cron alert can be issued`);
+                          continueProcess(qid, document, lpValue, endTime);
+                        }
+                        config[field.name] = configuredField.value;
+                      }
+                    }
+                  }
+
+                  let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+
+                  let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+
+                  notifierDefinition.sendAlert(config, message);
+
+                  document.doc.lastNotifiedCount = document.doc.count;
+                  document.doc.lastNotified = Math.floor(Date.now()/1000);
+
+                  return continueProcess(qid, document, lpValue, endTime);
+                });
+              } else {
+                return continueProcess(qid, document, lpValue, endTime);
+              }
             });
           });
         });

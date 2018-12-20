@@ -50,6 +50,7 @@
 # 53 - add forcedExpression to history
 # 54 - users_v6
 # 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
+# 56 - notifiers
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -58,7 +59,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 55;
+my $VERSION = 56;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1042,6 +1043,15 @@ sub queriesUpdate
       },
       "tags": {
         "type": "keyword"
+      },
+      "notifier": {
+        "type": "keyword"
+      },
+      "lastNotified": {
+        "type": "date"
+      },
+      "lastNotifiedCount": {
+        "type": "long"
       }
     }
   }
@@ -1411,6 +1421,11 @@ sub usersUpdate
         "dynamic": "true"
       },
       "views": {
+        "type": "object",
+        "dynamic": "true",
+        "enabled": "false"
+      },
+      "notifiers": {
         "type": "object",
         "dynamic": "true",
         "enabled": "false"
@@ -2279,6 +2294,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         huntsCreate();
         checkForOld5Indices();
         setPriority();
+        queriesUpdate();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
@@ -2287,16 +2303,19 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         checkForOld5Indices();
         setPriority();
+        queriesUpdate();
     } elsif ($main::versionNumber <= 53) {
         historyUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         sessions2Update();
         checkForOld5Indices();
         setPriority();
-    } elsif ($main::versionNumber <= 55) {
+        queriesUpdate();
+    } elsif ($main::versionNumber <= 56) {
         sessions2Update();
         checkForOld5Indices();
         usersUpdate();
+        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
