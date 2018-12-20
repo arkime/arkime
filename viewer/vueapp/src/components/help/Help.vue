@@ -958,6 +958,16 @@
             <p>
               Here, a user can update their password.
             </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Notifiers
+            </h6>
+            <p>
+              Here, an <strong>admin</strong> user can create, update, and delete notifiers.
+              The available notifiers are Slack, Email, and texts via Twilio.
+              Notifiers can be used to alert users that cron queries have found matching sessions.
+              Notifiers alert every <strong>10</strong> minutes if there are <strong>new</strong> matches.
+            </p>
           </div>
 
           <hr>
