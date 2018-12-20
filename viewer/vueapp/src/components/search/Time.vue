@@ -176,6 +176,7 @@ import FocusInput from '../utils/FocusInput';
 
 import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
+import moment from 'moment-timezone';
 
 const hourSec = 3600;
 let currentTimeSec;
@@ -206,7 +207,8 @@ export default {
         enableTime: true, // display time picker
         enableSeconds: true, // display seconds in time picker
         minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
-        time_24hr: true // show 24 hour time instead of am/pm
+        time_24hr: true, // show 24 hour time instead of am/pm
+        parseDate: this.parseTimezoneDate // show the date in the user configured timezone
       },
       stopTimeConfig: {
         dateFormat: 'U', // seconds from Jan 1, 1970
@@ -217,7 +219,8 @@ export default {
         enableTime: true, // display time picker
         enableSeconds: true, // display seconds in time picker
         minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
-        time_24hr: true // show 24 hour time instead of am/pm
+        time_24hr: true, // show 24 hour time instead of am/pm
+        parseDate: this.parseTimezoneDate // show the date in the user configured timezone
       }
     };
   },
@@ -504,6 +507,30 @@ export default {
       }
 
       if (change) { this.$emit('timeChange'); }
+    },
+    /**
+     * Parses a date number into a date string in the user configured timezone
+     * @param {number} date Seconds from 1970
+     */
+    parseTimezoneDate: function (date) {
+      date = date * 1000; // seconds to ms
+
+      let timezonedDate;
+
+      if (this.timezone === 'gmt') {
+        timezonedDate = moment.tz(date, 'gmt');
+      } else {
+        timezonedDate = moment(date);
+      }
+
+      return new Date(
+        timezonedDate.year(),
+        timezonedDate.month(),
+        timezonedDate.date(),
+        timezonedDate.hour(),
+        timezonedDate.minute(),
+        timezonedDate.second()
+      );
     }
   }
 };
