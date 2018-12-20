@@ -715,7 +715,7 @@
               </tr> <!-- /cron queries -->
               <!-- cron query form error -->
               <tr v-if="cronQueryListError">
-                <td colspan="7">
+                <td colspan="8">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -805,7 +805,7 @@
               </tr> <!-- /new cron query form -->
               <!-- cron query form error -->
               <tr v-if="cronQueryFormError">
-                <td colspan="7">
+                <td colspan="8">
                   <p class="small text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
@@ -1902,7 +1902,7 @@ export default {
       newCronQueryName: '',
       newCronQueryExpression: '',
       newCronQueryTags: '',
-      newCronQueryNotifier: '',
+      newCronQueryNotifier: undefined,
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
       molochClusters: {},
