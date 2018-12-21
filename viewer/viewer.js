@@ -1030,12 +1030,12 @@ app.get('/user.css', function(req, res) {
 
 /* User Endpoints ---------------------------------------------------------- */
 // default settings for users with no settings
-var settingDefaults = {
+let settingDefaults = {
   timezone      : 'local',
   detailFormat  : 'last',
   showTimestamps: 'last',
   sortColumn    : 'firstPacket',
-  sortDirection : 'asc',
+  sortDirection : 'desc',
   spiGraph      : 'node',
   connSrcField  : 'srcIp',
   connDstField  : 'ip.dst:port',
@@ -3268,7 +3268,6 @@ app.get('/esshard/list', recordResponseTime, function(req, res) {
         return a.name.localeCompare(b.name);
       });
     }
-
     res.send({nodes: nodes, indices: indices, nodeExcludes: nodeExcludes, ipExcludes: ipExcludes});
   });
 });

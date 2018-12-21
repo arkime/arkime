@@ -456,7 +456,7 @@ import Sortable from 'sortablejs';
 import '../../../../public/colResizable.js';
 
 const defaultTableState = {
-  order: [['firstPacket', 'asc']],
+  order: [['firstPacket', 'desc']],
   visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
 };
 

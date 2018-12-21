@@ -1852,7 +1852,7 @@ let clockInterval;
 
 const defaultSpiviewConfig = { fields: ['dstIp', 'protocol', 'srcIp'] };
 const defaultColConfig = {
-  order: [['firstPacket', 'asc']],
+  order: [['firstPacket', 'desc']],
   columns: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
 };
 
