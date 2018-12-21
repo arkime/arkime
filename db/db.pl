@@ -71,6 +71,7 @@ my $NOOPTIMIZE = 0;
 my $FULL = 0;
 my $REVERSE = 0;
 my $SHARDSPERNODE = 1;
+my $ESTIMEOUT=60;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -102,6 +103,7 @@ sub showHelp($)
     print "  -v                           - Verbose, multiple increases level\n";
     print "  --prefix <prefix>            - Prefix for table names\n";
     print "  -n                           - Make no db changes\n";
+    print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
@@ -281,7 +283,7 @@ sub esCopy
     }
 
     logmsg "\n";
-    $main::userAgent->timeout(60);
+    $main::userAgent->timeout($ESTIMEOUT + 5);
 }
 ################################################################################
 sub esScroll
@@ -360,7 +362,7 @@ sub sequenceUpdate
 }';
 
     logmsg "Setting sequence_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v2/sequence/_mapping", $mapping);
+    esPut("/${PREFIX}sequence_v2/sequence/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 }
 ################################################################################
 sub sequenceUpgrade
@@ -384,7 +386,7 @@ sub sequenceUpgrade
         esPost("/${PREFIX}sequence_v2/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
     }
     esDelete("/${PREFIX}sequence_v1");
-    $main::userAgent->timeout(60);
+    $main::userAgent->timeout($ESTIMEOUT + 5);
 }
 ################################################################################
 sub filesCreate
@@ -450,7 +452,7 @@ sub filesUpdate
 }';
 
     logmsg "Setting files_v5 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v5/file/_mapping", $mapping);
+    esPut("/${PREFIX}files_v5/file/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -506,7 +508,7 @@ my $mapping = '
 }';
 
     logmsg "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v3/stat/_mapping?pretty", $mapping, 1);
+    esPut("/${PREFIX}stats_v3/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -571,7 +573,7 @@ my $mapping = '
 }';
 
     logmsg "Setting dstats_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v3/dstat/_mapping?pretty", $mapping, 1);
+    esPut("/${PREFIX}dstats_v3/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -613,7 +615,7 @@ sub fieldsUpdate
 }';
 
     logmsg "Setting fields_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v2/field/_mapping", $mapping);
+    esPut("/${PREFIX}fields_v2/field/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 
     esPost("/${PREFIX}fields_v2/field/ip", '{
       "friendlyName": "All IP fields",
@@ -1058,7 +1060,7 @@ sub queriesUpdate
 }';
 
     logmsg "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v2/query/_mapping?pretty", $mapping);
+    esPut("/${PREFIX}queries_v2/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
     esAlias("add", "queries_v2", "queries");
 }
 
@@ -1159,7 +1161,7 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
     logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
-        esPut("/$i/session/_mapping", $mapping, 1);
+        esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
     }
 
     logmsg "\n";
@@ -1245,7 +1247,7 @@ my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
 foreach my $i (keys %{$indices}) {
     progress("$i ");
-    esPut("/$i/history/_mapping", $mapping, 1);
+    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
 }
 
 logmsg "\n";
@@ -1339,7 +1341,7 @@ logmsg "Setting hunts mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}hunts_v1", $settings);
 esAlias("add", "hunts_v1", "hunts");
 logmsg "Setting hunts_v1 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunts_v1/hunt/_mapping?pretty", $mapping);
+esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 
@@ -1450,7 +1452,7 @@ sub usersUpdate
 }';
 
     logmsg "Setting users_v6 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v6/user/_mapping?pretty", $mapping);
+    esPut("/${PREFIX}users_v6/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 sub setPriority
@@ -1742,6 +1744,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $PREFIX .= "_" if ($PREFIX !~ /_$/);
     } elsif ($ARGV[0] =~ /-n$/) {
         $NOCHANGES = 1;
+    } elsif ($ARGV[0] =~ /--timeout$/) {
+        $ESTIMEOUT = int($ARGV[1]);
+        shift @ARGV;
     } else {
         showHelp("Unknkown global option $ARGV[0]")
     }
@@ -1758,7 +1763,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 60);
+$main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
