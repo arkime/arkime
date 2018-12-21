@@ -1407,7 +1407,7 @@ export default {
     calculateInfoColumnWidth: function (infoColWidth) {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
-      let windowWidth = window.innerWidth; // account for right and left margins
+      let windowWidth = window.innerWidth - 25; // account for right and left margins
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
         let fillWithInfoCol = windowWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
@@ -1597,7 +1597,7 @@ table.sessions-table tbody tr td {
   margin-right: 4px;
 }
 .info-vis-menu {
-  margin-right: 35px;
+  margin-right: 10px;
 }
 .moloch-col-header:not(:last-child) .info-vis-menu {
   margin-right: 5px;
