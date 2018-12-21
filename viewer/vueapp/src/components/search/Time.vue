@@ -176,6 +176,7 @@ import FocusInput from '../utils/FocusInput';
 
 import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
+import 'flatpickr/dist/themes/dark.css';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
