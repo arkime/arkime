@@ -423,6 +423,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
     session->ses = ses;
+    session->stopSaving = 0xffff;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);
 

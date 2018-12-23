@@ -700,7 +700,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
         }
 
         /* Check if the stop saving bpf filters match */
-        if (session->packets[packet->direction] == 0 && session->stopSaving == 0) {
+        if (session->packets[packet->direction] == 0 && session->stopSaving == 0xffff) {
             moloch_rules_run_session_setup(session, packet);
         }
 
@@ -710,7 +710,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
         uint32_t packets = session->packets[0] + session->packets[1];
 
-        if (session->stopSaving == 0 || packets < session->stopSaving) {
+        if (packets <= session->stopSaving) {
             MOLOCH_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
             moloch_writer_write(session, packet);
 
