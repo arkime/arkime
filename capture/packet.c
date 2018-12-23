@@ -1134,7 +1134,7 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
         }
         initialPacket = packet->ts;
         if (!config.pcapReadOffline)
-            LOG("Initial Packet = %ld Initial Dropped = %d", initialPacket.tv_sec, initialDropped);
+            LOG("Initial Packet = %ld Initial Dropped = %u", initialPacket.tv_sec, initialDropped);
     }
 
     MOLOCH_THREAD_INCR(totalPackets);
