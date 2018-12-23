@@ -644,7 +644,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 session->port2 = ntohs(udphdr->uh_dport);
                 break;
             case IPPROTO_ESP:
-                session->stopSaving = 2;
+                session->stopSaving = 1;
                 break;
             case IPPROTO_ICMP:
                 break;
