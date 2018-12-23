@@ -194,7 +194,7 @@ LOCAL void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned ch
 /******************************************************************************/
 LOCAL void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 50 || data[4] != 0 || data[5] > 6|| data[7] != 0 || data[8] != 0)
+    if (len < 10 || data[4] != 0 || data[5] > 6|| data[7] != 0)
         return;
 
     int flen = 4 + ((data[2] << 8) | data[3]);
