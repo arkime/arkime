@@ -190,7 +190,16 @@ function searchScrollInternal(index, type, query, options, cb) {
 }
 
 exports.searchScroll = function (index, type, query, options, cb) {
-  if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
+
+  // Can't scroll with a non-0 "from"
+  if (query.from !== undefined && +query.from !== 0) {
+    return exports.search(index, type, query, options, cb);
+  }
+
+  delete query.from; // Delete any 0 from
+
+  // 10000 items or more we do a scroll
+  if ((query.size || 0) >= 10000) {
     if (cb) {
       return searchScrollInternal(index, type, query, options, cb);
     } else {
@@ -204,9 +213,10 @@ exports.searchScroll = function (index, type, query, options, cb) {
         });
       });
     }
-  } else {
-    return exports.search(index, type, query, options, cb);
   }
+
+  // A normal search of < 10000 items
+  return exports.search(index, type, query, options, cb);
 };
 
 exports.searchPrimary = function (index, type, query, options, cb) {
