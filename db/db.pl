@@ -1755,9 +1755,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias|set-?replicas)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2140,6 +2140,10 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
 } elsif ($ARGV[1] =~ /^set-?replicas$/) {
     esPost("/_flush/synced", "", 1);
     esPut("/${PREFIX}$ARGV[2]/_settings", "{\"index.number_of_replicas\" : $ARGV[3]}");
+    exit 0;
+} elsif ($ARGV[1] =~ /^set-?shards-?per-?node$/) {
+    esPost("/_flush/synced", "", 1);
+    esPut("/${PREFIX}$ARGV[2]/_settings", "{\"index.routing.allocation.total_shards_per_node\" : $ARGV[3]}");
     exit 0;
 }
 
