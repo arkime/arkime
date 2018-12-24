@@ -159,15 +159,23 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 function searchScrollInternal(index, type, query, options, cb) {
+  let from = +query.from || 0;
+  let size = +query.size || 0;
+
+  let querySize = from + size;
+  delete query.from;
+
   var totalResults;
   var params = {scroll: '5m'};
   exports.merge(params, options);
-  var querySize = query.size;
   query.size = 1000; // Get 1000 items per scroll call
   exports.search(index, type, query, params,
     function getMoreUntilDone(error, response) {
       if (error) {
-          return cb(error, totalResults);
+        if (totalResults && from > 0) {
+          totalResults.hits.hits = totalResults.hits.hits.slice(from);
+        }
+        return cb(error, totalResults);
       }
 
       if (totalResults === undefined) {
@@ -184,22 +192,16 @@ function searchScrollInternal(index, type, query, options, cb) {
           }
         }, getMoreUntilDone);
       } else {
-          cb(error, totalResults);
+        if (totalResults && from > 0) {
+          totalResults.hits.hits = totalResults.hits.hits.slice(from);
+        }
+        return cb(null, totalResults);
       }
     });
 }
 
 exports.searchScroll = function (index, type, query, options, cb) {
-
-  // Can't scroll with a non-0 "from"
-  if (query.from !== undefined && +query.from !== 0) {
-    return exports.search(index, type, query, options, cb);
-  }
-
-  delete query.from; // Delete any 0 from
-
-  // 10000 items or more we do a scroll
-  if ((query.size || 0) >= 10000) {
+  if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
     if (cb) {
       return searchScrollInternal(index, type, query, options, cb);
     } else {
@@ -213,10 +215,9 @@ exports.searchScroll = function (index, type, query, options, cb) {
         });
       });
     }
+  } else {
+    return exports.search(index, type, query, options, cb);
   }
-
-  // A normal search of < 10000 items
-  return exports.search(index, type, query, options, cb);
 };
 
 exports.searchPrimary = function (index, type, query, options, cb) {
