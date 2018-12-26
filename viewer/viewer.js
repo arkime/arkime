@@ -4603,6 +4603,72 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
+app.get('/multiunique.txt', logAction(), function(req, res) {
+  if (req.query.exp === undefined) {
+    return res.send("Missing exp parameter");
+  }
+
+  let fields = [];
+  req.query.exp.split(',').forEach((name) => {
+    let field = Config.getFieldsMap()[name];
+    if (!field) {
+      return res.send(`Unknown expression ${name}`);
+    }
+    fields.push(field);
+  });
+
+  let separator = req.query.separator || ', ';
+  let doCounts = parseInt(req.query.counts, 10) || 0;
+
+  function printUnique(buckets, line) {
+    for (let i = 0; i < buckets.length; i++) {
+      if (buckets[i].field) {
+        printUnique(buckets[i].field.buckets, line + buckets[i].key + separator);
+      } else {
+        res.write(line + buckets[i].key);
+        if (doCounts) {
+          res.write(separator + buckets[i].doc_count);
+        }
+        res.write("\n");
+      }
+    }
+  }
+
+  buildSessionQuery(req, function(err, query, indices) {
+    delete query.sort;
+    delete query.aggregations;
+    query.size = 0;
+
+    if (!query.query.bool.must) {
+      query.query.bool.must = [];
+    }
+
+    let lastQ = query;
+    for (let i = 0; i < fields.length; i++) {
+      query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: 1000000}}};
+      lastQ = lastQ.aggregations.field;
+    }
+
+    if (Config.debug > 2) {
+      console.log("multiunique aggregations", indices, JSON.stringify(query, false, 2));
+    }
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err) {
+        console.log('multiunique ERROR', err);
+        res.status(400);
+        return res.end(err);
+      }
+
+      if (Config.debug > 2) {
+        console.log('result', JSON.stringify(result, false, 2));
+      }
+      printUnique(result.aggregations.field.buckets, "");
+      return res.end();
+    });
+  });
+});
+
 app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   if (req.query.field === undefined && req.query.exp === undefined) {
     return res.send("Missing field or exp parameter");
