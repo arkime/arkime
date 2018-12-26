@@ -336,7 +336,7 @@ sub sequenceCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 10,
+    "index.priority": 100,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -394,7 +394,7 @@ sub filesCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 8,
+    "index.priority": 80,
     "number_of_shards": 2,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -460,7 +460,7 @@ sub statsCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 7,
+    "index.priority": 70,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -516,7 +516,7 @@ sub dstatsCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 5,
+    "index.priority": 50,
     "number_of_shards": 2,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -581,7 +581,7 @@ sub fieldsCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 9,
+    "index.priority": 90,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -998,7 +998,7 @@ sub queriesCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 4,
+    "index.priority": 40,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1154,7 +1154,7 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
 }';
 
     logmsg "Creating sessions template\n" if ($verbose > 0);
-    esPut("/_template/${PREFIX}sessions2_template", $template);
+    esPut("/_template/${PREFIX}sessions2_template?master_timeout=${ESTIMEOUT}s", $template);
 
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
@@ -1240,7 +1240,7 @@ sub historyUpdate
 }';
 
 logmsg "Creating history template\n" if ($verbose > 0);
-esPut("/_template/${PREFIX}history_v1_template", $template);
+esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
@@ -1260,7 +1260,7 @@ sub huntsCreate
   my $settings = '
 {
   "settings": {
-    "index.priority": 3,
+    "index.priority": 30,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1351,7 +1351,7 @@ sub usersCreate
     my $settings = '
 {
   "settings": {
-    "index.priority": 6,
+    "index.priority": 60,
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "auto_expand_replicas": "0-3"
@@ -1457,14 +1457,14 @@ sub usersUpdate
 ################################################################################
 sub setPriority
 {
-    esPut("/${PREFIX}sequence/_settings", '{"settings": {"index.priority": 10}}', 1);
-    esPut("/${PREFIX}files/_settings", '{"settings": {"index.priority": 8}}', 1);
-    esPut("/${PREFIX}stats/_settings", '{"settings": {"index.priority": 7}}', 1);
-    esPut("/${PREFIX}dstats/_settings", '{"settings": {"index.priority": 5}}', 1);
-    esPut("/${PREFIX}fields/_settings", '{"settings": {"index.priority": 9}}', 1);
-    esPut("/${PREFIX}queries/_settings", '{"settings": {"index.priority": 4}}', 1);
-    esPut("/${PREFIX}hunts/_settings", '{"settings": {"index.priority": 3}}', 1);
-    esPut("/${PREFIX}users/_settings", '{"settings": {"index.priority": 6}}', 1);
+    esPut("/${PREFIX}sequence/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 100}}', 1);
+    esPut("/${PREFIX}fields/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 90}}', 1);
+    esPut("/${PREFIX}files/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 80}}', 1);
+    esPut("/${PREFIX}stats/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 70}}', 1);
+    esPut("/${PREFIX}users/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 60}}', 1);
+    esPut("/${PREFIX}dstats/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 50}}', 1);
+    esPut("/${PREFIX}queries/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 40}}', 1);
+    esPut("/${PREFIX}hunts/_settings?master_timeout=${ESTIMEOUT}s", '{"settings": {"index.priority": 30}}', 1);
 }
 ################################################################################
 sub createNewAliasesFromOld
@@ -1867,7 +1867,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
             esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
             if ($REPLICAS != -1) {
                 esPost("/$i/_flush/synced", "", 1);
-                esPut("/$i/_settings", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
             }
         } else {
             esDelete("/$i", 1);
@@ -2139,11 +2139,11 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^set-?replicas$/) {
     esPost("/_flush/synced", "", 1);
-    esPut("/${PREFIX}$ARGV[2]/_settings", "{\"index.number_of_replicas\" : $ARGV[3]}");
+    esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.number_of_replicas\" : $ARGV[3]}");
     exit 0;
 } elsif ($ARGV[1] =~ /^set-?shards-?per-?node$/) {
     esPost("/_flush/synced", "", 1);
-    esPut("/${PREFIX}$ARGV[2]/_settings", "{\"index.routing.allocation.total_shards_per_node\" : $ARGV[3]}");
+    esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.routing.allocation.total_shards_per_node\" : $ARGV[3]}");
     exit 0;
 }
 
@@ -2321,6 +2321,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
     } elsif ($main::versionNumber <= 56) {
         checkForOld5Indices();
+        setPriority();
         usersUpdate();
         queriesUpdate();
         sessions2Update();
