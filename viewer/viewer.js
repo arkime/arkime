@@ -5600,7 +5600,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   Db.searchPrimary('sessions2-*', 'session', query, function(err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
-      writePcap(res, item._id, options, nextCb);
+      writePcap(res, Db.session2Sid(item), options, nextCb);
     }, function (err) {
       res.end();
     });
@@ -5621,7 +5621,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
     var fields = item._source || item.fields;
     isLocalView(fields.node, function () {
       // Get from our DISK
-      pcapWriter(res, item._id, options, nextCb);
+      pcapWriter(res, Db.session2Sid(item), options, nextCb);
     },
     function () {
       // Get from remote DISK
@@ -5629,7 +5629,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
         var buffer = Buffer.alloc(fields.pa*20 + fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(fields.node) + fields.node + "/" + extension + "/" + item._id + "." + extension;
+        info.path = Config.basePath(fields.node) + fields.node + "/" + extension + "/" + Db.session2Sid(item) + "." + extension;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
 
         addAuth(info, req.user, fields.node);
@@ -6851,7 +6851,7 @@ function scrubList(req, res, entire, list) {
     },
     function () {
       // Get from remote DISK
-      let path = fields.node + (entire?"/delete/":"/scrub/") + item._id;
+      let path = fields.node + (entire?"/delete/":"/scrub/") + Db.session2Sid(item);
       makeRequest(fields.node, path, req.user, function (err, response) {
         setImmediate(nextCb);
       });
@@ -7064,11 +7064,12 @@ function sendSessionsList(req, res, list) {
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
+    let sid = Db.session2Sid(item);
     isLocalView(fields.node, function () {
       var options = {
         user: req.user,
         cluster: req.body.cluster,
-        id: item._id,
+        id: sid,
         saveId: saveId,
         tags: req.body.tags,
         nodeName: fields.node
@@ -7077,7 +7078,7 @@ function sendSessionsList(req, res, list) {
       internals.sendSessionQueue.push(options, nextCb);
     },
     function () {
-      let path = `${fields.node}/sendSession/${item._id}?saveId=${saveId}&cluster=${req.body.cluster}`;
+      let path = `${fields.node}/sendSession/${sid}?saveId=${saveId}&cluster=${req.body.cluster}`;
       if (req.body.tags) {
         path += `&tags=${req.body.tags}`;
       }
