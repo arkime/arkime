@@ -20,6 +20,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new tcp initRTT field
   - viewer - cron query notifications
   - viewer - can't use es scroll api with "from" (issue #981)
+  - viewer - Export CSV uses the columns shown
+  - capture - Fixed corrupt file sequence numbers being used when
+              when ES is under heavy load
 
 1.6.2 2018/12/07
   - NOTICE: db.pl upgrade is required
