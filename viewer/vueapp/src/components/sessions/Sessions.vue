@@ -4,6 +4,7 @@
 
     <!-- search navbar -->
     <moloch-search
+      :fields="headers"
       :open-sessions="stickySessions"
       :num-visible-sessions="query.length"
       :num-matching-sessions="sessions.recordsFiltered"

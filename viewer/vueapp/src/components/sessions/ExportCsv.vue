@@ -93,7 +93,7 @@ export default {
     sessions: Array,
     numVisible: Number,
     numMatching: Number,
-    Fields: Array
+    fields: Array
   },
   data: function () {
     return {
@@ -134,6 +134,8 @@ export default {
           }
         }
       }
+
+      data.fields = data.fields.join(',');
 
       SessionsService.exportCsv(data, this.$route.query);
 

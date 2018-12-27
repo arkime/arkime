@@ -211,6 +211,7 @@
             </moloch-export-pcap>
             <moloch-export-csv v-else-if="actionForm === 'export:csv'"
               :start="start"
+              :fields="fields"
               :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
