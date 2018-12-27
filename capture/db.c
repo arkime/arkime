@@ -1411,6 +1411,8 @@ LOCAL void moloch_db_get_sequence_number_cb(int UNUSED(code), unsigned char *dat
         if (r->func)
             r->func(atoi((char*)version), r->uw);
     }
+
+    g_free(r->name);
     MOLOCH_TYPE_FREE(MolochSeqRequest_t, r);
 }
 /******************************************************************************/
@@ -1421,7 +1423,7 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
     MolochSeqRequest_t *r = MOLOCH_TYPE_ALLOC(MolochSeqRequest_t);
     char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
 
-    r->name = name;
+    r->name = g_strdup(name);
     r->func = func;
     r->uw   = uw;
 
