@@ -10,10 +10,9 @@
           right
           size="sm"
           toggle-class="rounded"
-          class="clickable-label">
-          <template slot="button-content">
-            {{ infoField.friendlyName }}
-          </template>
+          class="field-dropdown"
+          variant="default"
+          :text="infoField.friendlyName">
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 0)">
             Export Unique {{ infoField.friendlyName }}
@@ -144,32 +143,12 @@ export default {
 </script>
 
 <style>
-/* clickable labels */
-.session-info .clickable-label {
+/* clickable field labels */
+.session-info .btn-group.dropdown.field-dropdown > button {
   margin-top: 1px;
   margin-bottom: 1px;
-}
-
-.session-info .clickable-label button.btn {
-  height: 21px;
-  background-color: transparent;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 19px;
   padding: 0 4px;
-  color: var(--color-foreground);
-}
-
-.session-info .clickable-label button.btn:hover {
-  background-color: var(--color-primary-lightest);
-}
-
-.session-info .clickable-label .dropdown-menu {
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.session-info .clickable-label .dropdown-menu .dropdown-item {
-  font-size: 12px;
+  font-size: .75rem;
+  font-weight: 500;
 }
 </style>
