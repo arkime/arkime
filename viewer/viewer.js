@@ -4620,16 +4620,13 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
   let separator = req.query.separator || ', ';
   let doCounts = parseInt(req.query.counts, 10) || 0;
 
+  let results = [];
   function printUnique(buckets, line) {
     for (let i = 0; i < buckets.length; i++) {
       if (buckets[i].field) {
         printUnique(buckets[i].field.buckets, line + buckets[i].key + separator);
       } else {
-        res.write(line + buckets[i].key);
-        if (doCounts) {
-          res.write(separator + buckets[i].doc_count);
-        }
-        res.write("\n");
+        results.push({line: line + buckets[i].key, count: buckets[i].doc_count});
       }
     }
   }
@@ -4664,6 +4661,17 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
         console.log('result', JSON.stringify(result, false, 2));
       }
       printUnique(result.aggregations.field.buckets, "");
+      results = results.sort(function(a, b) {return b.count - a.count;});
+
+      if (doCounts) {
+        for (let i = 0; i < results.length; i++) {
+          res.write(results[i].line + separator + results[i].count + '\n');
+        }
+      } else {
+        for (let i = 0; i < results.length; i++) {
+          res.write(results[i].line + '\n');
+        }
+      }
       return res.end();
     });
   });
