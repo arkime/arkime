@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 60;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -56,11 +56,14 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$tasks}, ">=", 1, "tasks array size");
 
 # esshards
-    my $shards = viewerGet("/esshard/list");
+    my $shards = viewerGet("/esshard/list?show=all");
     cmp_ok (@{$shards->{indices}}, ">=", 30, "esshards: indices array size");
     cmp_ok ($shards->{indices}->[0]->{name}, "lt", $shards->{indices}->[1]->{name}, "esshard: index[0] before index[1]");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
+
+    my $shards = viewerGet("/esshard/list?show=notstarted");
+    cmp_ok (@{$shards->{indices}}, "==", 0, "esshards: indices array size");
 
     my $result = viewerPost("/esshard/exclude/ip/1.2.3.4", "");
     eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: exclude no token");
