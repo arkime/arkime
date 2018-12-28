@@ -132,6 +132,24 @@
           </select>
         </div> <!-- /table data interval select -->
 
+        <!-- shards show select -->
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex === 5">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Hide shards">
+           <span class="input-group-text">
+             Show
+           </span>
+         </div>
+          <select class="form-control input-sm"
+            v-model="shardsShow"
+            v-on:change="shardsShowChange">
+            <option value="all">All</option>
+            <option value="notstarted">Not Started</option>
+          </select>
+        </div> <!-- /graph hide select -->
+
         <!-- recovery show select -->
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex === 6">
@@ -302,6 +320,7 @@
           @click="tabIndexChange"
           v-if="!multiviewer">
           <es-shards v-if="user && tabIndex === 5"
+            :shards-show="shardsShow"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :data-interval="dataInterval">
@@ -351,6 +370,7 @@ export default {
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
       recoveryShow: this.$route.query.recoveryShow || 'notdone',
+      shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: this.$route.query.refreshInterval || '5000',
       refreshData: false,
       childError: '',
@@ -400,6 +420,9 @@ export default {
     graphHideChange: function () {
       this.$router.push({ query: { ...this.$route.query, hide: this.graphHide } });
     },
+    shardsShowChange: function () {
+      this.$router.push({ query: { ...this.$route.query, hide: this.shardsShow } });
+    },
     recoveryShowChange: function () {
       this.$router.push({ query: { ...this.$route.query, hide: this.recoveryShow } });
     },
@@ -423,6 +446,9 @@ export default {
       }
       if (queryParams.graphHide) {
         this.graphHide = queryParams.graphHide;
+      }
+      if (queryParams.shardsShow) {
+        this.shardsShow = queryParams.shardsShow;
       }
       if (queryParams.recoveryShow) {
         this.recoveryShow = queryParams.recoveryShow;

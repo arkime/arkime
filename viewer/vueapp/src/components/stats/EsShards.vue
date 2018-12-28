@@ -161,6 +161,7 @@ export default {
   components: { MolochError, MolochLoading },
   props: [
     'dataInterval',
+    'shardsShow',
     'refreshData',
     'searchTerm'
   ],
@@ -173,7 +174,8 @@ export default {
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'index',
-        desc: false
+        desc: false,
+        show: this.shardsShow || 'notstarted'
       },
       columns: [
         { name: 'Index', sort: 'index', doClick: false, hasDropdown: false }
@@ -203,6 +205,10 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
+    },
+    shardsShow: function () {
+      this.query.show = this.shardsShow;
+      this.loadData();
     },
     refreshData: function () {
       if (this.refreshData) {

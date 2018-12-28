@@ -3238,6 +3238,12 @@ app.get('/esshard/list', recordResponseTime, function(req, res) {
     for (var shard of shards) {
       if (shard.node === null || shard.node === "null") { shard.node = "Unassigned"; }
 
+      if (! (req.query.show === 'all' ||
+            shard.state === req.query.show ||    //  Show only matching stage
+            (shard.state !== 'STARTED' && req.query.show === 'notstarted'))) {
+        continue;
+      }
+
       if (regex && !shard.index.toLowerCase().match(regex) && !shard.node.toLowerCase().match(regex)) { continue; }
 
       if (result[shard.index] === undefined) {
