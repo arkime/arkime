@@ -299,6 +299,24 @@ export default {
   },
 
   /**
+   * Open a new page to view unique values for multiple fields
+   * @param {object} params       The parameters to be passed to server
+   * @param {object} routeParams  The current url route parameters
+   */
+  viewIntersection: function (params, routeParams) {
+    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+
+    params.expression = clonedParams.expression;
+    params.date = clonedParams.date;
+    params.startTime = clonedParams.startTime;
+    params.stopTime = clonedParams.stopTime;
+
+    let url = `multiunique.txt?${qs.stringify(params)}`;
+
+    window.open(url, '_blank');
+  },
+
+  /**
    * Open a new page to view unique values for different fields
    * @param {string} exp          The field to get unique values for
    * @param {number} counts       1 or 0 whether to include counts of the values
@@ -306,11 +324,16 @@ export default {
    */
   exportUniqueValues: function (exp, counts, routeParams) {
     let clonedParams = JSON.parse(JSON.stringify(routeParams));
-    clonedParams.counts = counts;
-    clonedParams.exp = exp;
-    clonedParams.field = undefined;
 
-    let url = `unique.txt?${qs.stringify(clonedParams)}`;
+    let params = {
+      exp: exp,
+      counts: counts,
+      date: clonedParams.date,
+      stopTime: clonedParams.stopTime,
+      startTime: clonedParams.startTime
+    };
+
+    let url = `unique.txt?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },

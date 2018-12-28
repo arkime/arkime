@@ -44,6 +44,15 @@
           <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
           Send Session to {{ cluster.name }}
         </b-dropdown-item>
+        <b-dropdown-item @click="viewIntersection">
+          <span class="fa fa-fw fa-venn">
+            <span class="fa fa-circle-o">
+            </span>
+            <span class="fa fa-circle-o">
+            </span>
+          </span>&nbsp;
+          Export Intersection
+        </b-dropdown-item>
       </b-dropdown> <!-- /actions dropdown menu -->
 
       <!-- views dropdown menu -->
@@ -218,6 +227,10 @@
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
             </moloch-export-csv>
+            <moloch-intersection v-else-if="actionForm === 'view:intersection'"
+              :done="actionFormDone"
+              :fields="fields">
+            </moloch-intersection>
           </div> <!-- /actions menu forms -->
         </div>
       </div>
@@ -240,6 +253,7 @@ import MolochScrubPcap from '../sessions/Scrub';
 import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochExportCsv from '../sessions/ExportCsv';
+import MolochIntersection from '../sessions/Intersection';
 
 export default {
   name: 'MolochSearch',
@@ -253,7 +267,8 @@ export default {
     MolochScrubPcap,
     MolochSendSessions,
     MolochExportPcap,
-    MolochExportCsv
+    MolochExportCsv,
+    MolochIntersection
   },
   props: [
     'openSessions',
@@ -379,6 +394,10 @@ export default {
     },
     createView: function () {
       this.actionForm = 'create:view';
+      this.showApplyButtons = false;
+    },
+    viewIntersection: function () {
+      this.actionForm = 'view:intersection';
       this.showApplyButtons = false;
     },
     actionFormDone: function (message, success, reloadData) {

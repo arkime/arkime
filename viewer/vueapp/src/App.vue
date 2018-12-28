@@ -527,4 +527,23 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   top: -2px;
   right: 6px;
 }
+
+/* custom font awesome icons */
+.fa.fa-venn {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: 1.28571429em;
+  text-align: center;
+}
+.fa.fa-venn > span.fa-circle-o {
+  position: absolute;
+  top: -7px;
+}
+.fa.fa-venn> span.fa-circle-o:first-child {
+  left: 5px;
+}
+.fa.fa-venn> span.fa-circle-o:last-child {
+  right: 6px;
+}
 </style>
