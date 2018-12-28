@@ -128,12 +128,12 @@
                     </div>
                     <div>
                       <span>Shard Type:</span>
-                      <span v-if="item.prirep === 'p'">
+                      <template v-if="item.prirep === 'p'">
                         primary
-                      </span>
-                      <span v-else>
+                      </template>
+                      <template v-else>
                         replicate
-                      </span>
+                      </template>
                     </div>
                   </span>
                 </span>
