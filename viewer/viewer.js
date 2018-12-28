@@ -4667,7 +4667,10 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
         console.log('result', JSON.stringify(result, false, 2));
       }
       printUnique(result.aggregations.field.buckets, "");
-      results = results.sort(function(a, b) {return b.count - a.count;});
+
+      if (req.query.sort !== 'field') {
+        results = results.sort(function(a, b) {return b.count - a.count;});
+      }
 
       if (doCounts) {
         for (let i = 0; i < results.length; i++) {
