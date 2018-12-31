@@ -3,7 +3,6 @@
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
-const path    = require('path');
 const http    = require('http');
 const https   = require('https');
 const fs      = require('fs');
@@ -33,6 +32,7 @@ const issueTypes = {
 const settingsDefault = {
   general : {
     noPackets: 0,
+    noPacketsLength: 10,
     outOfDate: 30,
     esQueryTimeout: 5,
     removeIssuesAfter: 60,
@@ -176,6 +176,12 @@ try {
 let groupId = 0;
 let clusterId = 0;
 
+// save noPackets issues so that the time of issue can be compared to the
+// noPacketsLength user setting (only issue alerts when the time the issue
+// was encounterd exceeds the noPacketsLength user setting)
+let noPacketsMap = {};
+
+// super secret
 app.disable('x-powered-by');
 
 // expose vue bundles (prod)
@@ -575,12 +581,24 @@ function getStats (cluster) {
             });
           }
 
+          // look for no packets issue
           if (stat.deltaPacketsPerSec <= getGeneralSetting('noPackets')) {
-            setIssue(cluster, {
-              type: 'noPackets',
-              node: stat.nodeName,
-              value: stat.deltaPacketsPerSec
-            });
+            let now = Date.now();
+            let id = cluster.title + stat.nodeName;
+
+            // only set the noPackets issue if there is a record of this cluster/node
+            // having noPackets and that issue has persisted for the set length of time
+            if (noPacketsMap[id] &&
+              now - noPacketsMap[id] >= (getGeneralSetting('noPacketsLength') * 1000)) {
+              setIssue(cluster, {
+                type: 'noPackets',
+                node: stat.nodeName,
+                value: stat.deltaPacketsPerSec
+              });
+            } else if (!noPacketsMap[id]) {
+              // if this issue has not been encountered yet, make a record of it
+              noPacketsMap[id] = Date.now();
+            }
           }
 
           if (stat.deltaESDroppedPerSec > 0) {
@@ -699,6 +717,9 @@ function initializeParliament () {
     }
     if (!parliament.settings.general.noPackets) {
       parliament.settings.general.noPackets = settingsDefault.general.noPackets;
+    }
+    if (!parliament.settings.general.noPacketsLength) {
+      parliament.settings.general.noPacketsLength = settingsDefault.general.noPacketsLength;
     }
     if (!parliament.settings.general.esQueryTimeout) {
       parliament.settings.general.esQueryTimeout = settingsDefault.general.esQueryTimeout;
@@ -826,6 +847,27 @@ function cleanUpIssues () {
   }
 
   return issuesRemoved;
+}
+
+function removeIssue (issueType, clusterId, nodeId) {
+  let foundIssue = false;
+  let len = issues.length;
+
+  while (len--) {
+    const issue = issues[len];
+    if (issue.clusterId === parseInt(clusterId) &&
+      issue.type === issueType &&
+      issue.node === nodeId) {
+      foundIssue = true;
+      issues.splice(len, 1);
+      if (issue.type === 'noPackets') {
+        // also remove it from the no packets record
+        delete noPacketsMap[issue.cluster + nodeId];
+      }
+    }
+  }
+
+  return foundIssue;
 }
 
 function getGeneralSetting (type) {
@@ -1536,17 +1578,7 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req
     return next(error);
   }
 
-  let foundIssue = false;
-  let len = issues.length;
-  while (len--) {
-    const issue = issues[len];
-    if (issue.clusterId === parseInt(req.params.clusterId) &&
-      issue.type === req.body.type &&
-      issue.node === req.body.node) {
-      foundIssue = true;
-      issues.splice(len, 1);
-    }
-  }
+  let foundIssue = removeIssue(req.body.type, req.params.clusterId, req.body.node);
 
   if (!foundIssue) {
     const error = new Error('Unable to find issue to remove. Maybe it was already removed.');

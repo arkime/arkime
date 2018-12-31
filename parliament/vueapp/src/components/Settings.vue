@@ -169,31 +169,53 @@
             </div> <!-- /es query timeout -->
             <!-- low packets -->
             <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Low Packets Threshold
+              <div class="row">
+                <div class="col-8 input-group">
+                  <span class="input-group-prepend">
+                    <span class="input-group-text">
+                      Low Packets Threshold
+                    </span>
                   </span>
-                </span>
-                <input type="number"
-                  class="form-control"
-                  id="noPackets"
-                  @input="debounceInput"
-                  v-model="settings.general.noPackets"
-                  max="100000"
-                  min="-1"
-                />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    packets
+                  <input type="number"
+                    class="form-control"
+                    id="noPackets"
+                    @input="debounceInput"
+                    v-model="settings.general.noPackets"
+                    max="100000"
+                    min="-1"
+                  />
+                  <span class="input-group-append">
+                    <span class="input-group-text">
+                      packets
+                    </span>
                   </span>
-                </span>
+                </div>
+                <div class="col-4 input-group">
+                  <span class="input-group-prepend">
+                    <span class="input-group-text">
+                      If persisting for
+                    </span>
+                  </span>
+                  <input type="number"
+                    class="form-control"
+                    id="noPacketsLength"
+                    @input="debounceInput"
+                    v-model="settings.general.noPacketsLength"
+                    max="100000"
+                    min="1"
+                  />
+                  <span class="input-group-append">
+                    <span class="input-group-text">
+                      seconds
+                    </span>
+                  </span>
+                </div>
               </div>
               <p class="form-text small text-muted">
                 Adds a
                 <strong>Low Packets</strong>
                 issue to the cluster if the capture node is receiving
-                fewer packets than this value.
+                fewer packets than this value for the specified length of time.
                 <strong>
                   Set this to -1 if you wish to ignore this issue.
                 </strong>
@@ -561,8 +583,14 @@ export default {
       this.success = '';
       if (successCloseTimeout) { clearTimeout(successCloseTimeout); }
 
-      if (!this.settings.general.noPackets || this.settings.general.noPackets > 100000 || this.settings.general.noPackets < -1) {
+      if (this.settings.general.noPackets === '' || this.settings.general.noPackets === undefined ||
+        this.settings.general.noPackets > 100000 || this.settings.general.noPackets < -1) {
         this.settingsError = 'Low packets threshold must contain a number between -1 and 100,000.';
+        return;
+      }
+      if (!this.settings.general.noPacketsLength || this.settings.general.noPacketsLength > 100000 ||
+          this.settings.general.noPacketsLength < 1) {
+        this.settingsError = 'Low packets time threshold must contain a number between 1 and 100,000.';
         return;
       }
       if (!this.settings.general.outOfDate || this.settings.general.outOfDate > 3600) {
