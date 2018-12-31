@@ -1,17 +1,38 @@
 <template>
   <div id="app">
-    <parliament-navbar />
-    <router-view />
+    <div v-if="compatibleBrowser">
+      <parliament-navbar />
+      <router-view />
+    </div>
+    <div v-else>
+      <parliament-upgrade-browser>
+      </parliament-upgrade-browser>
+    </div>
   </div>
 </template>
 
 <script>
 import ParliamentNavbar from './components/Navbar';
+import ParliamentUpgradeBrowser from './components/UpgradeBrowser';
 
 export default {
   name: 'App',
   components: {
-    ParliamentNavbar
+    ParliamentNavbar,
+    ParliamentUpgradeBrowser
+  },
+  data: function () {
+    return {
+      compatibleBrowser: true
+    };
+  },
+  mounted: function () {
+    this.compatibleBrowser = (typeof Object['__defineSetter__'] === 'function') &&
+      !!String.prototype.includes;
+
+    if (!this.compatibleBrowser) {
+      console.log('Incompatible browser, please upgrade!');
+    }
   }
 };
 </script>
@@ -103,6 +124,35 @@ a.no-href:hover { color: #0056b3 !important; }
   align-items: center;
   justify-content: center;
   flex-direction: column;
+}
+
+/* info page (404 & upgrade) */
+.parliament-info {
+  margin-top: 20px;
+}
+.parliament-info .center-area > img {
+  z-index: 99;
+}
+.parliament-info .center-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  min-height: 75vh;
+}
+.parliament-info .well {
+  margin-top: -6px;
+  min-width: 25%;
+  padding: 12px;
+  background-color: #F6F6F6;
+  border: 1px solid #EEEEEE;
+  border-radius: 3px;
+  box-shadow: 4px 4px 10px 0 rgba(0,0,0,0.5);
+}
+.parliament-info .well > h1 {
+  margin-top: 0;
+  color: #DB0A65;
 }
 
 /* media queries ----------------------------- */

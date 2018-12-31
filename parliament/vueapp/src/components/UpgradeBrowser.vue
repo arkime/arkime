@@ -8,17 +8,17 @@
       alt="hoot" />
 
     <div class="well well-lg">
-      <h1>404</h1>
-      <h4>Nothing to see here...</h4>
+      <h1>Incompatible Browser</h1>
+      <h4>Please upgrade!</h4>
     </div>
 
     <br/>
 
-    <div class="margined-bottom">
-      Maybe you want to view your
-      <a href=""
+    <div class="mb-2 mt-2">
+      <a href="https://github.com/aol/moloch/wiki/FAQ#what-browsers-are-supported"
         class="no-decoration">
-        Parliament</a>?
+        Which browsers are supported?
+      </a>
     </div>
 
   </div>
@@ -29,6 +29,6 @@
 
 <script>
 export default {
-  name: 'Parliament404'
+  name: 'ParliamentUpgradeBrowser'
 };
 </script>

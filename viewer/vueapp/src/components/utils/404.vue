@@ -1,6 +1,6 @@
 <template>
 
-  <div class="moloch-404 container">
+  <div class="moloch-info container">
 
   <div class="center-area">
 
@@ -38,33 +38,3 @@ export default {
   name: 'Moloch404'
 };
 </script>
-
-<style scoped>
-.moloch-404 {
-  margin-top: 20px;
-}
-
-.moloch-404 .center-area > img {
-  z-index: 99;
-}
-
-.moloch-404 .center-area {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  flex-direction: column;
-  min-height: 75vh;
-}
-
-.moloch-404 .well {
-  margin-top: -6px;
-  min-width: 25%;
-  box-shadow: 4px 4px 10px 0 rgba(0,0,0,0.5);
-}
-
-.moloch-404 .well > h1 {
-  margin-top: 0;
-  color: var(--color-primary);
-}
-</style>
