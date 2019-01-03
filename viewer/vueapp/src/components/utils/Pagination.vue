@@ -23,7 +23,13 @@
     <div class="pagination-info cursor-help"
       v-b-tooltip.hover
       :title="pagingInfoTitle">
-      Showing {{ start + 1 }}
+      Showing
+      <span v-if="recordsFiltered">
+        {{ start + 1 }}
+      </span>
+      <span v-else>
+        {{ start }}
+      </span>
       <span v-if="recordsFiltered">
         - {{ Math.min((start + length), recordsFiltered) }}
       </span>
