@@ -1,6 +1,7 @@
 <template>
 
-  <div class="mb-1">
+  <div class="mb-1"
+    v-on-clickaway="onOffFocus">
 
     <!-- typeahead input -->
     <div class="input-group input-group-sm">
@@ -24,7 +25,6 @@
         v-caret-pos="caretPos"
         v-focus-input="focusInput"
         placeholder="Search"
-        @blur="onOffFocus"
         @input="debounceExprChange"
         @keyup.enter="enterClick"
         @keyup.esc.tab.enter.down.up.stop="keyup($event)"
@@ -48,10 +48,27 @@
       ref="typeaheadResults"
       class="dropdown-menu typeahead-results"
       v-show="expression && results && results.length">
+      <template v-if="autocompletingField">
+        <a v-for="(value, key) in fieldHistoryResults"
+          :key="key+'-history'"
+          class="dropdown-item cursor-pointer"
+          :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
+          @click="addToQuery(value)"
+          v-b-tooltip.hover.top
+          :title="value.help">
+          <span class="fa fa-history"></span>&nbsp;
+          <strong v-if="value.exp">{{ value.exp }}</strong>
+          <strong v-if="!value.exp">{{ value }}</strong>
+          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <span class="fa fa-close pull-right mt-1"
+            @click.stop.prevent="removeFromFieldHistory(value)">
+          </span>
+        </a>
+      </template>
       <a v-for="(value, key) in results"
         :key="key"
         class="dropdown-item cursor-pointer"
-        :class="{'active':key === activeIdx}"
+        :class="{'active':key+fieldHistoryResults.length === activeIdx}"
         @click="addToQuery(value)"
         v-b-tooltip.hover.top
         :title="value.help">
@@ -84,9 +101,11 @@
 </template>
 
 <script>
+import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos';
 import FocusInput from '../utils/FocusInput';
+import { mixin as clickaway } from 'vue-clickaway';
 
 let tokens;
 let timeout;
@@ -95,6 +114,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
+  mixins: [ clickaway ],
   directives: { CaretPos, FocusInput },
   data: function () {
     return {
@@ -105,7 +125,12 @@ export default {
       loadingValues: false,
       caretPos: 0,
       cancellablePromise: null,
-      resultsElement: null
+      resultsElement: null,
+      // field history vars
+      fieldHistory: [],
+      fieldHistoryResults: [],
+      lastTokenWasField: false,
+      autocompletingField: false
     };
   },
   computed: {
@@ -136,6 +161,7 @@ export default {
 
       // reset necessary vars
       this.results = null;
+      this.fieldHistoryResults = [];
       this.focusInput = true;
       this.activeIdx = -1;
 
@@ -147,7 +173,13 @@ export default {
     if (this.$route.query.expression) {
       this.expression = this.$route.query.expression;
     }
+
     this.getFields();
+
+    UserService.getState('fieldHistory')
+      .then((response) => {
+        this.fieldHistory = response.data.fields || [];
+      });
   },
   mounted: function () {
     // set the results element for keyup event handler
@@ -168,9 +200,18 @@ export default {
 
       this.expression = this.rebuildQuery(this.expression, str);
 
+      if (this.lastTokenWasField) { // add field to history
+        this.addFieldToHistory(val);
+      }
+
       this.results = null;
+      this.fieldHistoryResults = [];
       this.focusInput = true; // re-focus on input
       this.activeIdx = -1;
+
+      setTimeout(() => { // unfocus input for further re-focusing
+        this.focusInput = false;
+      }, 1000);
     },
     /* Fired when the search input is changed */
     debounceExprChange: function () {
@@ -196,6 +237,7 @@ export default {
       this.cancelPromise();
       // clear out the results to close the dropdown
       this.results = null;
+      this.fieldHistoryResults = [];
     },
     /**
      * Watches for keyup events for escape, tab, enter, down, and up keys
@@ -221,6 +263,7 @@ export default {
         this.loadingValues = false;
         this.loadingError = false;
         this.results = null;
+        this.fieldHistoryResults = [];
         this.activeIdx = -1;
 
         return;
@@ -241,6 +284,7 @@ export default {
         this.loadingValues = false;
         this.loadingError = false;
         this.results = null;
+        this.fieldHistoryResults = [];
         this.activeIdx = -1;
 
         return;
@@ -254,6 +298,7 @@ export default {
           this.loadingValues = false;
           this.loadingError = false;
           this.results = null;
+          this.fieldHistoryResults = [];
           this.activeIdx = -1;
         }
 
@@ -265,20 +310,29 @@ export default {
       switch (event.keyCode) {
         case 40: // down arrow
           event.preventDefault();
-          this.activeIdx = (this.activeIdx + 1) % this.results.length;
+          this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
           target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-          target.parentNode.scrollTop = target.offsetTop;
+          if (target && target.parentNode) {
+            target.parentNode.scrollTop = target.offsetTop;
+          }
           break;
         case 38: // up arrow
           event.preventDefault();
-          this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : this.results.length) - 1;
+          this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
           target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-          target.parentNode.scrollTop = target.offsetTop;
+          if (target && target.parentNode) {
+            target.parentNode.scrollTop = target.offsetTop;
+          }
           break;
         case 13: // enter
           if (this.activeIdx >= 0) {
             event.preventDefault();
-            let result = this.results[this.activeIdx];
+            let result;
+            if (this.activeIdx < this.fieldHistoryResults.length) {
+              result = this.fieldHistoryResults[this.activeIdx];
+            } else {
+              result = this.results[this.activeIdx - this.fieldHistoryResults.length];
+            }
             if (result) { this.addToQuery(result); }
           }
           break;
@@ -292,17 +346,91 @@ export default {
         this.cancelPromise();
 
         this.results = null;
+        this.fieldHistoryResults = [];
         this.activeIdx = -1;
         this.focusInput = false;
       }, 300);
     },
+    /**
+     * Removes an item to the field history (and results)
+     * @param {object} field The field to remove from the history
+     */
+    removeFromFieldHistory: function (field) {
+      let index = 0;
+      for (let historyField of this.fieldHistory) {
+        if (historyField.exp === field.exp) {
+          break;
+        }
+        index++;
+      }
+
+      // remove the item from the history
+      this.fieldHistory.splice(index, 1);
+
+      // find it in the field history results (displayed in the typeahead)
+      index = 0;
+      for (let historyField of this.fieldHistoryResults) {
+        if (historyField.exp === field.exp) {
+          break;
+        }
+        index++;
+      }
+
+      // remove the item from the field history resutls
+      this.fieldHistoryResults.splice(index, 1);
+
+      // save the field history for the user
+      UserService.saveState({ fields: this.fieldHistory }, 'fieldHistory');
+    },
     /* helper functions ------------------------------------------ */
+    /**
+     * Adds an item to the field history if it doesn't already exist
+     * @param {object} field The field to add to the history
+     */
+    addFieldToHistory: function (field) {
+      let found = false;
+
+      if (!field) { return found; }
+
+      for (let historyField of this.fieldHistory) {
+        if (historyField.exp === field.exp) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) { this.fieldHistory.push(field); }
+
+      // if the list is larger than 30 items
+      if (this.fieldHistory.length > 30) {
+        // remove the first item in the history
+        this.fieldHistory.splice(0, 1);
+      }
+
+      // save the field history for the user
+      UserService.saveState({ fields: this.fieldHistory }, 'fieldHistory');
+
+      return found;
+    },
+    /**
+     * Filters the field history results and sets varaibles so that the view
+     * and other functions know that a field is being searched in the typeahead
+     * @param {string} strToMatch The string to compare the field history to
+     */
+    updateFieldHistoryResults: function (strToMatch) {
+      this.lastTokenWasField = true;
+      this.autocompletingField = true;
+      this.fieldHistoryResults = this.findMatch(strToMatch, this.fieldHistory) || [];
+    },
     /* Displays appropriate typeahead suggestions */
     changeExpression: function () {
       this.activeIdx = -1;
       this.results = null;
+      this.fieldHistoryResults = [];
       this.loadingValues = false;
       this.loadingError = false;
+      this.lastTokenWasField = false;
+      this.autocompletingField = false;
 
       // if the cursor is at a space
       let spaceCP = (this.caretPos > 0 &&
@@ -328,12 +456,18 @@ export default {
       // display fields
       if (tokens.length <= 1) {
         this.results = this.findMatch(lastToken, this.fields);
+        this.updateFieldHistoryResults(lastToken);
         return;
       }
 
       // display operators (depending on field type)
       let token = tokens[tokens.length - 2];
       let field = this.fields[token];
+
+      if (field) { // add field to the history
+        this.addFieldToHistory(field);
+      }
+
       if (field) {
         if (field.type === 'integer') {
           // if at a space, show all operators
@@ -365,6 +499,7 @@ export default {
           }
         } else {
           this.results = this.findMatch(lastToken, this.fields);
+          this.updateFieldHistoryResults(lastToken);
         }
 
         return;
@@ -605,6 +740,10 @@ export default {
   overflow-x: hidden;
   max-height: 500px;
   margin-left: 30px;
+}
+
+.typeahead-results a.last-history-item {
+  border-bottom: 1px solid var(--color-gray);
 }
 
 @media screen and (max-height: 600px) {
