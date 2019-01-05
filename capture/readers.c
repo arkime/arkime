@@ -32,6 +32,7 @@ MolochReaderStop   moloch_reader_stop;
 
 char              *readerFileName[256];
 MolochFieldOps_t   readerFieldOps[256];
+uint32_t           readerOutputIds[256];
 
 
 /******************************************************************************/

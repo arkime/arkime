@@ -31,7 +31,7 @@ extern MolochConfig_t        config;
 LOCAL MOLOCH_LOCK_DEFINE(filePtr2Id);
 
 extern char                *readerFileName[256];
-LOCAL uint32_t              outputIds[256];
+extern uint32_t             readerOutputIds[256];
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
@@ -57,15 +57,16 @@ LOCAL long writer_inplace_create(MolochPacket_t * const packet)
         char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId);
         g_free(filename);
     }
-    outputIds[packet->readerPos] = outputId;
+    readerOutputIds[packet->readerPos] = outputId;
     return outputId;
 }
 
 /******************************************************************************/
 LOCAL void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
+    // Need to lock since multiple packet threads for the same readerPos are running and only want to create once
     MOLOCH_LOCK(filePtr2Id);
-    long outputId = outputIds[packet->readerPos];
+    long outputId = readerOutputIds[packet->readerPos];
     if (!outputId)
         outputId = writer_inplace_create(packet);
     MOLOCH_UNLOCK(filePtr2Id);

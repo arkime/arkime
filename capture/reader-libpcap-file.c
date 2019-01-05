@@ -41,6 +41,7 @@ LOCAL MolochPacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
 extern char                *readerFileName[256];
 extern MolochFieldOps_t     readerFieldOps[256];
+extern uint32_t             readerOutputIds[256];
 
 LOCAL struct {
     GRegex    *regex;
@@ -509,8 +510,11 @@ LOCAL void reader_libpcapfile_opened()
     }
 
     readerPos++;
-    if (readerFileName[readerPos])
-        moloch_free_later(readerFileName[readerPos], g_free);
+    // We've wrapped around all 256 reader items, clear the previous file information
+    if (readerFileName[readerPos]) {
+        g_free(readerFileName[readerPos]);
+        readerOutputIds[readerPos] = 0;
+    }
     readerFileName[readerPos] = g_strdup(offlinePcapFilename);
 
     int fd = pcap_fileno(pcap);
