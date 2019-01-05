@@ -139,7 +139,6 @@ void reader_snf_init(char *UNUSED(name))
             LOGEXIT("Myricom: Couldn't find interface '%s'", config.interface[i]);
         }
 
-        int err;
         err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, snfFlags, &handles[i]);
         if (err != 0) {
             LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);

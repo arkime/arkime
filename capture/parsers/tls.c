@@ -447,7 +447,6 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         if (BSB_REMAINING(bsb)) {
             if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                 {badreason = 10; goto bad_cert;}
-            BSB tbsb;
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;

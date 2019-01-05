@@ -710,7 +710,6 @@ void moloch_parsers_init()
 
 
     if (config.extraOps) {
-        int i;
         for (i = 0; config.extraOps[i]; i++) { }
         moloch_field_ops_init(&config.ops, i, 0);
         for (i = 0; config.extraOps[i]; i++) {

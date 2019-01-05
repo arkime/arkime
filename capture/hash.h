@@ -38,13 +38,12 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_INIT(name, varname, hashfunc, cmpfunc) \
   do { \
-       int i; \
        (varname).size = sizeof((varname).buckets)/sizeof((varname).buckets[0]); \
        (varname).hash = hashfunc; \
        (varname).cmp = cmpfunc; \
        (varname).count = 0; \
-       for (i = 0; i < (varname).size; i++) { \
-           DLL_INIT(name, &((varname).buckets[i])); \
+       for (int _i = 0; _i < (varname).size; _i++) { \
+           DLL_INIT(name, &((varname).buckets[_i])); \
        } \
      } while (0)
 
@@ -61,14 +60,13 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASHP_INIT(name, varname, sz, hashfunc, cmpfunc) \
   do { \
-       int i; \
        (varname).size = sz; \
        (varname).hash = hashfunc; \
        (varname).cmp = cmpfunc; \
        (varname).count = 0; \
        (varname).buckets = malloc(sz * sizeof((varname).buckets[0])); \
-       for (i = 0; i < (varname).size; i++) { \
-           DLL_INIT(name, &((varname).buckets[i])); \
+       for (int _i = 0; _i < (varname).size; _i++) { \
+           DLL_INIT(name, &((varname).buckets[_i])); \
        } \
      } while (0)
 

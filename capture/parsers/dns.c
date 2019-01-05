@@ -366,7 +366,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
                 namelen = sizeof(namebuf);
-                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                     continue;
@@ -380,7 +380,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
                 namelen = sizeof(namebuf);
-                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                     continue;
@@ -395,7 +395,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 BSB_IMPORT_skip(rdbsb, 2); // preference
 
                 namelen = sizeof(namebuf);
-                unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                     continue;

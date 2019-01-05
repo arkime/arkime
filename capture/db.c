@@ -491,7 +491,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     if (session->firstBytesLen[0] > 0) {
-        int i;
         BSB_EXPORT_cstr(jbsb, "\"srcPayload8\":\"");
         for (i = 0; i < session->firstBytesLen[0]; i++) {
             BSB_EXPORT_ptr(jbsb, moloch_char_to_hexstr[(unsigned char)session->firstBytes[0][i]], 2);
@@ -606,7 +605,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_cstr(jbsb, "],");
 
     BSB_EXPORT_cstr(jbsb, "\"fileId\":[");
-    for(i = 0; i < session->fileNumArray->len; i++) {
+    for (i = 0; i < session->fileNumArray->len; i++) {
         if (i == 0)
             BSB_EXPORT_sprintf(jbsb, "%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
         else
@@ -789,8 +788,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             char                 *g[MAX_IPS];
             char                 *rir[MAX_IPS];
             int                   asFree[MAX_IPS];
-            int                   i;
-            int                   cnt = 0;
+            uint32_t              cnt = 0;
 
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
@@ -887,11 +885,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 SAVE_STRING_HEAD_CNT(certs->alt, "altCnt");
                 SAVE_STRING_HEAD(certs->alt, "alt");
 
-                BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore*1000);
-                BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter*1000);
+                BSB_EXPORT_sprintf(jbsb, "\"notBefore\":%" PRId64 ",", certs->notBefore*1000);
+                BSB_EXPORT_sprintf(jbsb, "\"notAfter\":%" PRId64 ",", certs->notAfter*1000);
                 if (certs->notAfter >= certs->notBefore) {
-                    BSB_EXPORT_sprintf(jbsb, "\"validDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\": %d,", (int)(certs->notAfter - currentTime.tv_sec)/(60*60*24));
+                    BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - certs->notBefore)/(60*60*24));
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)certs->notAfter - currentTime.tv_sec)/(60*60*24));
                 }
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
@@ -2148,8 +2146,7 @@ gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
     }
 
     if (outputId) {
-        uint32_t           hits_len;
-        unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
+        hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
 
         uint32_t           hit_len;
         unsigned char     *hit = moloch_js0n_get(hits, hits_len, "hits", &hit_len);

@@ -1038,7 +1038,7 @@ LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 
     // Copy payload
     DLL_FOREACH(packet_, &frags->packets, fpacket) {
-        struct ip *fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
+        fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
         uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
 
         if (packet->payloadOffset+(fip_off*8) + fpacket->payloadLen <= packet->pktlen)
