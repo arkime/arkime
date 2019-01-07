@@ -106,11 +106,14 @@
                 <!-- /toggle settings button -->
                 <td>
                   <toggle-btn :opened="user.expanded"
+                    class="btn-toggle-user"
                     @toggle="toggleAdvSettings(user)">
                   </toggle-btn>
                 </td> <!-- /toggle advanced settings button -->
                 <td class="no-wrap">
-                  {{ user.userId }}
+                  <div class="mt-1">
+                    {{ user.userId }}
+                  </div>
                 </td>
                 <td class="no-wrap">
                   <input v-model="user.userName"
@@ -744,5 +747,10 @@ export default {
 }
 .list-move {
   transition: transform .5s;
+}
+
+/* center the toggle button vertically */
+.btn-toggle-user {
+  margin-top: 2px;
 }
 </style>
