@@ -104,8 +104,16 @@
               <!-- user settings -->
               <tr :key="user.id + 'user'">
                 <!-- /toggle settings button -->
-                <td>
-                  <toggle-btn :opened="user.expanded"
+                <td :class="{'btn-indicator':user.hideStats || user.hideFiles || user.hidePcap || user.disablePcapDownload}">
+                  <toggle-btn v-if="user.hideStats || user.hideFiles || user.hidePcap || user.disablePcapDownload"
+                    :opened="user.expanded"
+                    v-b-tooltip.hover
+                    title="This user has additional restricted permissions"
+                    class="btn-toggle-user"
+                    @toggle="toggleAdvSettings(user)">
+                  </toggle-btn>
+                  <toggle-btn v-else
+                    :opened="user.expanded"
                     class="btn-toggle-user"
                     @toggle="toggleAdvSettings(user)">
                   </toggle-btn>
@@ -175,7 +183,7 @@
                   <span class="pull-right">
                     <button v-if="user.changed"
                       type="button"
-                      class="btn btn-sm btn-theme-tertiary"
+                      class="btn btn-sm btn-success"
                       @click="updateUser(user)"
                       v-b-tooltip.hover
                       :title="`Save the updated settings for ${user.userId}`">
@@ -760,5 +768,10 @@ td .cell-text {
 
 td input[type="checkbox"] {
   margin-top: 9px;
+}
+
+/* indication that a user has additional permissions set */
+.btn-indicator .btn-toggle-user.btn-success {
+  background: linear-gradient(135deg, #28a745 1%, #28a745 75%, #28a745 75%, #1c7730 77%, #1c7730 100%);
 }
 </style>

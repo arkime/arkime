@@ -17,7 +17,7 @@ export default {
     btnClass: function () {
       return {
         'btn-danger': this.opened,
-        'collapsed btn-theme-tertiary': !this.opened
+        'collapsed btn-success': !this.opened
       };
     }
   },
