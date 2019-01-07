@@ -111,7 +111,7 @@
                   </toggle-btn>
                 </td> <!-- /toggle advanced settings button -->
                 <td class="no-wrap">
-                  <div class="mt-1">
+                  <div class="cell-text">
                     {{ user.userId }}
                   </div>
                 </td>
@@ -749,8 +749,16 @@ export default {
   transition: transform .5s;
 }
 
-/* center the toggle button vertically */
+/* center cell content vertically */
 .btn-toggle-user {
   margin-top: 2px;
+}
+
+td .cell-text {
+  margin-top: 5px;
+}
+
+td input[type="checkbox"] {
+  margin-top: 9px;
 }
 </style>
