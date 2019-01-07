@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:czx3uclbVAqcKB38zV0MbAzF/kA=",
             "dns" : {
                "host" : [
                   "no.such.host"

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:QZSIg2XdG+L9Rsqn3tY6/MCUQBM=",
             "dns" : {
                "host" : [
                   "flashservice.adobe.com"

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:5FhVg97ow4NPd5Q5nqaxA/Bx83A=",
             "dstBytes" : 5773,
             "dstDataBytes" : 5237,
             "dstGEO" : "US",

@@ -251,6 +251,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
             "dns" : {
                "host" : [
                   "linux.local",
@@ -403,6 +404,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
             "dstASN" : "AS4589 EASYNET Easynet Global Services",
             "dstBytes" : 2563,
             "dstDataBytes" : 2259,

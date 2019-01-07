@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:nCsje+yaeICYCDFyASWqz9jhGJE=",
             "dns" : {
                "ASN" : [
                   "AS0000 This is neat"

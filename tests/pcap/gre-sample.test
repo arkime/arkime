@@ -114,6 +114,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:veIAhY2jaBSkfqgIosmVNpCkTpE=",
             "dstASN" : "AS3 Massachusetts Institute of Technology",
             "dstBytes" : 114,
             "dstDataBytes" : 106,
@@ -204,6 +205,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:GvEAhAEKkdnTWFCXuw7HpDevs2w=",
             "dstBytes" : 2579,
             "dstDataBytes" : 1671,
             "dstIp" : "172.28.2.3",
@@ -363,6 +365,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:07ZQAeEnPuTfz/AxZbb/1SQ0Yvk=",
             "dns" : {
                "host" : [
                   "www.gleeble.org"
@@ -468,6 +471,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:tHxGdFYxUdQ1mRGmcwzADwdsxpk=",
             "dstASN" : "AS11590 Cumberland Technologies International",
             "dstBytes" : 114,
             "dstDataBytes" : 106,
@@ -558,6 +562,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:KjznBxr7r/2kBYUhYhbnV4xMJmc=",
             "dstASN" : "AS10755 Dartmouth College",
             "dstBytes" : 114,
             "dstDataBytes" : 106,

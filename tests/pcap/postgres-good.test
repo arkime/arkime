@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:+KMQwe1GBT7eaCQAYnV9v0ga8zw=",
             "dstBytes" : 665,
             "dstDataBytes" : 327,
             "dstIp" : "10.0.13.120",

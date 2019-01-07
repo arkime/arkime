@@ -19,6 +19,7 @@
                }
             ],
             "certCnt" : 1,
+            "communityId" : "1:IkHJKD/fDcrb4ph0Zven4FrlFl4=",
             "dstBytes" : 3422,
             "dstDataBytes" : 2050,
             "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",

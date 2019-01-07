@@ -60,6 +60,7 @@
                }
             ],
             "certCnt" : 2,
+            "communityId" : "1:1Vhwrjwo6Dp0JRtAPwmn/2IaaTw=",
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 5216,
             "dstDataBytes" : 5036,

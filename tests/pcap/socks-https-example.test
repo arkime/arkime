@@ -197,6 +197,7 @@
                }
             ],
             "certCnt" : 2,
+            "communityId" : "1:mKawWPl/vbyo+D8YOO/ybLJJIhQ=",
             "dstBytes" : 9145,
             "dstDataBytes" : 8279,
             "dstGEO" : "US",
@@ -559,6 +560,7 @@
                }
             ],
             "certCnt" : 2,
+            "communityId" : "1:QFSWpQ4ebG5/0YcprIWXFTWEzvI=",
             "dstBytes" : 9120,
             "dstDataBytes" : 8254,
             "dstGEO" : "US",
@@ -918,6 +920,7 @@
                }
             ],
             "certCnt" : 2,
+            "communityId" : "1:FU35c9jWM24tS4OJPq+kgps1akw=",
             "dstBytes" : 9215,
             "dstDataBytes" : 8283,
             "dstGEO" : "US",

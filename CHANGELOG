@@ -24,6 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - Fixed corrupt file sequence numbers being used when
               when ES is under heavy load
   - capture - Fix importing more then 256 files at once not working correctly (issue #984)
+  - all - communityId support for tcp/udp (issue #966)
 
 1.6.2 2018/12/07
   - NOTICE: db.pl upgrade is required

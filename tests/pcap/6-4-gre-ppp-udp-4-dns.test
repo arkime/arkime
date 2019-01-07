@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:fZG4C8AY/jKS+Bf2SgfW9xMzRTg=",
             "dns" : {
                "host" : [
                   "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:JzVmR9JF+CoetgG0sIF2LBr8i/U=",
             "dstASN" : "AS16509 Amazon.com, Inc.",
             "dstBytes" : 1800,
             "dstDataBytes" : 1167,

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:KdO+JlWkJWvdDSYy6M4JQxSc4yY=",
             "dstASN" : "AS0000 This is neat",
             "dstBytes" : 854,
             "dstDataBytes" : 280,

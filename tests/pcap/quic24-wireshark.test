@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 2784,
             "dstDataBytes" : 2768,

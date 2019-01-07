@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:jOv8gtYKkFiC4/5gDoVA6WtkDQA=",
             "dstBytes" : 2003,
             "dstDataBytes" : 1599,
             "dstGEO" : "US",
@@ -210,6 +211,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:7mIgLO3MM/1td+keMk5CvXMEWiI=",
             "dstBytes" : 2069,
             "dstDataBytes" : 1599,
             "dstGEO" : "US",
@@ -417,6 +419,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:Xad2GdfmsgABdCGXU/fkZWG9Kpg=",
             "dstBytes" : 2073,
             "dstDataBytes" : 1603,
             "dstGEO" : "US",

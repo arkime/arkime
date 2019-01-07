@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:00y2N2+TsH6kM7On9rU3DFGgzZ8=",
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 352,
             "dstDataBytes" : 14,

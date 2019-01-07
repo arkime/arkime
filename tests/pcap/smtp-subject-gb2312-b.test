@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:zNTGsq2qV66R0SCEgw2VJAhwhVM=",
             "dstASN" : "AS1668 AOL Transit Data Network",
             "dstBytes" : 1290,
             "dstDataBytes" : 486,

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:PIDOtGFIHUsiDppmnIxS0PK/t7Y=",
             "dns" : {
                "ASN" : [
                   "AS1280 Internet Systems Consortium, Inc.",
@@ -213,6 +214,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:5hLk4/1TLHDVutfqIPb3yiUsYBE=",
             "dns" : {
                "host" : [
                   "1.0.0.127.in-addr.arpa"
@@ -299,6 +301,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:1PV+BXh7g/oZoNfFL5dz1Vkf+xo=",
             "dns" : {
                "host" : [
                   "isc.org"
@@ -392,6 +395,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:ohgJJxCtl8hquEFlCrXctgmMr5I=",
             "dns" : {
                "host" : [
                   "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
@@ -480,6 +484,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:hqisi7acI4ga52k6zobiWGqEIOU=",
             "dns" : {
                "host" : [
                   "_ldap._tcp.dc._msdcs.utelsystems.local"
@@ -568,6 +573,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:plvYpJqXTOAQPov3pvYacIRfowE=",
             "dns" : {
                "host" : [
                   "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
@@ -656,6 +662,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:BYN5bVH5Ip1rnFDnzEUTqwo5d9E=",
             "dns" : {
                "host" : [
                   "grimm.utelsystems.local"
@@ -744,6 +751,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:yyjGfQMyZcoNoQa+U4siXkQP9K4=",
             "dns" : {
                "host" : [
                   "grimm.utelsystems.local"
