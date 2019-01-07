@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:Y6I3JhgebNYJ7cm/dvZaIvCLNoU=",
             "dstASN" : "AS4385 Rochester Institute of Technology",
             "dstBytes" : 428,
             "dstDataBytes" : 90,

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:NBhOKOiIQwnX0s0SpX7a9Om6mAo=",
             "dstASN" : "AS10913 Internap Corporation",
             "dstBytes" : 983,
             "dstDataBytes" : 459,

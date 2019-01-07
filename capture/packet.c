@@ -2006,6 +2006,12 @@ void moloch_packet_init()
         0,  MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
+    moloch_field_define("general", "termfield",
+        "communityId", "Community Id", "communityId",
+        "Community id flow hash",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         char name[100];

@@ -19,6 +19,7 @@
                }
             ],
             "certCnt" : 1,
+            "communityId" : "1:B0KZ8/dCBnVra4vqcDaOEhO9D2Y=",
             "dstBytes" : 6086,
             "dstDataBytes" : 5526,
             "dstGEO" : "US",

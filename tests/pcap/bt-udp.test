@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:NgeArQd71rXSwTFQP3vAiAa5728=",
             "dstASN" : "AS0000 This is neat",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -71,6 +72,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:ubEG2mv8a/m0qWzbcUkdorgqN8Q=",
             "dstASN" : "AS0002 Hmm!@#$%^&*()",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -131,6 +133,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:GWqpKRTDsDjRq9+psUBQIgQbXtM=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.5",

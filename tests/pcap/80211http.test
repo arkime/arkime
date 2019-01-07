@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:CtpkM8732ncl+urC+3Y3WY9cQPk=",
             "dstASN" : "AS4816 China Telecom (Group)",
             "dstBytes" : 5069,
             "dstDataBytes" : 3945,

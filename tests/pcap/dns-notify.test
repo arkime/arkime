@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:KGHC61zwvrLTfiY6ROTE9nun7XA=",
             "dns" : {
                "host" : [
                   "bortzmeyer.42"

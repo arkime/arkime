@@ -114,6 +114,7 @@
                }
             ],
             "certCnt" : 3,
+            "communityId" : "1:cHzRfwVTdZ/gertST8amOoDIOkU=",
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 5014,
             "dstDataBytes" : 4478,

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:TZq1zqZGQ14FqFo8bDSSyTDUExo=",
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -139,6 +140,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:Xr3moorFsxAHU3AgXgAwT7VAl5w=",
             "dstASN" : "AS4657 StarHub Ltd",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -313,6 +315,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:7VGk+e41s6jkYHIWgawTY/6jbmI=",
             "dstASN" : "AS16509 Amazon.com, Inc.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -449,6 +452,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:pDHc/Xd19q1ZGWr8XRR6xT/GAko=",
             "dstASN" : "AS16625 Akamai Technologies, Inc.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -608,6 +612,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:XRzKP3QNF/rWqI/10PfCFrEzYS4=",
             "dstASN" : "AS2830 Verizon Nederland B.V.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -772,6 +777,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:TJNI9nAIXv4bSmp2zeP/lBtz9EI=",
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -945,6 +951,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:wo4B1UeuDfXGS5DHxQtdYvNngS4=",
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -1084,6 +1091,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:cS4Fc1Zfq5CWmbCwTlemXCCc0eQ=",
             "dstASN" : "AS14618 Amazon.com, Inc.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -1247,6 +1255,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:Ez5LrIoKmVgFpI/rMliXltCSNSQ=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "192.168.25.150",

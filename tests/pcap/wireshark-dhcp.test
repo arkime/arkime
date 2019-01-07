@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:t9O1j0qj71O4wJM7gnaHtgmfev8=",
             "dhcp" : {
                "id" : [
                   "3d1d",
@@ -79,6 +80,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:VbRSZnvQqvLiQRhYHLrdVI17sLQ=",
             "dhcp" : {
                "id" : [
                   "3d1d",

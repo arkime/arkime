@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:hvwrjviYDU44pSSuQ+1lYJGT72U=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "255.255.255.255",
@@ -66,6 +67,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:59834EQhKAceIA+2EKLL/MofaIw=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "255.255.255.255",
@@ -215,6 +217,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:nYHpAhu7aMvwHizgOrGzDrDJsBI=",
             "dstBytes" : 517,
             "dstDataBytes" : 49,
             "dstIp" : "10.34.0.1",

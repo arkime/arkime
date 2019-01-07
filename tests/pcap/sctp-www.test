@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
             "dstASN" : "AS9270 National Infomation Society Agency",
             "dstBytes" : 22472,
             "dstDataBytes" : 22296,
@@ -149,6 +150,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:9dAr7BinXFjtYMLvvPdJMq34dY4=",
             "dstASN" : "AS9270 National Infomation Society Agency",
             "dstBytes" : 20770,
             "dstDataBytes" : 20618,
@@ -286,6 +288,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:EsmQhihL1F8Uoc8T7wwqcUge3W4=",
             "dstASN" : "AS4766 Korea Telecom",
             "dstBytes" : 0,
             "dstDataBytes" : 0,

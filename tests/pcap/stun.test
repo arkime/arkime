@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:bXEsFJztw3iv5wiB6jK1YLFWxt0=",
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -95,6 +96,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:24a90n2SPEqaP7H/HoUl4rC56tA=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.4",
@@ -159,6 +161,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:ydsfSYKOf7xVsQvMBr27PNWiYRw=",
             "dstBytes" : 70,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.5",
@@ -242,6 +245,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:S6TnGUi0h15Zd+5leePlj01w/uA=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.10",
@@ -301,6 +305,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:mWdMcE3jS5E1q7B8aF8fspn/pUc=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.11",
@@ -360,6 +365,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:y2a75ZIrV87M51bKr1fK4E6wXYA=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.12",

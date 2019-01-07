@@ -267,6 +267,64 @@ void moloch_db_set_send_bulk(MolochDbSendBulkFunc func)
     sendBulkFunc = func;
 }
 /******************************************************************************/
+gchar *moloch_db_community_id(MolochSession_t *session)
+{
+    GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
+    int              cmp;
+
+    static uint16_t seed = 0;
+    static uint8_t  zero = 0;
+
+    g_checksum_update(checksum, (guchar *)&seed, 2);
+
+    if (session->sessionId[0] == 37) {
+        cmp = memcmp(session->sessionId+1, session->sessionId+19, 16);
+
+        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
+            g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
+            g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
+            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
+        } else {
+            g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
+            g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
+            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
+        }
+    } else {
+        cmp = memcmp(session->sessionId+1, session->sessionId+7, 4);
+
+        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
+            g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
+            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
+        }  else {
+            g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
+            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
+        }
+    }
+
+    guint8 digest[100];
+    gsize  digest_len = 100;
+
+    g_checksum_get_digest(checksum, digest, &digest_len);
+    gchar *b64 = g_base64_encode(digest, digest_len);
+
+    g_checksum_free(checksum);
+    return b64;
+}
+/******************************************************************************/
 LOCAL struct {
     char   *json;
     BSB     bsb;
@@ -459,6 +517,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       session->port1,
                       session->port2,
                       session->protocol);
+
+    // Currently don't do communityId for ICMP because it requires magic
+    if (session->ses != SESSION_ICMP) {
+        char *communityId = moloch_db_community_id(session);
+        BSB_EXPORT_sprintf(jbsb, "\"communityId\": \"1:%s\",", communityId);
+        g_free(communityId);
+    }
 
     if (session->protocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,

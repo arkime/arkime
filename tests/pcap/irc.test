@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:YdkGov/c+KLtmg7Cf5DLDB4+YdQ=",
             "dstASN" : "AS23028 Team Cymru Inc.",
             "dstBytes" : 7899,
             "dstDataBytes" : 6901,

@@ -65,6 +65,7 @@
                }
             ],
             "certCnt" : 3,
+            "communityId" : "1:C1UCMVQ0stzcOTtArGfbNxbT8e8=",
             "dstASN" : "AS1668 AOL Transit Data Network",
             "dstBytes" : 3596,
             "dstDataBytes" : 3282,

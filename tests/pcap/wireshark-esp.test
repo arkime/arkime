@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:q/l11Aul7Q4o/Z/WqmElI1VJ3U8=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -65,6 +66,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:X2f5bDfiyW1E3aPsBOv0F27zduM=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -128,6 +130,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:FrzLC/9Db5KtN8FCHAJAmnaAmoM=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -191,6 +194,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:xK9QrHrJJQNmb+2jiF+nm7SMzk4=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -254,6 +258,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:Vlp8i48N+5PVUz2YCuJIZ6UOPtg=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -317,6 +322,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:q1QBuhdRJUzvwx8OftysvB0spEU=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -380,6 +386,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:WnrhfVWe+DJyVsXc1xSMeL0nVgg=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -443,6 +450,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:9vUY3OzPvkNy1jDRG6jL8Sj2O6U=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -506,6 +514,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:izN7Tux8sSTKAu2Tr+hBS9kWu7s=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -569,6 +578,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:9iQQ+3R+ldlxRxJz5DUsNE9IsWA=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -632,6 +642,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:n19Ht6x+yYT3fbH5r9aVlGbN3ys=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -695,6 +706,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:s4Ib539kIqpYDryKECciSZutNkY=",
             "dstASN" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
@@ -758,6 +770,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:HeLJDpz57u3SQIJ9Qd2K/efJkqY=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0002",
@@ -815,6 +828,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:/rSr9PRtUM/PbL8ELHKHU+txHGY=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0003",
@@ -872,6 +886,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:dKwS0tclQusGrVOQGxUZD1LVYAU=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0004",
@@ -929,6 +944,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:vFMKcYAJ5joBAO43ttGrk5BDA3I=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0005",
@@ -986,6 +1002,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:x5nb/50wSYnUWf2L4WrDu3t29kg=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0012",
@@ -1043,6 +1060,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:yps3A2OLxbYbuK5+pIEgXaXtqPU=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0013",
@@ -1100,6 +1118,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:y3awuWizhQadiCQFmygxcwinoNA=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0014",
@@ -1157,6 +1176,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:0Kf65Ogew305Rp9sS3J/rdx+j5U=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0015",
@@ -1214,6 +1234,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:OZ5467XosNPdzDt1yOrbQ/3XykA=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0022",
@@ -1271,6 +1292,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:HRya8a4OCGSf0P5hJWu3RbecmLw=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0023",
@@ -1328,6 +1350,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:NJ1B7SkoBaRmCi9wygtJXFJWTHU=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0024",
@@ -1385,6 +1408,7 @@
       },
       {
          "body" : {
+            "communityId" : "1:wCCJEWspE5gE5Vs+Pr+04xqUsAI=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "3ffe:0000:0000:0000:0000:0000:0000:0025",

@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
             "dns" : {
                "ASN" : [
                   "AS41231 Canonical Group Limited",

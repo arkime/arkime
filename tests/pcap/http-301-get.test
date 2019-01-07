@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:/wxImZfyysTBc/FfJh8ZIhrdJbI=",
             "dstASN" : "AS36459 GitHub, Inc.",
             "dstBytes" : 313,
             "dstDataBytes" : 107,

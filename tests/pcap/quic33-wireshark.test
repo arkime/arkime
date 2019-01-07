@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:p/vcUPTuHDxAg7xjWnl7DygZ6gk=",
             "dstASN" : "AS43515 Google Ireland Limited",
             "dstBytes" : 119,
             "dstDataBytes" : 111,

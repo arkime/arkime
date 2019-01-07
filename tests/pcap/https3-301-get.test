@@ -50,6 +50,7 @@
                }
             ],
             "certCnt" : 2,
+            "communityId" : "1:JebvFh6+fkj6uRw7LYcK388Vcy8=",
             "dstASN" : "AS36459 GitHub, Inc.",
             "dstBytes" : 4810,
             "dstDataBytes" : 4208,

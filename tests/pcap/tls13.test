@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:+howsemozCcnIdXPNBANfoSfiAw=",
             "dstASN" : "AS13335 Cloudflare, Inc.",
             "dstBytes" : 1454,
             "dstDataBytes" : 1220,

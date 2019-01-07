@@ -2,6 +2,7 @@
    "sessions2" : [
       {
          "body" : {
+            "communityId" : "1:hqixyKnikIIf2iYrE//kB+ft+lc=",
             "dns" : {
                "host" : [
                   "<root>"
