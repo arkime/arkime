@@ -10,6 +10,7 @@ import vBTooltip from 'bootstrap-vue/es/directives/tooltip/tooltip';
 import bDropdown from 'bootstrap-vue/es/components/dropdown/dropdown';
 import bDropdownItem from 'bootstrap-vue/es/components/dropdown/dropdown-item';
 import bDropdownDropdown from 'bootstrap-vue/es/components/dropdown/dropdown-divider';
+import bPagination from 'bootstrap-vue/es/components/pagination/pagination';
 
 // internal deps
 import App from './App';
@@ -27,6 +28,7 @@ Vue.directive('b-tooltip', vBTooltip);
 Vue.component('b-dropdown', bDropdown);
 Vue.component('b-dropdown-item', bDropdownItem);
 Vue.component('b-dropdown-divider', bDropdownDropdown);
+Vue.component('b-pagination', bPagination);
 
 // setup axios http interceptor to add token to reqs
 interceptorSetup();

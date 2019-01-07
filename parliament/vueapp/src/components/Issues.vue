@@ -15,6 +15,83 @@
       </button>
     </div> <!-- /page error -->
 
+    <!-- search & paging -->
+    <div>
+      <!-- page size -->
+      <select number
+        class="form-control page-select"
+        v-model="query.length"
+        @change="updatePaging">
+        <option value="10">
+          10 per page
+        </option>
+        <option value="50">
+          50 per page
+        </option>
+        <option value="100">
+          100 per page
+        </option>
+        <option value="200">
+          200 per page
+        </option>
+        <option value="500">
+          500 per page
+        </option>
+        <option value="1000">
+          1000 per page
+        </option>
+      </select> <!-- /page size -->
+      <!-- paging -->
+      <b-pagination size="sm"
+        v-model="currentPage"
+        :limit="5"
+        hide-ellipsis
+        :total-rows="recordsFiltered"
+        :per-page="parseInt(query.length)"
+        @input="updatePaging">
+      </b-pagination> <!-- paging -->
+      <!-- page info -->
+      <div class="pagination-info"
+        v-b-tooltip.hover>
+        Showing
+        <span v-if="recordsFiltered">
+          {{ start + 1 }}
+        </span>
+        <span v-else>
+          {{ start }}
+        </span>
+        <span v-if="recordsFiltered">
+          - {{ Math.min((start + query.length), recordsFiltered) }}
+        </span>
+        of {{ recordsFiltered }} entries
+      </div>
+      <!-- /page info -->
+      <!-- search -->
+      <div class="input-group input-group-sm pull-right issue-search">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-fw">
+            <span class="fa fa-search fa-fw">
+            </span>
+          </span>
+        </div>
+        <input type="text"
+          class="form-control"
+          v-model="searchTerm"
+          @input="debounceSearchInput"
+          @keyup.enter="debounceSearchInput"
+          placeholder="Begin typing to search for issues"
+        />
+        <span class="input-group-append">
+          <button type="button"
+            @click="clear"
+            class="btn btn-outline-secondary">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </span>
+      </div> <!-- /search -->
+    </div> <!-- /search & paging -->
+
     <!-- issues table -->
     <table class="table table-hover table-sm">
       <thead>
@@ -245,9 +322,16 @@
     <div v-if="!loading && (!issues || !issues.length)"
       class="info-area vertical-center text-center">
       <div class="text-muted mt-5">
-        <span class="fa fa-3x fa-smile-o text-muted-more">
+        <span v-if="!searchTerm">
+          <span class="fa fa-3x fa-smile-o text-muted-more">
+          </span>
+          No issues in your Parliament
         </span>
-        No issues in your Parliament
+        <span v-else>
+          <span class="fa fa-3x fa-folder-open-o text-muted-more">
+          </span>
+          No issues match your search
+        </span>
       </div>
     </div> <!-- no clusters -->
 
@@ -260,6 +344,7 @@ import ParliamentService from './parliament.service';
 import IssueActions from './IssueActions';
 
 let interval;
+let searchInputTimeout;
 
 export default {
   name: 'Issues',
@@ -275,7 +360,13 @@ export default {
       // page data
       issues: [],
       allIssuesSelected: false,
-      atLeastOneIssueSelected: false
+      atLeastOneIssueSelected: false,
+      // pagination (always start on the first page)
+      start: 0,
+      currentPage: 1,
+      recordsFiltered: 0,
+      // searching
+      searchTerm: undefined
     };
   },
   computed: {
@@ -286,12 +377,13 @@ export default {
     refreshInterval: function () {
       return this.$store.state.refreshInterval;
     },
-    // table sorting
+    // table sorting and paging
     query: {
       get: function () {
         return {
           sort: this.$route.query.sort,
-          order: this.$route.query.order || 'desc'
+          order: this.$route.query.order || 'desc',
+          length: this.$route.query.length || 50
         };
       },
       set: function (val) {
@@ -343,7 +435,9 @@ export default {
 
       this.query = {
         sort: sort,
-        order: order
+        order: order,
+        start: this.start,
+        length: this.query.length
       };
     },
     getIssueTrackingId: function (issue) {
@@ -367,7 +461,7 @@ export default {
       ParliamentService.removeAllAcknowledgedIssues()
         .then((data) => {
           this.error = '';
-          this.issues = data.issues;
+          this.loadData(); // fetch new issues
         })
         .catch((error) => {
           this.error = error.text || 'Error removing all acknowledged issues.';
@@ -450,16 +544,51 @@ export default {
           this.error = error.text || `Unable to unignore ${selectedIssues.length} issues`;
         });
     },
+    updatePaging: function () {
+      this.start = (this.currentPage - 1) * this.query.length;
+
+      this.query = {
+        sort: this.query.sort,
+        order: this.query.order,
+        length: this.query.length
+      };
+
+      this.loadData();
+    },
+    debounceSearchInput: function () {
+      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      searchInputTimeout = setTimeout(() => {
+        searchInputTimeout = null;
+        this.loadData();
+      }, 400);
+    },
+    clear: function () {
+      this.searchTerm = undefined;
+      this.loadData();
+    },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
-      let query = {}; // set up query parameters (order and sort)
-      if (this.query.sort) { query = { order: this.query.order, sort: this.query.sort }; }
+      let query = { // set up query parameters (order, sort, paging)
+        start: this.start,
+        length: this.query.length
+      };
+
+      if (this.query.sort) {
+        query.sort = this.query.sort;
+        query.order = this.query.order;
+      }
+
+      if (this.searchTerm) {
+        query.filter = this.searchTerm;
+      }
 
       ParliamentService.getIssues(query)
         .then((data) => {
           this.error = '';
           this.loading = false;
           this.issues = data.issues;
+          this.recordsFiltered = data.recordsFiltered;
         })
         .catch((error) => {
           this.loading = false;
@@ -492,3 +621,40 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.pagination {
+  display: inline-flex;
+}
+
+select.page-select {
+  width: 120px;
+  font-size: .8rem;
+  display: inline-flex;
+  height: 31px !important;
+  margin-top: 1px;
+  margin-right: -5px;
+  margin-bottom: var(--px-xs);
+  padding-top: var(--px-xs);
+  padding-bottom: var(--px-xs);
+  border-right: none;
+  -webkit-appearance: none;
+}
+
+.pagination-info {
+  display: inline-block;
+  font-size: .8rem;
+  color: #495057;
+  border: 1px solid #CED4DA;
+  padding: 5px 10px;
+  margin-left: -6px;
+  border-radius: 0 var(--px-sm) var(--px-sm) 0;
+  background-color: #FFFFFF;
+}
+
+.input-group.issue-search {
+  flex-wrap: none;
+  width: auto;
+  min-width: 40%;
+}
+</style>

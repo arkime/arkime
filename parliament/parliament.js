@@ -1414,6 +1414,18 @@ router.get('/issues', (req, res, next) => {
   // filter out provisional issues
   issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
+  if (req.query.filter) { // simple search for issues
+    let searchTerm = req.query.filter.toLowerCase();
+    issuesClone = issuesClone.filter((issue) => {
+      return issue.severity.toLowerCase().includes(searchTerm) ||
+        issue.cluster.toLowerCase().includes(searchTerm) ||
+        issue.message.toLowerCase().includes(searchTerm) ||
+        issue.title.toLowerCase().includes(searchTerm) ||
+        issue.node.toLowerCase().includes(searchTerm) ||
+        issue.text.toLowerCase().includes(searchTerm);
+    });
+  }
+
   let type = 'string';
   let sortBy = req.query.sort;
   if (sortBy === 'ignoreUntil' ||
@@ -1446,7 +1458,19 @@ router.get('/issues', (req, res, next) => {
     });
   }
 
-  return res.json({ issues: issuesClone });
+  let recordsFiltered = issuesClone.length;
+
+  if (req.query.length) { // paging
+    let len = parseInt(req.query.length);
+    let start = !req.query.start ? 0 : parseInt(req.query.start);
+
+    issuesClone = issuesClone.slice(start, len + start);
+  }
+
+  return res.json({
+    issues: issuesClone,
+    recordsFiltered: recordsFiltered
+  });
 });
 
 // acknowledge one or more issues
@@ -1610,7 +1634,7 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
     return next(error);
   }
 
-  let successObj  = { success:true, text:`Successfully removed ${count} acknowledged issues.`, issues:issues };
+  let successObj  = { success:true, text:`Successfully removed ${count} acknowledged issues.` };
   let errorText   = 'Unable to remove acknowledged issues.';
   writeIssues(req, res, next, successObj, errorText, true);
 });
