@@ -2007,8 +2007,8 @@ void moloch_packet_init()
         (char *)NULL);
 
     moloch_field_define("general", "termfield",
-        "communityId", "communityId", "communityId",
-        "Community Id",
+        "communityId", "Community Id", "communityId",
+        "Community id flow hash",
         0,  MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
