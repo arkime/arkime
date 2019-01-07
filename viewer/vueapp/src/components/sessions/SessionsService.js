@@ -330,7 +330,8 @@ export default {
       counts: counts,
       date: clonedParams.date,
       stopTime: clonedParams.stopTime,
-      startTime: clonedParams.startTime
+      startTime: clonedParams.startTime,
+      expression: clonedParams.expression
     };
 
     let url = `unique.txt?${qs.stringify(params)}`;
