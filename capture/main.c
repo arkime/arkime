@@ -161,8 +161,11 @@ void parse_args(int argc, char **argv)
     if (!config.configFile)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
 
-    if (showVersion) {
+    if (showVersion || config.debug) {
         printf("moloch-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
+    }
+
+    if (showVersion) {
         printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
         printf("libpcap: %s\n", pcap_lib_version());
         printf("curl: %s\n", curl_version());
