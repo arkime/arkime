@@ -509,6 +509,14 @@ LOCAL void *moloch_packet_thread(void *threadp)
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
             ts.tv_sec++;
             MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
+
+            /* If we are in live capture mode and we haven't received any packets for 10 seconds we set current time to 10
+             * seconds in the past so moloch_session_process_commands will clean things up.  10 seconds is arbitrary but
+             * we want to make sure we don't set the time ahead of any packets that are currently being read off the wire
+             */
+            if (!config.pcapReadOffline && DLL_COUNT(packet_, &packetQ[thread]) == 0 && ts.tv_sec - 10 > lastPacketSecs[thread]) {
+                lastPacketSecs[thread] = ts.tv_sec - 10;
+            }
         }
         inProgress[thread] = 1;
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
