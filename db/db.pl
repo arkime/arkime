@@ -59,7 +59,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 56;
+my $VERSION = 57;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1273,6 +1273,14 @@ sub huntsCreate
   }
 }';
 
+  logmsg "Creating hunts_v1 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}hunts_v1", $settings);
+  esAlias("add", "hunts_v1", "hunts");
+  huntsUpdate();
+}
+
+sub huntsUpdate
+{
     my $mapping = '
 {
   "hunt": {
@@ -1338,14 +1346,17 @@ sub huntsCreate
             "type": "keyword"
           }
         }
+      },
+      "notifier": {
+        "type": "keyword"
+      },
+      "lastNotified": {
+        "type": "date"
       }
     }
   }
 }';
 
-logmsg "Setting hunts mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunts_v1", $settings);
-esAlias("add", "hunts_v1", "hunts");
 logmsg "Setting hunts_v1 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
@@ -2321,14 +2332,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags_v2", 1);
         esDelete("/${PREFIX}tags", 1);
 
-        huntsCreate();
+        huntsUpdate();
         checkForOld5Indices();
         setPriority();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
-        huntsCreate();
+        huntsUpdate();
         checkForOld5Indices();
         setPriority();
         queriesUpdate();
@@ -2340,10 +2351,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         setPriority();
         queriesUpdate();
         sessions2Update();
-    } elsif ($main::versionNumber <= 56) {
+    } elsif ($main::versionNumber <= 57) {
         checkForOld5Indices();
         setPriority();
         usersUpdate();
+        huntsUpdate();
         queriesUpdate();
         sessions2Update();
     } else {

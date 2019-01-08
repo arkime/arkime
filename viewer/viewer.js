@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 56;
+var MIN_DB_VERSION = 57;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -6288,6 +6288,7 @@ function pauseHuntJobWithError (huntId, hunt, error) {
 }
 
 function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
+  console.log('update hunt stats', huntId); // TODO remove
   // update the hunt with number of matchedSessions and searchedSessions
   // and the date of the first packet of the last searched session
   let lastPacketTime = session.lastPacket;
@@ -6307,6 +6308,18 @@ function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
       hunt.lastUpdated = now;
       hunt.searchedSessions = searchedSessions;
       hunt.lastPacketTime = lastPacketTime;
+
+      // TODO issue alert via notifier if the number of matched sessions has changed
+      // and it has been at least 10 minutes
+      console.log('matched sessions for hunt', hunt.matchedSessions);
+      console.log('matched sessions for huntHit', !huntHit.matchedSessions);
+      if (hunt.notifier && hunt.matchedSessions &&
+        huntHit.matchedSessions !== hunt.matchedSessions &&
+        (!hunt.lastNotified || (Math.floor(Date.now()/1000) - hunt.lastNotified >= 600))) {
+        console.log('notify hunt matches');
+        if (!internals.notifiers) { buildNotifiers(); }
+      }
+
       Db.setHunt(huntId, hunt, () => {});
       if (hunt.status === 'paused') {
         return cb('paused');
@@ -6364,7 +6377,6 @@ function buildHuntOptions (hunt) {
 
 // Actually do the search against ES and process the results.
 function runHuntJob (huntId, hunt, query, user) {
-
   let options = buildHuntOptions(hunt);
   let searchedSessions;
 
@@ -6545,7 +6557,7 @@ function processHuntJobs (cb) {
     console.log('HUNT - processing hunt jobs');
   }
 
-  if (internals.runningHuntJob) { return (cb?cb():null); }
+  if (internals.runningHuntJob) { return (cb ? cb() : null); }
   internals.runningHuntJob = true;
 
   let query = {
@@ -6570,12 +6582,12 @@ function processHuntJobs (cb) {
             // restart the abandoned hunt
             processHuntJob(id, hunt);
           }
-          return (cb?cb():null);
+          return (cb ? cb() : null);
         } else if (hunt.status === 'queued') { // get the first queued hunt
-          hunt.status = 'running'; // update the hunt job
           internals.runningHuntJob = hunt;
+          hunt.status = 'running'; // update the hunt job
           processHuntJob(id, hunt);
-          return (cb?cb():null);
+          return (cb ? cb() : null);
         }
       }
 
@@ -6682,7 +6694,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
   });
 });
 
-app.get('/hunt/list', logAction('hunt/list'), recordResponseTime, function (req, res) {
+app.get('/hunt/list', recordResponseTime, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
@@ -6756,13 +6768,13 @@ app.delete('/hunt/:id', logAction('hunt/:id'), checkCookieToken, checkHuntAccess
   });
 });
 
-app.put('/hunt/:id/pause', logAction('hunt'), checkCookieToken, checkHuntAccess, function (req, res) {
+app.put('/hunt/:id/pause', logAction('hunt/:id/pause'), checkCookieToken, checkHuntAccess, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
 });
 
-app.put('/hunt/:id/play', logAction('hunt'), checkCookieToken, checkHuntAccess, function (req, res) {
+app.put('/hunt/:id/play', logAction('hunt/:id/play'), checkCookieToken, checkHuntAccess, function (req, res) {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
