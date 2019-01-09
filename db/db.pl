@@ -1349,9 +1349,6 @@ sub huntsUpdate
       },
       "notifier": {
         "type": "keyword"
-      },
-      "lastNotified": {
-        "type": "date"
       }
     }
   }

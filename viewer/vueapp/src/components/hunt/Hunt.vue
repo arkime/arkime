@@ -71,7 +71,7 @@
               <div class="form-group col-lg-4 col-md-12">
                 <!-- packet search job name -->
                 <div class="input-group input-group-sm">
-                  <span class="input-group-prepend"
+                  <span class="input-group-prepend cursor-help"
                     v-b-tooltip.hover
                     title="Give your packet search job a short name (multiple jobs can have the same name)">
                     <span class="input-group-text">
@@ -108,7 +108,9 @@
               <!-- notifier -->
               <div class="form-group col-lg-4 col-md-12">
                 <div class="input-group input-group-sm">
-                  <span class="input-group-prepend">
+                  <span class="input-group-prepend cursor-help"
+                    v-b-tooltip.hover
+                    title="Notifies upon completion">
                     <span class="input-group-text">
                       Notify
                     </span>

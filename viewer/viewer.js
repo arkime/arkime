@@ -1145,6 +1145,58 @@ function buildNotifiers () {
   });
 }
 
+function issueAlert (notifierName, alertMessage, continueProcess) {
+  if (!internals.notifiers) { buildNotifiers(); }
+
+  // find notifier
+  Db.getUser('_moloch_shared', (err, sharedUser) => {
+    if (!sharedUser || !sharedUser.found) {
+      console.log('Cannot find notifier, no alert can be issued');
+      return continueProcess();
+    }
+
+    sharedUser = sharedUser._source;
+
+    sharedUser.notifiers = sharedUser.notifiers || {};
+
+    let notifier = sharedUser.notifiers[notifierName];
+
+    if (!notifier) {
+      console.log('Cannot find notifier, no alert can be issued');
+      return continueProcess();
+    }
+
+    let notifierDefinition;
+    for (let n in internals.notifiers) {
+      if (internals.notifiers[n].type === notifier.type) {
+        notifierDefinition = internals.notifiers[n];
+      }
+    }
+    if (!notifierDefinition) {
+      console.log('Cannot find notifier definition, no alert can be issued');
+      return continueProcess();
+    }
+
+    let config = {};
+    // check that required notifier fields exist
+    for (let field of notifierDefinition.fields) {
+      if (field.required) {
+        for (let configuredField of notifier.fields) {
+          if (configuredField.name === field.name && !configuredField.value) {
+            console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
+            continueProcess();
+          }
+          config[field.name] = configuredField.value;
+        }
+      }
+    }
+
+    notifierDefinition.sendAlert(config, alertMessage);
+
+    return continueProcess();
+  });
+}
+
 app.get('/notifierTypes', checkCookieToken, function (req, res) {
   if (internals.notifiers) {
     return res.send(internals.notifiers);
@@ -1393,49 +1445,14 @@ app.post('/notifiers/:name/test', getSettingUser, checkCookieToken, function (re
     return res.molochError(401, 'Need admin privelages to test a notifier');
   }
 
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      return res.molochError(404, 'Cannot find notifer to test');
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    if (!sharedUser.notifiers[req.params.name]) {
-      return res.molochError(404, 'Cannot find notifer to test');
-    }
-
-    let config = {};
-    const notifier = sharedUser.notifiers[req.params.name];
-
-    let notifierDefinition;
-    for (let n in internals.notifiers) {
-      if (internals.notifiers[n].type === notifier.type) {
-        notifierDefinition = internals.notifiers[n];
-      }
-    }
-    if (!notifierDefinition) { return res.molochError(403, 'Unknown notifier type'); }
-
-    // check that required notifier fields exist
-    for (let field of notifierDefinition.fields) {
-      if (field.required) {
-        for (let configuredField of notifier.fields) {
-          if (configuredField.name === field.name && !configuredField.value) {
-            return res.molochError(403, `Missing a value for ${field.name}`);
-          }
-          config[field.name] = configuredField.value;
-        }
-      }
-    }
-
-    notifierDefinition.sendAlert(config, 'Test alert');
-
+  function continueProcess () {
     return res.send(JSON.stringify({
       success : true,
       text    : `Successfully issued alert using the ${req.params.name} notifier.`
     }));
-  });
+  }
+
+  issueAlert(req.params.name, 'Test alert', continueProcess);
 });
 
 // gets a user's settings
@@ -6288,7 +6305,6 @@ function pauseHuntJobWithError (huntId, hunt, error) {
 }
 
 function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
-  console.log('update hunt stats', huntId); // TODO remove
   // update the hunt with number of matchedSessions and searchedSessions
   // and the date of the first packet of the last searched session
   let lastPacketTime = session.lastPacket;
@@ -6299,28 +6315,20 @@ function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
       if (!huntHit || !huntHit.found) { // hunt hit not found, likely deleted
         return cb('undefined');
       }
+
       if (err) {
         let errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
         pauseHuntJobWithError(huntId, hunt, { value: errorText });
         return cb({ success: false, text: errorText });
       }
+
       hunt.status = huntHit._source.status;
       hunt.lastUpdated = now;
       hunt.searchedSessions = searchedSessions;
       hunt.lastPacketTime = lastPacketTime;
 
-      // TODO issue alert via notifier if the number of matched sessions has changed
-      // and it has been at least 10 minutes
-      console.log('matched sessions for hunt', hunt.matchedSessions);
-      console.log('matched sessions for huntHit', !huntHit.matchedSessions);
-      if (hunt.notifier && hunt.matchedSessions &&
-        huntHit.matchedSessions !== hunt.matchedSessions &&
-        (!hunt.lastNotified || (Math.floor(Date.now()/1000) - hunt.lastNotified >= 600))) {
-        console.log('notify hunt matches');
-        if (!internals.notifiers) { buildNotifiers(); }
-      }
-
       Db.setHunt(huntId, hunt, () => {});
+
       if (hunt.status === 'paused') {
         return cb('paused');
       } else {
@@ -6449,10 +6457,20 @@ function runHuntJob (huntId, hunt, query, user) {
       // We are totally done with this hunt
       hunt.status = 'finished';
       hunt.searchedSessions = hunt.totalSessions;
-      Db.setHunt(huntId, hunt, (err, info) => {
-        internals.runningHuntJob = undefined;
-        processHuntJobs(); // Start new hunt
-      });
+
+      function continueProcess () {
+        Db.setHunt(huntId, hunt, (err, info) => {
+          internals.runningHuntJob = undefined;
+          processHuntJobs(); // Start new hunt
+        });
+      }
+
+      if (hunt.notifier) {
+        let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+        issueAlert(hunt.notifier, message, continueProcess);
+      } else {
+        return continueProcess();
+      }
     });
   });
 }
@@ -7780,11 +7798,11 @@ function processCronQueries() {
                 }
               };
 
-              function continueProcess (id, doc, lp, et) {
-                Db.update('queries', 'query', id, doc, { refresh: true }, function () {
+              function continueProcess () {
+                Db.update('queries', 'query', qid, document, { refresh: true }, function () {
                   // If there is more time to catch up on, repeat the loop, although other queries
                   // will get processed first to be fair
-                  if (lp !== et) { repeat = true; }
+                  if (lpValue !== endTime) { repeat = true; }
                   return forQueriesCb();
                 });
               }
@@ -7792,62 +7810,9 @@ function processCronQueries() {
               // issue alert via notifier if the count has changed and it has been at least 10 minutes
               if (cq.notifier && count && queries[qid].count !== document.doc.count &&
                 (!cq.lastNotified || (Math.floor(Date.now()/1000) - cq.lastNotified >= 600))) {
-                if (!internals.notifiers) { buildNotifiers(); }
-
-                // find notifier
-                Db.getUser('_moloch_shared', (err, sharedUser) => {
-                  if (!sharedUser || !sharedUser.found) {
-                    console.log('Cannot find notifier, no cron alert can be issued');
-                    return continueProcess(qid, document, lpValue, endTime);
-                  }
-
-                  sharedUser = sharedUser._source;
-
-                  sharedUser.notifiers = sharedUser.notifiers || {};
-
-                  let notifier = sharedUser.notifiers[cq.notifier];
-
-                  if (!notifier) {
-                    console.log('Cannot find notifier, no cron alert can be issued');
-                    return continueProcess(qid, document, lpValue, endTime);
-                  }
-
-                  let notifierDefinition;
-                  for (let n in internals.notifiers) {
-                    if (internals.notifiers[n].type === notifier.type) {
-                      notifierDefinition = internals.notifiers[n];
-                    }
-                  }
-                  if (!notifierDefinition) {
-                    console.log('Cannot find notifier definition, no cron alert can be issued');
-                    return continueProcess(qid, document, lpValue, endTime);
-                  }
-
-                  let config = {};
-                  // check that required notifier fields exist
-                  for (let field of notifierDefinition.fields) {
-                    if (field.required) {
-                      for (let configuredField of notifier.fields) {
-                        if (configuredField.name === field.name && !configuredField.value) {
-                          console.log(`Cannot find notifier field value: ${field.name}, no cron alert can be issued`);
-                          continueProcess(qid, document, lpValue, endTime);
-                        }
-                        config[field.name] = configuredField.value;
-                      }
-                    }
-                  }
-
-                  let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
-
-                  let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
-
-                  notifierDefinition.sendAlert(config, message);
-
-                  document.doc.lastNotifiedCount = document.doc.count;
-                  document.doc.lastNotified = Math.floor(Date.now()/1000);
-
-                  return continueProcess(qid, document, lpValue, endTime);
-                });
+                let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+                let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+                issueAlert(cq.notifier, message, continueProcess);
               } else {
                 return continueProcess(qid, document, lpValue, endTime);
               }
