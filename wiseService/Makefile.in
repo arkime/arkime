@@ -5,6 +5,9 @@ PLUGINDIR = @prefix@/plugins
 WISEDIR = @prefix@/wiseService
 BINDIR = @prefix@/bin
 
+all:
+	echo "WISE!"
+
 check:
 	npm install --production
 
