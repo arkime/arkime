@@ -45,6 +45,7 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/capture/plugins/snf/Makefile.in \
 	$(top_srcdir)/configure $(top_srcdir)/db/Makefile.in \
 	$(top_srcdir)/parliament/Makefile.in \
+	$(top_srcdir)/wiseService/Makefile.in \
 	$(top_srcdir)/release/Makefile.in \
 	$(top_srcdir)/tests/plugins/Makefile.in \
 	$(top_srcdir)/viewer/Makefile.in \
@@ -63,7 +64,7 @@ CONFIG_CLEAN_FILES = capture/Makefile capture/plugins/Makefile \
 	capture/plugins/snf/Makefile capture/plugins/lua/Makefile \
 	capture/parsers/Makefile db/Makefile tests/plugins/Makefile \
 	viewer/Makefile viewer/version.js parliament/Makefile \
-	release/Makefile
+	wiseService/Makefile release/Makefile
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -234,7 +235,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = . capture db viewer parliament release tests
+SUBDIRS = . capture db viewer parliament wiseService release tests
 all: all-recursive
 
 .SUFFIXES:
@@ -312,6 +313,8 @@ viewer/Makefile: $(top_builddir)/config.status $(top_srcdir)/viewer/Makefile.in
 viewer/version.js: $(top_builddir)/config.status $(top_srcdir)/viewer/version.js.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 parliament/Makefile: $(top_builddir)/config.status $(top_srcdir)/parliament/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+wiseService/Makefile: $(top_builddir)/config.status $(top_srcdir)/wiseService/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 release/Makefile: $(top_builddir)/config.status $(top_srcdir)/release/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

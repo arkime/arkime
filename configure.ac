@@ -21,6 +21,7 @@ AC_CONFIG_FILES([
   viewer/version.js
   parliament/Makefile
   release/Makefile
+  wiseService/Makefile
 ])
 
 AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))

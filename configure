@@ -4889,7 +4889,7 @@ fi
 
 done
 
-ac_config_files="$ac_config_files Makefile capture/Makefile capture/plugins/Makefile capture/plugins/daq/Makefile capture/plugins/pfring/Makefile capture/plugins/snf/Makefile capture/plugins/lua/Makefile capture/parsers/Makefile db/Makefile tests/plugins/Makefile viewer/Makefile viewer/version.js parliament/Makefile release/Makefile"
+ac_config_files="$ac_config_files Makefile capture/Makefile capture/plugins/Makefile capture/plugins/daq/Makefile capture/plugins/pfring/Makefile capture/plugins/snf/Makefile capture/plugins/lua/Makefile capture/parsers/Makefile db/Makefile tests/plugins/Makefile viewer/Makefile viewer/version.js parliament/Makefile release/Makefile wiseService/Makefile"
 
 
 

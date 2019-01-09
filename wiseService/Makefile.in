@@ -1,0 +1,17 @@
+install_sh = @install_sh@
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+PLUGINDIR = @prefix@/plugins
+WISEDIR = @prefix@/wiseService
+BINDIR = @prefix@/bin
+
+check:
+	npm install --production
+
+install:
+	@mkdir -p "$(WISEDIR)"
+	$(INSTALL) *.js wiseService.ini.sample package.json $(WISEDIR)
+	(cd $(WISEDIR) ; npm install --production)
+
+distclean realclean clean:
+	rm -f *.o *.so

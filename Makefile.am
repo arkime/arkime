@@ -1,4 +1,4 @@
-SUBDIRS = . capture db viewer parliament release tests
+SUBDIRS = . capture db viewer parliament wiseService release tests
 install-exec-local:
 	npm ci
 	cp -pr notifiers @prefix@

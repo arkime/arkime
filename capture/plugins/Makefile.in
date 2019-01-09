@@ -7,7 +7,6 @@ install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins
-WISEDIR = @prefix@/wiseService
 BINDIR = @prefix@/bin
 
 SRCS=$(wildcard *.c)
@@ -19,15 +18,11 @@ SOS=$(SRCS:.c=.so)
 all:$(SOS)
 
 check:
-	(cd wiseService ; npm install --production)
 
 install:
 	$(INSTALL) taggerUpload.pl $(BINDIR)
 	@mkdir -p "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
-	@mkdir -p "$(WISEDIR)"
-	$(INSTALL) wiseService/*.js wiseService/wiseService.ini.sample wiseService/package.json $(WISEDIR)
-	(cd $(WISEDIR) ; npm install --production)
 	@mkdir -p "$(PLUGINDIR)/writer-s3"
 	$(INSTALL) writer-s3/*.js writer-s3/package.json $(PLUGINDIR)/writer-s3
 	(cd $(PLUGINDIR)/writer-s3 ; npm install --production)
