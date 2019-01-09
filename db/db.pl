@@ -51,6 +51,7 @@
 # 54 - users_v6
 # 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
 # 56 - notifiers
+# 57 - hunt notifiers
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
