@@ -118,7 +118,6 @@ void moloch_plugin_init()
 {
     int thread;
     char **names = moloch_config_str_list(NULL, "luaFiles", "moloch.lua");
-    lua_State *L;
 
     molua_pluginIndex = moloch_plugins_register("lua", TRUE);
 
@@ -126,7 +125,7 @@ void moloch_plugin_init()
 
 
     for (thread = 0; thread < config.packetThreads; thread++) {
-        L = Ls[thread] = luaL_newstate();
+        lua_State *L = Ls[thread] = luaL_newstate();
         luaL_openlibs(L);
         moluaFakeSessions[thread].thread = thread;
 

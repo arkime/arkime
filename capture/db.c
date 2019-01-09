@@ -194,9 +194,6 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
     MolochIpInfo_t *ii = 0;
     *g = *as = *rir = 0;
     *asFree = 0;
-    static const char *countryPath[] = {"country", "iso_code", NULL};
-    static const char *asoPath[]     = {"autonomous_system_organization", NULL};
-    static const char *asnPath[]     = {"autonomous_system_number", NULL};
 
     if (ipTree4) {
         if ((ii = moloch_db_get_local_ip6(session, &addr))) {
@@ -230,6 +227,8 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s entry_data;
+            static const char *countryPath[] = {"country", "iso_code", NULL};
+
             int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
             if (status == MMDB_SUCCESS) {
                 *g = (char *)entry_data.utf8_string;
@@ -243,7 +242,10 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
             MMDB_entry_data_s org;
             MMDB_entry_data_s num;
 
+            static const char *asoPath[]     = {"autonomous_system_organization", NULL};
             int status = MMDB_aget_value(&result.entry, &org, asoPath);
+
+            static const char *asnPath[]     = {"autonomous_system_number", NULL};
             status += MMDB_aget_value(&result.entry, &num, asnPath);
 
             if (status == MMDB_SUCCESS) {

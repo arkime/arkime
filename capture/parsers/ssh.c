@@ -52,7 +52,7 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
 
     BSB_IMPORT_u32(bsb, len);
-    BSB_IMPORT_ptr(bsb, value, len);
+    BSB_IMPORT_skip(bsb, len);
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
