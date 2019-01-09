@@ -18,9 +18,19 @@ NOTICE: Restart wiseService before capture when upgrading
   - NOTICE: db.pl upgrade is required
   - capture - new cert remainingDays field
   - capture - new tcp initRTT field
-  - viewer - cron query notifications
+  - viewer - cron query notifications (issue #489)
   - viewer - can't use es scroll api with "from" (issue #981)
   - viewer - Export CSV uses the columns shown
+  - viewer - field history for search expression (issue #595)
+  - viewer - fix date/time picker not using user set timezone (issue #977)
+  - viewer - don’t display undefined or empty field values
+  - viewer - fix timezone parsing in session detail date field values
+  - viewer - show error if using an outdated browser (issue #980)
+  - viewer - export results intersection
+  - viewer - add clickable labels to the info column
+  - viewer - reset the width of the session table columns when switching back to the default
+  - parliament - search and page results on the issues page (issues #982 and #983)
+  - parliament - add a length of time threshold for “low packets” issues (issue #968)
   - capture - Fixed corrupt file sequence numbers being used when
               when ES is under heavy load
   - capture - Fix importing more then 256 files at once not working correctly (issue #984)

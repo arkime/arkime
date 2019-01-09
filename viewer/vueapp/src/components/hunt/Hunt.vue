@@ -68,10 +68,10 @@
               </div>
             </div>
             <div class="row">
-              <div class="form-group col-lg-6 col-md-12">
+              <div class="form-group col-lg-4 col-md-12">
                 <!-- packet search job name -->
                 <div class="input-group input-group-sm">
-                  <span class="input-group-prepend"
+                  <span class="input-group-prepend cursor-help"
                     v-b-tooltip.hover
                     title="Give your packet search job a short name (multiple jobs can have the same name)">
                     <span class="input-group-text">
@@ -88,7 +88,7 @@
                 </div> <!-- /packet search job name -->
               </div>
               <!-- packet search size -->
-              <div class="form-group col-lg-6 col-md-12">
+              <div class="form-group col-lg-4 col-md-12">
                 <div class="input-group input-group-sm">
                   <span class="input-group-prepend">
                     <span class="input-group-text">
@@ -105,6 +105,28 @@
                   </select>
                 </div>
               </div> <!-- /packet search size -->
+              <!-- notifier -->
+              <div class="form-group col-lg-4 col-md-12">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-prepend cursor-help"
+                    v-b-tooltip.hover
+                    title="Notifies upon completion">
+                    <span class="input-group-text">
+                      Notify
+                    </span>
+                  </span>
+                  <select class="form-control"
+                    v-model="jobNotifier"
+                    style="-webkit-appearance: none;">
+                    <option value=undefined>none</option>
+                    <option v-for="notifier in notifiers"
+                      :key="notifier.name"
+                      :value="notifier.name">
+                      {{ notifier.name }} ({{ notifier.type }})
+                    </option>
+                  </select>
+                </div>
+              </div> <!-- /notifier -->
             </div>
             <div class="row">
               <!-- packet search text & text type -->
@@ -324,6 +346,9 @@
               Search text
             </th>
             <th>
+              Notify
+            </th>
+            <th>
               Created
             </th>
             <th>
@@ -396,6 +421,9 @@
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   {{ job.search }} ({{ job.searchType }})
                 </span>
+              </td>
+              <td>
+                {{ job.notifier }}
               </td>
               <td>
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
@@ -608,6 +636,9 @@
             <th>
               Search text
             </th>
+            <th>
+              Notify
+            </th>
             <th class="cursor-pointer"
               @click="columnClick('created')">
               Created
@@ -685,6 +716,9 @@
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   {{ job.search }} ({{ job.searchType }})
                 </span>
+              </td>
+              <td>
+                {{ job.notifier }}
               </td>
               <td>
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
@@ -877,6 +911,9 @@ export default {
       jobSrc: true,
       jobDst: true,
       jobType: 'raw',
+      jobNotifier: undefined,
+      // notifiers
+      notifiers: undefined,
       // hunt limits
       huntWarn: this.$constants.MOLOCH_HUNTWARN,
       huntLimit: this.$constants.MOLOCH_HUNTLIMIT
@@ -915,6 +952,7 @@ export default {
       // wait for computed queries
       this.loadData();
       this.loadSessions();
+      this.loadNotifiers();
     });
 
     // interval to load jobs every 5 seconds
@@ -964,7 +1002,8 @@ export default {
         src: this.jobSrc,
         dst: this.jobDst,
         totalSessions: this.sessions.recordsFiltered,
-        query: this.sessionsQuery
+        query: this.sessionsQuery,
+        notifier: this.jobNotifier
       };
 
       this.axios.post('hunt', { hunt: newJob })
@@ -973,6 +1012,7 @@ export default {
           this.jobName = '';
           this.jobSearch = '';
           this.createFormError = '';
+          this.jobNotifier = undefined;
           this.loadData();
         }, (error) => {
           this.createFormError = error.text || error;
@@ -1060,6 +1100,7 @@ export default {
       this.jobType = job.type;
       this.jobName = job.name;
       this.jobSearch = job.search;
+      this.jobNotifier = job.notifier;
       this.jobSearchType = job.searchType;
       this.createFormOpened = true;
     },
@@ -1151,6 +1192,13 @@ export default {
         })
         .catch((error) => {
           this.sessions = undefined;
+        });
+    },
+    /* retrieves the notifiers that have been configured */
+    loadNotifiers: function () {
+      this.$http.get('notifiers')
+        .then((response) => {
+          this.notifiers = response.data;
         });
     }
   },
