@@ -2329,14 +2329,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}tags_v2", 1);
         esDelete("/${PREFIX}tags", 1);
 
-        huntsUpdate();
+        huntsCreate();
         checkForOld5Indices();
         setPriority();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
         fieldsUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
-        huntsUpdate();
+        huntsCreate();
         checkForOld5Indices();
         setPriority();
         queriesUpdate();
