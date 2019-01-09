@@ -6294,14 +6294,19 @@ function pauseHuntJobWithError (huntId, hunt, error) {
     hunt.errors.push(error);
   }
 
-  Db.setHunt(huntId, hunt, (err, info) => {
-    internals.runningHuntJob = undefined;
-    if (err) {
-      console.log('Error adding errors and pausing hunt job', err, info);
-      return;
-    }
-    processHuntJobs();
-  });
+  function continueProcess () {
+    Db.setHunt(huntId, hunt, (err, info) => {
+      internals.runningHuntJob = undefined;
+      if (err) {
+        console.log('Error adding errors and pausing hunt job', err, info);
+        return;
+      }
+      processHuntJobs();
+    });
+  }
+
+  let message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+  issueAlert(hunt.notifier, message, continueProcess);
 }
 
 function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
