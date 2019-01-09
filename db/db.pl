@@ -1876,18 +1876,41 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     esPost("/_flush/synced", "", 1);
 
     @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
+
+    # Get all the settings at once, we use below to see if we need to change them
+    my $settings = esGet("/_settings?flat_settings&master_timeout=${ESTIMEOUT}s", 1);
+
+    # Find all the shards that have too many segments and increment the OPTIMIZEIT count
+    my $shards = esGet("/_cat/shards?h=i,sc&format=json");
+    for my $i (@{$shards}) {
+        if (exists $indices->{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} & int($i->{sc}) > $SEGMENTS) {
+            $indices->{$i->{i}}->{OPTIMIZEIT}++;
+        }
+    }
+
     foreach my $i (@indiceskeys) {
         progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
+
+            # 1 is set if it shouldn't be expired, > 1 means it needs to be optimized
+            if ($indices->{$i}->{OPTIMIZEIT} > 1) {
+                esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
+            }
+
             if ($REPLICAS != -1) {
-                esPost("/$i/_flush/synced", "", 1);
-                esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                if (!exists $settings->{$i} ||
+                    $settings->{$i}->{settings}->{"index.number_of_replicas"} ne "$REPLICAS" ||
+                    $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode") {
+
+                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                }
             }
         } else {
             esDelete("/$i", 1);
         }
     }
+    esPost("/_flush/synced", "", 1);
+
     # Now figure out history expire
     my $hindices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 

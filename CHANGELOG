@@ -36,6 +36,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - Fix importing more then 256 files at once not working correctly (issue #984)
   - all - communityId support for tcp/udp (issue #966)
   - capture - In live capture clean up sessions even if no packets are being received
+  - db - improve expire efficiency
 
 1.6.2 2018/12/07
   - NOTICE: db.pl upgrade is required
