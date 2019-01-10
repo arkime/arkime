@@ -146,6 +146,9 @@
             v-model="shardsShow"
             v-on:change="shardsShowChange">
             <option value="all">All</option>
+            <option value="UNASSIGNED">Unassigned</option>
+            <option value="RELOCATING">Relocating</option>
+            <option value="INITIALIZING">Initializing</option>
             <option value="notstarted">Not Started</option>
           </select>
         </div> <!-- /graph hide select -->
