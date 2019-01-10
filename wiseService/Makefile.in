@@ -9,12 +9,13 @@ all:
 	echo "WISE!"
 
 check:
-	npm install --production
+	npm ci --production
 
 install:
 	@mkdir -p "$(WISEDIR)"
-	$(INSTALL) *.js wiseService.ini.sample package.json $(WISEDIR)
-	(cd $(WISEDIR) ; npm install --production)
+	$(INSTALL) *.js wiseService.ini.sample package.json package-lock.json $(WISEDIR)
+	(cd $(WISEDIR) ; npm ci --production)
+	rm -f $(VIEWERDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -f *.o *.so
