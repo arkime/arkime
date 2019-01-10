@@ -16,6 +16,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.7.0 2019/01/XX
   - NOTICE: db.pl upgrade is required
+  - release - node 8.15.0
   - capture - new cert remainingDays field
   - capture - new tcp initRTT field
   - viewer - cron query notifications (issue #489)

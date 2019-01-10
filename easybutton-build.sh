@@ -18,7 +18,7 @@ PCAP=1.9.0
 CURL=7.61.1
 LUA=5.3.5
 DAQ=2.0.6
-NODE=8.12.0
+NODE=8.15.0
 
 TDIR="/data/moloch"
 DOPFRING=0
