@@ -64,7 +64,9 @@
                 no-flip
                 no-caret
                 class="col-vis-menu"
-                variant="theme-primary">
+                variant="theme-primary"
+                @show="colVisMenuOpen = true"
+                @hide="colVisMenuOpen = false">
                 <template slot="button-content">
                   <span class="fa fa-th"
                     v-b-tooltip.hover
@@ -80,7 +82,7 @@
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template
+                <template v-if="colVisMenuOpen"
                   v-for="(group, key) in filteredFields">
                   <b-dropdown-header
                     :key="key"
@@ -517,7 +519,8 @@ export default {
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
-      infoFields: customCols.info.children
+      infoFields: customCols.info.children,
+      colVisMenuOpen: false
     };
   },
   created: function () {
