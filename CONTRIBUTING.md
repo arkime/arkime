@@ -21,7 +21,7 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 * Install and Start Elasticsearch
 * Use `easybutton-build.sh` or `configure` and `make` to build everything
 * Run `make check` from the top level directory, this will
-  * run `npm install` everywhere
+  * run `npm ci` everywhere
   * run `tests.pl` and `tests.pl --viewer` in the tests directory
 
 > **Note:** this will only work if viewer is not already running.
@@ -29,9 +29,9 @@ First, checkout the main [Moloch README](README.rst) for information on how to b
 You should now have test data loaded, so let's **start the web app**:
 
 * Move to the Moloch viewer directory
-* Run `npm install`
+* Run `npm ci`
 * Move to the vueapp directory
-* Run `npm install`
+* Run `npm ci`
 * Move back up to the viewer directory
 * Run `npm run start:test`
 * Now browse to the app at `http://localhost:8123`
