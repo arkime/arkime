@@ -2130,10 +2130,11 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
 
     # See what files are in db
     my $remotefiles = esScroll("files", "file", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
+    logmsg("\n") if ($verbose > 0);
     my %remotefileshash;
     foreach my $hit (@{$remotefiles}) {
         if (! -f $hit->{_source}->{name}) {
-            progress("Removing " . $hit->{_source}->{name} . " id: " . $hit->{_id}, "\n");
+            progress("Removing " . $hit->{_source}->{name} . " id: " . $hit->{_id} . "\n");
             esDelete("/${PREFIX}files/file/" . $hit->{_id}, 1);
         } else {
             $remotefileshash{$hit->{_source}->{name}} = $hit->{_source};
