@@ -62,6 +62,8 @@ LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
 LOCAL struct timespec startHealthCheck;
 LOCAL uint64_t        esHealthMS;
 
+LOCAL int             dbExit;
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -1380,13 +1382,6 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     }
 }
 /******************************************************************************/
-LOCAL gboolean moloch_db_update_stats_gfunc (gpointer user_data)
-{
-    moloch_db_update_stats((long)user_data, 0);
-
-    return TRUE;
-}
-/******************************************************************************/
 // Runs on main thread
 LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
@@ -2264,6 +2259,34 @@ int moloch_db_can_quit()
     return 0;
 }
 /******************************************************************************/
+/* Use a thread for sending the stats instead of main thread so that if http is
+ * being slow we still try and send event
+ */
+LOCAL void *moloch_db_stats_thread(void *UNUSED(threadp))
+{
+    uint64_t       lastTime[4];
+    struct timeval currentTime;
+    uint64_t       times[4] = {2, 5, 60, 600};
+
+    gettimeofday(&currentTime, NULL);
+
+    while (1) {
+        usleep(500000);
+        gettimeofday(&currentTime, NULL);
+
+        if (dbExit)
+            break;
+
+        for (int i = 0; i < 4; i++) {
+            if (currentTime.tv_sec - lastTime[i] >= times[i]) {
+                moloch_db_update_stats(i, 0);
+                lastTime[i] = currentTime.tv_sec;
+            }
+        }
+    }
+    return NULL;
+}
+/******************************************************************************/
 LOCAL  guint timers[10];
 void moloch_db_init()
 {
@@ -2303,10 +2326,7 @@ void moloch_db_init()
     if (!config.dryRun) {
         int t = 0;
         if (!config.noStats) {
-            timers[t++] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);
-            timers[t++] = g_timeout_add_seconds(  5, moloch_db_update_stats_gfunc, (gpointer)1);
-            timers[t++] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
-            timers[t++] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
+            g_thread_new("moloch-stats", &moloch_db_stats_thread, NULL);
         }
         timers[t++] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
         if (moloch_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
@@ -2327,6 +2347,7 @@ void moloch_db_exit()
         }
 
         moloch_db_flush_gfunc((gpointer)1);
+        dbExit = 1;
         if (!config.noStats) {
             moloch_db_update_stats(0, 1);
         }
