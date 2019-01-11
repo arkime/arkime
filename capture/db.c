@@ -2271,7 +2271,7 @@ LOCAL void *moloch_db_stats_thread(void *UNUSED(threadp))
     gettimeofday(&currentTime, NULL);
 
     while (1) {
-        sleep(1);
+        usleep(500000);
         gettimeofday(&currentTime, NULL);
 
         if (dbExit)
