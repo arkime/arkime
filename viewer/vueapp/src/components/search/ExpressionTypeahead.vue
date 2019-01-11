@@ -384,7 +384,7 @@ export default {
     },
     /* helper functions ------------------------------------------ */
     /**
-     * Adds an item to the field history if it doesn't already exist
+     * Adds an item to the beginning of the field history
      * @param {object} field The field to add to the history
      */
     addFieldToHistory: function (field) {
@@ -392,19 +392,26 @@ export default {
 
       if (!field) { return found; }
 
+      let index = 0;
       for (let historyField of this.fieldHistory) {
         if (historyField.exp === field.exp) {
           found = true;
           break;
         }
+        index++;
       }
 
-      if (!found) { this.fieldHistory.push(field); }
+      if (found) { // if the field was found, remove it
+        this.fieldHistory.splice(index, 1);
+      }
+
+      // add the field to the beginning of the list
+      this.fieldHistory.unshift(field);
 
       // if the list is larger than 30 items
       if (this.fieldHistory.length > 30) {
-        // remove the first item in the history
-        this.fieldHistory.splice(0, 1);
+        // remove the last item in the history
+        this.fieldHistory.splice(this.fieldHistory.length - 1, 1);
       }
 
       // save the field history for the user
