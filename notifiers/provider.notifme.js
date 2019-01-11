@@ -57,11 +57,9 @@ exports.init = function (api) {
       description: 'Email port'
     }, {
       name: 'user',
-      required: true,
       description: 'The username of the user sending the email'
     }, {
       name: 'password',
-      required: true,
       type: 'secret',
       description: 'Password of the user sending the email'
     }, {
