@@ -1642,7 +1642,7 @@
           <div class="row"
             v-if="newNotifier">
             <div class="col">
-              <div class="card bg-light mb-3">
+              <div class="card mb-3">
                 <div class="card-body">
                   <!-- newNotifier title -->
                   <h4 class="mb-3">
@@ -1739,7 +1739,7 @@
             <div class="col-12 col-xl-6"
               v-for="(notifier, key) of notifiers"
               :key="notifier.name">
-              <div class="card bg-light mb-3">
+              <div class="card mb-3">
                 <div class="card-body">
                   <!-- notifier title -->
                   <h4 class="mb-3">
@@ -1802,21 +1802,21 @@
                         @click="testNotifier(notifier.name)">
                         <span class="fa fa-bell">
                         </span>&nbsp;
-                        Test Notifier
+                        Test
                       </button>
                       <button type="button"
                         class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
                         @click="updateNotifier(key, notifier)">
                         <span class="fa fa-save">
                         </span>&nbsp;
-                        Save Notifier
+                        Save
                       </button>
                       <button type="button"
                         class="btn btn-sm btn-danger cursor-pointer pull-right"
                         @click="removeNotifier(notifier.name)">
                         <span class="fa fa-trash-o">
                         </span>&nbsp;
-                        Delete Notifier
+                        Delete
                       </button>
                     </div>
                   </div> <!-- /notifier actions -->
@@ -2937,6 +2937,13 @@ export default {
 .settings-page .settings-error {
   margin-top: 6rem;
   margin-bottom: 1rem;
+}
+
+/* apply theme color to notifier cards */
+.card {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
 }
 
 /* theme displays ----------------- */

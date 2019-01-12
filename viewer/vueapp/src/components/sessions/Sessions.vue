@@ -196,7 +196,9 @@
                   no-caret
                   right
                   class="col-vis-menu info-vis-menu pull-right"
-                  variant="theme-primary">
+                  variant="theme-primary"
+                  @show="infoFieldVisMenuOpen = true"
+                  @hide="infoFieldVisMenuOpen = false">
                   <template slot="button-content">
                     <span class="fa fa-th-list"
                       v-b-tooltip.hover
@@ -220,7 +222,7 @@
                   </b-dropdown-item>
                   <b-dropdown-divider>
                   </b-dropdown-divider>
-                  <template
+                  <template v-if="infoFieldVisMenuOpen"
                     v-for="(group, key) in filteredFields">
                     <b-dropdown-header
                       :key="key"
@@ -520,7 +522,8 @@ export default {
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
       infoFields: customCols.info.children,
-      colVisMenuOpen: false
+      colVisMenuOpen: false,
+      infoFieldVisMenuOpen: false
     };
   },
   created: function () {
