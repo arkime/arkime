@@ -70,7 +70,7 @@ var internals = {
   userNameHeader: Config.get("userNameHeader"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
-  previousNodeStats: [],
+  previousNodesStats: [],
   caTrustCerts: {},
   cronRunning: false,
   rightClicks: {},
@@ -3400,11 +3400,12 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
   var stats = [];
   var r;
 
-  Promise.all([Db.nodesStats({metric: "jvm,process,fs,os,indices"}),
+  Promise.all([Db.nodesStatsCache(),
+               Db.nodesInfoCache(),
                Db.healthCachePromise(),
                Db.getClusterSettings({flatSettings: true})
              ])
-  .then(([nodes, health, settings]) => {
+  .then(([nodesStats, nodes, health, settings]) => {
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -3416,8 +3417,8 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
     }
 
     var now = new Date().getTime();
-    while (internals.previousNodeStats.length > 1 && internals.previousNodeStats[1].timestamp + 10000 < now) {
-      internals.previousNodeStats.shift();
+    while (internals.previousNodesStats.length > 1 && internals.previousNodesStats[1].timestamp + 5000 < now) {
+      internals.previousNodesStats.shift();
     }
 
     var regex;
@@ -3425,16 +3426,16 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
       regex = new RegExp(req.query.filter);
     }
 
-    var nodeKeys = Object.keys(nodes.nodes);
+    var nodeKeys = Object.keys(nodesStats.nodes);
     for (var n = 0, nlen = nodeKeys.length; n < nlen; n++) {
-      var node = nodes.nodes[nodeKeys[n]];
+      var node = nodesStats.nodes[nodeKeys[n]];
 
       if (regex && !node.name.match(regex)) {continue;}
 
       var read = 0;
       var write = 0;
 
-      var oldnode = internals.previousNodeStats[0][nodeKeys[n]];
+      var oldnode = internals.previousNodesStats[0][nodeKeys[n]];
       if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
@@ -3442,6 +3443,9 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
       }
 
       var ip = (node.ip?node.ip.split(":")[0]:node.host);
+
+      let writeInfo = node.thread_pool.bulk || node.thread_pool.write;
+      let threadpoolInfo = nodes.nodes[nodeKeys[n]].thread_pool.bulk || nodes.nodes[nodeKeys[n]].thread_pool.write;
 
       stats.push({
         name: node.name,
@@ -3458,6 +3462,9 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
         cpu: node.process.cpu.percent,
         read: read,
         write: write,
+        writesRejected: writeInfo.rejected,
+        writesCompleted: writeInfo.completed,
+        writesQueueSize: threadpoolInfo.queue_size,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
     }
@@ -3479,8 +3486,8 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
       }
     }
 
-    nodes.nodes.timestamp = new Date().getTime();
-    internals.previousNodeStats.push(nodes.nodes);
+    nodesStats.nodes.timestamp = new Date().getTime();
+    internals.previousNodesStats.push(nodesStats.nodes);
 
     r = {health: health,
          recordsTotal: stats.length,
@@ -7855,7 +7862,7 @@ function main () {
 
   Db.nodesStats({metric: "fs"}, function (err, info) {
     info.nodes.timestamp = new Date().getTime();
-    internals.previousNodeStats.push(info.nodes);
+    internals.previousNodesStats.push(info.nodes);
   });
 
   expireCheckAll();

@@ -32,6 +32,8 @@ var internals = {fileId2File: {},
                  healthCache: {},
                  indicesCache: {},
                  usersCache: {},
+                 nodesStatsCache: {},
+                 nodesInfoCache: {},
                  qInProgress: 0,
                  apiVersion: "5.5",
                  q: []};
@@ -354,6 +356,10 @@ exports.nodesStats = function (options, cb) {
   return internals.elasticSearchClient.nodes.stats(options, cb);
 };
 
+exports.nodesInfo = function (options, cb) {
+  return internals.elasticSearchClient.nodes.info(options, cb);
+};
+
 exports.update = function (index, type, id, document, options, cb) {
   if (!cb) {
     cb = options;
@@ -529,6 +535,42 @@ exports.healthCachePromise = function () {
       if (err) {
         reject(err);
       } else {
+        resolve(data);
+      }
+    });
+  });
+};
+
+exports.nodesInfoCache = function () {
+  if (internals.nodesInfoCache._timeStamp !== undefined && internals.nodesInfoCache._timeStamp > Date.now() - 30000) {
+    return new Promise((resolve, reject) => {resolve(internals.nodesInfoCache);});
+  }
+
+  return new Promise((resolve, reject) => {
+    exports.nodesInfo((err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        internals.nodesInfoCache = data;
+        internals.nodesInfoCache._timeStamp = Date.now();
+        resolve(data);
+      }
+    });
+  });
+};
+
+exports.nodesStatsCache = function () {
+  if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
+    return new Promise((resolve, reject) => {resolve(internals.nodesStatsCache);});
+  }
+
+  return new Promise((resolve, reject) => {
+    exports.nodesStats({metric: 'jvm,process,fs,os,indices,thread_pool'}, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        internals.nodesStatsCache = data;
+        internals.nodesStatsCache._timeStamp = Date.now();
         resolve(data);
       }
     });
