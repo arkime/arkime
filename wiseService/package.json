@@ -5,11 +5,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "hashtable": "",
-    "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
-    "jshint": "^2.9.5",
-    "lru-cache": "^4.0.1",
-    "native-dns": "^0.7.0",
-    "splunk-sdk": "^1.8.3"
+    "hashtable-patch-valeriansaliou": "^2.1.5",
+    "iptrie": "http://github.com/postwait/node-iptrie/tarball/master"
   },
   "scripts": {
     "lint": "jshint *.js"

@@ -3453,7 +3453,12 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
 
       var ip = (node.ip?node.ip.split(":")[0]:node.host);
 
-      let threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
+      let threadpoolInfo;
+      if (nodesInfo.nodes[nodeKeys[n]]) {
+        threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
+      } else {
+        threadpoolInfo = {queue_size: 0};
+      }
 
       stats.push({
         name: node.name,
