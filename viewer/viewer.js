@@ -3405,7 +3405,7 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
                Db.healthCachePromise(),
                Db.getClusterSettings({flatSettings: true})
              ])
-  .then(([nodesStats, nodes, health, settings]) => {
+  .then(([nodesStats, nodesInfo, health, settings]) => {
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -3417,7 +3417,7 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
     }
 
     var now = new Date().getTime();
-    while (internals.previousNodesStats.length > 1 && internals.previousNodesStats[1].timestamp + 5000 < now) {
+    while (internals.previousNodesStats.length > 1 && internals.previousNodesStats[1].timestamp + 10000 < now) {
       internals.previousNodesStats.shift();
     }
 
@@ -3430,22 +3430,30 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
     for (var n = 0, nlen = nodeKeys.length; n < nlen; n++) {
       var node = nodesStats.nodes[nodeKeys[n]];
 
-      if (regex && !node.name.match(regex)) {continue;}
+      if (nodeKeys[n] === 'timestamp' || (regex && !node.name.match(regex))) {continue;}
 
-      var read = 0;
-      var write = 0;
+      let read = 0;
+      let write = 0;
+      let rejected = 0;
+      let completed = 0;
+
+      let writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
       var oldnode = internals.previousNodesStats[0][nodeKeys[n]];
       if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
         write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
+
+        let writeInfoOld = oldnode.thread_pool.bulk || oldnode.thread_pool.write;
+
+        completed = Math.ceil((writeInfo.completed - writeInfoOld.completed)/timediffsec*1024);
+        rejected = Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec*1024);
       }
 
       var ip = (node.ip?node.ip.split(":")[0]:node.host);
 
-      let writeInfo = node.thread_pool.bulk || node.thread_pool.write;
-      let threadpoolInfo = nodes.nodes[nodeKeys[n]].thread_pool.bulk || nodes.nodes[nodeKeys[n]].thread_pool.write;
+      let threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
 
       stats.push({
         name: node.name,
@@ -3464,6 +3472,8 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
         write: write,
         writesRejected: writeInfo.rejected,
         writesCompleted: writeInfo.completed,
+        writesRejectedDelta: rejected,
+        writesCompletedDelta: completed,
         writesQueueSize: threadpoolInfo.queue_size,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
@@ -7860,7 +7870,7 @@ function main () {
     internals.clusterName = health.cluster_name;
   });
 
-  Db.nodesStats({metric: "fs"}, function (err, info) {
+  Db.nodesStats({metric: 'jvm,process,fs,os,indices,thread_pool'}, function (err, info) {
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
   });
