@@ -472,7 +472,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("hsrp",  NULL, 1985, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
     moloch_parsers_classifier_register_port("hsrp",  NULL, 2029, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
 
-    moloch_parsers_classifier_register_udp("elasticsearch", "elasticsearch", 0, (unsigned char*)"ES\x00\x00", 4, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("elasticsearch", "elasticsearch", 0, (unsigned char*)"ES\x00\x00", 4, misc_add_protocol_classify);
 
 
     userField = moloch_field_by_db("user");
