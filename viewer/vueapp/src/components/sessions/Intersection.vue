@@ -114,7 +114,7 @@ export default {
       if (this.counts) { data.counts = 1; }
 
       for (let field of this.fields) {
-        if (field.exp === 'info') {
+        if (field.exp === 'info' || field.type === 'seconds') {
           continue;
         } else if (field.children) {
           for (let child of field.children) {
