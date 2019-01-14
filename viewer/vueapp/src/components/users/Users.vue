@@ -248,7 +248,7 @@
                       </label>
                     </span>
                     <span v-b-tooltip.hover
-                      title="Hide the Stats page from this user">
+                      title="Hide the Files page from this user">
                       <input class="form-check-input ml-3"
                         type="checkbox"
                         :id="user.id + 'files'"
