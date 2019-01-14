@@ -14,7 +14,9 @@
       <div v-if="stats.indices && !stats.indices.length"
         class="text-danger text-center mt-4 mb-4">
         <span class="fa fa-warning"></span>&nbsp;
-        No results match your search
+        No results match your search.
+        <br>
+        You may need to adjust the "Show" pulldown
       </div>
 
       <table v-if="stats.indices && stats.indices.length"

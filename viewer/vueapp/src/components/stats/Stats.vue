@@ -424,10 +424,10 @@ export default {
       this.$router.push({ query: { ...this.$route.query, hide: this.graphHide } });
     },
     shardsShowChange: function () {
-      this.$router.push({ query: { ...this.$route.query, hide: this.shardsShow } });
+      this.$router.push({ query: { ...this.$route.query, shardsShow: this.shardsShow } });
     },
     recoveryShowChange: function () {
-      this.$router.push({ query: { ...this.$route.query, hide: this.recoveryShow } });
+      this.$router.push({ query: { ...this.$route.query, recoveryShow: this.recoveryShow } });
     },
     dataIntervalChange: function () {
       this.$router.push({ query: { ...this.$route.query, refreshInterval: this.dataInterval } });
