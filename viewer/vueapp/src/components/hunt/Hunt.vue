@@ -480,7 +480,7 @@
             </tr>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
-              <td colspan="9">
+              <td colspan="10">
                 <div class="row">
                   <div class="col-12">
                     This hunt is
@@ -765,7 +765,7 @@
             </tr>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
-              <td colspan="9">
+              <td colspan="10">
                 <div class="row">
                   <div class="col-12">
                     This hunt is
