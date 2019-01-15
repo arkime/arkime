@@ -17,12 +17,12 @@
  */
 'use strict';
 
-var dns            = require('dns')
+var Dns            = require('dns')
   , iptrie         = require('iptrie')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   ;
-var resolver       = dns;
+var resolver       = Dns;
 //////////////////////////////////////////////////////////////////////////////////
 function removeArray(arr, value) {
   var pos = 0;
@@ -38,7 +38,7 @@ function ReverseDNSSource (api, section) {
   this.ips          = api.getConfig("reversedns", "ips");
   this.servers      = api.getConfig("reversedns", "servers");
   if (this.servers !== undefined) {
-    resolver = new Resolver();
+    resolver = new Dns();
     resolver.setServers(this.servers.split(";"));
   }
   this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";").map(item => item.trim()), "");

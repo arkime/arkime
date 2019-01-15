@@ -530,7 +530,7 @@ function processQueryResponse0(req, res, queries, results) {
 //////////////////////////////////////////////////////////////////////////////////
 //
 function processQueryResponse2(req, res, queries, results) {
-  var hashes = (req.query.hashes || "").split(",")
+  var hashes = (req.query.hashes || "").split(",");
 
   const sendFields = !hashes.includes(internals.fieldsMd5);
 

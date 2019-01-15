@@ -19,8 +19,8 @@
 
 var LRU = require('lru-cache')
   , redis = require('redis')
-  , bson = require('bson')
-  , BSON = new bson()
+  , Bson = require('bson')
+  , BSON = new Bson()
   ;
 
 

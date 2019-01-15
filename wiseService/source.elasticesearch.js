@@ -44,8 +44,9 @@ function ElasticsearchSource (api, section) {
     }
   });
 
-  if (!this.type)
+  if (!this.type) {
     return;
+  }
 
   this[this.api.funcName(this.type)] = this.sendResult;
 

@@ -127,14 +127,15 @@ OpenDNSSource.prototype.performQuery = function () {
         console.log(this.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
         results = {};
       }
+
       for (var result in results) {
-        var cbs = this.processing[result];
+        let cbs = this.processing[result];
         if (!cbs) {
           return;
         }
         delete this.processing[result];
 
-        var args = [this.statusField, this.statuses[results[result].status]];
+        let args = [this.statusField, this.statuses[results[result].status]];
 
         if (results[result].security_categories) {
           results[result].security_categories.forEach((value) => {
@@ -158,7 +159,7 @@ OpenDNSSource.prototype.performQuery = function () {
 
         result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
-        var cb;
+        let cb;
         while ((cb = cbs.shift())) {
           cb(null, result);
         }

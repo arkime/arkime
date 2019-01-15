@@ -11,5 +11,6 @@
   "undef": true,
   "strict": true,
   "trailing": true,
-  "esversion": 6
+  "esversion": 6,
+  "validthis":true
 }

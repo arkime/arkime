@@ -62,7 +62,7 @@ exports.sprintf = function() {
 
   // formatString()
   var formatString = function (value, leftJustify, minWidth, precision, zeroPad, customPadChar) {
-    if (precision != null) {
+    if (precision !== null) {
       value = value.slice(0, precision);
     }
     return justify(value, '', leftJustify, minWidth, zeroPad, customPadChar);
@@ -76,7 +76,7 @@ exports.sprintf = function() {
     var textTransform;
     var value;
 
-    if (substring == '%%') {
+    if (substring === '%%') {
       return '%';
     }
 
@@ -114,9 +114,9 @@ exports.sprintf = function() {
     // we want to ignore null, undefined and empty-string values
     if (!minWidth) {
       minWidth = 0;
-    } else if (minWidth == '*') {
+    } else if (minWidth === '*') {
       minWidth = +a[i++];
-    } else if (minWidth.charAt(0) == '*') {
+    } else if (minWidth.charAt(0) === '*') {
       minWidth = +a[minWidth.slice(1, -1)];
     } else {
       minWidth = +minWidth;
@@ -133,10 +133,10 @@ exports.sprintf = function() {
     }
 
     if (!precision) {
-      precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type == 'd') ? 0 : undefined;
-    } else if (precision == '*') {
+      precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type === 'd') ? 0 : undefined;
+    } else if (precision === '*') {
       precision = +a[i++];
-    } else if (precision.charAt(0) == '*') {
+    } else if (precision.charAt(0) === '*') {
       precision = +a[precision.slice(1, -1)];
     } else {
       precision = +precision;
