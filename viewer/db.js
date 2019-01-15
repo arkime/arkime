@@ -699,7 +699,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (version < 81200) {
-    console.log(`ERROR - Need at least node 8.0.0, currently using ${process.version}`);
+    console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
     process.exit(1);
     throw new Error("Exiting");
   }

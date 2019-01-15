@@ -317,7 +317,12 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             LOGEXIT("Unknown simpleMode %d", simpleMode);
         }
 
-        currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+        /* If offline pcap honor umask, otherwise disable other RW */
+        if (config.pcapReadOffline) {
+            currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        } else {
+            currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+        }
         if (currentInfo[thread]->file->fd < 0) {
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", name, strerror(errno), errno);
         }
