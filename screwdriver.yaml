@@ -97,7 +97,7 @@ jobs:
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - install-for-tests: (cd viewer; npm ci ; cd ../wiseService; npm ci)
+            - install-for-tests: (cd ../wiseService; npm ci --production)
             - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 10
@@ -119,17 +119,16 @@ jobs:
         image: andywick/moloch-build-18:1.6.3
         annotations:
             beta.screwdriver.cd/cpu: LOW
-            beta.screwdriver.cd/ram: LOW
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring
+            - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - test-capture: (cd tests ; ./tests.pl)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -156,7 +155,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
-            - install-for-tests: (cd viewer; npm ci ; cd ../wiseService; npm ci)
+            - install-for-tests: (cd ../wiseService; npm ci --production)
             - sleep 10
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; ./tests.pl --viewer)
@@ -183,7 +182,7 @@ jobs:
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - install-for-tests: (cd viewer; npm ci ; cd ../wiseService; npm ci)
+            - install-for-tests: (cd ../wiseService; npm ci --production)
             - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 10
