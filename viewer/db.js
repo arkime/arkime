@@ -698,8 +698,8 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 60000) {
-    console.log("ERROR - Need at least node 6.0.0, currently using", process.version);
+  if (version < 81200) {
+    console.log(`ERROR - Need at least node 8.0.0, currently using ${process.version}`);
     process.exit(1);
     throw new Error("Exiting");
   }
@@ -725,8 +725,11 @@ exports.checkVersion = function(minVersion, checkUsers) {
       var version = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
 
       if (version < minVersion) {
-          console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
-          process.exit(1);
+        console.log(`ERROR - Current database version (${version}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
+        if (doc._node) {
+          console.log(`On node ${doc._node}`);
+        }
+        process.exit(1);
       }
     } catch (e) {
       console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?");
