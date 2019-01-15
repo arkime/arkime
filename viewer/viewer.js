@@ -3442,13 +3442,13 @@ app.get('/esstats.json', recordResponseTime, function(req, res) {
       var oldnode = internals.previousNodesStats[0][nodeKeys[n]];
       if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
         var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
-        read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
-        write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
+        read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024));
+        write = Math.max(0, Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024));
 
         let writeInfoOld = oldnode.thread_pool.bulk || oldnode.thread_pool.write;
 
-        completed = Math.ceil((writeInfo.completed - writeInfoOld.completed)/timediffsec*1024);
-        rejected = Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec*1024);
+        completed = Math.max(0, Math.ceil((writeInfo.completed - writeInfoOld.completed)/timediffsec*1024));
+        rejected = Math.max(0, Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec*1024));
       }
 
       var ip = (node.ip?node.ip.split(":")[0]:node.host);
