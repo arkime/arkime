@@ -1,4 +1,4 @@
-use Test::More tests => 60;
+use Test::More tests => 62;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -36,6 +36,13 @@ my $test1Token = getTokenCookie("test1");
 # dstats.json
     my $dstats = viewerGet("/dstats.json?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
+
+# esstats.json
+    my $esstats = viewerGet("/esstats.json");
+    is ($esstats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+
+    my $messtats = multiGet("/esstats.json");
+    is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
 
 # esindices
     my $indices = viewerGet("/esindices/list");

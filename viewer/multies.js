@@ -200,6 +200,7 @@ function simpleGatherFirst(req, res) {
 }
 
 app.get("/_cluster/nodes/stats", simpleGatherCopy);
+app.get("/_nodes", simpleGatherCopy);
 app.get("/_nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats/:kinds", simpleGatherCopy);
 app.get("/_cluster/health", simpleGatherAdd);
