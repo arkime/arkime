@@ -100,7 +100,7 @@ jobs:
             - install-for-tests: (cd wiseService; npm ci --production)
             - run-es: (cd /elasticsearch-6.3.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
-            - sleep 10
+            - sleep 30
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; ./tests.pl --viewer)
             - build-package: |
@@ -117,8 +117,6 @@ jobs:
     ubuntu-18:
         requires: [~pr, ~commit]
         image: andywick/moloch-build-18:1.6.3
-        annotations:
-            beta.screwdriver.cd/cpu: LOW
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
