@@ -73,6 +73,7 @@ my $FULL = 0;
 my $REVERSE = 0;
 my $SHARDSPERNODE = 1;
 my $ESTIMEOUT=60;
+my $UPGRADEALLSESSIONS = 1;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -601,6 +602,23 @@ sub fieldsCreate
     fieldsUpdate();
 }
 ################################################################################
+# Not the fix I want, but it works for now
+sub fieldsIpDst
+{
+    esPost("/${PREFIX}fields_v2/field/ip.dst", '{
+      "friendlyName": "Dst IP",
+      "group": "general",
+      "help": "Destination IP",
+      "type": "ip",
+      "dbField": "a2",
+      "dbField2": "dstIp",
+      "portField": "p2",
+      "portField2": "dstPort",
+      "category": "ip",
+      "aliases": ["ip.dst:port"]
+    }');
+}
+################################################################################
 sub fieldsUpdate
 {
     my $mapping = '
@@ -727,17 +745,7 @@ sub fieldsUpdate
       "dbField2": "srcRIR",
       "category": "rir"
     }');
-    esPost("/${PREFIX}fields_v2/field/ip.dst", '{
-      "friendlyName": "Dst IP",
-      "group": "general",
-      "help": "Destination IP",
-      "type": "ip",
-      "dbField": "a2",
-      "dbField2": "dstIp",
-      "portField": "p2",
-      "portField2": "dstPort",
-      "category": "ip"
-    }');
+    fieldsIpDst();
     esPost("/${PREFIX}fields_v2/field/port.dst", '{
       "friendlyName": "Dst Port",
       "group": "general",
@@ -1165,13 +1173,14 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
 
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
-    logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-    foreach my $i (keys %{$indices}) {
-        progress("$i ");
-        esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+    if ($UPGRADEALLSESSIONS) {
+        logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+        foreach my $i (keys %{$indices}) {
+            progress("$i ");
+            esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+        }
+        logmsg "\n";
     }
-
-    logmsg "\n";
 }
 
 ################################################################################
@@ -1737,6 +1746,8 @@ sub parseArgs {
 	    $FULL = 1;
         } elsif ($ARGV[$pos] eq "--reverse") {
 	    $REVERSE = 1;
+        } elsif ($ARGV[$pos] eq "--skipupgradeall") {
+            $UPGRADEALLSESSIONS = 0;
         } elsif ($ARGV[$pos] eq "--shardsPerNode") {
             $pos++;
             if ($ARGV[$pos] eq "null") {
@@ -1745,7 +1756,7 @@ sub parseArgs {
                 $SHARDSPERNODE = int($ARGV[$pos]);
             }
         } else {
-            logmsg "Unknown option '", $ARGV[$pos], "'\n";
+            logmsg "Unknown option '$ARGV[$pos]'\n";
         }
     }
 }
@@ -2373,6 +2384,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         setPriority();
         queriesUpdate();
         sessions2Update();
+        fieldsIpDst();
     } elsif ($main::versionNumber <= 57) {
         checkForOld5Indices();
         setPriority();
@@ -2380,6 +2392,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         huntsUpdate();
         queriesUpdate();
         sessions2Update();
+        fieldsIpDst();
     } else {
         logmsg "db.pl is hosed\n";
     }
