@@ -672,7 +672,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(err);
       }
       console.log("ERROR - getViewUrl - node:", req.params.nodeName, "err:", err);
-      return res.send(`Can't find view url for '${req.params.nodeName}' check viewer logs on '${Config.hostName()}'`);
+      return res.send(`Can't find view url for '${safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -700,7 +700,7 @@ function proxyRequest (req, res, errCb) {
         return errCb(e);
       }
       console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
-      res.send(`Error talking to node '${req.params.nodeName}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
+      res.send(`Error talking to node '${safeStr(req.params.nodeName)}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
     });
     preq.end();
   });
@@ -4654,13 +4654,14 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
   }
 
   let fields = [];
-  req.query.exp.split(',').forEach((name) => {
-    let field = Config.getFieldsMap()[name];
+  let parts = req.query.exp.split(',');
+  for (let i = 0; i < parts.length; i++) {
+    let field = Config.getFieldsMap()[parts[i]];
     if (!field) {
-      return res.send(`Unknown expression ${name}`);
+      return res.send(`Unknown expression ${safeStr(parts[i])}`);
     }
     fields.push(field);
-  });
+  }
 
   let separator = req.query.separator || ', ';
   let doCounts = parseInt(req.query.counts, 10) || 0;
@@ -5211,7 +5212,7 @@ function localSessionDetail(req, res) {
   },
   function(err, session) {
     if (err) {
-      return res.end("Problem loading packets for " + req.params.id + " Error: " + err);
+      return res.end("Problem loading packets for " + safeStr(req.params.id) + " Error: " + err);
     }
     session.id = req.params.id;
     sortFields(session);
@@ -5269,7 +5270,7 @@ function localSessionDetail(req, res) {
 app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
   Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
     if (err || !session.found) {
-      return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
+      return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
     }
 
     session = session._source;
