@@ -214,3 +214,31 @@ jobs:
                 fi
         secrets:
             - SLACK
+
+    release-build:
+        requires: []
+        steps:
+
+    release-centos-6:
+        requires: [release-build]
+        image: andywick/moloch-build-6:1.6.3
+        steps:
+            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - ln -s /thirdparty .
+            - build: scl enable devtoolset-6 python27 "./easybutton-build.sh --daq --pfring"
+            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
+            - npm -g config set user root; npm -g config set cache-min 9999999
+            - installing: scl enable devtoolset-6 python27 "make install"
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
+            - head /data/moloch/NOTICE.txt
+            - build-package: |
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
+                #                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+
+                  echo scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install 'release/afterinstall.sh' --url "http://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
+
+                  #fi
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
