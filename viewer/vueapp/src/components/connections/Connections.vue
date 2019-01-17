@@ -1,16 +1,322 @@
 <template>
 
   <div class="connections-page">
-    <svg></svg>
+
+    <!-- search navbar -->
+    <moloch-search
+      :start="query.start"
+      :timezone="settings.timezone"
+      @changeSearch="loadData">
+    </moloch-search> <!-- /search navbar -->
+
+    <!-- connections sub navbar -->
+    <form class="connections-form">
+      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+
+        <!-- query size select -->
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Query Size">
+            <span class="input-group-text">
+              Query Size
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="query.length"
+            @change="changeLength">
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1,000</option>
+            <option value="5000">5,000</option>
+            <option value="10000">10,000</option>
+            <option value="50000">50,000</option>
+            <option value="100000">100,000</option>
+          </select>
+        </div> <!-- /query size select -->
+
+        <!-- src select -->
+        <div class="form-group ml-1"
+          v-if="fields && fields.length && srcFieldTypeahead">
+          <div class="input-group input-group-sm">
+            <span class="input-group-prepend legend cursor-help"
+              v-b-tooltip.hover
+              title="Select a field for the source nodes">
+              <span class="input-group-text"
+                :style="{'background-color': primaryColor + '!important'}">
+                Src:
+              </span>
+            </span>
+            <moloch-field-typeahead
+              :fields="fields"
+              query-param="srcField"
+              :initial-value="srcFieldTypeahead"
+              @fieldSelected="changeSrcField">
+            </moloch-field-typeahead>
+          </div>
+        </div> <!-- /src select -->
+
+        <!-- dst select -->
+        <div class="form-group ml-1"
+          v-if="fields && dstFieldTypeahead">
+          <div class="input-group input-group-sm">
+            <span class="input-group-prepend legend cursor-help"
+              v-b-tooltip.hover
+              title="Select a field for the destination nodes">
+              <span class="input-group-text"
+                :style="{'background-color': tertiaryColor + '!important'}">
+                Dst:
+              </span>
+            </span>
+            <moloch-field-typeahead
+              :fields="fields"
+              query-param="dstField"
+              :initial-value="dstFieldTypeahead"
+              @fieldSelected="changeDstField">
+            </moloch-field-typeahead>
+          </div>
+        </div> <!-- /dst select -->
+
+        <!-- src & dst color -->
+        <div class="form-group ml-1">
+          <div class="input-group input-group-sm">
+            <span class="input-group-prepend legend cursor-help"
+              v-b-tooltip.hover
+              title="This is the color of a node that is both a source and destination node">
+              <span class="input-group-text"
+                style="border-radius: 4px"
+                :style="{'background-color': secondaryColor + '!important'}">
+                Src & Dst
+              </span>
+            </span>
+          </div>
+        </div> <!-- /src & dst color -->
+
+        <!-- min connections select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Min connections">
+            <span class="input-group-text">
+              Min. Connections
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="query.minConn"
+            @change="changeMinConn">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div> <!-- /min connections select -->
+
+        <!-- node dist select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Node distance in pixels">
+            <span class="input-group-text">
+              Node distance
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="query.nodeDist"
+            @change="changeNodeDist">
+            <option value="15">15</option>
+            <option value="25">25</option>
+            <option value="35">35</option>
+            <option value="50">50</option>
+            <option value="75">75</option>
+            <option value="100">100</option>
+            <option value="125">125</option>
+            <option value="150">150</option>
+          </select>
+        </div> <!-- /node dist select -->
+
+        <!-- unlock button-->
+        <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Unlock any nodes that you have set into place"
+          @click.stop.prevent="unlock">
+          <span class="fa fa-unlock"></span>&nbsp;
+          Unlock
+        </button> <!-- /unlock button-->
+
+        <!-- export button-->
+        <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Export this graph as a png"
+          @click.stop.prevent="exportPng">
+          <span class="fa fa-download"></span>&nbsp;
+          Export
+        </button> <!-- /export button-->
+
+        <!-- zoom in/out -->
+        <div class="btn-group ml-1">
+          <button type="button"
+            class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom in"
+            @click="zoomConnections(2)">
+            <span class="fa fa-fw fa-plus">
+            </span>
+          </button>
+          <button type="button"
+            class="btn btn-default btn-sm"
+            v-b-tooltip.hover
+            title="Zoom out"
+            @click="zoomConnections(0.5)">
+            <span class="fa fa-fw fa-minus">
+            </span>
+          </button>
+        </div> <!-- /zoom in/out -->
+
+        <!-- node fields button -->
+        <b-dropdown
+          size="sm"
+          no-flip
+          no-caret
+          class="field-vis-menu ml-1"
+          variant="theme-primary"
+          v-if="fields && groupedFields && nodeFields">
+          <template slot="button-content">
+            <span class="fa fa-circle-o"
+              v-b-tooltip.hover
+              title="Toggle visible fields in the node popups">
+            </span>
+          </template>
+          <b-dropdown-header>
+            <input type="text"
+              v-model="fieldQuery"
+              class="form-control form-control-sm dropdown-typeahead"
+              placeholder="Search for fields..."
+            />
+          </b-dropdown-header>
+          <b-dropdown-divider>
+          </b-dropdown-divider>
+          <template
+            v-for="(group, key) in filteredFields">
+            <b-dropdown-header
+              :key="key"
+              v-if="group.length"
+              class="group-header">
+              {{ key }}
+            </b-dropdown-header>
+            <!-- TODO fix tooltip placement -->
+            <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
+            <b-dropdown-item
+              v-for="(field, k) in group"
+              :key="key + k"
+              :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+              v-b-tooltip.hover.top
+              :title="field.help"
+              @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+              {{ field.friendlyName }}
+              <small>({{ field.exp }})</small>
+            </b-dropdown-item>
+          </template>
+        </b-dropdown> <!-- /node fields button -->
+
+        <!-- link fields button -->
+        <b-dropdown
+          size="sm"
+          no-flip
+          no-caret
+          class="field-vis-menu ml-1"
+          variant="theme-primary"
+          v-if="fields && groupedFields && linkFields">
+          <template slot="button-content">
+            <span class="fa fa-link"
+              v-b-tooltip.hover
+              title="Toggle visible fields in the link popups">
+            </span>
+          </template>
+          <b-dropdown-header>
+            <input type="text"
+              v-model="fieldQuery"
+              class="form-control form-control-sm dropdown-typeahead"
+              placeholder="Search for fields..."
+            />
+          </b-dropdown-header>
+          <b-dropdown-divider>
+          </b-dropdown-divider>
+          <template
+            v-for="(group, key) in filteredFields">
+            <b-dropdown-header
+              :key="key"
+              v-if="group.length"
+              class="group-header">
+              {{ key }}
+            </b-dropdown-header>
+            <!-- TODO fix tooltip placement -->
+            <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
+            <b-dropdown-item
+              v-for="(field, k) in group"
+              :key="key + k"
+              :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+              v-b-tooltip.hover.top
+              :title="field.help"
+              @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+              {{ field.friendlyName }}
+              <small>({{ field.exp }})</small>
+            </b-dropdown-item>
+          </template>
+        </b-dropdown> <!-- /link fields button -->
+
+      </div>
+    </form> <!-- /connections sub navbar -->
+
+    <div class="connections-content">
+
+      <!-- loading overlay -->
+      <moloch-loading
+        v-if="loading && !error">
+      </moloch-loading> <!-- /loading overlay -->
+
+      <!-- page error -->
+      <moloch-error
+        v-if="error"
+        :message="error"
+        class="mt-5">
+      </moloch-error> <!-- /page error -->
+
+      <!-- no results -->
+      <moloch-no-results
+        v-if="!error && !loading && recordsFiltered === 0"
+        class="mt-5"
+        :view="query.view">
+      </moloch-no-results> <!-- /no results -->
+
+      <!-- connections graph container -->
+      <svg></svg>
+      <!-- /connections graph container -->
+
+    </div>
+
   </div>
 
 </template>
 
 <script>
+// import components
+import MolochSearch from '../search/Search';
+import MolochPaging from '../utils/Pagination';
+import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
+import MolochNoResults from '../utils/NoResults';
+// import services
+import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import FieldService from '../search/FieldService';
+import UserService from '../users/UserService';
+// import external
 import * as d3 from 'd3';
+import saveSvgAsPng from 'save-svg-as-png';
 
+// d3 force directed graph vars/functions ---------------------------------- */
 let colors, foregroundColor;
-let simulation, svg, container;
+let simulation, svg, container, zoom;
 let node, link, nodeLabel;
 let draggingNode;
 
@@ -41,7 +347,9 @@ function dragended (d) {
 // highlighting helpers
 let linkedByIndex = {};
 function isConnected (a, b) {
-  return linkedByIndex[a.index + ',' + b.index] || linkedByIndex[b.index + ',' + a.index] || a.index === b.index;
+  return linkedByIndex[a.index + ',' + b.index] ||
+    linkedByIndex[b.index + ',' + a.index] ||
+    a.index === b.index;
 }
 
 function focus (d) {
@@ -65,51 +373,294 @@ function unfocus () {
   link.style('opacity', 1);
 }
 
-// vue def
+// other necessary vars ---------------------------------------------------- */
+// default fields to display in the node/link popups
+const defaultLinkFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
+const defaultNodeFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
+
+// vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
+  components: {
+    MolochSearch,
+    MolochPaging,
+    MolochError,
+    MolochLoading,
+    MolochNoResults,
+    MolochFieldTypeahead
+  },
+  data: function () {
+    return {
+      error: '',
+      loading: true,
+      settings: {}, // user settings
+      recordsFiltered: 0,
+      fields: [],
+      fieldsMap: {},
+      fieldQuery: '',
+      srcFieldTypeahead: undefined,
+      dstFieldTypeahead: undefined,
+      groupedFields: undefined,
+      primaryColor: undefined,
+      secondaryColor: undefined,
+      tertiaryColor: undefined
+    };
+  },
+  computed: {
+    query: function () {
+      return {
+        start: 0, // first item index
+        length: this.$route.query.length || 100, // page length
+        date: this.$store.state.timeRange,
+        startTime: this.$store.state.time.startTime,
+        stopTime: this.$store.state.time.stopTime,
+        srcField: this.$route.query.srcField || 'srcIp',
+        dstField: this.$route.query.dstField || 'dstIp',
+        bounding: this.$route.query.bounding || 'last',
+        interval: this.$route.query.interval || 'auto',
+        minConn: this.$route.query.minConn || 1,
+        nodeDist: this.$route.query.nodeDist || 50,
+        view: this.$route.query.view || undefined,
+        expression: this.$store.state.expression || undefined
+      };
+    },
+    user: function () {
+      return this.$store.state.user;
+    },
+    filteredFields: function () {
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.$options.filters.searchFields(
+          this.fieldQuery,
+          this.groupedFields[group]
+        );
+      }
+
+      return filteredGroupedFields;
+    },
+    nodeFields: function () {
+      return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+    },
+    linkFields: function () {
+      return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+    }
+  },
+  watch: {
+    '$route.query.length': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.minConn': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.nodeDist': function (newVal, oldVal) {
+      simulation.force('link').distance(parseInt(this.query.nodeDist));
+      simulation.alphaTarget(0.3).restart();
+    },
+    '$route.query.srcField': function (newVal, oldVal) {
+      this.loadData();
+    },
+    '$route.query.dstField': function (newVal, oldVal) {
+      this.loadData();
+    }
+  },
   mounted: function () {
     let styles = window.getComputedStyle(document.body);
-    let primaryColor = styles.getPropertyValue('--color-primary').trim();
-    let secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
-    let tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
+    this.primaryColor = styles.getPropertyValue('--color-primary').trim();
+    this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
+    this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
     foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    colors = ['', primaryColor, tertiaryColor, secondaryColor];
+    colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.loadData();
   },
   methods: {
-    loadData: function () {
-      let query = {
-        length: 1000,
-        start: 0,
-        date: -1,
-        srcField: 'srcIp',
-        dstField: 'ip.dst:port',
-        bounding: 'last',
-        interval: 'auto',
-        minConn: 1,
-        nodeDist: 125,
-        fields: 'totBytes,totDataBytes,totPackets,node'
-      };
+    /* exposed page functions ---------------------------------------------- */
+    changeLength: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          length: this.query.length
+        }
+      });
+    },
+    changeMinConn: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          minConn: this.query.minConn
+        }
+      });
+    },
+    changeNodeDist: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          nodeDist: this.query.nodeDist
+        }
+      });
+    },
+    changeSrcField: function (field) {
+      this.srcFieldTypeahead = field.friendlyName;
+      this.query.srcField = field.dbField;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          srcField: this.query.srcField
+        }
+      });
+    },
+    changeDstField: function (field) {
+      this.dstFieldTypeahead = field.friendlyName;
+      this.query.dstField = field.dbField;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          dstField: this.query.dstField
+        }
+      });
+    },
+    isFieldVisible: function (id, list) {
+      return list.indexOf(id);
+    },
+    toggleFieldVisibility: function (id, list) {
+      let index = this.isFieldVisible(id, list);
 
-      this.$http.get('connections.json', { params: query })
+      if (index >= 0) { // it's visible
+        // remove it from the visible node fields list
+        list.splice(index, 1);
+      } else { // it's hidden
+        // add it to the visible headers list
+        list.push(id);
+        this.loadData();
+      }
+
+      this.saveVisibleFields();
+    },
+    unlock: function () {
+      svg.selectAll('.node').each((d) => {
+        d.fx = undefined;
+        d.fy = undefined;
+      });
+      simulation.alphaTarget(0.3).restart();
+    },
+    zoomConnections: function (direction) {
+      svg.transition().duration(500).call(zoom.scaleBy, direction);
+    },
+    exportPng: function () {
+      saveSvgAsPng.saveSvgAsPng(
+        document.getElementById('graphSvg'),
+        'connections.png',
+        { backgroundColor: '#FFFFFF' }
+      );
+    },
+    /* helper functions ---------------------------------------------------- */
+    loadData: function () {
+      this.error = '';
+      this.loading = true;
+
+      if (!this.$route.query.srcField) {
+        this.query.srcField = this.user.settings.connSrcField;
+      }
+      if (!this.$route.query.dstField) {
+        this.query.dstField = this.user.settings.connDstField;
+      }
+
+      // send the requested fields with the query
+      let fields = this.nodeFields;
+      // combine fields from nodes and links
+      for (let f in this.linkFields) {
+        let id = this.linkFields[f];
+        if (fields.indexOf(id) > -1) { continue; }
+        fields.push(id);
+      }
+      this.query.fields = fields.join(',');
+
+      this.$http.get('connections.json', { params: this.query })
         .then((response) => {
+          this.error = '';
+          this.loading = false;
+          this.getFields();
           this.processData(response.data);
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
-          // TODO
+          this.loading = false;
+          this.error = error.text || error;
         });
     },
+    getFields: function () {
+      FieldService.get(true)
+        .then((result) => {
+          this.fields = result;
+          // TODO only add this if it doesn't exist
+          this.fields.push({
+            dbField: 'ip.dst:port',
+            exp: 'ip.dst:port',
+            help: 'Destination IP:Destination Port',
+            group: 'general',
+            friendlyName: 'Dst IP:Dst Port'
+          });
+
+          for (let field of this.fields) {
+            if (field.dbField === this.query.srcField) {
+              this.srcFieldTypeahead = field.friendlyName;
+            }
+            if (field.dbField === this.query.dstField) {
+              this.dstFieldTypeahead = field.friendlyName;
+            }
+          }
+
+          this.setupFields();
+        }).catch((error) => {
+          this.error = error.text || error;
+        });
+    },
+    setupFields: function () {
+      // group fields map by field group
+      // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
+      let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
+      this.groupedFields = {};
+      for (let field of this.fields) {
+        // don't include fields with regex
+        if (field.hasOwnProperty('regex')) { continue; }
+        if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
+          this.fieldsMap[field.dbField] = field;
+          existingFieldsLookup[field.exp] = field;
+          if (!this.groupedFields[field.group]) {
+            this.groupedFields[field.group] = [];
+          }
+          this.groupedFields[field.group].push(field);
+        }
+      }
+    },
+    saveVisibleFields: function () {
+      this.user.settings.connNodeFields = this.nodeFields;
+      this.user.settings.connLinkFields = this.linkFields;
+
+      UserService.saveSettings(this.user.settings, this.user.userId);
+    },
     processData: function (data) {
+      if (svg) { // remove any existing nodes
+        node.exit().remove();
+        link.exit().remove();
+        nodeLabel.exit().remove();
+        svg.selectAll('.link').remove();
+        svg.selectAll('.node').remove();
+        svg.selectAll('.node-label').remove();
+      }
+
+      // don't do anything if there's no data to process
+      if (!data.nodes.length) { return; }
+
       // map which nodes are linked (for highlighting)
+      linkedByIndex = {};
       data.links.forEach((d) => {
         linkedByIndex[d.source + ',' + d.target] = true;
       });
 
       // calculate the width and height of the canvas
-      const width = $(window).width();
-      const height = $(window).height() - 158;
+      const width = $(window).width() - 10;
+      const height = $(window).height() - 171;
 
       // get the node and link data
       const links = data.links.map(d => Object.create(d));
@@ -120,27 +671,35 @@ export default {
         .force('link',
           d3.forceLink(links).id((d) => {
             return d.pos; // tell the links where to link
-          }).distance(40) // TODO configurable this.query.nodeDist
+          }).distance(this.query.nodeDist) // set the link distance
         )
-        // TODO make this configurable?
-        .force('charge', d3.forceManyBody().strength(-75)) // simulate gravity mutually amongst all nodes
-        .force('center', d3.forceCenter(width / 2, height / 2)) // set the center
-        .force('x', d3.forceX()) // positioning force along x-axis for disjoint graph
-        .force('y', d3.forceY()); // positioning force along y-axis for disjoint graph
+        // simulate gravity mutually amongst all nodes
+        .force('charge', d3.forceManyBody().strength(-50))
+        // set the graph center
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        // positioning force along x-axis for disjoint graph
+        .force('x', d3.forceX())
+        // positioning force along y-axis for disjoint graph
+        .force('y', d3.forceY());
 
-      // set the width and height of the canvas
-      svg = d3.select('svg')
-        .attr('width', width)
-        .attr('height', height);
+      if (!svg) {
+        // set the width and height of the canvas
+        svg = d3.select('svg')
+          .attr('width', width)
+          .attr('height', height);
+      }
 
-      // add container for zoomability
-      container = svg.append('g');
+      if (!container) {
+        // add container for zoomability
+        container = svg.append('g');
+      }
 
       // add zoomability
       svg.call(
-        d3.zoom()
+        zoom = d3.zoom()
           .scaleExtent([0.1, 4])
           .on('zoom', () => {
+            console.log(d3.event);
             container.attr('transform', d3.event.transform);
           })
       );
@@ -152,6 +711,7 @@ export default {
         .selectAll('line')
         .data(links)
         .enter().append('line')
+        .attr('class', 'link')
         .attr('stroke-width', (d) => {
           return Math.min(1 + Math.log(d.value), 12);
         });
@@ -164,7 +724,7 @@ export default {
         .data(nodes)
         .enter()
         .append('circle')
-        // TODO drag
+        .attr('class', 'node')
         .attr('id', (d) => {
           /* eslint-disable no-useless-escape */
           return 'id' + d.id.replace(/[\[\]:.]/g, '_');
@@ -193,6 +753,7 @@ export default {
         .append('text')
         .attr('dx', 6)
         .attr('dy', '.35em')
+        .attr('class', 'node-label')
         .style('font-size', '0.35em')
         .text((d) => { return d.id; });
 
@@ -213,22 +774,83 @@ export default {
           return 'translate(' + d.x + ',' + d.y + ')';
         });
       });
+
+      // TODO on resize
     }
+  },
+  beforeDestroy: function () {
+    // remove listeners
+    // d3 doesn't have .off function to remove listeners,
+    // so use .on('listener', null)
+    d3.zoom().on('zoom', null);
+    simulation.on('tick', null);
+    d3.drag()
+      .on('start', null)
+      .on('drag', null)
+      .on('end', null);
+
+    // remove svg elements
+    node.exit().remove();
+    link.exit().remove();
+    nodeLabel.exit().remove();
+    svg.selectAll('.link').remove();
+    svg.selectAll('.node').remove();
+    svg.selectAll('.node-label').remove();
+    svg.remove();
+
+    // clean up global vars
+    svg = undefined;
+    zoom = undefined;
+    node = undefined;
+    link = undefined;
+    colors = undefined;
+    container = undefined;
+    nodeLabel = undefined;
+    simulation = undefined;
+    draggingNode = undefined;
+    foregroundColor = undefined;
   }
 };
 </script>
 
 <style scoped>
-/* don't allow selecting text */
 .connections-page {
+  /* account for main navbar height */
+  margin-top: 36px;
+  /* don't allow selecting text */
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
 }
 
+/* position the subnavbar */
+.connections-page form.connections-form {
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+/* remove select box styles */
+.connections-page form.connections-form select {
+  -webkit-appearance: none;
+}
+
 /* accommodate top navbars */
-.connections-page svg {
-  margin-top: 130px;
+.connections-page .connections-content {
+  padding-top: 110px;
+}
+
+/* make the color for legend areas white */
+.connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
+  font-weight: 700;
+  color: white !important;
 }
 
 /* apply foreground theme color */
