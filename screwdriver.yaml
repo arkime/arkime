@@ -217,7 +217,7 @@ jobs:
 
     release-build:
         image: andywick/moloch-build-6:1.6.3
-        requires: [~pr, ~commit]
+        requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
             beta.screwdriver.cd/ram: LOW
@@ -225,7 +225,8 @@ jobs:
             - echo "Hi!"
 
     release-centos-6:
-        requires: [release-build]
+        requires: [~pr, ~commit]
+        #requires: [release-build]
         image: andywick/moloch-build-6:1.6.3
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
