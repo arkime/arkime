@@ -14,7 +14,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.7.0 2019/01/XX
+1.7.0 2019/01/17
   - NOTICE: db.pl upgrade is required
   - release - node 8.15.0, cyberchef
   - capture - new cert remainingDays field
@@ -40,7 +40,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - improve expire efficiency
   - capture - fix elasticsearch classifier
   - capture - for offline pcap honor umask when --copy is used (issue #976)
-  - viewer - Fix some rXSS, thanks Esben Sparre Andreasen
+  - viewer - Fix some rXSS, thanks Esben Sparre Andreasen of Semmle Security Research Team
 
 1.6.2 2018/12/07
   - NOTICE: db.pl upgrade is required
