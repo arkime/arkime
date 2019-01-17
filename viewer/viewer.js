@@ -796,6 +796,12 @@ function checkHuntAccess (req, res, next) {
   }
 }
 
+function noCacheJson(req, res, next) {
+  res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+  res.setHeader("Content-Type", 'application/json');
+  return next();
+}
+
 function logAction(uiPage) {
   return function(req, res, next) {
     var log = {
@@ -3083,7 +3089,7 @@ app.get('/molochRightClick', checkWebEnabled, function(req, res) {
   res.send(app.locals.molochRightClick);
 });
 
-app.get('/eshealth.json', function(req, res) {
+app.get('/eshealth.json', noCacheJson, function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);
   });
@@ -3386,7 +3392,7 @@ app.get('/esrecovery/list', recordResponseTime, function(req, res) {
   });
 });
 
-app.get('/esstats.json', recordResponseTime, function(req, res) {
+app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
   var stats = [];
@@ -3521,9 +3527,7 @@ function mergeUnarray(to, from) {
   }
 }
 
-app.get('/parliament.json', function (req, res) {
-  noCache(req, res);
-
+app.get('/parliament.json', noCacheJson, function (req, res) {
   let query = {
     size: 500,
     _source: [
@@ -3571,10 +3575,8 @@ app.get('/parliament.json', function (req, res) {
     });
 });
 
-app.get('/stats.json', recordResponseTime, function(req, res) {
+app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
-  noCache(req, res);
 
   var query = {from: +req.query.start || 0,
                size: Math.min(10000, +req.query.length || 500),
@@ -3671,10 +3673,8 @@ app.get('/stats.json', recordResponseTime, function(req, res) {
   });
 });
 
-app.get('/dstats.json', function(req, res) {
+app.get('/dstats.json', noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
-  noCache(req, res);
 
   var nodeName = req.query.nodeName;
 
@@ -3780,7 +3780,8 @@ app.get('/dstats.json', function(req, res) {
   });
 });
 
-app.get('/:nodeName/:fileNum/filesize.json', function(req, res) {
+app.get('/:nodeName/:fileNum/filesize.json', noCacheJson, function(req, res) {
+
   Db.fileIdToFile(req.params.nodeName, req.params.fileNum, function(file) {
     if (!file) {
       return res.send({filesize: -1});
@@ -3922,7 +3923,7 @@ function flattenFields(fields) {
   return fields;
 }
 
-app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
+app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, next) {
 
   if (req.method === "POST") {
     req.query = req.body;
@@ -3947,7 +3948,8 @@ app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
   });
 });
 
-app.get('/sessions.json', logAction('sessions'), recordResponseTime, function(req, res) {
+app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function(req, res) {
+
   var graph = {};
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -4049,7 +4051,8 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, function(re
   });
 });
 
-app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, function(req, res) {
+app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, noCacheJson, function(req, res) {
+
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
@@ -4163,7 +4166,8 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
   });
 });
 
-app.get('/spiview.json', logAction('spiview'), recordResponseTime, function(req, res) {
+app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, function(req, res) {
+
   if (req.query.spi === undefined) {
     return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
   }
@@ -4322,7 +4326,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, function(req,
   });
 });
 
-app.get('/dns.json', logAction(), function(req, res) {
+app.get('/dns.json', logAction(), noCacheJson, function(req, res) {
   console.log("dns.json", req.query);
   dns.reverse(req.query.ip, function (err, data) {
     if (err) {
@@ -4524,7 +4528,8 @@ app.get('/connections.json', logAction('connections'), recordResponseTime, funct
 });
 
 app.get('/connections.csv', logAction(), function(req, res) {
-  res.setHeader("Content-Type", "application/force-download");
+  noCache(req, res, "text/csv");
+
   var seperator = req.query.seperator || ",";
   buildConnections(req, res, function (err, nodes, links, total) {
     if (err) {
@@ -4615,6 +4620,7 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
 
 app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   noCache(req, res, "text/csv");
+
   // default fields to display in csv
   var fields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node"];
   // save requested fields because sessionsListFromQuery returns fields with
@@ -4638,6 +4644,8 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
 });
 
 app.get('/multiunique.txt', logAction(), function(req, res) {
+  noCache(req, res, 'text/plain; charset=utf-8');
+
   if (req.query.exp === undefined) {
     return res.send("Missing exp parameter");
   }
@@ -4647,7 +4655,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
   for (let i = 0; i < parts.length; i++) {
     let field = Config.getFieldsMap()[parts[i]];
     if (!field) {
-      return res.send(`Unknown expression ${safeStr(parts[i])}`);
+      return res.send(`Unknown expression ${parts[i]}\n`);
     }
     fields.push(field);
   }
@@ -4716,11 +4724,11 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
 });
 
 app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
+  noCache(req, res, 'text/plain; charset=utf-8');
+
   if (req.query.field === undefined && req.query.exp === undefined) {
     return res.send("Missing field or exp parameter");
   }
-
-  noCache(req, res);
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;

@@ -191,5 +191,5 @@ eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 $txt = get('exp=<script>alert("xss")</script>');
 $mtxt = get('exp=<script>alert("xss")</script>', 1);
 eq_or_diff($txt,
-"Unknown expression &lt;script&gt;alert(&quot;xss&quot;)&lt;&#47;script&gt;
-");
+'Unknown expression <script>alert("xss")</script>
+');
