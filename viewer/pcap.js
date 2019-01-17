@@ -70,7 +70,7 @@ exports.make = function(key, header) {
     pcap.linkType   = pcap.headBuffer.readUInt32LE(20);
   }
   return pcap;
-}
+};
 
 Pcap.prototype.isOpen = function() {
   return this.fd !== undefined;
@@ -137,7 +137,7 @@ Pcap.prototype.unref = function() {
 Pcap.prototype.createDecipher = function(pos) {
     this.iv.writeInt32BE(pos, 12);
     return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
-}
+};
 
 Pcap.prototype.readHeader = function(cb) {
   if (this.headBuffer) {
@@ -158,7 +158,7 @@ Pcap.prototype.readHeader = function(cb) {
     for (var i = 0; i < this.headBuffer.length; i++) {
       this.headBuffer[i] ^= this.encKey[i%256];
     }
-}
+};
 
 
   this.bigEndian  = this.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
@@ -663,7 +663,7 @@ Pcap.prototype.framerelay = function (buffer, obj, pos) {
   } else if (buffer[2] == 0x86 || buffer[3] == 0xdd) {
     this.ip6(buffer.slice(4), obj, pos + 4);
   }
-}
+};
 
 
 Pcap.prototype.pcap = function (buffer, obj) {

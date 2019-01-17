@@ -21,10 +21,8 @@
 'use strict';
 
 var ESC            = require('elasticsearch'),
-    async          = require('async'),
     os             = require('os'),
-    fs             = require('fs'),
-    util           = require('util');
+    fs             = require('fs');
 
 var internals = {fileId2File: {},
                  fileName2File: {},

@@ -33,12 +33,9 @@ var Config         = require('./config.js'),
     Pcap           = require('./pcap.js'),
     sprintf        = require('./public/sprintf.js'),
     Db             = require('./db.js'),
-    os             = require('os'),
-    zlib           = require('zlib'),
     molochparser   = require('./molochparser.js'),
     passport       = require('passport'),
     DigestStrategy = require('passport-http').DigestStrategy,
-    HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
     http           = require('http'),
     pug            = require('pug'),
@@ -47,8 +44,7 @@ var Config         = require('./config.js'),
     PNG            = require('pngjs').PNG,
     decode         = require('./decode.js'),
     onHeaders      = require('on-headers'),
-    glob           = require('glob'),
-    path           = require('path');
+    glob           = require('glob');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -2552,8 +2548,6 @@ function lookupQueryItems(query, doneCb) {
 
 function buildSessionQuery(req, buildCb) {
   var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
-  var i;
-
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
                size: limit,
@@ -3374,8 +3368,6 @@ app.get('/esrecovery/list', recordResponseTime, function(req, res) {
       regex = new RegExp(req.query.filter);
     }
 
-    let all = req.query.all === 'true' || req.query.all === true;
-
     let result = [];
 
     for (var recovery of recoveries) {
@@ -3956,8 +3948,6 @@ app.use('/buildQuery.json', logAction('query'), function(req, res, next) {
 });
 
 app.get('/sessions.json', logAction('sessions'), recordResponseTime, function(req, res) {
-  var i;
-
   var graph = {};
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -4098,7 +4088,6 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
       }
 
       var aggs = result.aggregations.field.buckets;
-      var interval = query.aggregations.dbHisto.histogram.interval;
       var filter = {term: {}};
       var sfilter = {term: {}};
       query.query.bool.filter.push(filter);
@@ -4736,7 +4725,6 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;
   var doneCb;
-  var writes = 0;
   var items = [];
   var aggSize = 1000000;
 
@@ -4750,7 +4738,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
           (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
-        console.log("INFO For autocomplete replacing date="+ req.query.date, "with", spiDataMaxIndices);
+        console.log(`INFO For autocomplete replacing date=${safeStr(req.query.date)} with ${spiDataMaxIndices}`);
         req.query.date = spiDataMaxIndices;
       }
     }
@@ -5220,7 +5208,7 @@ function localSessionDetail(req, res) {
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
-      session._err = err || "No pcap data found";
+      session._err = "No pcap data found";
       localSessionDetailReturn(req, res, session, []);
     } else if (packets[0].ip === undefined) {
       session._err = "Couldn't decode pcap file, check viewer log";
@@ -5861,7 +5849,6 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
   .then(([users, total]) => {
     if (users.error) { throw users.error; }
     let results = { total: users.hits.total, results: [] };
-    let hasSharedUser = false;
     for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
       let fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
       fields.id = users.hits.hits[i]._id;
@@ -6836,8 +6823,6 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
     .then(([hunt, session]) => {
       if (hunt.error || session.error) { res.send({ matched: false }); }
 
-      let matched = false;
-
       hunt = hunt._source;
       session = session._source;
 
@@ -7756,7 +7741,6 @@ function processCronQueries() {
       async.eachSeries(Object.keys(queries), function (qid, forQueriesCb) {
         var cq = queries[qid];
         var cluster = null;
-        var req, res;
 
         if (Config.debug > 1) {
           console.log("CRON - Running", qid, cq);

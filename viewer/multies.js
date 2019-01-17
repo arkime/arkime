@@ -27,7 +27,6 @@ try {
 var Config         = require('./config.js'),
     express        = require('express'),
     async          = require('async'),
-    os             = require('os'),
     util           = require('util'),
     URL            = require('url'),
     ESC            = require('elasticsearch'),
