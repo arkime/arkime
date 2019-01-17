@@ -217,7 +217,7 @@ jobs:
 
     release-build:
         image: andywick/moloch-build-6:1.6.3
-        requires: []
+        requires: [~pr, ~commit]
         annotations:
             beta.screwdriver.cd/cpu: LOW
             beta.screwdriver.cd/ram: LOW
