@@ -20,7 +20,6 @@
 var request        = require('request')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , LRU            = require('lru-cache')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +219,7 @@ function getURL(item, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^wiseproxy:/);});
   sections.forEach((section) => {
-    var source = new WiseProxySource(api, section);
+    return new WiseProxySource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

@@ -165,5 +165,5 @@ ThreatQSource.prototype.dump = function(res) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new ThreatQSource(api, "threatq");
+  return new ThreatQSource(api, "threatq");
 };

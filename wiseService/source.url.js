@@ -71,7 +71,7 @@ URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^url:/);});
   sections.forEach((section) => {
-    var source = new URLSource(api, section);
+    return new URLSource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

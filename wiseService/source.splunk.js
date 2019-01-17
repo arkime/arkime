@@ -195,7 +195,7 @@ SplunkSource.prototype.sendResult = function(key, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^splunk:/);});
   sections.forEach((section) => {
-    var source = new SplunkSource(api, section);
+    return new SplunkSource(api, section);
   });
 };
 

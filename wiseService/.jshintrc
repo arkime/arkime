@@ -12,5 +12,6 @@
   "strict": true,
   "trailing": true,
   "esversion": 6,
-  "validthis":true
+  "validthis": true,
+  "unused": "vars"
 }

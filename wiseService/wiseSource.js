@@ -112,7 +112,7 @@ function splitRemain(str, separator, limit) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
-  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, (err, data) => {
+  csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, (err, data) => {
     if (err) {
       return endCb(err);
     }

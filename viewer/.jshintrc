@@ -11,6 +11,7 @@
   "strict": true,
   "trailing": true,
   "esversion": 6,
+  "unused": "vars",
   "predef": [
     "angular", "document", "jasmine", "jQuery", "$", "window", "localStorage",
     "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn",

@@ -22,7 +22,6 @@ var fs             = require('fs')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , HashTable      = require('hashtable')
-  , LRU            = require('lru-cache')
   , request        = require('request')
   , exec           = require('child_process').exec
   ;
@@ -465,6 +464,6 @@ ThreatStreamSource.prototype.openDb = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new ThreatStreamSource(api, "threatstream");
+  return new ThreatStreamSource(api, "threatstream");
 };
 //////////////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,6 @@ var Config         = require('./config.js'),
     url            = require('url'),
     dns            = require('dns'),
     Pcap           = require('./pcap.js'),
-    sprintf        = require('./public/sprintf.js'),
     Db             = require('./db.js'),
     molochparser   = require('./molochparser.js'),
     passport       = require('passport'),
@@ -373,13 +372,8 @@ function loadPlugins() {
 //////////////////////////////////////////////////////////////////////////////////
 //// Utility
 //////////////////////////////////////////////////////////////////////////////////
-function isEmptyObject(object) { for(var i in object) { return false; } return true; }
 function safeStr(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
-}
-
-function twoDigitString(value) {
-  return (value < 10) ? ("0" + value) : value.toString();
 }
 
 function queryValueToArray(val) {
@@ -410,11 +404,6 @@ function errorString(err, result) {
   } else {
     return "Elasticsearch error: " + str;
   }
-}
-
-// http://stackoverflow.com/a/10934946
-function dot2value(obj, str) {
-      return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
 function parseCustomView(key, input) {
@@ -911,16 +900,6 @@ if (Config.get('demoMode', false)) {
   app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
     return res.molochError(403, "Disabled in demo mode.");
   });
-}
-
-function makeTitle(req, page) {
-  var title = Config.get("titleTemplate", "_cluster_ - _page_ _-view_ _-expression_");
-  title = title.replace(/_cluster_/g, internals.clusterName)
-               .replace(/_page_/g, page)
-               .replace(/_userId_/g, req.user?req.user.userId:"-")
-               .replace(/_userName_/g, req.user?req.user.userName:"-")
-               ;
-  return title;
 }
 
 app.get(['/', '/app'], function(req, res) {
@@ -4350,7 +4329,6 @@ function buildConnections(req, res, cb) {
   let fdst                 = req.query.dstField;
   let minConn              = req.query.minConn || 1;
 
-  let srcIsIp = fsrc.match(/(\.ip|Ip)$/);
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
   let nodesHash = {};
@@ -4994,66 +4972,6 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
     }
   },
   numPackets, 10);
-}
-
-// Some ideas from hexy.js
-function toHex(input, offsets) {
-  var out = "";
-  var i, ilen;
-
-  for (var pos = 0, poslen = input.length; pos < poslen; pos += 16) {
-    var line = input.slice(pos, Math.min(pos+16, input.length));
-    if (offsets) {
-      out += sprintf.sprintf("<span class=\"sessionln\">%08d:</span> ", pos);
-    }
-
-    for (i = 0; i < 16; i++) {
-      if (i % 2 === 0 && i > 0) {
-        out += " ";
-      }
-      if (i < line.length) {
-        out += sprintf.sprintf("%02x", line[i]);
-      } else {
-        out += "  ";
-      }
-    }
-
-    out += " ";
-
-    for (i = 0, ilen = line.length; i < ilen; i++) {
-      if (line[i] <= 32 || line[i]  > 128) {
-        out += ".";
-      } else {
-        out += safeStr(line.toString("ascii", i, i+1));
-      }
-    }
-    out += "\n";
-  }
-  return out;
-}
-
-// Modified version of https://gist.github.com/penguinboy/762197
-function flattenObject1 (obj) {
-  var toReturn = {};
-
-  for (var i in obj) {
-    if (!obj.hasOwnProperty(i)) {
-      continue;
-    }
-
-    if ((typeof obj[i]) === 'object' && !Array.isArray(obj[i])) {
-      for (var x in obj[i]) {
-        if (!obj[i].hasOwnProperty(x)) {
-          continue;
-        }
-
-        toReturn[i + '.' + x] = obj[i][x];
-      }
-    } else {
-      toReturn[i] = obj[i];
-    }
-  }
-  return toReturn;
 }
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
@@ -7742,9 +7660,6 @@ function processCronQueries() {
       // Delayed by the max Timeout
       var endTime = Math.floor(Date.now()/1000) - internals.cronTimeout;
 
-      // Save incase reload happens while running
-      var molochClusters = Config.configMap("moloch-clusters");
-
       // Go thru the queries, fetch the user, make the query
       async.eachSeries(Object.keys(queries), function (qid, forQueriesCb) {
         var cq = queries[qid];
@@ -7834,7 +7749,7 @@ function processCronQueries() {
                 let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
                 issueAlert(cq.notifier, message, continueProcess);
               } else {
-                return continueProcess(qid, document, lpValue, endTime);
+                return continueProcess();
               }
             });
           });

@@ -135,7 +135,7 @@ if (app.get('regressionTests')) {
   app.post('/shutdown', function (req, res) {
     process.exit(0);
   });
-};
+}
 
 // get the parliament file or create it if it doesn't exist
 let parliament;
@@ -304,7 +304,7 @@ async function sendAlerts () {
           if (i === len - 1) { resolve(); }
         }, 250 * i);
       })(i);
-    };
+    }
   });
 
   promise.then(() => {

@@ -117,7 +117,7 @@ RightClickSource.prototype.process = function(data) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/(^right-click$|^right-click:)/);});
   sections.forEach((section) => {
-    var source = new RightClickSource(api, section);
+    return new RightClickSource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

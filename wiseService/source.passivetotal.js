@@ -134,8 +134,7 @@ PassiveTotalSource.prototype.fetch = function(key, cb) {
 PassiveTotalSource.prototype.getIp     = PassiveTotalSource.prototype.fetch;
 PassiveTotalSource.prototype.getDomain = PassiveTotalSource.prototype.fetch;
 //////////////////////////////////////////////////////////////////////////////////
-var source;
 exports.initSource = function(api) {
-  source = new PassiveTotalSource(api, "passivetotal");
+  return new PassiveTotalSource(api, "passivetotal");
 };
 //////////////////////////////////////////////////////////////////////////////////

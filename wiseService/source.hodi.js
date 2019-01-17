@@ -127,5 +127,5 @@ HODISource.prototype.getEmail = function(email, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new HODISource(api, "hodi");
+  return new HODISource(api, "hodi");
 };

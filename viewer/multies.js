@@ -27,7 +27,6 @@ try {
 var Config         = require('./config.js'),
     express        = require('express'),
     async          = require('async'),
-    util           = require('util'),
     URL            = require('url'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
@@ -159,10 +158,6 @@ function shallowCopy(obj1, obj2) {
   }
 }
 
-function deepCopy(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
 function shallowAdd(obj1, obj2) {
   for (var attrname in obj2) {
     if (typeof obj2[attrname] === "number") {
@@ -226,7 +221,7 @@ app.get("/:index/_status", (req, res) => {
 
 app.get("/:index/_stats", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    //console.log("DEBUG - _stats results", util.inspect(results, false, 50));
+    //console.log("DEBUG - _stats results", JSON.stringify(results, null, 2));
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
       for (var index in results[i].indices) {
@@ -244,7 +239,7 @@ app.get("/:index/_stats", (req, res) => {
 
 app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    //console.log("DEBUG -", util.inspect(results, false, 50));
+    //console.log("DEBUG -", JSON.stringify(results, null, 2));
 
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -623,16 +618,11 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
 app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
-  //console.log("DEBUG - INCOMING SEARCH", util.inspect(search, false, 50));
-
-  var doField = search.aggregations &&
-                search.aggregations.field &&
-                search.aggregations.field.terms &&
-                search.aggregations.field.terms.field.match(/^(ta|hh1|hh2)$/);
+  //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
 
   async.each(nodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
-      //console.log("DEBUG - OUTGOING SEARCH", node, util.inspect(body, false, 50));
+      //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
@@ -681,7 +671,6 @@ function msearch(req, res) {
       nodeCb();
     });
   }, (err) => {
-    var responses = [];
     simpleGather(req, res, bodies, (err, results) => {
       var obj = {responses:[]};
       for (var h = 0; h < results[0].responses.length; h++) {
@@ -785,4 +774,4 @@ nodes.forEach((node) => {
 console.log(nodes);
 
 console.log("Listen on ", Config.get("multiESPort", "8200"));
-var server = http.createServer(app).listen(Config.get("multiESPort", "8200"), Config.get("multiESHost", undefined));
+http.createServer(app).listen(Config.get("multiESPort", "8200"), Config.get("multiESHost", undefined));

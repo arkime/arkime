@@ -80,7 +80,7 @@ FileSource.prototype.simpleSourceLoad = function(setFunc, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^file:/);});
   sections.forEach((section) => {
-    var source = new FileSource(api, section);
+    return new FileSource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

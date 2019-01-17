@@ -124,5 +124,5 @@ AlienVaultSource.prototype.dump = function(res) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  let source = new AlienVaultSource(api, "alienvault");
+  return new AlienVaultSource(api, "alienvault");
 };

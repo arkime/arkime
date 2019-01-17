@@ -87,5 +87,5 @@ HODIRedisSource.prototype.getIp = function(query, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new HODIRedisSource(api, "hodiredis");
+  return new HODIRedisSource(api, "hodiredis");
 };

@@ -702,8 +702,6 @@ exports.checkVersion = function(minVersion, checkUsers) {
     throw new Error("Exiting");
   }
 
-  var index;
-
   ["stats", "dstats", "sequence", "files"].forEach((index) => {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {

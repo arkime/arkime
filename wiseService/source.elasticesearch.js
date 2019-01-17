@@ -118,7 +118,7 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^elasticsearch:/);});
   sections.forEach((section) => {
-    var source = new ElasticsearchSource(api, section);
+    return new ElasticsearchSource(api, section);
   });
 };
 

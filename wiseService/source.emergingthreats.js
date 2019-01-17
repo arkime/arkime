@@ -147,5 +147,5 @@ EmergingThreatsSource.prototype.dump = function(res) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new EmergingThreatsSource(api, "emergingthreats");
+  return new EmergingThreatsSource(api, "emergingthreats");
 };

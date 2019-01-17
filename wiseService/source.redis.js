@@ -69,7 +69,7 @@ RedisSource.prototype.fetch = function (key, cb) {
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter((e) => {return e.match(/^redis:/);});
   sections.forEach((section) => {
-    var source = new RedisSource(api, section);
+    return new RedisSource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
