@@ -237,8 +237,10 @@ jobs:
             - installing: scl enable devtoolset-6 python27 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
+            - echo $PATH
+            - ls -l $PWD/node_modules/.bin
             - head /data/moloch/NOTICE.txt
-            - tail /data/moloch/NOTICE.txt
+            - tail -100 /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 echo scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install 'release/afterinstall.sh' --url "http://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
