@@ -217,6 +217,8 @@ jobs:
 
     release-build:
         requires: []
+        steps:
+            - echo "Hi!"
 
     release-centos-6:
         requires: [release-build]
