@@ -95,7 +95,7 @@ VirusTotalSource.prototype.performQuery = function () {
 
   this.waiting = [];
 
-  var req = request(options, (err, im, results) => {
+  request(options, (err, im, results) => {
     if (err || im.statusCode !== 200 || results === undefined) {
       console.log(this.section, "Error for request:\n", options, "\n", im, "\nresults:\n", results);
       sent.forEach((md5) => {
@@ -128,7 +128,6 @@ VirusTotalSource.prototype.performQuery = function () {
 
         for(var i = 0; i < this.dataSources.length; i++) {
           var uc = this.dataSources[i];
-          var lc = this.dataSourcesLC[i];
 
           if (result.scans[uc] && result.scans[uc].detected) {
             args.push(this.dataFields[i], result.scans[uc].result);
@@ -195,6 +194,6 @@ var reportApi = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   api.app.get("/vtapi/v2/file/report", reportApi);
-  var source = new VirusTotalSource(api, "virustotal");
+  source = new VirusTotalSource(api, "virustotal");
 };
 //////////////////////////////////////////////////////////////////////////////////

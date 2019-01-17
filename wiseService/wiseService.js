@@ -26,8 +26,6 @@ const ini            = require('iniparser')
     , glob           = require('glob')
     , async          = require('async')
     , sprintf        = require('./sprintf.js').sprintf
-    , csv            = require('csv')
-    , request        = require('request')
     , iptrie         = require('iptrie')
     , wiseSource     = require('./wiseSource.js')
     , wiseCache      = require('./wiseCache.js')
@@ -698,7 +696,7 @@ app.get("/bro/:type", function(req, res) {
 });
 */
 //////////////////////////////////////////////////////////////////////////////////
-app.get("/:typeName/:value", function(req, res, next) {
+app.get("/:typeName/:value", function(req, res) {
   var query = {typeName: req.params.typeName,
                value: req.params.value};
 

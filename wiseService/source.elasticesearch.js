@@ -17,8 +17,7 @@
  */
 'use strict';
 
-var fs             = require('fs')
-  , wiseSource     = require('./wiseSource.js')
+var wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , elasticsearch  = require('elasticsearch')
   ;

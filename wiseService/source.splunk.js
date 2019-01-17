@@ -175,7 +175,6 @@ SplunkSource.prototype.sendResult = function(key, cb) {
     }
 
     var item = results.results[0];
-    var key = item[this.keyColumn];
 
     var args = [];
     for (var k in this.shortcuts) {

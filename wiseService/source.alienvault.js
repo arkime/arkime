@@ -115,7 +115,6 @@ AlienVaultSource.prototype.getIp = function(ip, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.dump = function(res) {
-  var cache = this.ips;
   this.ips.forEach((key, value) => {
     var str = "{key: \"" + key + "\", ops:\n" +
                wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
@@ -125,5 +124,5 @@ AlienVaultSource.prototype.dump = function(res) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var source = new AlienVaultSource(api, "alienvault");
+  let source = new AlienVaultSource(api, "alienvault");
 };
