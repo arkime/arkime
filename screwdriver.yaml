@@ -216,7 +216,11 @@ jobs:
             - SLACK
 
     release-build:
+        image: andywick/moloch-build-6:1.6.3
         requires: []
+        annotations:
+            beta.screwdriver.cd/cpu: LOW
+            beta.screwdriver.cd/ram: LOW
         steps:
             - echo "Hi!"
 
