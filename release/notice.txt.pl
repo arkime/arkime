@@ -16,7 +16,7 @@ sub handle {
 
 my %DONE;
 my $viewerJson = from_json(`cd $ARGV[0]/viewer; license-checker --production --json`);
-my $wiseServiceJson = from_json(`cd $ARGV[0]/capture/plugins/wiseService; license-checker --production --json`);
+my $wiseServiceJson = from_json(`cd $ARGV[0]/wiseService; license-checker --production --json`);
 
 shift @ARGV;
 
