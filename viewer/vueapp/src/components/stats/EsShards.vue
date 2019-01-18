@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container-fluid mt-2">
+  <div class="container-fluid mt-3">
 
     <moloch-loading v-if="initialLoading && !error">
     </moloch-loading>
@@ -25,7 +25,8 @@
           <tr>
             <th v-for="column in columns"
               :key="column.name"
-              class="hover-menu">
+              class="hover-menu"
+              :width="column.width">
               <div>
                 <!-- column dropdown menu -->
                 <b-dropdown right
@@ -71,8 +72,7 @@
               {{ stat.name }}
             </td>
             <td v-for="node in nodes"
-              :key="node"
-              class="text-center">
+              :key="node">
               <template v-if="stat.nodes[node]"
                 v-for="item in stat.nodes[node]">
                 <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
@@ -83,60 +83,53 @@
                   @mouseleave="hideDetails(item)">
                   {{ item.shard }}
                   <span v-if="item.showDetails"
+                    class="shard-detail"
                     @mouseenter="hideDetails(item)">
-                    <div>
-                      <span>Index:</span>
-                      {{ stat.name }}
-                    </div>
-                    <div>
-                      <span>Node:</span>
-                      {{ node }}
-                    </div>
-                    <div v-if="item.ip">
-                      <span>IP:</span>
-                      {{ item.ip }}
-                    </div>
-                    <div>
-                      <span>Shard:</span>
-                      {{ item.shard }}
-                    </div>
-                    <div>
-                      <span>State:</span>
-                      {{ item.state }}
-                    </div>
-                    <div v-if="item.ur">
-                      <span>Reason:</span>
-                      {{ item.ur }}
-                    </div>
-                    <div v-if="item.uf">
-                      <span>For:</span>
-                      {{ item.uf }}
-                    </div>
-                    <div v-if="item.store">
-                      <span>Size:</span>
-                      {{ item.store | humanReadableBytes}}
-                    </div>
-                    <div v-if="item.docs">
-                      <span>Documents:</span>
-                      {{ item.docs | round(0) | commaString}}
-                    </div>
-                    <div v-if="item.fm">
-                      <span>Field Memory:</span>
-                      {{ item.fm | humanReadableBytes}}
-                    </div>
-                    <div v-if="item.sm">
-                      <span>Segment Memory:</span>
-                      {{ item.sm | humanReadableBytes}}
-                    </div>
-                    <div>
-                      <span>Shard Type:</span>
+                    <dl class="dl-horizontal">
+                      <dt>Index</dt>
+                      <dd>{{ stat.name }}</dd>
+                      <dt>Node</dt>
+                      <dd>{{ node }}</dd>
+                      <span v-if="item.ip">
+                        <dt>IP</dt>
+                        <dd>{{ item.ip }}</dd>
+                      </span>
+                      <dt>Shard</dt>
+                      <dd>{{ item.shard }}</dd>
+                      <dt>State</dt>
+                      <dd>{{ item.state }}</dd>
+                      <span v-if="item.ur">
+                        <dt>Reason</dt>
+                        <dd>{{ item.uf }}</dd>
+                      </span>
+                      <span v-if="item.uf">
+                        <dt>For</dt>
+                        <dd>{{ item.ur }}</dd>
+                      </span>
+                      <span v-if="item.store">
+                        <dt>Size</dt>
+                        <dd>{{ item.store | humanReadableBytes }}</dd>
+                      </span>
+                      <span v-if="item.docs">
+                        <dt>Documents</dt>
+                        <dd>{{ item.docs | round(0) | commaString }}</dd>
+                      </span>
+                      <span v-if="item.fm">
+                        <dt>Field Mem</dt>
+                        <dd>{{ item.fm | humanReadableBytes }}</dd>
+                      </span>
+                      <span v-if="item.sm">
+                        <dt>Segment Mem</dt>
+                        <dd>{{ item.sm | humanReadableBytes }}</dd>
+                      </span>
+                      <dt>Shard Type</dt>
                       <template v-if="item.prirep === 'p'">
-                        primary
+                        <dd>primary</dd>
                       </template>
                       <template v-else>
-                        replicate
+                        <dd>replicate</dd>
                       </template>
-                    </div>
+                    </dl>
                   </span>
                 </span>
               </template>
@@ -180,7 +173,7 @@ export default {
         show: this.shardsShow || 'notstarted'
       },
       columns: [
-        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false }
+        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
       ]
     };
   },
@@ -371,6 +364,7 @@ table.table tbody > tr > td:first-child {
   padding: .1em .4em;
   font-weight: 500;
   font-size: 14px;
+  white-space: normal;
 }
 .badge.badge-primary {
   font-weight: bold;
@@ -382,22 +376,9 @@ table.table tbody > tr > td:first-child {
 .badge > span {
   display: none;
 }
-.badge:hover > span {
+.badge:hover > span.shard-detail {
   z-index: 2;
-  font-weight: normal;
   display: block;
-  position: absolute;
-  margin: 10px;
-  bottom: -14px;
-  right: 20px;
-  padding: 4px 6px;
-  color: white;
-  text-align: center;
-  background-color: black;
-  border-radius: 5px;
-  font-size: 90%;
-  line-height: 1.2;
-  min-height: 133px;
 }
 .badge > span:before {
   content: '';
@@ -411,14 +392,37 @@ table.table tbody > tr > td:first-child {
   right: -8px;
   bottom: 7px;
 }
+.badge > span.shard-detail {
+  font-weight: normal;
+  position: absolute;
+  margin: 10px;
+  bottom: -14px;
+  right: 20px;
+  padding: 4px 6px;
+  color: white;
+  background-color: black;
+  border-radius: 5px;
+  font-size: 85%;
+  line-height: 1.2;
+  max-width: 210px;
+}
+.badge > span.shard-detail dl {
+  margin-bottom: 0;
+}
+.badge > span.shard-detail dt {
+  width: 85px;
+}
+.badge > span.shard-detail dd {
+  margin-left: 90px;
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
 .badge.render-tooltip-bottom:hover > span {
   bottom: -120px;
 }
 .badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
-}
-.badge > span span {
-  color: #bbb;
 }
 .badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
   border: 2px dotted #6c757d;
