@@ -178,6 +178,7 @@
           size="sm"
           no-flip
           no-caret
+          toggle-class="rounded"
           class="field-vis-menu ml-1"
           variant="theme-primary"
           v-if="fields && groupedFields && nodeFields">
@@ -224,6 +225,7 @@
           size="sm"
           no-flip
           no-caret
+          toggle-class="rounded"
           class="field-vis-menu ml-1"
           variant="theme-primary"
           v-if="fields && groupedFields && linkFields">
@@ -293,6 +295,13 @@
       <svg></svg>
       <!-- /connections graph container -->
 
+      <!-- popup area -->
+      <div ref="infoPopup"
+        v-on-clickaway="closePopups">
+        <div class="connections-popup">
+        </div>
+      </div> <!-- /popup area -->
+
     </div>
 
   </div>
@@ -311,13 +320,16 @@ import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 // import external
+import Vue from 'vue';
 import * as d3 from 'd3';
 import saveSvgAsPng from 'save-svg-as-png';
+import { mixin as clickaway } from 'vue-clickaway';
 
 // d3 force directed graph vars/functions ---------------------------------- */
 let colors, foregroundColor;
 let simulation, svg, container, zoom;
 let node, link, nodeLabel;
+let popupTimer, popupVue;
 let draggingNode;
 
 // drag helpers
@@ -373,6 +385,29 @@ function unfocus () {
   link.style('opacity', 1);
 }
 
+// simulation resize helper
+function resize () {
+  const width = $(window).width() - 10;
+  const height = $(window).height() - 171;
+
+  // set the width and height of the canvas
+  svg.attr('width', width).attr('height', height);
+}
+
+// close popups helpers
+function closePopups () {
+  if (popupVue) { popupVue.$destroy(); }
+  popupVue = undefined;
+  $('.connections-popup').hide();
+}
+
+// close popup on escape press
+function closePopupsOnEsc (keyCode) {
+  if (event.keyCode === 27) { // esc
+    closePopups();
+  }
+}
+
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
 const defaultLinkFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
@@ -381,6 +416,7 @@ const defaultNodeFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
 // vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
+  mixins: [ clickaway ],
   components: {
     MolochSearch,
     MolochPaging,
@@ -403,7 +439,8 @@ export default {
       groupedFields: undefined,
       primaryColor: undefined,
       secondaryColor: undefined,
-      tertiaryColor: undefined
+      tertiaryColor: undefined,
+      closePopups: closePopups
     };
   },
   computed: {
@@ -419,7 +456,7 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
-        nodeDist: this.$route.query.nodeDist || 50,
+        nodeDist: this.$route.query.nodeDist || 35,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
@@ -473,6 +510,11 @@ export default {
     colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.loadData();
+
+    // close any node/link popups if the user presses escape
+    window.addEventListener('keyup', closePopupsOnEsc);
+    // resize the simulation with the window
+    window.addEventListener('resize', resize);
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -580,26 +622,20 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.getFields();
-          this.processData(response.data);
+          // IMPORTANT: this kicks off drawing the connections graph
+          this.getFields(response.data);
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           this.loading = false;
           this.error = error.text || error;
         });
     },
-    getFields: function () {
+    getFields: function (connectionsData) {
       FieldService.get(true)
         .then((result) => {
           this.fields = result;
-          // TODO only add this if it doesn't exist
-          this.fields.push({
-            dbField: 'ip.dst:port',
-            exp: 'ip.dst:port',
-            help: 'Destination IP:Destination Port',
-            group: 'general',
-            friendlyName: 'Dst IP:Dst Port'
-          });
+
+          this.setupFields();
 
           for (let field of this.fields) {
             if (field.dbField === this.query.srcField) {
@@ -610,7 +646,7 @@ export default {
             }
           }
 
-          this.setupFields();
+          this.drawGraph(connectionsData);
         }).catch((error) => {
           this.error = error.text || error;
         });
@@ -620,7 +656,10 @@ export default {
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
       let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
+      let ipDstPortFieldExists = false;
       for (let field of this.fields) {
+        // found the ip.dst:port field
+        if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
         // don't include fields with regex
         if (field.hasOwnProperty('regex')) { continue; }
         if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
@@ -632,6 +671,19 @@ export default {
           this.groupedFields[field.group].push(field);
         }
       }
+
+      // only add this field if it doesn't already exist
+      if (!ipDstPortFieldExists) {
+        const ipDstPortField = {
+          dbField: 'ip.dst:port',
+          exp: 'ip.dst:port',
+          help: 'Destination IP:Destination Port',
+          group: 'general',
+          friendlyName: 'Dst IP:Dst Port'
+        };
+        this.fields.push(ipDstPortField);
+        this.groupedFields.general.push(ipDstPortField);
+      }
     },
     saveVisibleFields: function () {
       this.user.settings.connNodeFields = this.nodeFields;
@@ -639,7 +691,7 @@ export default {
 
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
-    processData: function (data) {
+    drawGraph: function (data) {
       if (svg) { // remove any existing nodes
         node.exit().remove();
         link.exit().remove();
@@ -651,6 +703,27 @@ export default {
 
       // don't do anything if there's no data to process
       if (!data.nodes.length) { return; }
+
+      // convert time in ms to timezone date string
+      const srcFieldIsTime = this.dbField2Type(this.query.srcField) === 'seconds';
+      const dstFieldIsTime = this.dbField2Type(this.query.dstField) === 'seconds';
+
+      if (srcFieldIsTime || dstFieldIsTime) {
+        for (let dataNode of data.nodes) {
+          // only parse date values if the source field is of type seconds
+          // and the node is a source node OR if the destination field is
+          // of type seconds and the node is a destination (target) node
+          if ((srcFieldIsTime && dataNode.type === 1) ||
+            (dstFieldIsTime && dataNode.type === 2)) {
+            dataNode.id = this.$options.filters.timezoneDateString(
+              Math.floor(dataNode.id / 1000),
+              this.settings.timezone ||
+                this.$store.state.user.settings.timezone,
+              'YYYY/MM/DD HH:mm:ss z'
+            );
+          }
+        }
+      }
 
       // map which nodes are linked (for highlighting)
       linkedByIndex = {};
@@ -686,7 +759,8 @@ export default {
         // set the width and height of the canvas
         svg = d3.select('svg')
           .attr('width', width)
-          .attr('height', height);
+          .attr('height', height)
+          .attr('id', 'graphSvg');
       }
 
       if (!container) {
@@ -699,7 +773,6 @@ export default {
         zoom = d3.zoom()
           .scaleExtent([0.1, 4])
           .on('zoom', () => {
-            console.log(d3.event);
             container.attr('transform', d3.event.transform);
           })
       );
@@ -715,6 +788,16 @@ export default {
         .attr('stroke-width', (d) => {
           return Math.min(1 + Math.log(d.value), 12);
         });
+
+      // add link mouse listeners for showing popups
+      link.on('mouseover', (l) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showLinkPopup(l);
+        }, 600);
+      }).on('mouseout', (l) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
 
       // add nodes
       node = container.append('g')
@@ -741,9 +824,17 @@ export default {
           .on('end', dragended)
         );
 
-      // highlight connected nodes
-      node.on('mouseover', focus)
-        .on('mouseout', unfocus);
+      // add node mouse listeners for showing focus and popups
+      node.on('mouseover', (d) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showNodePopup(d);
+        }, 600);
+        focus(d);
+      }).on('mouseout', (d) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        unfocus(d);
+      });
 
       // add node labels
       nodeLabel = container.append('g')
@@ -774,12 +865,247 @@ export default {
           return 'translate(' + d.x + ',' + d.y + ')';
         });
       });
+    },
+    dbField2Type: function (dbField) {
+      for (let k in this.fields) {
+        if (dbField === this.fields[k].dbField ||
+            dbField === this.fields[k].rawField) {
+          return this.fields[k].type;
+        }
+      }
 
-      // TODO on resize
+      return undefined;
+    },
+    dbField2Exp: function (dbField) {
+      for (let k in this.fields) {
+        if (dbField === this.fields[k].dbField ||
+            dbField === this.fields[k].rawField) {
+          return this.fields[k].exp;
+        }
+      }
+
+      return undefined;
+    },
+    showNodePopup: function (dataNode) {
+      if (dataNode.type === 2) {
+        dataNode.exp = this.dbField2Exp(this.query.dstField);
+      } else {
+        dataNode.exp = this.dbField2Exp(this.query.srcField);
+      }
+
+      closePopups();
+      if (!popupVue) {
+        popupVue = new Vue({
+          template: `
+            <div class="connections-popup">
+              <div class="mb-2">
+                <strong>{{dataNode.id}}</strong>
+                <a class="pull-right cursor-pointer no-decoration"
+                  @click="closePopup()">
+                  <span class="fa fa-close"></span>
+                </a>
+              </div>
+
+              <dl class="dl-horizontal">
+                <dt>Type</dt>
+                <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
+                <dt>Links</dt>
+                <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
+                <dt>Sessions</dt>
+                <dd>{{dataNode.sessions}}&nbsp;</dd>
+
+                <span v-for="field in nodeFields"
+                  :key="field">
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].exp }}
+                  </dt>
+                  <dd>
+                    <span v-if="!Array.isArray(dataNode[field])">
+                      <moloch-session-field
+                        :value="dataNode[field]"
+                        :session="dataNode"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
+                    </span>
+                    <span v-else
+                      v-for="value in dataNode[field]">
+                      <moloch-session-field
+                        :value="value"
+                        :session="dataNode"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
+                    </span>&nbsp;
+                  </dd>
+                </span>
+
+                <dt>Expressions</dt>
+                <dd>
+                  <a class="cursor-pointer no-decoration"
+                    href="javascript:void(0)"
+                    @click.stop.prevent="addExpression('&&')">
+                    AND
+                  </a>&nbsp;
+                  <a class="cursor-pointer no-decoration"
+                    href="javascript:void(0)"
+                    @click.stop.prevent="addExpression('||')">
+                    OR
+                  </a>
+                </dd>
+              </dl>
+
+              <a class="cursor-pointer no-decoration"
+                href="javascript:void(0)"
+                @click.stop.prevent="hideNode">
+                <span class="fa fa-eye-slash">
+                </span>&nbsp;
+                Hide Node
+              </a>
+            </div>
+          `,
+          parent: this,
+          data: {
+            dataNode: dataNode,
+            nodeFields: this.nodeFields,
+            fields: this.fieldsMap
+          },
+          methods: {
+            hideNode: function () {
+              this.$parent.closePopups();
+              /* eslint-disable no-useless-escape */
+              svg.select('#id' + dataNode.id.replace(/[\[\]:.]/g, '_')).remove();
+              svg.selectAll('.link')
+                .filter(function (d, i) {
+                  return d.source.id === dataNode.id || d.target.id === dataNode.id;
+                })
+                .remove();
+            },
+            addExpression: function (op) {
+              let fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
+              this.$store.commit('addToExpression', { expression: fullExpression, op: op });
+            },
+            closePopup: function () {
+              this.$parent.closePopups();
+            }
+          }
+        }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      }
+
+      popupVue.dataNode = dataNode;
+
+      $('.connections-popup').show();
+    },
+    showLinkPopup: function (linkData) {
+      linkData.dstExp = this.dbField2Exp(this.query.dstField);
+      linkData.srcExp = this.dbField2Exp(this.query.srcField);
+
+      closePopups();
+      if (!popupVue) {
+        popupVue = new Vue({
+          template: `
+            <div class="connections-popup">
+              <div class="mb-2">
+                <strong>Link</strong>
+                <a class="pull-right cursor-pointer no-decoration"
+                   @click="closePopup">
+                  <span class="fa fa-close"></span>
+                </a>
+              </div>
+              <div>{{linkData.source.id}}</div>
+              <div class="mb-2">
+                {{linkData.target.id}}
+              </div>
+
+              <dl class="dl-horizontal">
+                <dt>Sessions</dt>
+                <dd>{{linkData.value}}&nbsp;</dd>
+
+                <span v-for="field in linkFields"
+                  :key="field">
+                  <dt :title="fields[field].friendlyName">
+                    {{ fields[field].exp }}
+                  </dt>
+                  <dd>
+                    <span v-if="!Array.isArray(linkData[field])">
+                      <moloch-session-field
+                        :value="linkData[field]"
+                        :session="linkData"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
+                    </span>
+                    <span v-else
+                      v-for="value in linkData[field]">
+                      <moloch-session-field
+                        :value="value"
+                        :session="linkData"
+                        :expr="fields[field].exp"
+                        :field="fields[field]"
+                        :pull-left="true">
+                      </moloch-session-field>
+                    </span>&nbsp;
+                  </dd>
+                </span>
+
+                <dt>Expressions</dt>
+                <dd>
+                  <a class="cursor-pointer no-decoration"
+                    href="javascript:void(0)"
+                    @click="addExpression('&&')">AND</a>&nbsp;
+                  <a class="cursor-pointer no-decoration"
+                    href="javascript:void(0)"
+                    @click="addExpression('||')">OR</a>
+                </dd>
+              </dl>
+
+              <a class="cursor-pointer no-decoration"
+                href="javascript:void(0)"
+                @click="hideLink">
+                <span class="fa fa-eye-slash"></span>&nbsp;
+                Hide Link
+              </a>
+
+            </div>
+          `,
+          parent: this,
+          data: {
+            linkData: linkData,
+            linkFields: this.linkFields,
+            fields: this.fieldsMap
+          },
+          methods: {
+            hideLink: function () {
+              this.$parent.closePopups();
+              svg.selectAll('.link')
+                .filter((d, i) => {
+                  return d.source.id === linkData.source.id && d.target.id === linkData.target.id;
+                })
+                .remove();
+            },
+            addExpression: function (op) {
+              let fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
+              this.$store.commit('addToExpression', { expression: fullExpression, op: op });
+            },
+            closePopup: function () {
+              this.$parent.closePopups();
+            }
+          }
+        }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      }
+
+      popupVue.linkData = linkData;
+
+      $('.connections-popup').show();
     }
   },
   beforeDestroy: function () {
     // remove listeners
+    window.removeEventListener('resize', resize);
+    window.removeEventListener('keyup', closePopupsOnEsc);
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
     d3.zoom().on('zoom', null);
@@ -788,6 +1114,10 @@ export default {
       .on('start', null)
       .on('drag', null)
       .on('end', null);
+    node.on('mouseover', null)
+      .on('mouseout', null);
+    link.on('mouseover', null)
+      .on('mouseout', null);
 
     // remove svg elements
     node.exit().remove();
@@ -796,7 +1126,12 @@ export default {
     svg.selectAll('.link').remove();
     svg.selectAll('.node').remove();
     svg.selectAll('.node-label').remove();
+    container.remove();
     svg.remove();
+
+    // destroy child component
+    $('.connections-popup').remove();
+    if (popupVue) { popupVue.$destroy(); }
 
     // clean up global vars
     svg = undefined;
@@ -804,8 +1139,10 @@ export default {
     node = undefined;
     link = undefined;
     colors = undefined;
+    popupVue = undefined;
     container = undefined;
     nodeLabel = undefined;
+    popupTimer = undefined;
     simulation = undefined;
     draggingNode = undefined;
     foregroundColor = undefined;
@@ -856,5 +1193,60 @@ export default {
 /* apply foreground theme color */
 .connections-page svg {
   fill: var(--color-foreground, #333);
+}
+</style>
+
+<style>
+/* this needs to not be scoped because it's a child component */
+/* node/link data popup */
+.connections-page div.connections-popup {
+  position: absolute;
+  left: 0;
+  top: 148px;
+  bottom: 24px;
+  display: none;
+  font-size: smaller;
+  padding: 4px 8px;
+  max-width: 400px;
+  min-width: 280px;
+  border: solid 1px var(--color-gray);
+  background: var(--color-primary-lightest);
+  white-space: nowrap;
+  overflow-x: visible;
+  overflow-y: auto;
+  text-overflow: ellipsis;
+}
+.connections-page div.connections-popup .dl-horizontal {
+  margin-bottom: var(--px-md) !important;
+}
+.connections-page div.connections-popup .dl-horizontal dt {
+  width: 100px !important;
+  text-align: left;
+}
+.connections-page div.connections-popup .dl-horizontal dd {
+  margin-left: 105px !important;
+  white-space: normal;
+}
+
+.field-vis-menu > button.btn {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;;
+}
+.field-vis-menu .dropdown-menu input {
+  width: 100%;
+}
+.field-vis-menu .dropdown-menu {
+  max-height: 300px;
+  overflow: auto;
+}
+.field-vis-menu .dropdown-header {
+  padding: .25rem .5rem 0;
+}
+.field-vis-menu .dropdown-header.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  font-size: 120%;
+  font-weight: bold;
 }
 </style>
