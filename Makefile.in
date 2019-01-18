@@ -45,12 +45,12 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/capture/plugins/snf/Makefile.in \
 	$(top_srcdir)/configure $(top_srcdir)/db/Makefile.in \
 	$(top_srcdir)/parliament/Makefile.in \
-	$(top_srcdir)/wiseService/Makefile.in \
 	$(top_srcdir)/release/Makefile.in \
 	$(top_srcdir)/tests/plugins/Makefile.in \
 	$(top_srcdir)/viewer/Makefile.in \
-	$(top_srcdir)/viewer/version.js.in compile config.guess \
-	config.sub depcomp install-sh missing ylwrap
+	$(top_srcdir)/viewer/version.js.in \
+	$(top_srcdir)/wiseService/Makefile.in compile config.guess \
+	config.sub install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -64,7 +64,7 @@ CONFIG_CLEAN_FILES = capture/Makefile capture/plugins/Makefile \
 	capture/plugins/snf/Makefile capture/plugins/lua/Makefile \
 	capture/parsers/Makefile db/Makefile tests/plugins/Makefile \
 	viewer/Makefile viewer/version.js parliament/Makefile \
-	wiseService/Makefile release/Makefile
+	release/Makefile wiseService/Makefile
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -314,9 +314,9 @@ viewer/version.js: $(top_builddir)/config.status $(top_srcdir)/viewer/version.js
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 parliament/Makefile: $(top_builddir)/config.status $(top_srcdir)/parliament/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-wiseService/Makefile: $(top_builddir)/config.status $(top_srcdir)/wiseService/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 release/Makefile: $(top_builddir)/config.status $(top_srcdir)/release/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+wiseService/Makefile: $(top_builddir)/config.status $(top_srcdir)/wiseService/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -749,15 +749,15 @@ uninstall-am:
 	tags-recursive uninstall uninstall-am
 
 install-exec-local:
-	npm install
+	npm ci
 	cp -pr notifiers @prefix@
 	@INSTALL@ -D package.json @prefix@/package.json
 	@INSTALL@ -D package-lock.json @prefix@/package-lock.json
-	(cd @prefix@ ; npm install --production)
+	(cd @prefix@ ; npm ci --production)
 	rm -f @prefix@/package-lock.json
 
 check-local:
-	npm install
+	npm ci
 
 config:
 	@prefix@/bin/Configure
