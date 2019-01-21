@@ -7388,7 +7388,7 @@ app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
      .replace('{CONFIG}', Config.getConfigFile());
 
   console.log('upload command: ', cmd);
-  child = exec(cmd, function (error, stdout, stderr) {
+  exec(cmd, function (error, stdout, stderr) {
     if (error !== null) {
       console.log('<b>exec error: ' + error);
       res.status(500);

@@ -57,7 +57,12 @@ function WISESource (api, section) {
       return;
     }
     var parts = item.split("/");
-    this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+    try {
+      this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+    } catch (e) {
+      console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
+      process.exit();
+    }
   });
 
   items = api.getConfig(section, "onlyIPs", undefined);
@@ -67,8 +72,13 @@ function WISESource (api, section) {
       if (item === "") {
         return;
       }
-      var parts = item.split("/");
-      this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+      let parts = item.split("/");
+      try {
+        this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+      } catch (e) {
+        console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
+        process.exit();
+      }
     });
   }
 
@@ -196,18 +206,41 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
     return endCb("No keyColumn set");
   }
 
+  let keyColumn = this.keyColumn.split('.');
+
+  // Convert shortcuts into array of key path
+  let shortcuts = [];
+  let shortcutsValue = [];
+  for (var k in this.shortcuts) {
+    shortcuts.push(k.split('.'));
+    shortcutsValue.push(this.shortcuts[k]);
+  }
+
   for(var i = 0; i < json.length; i++) {
-    var key = json[i][this.keyColumn];
-    var args = [];
-    if (key === undefined) {
+    // Walk the key path
+    let key = json[i];
+    for (var j = 0; key && j < keyColumn.length; j++) {
+      key = key[keyColumn[j]];
+    }
+
+    if (key === undefined || key === null) {
       continue;
     }
-    for (var k in this.shortcuts) {
-      if (json[i][k] !== undefined && json[i][k] !== null) {
-        args.push(this.shortcuts[k]);
-        args.push(json[i][k]);
+
+    var args = [];
+    // Check each shortcut
+    for (var k = 0; k < shortcuts.length; k++) {
+      var obj = json[i];
+      // Walk the shortcut path
+      for (var j = 0; obj && j < shortcuts[k].length; j++) {
+        obj = obj[shortcuts[k][j]];
+      }
+      if (obj !== undefined && obj !== null) {
+        args.push(shortcutsValue[k]);
+        args.push(obj);
       }
     }
+
     setCb(key, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
   }
   endCb(null);

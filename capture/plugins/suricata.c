@@ -469,6 +469,7 @@ void moloch_plugin_init()
         LOGEXIT("No suricataAlertFile set");
 
     g_timeout_add_seconds(1, suricata_timer, 0);
+    suricata_timer(NULL);
 
     moloch_plugins_register("suricata", FALSE);
 
