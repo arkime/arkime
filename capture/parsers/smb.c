@@ -621,6 +621,13 @@ void moloch_parser_init()
         "aliases", "[\"smb.host\"]",
         (char *)NULL);
 
+    moloch_field_define("smb", "textfield",
+        "host.smb", "Host Words", "smb.host",
+        "SMB Host Words",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        "aliases", "[\"smb.host.words\"]",
+        (char *)NULL);
+
     if (config.parseSMB) {
         moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
     }

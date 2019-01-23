@@ -512,6 +512,9 @@ export default {
         return;
       }
 
+      // Don't try and autocomplete these fields
+      if (field.noFacet || field.regex || field.type.match(/textfield/)) { return; }
+
       // regular expressions start with a forward slash
       // lists start with an open square bracket
       // don't issue query for these types of values

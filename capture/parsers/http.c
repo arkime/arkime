@@ -730,6 +730,13 @@ static const char *method_strings[] =
         "category", "host",
         (char *)NULL);
 
+    moloch_field_define("http", "lotextfield",
+        "host.http.words", "Hostname Words", "http.hostWords",
+        "HTTP host words header field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        "aliases", "[\"http.host.words\"]",
+        (char *)NULL);
+
     urlsField = moloch_field_define("http", "termfield",
         "http.uri", "URI", "http.uri",
         "URIs for request",

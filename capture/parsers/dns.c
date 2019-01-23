@@ -551,6 +551,13 @@ void moloch_parser_init()
         "category", "host",
         (char *)NULL);
 
+    moloch_field_define("dns", "lotextfield",
+        "host.dns.words", "Host Words", "dns.hostWords",
+        "DNS lookup hostname words",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        "aliases", "[\"dns.host.words\"]",
+        (char *)NULL);
+
     hostNameServerField = moloch_field_define("dns", "lotermfield",
         "host.dns.nameserver", "NS Host", "dns.nameserverHost",
         "Hostnames for Name Server",

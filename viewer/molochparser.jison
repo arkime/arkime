@@ -526,8 +526,8 @@ function stringQuery(yy, field, str) {
           }
           terms.terms[dbField].push(str);
         } else {
-          should = {match: {}};
-          should.match[dbField] = {query: str, type: "phrase", operator: "and"}
+          should = {match_phrase: {}};
+          should.match_phrase[dbField] = str;
           obj.push(should);
         }
       }
@@ -557,8 +557,8 @@ function stringQuery(yy, field, str) {
     obj = {wildcard: {}};
     obj.wildcard[dbField] = str;
   } else if (info.type.match(/textfield/)) {
-    obj = {match: {}};
-    obj.match[dbField] = {query: str, type: "phrase", operator: "and"}
+    obj = {match_phrase: {}};
+    obj.match_phrase[dbField] = str;
   } else if (info.type.match(/termfield/)) {
     obj = {term: {}};
     obj.term[dbField] = str;

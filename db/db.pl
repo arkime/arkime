@@ -695,7 +695,7 @@ sub fieldsUpdate
       "type": "lotermfield",
       "dbField": "hostall",
       "dbField2": "hostall",
-      "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
+      "regex": "(^host\\\\.(?:(?!\\\\.(cnt|words)$).)*$|\\\\.host$)"
     }');
     esPost("/${PREFIX}fields_v2/field/ip.src", '{
       "friendlyName": "Src IP",
@@ -1108,6 +1108,16 @@ sub sessions2Update
         }
       },
       {
+        "template_word_split": {
+          "match": "*Words",
+          "mapping": {
+            "analyzer": "wordSplit",
+            "type": "text",
+            "omit_norms": true
+          }
+        }
+      },
+      {
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
@@ -1144,6 +1154,90 @@ sub sessions2Update
             "type": "date"
           }
         }
+      },
+      "dhcp": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dhcp.hostWords"
+          }
+        }
+      },
+      "dns": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dns.hostWords"
+          }
+        }
+      },
+      "email": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "email.hostWords"
+          }
+        }
+      },
+      "http": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "hostWords"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "http.useragentWords"
+          },
+          "uri" : {
+            "type" : "keyword",
+            "copy_to": "http.uriWords"
+          }
+        }
+      },
+      "quic": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "quic.hostWords"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "http.useragentWords"
+          }
+        }
+      },
+      "smb": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "smb.hostWords"
+          }
+        }
+      },
+      "socks": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "socks.hostWords"
+          }
+        }
+      },
+      "oracle": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "oracle.hostWords"
+          }
+        }
       }
     }
   }
@@ -1162,7 +1256,16 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
       "refresh_interval": "60s",
       "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . '
+      "number_of_replicas": ' . $REPLICAS . ',
+      "analysis": {
+        "analyzer": {
+          "wordSplit": {
+            "type": "custom",
+            "tokenizer": "pattern",
+            "filter": ["lowercase"]
+          }
+        }
+      }
     }
   },
   "mappings":' . $mapping . '
