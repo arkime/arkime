@@ -7370,8 +7370,7 @@ app.post('/sendSessions', function(req, res) {
 });
 
 app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
-  var exec = require('child_process').exec,
-     child;
+  var exec = require('child_process').exec;
 
   var tags = '';
   if (req.body.tags) {
