@@ -124,14 +124,13 @@
           <select class="form-control input-sm"
             v-model="query.nodeDist"
             @change="changeNodeDist">
-            <option value="15">15</option>
-            <option value="25">25</option>
+            <option value="25">20</option>
             <option value="35">35</option>
             <option value="50">50</option>
-            <option value="75">75</option>
+            <option value="65">65</option>
+            <option value="70">70</option>
+            <option value="85">85</option>
             <option value="100">100</option>
-            <option value="125">125</option>
-            <option value="150">150</option>
           </select>
         </div> <!-- /node dist select -->
 
@@ -328,7 +327,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 // d3 force directed graph vars/functions ---------------------------------- */
 let colors, foregroundColor;
 let simulation, svg, container, zoom;
-let node, link, nodeLabel;
+let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
 let draggingNode;
 
@@ -491,7 +490,16 @@ export default {
       this.loadData();
     },
     '$route.query.nodeDist': function (newVal, oldVal) {
-      simulation.force('link').distance(parseInt(this.query.nodeDist));
+      simulation.force('link',
+        d3.forceLink(links).id((d) => {
+          return d.pos; // tell the links where to link
+        }).distance(parseInt(this.query.nodeDist)) // set the link distance
+      ).force(
+        'charge', // recalculate the gravity mutually amongst all nodes
+        d3.forceManyBody().strength(-parseInt(this.query.nodeDist * 2))
+      );
+
+      // restart the graph simulation
       simulation.alphaTarget(0.3).restart();
     },
     '$route.query.srcField': function (newVal, oldVal) {
@@ -736,8 +744,8 @@ export default {
       const height = $(window).height() - 171;
 
       // get the node and link data
-      const links = data.links.map(d => Object.create(d));
-      const nodes = data.nodes.map(d => Object.create(d));
+      links = data.links.map(d => Object.create(d));
+      nodes = data.nodes.map(d => Object.create(d));
 
       // setup the force directed graph
       simulation = d3.forceSimulation(nodes)
@@ -747,7 +755,11 @@ export default {
           }).distance(this.query.nodeDist) // set the link distance
         )
         // simulate gravity mutually amongst all nodes
-        .force('charge', d3.forceManyBody().strength(-50))
+        .force('charge', d3.forceManyBody().strength(-parseInt(this.query.nodeDist * 2)))
+        // prevent elements from overlapping
+        .force('collision', d3.forceCollide().radius((d) => {
+          return 2 * Math.min(3 + Math.log(d.sessions), 12);
+        }))
         // set the graph center
         .force('center', d3.forceCenter(width / 2, height / 2))
         // positioning force along x-axis for disjoint graph
@@ -791,6 +803,7 @@ export default {
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
+        if (draggingNode) { return; }
         if (popupTimer) { clearTimeout(popupTimer); }
         popupTimer = setTimeout(() => {
           this.showLinkPopup(l);
@@ -826,6 +839,7 @@ export default {
 
       // add node mouse listeners for showing focus and popups
       node.on('mouseover', (d) => {
+        if (draggingNode) { return; }
         if (popupTimer) { clearTimeout(popupTimer); }
         popupTimer = setTimeout(() => {
           this.showNodePopup(d);
