@@ -4045,6 +4045,8 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
     var field = req.query.field || 'node';
 
+    if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
+
     if (field === 'ip.dst:port') {
       query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggs: {sub: {terms: {field: 'dstPort', size: size}}}};
     } else {
