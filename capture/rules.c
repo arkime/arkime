@@ -678,6 +678,15 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]);
                 break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]);
+                break;
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->packets[0]);
                 break;
