@@ -856,10 +856,11 @@ export default {
         .data(nodes)
         .enter()
         .append('text')
-        .attr('dx', 6)
+        .attr('dx', 10)
         .attr('dy', '.35em')
         .attr('class', 'node-label')
         .style('font-size', '0.35em')
+        .style('pointer-events', 'none') // to prevent mouseover/drag capture
         .text((d) => { return d.id; });
 
       // listen on each tick of the simulation's internal timer
