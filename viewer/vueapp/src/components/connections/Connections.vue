@@ -856,7 +856,10 @@ export default {
         .data(nodes)
         .enter()
         .append('text')
-        .attr('dx', 10)
+        .attr('dx', (d) => {
+          // set label offset based on size of node radius
+          return 2 + Math.ceil(Math.min(3 + Math.log(d.sessions), 12));
+        })
         .attr('dy', '.35em')
         .attr('class', 'node-label')
         .style('font-size', '0.35em')
