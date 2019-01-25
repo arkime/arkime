@@ -29,7 +29,7 @@
               query-param="field"
               :initial-value="fieldTypeahead"
               @fieldSelected="changeField"
-              page="spigraph">
+              page="Spigraph">
             </moloch-field-typeahead>
           </div>
         </div> <!-- /field select -->

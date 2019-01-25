@@ -26,7 +26,13 @@
         <span class="fa fa-history"></span>&nbsp;
         {{ field.friendlyName }}
         <small>({{ field.exp }})</small>
+        <span class="fa fa-close pull-right mt-1"
+          @click.stop.prevent="removeFromFieldHistory(field)">
+        </span>
       </a>
+      <div v-if="filteredFieldHistory.length"
+        class="dropdown-divider">
+      </div>
       <a v-for="(field, index) in filteredFields"
         :key="field.exp"
         :class="{'active':index+filteredFieldHistory.length === current}"
@@ -193,6 +199,37 @@ export default {
       UserService.saveState({ fields: this.fieldHistory }, `fieldHistory${this.page}`);
 
       return found;
+    },
+    /**
+     * Removes an item to the field history (and results)
+     * @param {object} field The field to remove from the history
+     */
+    removeFromFieldHistory: function (field) {
+      let index = 0;
+      for (let historyField of this.fieldHistory) {
+        if (historyField.exp === field.exp) {
+          break;
+        }
+        index++;
+      }
+
+      // remove the item from the history
+      this.fieldHistory.splice(index, 1);
+
+      // find it in the field history results (displayed in the typeahead)
+      index = 0;
+      for (let historyField of this.filteredFieldHistory) {
+        if (historyField.exp === field.exp) {
+          break;
+        }
+        index++;
+      }
+
+      // remove the item from the field history resutls
+      this.filteredFieldHistory.splice(index, 1);
+
+      // save the field history for the user
+      UserService.saveState({ fields: this.fieldHistory }, `fieldHistory${this.page}`);
     }
   }
 };
@@ -206,7 +243,8 @@ export default {
 .input-group input {
   border-radius: 0 .2rem .2rem 0;
 }
-.field-typeahead a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
+.field-typeahead div.dropdown-divider {
+  margin: .15rem 0;
+  border-color: var(--color-gray);
 }
 </style>
