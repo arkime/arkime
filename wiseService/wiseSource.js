@@ -342,7 +342,7 @@ WISESource.request = function (url, file, cb) {
     console.log(error);
   })
   .on('end', () => {
-    setImmediate(cb, statusCode);
+    setTimeout(cb, 100, statusCode);
   })
   ;
 };
