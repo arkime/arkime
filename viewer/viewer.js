@@ -3190,6 +3190,11 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
       }
     }
 
+    let size = parseInt(req.query.size) || 1000;
+    if (tasks.lengh > size) {
+      tasks = tasks.slice(0, size);
+    }
+
     res.send(tasks);
   });
 });

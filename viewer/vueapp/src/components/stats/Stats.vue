@@ -110,6 +110,26 @@
           </select>
         </div> <!-- /graph hide select -->
 
+        <!-- page size select -->
+        <div class="input-group input-group-sm ml-1"
+          v-if="tabIndex !== 0">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              Page Size
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="pageSize"
+            v-on:change="pageSizeChange">
+            <option value="100">100 per page</option>
+            <option value="200">200 per page</option>
+            <option value="500">500 per page</option>
+            <option value="1000">1,000 per page</option>
+            <option value="5000">5,000 per page</option>
+            <option value="10000">10,000 per page (careful)</option>
+          </select>
+        </div> <!-- /page size select -->
+
         <!-- table data interval select -->
         <div class="input-group input-group-sm ml-1"
           v-if="tabIndex !== 0">
@@ -122,7 +142,7 @@
           </div>
           <select class="form-control input-sm"
             v-model="dataInterval"
-            v-on:change="dataIntervalChange" >
+            v-on:change="dataIntervalChange">
             <option value="5000">5 seconds</option>
             <option value="15000">15 seconds</option>
             <option value="30000">30 seconds</option>
@@ -316,6 +336,7 @@
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
+            :pageSize="pageSize"
             :user="user">
           </es-tasks>
         </b-tab>
@@ -374,7 +395,8 @@ export default {
       graphSort: this.$route.query.sort || 'asc',
       recoveryShow: this.$route.query.recoveryShow || 'notdone',
       shardsShow: this.$route.query.shardsShow || 'notstarted',
-      dataInterval: this.$route.query.refreshInterval || '5000',
+      dataInterval: this.$route.query.refreshInterval || '15000',
+      pageSize: this.$route.query.size || '1000',
       refreshData: false,
       childError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
@@ -432,6 +454,9 @@ export default {
     dataIntervalChange: function () {
       this.$router.push({ query: { ...this.$route.query, refreshInterval: this.dataInterval } });
     },
+    pageSizeChange: function () {
+      this.$router.push({ query: { ...this.$route.query, size: this.pageSize } });
+    },
     tabIndexChange: function () {
       this.$router.push({ query: { ...this.$route.query, statsTab: this.tabIndex } });
     },
@@ -462,6 +487,7 @@ export default {
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
       }
+      this.pageSize = queryParams.size || 1000;
     },
     clear: function () {
       this.searchTerm = undefined;
