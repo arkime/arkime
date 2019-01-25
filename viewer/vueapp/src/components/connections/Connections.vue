@@ -860,6 +860,10 @@ export default {
           // set label offset based on size of node radius
           return 2 + Math.ceil(Math.min(3 + Math.log(d.sessions), 12));
         })
+        .attr('id', (d) => {
+          /* eslint-disable no-useless-escape */
+          return 'id' + d.id.replace(/[\[\]:.]/g, '_') + '-label';
+        })
         .attr('dy', '.35em')
         .attr('class', 'node-label')
         .style('font-size', '0.35em')
@@ -995,6 +999,7 @@ export default {
               this.$parent.closePopups();
               /* eslint-disable no-useless-escape */
               svg.select('#id' + dataNode.id.replace(/[\[\]:.]/g, '_')).remove();
+              svg.select('#id' + dataNode.id.replace(/[\[\]:.]/g, '_') + '-label').remove();
               svg.selectAll('.link')
                 .filter(function (d, i) {
                   return d.source.id === dataNode.id || d.target.id === dataNode.id;
