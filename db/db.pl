@@ -695,7 +695,7 @@ sub fieldsUpdate
       "type": "lotermfield",
       "dbField": "hostall",
       "dbField2": "hostall",
-      "regex": "(^host\\\\.(?:(?!\\\\.(cnt|words)$).)*$|\\\\.host$)"
+      "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
     esPost("/${PREFIX}fields_v2/field/ip.src", '{
       "friendlyName": "Src IP",
@@ -1109,7 +1109,7 @@ sub sessions2Update
       },
       {
         "template_word_split": {
-          "match": "*Words",
+          "match": "*Tokens",
           "mapping": {
             "analyzer": "wordSplit",
             "type": "text",
@@ -1160,7 +1160,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "dhcp.hostWords"
+            "copy_to": "dhcp.hostTokens"
           }
         }
       },
@@ -1169,7 +1169,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "dns.hostWords"
+            "copy_to": "dns.hostTokens"
           }
         }
       },
@@ -1178,7 +1178,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "email.hostWords"
+            "copy_to": "email.hostTokens"
           }
         }
       },
@@ -1187,15 +1187,15 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "hostWords"
+            "copy_to": "http.hostTokens"
           },
           "useragent" : {
             "type" : "keyword",
-            "copy_to": "http.useragentWords"
+            "copy_to": "http.useragentTokens"
           },
           "uri" : {
             "type" : "keyword",
-            "copy_to": "http.uriWords"
+            "copy_to": "http.uriTokens"
           }
         }
       },
@@ -1204,11 +1204,11 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "quic.hostWords"
+            "copy_to": "quic.hostTokens"
           },
           "useragent" : {
             "type" : "keyword",
-            "copy_to": "http.useragentWords"
+            "copy_to": "http.useragentTokens"
           }
         }
       },
@@ -1217,7 +1217,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "smb.hostWords"
+            "copy_to": "smb.hostTokens"
           }
         }
       },
@@ -1226,7 +1226,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "socks.hostWords"
+            "copy_to": "socks.hostTokens"
           }
         }
       },
@@ -1235,7 +1235,7 @@ sub sessions2Update
         "properties": {
           "host": {
             "type": "keyword",
-            "copy_to": "oracle.hostWords"
+            "copy_to": "oracle.hostTokens"
           }
         }
       }

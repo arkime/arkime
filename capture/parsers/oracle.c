@@ -86,10 +86,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("oracle", "lotextfield",
-        "oracle.host.words", "Host Words", "oracle.hostWords",
-        "Oracle Host Words",
+        "oracle.host.tokens", "Hostname Tokens", "oracle.hostTokens",
+        "Oracle Hostname Tokens",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"host.oracle.words\"]",
+        "aliases", "[\"host.oracle.tokens\"]",
         (char *)NULL);
 
     serviceField = moloch_field_define("oracle", "lotermfield",

@@ -1,4 +1,4 @@
-use Test::More tests => 98;
+use Test::More tests => 106;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -47,6 +47,11 @@ countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host==*hub.com"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host==/.*hub.com/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host!=/.*hub.com/"));
+# dns.host.tokens tests
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host.tokens==github"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host.tokens==mx"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host.tokens==[github,mx]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-udp.pcap||file=$pwd/dns-mx.pcap)&&dns.host.tokens!=[github,mx]"));
 # dns.puny tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-punycode.pcap||file=$pwd/dns-mx.pcap)&&dns.puny==xn--80a0adav.xn--80ao21a"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-punycode.pcap||file=$pwd/dns-mx.pcap)&&dns.host==\"уаноо.қаз\""));

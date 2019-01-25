@@ -288,10 +288,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("socks", "lotextfield",
-        "host.socks.words", "Host Words", "socks.hostWords",
-        "SOCKS destination host words",
+        "host.socks.tokens", "Hostname Tokens", "socks.hostTokens",
+        "SOCKS Hostname Tokens",
         MOLOCH_FIELD_TYPE_STR,       MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"socks.host.words\"]",
+        "aliases", "[\"socks.host.tokens\"]",
         (char *)NULL);
 
     portField = moloch_field_define("socks", "integer",

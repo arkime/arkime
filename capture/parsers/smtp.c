@@ -873,10 +873,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("email", "lotextfield",
-        "host.email.words", "Hostname Words", "email.hostWords",
-        "Email Host Words",
+        "host.email.tokens", "Hostname Tokens", "email.hostTokens",
+        "Email Hostname Tokens",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"email.host.words\"]",
+        "aliases", "[\"email.host.tokens\"]",
         "requiredRight", "emailSearch",
         (char *)NULL);
 

@@ -731,10 +731,10 @@ static const char *method_strings[] =
         (char *)NULL);
 
     moloch_field_define("http", "lotextfield",
-        "host.http.words", "Hostname Words", "http.hostWords",
-        "HTTP host words header field",
+        "host.http.tokens", "Hostname Tokens", "http.hostTokens",
+        "HTTP host Tokens header field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"http.host.words\"]",
+        "aliases", "[\"http.host.tokens\"]",
         (char *)NULL);
 
     urlsField = moloch_field_define("http", "termfield",
@@ -742,6 +742,12 @@ static const char *method_strings[] =
         "URIs for request",
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
         "category", "[\"url\",\"host\"]",
+        (char *)NULL);
+
+    moloch_field_define("http", "lotextfield",
+        "http.uri.tokens", "URI Tokens", "http.uriTokens",
+        "URIs Tokens for request",
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
     xffField = moloch_field_define("http", "ip",
@@ -755,6 +761,12 @@ static const char *method_strings[] =
         "http.user-agent", "Useragent", "http.useragent",
         "User-Agent Header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    moloch_field_define("http", "lotextfield",
+        "http.user-agent.tokens", "Useragent Tokens", "http.useragentTokens",
+        "User-Agent Header Tokens",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
     tagsReqField = moloch_field_define("http", "lotermfield",

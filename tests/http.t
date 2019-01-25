@@ -1,4 +1,4 @@
-use Test::More tests => 292;
+use Test::More tests => 332;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -30,6 +30,18 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host!=www.EXample.com"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host!=[www.EXample.com,foo.com]"));
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host==[www.EXample.com,foo.com]"));
+# http.host.tokens tests
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==http://www.example"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==http://www.example/foo"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==www.example/foo"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==www.example"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens!=www.example"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens!=[www.example,foo]"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==[www.example,foo]"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==www.EXample"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens!=www.EXample"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens!=[www.EXample,foo]"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks-http-example.pcap)&&http.host.tokens==[www.EXample,foo]"));
 # http.method tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.method==GET"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.method!=GET"));
@@ -50,6 +62,14 @@ my $pwd = "*/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==a.zip"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==/.*a.zip/"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==/.*a.zip/"));
+# http.uri.tokens tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==http://samples.example.com/UpdataConfig.dat"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==samples.example.com/UpdataConfig.dat"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==samples.example.com"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==Config.dat"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==config.dat"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==a.zip"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri.tokens==b.zip"));
 # http.uri.path slash tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/.*\\/js\\/xxxxxx.js/"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==*/js/xxxxxx.j*"));
@@ -145,6 +165,9 @@ SKIP: {
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==/.*mozilla.*/"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-empty-useragent.pcap)&&http.user-agent==\"\""));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-empty-useragent.pcap)&&http.user-agent==//"));
+# http.user-agent.tokens tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent.tokens==\"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)\""));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent.tokens==\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36\""));
 # http.md5 tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40be8f5100e9beabab293c9d7bacaff0"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40Be8f5100e9beabab293c9d7bacaff0"));

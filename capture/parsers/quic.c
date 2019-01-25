@@ -244,10 +244,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("quic", "lotextfield",
-        "host.quic.words", "Hostname Words", "quic.hostWords",
-        "QUIC host words header field",
+        "host.quic.tokens", "Hostname Tokens", "quic.hostTokens",
+        "QUIC host tokens header field",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"quic.host.words\"]",
+        "aliases", "[\"quic.host.tokens\"]",
         (char *)NULL);
 
     uaField = moloch_field_define("quic", "termfield",

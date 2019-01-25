@@ -152,10 +152,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("dhcp", "lotextfield",
-        "dhcp.host.words", "Host Words", "dhcp.hostWords",
-        "DHCP Host Words",
+        "dhcp.host.tokens", "Hostname Tokens", "dhcp.hostTokens",
+        "DHCP Hostname Tokens",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"host.dhcp.words\"]",
+        "aliases", "[\"host.dhcp.tokens\"]",
         (char *)NULL);
 
     macField = moloch_field_define("dhcp", "lotermfield",

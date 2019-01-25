@@ -552,10 +552,10 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("dns", "lotextfield",
-        "host.dns.words", "Host Words", "dns.hostWords",
-        "DNS lookup hostname words",
+        "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
+        "DNS lookup hostname tokens",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"dns.host.words\"]",
+        "aliases", "[\"dns.host.tokens\"]",
         (char *)NULL);
 
     hostNameServerField = moloch_field_define("dns", "lotermfield",

@@ -1,4 +1,4 @@
-use Test::More tests => 92;
+use Test::More tests => 96;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -29,6 +29,10 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email==xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email==Xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&host.email.cnt==2"));
+
+# host.email.tokens
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email.tokens==xxxxxxxxxxxxxxxxxxxx"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email.tokens==Xxxxxxxxxxxxxxxxxxxx"));
 
 # email.bodymagic
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"application/zip\""));

@@ -347,12 +347,13 @@ exports.loadFields = function(data) {
 
     // Add some transforms
     if (!source.transform) {
-      if (source.exp === "http.uri") {
+      if (source.exp === "http.uri" || source.exp == "http.uri.tokens") {
         source.transform = "removeProtocol";
       }
       if (source.exp === "host" || source.exp.startsWith("host.")) {
         source.transform = "removeProtocolAndURI";
       }
+      console.log("ALW", source.exp, source.transform);
     }
 
     internals.fieldsMap[field._id] = source;

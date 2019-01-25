@@ -621,11 +621,11 @@ void moloch_parser_init()
         "aliases", "[\"smb.host\"]",
         (char *)NULL);
 
-    moloch_field_define("smb", "textfield",
-        "host.smb", "Host Words", "smb.host",
-        "SMB Host Words",
+    moloch_field_define("smb", "lotextfield",
+        "host.smb", "Hostname Tokens", "smb.hostTokens",
+        "SMB Host Tokens",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"smb.host.words\"]",
+        "aliases", "[\"smb.host.tokens\"]",
         (char *)NULL);
 
     if (config.parseSMB) {
