@@ -112,7 +112,7 @@
 
         <!-- page size select -->
         <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex !== 0">
+          v-if="tabIndex === 4">
           <div class="input-group-prepend">
             <span class="input-group-text">
               Page Size
