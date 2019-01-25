@@ -51,7 +51,8 @@
               :fields="fields"
               query-param="srcField"
               :initial-value="srcFieldTypeahead"
-              @fieldSelected="changeSrcField">
+              @fieldSelected="changeSrcField"
+              page="ConnectionsSrc">
             </moloch-field-typeahead>
           </div>
         </div> <!-- /src select -->
@@ -72,7 +73,8 @@
               :fields="fields"
               query-param="dstField"
               :initial-value="dstFieldTypeahead"
-              @fieldSelected="changeDstField">
+              @fieldSelected="changeDstField"
+              page="ConnectionsDst">
             </moloch-field-typeahead>
           </div>
         </div> <!-- /dst select -->
