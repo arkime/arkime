@@ -2264,11 +2264,9 @@ int moloch_db_can_quit()
  */
 LOCAL void *moloch_db_stats_thread(void *UNUSED(threadp))
 {
-    uint64_t       lastTime[4];
+    uint64_t       lastTime[4] = {0, 0, 0, 0};
     struct timeval currentTime;
     uint64_t       times[4] = {2, 5, 60, 600};
-
-    gettimeofday(&currentTime, NULL);
 
     while (1) {
         usleep(500000);
@@ -2367,5 +2365,10 @@ void moloch_db_exit()
         Destroy_Patricia(ipTree6, moloch_db_free_local_ip);
         ipTree4 = 0;
         ipTree6 = 0;
+    }
+
+    if (config.debug) {
+        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64,
+             totalPackets, totalSessions, writtenBytes, unwrittenBytes);
     }
 }
