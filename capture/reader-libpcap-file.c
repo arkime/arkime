@@ -507,6 +507,7 @@ LOCAL void reader_libpcapfile_opened()
 	if (pcap_setfilter(pcap, &bpf) == -1) {
             LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
+        pcap_freecode(&bpf);
     }
 
     readerPos++;

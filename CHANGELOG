@@ -16,6 +16,14 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.7.1 2019/02/XX
   - viewer - upgrade to d3 v5 for connections page
+  - viewer - typeahead history for spigraph/connections
+  - viewer - stats tasks page has a num item selector now
+  - wise - support json paths
+  - wise - improve alienvault loading
+  - capture - more tcpflags fields can be matched with rules
+  - capture - print more stats at exit with --debug
+  - capture - fix small bpf memory leak
+
 
 1.7.0 2019/01/17
   - NOTICE: db.pl upgrade is required
