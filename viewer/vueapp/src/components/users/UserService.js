@@ -610,6 +610,32 @@ export default {
     });
   },
 
+  /**
+  * Acknowledge the welcome message for a user
+  * @param {number} msgNum     The message number
+  *                            { userId, currentPassword, newPassword }
+  * @param {string} userId     The unique identifier for a user
+  *                            (only required if not the current user)
+  * @returns {Promise} Promise A promise object that signals the completion
+  *                            or rejection of the request.
+   */
+  acknowledgeMsg: function (msgNum, userId) {
+    return new Promise((resolve, reject) => {
+      let options = {
+        url: `user/${userId}/acknowledgeMsg`,
+        method: 'PUT',
+        data: { msgNum: msgNum }
+      };
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
   /* internal methods ---------------------------------------------------- */
   /**
    * Adds the name as a property on a view (instead of just key)
