@@ -18,6 +18,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - upgrade to d3 v5 for connections page
   - viewer - typeahead history for spigraph/connections
   - viewer - stats tasks page has a num item selector now
+  - viewer - welcome message for new users
   - wise - support json paths
   - wise - improve alienvault loading
   - capture - more tcpflags fields can be matched with rules
