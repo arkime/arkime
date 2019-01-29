@@ -13,6 +13,9 @@
       </div>
     </transition>
     <moloch-footer></moloch-footer>
+    <moloch-welcome-message
+      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)">
+    </moloch-welcome-message>
   </div>
   <div v-else>
     <moloch-upgrade-browser>
@@ -24,6 +27,7 @@
 import UserService from './components/users/UserService';
 import MolochNavbar from './components/utils/Navbar';
 import MolochFooter from './components/utils/Footer';
+import MolochWelcomeMessage from './components/utils/WelcomeMessage';
 import MolochUpgradeBrowser from './components/utils/UpgradeBrowser';
 import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
 
@@ -32,6 +36,7 @@ export default {
   components: {
     MolochNavbar,
     MolochFooter,
+    MolochWelcomeMessage,
     MolochUpgradeBrowser,
     MolochKeyboardShortcuts
   },

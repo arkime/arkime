@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 57;
+var MIN_DB_VERSION = 58;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -255,7 +255,7 @@ if (Config.get("passwordSecret")) {
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     var username = req.query.molochRegressionUser || "anonymous";
-    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
+    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
     Db.getUserCache(username, function(err, suser) {
         if (!err && suser && suser.found) {
           userCleanup(suser._source);
@@ -269,7 +269,7 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
+    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
     Db.getUserCache("anonymous", function(err, suser) {
         if (!err && suser && suser.found) {
           req.user.settings = suser._source.settings || {};
@@ -1026,15 +1026,14 @@ let settingDefaults = {
 
 // gets the current user
 app.get('/user/current', function(req, res) {
-
   let userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+    'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
 
   let clone = {};
 
   for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
-    var prop = userProps[i];
+    let prop = userProps[i];
     if (req.user.hasOwnProperty(prop)) {
       clone[prop] = req.user[prop];
     }
@@ -5753,7 +5752,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
 
   var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
 
   var query = {
     _source: columns,
@@ -5827,7 +5826,7 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       return res.molochError(403, 'User already exists');
     }
 
-    var nuser = {
+    let nuser = {
       userId: req.body.userId,
       userName: req.body.userName,
       expression: req.body.expression,
@@ -5838,7 +5837,8 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       headerAuthEnabled: req.body.headerAuthEnabled === true,
       createEnabled: req.body.createEnabled === true,
       removeEnabled: req.body.removeEnabled === true,
-      packetSearch: req.body.packetSearch === true
+      packetSearch: req.body.packetSearch === true,
+      welcomeMsgNum: 0
     };
 
     // console.log('Creating new user', nuser);
@@ -5849,6 +5849,32 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
         console.log('ERROR - add user', err, info);
         return res.molochError(403, err);
       }
+    });
+  });
+});
+
+app.put('/user/:userId/acknowledgeMsg', logAction(), checkCookieToken, function (req, res) {
+  if (!req.body.msgNum) {
+    return res.molochError(403, 'Message number required');
+  }
+
+  Db.getUser(req.params.userId, function (err, user) {
+    if (err || !user.found) {
+      console.log('update user failed', err, user);
+      return res.molochError(403, 'User not found');
+    }
+    user = user._source;
+
+    user.welcomeMsgNum = parseInt(req.body.msgNum);
+
+    Db.setUser(req.params.userId, user, function (err, info) {
+      if (Config.debug) {
+        console.log('setUser', user, err, info);
+      }
+      return res.send(JSON.stringify({
+        success: true,
+        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
+      }));
     });
   });
 });
