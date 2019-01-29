@@ -114,28 +114,6 @@
           </select>
         </div> <!-- /min connections select -->
 
-        <!-- node dist select -->
-        <div class="input-group input-group-sm ml-1">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Node distance in pixels">
-            <span class="input-group-text">
-              Node distance
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="query.nodeDist"
-            @change="changeNodeDist">
-            <option value="25">20</option>
-            <option value="35">35</option>
-            <option value="50">50</option>
-            <option value="65">65</option>
-            <option value="70">70</option>
-            <option value="85">85</option>
-            <option value="100">100</option>
-          </select>
-        </div> <!-- /node dist select -->
-
         <!-- unlock button-->
         <button class="btn btn-default btn-sm ml-1"
           v-b-tooltip.hover
@@ -153,26 +131,6 @@
           <span class="fa fa-download"></span>&nbsp;
           Export
         </button> <!-- /export button-->
-
-        <!-- zoom in/out -->
-        <div class="btn-group ml-1">
-          <button type="button"
-            class="btn btn-default btn-sm"
-            v-b-tooltip.hover
-            title="Zoom in"
-            @click="zoomConnections(2)">
-            <span class="fa fa-fw fa-plus">
-            </span>
-          </button>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            v-b-tooltip.hover
-            title="Zoom out"
-            @click="zoomConnections(0.5)">
-            <span class="fa fa-fw fa-minus">
-            </span>
-          </button>
-        </div> <!-- /zoom in/out -->
 
         <!-- node fields button -->
         <b-dropdown
@@ -302,6 +260,76 @@
         <div class="connections-popup">
         </div>
       </div> <!-- /popup area -->
+
+      <!-- zoom in/out -->
+      <div class="btn-group-vertical zoom-btns">
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          title="Zoom in"
+          @click="zoomConnections(2)">
+          <span class="fa fa-lg fa-search-plus">
+          </span>
+        </button>
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          title="Zoom out"
+          @click="zoomConnections(0.5)">
+          <span class="fa fa-lg fa-search-minus">
+          </span>
+        </button>
+      </div> <!-- /zoom in/out -->
+
+      <!-- text size increase/decrease -->
+      <div class="btn-group-vertical text-size-btns">
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          title="Increase text size (you might also want to update the node distance using the buttons just to the left)"
+          :disabled="fontSize >= 1"
+          @click="updateTextSize(0.1)">
+          <span class="fa fa-long-arrow-up">
+          </span>
+          <span class="fa fa-font">
+          </span>
+        </button>
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          :disabled="fontSize <= 0.2"
+          title="Decrease text size (you might also want to update the node distance using the buttons just to the left)"
+          @click="updateTextSize(-0.1)">
+          <span class="fa fa-long-arrow-down">
+          </span>
+          <span class="fa fa-font">
+          </span>
+        </button>
+      </div> <!-- /text size increase/decrease -->
+
+      <!-- zoom in/out -->
+      <div class="btn-group-vertical node-distance-btns">
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          title="Increase node distance"
+          @click="changeNodeDist(10)">
+          <span class="fa fa-plus">
+          </span>
+          <span class="fa fa-arrows-v">
+          </span>
+        </button>
+        <button type="button"
+          class="btn btn-default btn-sm"
+          v-b-tooltip.hover.left
+          title="Decrease node distance"
+          @click="changeNodeDist(-10)">
+          <span class="fa fa-minus">
+          </span>
+          <span class="fa fa-arrows-v">
+          </span>
+        </button>
+      </div> <!-- /zoom in/out -->
 
     </div>
 
@@ -441,7 +469,8 @@ export default {
       primaryColor: undefined,
       secondaryColor: undefined,
       tertiaryColor: undefined,
-      closePopups: closePopups
+      closePopups: closePopups,
+      fontSize: 0.4
     };
   },
   computed: {
@@ -457,7 +486,7 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
-        nodeDist: this.$route.query.nodeDist || 35,
+        nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
       };
@@ -544,7 +573,10 @@ export default {
         }
       });
     },
-    changeNodeDist: function () {
+    changeNodeDist: function (direction) {
+      this.query.nodeDist = direction > 0 ? Math.min(this.query.nodeDist + direction, 200)
+        : Math.max(this.query.nodeDist + direction, 10);
+
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -605,6 +637,13 @@ export default {
         'connections.png',
         { backgroundColor: '#FFFFFF' }
       );
+    },
+    updateTextSize: function (direction) {
+      this.fontSize = direction > 0 ? Math.min(this.fontSize + direction, 1)
+        : Math.max(this.fontSize + direction, 0.2);
+
+      svg.selectAll('.node-label')
+        .style('font-size', this.fontSize + 'em');
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
@@ -866,9 +905,9 @@ export default {
           /* eslint-disable no-useless-escape */
           return 'id' + d.id.replace(/[\[\]:.]/g, '_') + '-label';
         })
-        .attr('dy', '.35em')
+        .attr('dy', '2px')
         .attr('class', 'node-label')
-        .style('font-size', '0.35em')
+        .style('font-size', this.fontSize + 'em')
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
         .text((d) => { return d.id; });
 
@@ -1218,6 +1257,23 @@ export default {
 /* apply foreground theme color */
 .connections-page svg {
   fill: var(--color-foreground, #333);
+}
+
+/* zoom/font size/node distance buttons overlaying the graph */
+.connections-content .zoom-btns {
+  position: fixed;
+  top: 160px;
+  right: 10px;
+}
+.connections-content .text-size-btns {
+  position: fixed;
+  top: 160px;
+  right: 48px;
+}
+.connections-content .node-distance-btns {
+  position: fixed;
+  top: 160px;
+  right: 92px;
 }
 </style>
 
