@@ -633,6 +633,10 @@ LOCAL void *moloch_packet_thread(void *threadp)
                     session->port1 = ntohs(tcphdr->th_sport);
                     session->port2 = ntohs(tcphdr->th_dport);
                 }
+
+                session->tcpSeq[0] = ntohl(tcphdr->th_seq);
+                session->tcpSeq[1] = ntohl(tcphdr->th_ack);
+
                 if (moloch_http_is_moloch(session->h_hash, sessionId)) {
                     if (config.debug) {
                         char buf[1000];
