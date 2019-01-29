@@ -52,7 +52,7 @@
 # 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
 # 56 - notifiers
 # 57 - hunt notifiers
-# 58 - users message count
+# 58 - users message count and last used date
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -1474,6 +1474,9 @@ sub usersUpdate
       },
       "welcomeMsgNum": {
         "type": "integer"
+      },
+      "lastUsed": {
+        "type": "date"
       }
     }
   }

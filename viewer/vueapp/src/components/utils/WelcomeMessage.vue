@@ -3,6 +3,8 @@
   <div v-if="!dismissed"
     class="card welcome-msg">
     <div class="card-body">
+      <span class="fa fa-heart text-theme-accent">
+      </span>
       <strong class="text-theme-accent">
         Welcome {{ user.userName }}!
       </strong>
@@ -87,8 +89,9 @@ export default {
   bottom: 15px;
   left: 10px;
   z-index: 999;
-  width: 250px;
+  width: 333px;
   text-align: center;
+  font-size: 1.2rem;
 }
 
 /* apply theme color to welcome card */
@@ -100,6 +103,6 @@ export default {
           box-shadow: 4px 4px 16px -2px black;
 }
 .card > .card-body {
-  padding: 0.5rem;
+  padding: 0.8rem;
 }
 </style>
