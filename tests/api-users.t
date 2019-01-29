@@ -1,4 +1,4 @@
-use Test::More tests => 81;
+use Test::More tests => 83;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -219,6 +219,11 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json("{}"), "view: empty");
 
+# Messages
+    $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
+    ok($info->{success}, "update welcome message number");
+    $info = viewerGet("/user/current?molochRegressionUser=test1");
+    eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
 
 # Delete Users
     $json = viewerPostToken("/user/delete", "userId=test1", $token);
