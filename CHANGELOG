@@ -15,6 +15,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 1.7.1 2019/02/XX
+  - NOTICE: db.pl upgrade is required
   - viewer - upgrade to d3 v5 for connections page
   - viewer - typeahead history for spigraph/connections
   - viewer - stats tasks page has a num item selector now

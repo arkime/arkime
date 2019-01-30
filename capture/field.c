@@ -1278,9 +1278,12 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_EXSPECIAL_DST_IP:
             case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH:
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST:
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_FIN:
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_URG:
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
@@ -1376,9 +1379,12 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
             LOG("Warning - not allow to set src/dst ip/port: %s", op->str);
             break;
         case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
+        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
         case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH:
         case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST:
-        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
+        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_FIN:
+        case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_URG:
             LOG("Warning - not allow to set tcpflags: %s", op->str);
             break;
         case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
@@ -1440,9 +1446,12 @@ void moloch_field_init()
     moloch_field_by_exp_add_special_type("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
     moloch_field_by_exp_add_special_type("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("tcpflags.syn", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.syn-ack", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.ack", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("tcpflags.psh", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("tcpflags.rst", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_special_type("tcpflags.ack", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.fin", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_FIN, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.urg", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_URG, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("packets.src", MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("databytes.src", MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC, MOLOCH_FIELD_TYPE_INT);
