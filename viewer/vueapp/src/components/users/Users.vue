@@ -94,132 +94,140 @@
             <tr v-if="!users.data.length"
               key="noUsers"
               class="text-danger text-center">
-              <td colspan="12"
+              <td colspan="13"
                 class="pt-2">
                 <h6>No users match your search</h6>
               </td>
             </tr> <!-- /no results -->
             <!-- user -->
-            <template v-for="(user, index) of users.data">
+            <template v-for="(listUser, index) of users.data">
               <!-- user settings -->
-              <tr :key="user.id + 'user'">
+              <tr :key="listUser.id + 'user'">
                 <!-- /toggle settings button -->
-                <td :class="{'btn-indicator':user.hideStats || user.hideFiles || user.hidePcap || user.disablePcapDownload}">
-                  <toggle-btn v-if="user.hideStats || user.hideFiles || user.hidePcap || user.disablePcapDownload"
-                    :opened="user.expanded"
+                <td :class="{'btn-indicator':listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload}">
+                  <toggle-btn v-if="listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload"
+                    :opened="listUser.expanded"
                     v-b-tooltip.hover
                     title="This user has additional restricted permissions"
                     class="btn-toggle-user"
-                    @toggle="toggleAdvSettings(user)">
+                    @toggle="toggleAdvSettings(listUser)">
                   </toggle-btn>
                   <toggle-btn v-else
-                    :opened="user.expanded"
+                    :opened="listUser.expanded"
                     class="btn-toggle-user"
-                    @toggle="toggleAdvSettings(user)">
+                    @toggle="toggleAdvSettings(listUser)">
                   </toggle-btn>
                 </td> <!-- /toggle advanced settings button -->
                 <td class="no-wrap">
                   <div class="cell-text">
-                    {{ user.userId }}
+                    {{ listUser.userId }}
                   </div>
                 </td>
                 <td class="no-wrap">
-                  <input v-model="user.userName"
+                  <input v-model="listUser.userName"
                     class="form-control form-control-sm"
                     type="text"
-                    @input="userChanged(user)"
+                    @input="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input v-model="user.expression"
+                  <input v-model="listUser.expression"
                     class="form-control form-control-sm"
                     type="text"
-                    @input="userChanged(user)"
+                    @input="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.enabled"
-                    @change="userChanged(user)"
+                    v-model="listUser.enabled"
+                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.createEnabled"
-                    @change="userChanged(user)"
+                    v-model="listUser.createEnabled"
+                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.webEnabled"
-                    @change="userChanged(user)"
+                    v-model="listUser.webEnabled"
+                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.headerAuthEnabled"
-                    @change="userChanged(user);"
+                    v-model="listUser.headerAuthEnabled"
+                    @change="userChanged(listUser);"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.emailSearch"
-                    @change="userChanged(user)"
+                    v-model="listUser.emailSearch"
+                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.removeEnabled"
-                    @change="userChanged(user)"
+                    v-model="listUser.removeEnabled"
+                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
-                    v-model="user.packetSearch"
-                    @change="userChanged(user)"
+                    v-model="listUser.packetSearch"
+                    @change="userChanged(listUser)"
                   />
+                </td>
+                <td class="no-wrap">
+                  <span v-if="listUser.lastUsed">
+                    {{ listUser.lastUsed / 1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                  </span>
+                  <span v-else>
+                    Never
+                  </span>
                 </td>
                 <td class="no-wrap">
                   <span class="pull-right">
-                    <button v-if="user.changed"
+                    <button v-if="listUser.changed"
                       type="button"
                       class="btn btn-sm btn-success"
-                      @click="updateUser(user)"
+                      @click="updateUser(listUser)"
                       v-b-tooltip.hover
-                      :title="`Save the updated settings for ${user.userId}`">
+                      :title="`Save the updated settings for ${listUser.userId}`">
                       <span class="fa fa-save">
                       </span>
                     </button>
-                    <button v-if="user.changed"
+                    <button v-if="listUser.changed"
                       type="button"
                       class="btn btn-sm btn-warning"
                       @click="loadData"
                       v-b-tooltip.hover
-                      :title="`Cancel changed settings for ${user.userId}`">
+                      :title="`Cancel changed settings for ${listUser.userId}`">
                       <span class="fa fa-ban">
                       </span>
                     </button>
                     <button type="button"
                       class="btn btn-sm btn-theme-primary"
-                      @click="openSettings(user.userId)"
+                      @click="openSettings(listUser.userId)"
                       v-b-tooltip.hover
-                      :title="`Settings for ${user.userId}`">
+                      :title="`Settings for ${listUser.userId}`">
                       <span class="fa fa-gear">
                       </span>
                     </button>
                     <button type="button"
                       class="btn btn-sm btn-theme-secondary"
-                      @click="openHistory(user.userId)"
+                      @click="openHistory(listUser.userId)"
                       v-b-tooltip.hover
-                      :title="`History for ${user.userId}`">
+                      :title="`History for ${listUser.userId}`">
                       <span class="fa fa-history">
                       </span>
                     </button>
                     <button type="button"
                       class="btn btn-sm btn-danger"
-                      @click="deleteUser(user, index)"
+                      @click="deleteUser(listUser, index)"
                       v-b-tooltip.hover
-                      :title="`Delete ${user.userId}`">
+                      :title="`Delete ${listUser.userId}`">
                       <span class="fa fa-trash-o">
                       </span>
                     </button>
@@ -227,9 +235,9 @@
                 </td>
               </tr> <!-- /user settings -->
               <!-- advanced user settings -->
-              <tr :key="user.id + 'adv'"
-                v-if="user.expanded">
-                <td colspan="12">
+              <tr :key="listUser.id + 'adv'"
+                v-if="listUser.expanded">
+                <td colspan="13">
                   <div class="form-check form-check-inline mt-1 mb-1">
                     <strong>
                       Configure additional user permissions:
@@ -238,12 +246,12 @@
                       title="Hide the Stats page from this user">
                       <input class="form-check-input ml-3"
                         type="checkbox"
-                        :id="user.id + 'stats'"
-                        v-model="user.hideStats"
-                        @change="userChanged(user);"
+                        :id="listUser.id + 'stats'"
+                        v-model="listUser.hideStats"
+                        @change="userChanged(listUser)"
                       />
                       <label class="form-check-label"
-                        :for="user.id + 'stats'">
+                        :for="listUser.id + 'stats'">
                         Hide Stats Page
                       </label>
                     </span>
@@ -251,12 +259,12 @@
                       title="Hide the Files page from this user">
                       <input class="form-check-input ml-3"
                         type="checkbox"
-                        :id="user.id + 'files'"
-                        v-model="user.hideFiles"
-                        @change="userChanged(user);"
+                        :id="listUser.id + 'files'"
+                        v-model="listUser.hideFiles"
+                        @change="userChanged(listUser)"
                       />
                       <label class="form-check-label"
-                        :for="user.id + 'files'">
+                        :for="listUser.id + 'files'">
                         Hide Files Page
                       </label>
                     </span>
@@ -264,12 +272,12 @@
                       title="Hide packets from this user">
                       <input class="form-check-input ml-3"
                         type="checkbox"
-                        :id="user.id + 'pcap'"
-                        v-model="user.hidePcap"
-                        @change="userChanged(user);"
+                        :id="listUser.id + 'pcap'"
+                        v-model="listUser.hidePcap"
+                        @change="userChanged(listUser)"
                       />
                       <label class="form-check-label"
-                        :for="user.id + 'pcap'">
+                        :for="listUser.id + 'pcap'">
                         Hide PCAP
                       </label>
                     </span>
@@ -277,12 +285,12 @@
                       title="Disable PCAP download for this user">
                       <input class="form-check-input ml-3"
                         type="checkbox"
-                        :id="user.id + 'pcapDownload'"
-                        v-model="user.disablePcapDownload"
-                        @change="userChanged(user);"
+                        :id="listUser.id + 'pcapDownload'"
+                        v-model="listUser.disablePcapDownload"
+                        @change="userChanged(listUser)"
                       />
                       <label class="form-check-label"
-                        :for="user.id + 'pcapDownload'">
+                        :for="listUser.id + 'pcapDownload'">
                         Disable PCAP Download
                       </label>
                     </span>
@@ -520,7 +528,8 @@ export default {
         { name: 'Web Auth Header', sort: 'headerAuthEnabled', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
         { name: 'Email Search', sort: 'emailSearch', help: 'Can perform email searches' },
         { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
-        { name: 'Can Search Packets', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' }
+        { name: 'Can Search Packets', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
+        { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Moloch' }
       ]
     };
   },

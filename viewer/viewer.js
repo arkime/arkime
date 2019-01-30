@@ -92,9 +92,19 @@ if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
 
 function userCleanup(suser) {
   suser.settings = suser.settings || {};
-  if (suser.emailSearch === undefined) {suser.emailSearch = false;}
-  if (suser.removeEnabled === undefined) {suser.removeEnabled = false;}
-  if (Config.get("multiES", false)) {suser.createEnabled = false;}
+  if (suser.emailSearch === undefined) { suser.emailSearch = false; }
+  if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
+  if (Config.get('multiES', false)) { suser.createEnabled = false; }
+  let now = Date.now();
+  // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
+  if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > 60000)) {
+    suser.lastUsed = now;
+    Db.setUser(suser.userId, suser, function (err, info) {
+      if (err) {
+        console.log('user lastUsed update error', err, info);
+      }
+    });
+  }
 }
 
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
@@ -181,6 +191,7 @@ app.use('/cyberchef.htm', function(req, res, next) {
 
 
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
+
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
   app.use(function(req, res, next) {
@@ -5737,24 +5748,26 @@ app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
 });
 
 internals.usersMissing = {
-  userId: "",
-  userName: "",
-  expression: "",
+  userId: '',
+  userName: '',
+  expression: '',
   enabled: 0,
   createEnabled: 0,
   webEnabled: 0,
   headerAuthEnabled: 0,
   emailSearch: 0,
-  removeEnabled: 0
+  removeEnabled: 0,
+  lastUsed: 0
 };
+
 app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
-  var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  let columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
     'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
 
-  var query = {
+  let query = {
     _source: columns,
     sort: {},
     from: +req.body.start || 0,
@@ -5772,7 +5785,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
   }
 
   req.body.sortField = req.body.sortField || 'userId';
-  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc': 'asc'};
+  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc': 'asc' };
   query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
 
   Promise.all([Db.searchUsers(query),
@@ -5798,6 +5811,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
       recordsFiltered: results.total,
       data: results.results
     };
+
     res.send(r);
   }).catch((err) => {
     console.log('ERROR - /user/list', err);
