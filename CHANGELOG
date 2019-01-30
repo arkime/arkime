@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - typeahead history for spigraph/connections
   - viewer - stats tasks page has a num item selector now
   - viewer - welcome message for new users
+  - viewer - save the last time a user used moloch
   - wise - support json paths
   - wise - improve alienvault loading
   - capture - more tcpflags fields can be matched with rules
