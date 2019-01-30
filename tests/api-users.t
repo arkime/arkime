@@ -1,4 +1,4 @@
-use Test::More tests => 86;
+use Test::More tests => 88;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -26,22 +26,33 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #1");
+    is (!exists $users->{data}->[0]->{lastUsed}, 1, "last used doesn't exist #0");
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #2");
+
     is (exists $users->{data}->[0]->{lastUsed}, 1, "last used exists #1");
+    my $lastUsedTimestamp1 = $users->{data}->[0]->{lastUsed};
     delete $users->{data}->[0]->{lastUsed};
+
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 
 # Update User Server 1
     $json = viewerPostToken("/user/update", '{"userId":"test1", "userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "createEnabled":true, "packetSearch": false}', $token);
 
-    $users = viewerPost("/user/list", "");
+    $users = viewerPost("/user/list?molochRegressionUser=test1", "");
     is (@{$users->{data}}, 1, "Check Update #1");
+
+    sleep(2);
+
+    $users = viewerPost("/user/list", "");
     is (exists $users->{data}->[0]->{lastUsed}, 1, "last used exists #2");
+    my $lastUsedTimestamp2 = $users->{data}->[0]->{lastUsed};
+    cmp_ok($lastUsedTimestamp1, '<', $lastUsedTimestamp2);
     delete $users->{data}->[0]->{lastUsed};
+
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");

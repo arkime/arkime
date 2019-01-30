@@ -96,8 +96,9 @@ function userCleanup(suser) {
   if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
   if (Config.get('multiES', false)) { suser.createEnabled = false; }
   let now = Date.now();
+  let timespan = Config.get('regressionTests', false) ? 1 : 60000;
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
-  if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > 60000)) {
+  if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
     suser.lastUsed = now;
     Db.setUser(suser.userId, suser, function (err, info) {
       if (err) {
@@ -268,10 +269,10 @@ if (Config.get("passwordSecret")) {
     var username = req.query.molochRegressionUser || "anonymous";
     req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
     Db.getUserCache(username, function(err, suser) {
-        if (!err && suser && suser.found) {
-          userCleanup(suser._source);
-          req.user = suser._source;
-        }
+      if (!err && suser && suser.found) {
+        userCleanup(suser._source);
+        req.user = suser._source;
+      }
       next();
     });
   });
