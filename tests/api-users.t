@@ -26,7 +26,7 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #1");
-    is (!exists $users->{data}->[0]->{lastUsed}, 1, "last used doesn't exist #0");
+    is (!exists $users->{data}->[0]->{lastUsed}, 1, "last used doesn't exist #1");
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
@@ -50,7 +50,7 @@ my $pwd = "*/pcap";
     $users = viewerPost("/user/list", "");
     is (exists $users->{data}->[0]->{lastUsed}, 1, "last used exists #2");
     my $lastUsedTimestamp2 = $users->{data}->[0]->{lastUsed};
-    cmp_ok($lastUsedTimestamp1, '<', $lastUsedTimestamp2);
+    cmp_ok($lastUsedTimestamp1, '<', $lastUsedTimestamp2, "last used updated");
     delete $users->{data}->[0]->{lastUsed};
 
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
