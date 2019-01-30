@@ -1,42 +1,44 @@
 <template>
 
-  <div v-if="!dismissed"
-    class="card welcome-msg">
-    <div class="card-body">
-      <span class="fa fa-heart text-theme-accent">
-      </span>
-      <strong class="text-theme-accent">
-        Welcome {{ user.userName }}!
-      </strong>
-      Check out our
-      <a href="javascript:void(0)"
-        @click="openHelp"
-        class="no-decoration">
-        help
-      </a>
-      page for more information,
-      or click the owl on the top left.
-      <br>
-      <a href="javascript:void(0)"
-        @click="dismissMsg"
-        class="no-decoration pull-left"
-        v-b-tooltip.hover
-        title="But see this message again next time">
-        <span class="fa fa-close">
+  <transition name="slide-fade">
+    <div v-if="!dismissed"
+      class="card welcome-msg">
+      <div class="card-body">
+        <span class="fa fa-heart text-theme-accent">
         </span>
-        Dismiss
-      </a>
-      <a href="javascript:void(0)"
-        @click="acknowledgeMsg"
-        class="no-decoration pull-right"
-        v-b-tooltip.hover
-        title="Don't show me this message again">
-        Got it!
-        <span class="fa fa-thumbs-up">
-        </span>
-      </a>
+        <strong class="text-theme-accent">
+          Welcome {{ user.userName }}!
+        </strong>
+        Check out our
+        <a href="javascript:void(0)"
+          @click="openHelp"
+          class="no-decoration">
+          help
+        </a>
+        page for more information,
+        or click the owl on the top left.
+        <br>
+        <a href="javascript:void(0)"
+          @click="dismissMsg"
+          class="no-decoration pull-left"
+          v-b-tooltip.hover
+          title="But see this message again next time">
+          <span class="fa fa-close">
+          </span>
+          Dismiss
+        </a>
+        <a href="javascript:void(0)"
+          @click="acknowledgeMsg"
+          class="no-decoration pull-right"
+          v-b-tooltip.hover
+          title="Don't show me this message again">
+          Got it!
+          <span class="fa fa-thumbs-up">
+          </span>
+        </a>
+      </div>
     </div>
-  </div>
+  </transition>
 
 </template>
 
@@ -104,5 +106,17 @@ export default {
 }
 .card > .card-body {
   padding: 0.8rem;
+}
+
+/* slide/fade welcome message in/out */
+.slide-fade-enter-active {
+  transition: all .8s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(-343px);
+  opacity: 0;
 }
 </style>
