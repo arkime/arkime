@@ -25,18 +25,36 @@ extern MolochConfig_t        config;
 HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 307);
 HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
 
-#define MOLOCH_FIELD_SPECIAL_NOT_FOUND  -1
 #define MOLOCH_FIELD_SPECIAL_STOP_SPI   -2
 #define MOLOCH_FIELD_SPECIAL_STOP_PCAP  -3
 #define MOLOCH_FIELD_SPECIAL_MIN_SAVE   -4
 #define MOLOCH_FIELD_SPECIAL_DROP_SRC   -5
 #define MOLOCH_FIELD_SPECIAL_DROP_DST   -6
 #define MOLOCH_FIELD_SPECIAL_STOP_YARA  -7
+#define MOLOCH_FIELD_SPECIAL_MIN        -7
 
 LOCAL va_list empty_va_list;
 
 #define MOLOCH_FIELD_MAX_ELEMENT_SIZE 16384
 
+/******************************************************************************/
+void moloch_field_by_exp_add_special(char *exp, int pos)
+{
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
+    info->expression = exp;
+    info->pos = pos;
+    HASH_ADD(e_, fieldsByExp, info->expression, info);
+}
+/******************************************************************************/
+void moloch_field_by_exp_add_special_type(char *exp, int pos, int type)
+{
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
+    info->expression   = exp;
+    info->pos          = pos;
+    info->type         = type;
+    config.fields[pos] = info;
+    HASH_ADD(e_, fieldsByExp, info->expression, info);
+}
 /******************************************************************************/
 LOCAL int moloch_field_exp_cmp(const void *keyv, const void *elementv)
 {
@@ -325,6 +343,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
             snprintf(help2, sizeof(help2), "Unique number of %s", help);
             moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+            moloch_field_by_exp_add_special_type(g_strdup(expression2), minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
         }
     }
 
@@ -432,24 +451,6 @@ int moloch_field_by_exp(const char *exp)
     }
 
     LOGEXIT("expr %s wasn't defined", exp);
-}
-/******************************************************************************/
-void moloch_field_by_exp_add_special(char *exp, int pos)
-{
-    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression = exp;
-    info->pos = pos;
-    HASH_ADD(e_, fieldsByExp, info->expression, info);
-}
-/******************************************************************************/
-void moloch_field_by_exp_add_exspecial(char *exp, int pos, int type)
-{
-    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression   = exp;
-    info->pos          = pos;
-    info->type         = type;
-    config.fields[pos] = info;
-    HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
 void moloch_field_truncated(MolochSession_t *session, const MolochFieldInfo_t *info)
@@ -1282,6 +1283,8 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
+            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
+            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
                 break;
             }
             continue;
@@ -1382,6 +1385,10 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
             LOG("Warning - not allow to set num packets: %s", op->str);
             break;
+        case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
+        case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
+            LOG("Warning - not allow to set databytes: %s", op->str);
+            break;
         }
     } else {
         switch (config.fields[fieldPos]->type) {
@@ -1428,16 +1435,18 @@ void moloch_field_init()
     moloch_field_by_exp_add_special("_dropByDst", MOLOCH_FIELD_SPECIAL_DROP_DST);
     moloch_field_by_exp_add_special("_dontCheckYara", MOLOCH_FIELD_SPECIAL_STOP_YARA);
 
-    moloch_field_by_exp_add_exspecial("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
-    moloch_field_by_exp_add_exspecial("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
-    moloch_field_by_exp_add_exspecial("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("tcpflags.syn", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("tcpflags.psh", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("tcpflags.rst", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("tcpflags.ack", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("packets.src", MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC, MOLOCH_FIELD_TYPE_INT);
-    moloch_field_by_exp_add_exspecial("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("ip.src", MOLOCH_FIELD_EXSPECIAL_SRC_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_special_type("port.src", MOLOCH_FIELD_EXSPECIAL_SRC_PORT, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("ip.dst", MOLOCH_FIELD_EXSPECIAL_DST_IP, MOLOCH_FIELD_TYPE_IP);
+    moloch_field_by_exp_add_special_type("port.dst", MOLOCH_FIELD_EXSPECIAL_DST_PORT, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.syn", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.psh", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.rst", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("tcpflags.ack", MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("packets.src", MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("databytes.src", MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("databytes.dst", MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST, MOLOCH_FIELD_TYPE_INT);
 }
 /******************************************************************************/
 void moloch_field_exit()

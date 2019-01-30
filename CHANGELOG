@@ -24,6 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - more tcpflags fields can be matched with rules
   - capture - print more stats at exit with --debug
   - capture - fix small bpf memory leak
+  - capture - rules can support most .cnt fields
 
 
 1.7.0 2019/01/17
