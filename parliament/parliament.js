@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
+const MIN_PARLIAMENT_VERSION = 2;
+
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
 const http    = require('http');
@@ -14,6 +16,7 @@ const jwt     = require('jsonwebtoken');
 const bcrypt  = require('bcrypt');
 const glob    = require('glob');
 const os      = require('os');
+const upgrade = require('./upgrade');
 
 /* app setup --------------------------------------------------------------- */
 const app     = express();
@@ -41,6 +44,9 @@ const settingsDefault = {
   notifiers: {}
 };
 
+const parliamentReadError = `\nYou must fix this before you can run Parliament.
+  Try using parliament.example.json as a starting point`;
+
 (function () { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
@@ -56,7 +62,7 @@ const settingsDefault = {
   }
 
   function help () {
-    console.log('server.js [<config options>]\n');
+    console.log('parliament.js [<config options>]\n');
     console.log('Config Options:');
     console.log('  -c, --config   Parliament config file to use');
     console.log('  --pass         Password for updating the parliament');
@@ -137,9 +143,23 @@ if (app.get('regressionTests')) {
   });
 }
 
-// get the parliament file or create it if it doesn't exist
+// parliament object!
 let parliament;
-try {
+
+try { // check if the file exists
+  fs.accessSync(app.get('file'), fs.constants.F_OK);
+} catch (e) { // if the file doesn't exist, create it
+  try { // write the new file
+    parliament = { version: MIN_PARLIAMENT_VERSION };
+    fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
+  } catch (e) { // notify of error saving new parliament and exit
+    console.log(`Error creating new Parliament:\n\n`, e.stack);
+    console.log(parliamentReadError);
+    process.exit(1);
+  }
+}
+
+try { // get the parliament file or error out if it's unreadable
   parliament = require(`${app.get('file')}`);
   // set the password if passed in when starting the server
   // IMPORTANT! this will overwrite any password in the parliament json file
@@ -150,9 +170,9 @@ try {
     // use any existing password in the parliament json file
     app.set('password', parliament.password);
   }
-} catch (err) {
-  console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
-  console.log('\nYou must fix this before you can run Parliament\nTry using parliament.example.json as a starting point');
+} catch (e) {
+  console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, e.stack);
+  console.log(parliamentReadError);
   process.exit(1);
 }
 
@@ -431,7 +451,12 @@ function setIssue (cluster, newIssue) {
 
       issue.lastNoticed = Date.now();
 
-      if (!issue.acknowledged && !issue.ignoreUntil && !issue.alerted) {
+      // if the issue has not been acknowledged, ignored, or alerted, or
+      // if the cluster is not a no alert cluster or multiviewer cluster,
+      // build and issue an alert
+      if (!issue.acknowledged && !issue.ignoreUntil &&
+        !issue.alerted && cluster.type !== 'noAlerts' &&
+        cluster.type !== 'multiviewer') {
         buildAlert(cluster, issue);
       }
     }
@@ -691,6 +716,28 @@ function describeNotifierAlerts (settings) {
 // and sets up the parliament settings
 function initializeParliament () {
   return new Promise((resolve, reject) => {
+    if (!parliament.version || parliament.version < MIN_PARLIAMENT_VERSION) {
+      // notify of upgrade
+      console.log(
+        `WARNING - Current parliament version (${parliament.version || 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
+          Upgrading ${app.get('file')} file...\n`
+      );
+
+      // do the upgrade
+      parliament = upgrade.upgrade(parliament);
+
+      try { // write the upgraded file
+        fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
+      } catch (e) { // notify of error saving upgraded parliament and exit
+        console.log(`Error upgrading Parliament:\n\n`, e.stack);
+        console.log(parliamentReadError);
+        process.exit(1);
+      }
+
+      // notify of upgrade success
+      console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
+    }
+
     if (!parliament.groups) { parliament.groups = []; }
 
     // set id for each group/cluster
@@ -764,11 +811,11 @@ function updateParliament () {
       if (group.clusters) {
         for (let cluster of group.clusters) {
           // only get health for online clusters
-          if (!cluster.disabled) {
+          if (cluster.type !== 'disabled') {
             promises.push(getHealth(cluster));
           }
           // don't get stats for multiviewers or offline clusters
-          if (!cluster.multiviewer && !cluster.disabled) {
+          if (cluster.type !== 'multiviewer' && cluster.type !== 'disabled') {
             promises.push(getStats(cluster));
           }
         }
@@ -788,6 +835,7 @@ function updateParliament () {
             }
           );
         }
+
         // save the data created after updating the parliament
         fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
           (err) => {
@@ -1299,9 +1347,8 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
     description : req.body.description,
     url         : req.body.url,
     localUrl    : req.body.localUrl,
-    multiviewer : req.body.multiviewer,
-    disabled    : req.body.disabled,
-    id          : clusterId++
+    id          : clusterId++,
+    type        : req.body.type || undefined
   };
 
   let foundGroup = false;
@@ -1377,18 +1424,18 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
     if (group.id === parseInt(req.params.groupId)) {
       for (let cluster of group.clusters) {
         if (cluster.id === parseInt(req.params.clusterId)) {
-          cluster.title           = req.body.title;
-          cluster.description     = req.body.description;
           cluster.url             = req.body.url;
+          cluster.title           = req.body.title;
           cluster.localUrl        = req.body.localUrl;
-          cluster.multiviewer     = req.body.multiviewer;
-          cluster.disabled        = req.body.disabled;
+          cluster.description     = req.body.description;
           cluster.hideDeltaBPS    = req.body.hideDeltaBPS;
           cluster.hideDataNodes   = req.body.hideDataNodes;
           cluster.hideDeltaTDPS   = req.body.hideDeltaTDPS;
           cluster.hideTotalNodes  = req.body.hideTotalNodes;
           cluster.hideMonitoring  = req.body.hideMonitoring;
           cluster.hideMolochNodes = req.body.hideMolochNodes;
+          cluster.type            = req.body.type || undefined;
+
           foundCluster = true;
           break;
         }
