@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "groups": [
     {
       "title": "Cluster Group 1",
@@ -14,12 +14,17 @@
           "title": "Multiviewer",
           "description": "This is a multiviewer cluster!",
           "url": "multiviewer/url/here",
-          "multiviewer": true
+          "type": "multiviewer"
         },
         {
           "title": "Disabled Cluster",
           "description": "This is a disabled cluster",
-          "disabled": true
+          "type": "disabled"
+        },
+        {
+          "title": "Silent Cluster",
+          "description": "This is a silent cluster",
+          "type": "noAlerts"
         }
       ]
     },
