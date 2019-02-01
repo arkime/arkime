@@ -9,10 +9,12 @@ use strict;
 
 my $result;
 
+my $version = 2;
+
 
 # Get parliament, empty
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": []}'));
+eq_or_diff($result, from_json('{"groups": [], "version": ' . $version . '}'));
 
 
 # Set first password
@@ -37,7 +39,6 @@ delete $result->{token};
 eq_or_diff($result, from_json('{"success":true,"text":"Here\'s your new token!"}'));
 
 
-
 # Create group no title no token
 $result = parliamentPost("/parliament/api/groups", '{}');
 eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permission Denied: No token provided."}'));
@@ -56,7 +57,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new gr
 
 # Get parliament no token
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}]}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
 
 # Get settings no token
 $result = parliamentGet("/parliament/api/settings");
@@ -83,7 +84,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new gr
 
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "description for 2", "id": 1, "title": "the second title"}]}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "description for 2", "id": 1, "title": "the second title"}], "version": ' . $version .'}'));
 
 
 # Update second group no token
@@ -100,7 +101,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully updated the 
 
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id": 1, "title": "UP the second title"}]}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id": 1, "title": "UP the second title"}], "version": ' . $version .'}'));
 
 # Delete second group no token
 $result = parliamentDelete("/parliament/api/groups/1");
@@ -116,4 +117,4 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully removed the 
 
 # Get parliament after delete
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}]}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
