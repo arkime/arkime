@@ -649,9 +649,9 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)"
+              <div v-if="(cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || editMode"
                 class="card-footer small">
-                <a v-if="cluster.activeIssues && cluster.activeIssues.length && !editMode"
+                <a v-if="cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer"
                   title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
@@ -659,37 +659,39 @@
                   <span class="fa fa-check">
                   </span>
                 </a>
-                <a v-show="cluster.id !== clusterBeingEdited && editMode"
-                  class="btn btn-sm btn-outline-warning cursor-pointer"
-                  @click="displayEditClusterForm(cluster)"
-                  title="Edit cluster"
-                  v-b-tooltip.hover.right>
-                  <span class="fa fa-pencil">
+                <span v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)">
+                  <a v-show="cluster.id !== clusterBeingEdited && editMode"
+                    class="btn btn-sm btn-outline-warning cursor-pointer"
+                    @click="displayEditClusterForm(cluster)"
+                    title="Edit cluster"
+                    v-b-tooltip.hover.right>
+                    <span class="fa fa-pencil">
+                    </span>
+                  </a>
+                  <span v-show="cluster.id === clusterBeingEdited && editMode">
+                    <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                      @click="editCluster(group, cluster)"
+                      title="Save cluster"
+                      v-b-tooltip.hover.top>
+                      <span class="fa fa-save">
+                      </span>&nbsp;
+                      Save
+                    </a>
+                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
+                      @click="cancelEditCluster(cluster)"
+                      title="Cancel"
+                      v-b-tooltip.hover>
+                      <span class="fa fa-ban">
+                      </span>
+                    </a>
+                    <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
+                      @click="deleteCluster(group, cluster)"
+                      title="Delete cluster"
+                      v-b-tooltip.hover.top>
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </a>
                   </span>
-                </a>
-                <span v-show="cluster.id === clusterBeingEdited && editMode">
-                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                    @click="editCluster(group, cluster)"
-                    title="Save cluster"
-                    v-b-tooltip.hover.top>
-                    <span class="fa fa-save">
-                    </span>&nbsp;
-                    Save
-                  </a>
-                  <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
-                    @click="cancelEditCluster(cluster)"
-                    title="Cancel"
-                    v-b-tooltip.hover>
-                    <span class="fa fa-ban">
-                    </span>
-                  </a>
-                  <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
-                    @click="deleteCluster(group, cluster)"
-                    title="Delete cluster"
-                    v-b-tooltip.hover.top>
-                    <span class="fa fa-trash-o">
-                    </span>
-                  </a>
                 </span>
               </div> <!-- /edit cluster buttons -->
             </div>
