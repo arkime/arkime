@@ -649,7 +649,7 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="(cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || editMode"
+              <div v-if="(loggedIn && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (loggedIn && editMode)"
                 class="card-footer small">
                 <a v-if="cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
