@@ -448,6 +448,7 @@ typedef struct moloch_config {
     char     *pcapDirAlgorithm;
     char      corruptSavePcap;
     char      autoGenerateId;
+    char      ignoreErrors;
 } MolochConfig_t;
 
 typedef struct {

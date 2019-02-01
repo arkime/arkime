@@ -22,12 +22,15 @@ my $pwd = "*/pcap";
     $users = viewerPost("/user/list?molochRegressionUser=notadmin", "");
     eq_or_diff($users, from_json('{"text": "Need admin privileges", "success": false}'));
 
-    my $test1Token = getTokenCookie("test1");
-
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #1");
     is (!exists $users->{data}->[0]->{lastUsed}, 1, "last used doesn't exist #1");
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
+
+
+    # This will set a lastUsed time, make sure DB is updated with sleep
+    my $test1Token = getTokenCookie("test1");
+    sleep(1);
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #2");

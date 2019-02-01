@@ -1824,7 +1824,10 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
-        LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
+        if (config.ignoreErrors)
+            rc = MOLOCH_PACKET_CORRUPT;
+        else
+            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
     }
     if (rc == MOLOCH_PACKET_CORRUPT && config.corruptSavePcap) {
         moloch_packet_save_unknown_packet(2, packet);
