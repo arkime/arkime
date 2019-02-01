@@ -150,6 +150,20 @@ export default {
     });
   },
 
+  removeSelectedAcknowledgedIssues: function (issues) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.put(`api/removeSelectedAcknowledgedIssues`, {
+        issues: issues
+      })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  },
+
   ignoreIssues: function (issues, forMs) {
     return new Promise((resolve, reject) => {
       Vue.axios.put(`api/ignoreIssues`, {

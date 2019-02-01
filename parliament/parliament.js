@@ -1686,6 +1686,61 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
   writeIssues(req, res, next, successObj, errorText, true);
 });
 
+// remove one or more acknowledged issues
+router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) => {
+  if (!req.body.issues || !req.body.issues.length) {
+    let message = 'Must specify the acknowledged issue(s) to remove.';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  let count = 0;
+
+  // mark issues to remove
+  for (let i of req.body.issues) {
+    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    if (issue && issue.acknowledged) {
+      count++;
+      issue.remove = true;
+    }
+  }
+
+  if (!count) {
+    const error = new Error('There are no acknowledged issues to remove.');
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+
+  count = 0;
+  let len = issues.length;
+  while (len--) {
+    let issue = issues[len];
+    if (issue.remove) {
+      count++;
+      issues.splice(len, 1);
+    }
+  }
+
+  if (!count) {
+    let errorText = 'Unable to remove requested issue';
+    if (req.body.issues.length > 1) { errorText += 's'; }
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+
+  let successText = `Successfully removed ${count} requested issue`;
+  let errorText = 'Unable to remove the requested issue';
+  if (count > 1) {
+    successText += 's';
+    errorText += 's';
+  }
+
+  let successObj = { success:true, text:successText };
+  writeIssues(req, res, next, successObj, errorText);
+});
+
 // issue a test alert to a specified notifier
 router.post('/testAlert', (req, res, next) => {
   if (!req.body.notifier) {

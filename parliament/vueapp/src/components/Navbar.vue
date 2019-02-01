@@ -211,7 +211,7 @@ nav.navbar > .navbar-brand > img {
 }
 
 /* animations -------------------------------- */
-.hide-login, .show-login, .show-cancel-btn, .hide-cancel-btn {
+.hide-login, .show-login {
   transition: width 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940),
               opacity 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 }

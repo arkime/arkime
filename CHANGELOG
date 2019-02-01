@@ -28,6 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fix small bpf memory leak
   - capture - rules can support most .cnt fields
   - parliament - add no alert cluster type
+  - parliament - remove selected acknowledged issues
 
 
 1.7.0 2019/01/17

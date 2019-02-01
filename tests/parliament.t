@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 37;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -118,3 +118,23 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully removed the 
 # Get parliament after delete
 $result = parliamentGet("/parliament/api/parliament");
 eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
+
+# Add cluster requires url
+$result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $token . '", "title": "cluster 1"}');
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url."}'));
+
+# Add cluster
+$result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $token . '", "title": "cluster 1", "url": "super/fancy/url"}');
+ok ($result->{success});
+
+# Update cluster
+$result = parliamentPut("/parliament/api/groups/0/clusters/0", '{"token": "' . $token . '", "title": "cluster 1a", "url": "super/fancy/urla"}');
+ok ($result->{success});
+
+# Delete cluster no token
+$result = parliamentDelete("/parliament/api/groups/0/clusters/0");
+eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permission Denied: No token provided."}'));
+
+# Delete cluster
+$result = parliamentDeleteToken("/parliament/api/groups/0/clusters/0", $token);
+ok ($result->{success});
