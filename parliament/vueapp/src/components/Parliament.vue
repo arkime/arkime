@@ -333,16 +333,16 @@
                     class="form-control"
                     id="newClusterType">
                     <option value=undefined>
-                      Normal (alerts, stats and health, link)
+                      Normal (alerts, stats and health, link to cluster)
                     </option>
                     <option value="noAlerts">
-                      No Alerts (no alerts, stats and health, link)
+                      No Alerts (no alerts, stats and health, link to cluster)
                     </option>
                     <option value="multiviewer">
-                      Multiviewer (no alerts, no stats, health, link)
+                      Multiviewer (no alerts, no stats, health, link to cluster)
                     </option>
                     <option value="disabled">
-                      Disabled (no alerts, no stats or health, no link)
+                      Disabled (no alerts, no stats or health, no link to cluster)
                     </option>
                   </select>
                 </div>
@@ -363,7 +363,7 @@
             class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
             <div class="card bg-light">
               <div class="card-body">
-                <!-- TODO cluster title -->
+                <!-- cluster title -->
                 <span v-if="cluster.type !== 'disabled'"
                   class="badge badge-pill badge-secondary cursor-help pull-right"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
@@ -632,16 +632,16 @@
                         class="form-control form-control-sm"
                         id="newClusterType">
                         <option value=undefined>
-                          Normal (alerts, stats and health, link)
+                          Normal (alerts, stats and health, link to cluster)
                         </option>
                         <option value="noAlerts">
-                          No Alerts (no alerts, stats and health, link)
+                          No Alerts (no alerts, stats and health, link to cluster)
                         </option>
                         <option value="multiviewer">
-                          Multiviewer (no alerts, no stats, health, link)
+                          Multiviewer (no alerts, no stats, health, link to cluster)
                         </option>
                         <option value="disabled">
-                          Disabled (no alerts, no stats or health, no link)
+                          Disabled (no alerts, no stats or health, no link to cluster)
                         </option>
                       </select>
                     </div>
@@ -1128,7 +1128,6 @@ export default {
           newCluster.newDescription = oldCluster.newDescription;
           newCluster.newUrl = oldCluster.newUrl;
           newCluster.newLocalUrl = oldCluster.newLocalUrl;
-          newCluster.activeIssues = oldCluster.activeIssues;
           newCluster.newType = oldCluster.newType;
         }
       }
