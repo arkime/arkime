@@ -951,7 +951,6 @@ export default {
           this.$set(group, 'error', '');
           group.clusters.push(data.cluster);
           this.cancelUpdateGroup(group);
-          this.updateParliament(data.parliament);
           this.filterClusters();
         })
         .catch((error) => {
