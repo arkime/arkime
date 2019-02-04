@@ -218,10 +218,6 @@ Before submitting a pull request with your contribution, please run `npm run lin
 
   // cluster local url for fetching health/stats data (string, defaults to url if not supplied)
   localUrl: 'https://localhost:port',
-
-  // whether the cluster is offline (boolean, defaults to false)
-  // requests will not be made for health and stats for a disabled cluster
-  disabled: false,
   
   // which type of cluster this is. types include:
   // noAlerts - no alerts, stats, health, link to cluster
