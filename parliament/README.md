@@ -223,11 +223,8 @@ Before submitting a pull request with your contribution, please run `npm run lin
   // noAlerts - no alerts, stats, health, link to cluster
   // mutiviewer - no alerts, no stats, health, link to cluster
   // disabled - no alets, no stats, no health, no link to cluster
+  // (defaults to undefined)
   type: 'multiviewer',
-
-  // whether the cluster is a multiviewer (boolean, defaults to false)
-  // requests will not be made for stats for a multiviewer
-  multiviewer: false,
 
   // whether to hide delta bytes per second stats (defaults to false)
   hideDeltaBPS: false,
