@@ -31,8 +31,9 @@ The settings page has 3 sections as described below:
 **General:** this section has a few settings that pertain to issues in your Parliament.
 1. The `capture nodes must check in this often` setting controls how behind a node's cluster's timestamp can be from the current time. If the timestamp exceeds this time setting, an `Out Of Date` issue is added to the cluster. _The default for this setting is 30 seconds._
 2. The `Elasticsearch query timeout` setting controls the maxiumum Elasticsearch status query duration. If the query exceeds this time setting, an `ES Down` issue is added to the cluster. _The default for this setting is 5 seconds._
-3. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
-4. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
+3. The `Low Packets Threshold` setting controls the minumum number of packets that the capture node must receive. If the capture node is receiving not receiving enough packets, a `Low Packets` issue is added to the cluster. You can set this value to `-1` to ignore this issue altogether. This setting also includes a time range for how long this problem must persist before adding an issue to the cluster. _The default for this setting is 0 packets for 10 seconds._
+4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
+5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
 **Password:** this section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
 
@@ -221,6 +222,12 @@ Before submitting a pull request with your contribution, please run `npm run lin
   // whether the cluster is offline (boolean, defaults to false)
   // requests will not be made for health and stats for a disabled cluster
   disabled: false,
+  
+  // which type of cluster this is. types include:
+  // noAlerts - no alerts, stats, health, link to cluster
+  // mutiviewer - no alerts, no stats, health, link to cluster
+  // disabled - no alets, no stats, no health, no link to cluster
+  type: 'multiviewer',
 
   // whether the cluster is a multiviewer (boolean, defaults to false)
   // requests will not be made for stats for a multiviewer
