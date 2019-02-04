@@ -2,7 +2,7 @@
   <div id="app">
     <div v-if="compatibleBrowser">
       <parliament-navbar />
-      <router-view />
+      <router-view class="parliament-content" />
     </div>
     <div v-else>
       <parliament-upgrade-browser>
@@ -58,6 +58,10 @@ body {
   --px-xxxlg  : 2rem;       /* 32px */
   --px-xxxxlg : 3rem;       /* 48px */
   --px-xxxxxlg: 3.5rem;     /* 56px */
+}
+
+.parliament-content {
+  margin-top: 70px;
 }
 
 a.no-href { color: #007bff !important; }

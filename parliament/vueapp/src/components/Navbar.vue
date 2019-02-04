@@ -3,11 +3,17 @@
   <div>
 
     <!-- parliament navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
-      <a class="navbar-brand">
+    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
+      <router-link to="help"
+        active-class="active"
+        class="navbar-brand"
+        exact>
         <img src="../assets/header_logo.png"
-          alt="hoot" />
-      </a>
+          alt="hoot"
+          v-b-tooltip.hover
+          title="HOOT! Can I help you? Click me to see the help page"
+        />
+      </router-link>
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-5">
         <li class="nav-item mr-2">

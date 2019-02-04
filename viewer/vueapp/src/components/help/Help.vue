@@ -4,9 +4,7 @@
     <div class="container-fluid">
       <div class="row pl-2">
 
-        <div class="nav nav-pills col-1"
-          role="tablist"
-          aria-orientation="vertical">
+        <div class="nav nav-pills col-1">
           <a href="help#about"
             class="nav-link">
             <span class="fa fa-fw fa-question-circle">
