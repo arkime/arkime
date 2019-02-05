@@ -370,6 +370,8 @@ let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
 let draggingNode;
+/* eslint-disable no-useless-escape */
+let idRegex = /[\[\]:. ]/g;
 
 // drag helpers
 function dragstarted (d) {
@@ -877,8 +879,7 @@ export default {
         .append('circle')
         .attr('class', 'node')
         .attr('id', (d) => {
-          /* eslint-disable no-useless-escape */
-          return 'id' + d.id.replace(/[\[\]:.]/g, '_');
+          return 'id' + d.id.replace(idRegex, '_');
         })
         .attr('fill', (d) => {
           return colors[d.type];
@@ -916,8 +917,7 @@ export default {
           return 2 + Math.ceil(Math.min(3 + Math.log(d.sessions), 12));
         })
         .attr('id', (d) => {
-          /* eslint-disable no-useless-escape */
-          return 'id' + d.id.replace(/[\[\]:.]/g, '_') + '-label';
+          return 'id' + d.id.replace(idRegex, '_') + '-label';
         })
         .attr('dy', '2px')
         .attr('class', 'node-label')
@@ -1052,9 +1052,9 @@ export default {
           methods: {
             hideNode: function () {
               this.$parent.closePopups();
-              /* eslint-disable no-useless-escape */
-              svg.select('#id' + dataNode.id.replace(/[\[\]:.]/g, '_')).remove();
-              svg.select('#id' + dataNode.id.replace(/[\[\]:.]/g, '_') + '-label').remove();
+              let id = '#id' + dataNode.id.replace(idRegex, '_');
+              svg.select(id).remove();
+              svg.select(id + '-label').remove();
               svg.selectAll('.link')
                 .filter(function (d, i) {
                   return d.source.id === dataNode.id || d.target.id === dataNode.id;
