@@ -98,7 +98,7 @@
         <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
-            title="Min connections">
+            title="Minimum number of sessions between nodes">
             <span class="input-group-text">
               Min. Connections
             </span>
@@ -113,6 +113,25 @@
             <option value="5">5</option>
           </select>
         </div> <!-- /min connections select -->
+
+        <!-- weight select -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Change the field that calculates the radius of nodes and the width links">
+            <span class="input-group-text">
+              Node/Link Weight
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="weight"
+            @change="changeWeight">
+            <option value="sessions">Sessions</option>
+            <option value="totPackets">Packets</option>
+            <option value="totBytes">Total Raw Bytes</option>
+            <option value="totDataBytes">Total Data Bytes</option>
+          </select>
+        </div> <!-- /weight select -->
 
         <!-- unlock button-->
         <button class="btn btn-default btn-sm ml-1"
@@ -483,7 +502,8 @@ export default {
       tertiaryColor: undefined,
       closePopups: closePopups,
       fontSize: 0.4,
-      zoomLevel: 1
+      zoomLevel: 1,
+      weight: 'sessions'
     };
   },
   computed: {
@@ -585,6 +605,16 @@ export default {
           minConn: this.query.minConn
         }
       });
+    },
+    changeWeight: function () {
+      svg.selectAll('.node')
+        .attr('r', this.calculateNodeWeight);
+
+      svg.selectAll('.link')
+        .attr('stroke-width', this.calculateLinkWeight);
+
+      svg.selectAll('.node-label')
+        .attr('dx', this.calculateNodeLabelOffset);
     },
     changeNodeDist: function (direction) {
       this.query.nodeDist = direction > 0 ? Math.min(this.query.nodeDist + direction, 200)
@@ -854,9 +884,7 @@ export default {
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .attr('stroke-width', (d) => {
-          return Math.min(1 + Math.log(d.value), 12);
-        });
+        .attr('stroke-width', this.calculateLinkWeight);
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
@@ -884,9 +912,7 @@ export default {
         .attr('fill', (d) => {
           return colors[d.type];
         })
-        .attr('r', (d) => {
-          return Math.min(3 + Math.log(d.sessions), 12);
-        })
+        .attr('r', this.calculateNodeWeight)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -912,10 +938,7 @@ export default {
         .data(nodes)
         .enter()
         .append('text')
-        .attr('dx', (d) => {
-          // set label offset based on size of node radius
-          return 2 + Math.ceil(Math.min(3 + Math.log(d.sessions), 12));
-        })
+        .attr('dx', this.calculateNodeLabelOffset)
         .attr('id', (d) => {
           return 'id' + d.id.replace(idRegex, '_') + '-label';
         })
@@ -942,6 +965,18 @@ export default {
           return 'translate(' + d.x + ',' + d.y + ')';
         });
       });
+    },
+    calculateLinkWeight: function (l) {
+      let val = l[this.weight] || l.value;
+      return Math.min(1 + Math.log(val), 12);
+    },
+    calculateNodeWeight: function (n) {
+      let val = n[this.weight] || n.sessions;
+      return Math.min(3 + Math.log(val), 12);
+    },
+    calculateNodeLabelOffset: function (nl) {
+      let val = nl[this.weight] || nl.sessions;
+      return 2 + Math.ceil(Math.min(3 + Math.log(val), 12));
     },
     dbField2Type: function (dbField) {
       for (let k in this.fields) {
