@@ -966,16 +966,28 @@ export default {
         });
       });
     },
+    calculateWeightValue: function (value) {
+      if (this.weight === 'totPackets') {
+        value = Math.ceil(value / 100);
+      } else if (this.weight === 'totBytes' || this.weight === 'totDataBytes') {
+        value = Math.ceil(value / 1000000);
+      }
+
+      return value;
+    },
     calculateLinkWeight: function (l) {
       let val = l[this.weight] || l.value;
+      val = this.calculateWeightValue(val);
       return Math.min(1 + Math.log(val), 12);
     },
     calculateNodeWeight: function (n) {
       let val = n[this.weight] || n.sessions;
+      val = this.calculateWeightValue(val);
       return Math.min(3 + Math.log(val), 12);
     },
     calculateNodeLabelOffset: function (nl) {
       let val = nl[this.weight] || nl.sessions;
+      val = this.calculateWeightValue(val);
       return 2 + Math.ceil(Math.min(3 + Math.log(val), 12));
     },
     dbField2Type: function (dbField) {
