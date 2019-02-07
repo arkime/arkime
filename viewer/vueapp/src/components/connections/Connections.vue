@@ -389,6 +389,13 @@ let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
 let draggingNode;
+let nodeMax = 1;
+let nodeMin = 1;
+let linkMax = 1;
+let linkMin = 1;
+let linkScaleFactor = 0;
+let nodeScaleFactor = 0;
+let maxLog = Math.ceil(Math.pow(Math.E, 9));
 /* eslint-disable no-useless-escape */
 let idRegex = /[\[\]:. ]/g;
 
@@ -607,6 +614,8 @@ export default {
       });
     },
     changeWeight: function () {
+      this.getMinMaxForScale();
+
       svg.selectAll('.node')
         .attr('r', this.calculateNodeWeight);
 
@@ -834,6 +843,9 @@ export default {
       links = data.links.map(d => Object.create(d));
       nodes = data.nodes.map(d => Object.create(d));
 
+      // get the min/max values of links and nodes to scale the weight
+      this.getMinMaxForScale();
+
       // setup the force directed graph
       simulation = d3.forceSimulation(nodes)
         .force('link',
@@ -844,9 +856,7 @@ export default {
         // simulate gravity mutually amongst all nodes
         .force('charge', d3.forceManyBody().strength(-parseInt(this.query.nodeDist * 2)))
         // prevent elements from overlapping
-        .force('collision', d3.forceCollide().radius((d) => {
-          return 2 * Math.min(3 + Math.log(d.sessions), 12);
-        }))
+        .force('collision', d3.forceCollide().radius(this.calculateCollisionRadius))
         // set the graph center
         .force('center', d3.forceCenter(width / 2, height / 2))
         // positioning force along x-axis for disjoint graph
@@ -966,29 +976,60 @@ export default {
         });
       });
     },
-    calculateWeightValue: function (value) {
-      if (this.weight === 'totPackets') {
-        value = Math.ceil(value / 100);
-      } else if (this.weight === 'totBytes' || this.weight === 'totDataBytes') {
-        value = Math.ceil(value / 1000000);
+    getMinMaxForScale: function () {
+      let weightField = this.weight;
+
+      nodeMax = 1;
+      nodeMin = 1;
+      for (let n of nodes) {
+        if (n[weightField] !== undefined) {
+          if (n[weightField] > nodeMax) {
+            nodeMax = n[weightField];
+          }
+          if (n[weightField] < nodeMin) {
+            nodeMin = n[weightField];
+          }
+        }
       }
 
-      return value;
+      linkMax = 1;
+      linkMin = 1;
+      if (weightField === 'sessions') {
+        weightField = 'value';
+      }
+      for (let l of links) {
+        if (l[weightField] !== undefined) {
+          if (l[weightField] > linkMax) {
+            linkMax = l[weightField];
+          }
+          if (l[weightField] < linkMin) {
+            linkMin = l[weightField];
+          }
+        }
+      }
+
+      nodeScaleFactor = (nodeMax - nodeMin) / maxLog;
+      if (nodeScaleFactor < 1) { nodeScaleFactor = 1; }
+      linkScaleFactor = (linkMax - linkMin) / maxLog;
+      if (linkScaleFactor < 1) { linkScaleFactor = 1; }
     },
     calculateLinkWeight: function (l) {
       let val = l[this.weight] || l.value;
-      val = this.calculateWeightValue(val);
-      return Math.min(1 + Math.log(val), 12);
+      val = Math.max(Math.log((val - linkMin) / linkScaleFactor), 0);
+      return 1 + val;
     },
     calculateNodeWeight: function (n) {
       let val = n[this.weight] || n.sessions;
-      val = this.calculateWeightValue(val);
-      return Math.min(3 + Math.log(val), 12);
+      val = Math.max(Math.log((val - nodeMin) / nodeScaleFactor), 0);
+      return 3 + val;
     },
     calculateNodeLabelOffset: function (nl) {
-      let val = nl[this.weight] || nl.sessions;
-      val = this.calculateWeightValue(val);
-      return 2 + Math.ceil(Math.min(3 + Math.log(val), 12));
+      let val = this.calculateNodeWeight(nl);
+      return 2 + val;
+    },
+    calculateCollisionRadius: function (n) {
+      let val = this.calculateNodeWeight(n);
+      return 2 * val;
     },
     dbField2Type: function (dbField) {
       for (let k in this.fields) {
