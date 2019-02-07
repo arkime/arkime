@@ -989,6 +989,12 @@ uint32_t moloch_field_certsinfo_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
 
+    if (ci->serialNumberLen == 0) {
+        return ((ci->issuer.commonName.s_count << 18) |
+                (ci->issuer.orgName.s_count << 12) |
+                (ci->subject.commonName.s_count << 6) |
+                (ci->subject.orgName.s_count));
+    }
     return ((ci->serialNumber[0] << 28) |
             (ci->serialNumber[ci->serialNumberLen-1] << 24) |
             (ci->issuer.commonName.s_count << 18) |
