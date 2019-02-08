@@ -310,6 +310,13 @@ LOCAL void hsrp_udp_classify(MolochSession_t *session, const unsigned char *data
         moloch_session_add_protocol(session, "hsrpv2");
 }
 /******************************************************************************/
+LOCAL void safet_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 24 || data[2] != len)
+        return;
+    moloch_session_add_protocol(session, "safet");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -473,6 +480,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("hsrp",  NULL, 2029, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
 
     moloch_parsers_classifier_register_tcp("elasticsearch", "elasticsearch", 0, (unsigned char*)"ES\x00\x00", 4, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("safet",  NULL, 23294, MOLOCH_PARSERS_PORT_UDP, safet_udp_classify);
 
 
     userField = moloch_field_by_db("user");
