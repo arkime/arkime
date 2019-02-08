@@ -4475,8 +4475,11 @@ function buildConnections(req, res, cb) {
         for (let vsrc of asrc) {
           for (let vdst of adst) {
             if (dstIsIp && dstipport) {
-              if (vdst.includes(':')) { vdst = `[${vdst}]`; }
-              vdst += ':' + f.dstPort;
+              if (vdst.includes(':')) {
+                vdst += '.' + f.dstPort;
+              } else {
+                vdst += ':' + f.dstPort;
+              }
             }
             process(vsrc, vdst, f, fields);
           }

@@ -22,6 +22,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - welcome message for new users
   - viewer - save the last time a user used moloch
   - viewer - two --debug will display why proxying traffic
+  - viewer - connections now uses ipv6.port and ipv4:port
   - wise - support json paths
   - wise - improve alienvault loading
   - capture - more tcpflags fields can be matched with rules
