@@ -696,7 +696,7 @@ function proxyRequest (req, res, errCb) {
       if (errCb) {
         return errCb(e);
       }
-      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
+      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e, "You might want to run viewer with two --debug for more info");
       res.send(`Error talking to node '${safeStr(req.params.nodeName)}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
     });
     preq.end();
@@ -729,12 +729,18 @@ function makeRequest (node, path, user, cb) {
 
 function isLocalView (node, yesCb, noCb) {
   if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
+    }
     return yesCb();
   }
 
   var pcapWriteMethod = Config.getFull(node, "pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
   if (writer && writer.localNode === false) {
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is local view because of writer`);
+    }
     return yesCb();
   }
   return Db.isLocalView(node, yesCb, noCb);
@@ -7906,5 +7912,6 @@ Db.initialize({host: internals.elasticBase,
                nodeName: Config.nodeName(),
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
-               ca: loadCaTrust(internals.nodeName)
+               ca: loadCaTrust(internals.nodeName),
+               debug: Config.debug
               }, main);

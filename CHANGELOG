@@ -21,14 +21,17 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - stats tasks page has a num item selector now
   - viewer - welcome message for new users
   - viewer - save the last time a user used moloch
+  - viewer - two --debug will display why proxying traffic
   - wise - support json paths
   - wise - improve alienvault loading
   - capture - more tcpflags fields can be matched with rules
   - capture - print more stats at exit with --debug
   - capture - fix small bpf memory leak
   - capture - rules can support most .cnt fields
+  - capture - fix OBR if cert has no serial
   - parliament - add no alert cluster type
   - parliament - remove selected acknowledged issues
+  - parliment - add help page
 
 
 1.7.0 2019/01/17
