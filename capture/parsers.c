@@ -919,8 +919,11 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     c->minlen   = matchlen + offset;
     c->func     = func;
 
-    if (config.debug)
-        LOG("adding %s matchlen:%d offset:%d match %s ", name, matchlen, offset, match);
+    if (config.debug) {
+        char hex[1000];
+        moloch_sprint_hex_string(hex, match, matchlen);
+        LOG("adding %s matchlen:%d offset:%d match %s (0x%s)", name, matchlen, offset, match, hex);
+    }
     if (matchlen == 0 || offset != 0) {
         moloch_parsers_classifier_add(&classifersTcp0, c);
     } else if (matchlen == 1) {
