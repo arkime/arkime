@@ -692,6 +692,69 @@ void moloch_mlockall_init()
 #endif
 }
 /******************************************************************************/
+#ifdef FUZZLOCH
+
+/* This replaces main for libFuzzer.  Basically initialized everything like main
+ * would for starting up and set some important settings.  Must be run from tests
+ * directory, and config.test.ini will be loaded for fuzz node.
+ */
+
+MolochPacketBatch_t   batch;
+
+int
+LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
+{
+    config.configFile = g_strdup("config.test.ini");
+    config.dryRun = 1;
+    config.pcapReadOffline = 1;
+    config.hostName = strdup("fuzz.example.com");
+    config.nodeName = strdup("fuzz");
+    moloch_free_later_init();
+    moloch_hex_init();
+    moloch_config_init();
+    moloch_writers_init();
+    moloch_writers_start("null");
+    moloch_readers_init();
+    moloch_readers_set("null");
+    moloch_plugins_init();
+    moloch_field_init();
+    moloch_http_init();
+    moloch_db_init();
+    moloch_packet_init();
+    moloch_config_load_local_ips();
+    moloch_config_load_packet_ips();
+    moloch_yara_init();
+    moloch_parsers_init();
+    moloch_session_init();
+    moloch_plugins_load(config.plugins);
+    moloch_rules_init();
+    moloch_packet_batch_init(&batch);
+    return 0;
+}
+
+/******************************************************************************/
+/* In libFuzzer mode this is called for each packet.
+ * There are no packet threads in fuzz mode, and the batch call will actually
+ * process the packet.  The current time just increases for each packet.
+ */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    static int            ts = 10000;
+
+    packet->pktlen        = size;
+    packet->pkt           = (u_char *)data;
+    packet->ts.tv_sec     = ts++;
+    packet->ts.tv_usec    = 0;
+    packet->readerFilePos = 0;
+    packet->readerPos     = 0;
+
+    // In FUZZ mode batch will actually process it
+    moloch_packet_batch(&batch, packet);
+
+    return 0;
+}
+
+#else
 int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
@@ -755,3 +818,4 @@ int main(int argc, char **argv)
     free_args();
     exit(0);
 }
+#endif

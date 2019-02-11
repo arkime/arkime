@@ -52,6 +52,8 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
             LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
             break;*/
         case 8:
+            if (length != 4)
+                return 0;
             memcpy(&in.s_addr, value, 4);
             moloch_field_ip4_add(framedIpField, session, in.s_addr);
             break;

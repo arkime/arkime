@@ -432,7 +432,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
         char buf[100];
-        LOG("Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+        LOG("ERROR - Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
