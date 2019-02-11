@@ -1216,6 +1216,9 @@ LOCAL int moloch_packet_ip4_gtp(MolochPacketBatch_t *batch, MolochPacket_t * con
     while (next != 0 && !BSB_IS_ERROR(bsb)) {
         uint8_t extlen = 0;
         BSB_IMPORT_u08(bsb, extlen);
+        if (extlen == 0) {
+            return MOLOCH_PACKET_CORRUPT;
+        }
         BSB_IMPORT_skip(bsb, extlen*4-2);
         BSB_IMPORT_u08(bsb, next);
     }

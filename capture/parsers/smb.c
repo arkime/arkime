@@ -59,6 +59,9 @@ typedef struct {
 /******************************************************************************/
 LOCAL void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
 {
+    if (len == 0)
+        return;
+
     GError *error = 0;
     gsize bread, bwritten;
 
@@ -295,6 +298,8 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
         BSB_IMPORT_skip(*bsb, wordcount*2+3);
+        if (BSB_IS_ERROR(*bsb))
+            return 1;
         smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
