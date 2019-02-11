@@ -26,7 +26,7 @@ LOCAL  int verField;
 LOCAL  int fnField;
 LOCAL  int shareField;
 
-#define MAX_SMB_BUFFER 4096
+#define MAX_SMB_BUFFER 8192
 typedef struct {
     char               buf[2][MAX_SMB_BUFFER];
     uint32_t           remlen[2];
@@ -59,13 +59,17 @@ typedef struct {
 /******************************************************************************/
 LOCAL void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
 {
+    if (len == 0)
+        return;
+
     GError *error = 0;
     gsize bread, bwritten;
 
     if (useunicode) {
         char *out = g_convert(buf, len, "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
-            LOG("ERROR %s", error->message);
+            if (config.debug)
+                LOG("ERROR %s", error->message);
             g_error_free(error);
         } else {
             if (!moloch_field_string_add(field, session, out, -1, FALSE)) {
@@ -146,12 +150,13 @@ LOCAL void smb_security_blob(MolochSession_t *session, unsigned char *data, int 
 /******************************************************************************/
 LOCAL void smb1_str_null_split(char *buf, int len, char **out, int max)
 {
-    memset(out, 0, max*sizeof(char *));
-    out[0] = buf;
+    memset(out, 0, max * sizeof(char *));
     int i, p;
-    for (i = 0, p=1; i < len-1 && p < max; i++) {
+    int start = 0;
+    for (i = 0, p = 0; i < len && p < max; i++) {
         if (buf[i] == 0) {
-            out[p] = buf + i + 1;
+            out[p] = buf + start;
+            start = i + 1;
             p++;
         }
     }
@@ -171,7 +176,8 @@ LOCAL void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, 
     }
 
     if (error) {
-        LOG("ERROR %s", error->message);
+        if (config.debug)
+            LOG("ERROR %s", error->message);
         g_error_free(error);
         return;
     }
@@ -205,7 +211,8 @@ LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int l
     }
 
     if (error) {
-        LOG("ERROR %s", error->message);
+        if (config.debug)
+            LOG("ERROR %s", error->message);
         g_error_free(error);
         return;
     }
@@ -291,6 +298,8 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
         BSB_IMPORT_skip(*bsb, wordcount*2+3);
+        if (BSB_IS_ERROR(*bsb))
+            return 1;
         smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
@@ -305,6 +314,10 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         BSB_IMPORT_skip(*bsb, 2 + passlength);
 
         int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
+
+        if (BSB_IS_ERROR(*bsb) || offset > BSB_REMAINING(*bsb)) {
+            return 1;
+        }
         smb_add_string(session, shareField, (char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb)-offset, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
@@ -312,6 +325,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
     case SMB1_SETUP_ANDX: { // http://msdn.microsoft.com/en-us/library/ee441849.aspx
         if (BSB_REMAINING(*bsb) < *remlen) {
+            BSB_SET_ERROR(*bsb);
             return 1;
         }
         int wordcount = 0;
@@ -325,6 +339,10 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
             BSB_IMPORT_skip(*bsb, 10);
 
+            if (securitylen > BSB_REMAINING(*bsb)) {
+                BSB_SET_ERROR(*bsb);
+                return 1;
+            }
             smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
             BSB_IMPORT_skip(*bsb, securitylen);
 
@@ -486,7 +504,9 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
         }
 
         if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
+#ifndef FUZZLOCH
             LOG("ERROR - Not enough room for SMB packet %u", *remlen);
+#endif
             moloch_parsers_unregister(session, smb);
             return 0;
         }
@@ -538,7 +558,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         if (BSB_REMAINING(bsb) > 0 && BSB_WORK_PTR(bsb) != (unsigned char *)buf) {
 #ifdef SMBDEBUG
-            LOG("  Moving data %ld %s", BSB_REMAINING(bsb), moloch_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
+            //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), moloch_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
             if (BSB_REMAINING(bsb) > MAX_SMB_BUFFER) {
                 LOG("ERROR - Not enough room for SMB packet %ld", BSB_REMAINING(bsb));

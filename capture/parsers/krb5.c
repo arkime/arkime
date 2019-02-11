@@ -258,7 +258,7 @@ LOCAL int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned cha
 /******************************************************************************/
 LOCAL void krb5_tcp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (which !=0 || data[0] != 0 || data[1] != 0)
+    if (len < 2 || which != 0 || data[0] != 0 || data[1] != 0)
         return;
 
     KRB5Info_t            *krb5          = MOLOCH_TYPE_ALLOC(KRB5Info_t);

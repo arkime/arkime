@@ -26,7 +26,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lpthread -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c packet.c session.c rules.c drophash.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c packet.c session.c rules.c drophash.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
@@ -34,6 +34,7 @@ bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
 SANITIZE_FLAGS  = -DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+FUZZ_FLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
@@ -61,6 +62,20 @@ sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	-rm */*.so
 	(cd parsers; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
 	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
+
+fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+	$(CC) $(FUZZ_FLAGS) -fPIC -g -O0 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
+	    $(INCLUDE_PCAP) \
+	    $(INCLUDE_OTHER) \
+	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
+	$(CC) $(FUZZ_FLAGS) -rdynamic -ggdb $(O_FILES) -o fuzzloch-capture \
+            @UNDEFINED_FLAGS@ \
+	    $(LIB_PCAP) \
+	    $(LIB_OTHER) \
+	    -lm -lresolv -lmagic -lffi -lz
+	-rm */*.so
+	(cd parsers; $(MAKE) SANITIZE_FLAGS="$(FUZZ_FLAGS)")
+	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(FUZZ_FLAGS)")
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
