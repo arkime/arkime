@@ -69,7 +69,7 @@ fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
 	$(CC) $(FUZZ_FLAGS) -rdynamic -ggdb $(O_FILES) -o fuzzloch-capture \
-            -u _g_checksum_update -u _g_hmac_update -ljansson \
+            @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lm -lresolv -lmagic -lffi -lz

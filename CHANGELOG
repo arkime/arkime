@@ -30,6 +30,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fix small bpf memory leak
   - capture - rules can support most .cnt fields
   - capture - fix OBR if cert has no serial
+  - capture - libfuzzer support and initial fixes
   - parliament - add no alert cluster type
   - parliament - remove selected acknowledged issues
   - parliment - add help page

@@ -739,12 +739,13 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
-    static int            ts = 10000;
+    static uint64_t       ts = 10000;
 
     packet->pktlen        = size;
     packet->pkt           = (u_char *)data;
-    packet->ts.tv_sec     = ts++;
-    packet->ts.tv_usec    = 0;
+    packet->ts.tv_sec     = ts >> 4;
+    packet->ts.tv_usec    = ts & 0x8;
+    ts++;
     packet->readerFilePos = 0;
     packet->readerPos     = 0;
 

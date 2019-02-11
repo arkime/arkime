@@ -430,7 +430,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
     HASH_ADD_HASH(h_, sessions[thread][ses], hash, sessionId, session);
     DLL_PUSH_TAIL(q_, &sessionsQ[thread][ses], session);
 
-    if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
+    if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
         char buf[100];
         LOG("ERROR - Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
     }
