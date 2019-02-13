@@ -40,9 +40,8 @@
     </div> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="form-group ml-1"
-      @keydown.enter.esc="closeStartPicker">
-      <div class="input-group input-group-sm">
+    <div class="form-group ml-1">
+      <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
           placement="topright"
           v-b-tooltip.hover
@@ -51,29 +50,20 @@
             Start
           </span>
         </span>
-        <flat-pickr v-model="localStartTime"
-          @on-change="changeStartTime"
-          @on-close="validateDate"
-          :config="startTimeConfig"
-          class="form-control"
+        <date-picker v-model="localStartTime"
+          :config="datePickerOptions"
+          @dp-change="changeStartTime"
           name="startTime"
           ref="startTime"
+          id="startTime"
           tabindex="4">
-        </flat-pickr>
-        <div class="input-group-append">
-          <button class="btn btn-default"
-            @click="toggleStartPicker"
-            type="button">
-            <span class="fa fa-calendar-o"></span>
-          </button>
-        </div>
+        </date-picker>
       </div>
     </div> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="form-group ml-1"
-      @keydown.enter.esc="closeStopPicker">
-      <div class="input-group input-group-sm">
+    <div class="form-group ml-1">
+      <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
           placement="topright"
           v-b-tooltip.hover
@@ -82,22 +72,14 @@
             End
           </span>
         </span>
-        <flat-pickr v-model="localStopTime"
-          @on-change="changeStopTime"
-          @on-close="validateDate"
-          :config="stopTimeConfig"
-          class="form-control"
+        <date-picker v-model="localStopTime"
+          :config="datePickerOptions"
+          @dp-change="changeStopTime"
           name="stopTime"
           ref="stopTime"
+          id="stopTime"
           tabindex="5">
-        </flat-pickr>
-        <div class="input-group-append">
-          <button class="btn btn-default"
-            @click="toggleStopPicker"
-            type="button">
-            <span class="fa fa-calendar-o"></span>
-          </button>
-        </div>
+        </date-picker>
       </div>
     </div> <!-- /stop time -->
 
@@ -174,20 +156,27 @@
 <script>
 import FocusInput from '../utils/FocusInput';
 
-import flatPickr from 'vue-flatpickr-component';
-import 'flatpickr/dist/flatpickr.css';
-import 'flatpickr/dist/themes/dark.css';
+import datePicker from 'vue-bootstrap-datetimepicker';
+import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
 let currentTimeSec;
 let dateChanged = false;
+let startDateCheck;
+let stopDateCheck;
+let timeRangeUpdated = false;
 
 export default {
   name: 'MolochTime',
-  components: { flatPickr },
+  components: { datePicker },
   directives: { FocusInput },
-  props: [ 'timezone', 'hideBounding', 'hideInterval', 'updateTime' ],
+  props: [
+    'timezone',
+    'hideBounding',
+    'hideInterval',
+    'updateTime'
+  ],
   data: function () {
     return {
       deltaTime: null,
@@ -196,32 +185,16 @@ export default {
       timeInterval: this.$route.query.interval || 'auto',
       // use start/stop time localized to this component so that the time
       // watcher can compare time values to local (unaffected) start/stop times
-      localStartTime: undefined,
       localStopTime: undefined,
-      // date configs must be separate
-      startTimeConfig: {
-        dateFormat: 'U', // seconds from Jan 1, 1970
-        wrap: true, // for input groups
-        altFormat: 'Y/m/d H:i:S', // 'yyyy/MM/dd HH:mm:ss'
-        altInput: true, // input date display differs from model
-        allowInput: true, // let user edit the input manually
-        enableTime: true, // display time picker
-        enableSeconds: true, // display seconds in time picker
-        minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
-        time_24hr: true, // show 24 hour time instead of am/pm
-        parseDate: this.parseTimezoneDate // show the date in the user configured timezone
-      },
-      stopTimeConfig: {
-        dateFormat: 'U', // seconds from Jan 1, 1970
-        wrap: true, // for input groups
-        altFormat: 'Y/m/d H:i:S', // 'yyyy/MM/dd HH:mm:ss'
-        altInput: true, // input date display differs from model
-        allowInput: true, // let user edit the input manually
-        enableTime: true, // display time picker
-        enableSeconds: true, // display seconds in time picker
-        minuteIncrement: 1, // increment minutes by 1 instead of 5 (default)
-        time_24hr: true, // show 24 hour time instead of am/pm
-        parseDate: this.parseTimezoneDate // show the date in the user configured timezone
+      localStartTime: undefined,
+      datePickerOptions: {
+        useCurrent: false,
+        format: 'YYYY/MM/DD HH:mm:ss',
+        timeZone: this.timezone === 'local' || this.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'GMT',
+        showClose: true,
+        focusOnShow: false,
+        showTodayButton: true,
+        allowInputToggle: true
       }
     };
   },
@@ -233,11 +206,18 @@ export default {
     'time': {
       deep: true,
       handler (newVal, oldVal) {
-        if (newVal && oldVal &&
-          (newVal.stopTime !== this.localStopTime ||
-          newVal.startTime !== this.localStartTime)) {
-          dateChanged = true;
-          this.validateDate();
+        if (newVal && oldVal) {
+          if (newVal.stopTime !== stopDateCheck) {
+            dateChanged = true;
+            stopDateCheck = newVal.stopTime;
+            this.localStopTime = moment(newVal.stopTime * 1000);
+          }
+
+          if (newVal.startTime !== startDateCheck) {
+            dateChanged = true;
+            startDateCheck = newVal.startTime;
+            this.localStartTime = moment(newVal.startTime * 1000);
+          }
         }
       }
     },
@@ -316,26 +296,28 @@ export default {
           startTime: undefined
         }
       });
+
+      timeRangeUpdated = true;
     },
     /**
      * Fired when start datetime is changed
      * Notes that the date has changed so it can be validated
      */
-    changeStartTime: function (selectedDates, dateStr, instance) {
-      if (this.time.startTime !== dateStr) {
-        dateChanged = true;
-        this.time.startTime = this.localStartTime = dateStr;
-      }
+    changeStartTime: function (event) {
+      timeRangeUpdated = false;
+      let msDate = event.date.valueOf();
+      this.time.startTime = Math.floor(msDate / 1000);
+      this.validateDate();
     },
     /**
      * Fired when stop datetime is changed
      * Notes that the date has changed so it can be validated
      */
-    changeStopTime: function (selectedDates, dateStr, instance) {
-      if (this.time.stopTime !== dateStr) {
-        dateChanged = true;
-        this.time.stopTime = this.localStopTime = dateStr;
-      }
+    changeStopTime: function (event) {
+      timeRangeUpdated = false;
+      let msDate = event.date.valueOf();
+      this.time.stopTime = Math.ceil(msDate / 1000);
+      this.validateDate();
     },
     /**
      * Fired when change bounded select box is changed
@@ -373,7 +355,10 @@ export default {
       dateChanged = false;
 
       this.timeError = '';
-      this.timeRange = '0'; // custom time range
+
+      // if the time range wasn't updated, we can assume that the start/stop
+      // times were udpated, so set the timerange to custom
+      if (!timeRangeUpdated) { this.timeRange = '0'; }
 
       let stopSec = parseInt(this.time.stopTime, 10);
       let startSec = parseInt(this.time.startTime, 10);
@@ -390,18 +375,6 @@ export default {
 
       // update the displayed time range
       this.deltaTime = stopSec - startSec;
-    },
-    closeStartPicker: function () {
-      this.$refs.startTime.fp.close();
-    },
-    toggleStartPicker: function () {
-      this.$refs.startTime.fp.toggle();
-    },
-    closeStopPicker: function () {
-      this.$refs.stopTime.fp.close();
-    },
-    toggleStopPicker: function () {
-      this.$refs.stopTime.fp.toggle();
     },
     onOffTimeRangeFocus: function () {
       this.focusTimeRange = false;
@@ -421,13 +394,17 @@ export default {
 
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time
-        this.time.stopTime = this.localStopTime = currentTimeSec.toString();
-        this.time.startTime = this.localStartTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+        this.localStopTime = moment(currentTimeSec * 1000);
+        this.time.stopTime = currentTimeSec.toString();
+        this.localStartTime = moment((currentTimeSec - (hourSec * this.timeRange)) * 1000);
+        this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
       }
 
       if (parseInt(this.timeRange, 10) === -1) { // all time
-        this.time.startTime = this.localStartTime = (hourSec * 5).toString();
-        this.time.stopTime = this.localStopTime = (currentTimeSec).toString();
+        this.localStartTime = moment(0);
+        this.time.startTime = '0';
+        this.localStopTime = moment(currentTimeSec * 1000);
+        this.time.stopTime = currentTimeSec.toString();
       }
     },
     /**
@@ -440,11 +417,15 @@ export default {
       if (date) { // time range is available
         this.timeRange = date;
         if (parseInt(this.timeRange, 10) === -1) { // all time
-          this.time.startTime = this.localStartTime = (hourSec * 5).toString();
-          this.time.stopTime = this.localStopTime = currentTimeSec.toString();
+          this.localStartTime = moment(0);
+          this.time.startTime = '0';
+          this.localStopTime = moment(currentTimeSec * 1000);
+          this.time.stopTime = currentTimeSec.toString();
         } else if (this.timeRange > 0) {
-          this.time.stopTime = this.localStopTime = currentTimeSec.toString();
-          this.time.startTime = this.localStartTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
+          this.localStopTime = moment(currentTimeSec * 1000);
+          this.time.stopTime = currentTimeSec.toString();
+          this.localStartTime = moment((currentTimeSec - (hourSec * this.timeRange)) * 1000);
+          this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
         }
       } else if (startTime && stopTime) {
         // start and stop times available
@@ -454,8 +435,10 @@ export default {
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
           // if we can parse start and stop time, set them
           this.timeRange = '0'; // custom time range
-          this.time.stopTime = this.localStopTime = stop;
-          this.time.startTime = this.localStartTime = start;
+          this.localStopTime = moment(stop * 1000);
+          this.time.stopTime = stop;
+          this.localStartTime = moment(start * 1000);
+          this.time.startTime = start;
 
           stop = parseInt(stop, 10);
           start = parseInt(start, 10);
@@ -499,50 +482,21 @@ export default {
 
       if (newParams.stopTime && newParams.stopTime !== oldParams.stopTime) {
         change = true;
-        this.time.stopTime = this.localStopTime = newParams.stopTime;
+        this.time.stopTime = newParams.stopTime;
+        this.localStopTime = moment(newParams.stopTime * 1000);
       }
 
       if (newParams.startTime && newParams.startTime !== oldParams.startTime) {
         change = true;
-        this.time.startTime = this.localStartTime = newParams.startTime;
+        this.time.startTime = newParams.startTime;
+        this.localStartTime = moment(newParams.startTime * 1000);
       }
 
       if (change) { this.$emit('timeChange'); }
-    },
-    /**
-     * Parses a date number into a date string in the user configured timezone
-     * @param {number} date Seconds from 1970
-     */
-    parseTimezoneDate: function (date) {
-      date = date * 1000; // seconds to ms
-
-      let timezonedDate;
-
-      if (this.timezone === 'gmt') {
-        timezonedDate = moment.tz(date, 'gmt');
-      } else {
-        timezonedDate = moment(date);
-      }
-
-      return new Date(
-        timezonedDate.year(),
-        timezonedDate.month(),
-        timezonedDate.date(),
-        timezonedDate.hour(),
-        timezonedDate.minute(),
-        timezonedDate.second()
-      );
     }
   }
 };
 </script>
-
-<style>
-input.form-control.flatpickr-input {
-  font-size: var(--px-lg);
-  max-width: 130px;
-}
-</style>
 
 <style scoped>
 .time-form {
@@ -561,5 +515,9 @@ select.form-control {
 
 .time-range-control {
   -webkit-appearance: none;
+}
+
+.input-group-time input.form-control {
+  font-size: 75%;
 }
 </style>
