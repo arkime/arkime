@@ -14,6 +14,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.8.0 2019/03/XX
+  - NOTICE: This will be the last version to support ES 5
+
 1.7.1 2019/02/14
   - NOTICE: db.pl upgrade is required
   - viewer - upgrade to d3 v5 for connections page
