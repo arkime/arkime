@@ -53,6 +53,7 @@
         <date-picker v-model="localStartTime"
           :config="datePickerOptions"
           @dp-change="changeStartTime"
+          @dp-hide="closePicker"
           name="startTime"
           ref="startTime"
           id="startTime"
@@ -75,6 +76,7 @@
         <date-picker v-model="localStopTime"
           :config="datePickerOptions"
           @dp-change="changeStopTime"
+          @dp-hide="closePicker"
           name="stopTime"
           ref="stopTime"
           id="stopTime"
@@ -300,21 +302,22 @@ export default {
       timeRangeUpdated = true;
     },
     /**
-     * Fired when start datetime is changed
-     * Notes that the date has changed so it can be validated
+     * Fired when a date time picker is closed
+     * Sets the time range updated flag to false so
+     * validate date knows that a date was changed
+     * rather than the date range input
      */
-    changeStartTime: function (event) {
+    closePicker: function () {
       timeRangeUpdated = false;
+    },
+    /* Fired when start datetime is changed */
+    changeStartTime: function (event) {
       let msDate = event.date.valueOf();
       this.time.startTime = Math.floor(msDate / 1000);
       this.validateDate();
     },
-    /**
-     * Fired when stop datetime is changed
-     * Notes that the date has changed so it can be validated
-     */
+    /* Fired when stop datetime is changed */
     changeStopTime: function (event) {
-      timeRangeUpdated = false;
       let msDate = event.date.valueOf();
       this.time.stopTime = Math.ceil(msDate / 1000);
       this.validateDate();
