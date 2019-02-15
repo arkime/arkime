@@ -21,7 +21,8 @@
 'use strict';
 
 var fs             = require('fs'),
-    crypto         = require('crypto');
+    crypto         = require('crypto'),
+    ipaddr         = require('ipaddr.js');
 
 var Pcap = module.exports = exports = function Pcap (key) {
   this.key     = key;
@@ -490,8 +491,8 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     len:    buffer.readUInt16BE(4),
     p: buffer[6],
     hopLimt:  buffer[7],
-    addr1:  buffer.slice(8,24).toString("hex"),
-    addr2:  buffer.slice(24,40).toString("hex")
+    addr1:  ipaddr.fromByteArray(buffer.slice(8,24)),
+    addr2:  ipaddr.fromByteArray(buffer.slice(24,40))
   };
 
   var offset = 40;
