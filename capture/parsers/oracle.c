@@ -81,6 +81,15 @@ void moloch_parser_init()
         "oracle.host", "Host", "oracle.host",
         "Oracle Host",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "category", "host",
+        "aliases", "[\"host.oracle\"]",
+        (char *)NULL);
+
+    moloch_field_define("oracle", "lotextfield",
+        "oracle.host.tokens", "Hostname Tokens", "oracle.hostTokens",
+        "Oracle Hostname Tokens",
+        MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_FAKE,
+        "aliases", "[\"host.oracle.tokens\"]",
         (char *)NULL);
 
     serviceField = moloch_field_define("oracle", "lotermfield",

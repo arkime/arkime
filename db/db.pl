@@ -53,6 +53,7 @@
 # 56 - notifiers
 # 57 - hunt notifiers
 # 58 - users message count and last used date
+# 59 - tokens
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -61,7 +62,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 58;
+my $VERSION = 59;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -696,7 +697,7 @@ sub fieldsUpdate
       "type": "lotermfield",
       "dbField": "hostall",
       "dbField2": "hostall",
-      "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
+      "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
     esPost("/${PREFIX}fields_v2/field/ip.src", '{
       "friendlyName": "Src IP",
@@ -1109,6 +1110,16 @@ sub sessions2Update
         }
       },
       {
+        "template_word_split": {
+          "match": "*Tokens",
+          "mapping": {
+            "analyzer": "wordSplit",
+            "type": "text",
+            "omit_norms": true
+          }
+        }
+      },
+      {
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
@@ -1145,6 +1156,90 @@ sub sessions2Update
             "type": "date"
           }
         }
+      },
+      "dhcp": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dhcp.hostTokens"
+          }
+        }
+      },
+      "dns": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dns.hostTokens"
+          }
+        }
+      },
+      "email": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "email.hostTokens"
+          }
+        }
+      },
+      "http": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "http.hostTokens"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "http.useragentTokens"
+          },
+          "uri" : {
+            "type" : "keyword",
+            "copy_to": "http.uriTokens"
+          }
+        }
+      },
+      "quic": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "quic.hostTokens"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "quic.useragentTokens"
+          }
+        }
+      },
+      "smb": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "smb.hostTokens"
+          }
+        }
+      },
+      "socks": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "socks.hostTokens"
+          }
+        }
+      },
+      "oracle": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "oracle.hostTokens"
+          }
+        }
       }
     }
   }
@@ -1163,7 +1258,16 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
       "refresh_interval": "60s",
       "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . '
+      "number_of_replicas": ' . $REPLICAS . ',
+      "analysis": {
+        "analyzer": {
+          "wordSplit": {
+            "type": "custom",
+            "tokenizer": "pattern",
+            "filter": ["lowercase"]
+          }
+        }
+      }
     }
   },
   "mappings":' . $mapping . '
@@ -2400,6 +2504,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
+    } elsif ($main::versionNumber <= 59) {
+        checkForOld5Indices();
+        sessions2Update();
     } else {
         logmsg "db.pl is hosed\n";
     }

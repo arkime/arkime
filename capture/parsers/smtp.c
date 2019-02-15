@@ -872,6 +872,14 @@ void moloch_parser_init()
         "category", "host",
         (char *)NULL);
 
+    moloch_field_define("email", "lotextfield",
+        "host.email.tokens", "Hostname Tokens", "email.hostTokens",
+        "Email Hostname Tokens",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        "aliases", "[\"email.host.tokens\"]",
+        "requiredRight", "emailSearch",
+        (char *)NULL);
+
     uaField = moloch_field_define("email", "termfield",
         "email.x-mailer", "X-Mailer Header", "email.useragent",
         "Email X-Mailer header",
