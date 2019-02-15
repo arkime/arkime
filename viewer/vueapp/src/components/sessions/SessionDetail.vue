@@ -73,6 +73,12 @@
             </b-form-group>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :class="{'active':params.showFrames}"
+              @click="toggleShowFrames">
+              Show Frames
+            </button>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :disabled="params.base !== 'hex'"
               :class="{'active':params.line && params.base === 'hex'}"
               @click="toggleLineNumbers">
@@ -82,6 +88,7 @@
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :disabled="params.showFrames"
               :class="{'active':params.gzip}"
               @click="toggleCompression">
               <span class="fa fa-file-archive-o">
@@ -90,6 +97,7 @@
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :disabled="params.showFrames"
               :class="{'active':params.image}"
               @click="toggleImages">
               <span class="fa fa-file-image-o">
@@ -100,9 +108,9 @@
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.ts}"
               @click="toggleTimestamps">
-              <span class="fa fa-clock-o">
+              <span class="fa fa-info-circle">
               </span>&nbsp;
-              Show Timestamps
+              Show Info
             </button>
             <!-- decodings -->
             <div class="btn-group mr-1 mb-1"
@@ -112,6 +120,7 @@
                 type="button"
                 class="btn btn-secondary btn-checkbox btn-sm"
                 v-b-tooltip.hover
+                :disabled="params.showFrames"
                 :title="value.name + 'Decoding'"
                 :class="{'active':params.decode[key]}"
                 @click="toggleDecoding(key)">
@@ -140,11 +149,11 @@
       </form>
       <!-- decoding form -->
       <div v-if="decodingForm">
-        <form class="form-inline well well-sm mt-1">
+        <form class="form-inline well well-sm mt-1 mb-1">
           <span v-for="field in decodings[decodingForm].fields"
             :key="field.name"
             v-if="!field.disabled">
-            <div class="form-group mr-1 mt-1">
+            <div class="form-group mr-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend">
                   <span class="input-group-text">
@@ -158,7 +167,7 @@
               </div>
             </div>
           </span>
-          <div class="btn-group btn-group-sm pull-right mt-1 mb-1">
+          <div class="btn-group btn-group-sm pull-right">
             <button type="button"
               class="btn btn-warning"
               title="cancel"
@@ -284,6 +293,12 @@
             </b-form-group>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :class="{'active':params.showFrames}"
+              @click="toggleShowFrames">
+              Show Frames
+            </button>
+            <button type="button"
+              class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :disabled="params.base !== 'hex'"
               :class="{'active':params.line && params.base === 'hex'}"
               @click="toggleLineNumbers">
@@ -293,6 +308,7 @@
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :disabled="params.showFrames"
               :class="{'active':params.gzip}"
               @click="toggleCompression">
               <span class="fa fa-file-archive-o">
@@ -301,6 +317,7 @@
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
+              :disabled="params.showFrames"
               :class="{'active':params.image}"
               @click="toggleImages">
               <span class="fa fa-file-image-o">
@@ -311,9 +328,9 @@
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.ts}"
               @click="toggleTimestamps">
-              <span class="fa fa-clock-o">
+              <span class="fa fa-info-circle">
               </span>&nbsp;
-              Show Timestamps
+              Show Info
             </button>
             <!-- decodings -->
             <div class="btn-group mr-1 mb-1"
@@ -323,6 +340,7 @@
                 type="button"
                 class="btn btn-secondary btn-checkbox btn-sm"
                 v-b-tooltip.hover
+                :disabled="params.showFrames"
                 :title="value.name + 'Decoding'"
                 :class="{'active':params.decode[key]}"
                 @click="toggleDecoding(key)">
@@ -444,7 +462,8 @@ export default {
         gzip: false,
         ts: false,
         decode: {},
-        packets: 200
+        packets: 200,
+        showFrames: false
       }
     };
   },
@@ -473,6 +492,15 @@ export default {
         this.loadingPackets = false;
         this.errorPackets = 'Request canceled';
       }
+    },
+    toggleShowFrames: function () {
+      this.params.showFrames = !this.params.showFrames;
+      if (this.params.showFrames) {
+        this.params.gzip = false;
+        this.params.image = false;
+        this.params.decode = {};
+      }
+      this.getPackets();
     },
     toggleLineNumbers: function () {
       // can only have line numbers in hex mode

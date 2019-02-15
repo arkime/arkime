@@ -5013,7 +5013,8 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       basedir: "/",
       reqFields: Config.headers("headers-http-request"),
       resFields: Config.headers("headers-http-response"),
-      emailFields: Config.headers("headers-email")
+      emailFields: Config.headers("headers-email"),
+      showFrames: req.query.showFrames
     }, function(err, data) {
       if (err) {
         console.trace("ERROR - localSession - ", err);
@@ -5127,13 +5128,14 @@ function sortFields(session) {
 
 function localSessionDetail(req, res) {
   if (!req.query) {
-    req.query = {gzip: false, line: false, base: "natural", packets: 200};
+    req.query = { gzip: false, line: false, base: "natural", packets: 200 };
   }
 
-  req.query.needgzip  = req.query.gzip === "true" || false;
+  req.query.needgzip = req.query.gzip === "true" || false;
   req.query.needimage = req.query.image === "true" || false;
-  req.query.line  = req.query.line  || false;
-  req.query.base  = req.query.base  || "ascii";
+  req.query.line = req.query.line  || false;
+  req.query.base = req.query.base  || "ascii";
+  req.query.showFrames = req.query.showFrames === 'true' || false;
 
   var packets = [];
   processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
@@ -5158,9 +5160,13 @@ function localSessionDetail(req, res) {
     session.id = req.params.id;
     sortFields(session);
 
-    //console.log("session", util.inspect(session, false, 15));
-    /* Now reassembly the packets */
-    if (packets.length === 0) {
+    // TODO ECR
+    if (req.query.showFrames && packets.length !== 0) {
+      Pcap.packetFlow(session, packets, +req.query.packets || 200, function (err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets.length === 0) {
       session._err = "No pcap data found";
       localSessionDetailReturn(req, res, session, []);
     } else if (packets[0].ip === undefined) {

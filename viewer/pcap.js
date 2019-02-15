@@ -986,6 +986,72 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
   }
 };
 
+// TODO ECR
+exports.packetFlow = function (session, packets, numPackets, cb) {
+  let sKey;
+  let error = false;
+
+  packets = packets.slice(0, numPackets);
+
+  let results = packets.map((item, index) => {
+    if (!sKey) { sKey = Pcap.keyFromSession(session); }
+
+    let result = {
+      key: Pcap.key(item),
+      ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+    };
+
+    // TODO determining source vs destination packet doesn't work
+    // TODO it especially doesn't work for ipv6
+    console.log('\nsourceKey', sKey);
+    console.log('key', result.key);
+    console.log('\n');
+
+    switch (item.ip.p) {
+      case 1:
+      case 58:
+        result.data = item.icmp.data;
+        result.src = result.key === sKey;
+        break;
+      case 6:
+        result.data = item.tcp.data;
+        result.src = result.key === sKey;
+        result.tcpflags = {
+          syn: item.tcp.synflag,
+          ack: item.tcp.ackflag,
+          psh: item.tcp.pshflag,
+          rst: item.tcp.rstflag,
+          fin: item.tcp.finflag,
+          urg: item.tcp.urgflag
+        };
+        break;
+      case 17:
+        result.data = item.udp.data;
+        result.src = result.key === sKey;
+        break;
+      case 132:
+        result.data = item.sctp.data;
+        result.src = result.key === sKey;
+        break;
+      case 50:
+        result.data = item.esp.data;
+        result.src = result.key === sKey;
+        break;
+      default:
+        error = 'Couldn\'t decode pcap file, check viewer log';
+        break;
+    }
+
+    return result;
+  });
+
+  sKey = undefined;
+
+  if (error) { return cb(error, null); }
+
+  return cb(null, results);
+};
+
 exports.key = function(packet) {
   switch(packet.ip.p) {
   case 6: // tcp
