@@ -994,18 +994,13 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
   packets = packets.slice(0, numPackets);
 
   let results = packets.map((item, index) => {
+    // TODO determining source vs destination packet doesn't work for ipv6
     if (!sKey) { sKey = Pcap.keyFromSession(session); }
 
     let result = {
       key: Pcap.key(item),
       ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
     };
-
-    // TODO determining source vs destination packet doesn't work
-    // TODO it especially doesn't work for ipv6
-    console.log('\nsourceKey', sKey);
-    console.log('key', result.key);
-    console.log('\n');
 
     switch (item.ip.p) {
       case 1:
@@ -1066,10 +1061,14 @@ exports.key = function(packet) {
 };
 
 exports.keyFromSession = function(session) {
+  console.log(session.ipProtocol);
   switch(session.ipProtocol) {
   case 6: // tcp
+  case 'tcp':
   case 17: // udp
+  case 'udp':
   case 132: // sctp
+  case 'sctp':
     return session.srcIp + ':' + session.srcPort;
   default:
     return session.srcIp;
