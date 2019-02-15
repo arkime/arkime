@@ -167,7 +167,6 @@ let currentTimeSec;
 let dateChanged = false;
 let startDateCheck;
 let stopDateCheck;
-let timeRangeUpdated = false;
 
 export default {
   name: 'MolochTime',
@@ -298,8 +297,6 @@ export default {
           startTime: undefined
         }
       });
-
-      timeRangeUpdated = true;
     },
     /**
      * Fired when a date time picker is closed
@@ -308,7 +305,9 @@ export default {
      * rather than the date range input
      */
     closePicker: function () {
-      timeRangeUpdated = false;
+      // start or stop time was udpated, so set the timerange to custom
+      this.timeRange = '0';
+      this.validateDate();
     },
     /* Fired when start datetime is changed */
     changeStartTime: function (event) {
@@ -358,10 +357,6 @@ export default {
       dateChanged = false;
 
       this.timeError = '';
-
-      // if the time range wasn't updated, we can assume that the start/stop
-      // times were udpated, so set the timerange to custom
-      if (!timeRangeUpdated) { this.timeRange = '0'; }
 
       let stopSec = parseInt(this.time.stopTime, 10);
       let startSec = parseInt(this.time.startTime, 10);
