@@ -53,6 +53,7 @@
 # 56 - notifiers
 # 57 - hunt notifiers
 # 58 - users message count and last used date
+# 59 - tokens
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -61,7 +62,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 58;
+my $VERSION = 59;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -2503,6 +2504,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
+    } elsif ($main::versionNumber <= 59) {
+        checkForOld5Indices();
+        sessions2Update();
     } else {
         logmsg "db.pl is hosed\n";
     }
