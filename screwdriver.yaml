@@ -14,6 +14,7 @@ shared:
         MOLOCH_COPY_BRANCH: "origin/master"
         MOLOCH_FILE_NAME: "master"
         GIT_SHALLOW_CLONE: false
+        ASAN_OPTIONS: "fast_unwind_on_malloc=0"
 
 jobs:
     centos-6:
@@ -156,7 +157,7 @@ jobs:
             - install-for-tests: (cd wiseService; npm ci --production)
             - sleep 10
             - export TZ=US/Eastern
-            - test-viewer: (cd tests ; ./tests.pl --viewer)
+            - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -185,7 +186,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 10
             - export TZ=US/Eastern
-            - test-viewer: (cd tests ; ./tests.pl --viewer)
+            - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
