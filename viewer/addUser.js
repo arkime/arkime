@@ -65,6 +65,7 @@ function main() {
     createEnabled: false,
     removeEnabled: false,
     packetSearch: false,
+    welcomeMsgNum: 0,
     settings: {}
   };
 

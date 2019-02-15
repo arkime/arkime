@@ -8,7 +8,7 @@ all:
 
 install:
 	@mkdir -p "$(DBDIR)"
-	$(INSTALL) daily.sh db.pl elasticsearch.yml.sample runes.sh.sample $(DBDIR)
+	$(INSTALL) daily.sh db.pl $(DBDIR)
 
 check:
 

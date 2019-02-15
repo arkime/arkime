@@ -85,27 +85,53 @@ AlienVaultSource.prototype.parseFile = function()
 AlienVaultSource.prototype.loadFile = function() {
   console.log(this.section, "- Downloading files");
 
-  var revision = 0;
+  var revision = -1;
 
+  // If we already have the rev and data files, find out what revision the data file is
   if (fs.existsSync("/tmp/alienvault.rev") && fs.existsSync("/tmp/alienvault.data")) {
     revision = + fs.readFileSync("/tmp/alienvault.rev").toString();
   }
 
+  // Get the new revision
   wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.rev',  '/tmp/alienvault.rev', (statusCode) => {
-    var line = fs.readFileSync("/tmp/alienvault.rev").toString();
-    if (+line !== revision) {
-      if (fs.existsSync("/tmp/alienvault.data")) {
-        fs.unlinkSync("//tmp/alienvault.data");
+
+    // If statusCode isn't success or not changed then try again if not already
+    if (statusCode !== 200 && statusCode != 304) {
+      if (!this.retry) {
+        this.retry = setTimeout(this.loadFile.bind(this), 5*60*1000);
       }
+      return;
+    }
+
+    var line = fs.readFileSync("/tmp/alienvault.rev").toString();
+
+    // New revision doesn't match old revision, need new data file
+    if (+line !== revision) {
+
+      // Remove old data file since out of date
+      if (fs.existsSync("/tmp/alienvault.data")) {
+        fs.unlinkSync("/tmp/alienvault.data");
+      }
+
+      // Fetch new data file
       wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.data',  '/tmp/alienvault.data', (statusCode) => {
-        if (statusCode === 200 || !this.loaded) {
+        if (statusCode === 200) {
           this.loaded = true;
           this.parseFile();
+          delete this.retry;
+        } else {
+          if (!this.retry) {
+            this.retry = setTimeout(this.loadFile.bind(this), 5*60*1000); // Failed to load data file, try again in 5 minutes
+          }
+          return;
         }
       });
-    } else {
+
+    // We haven't loaded anything, if revision isn't -1 then we have a rev and data file
+    } else if (!this.loaded && revision !== -1) {
       this.loaded = true;
       this.parseFile();
+      delete this.retry;
     }
   });
 };

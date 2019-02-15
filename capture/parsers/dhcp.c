@@ -83,7 +83,7 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         if (t == 255) // End Tag, no length
             break;
         BSB_IMPORT_u08(bsb, l);
-        if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb))
+        if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb) || l == 0)
             break;
         switch(t) {
         case 12: // Host Name
@@ -93,7 +93,8 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         case 53: // Message Type
             if (l == 1) {
                 BSB_IMPORT_u08(bsb, value);
-                moloch_field_string_add(typeField, session, names[value], -1, TRUE);
+                if (value <= 18)
+                    moloch_field_string_add(typeField, session, names[value], -1, TRUE);
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
@@ -108,6 +109,10 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             }
             break;
         case 81: // FQDN
+            if (l < 3) {
+                BSB_IMPORT_skip(bsb, l);
+                break;
+            }
             BSB_IMPORT_u08(bsb, value);
             BSB_IMPORT_skip(bsb, 2);
             if (value != 0) // Don't support any encodings right now

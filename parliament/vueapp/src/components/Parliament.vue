@@ -324,27 +324,27 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col-sm-10 offset-sm-2">
-                  <div class="form-check form-check-inline">
-                    <label class="form-check-label">
-                      <input class="form-check-input"
-                        v-model="group.newClusterMultiviewer"
-                        type="checkbox"
-                        id="newClusterMultiviewer"
-                      />
-                      Multiviewer
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <label class="form-check-label">
-                      <input class="form-check-input"
-                        type="checkbox"
-                        id="newClusterDisabled"
-                        v-model="group.newClusterDisabled"
-                      />
-                      Disabled
-                    </label>
-                  </div>
+                <label for="newClusterType"
+                  class="col-sm-2 col-form-label">
+                  Type<sup class="text-danger">*</sup>
+                </label>
+                <div class="col-sm-10">
+                  <select v-model="group.newClusterType"
+                    class="form-control"
+                    id="newClusterType">
+                    <option value=undefined>
+                      Normal (alerts, stats and health, link to cluster)
+                    </option>
+                    <option value="noAlerts">
+                      No Alerts (no alerts, stats and health, link to cluster)
+                    </option>
+                    <option value="multiviewer">
+                      Multiviewer (no alerts, no stats, health, link to cluster)
+                    </option>
+                    <option value="disabled">
+                      Disabled (no alerts, no stats or health, no link to cluster)
+                    </option>
+                  </select>
                 </div>
               </div>
             </form>
@@ -364,7 +364,7 @@
             <div class="card bg-light">
               <div class="card-body">
                 <!-- cluster title -->
-                <span v-if="!cluster.disabled"
+                <span v-if="cluster.type !== 'disabled'"
                   class="badge badge-pill badge-secondary cursor-help pull-right"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
                   v-b-tooltip.hover.top
@@ -385,17 +385,22 @@
                     <span class="fa fa-th">
                     </span>
                   </span>
-                  <span v-if="cluster.multiviewer"
+                  <span v-if="cluster.type === 'multiviewer'"
                     class="fa fa-sitemap text-muted cursor-help"
                     v-b-tooltip.hover.top
                     title="Mutiviewer cluster">
                   </span>
-                  <span v-if="cluster.disabled"
+                  <span v-if="cluster.type === 'disabled'"
                     class="text-muted fa fa-eye-slash cursor-help"
                     v-b-tooltip.hover.top
                     title="Disabled cluster">
                   </span>
-                  <a v-if="!cluster.disabled"
+                  <span v-if="cluster.type === 'noAlerts'"
+                    class="text-muted cursor-help fa fa-bell-slash"
+                    v-b-tooltip.hover.top
+                    title="Silent cluster">
+                  </span>
+                  <a v-if="cluster.type !== 'disabled'"
                     class="no-decoration"
                     :href="`${cluster.url}/sessions`">
                     {{ cluster.title }}
@@ -429,7 +434,7 @@
                   {{ cluster.error }}
                 </div> <!-- /cluster error -->
                 <!-- cluster stats -->
-                <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && !cluster.disabled && !cluster.multiviewer) || (cluster.id === clusterBeingEdited && !cluster.newDisabled && !cluster.newMultiviewer)">
+                <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
                   <div class="row cluster-stats-row pt-1">
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
                       class="col-6">
@@ -619,31 +624,34 @@
                         placeholder="Cluster local url"
                       />
                     </div>
-                    <div class="form-check form-check-inline">
-                      <label class="form-check-label">
-                        <input type="checkbox"
-                          v-model="cluster.newMultiviewer"
-                          class="form-check-input"
-                          id="newMultiviewer">
-                        Multiviewer
+                    <div class="form-group">
+                      <label for="newClusterType">
+                        Type<sup class="text-danger">*</sup>
                       </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <label class="form-check-label">
-                        <input type="checkbox"
-                          v-model="cluster.newDisabled"
-                          class="form-check-input"
-                          id="newDisabled">
-                        Disabled
-                      </label>
+                      <select v-model="cluster.newType"
+                        class="form-control form-control-sm"
+                        id="newClusterType">
+                        <option value=undefined>
+                          Normal (alerts, stats and health, link to cluster)
+                        </option>
+                        <option value="noAlerts">
+                          No Alerts (no alerts, stats and health, link to cluster)
+                        </option>
+                        <option value="multiviewer">
+                          Multiviewer (no alerts, no stats, health, link to cluster)
+                        </option>
+                        <option value="disabled">
+                          Disabled (no alerts, no stats or health, no link to cluster)
+                        </option>
+                      </select>
                     </div>
                   </form>
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)"
+              <div v-if="(loggedIn && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (loggedIn && editMode)"
                 class="card-footer small">
-                <a v-if="cluster.activeIssues && cluster.activeIssues.length"
+                <a v-if="cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer"
                   title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
@@ -651,37 +659,39 @@
                   <span class="fa fa-check">
                   </span>
                 </a>
-                <a v-show="cluster.id !== clusterBeingEdited && editMode"
-                  class="btn btn-sm btn-outline-warning cursor-pointer"
-                  @click="displayEditClusterForm(cluster)"
-                  title="Edit cluster"
-                  v-b-tooltip.hover.right>
-                  <span class="fa fa-pencil">
+                <span v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)">
+                  <a v-show="cluster.id !== clusterBeingEdited && editMode"
+                    class="btn btn-sm btn-outline-warning cursor-pointer"
+                    @click="displayEditClusterForm(cluster)"
+                    title="Edit cluster"
+                    v-b-tooltip.hover.right>
+                    <span class="fa fa-pencil">
+                    </span>
+                  </a>
+                  <span v-show="cluster.id === clusterBeingEdited && editMode">
+                    <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
+                      @click="editCluster(group, cluster)"
+                      title="Save cluster"
+                      v-b-tooltip.hover.top>
+                      <span class="fa fa-save">
+                      </span>&nbsp;
+                      Save
+                    </a>
+                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
+                      @click="cancelEditCluster(cluster)"
+                      title="Cancel"
+                      v-b-tooltip.hover>
+                      <span class="fa fa-ban">
+                      </span>
+                    </a>
+                    <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
+                      @click="deleteCluster(group, cluster)"
+                      title="Delete cluster"
+                      v-b-tooltip.hover.top>
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </a>
                   </span>
-                </a>
-                <span v-show="cluster.id === clusterBeingEdited && editMode">
-                  <a class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1"
-                    @click="editCluster(group, cluster)"
-                    title="Save cluster"
-                    v-b-tooltip.hover.top>
-                    <span class="fa fa-save">
-                    </span>&nbsp;
-                    Save
-                  </a>
-                  <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
-                    @click="cancelEditCluster(cluster)"
-                    title="Cancel"
-                    v-b-tooltip.hover>
-                    <span class="fa fa-ban">
-                    </span>
-                  </a>
-                  <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
-                    @click="deleteCluster(group, cluster)"
-                    title="Delete cluster"
-                    v-b-tooltip.hover.top>
-                    <span class="fa fa-trash-o">
-                    </span>
-                  </a>
                 </span>
               </div> <!-- /edit cluster buttons -->
             </div>
@@ -910,8 +920,7 @@ export default {
       group.newClusterDescription = '';
       group.newClusterUrl = '';
       group.newClusterLocalUrl = '';
-      group.newClusterMultiviewer = false;
-      group.newClusterDisabled = false;
+      group.newClusterType = undefined;
     },
     displayNewClusterForm: function (group) {
       this.groupAddingCluster = group.id;
@@ -934,8 +943,7 @@ export default {
         description: group.newClusterDescription,
         url: group.newClusterUrl,
         localUrl: group.newClusterLocalUrl,
-        multiviewer: group.newClusterMultiviewer,
-        disabled: group.newClusterDisabled
+        type: group.newClusterType
       };
 
       ParliamentService.createCluster(group.id, newCluster)
@@ -943,7 +951,6 @@ export default {
           this.$set(group, 'error', '');
           group.clusters.push(data.cluster);
           this.cancelUpdateGroup(group);
-          this.updateParliament(data.parliament);
           this.filterClusters();
         })
         .catch((error) => {
@@ -957,8 +964,7 @@ export default {
       cluster.newDescription = cluster.description;
       cluster.newUrl = cluster.url;
       cluster.newLocalUrl = cluster.localUrl;
-      cluster.newMultiviewer = cluster.multiviewer;
-      cluster.newDisabled = cluster.disabled;
+      cluster.newType = cluster.type;
     },
     cancelEditCluster: function (cluster) {
       this.focusClusterInput = false;
@@ -977,13 +983,11 @@ export default {
       }
 
       const updatedCluster = {
-        title: cluster.newTitle,
-        description: cluster.newDescription,
         url: cluster.newUrl,
+        title: cluster.newTitle,
         localUrl: cluster.newLocalUrl,
-        multiviewer: cluster.newMultiviewer,
-        disabled: cluster.newDisabled,
         hideDeltaBPS: cluster.hideDeltaBPS,
+        description: cluster.newDescription,
         hideDataNodes: cluster.hideDataNodes,
         hideDeltaTDPS: cluster.hideDeltaTDPS,
         hideTotalNodes: cluster.hideTotalNodes,
@@ -991,16 +995,19 @@ export default {
         hideMolochNodes: cluster.hideMolochNodes
       };
 
+      if (cluster.newType) {
+        updatedCluster.type = cluster.newType;
+      }
+
       ParliamentService.editCluster(group.id, cluster.id, updatedCluster)
         .then((data) => {
           this.focusClusterInput = false;
           this.$set(cluster, 'error', '');
-          cluster.title = cluster.newTitle;
-          cluster.description = cluster.newDescription;
           cluster.url = cluster.newUrl;
+          cluster.type = cluster.newType;
+          cluster.title = cluster.newTitle;
           cluster.localUrl = cluster.newLocalUrl;
-          cluster.multiviewer = cluster.newMultiviewer;
-          cluster.disabled = cluster.newDisabled;
+          cluster.description = cluster.newDescription;
           this.cancelEditCluster();
         })
         .catch((error) => {
@@ -1111,8 +1118,7 @@ export default {
         newGroup.newClusterDescription = oldGroup.newClusterDescription;
         newGroup.newClusterUrl = oldGroup.newClusterUrl;
         newGroup.newClusterLocalUrl = oldGroup.newClusterLocalUrl;
-        newGroup.newClusterMultiviewer = oldGroup.newClusterMultiviewer;
-        newGroup.newClusterDisabled = oldGroup.newClusterDisabled;
+        newGroup.newClusterType = oldGroup.newClusterType;
 
         for (let c = 0, clen = newGroup.clusters.length; c < clen; ++c) {
           const newCluster = newGroup.clusters[c];
@@ -1123,9 +1129,7 @@ export default {
           newCluster.newDescription = oldCluster.newDescription;
           newCluster.newUrl = oldCluster.newUrl;
           newCluster.newLocalUrl = oldCluster.newLocalUrl;
-          newCluster.newMultiviewer = oldCluster.newMultiviewer;
-          newCluster.newDisabled = oldCluster.newDisabled;
-          newCluster.activeIssues = oldCluster.activeIssues;
+          newCluster.newType = oldCluster.newType;
         }
       }
 
@@ -1136,23 +1140,21 @@ export default {
       for (const group of data.groups) {
         group.error = undefined;
         group.newTitle = undefined;
+        group.newClusterUrl = undefined;
+        group.newClusterType = undefined;
         group.newDescription = undefined;
         group.newClusterTitle = undefined;
-        group.newClusterDescription = undefined;
-        group.newClusterUrl = undefined;
         group.newClusterLocalUrl = undefined;
-        group.newClusterMultiviewer = undefined;
-        group.newClusterDisabled = undefined;
+        group.newClusterDescription = undefined;
         group.filteredClusters = group.clusters;
 
         for (const cluster of group.clusters) {
           cluster.error = undefined;
-          cluster.newTitle = undefined;
-          cluster.newDescription = undefined;
           cluster.newUrl = undefined;
+          cluster.newType = undefined;
+          cluster.newTitle = undefined;
           cluster.newLocalUrl = undefined;
-          cluster.newMultiviewer = undefined;
-          cluster.newDisabled = undefined;
+          cluster.newDescription = undefined;
         }
       }
     },

@@ -14,7 +14,31 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.7.1 2019/02/XX
+1.8.0 2019/03/XX
+  - NOTICE: This will be the last version to support ES 5
+
+1.7.1 2019/02/14
+  - NOTICE: db.pl upgrade is required
+  - viewer - upgrade to d3 v5 for connections page
+  - viewer - typeahead history for spigraph/connections
+  - viewer - stats tasks page has a num item selector now
+  - viewer - welcome message for new users
+  - viewer - save the last time a user used moloch
+  - viewer - two --debug will display why proxying traffic
+  - viewer - connections now uses ipv6.port and ipv4:port
+  - viewer - fix date/time picker timezone and input bugs
+  - wise - support json paths
+  - wise - improve alienvault loading
+  - capture - more tcpflags fields can be matched with rules
+  - capture - print more stats at exit with --debug
+  - capture - fix small bpf memory leak
+  - capture - rules can support most .cnt fields
+  - capture - fix OBR if cert has no serial
+  - capture - libfuzzer support and initial fixes
+  - parliament - add no alert cluster type
+  - parliament - remove selected acknowledged issues
+  - parliment - add help page
+
 
 1.7.0 2019/01/17
   - NOTICE: db.pl upgrade is required

@@ -66,6 +66,32 @@
         of {{ recordsFiltered }} entries
       </div>
       <!-- /page info -->
+      <!-- remove/cancel all issues button -->
+      <button v-if="loggedIn && issues && issues.length"
+        class="btn btn-outline-danger btn-sm cursor-pointer"
+        v-b-tooltip.hover.bottom
+        title="Remove ALL acknowledged issues across the ENTIRE Parliament"
+        @click="removeAllAcknowledgedIssues">
+        <span class="fa fa-trash fa-fw">
+        </span>
+        <transition name="visibility">
+          <span v-if="removeAllAcknowledgedIssuesConfirm">
+            Click to confirm
+          </span>
+        </transition>
+      </button>
+      <transition name="slide-fade">
+        <button class="btn btn-outline-warning btn-sm cursor-pointer"
+          v-if="loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+          v-b-tooltip.hover.bottom
+          title="Cancel removing ALL acknowledged issues"
+          @click="cancelRemoveAllAcknowledgedIssues">
+          <span class="fa fa-ban fa-fw">
+          </span>&nbsp;
+          Cancel
+        </button>
+      </transition>
+      <!-- /remove/cancel all issues button -->
       <!-- search -->
       <div class="input-group input-group-sm pull-right issue-search">
         <div class="input-group-prepend">
@@ -205,7 +231,7 @@
               class="fa fa-sort-desc fa-fw">
             </span>
           </th>
-          <th v-if="loggedIn && issues.length"
+          <th v-if="loggedIn && issues && issues.length"
             width="120px"
             scope="col">
             <span v-if="atLeastOneIssueSelected">
@@ -254,15 +280,15 @@
                 <span class="fa fa-check fa-fw">
                 </span>
               </button> <!-- /acknowledge issues button -->
+              <!-- remove selected issues button -->
+              <button class="btn btn-outline-danger btn-xs pull-right cursor-pointer"
+                v-b-tooltip.hover.bottom-right
+                title="Remove selected acknowledged issues"
+                @click="removeSelectedAcknowledgedIssues">
+                <span class="fa fa-trash fa-fw">
+                </span>
+              </button> <!-- /remove selected issues button -->
             </span>
-            <!-- remove all issues button -->
-            <button class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
-              v-b-tooltip.hover.bottom-right
-              title="Remove ALL acknowledged issues"
-              @click="removeAllAcknowledgedIssues">
-              <span class="fa fa-trash fa-fw">
-              </span>
-            </button> <!-- /remove all issues button -->
           </th>
         </tr>
       </thead>
@@ -366,7 +392,9 @@ export default {
       currentPage: 1,
       recordsFiltered: 0,
       // searching
-      searchTerm: undefined
+      searchTerm: undefined,
+      // remove ALL ack issues confirm (double click)
+      removeAllAcknowledgedIssuesConfirm: false
     };
   },
   computed: {
@@ -457,14 +485,39 @@ export default {
 
       return '';
     },
+    cancelRemoveAllAcknowledgedIssues: function () {
+      this.removeAllAcknowledgedIssuesConfirm = false;
+    },
     removeAllAcknowledgedIssues: function () {
-      ParliamentService.removeAllAcknowledgedIssues()
+      if (!this.removeAllAcknowledgedIssuesConfirm) {
+        this.removeAllAcknowledgedIssuesConfirm = true;
+        return;
+      }
+
+      if (this.removeAllAcknowledgedIssuesConfirm) {
+        this.removeAllAcknowledgedIssuesConfirm = false;
+        ParliamentService.removeAllAcknowledgedIssues()
+          .then((data) => {
+            this.error = '';
+            this.loadData(); // fetch new issues
+          })
+          .catch((error) => {
+            this.error = error.text || 'Error removing all acknowledged issues.';
+          });
+      }
+    },
+    removeSelectedAcknowledgedIssues: function () {
+      let selectedIssues = this.getSelectedIssues();
+
+      ParliamentService.removeSelectedAcknowledgedIssues(selectedIssues)
         .then((data) => {
+          this.allIssuesSelected = false;
+          this.atLeastOneIssueSelected = false;
           this.error = '';
           this.loadData(); // fetch new issues
         })
         .catch((error) => {
-          this.error = error.text || 'Error removing all acknowledged issues.';
+          this.error = error.text || `Unable to remove ${selectedIssues.length} issues`;
         });
     },
     toggleIssue: function (issue) {
@@ -656,5 +709,26 @@ select.page-select {
   flex-wrap: none;
   width: auto;
   min-width: 40%;
+}
+
+/* button animation */
+.slide-fade-enter-active {
+  transition: all .5s ease;
+}
+.slide-fade-leave-active {
+  transition: all .5s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(-10px);
+  opacity: 0;
+}
+.visibility-enter-active {
+  transition: all .5s ease;
+}
+.visibility-leave-active {
+  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.visibility-enter, .visibility-leave-to {
+  opacity: 0;
 }
 </style>

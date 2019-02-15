@@ -29,21 +29,30 @@
       target="infoTooltip"
       placement="left"
       boundary="viewport">
-      <div v-if="!error && esHealth">
-        <strong>Elasticsearch</strong><br>
-        ES Version: <strong>{{ esHealth.version }}</strong><br>
-        DB Version: <strong>{{ esHealth.molochDbVersion }}</strong><br>
-        Cluster: <strong>{{ esHealth.cluster_name }}</strong><br>
-        Status: <strong>{{ esHealth.status }}</strong><br>
-        Nodes: <strong>{{ esHealth.number_of_nodes }}</strong><br>
-        Shards: <strong>{{ esHealth.active_shards }}</strong><br>
-        Relocating Shards: <strong>{{ esHealth.relocating_shards }}</strong><br>
-        Unassigned Shards: <strong>{{ esHealth.unassigned_shards }}</strong>
-        Initializing Shards: <strong>{{ esHealth.initializing_shards }}</strong>
+      <div class="text-center mb-1">
+        <strong>Elasticsearch Stats</strong>
       </div>
-      <div v-if="error">
-
-      </div>
+      <dl v-if="!error && esHealth"
+        class="dl-horizontal es-stats-dl">
+        <dt>ES Version</dt>
+        <dd>{{ esHealth.version }}&nbsp;</dd>
+        <dt>DB Version</dt>
+        <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
+        <dt>Cluster</dt>
+        <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
+        <dt>Status</dt>
+        <dd>{{ esHealth.status }}&nbsp;</dd>
+        <dt>Nodes</dt>
+        <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
+        <dt>Shards</dt>
+        <dd>{{ esHealth.active_shards }}&nbsp;</dd>
+        <dt>Relocating Shards</dt>
+        <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
+        <dt>Unassigned Shards</dt>
+        <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
+        <dt>Initializing Shards</dt>
+        <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
+      </dl>
     </b-tooltip> <!-- /tooltip content -->
 
   </span>
@@ -120,5 +129,16 @@ export default {
 }
 .reload-btn:hover {
   color: var(--color-tertiary) !important;
+}
+
+.es-stats-dl dt {
+  width: 140px;
+  font-weight: normal;
+}
+.es-stats-dl dd {
+  margin-left: 150px;
+  width: 100px;
+  text-align: left;
+  font-weight: bold;
 }
 </style>

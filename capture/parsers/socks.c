@@ -96,6 +96,11 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
 
     switch(socks->state5[which]) {
     case SOCKS5_STATE_VER_REQUEST:
+        if (remaining < 3) {
+            moloch_parsers_unregister(session, uw);
+            return 0;
+        }
+
         if (data[2] == 0) {
             socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         } else {
@@ -128,7 +133,7 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
 
         return 2;
     case SOCKS5_STATE_USER_REQUEST:
-        if ((2 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
+        if (remaining < 2 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
             moloch_parsers_unregister(session, uw);
             return 0;
         }

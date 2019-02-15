@@ -212,3 +212,9 @@ pre {
   background-color: var(--color-gray-lighter);
   border-color    : var(--color-gray-light);
 }
+
+
+/* increase the width of tooltips (mostly for es stats in navbar) */
+.tooltip-inner {
+  max-width: 325px;
+}

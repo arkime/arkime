@@ -1,9 +1,0 @@
-#!/bin/sh
-cd /srv/moloch/elasticsearch-0.19.8
-ulimit -a
-export JAVA_OPTS="-XX:+UseCompressedOops"
-export ES_HOSTNAME=`hostname -s`a
-ES_HEAP_SIZE=20G bin/elasticsearch -Des.config=/srv/moloch/elasticsearch.yml
-sleep 2
-export ES_HOSTNAME=`hostname -s`b
-ES_HEAP_SIZE=20G bin/elasticsearch -Des.config=/srv/moloch/elasticsearch.yml

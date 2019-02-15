@@ -115,6 +115,7 @@ LOCAL  GOptionEntry entries[] =
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "insecure https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
+    { "ignoreerrors",0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -542,9 +543,7 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 }
 /******************************************************************************/
 /*
- * Don't actually end main loop until all tags are loaded
- * TRUE - call again
- * FALSE - don't call again
+ * Don't actually end main loop until all the various pieces are done
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
@@ -559,7 +558,9 @@ LOCAL gboolean writerExit   = TRUE;
         moloch_readers_exit();
         moloch_packet_exit();
         moloch_session_exit();
-        return TRUE;
+        if (config.debug)
+            LOG("Read exit finished");
+        return G_SOURCE_CONTINUE;
     }
 
 // Wait for all the can quits to signal all clear
@@ -570,7 +571,7 @@ LOCAL gboolean writerExit   = TRUE;
             if (config.debug && canQuitNames[i]) {
                 LOG ("Can't quit, %s is %d", canQuitNames[i], val);
             }
-            return TRUE;
+            return G_SOURCE_CONTINUE;
         }
     }
 
@@ -579,17 +580,21 @@ LOCAL gboolean writerExit   = TRUE;
         writerExit = FALSE;
         if (!config.dryRun && config.copyPcap) {
             moloch_writer_exit();
-            return TRUE;
+            if (config.debug)
+                LOG("Write exit finished");
+            return G_SOURCE_CONTINUE;
         }
     }
 
 // Can quit the main loop now
     g_main_loop_quit(mainLoop);
-    return FALSE;
+    return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
 void moloch_quit()
 {
+    if (config.debug)
+        LOG("Quitting");
     config.quitting = TRUE;
     g_timeout_add(100, moloch_quit_gfunc, 0);
 }
@@ -687,6 +692,70 @@ void moloch_mlockall_init()
 #endif
 }
 /******************************************************************************/
+#ifdef FUZZLOCH
+
+/* This replaces main for libFuzzer.  Basically initialized everything like main
+ * would for starting up and set some important settings.  Must be run from tests
+ * directory, and config.test.ini will be loaded for fuzz node.
+ */
+
+MolochPacketBatch_t   batch;
+
+int
+LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
+{
+    config.configFile = g_strdup("config.test.ini");
+    config.dryRun = 1;
+    config.pcapReadOffline = 1;
+    config.hostName = strdup("fuzz.example.com");
+    config.nodeName = strdup("fuzz");
+    moloch_free_later_init();
+    moloch_hex_init();
+    moloch_config_init();
+    moloch_writers_init();
+    moloch_writers_start("null");
+    moloch_readers_init();
+    moloch_readers_set("null");
+    moloch_plugins_init();
+    moloch_field_init();
+    moloch_http_init();
+    moloch_db_init();
+    moloch_packet_init();
+    moloch_config_load_local_ips();
+    moloch_config_load_packet_ips();
+    moloch_yara_init();
+    moloch_parsers_init();
+    moloch_session_init();
+    moloch_plugins_load(config.plugins);
+    moloch_rules_init();
+    moloch_packet_batch_init(&batch);
+    return 0;
+}
+
+/******************************************************************************/
+/* In libFuzzer mode this is called for each packet.
+ * There are no packet threads in fuzz mode, and the batch call will actually
+ * process the packet.  The current time just increases for each packet.
+ */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    static uint64_t       ts = 10000;
+
+    packet->pktlen        = size;
+    packet->pkt           = (u_char *)data;
+    packet->ts.tv_sec     = ts >> 4;
+    packet->ts.tv_usec    = ts & 0x8;
+    ts++;
+    packet->readerFilePos = 0;
+    packet->readerPos     = 0;
+
+    // In FUZZ mode batch will actually process it
+    moloch_packet_batch(&batch, packet);
+
+    return 0;
+}
+
+#else
 int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
@@ -750,3 +819,4 @@ int main(int argc, char **argv)
     free_args();
     exit(0);
 }
+#endif

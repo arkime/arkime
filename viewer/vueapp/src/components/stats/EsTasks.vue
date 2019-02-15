@@ -63,7 +63,8 @@ export default {
     'user',
     'dataInterval',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'pageSize'
   ],
   components: { MolochError, MolochLoading, MolochTable },
   data: function () {
@@ -126,6 +127,9 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    pageSize: function () {
+      this.loadData();
     }
   },
   created: function () {
@@ -152,6 +156,8 @@ export default {
       respondedAt = undefined;
 
       this.query.filter = this.searchTerm;
+
+      this.query.size = this.pageSize || 1000;
 
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }

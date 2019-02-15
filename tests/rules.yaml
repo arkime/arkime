@@ -62,6 +62,7 @@ rules:
       port.dst:
         - 443
         - 5353
+      protocols.cnt: 1
     ops:
       "protocols": "iprulztest"
 

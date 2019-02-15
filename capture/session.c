@@ -280,8 +280,6 @@ LOCAL void moloch_session_save(MolochSession_t *session)
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, TRUE);
 
-    moloch_rules_run_before_save(session, 1);
-
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ[session->thread], session);
     }
@@ -292,6 +290,7 @@ LOCAL void moloch_session_save(MolochSession_t *session)
         return;
     }
 
+    moloch_rules_run_before_save(session, 1);
     moloch_db_save_session(session, TRUE);
     moloch_session_free(session);
 }
@@ -309,12 +308,11 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, FALSE);
 
-    moloch_rules_run_before_save(session, 0);
-
     if (!session->rootId) {
         session->rootId = (void *)1L;
     }
 
+    moloch_rules_run_before_save(session, 0);
     moloch_db_save_session(session, FALSE);
     g_array_set_size(session->filePosArray, 0);
     g_array_set_size(session->fileLenArray, 0);
@@ -348,6 +346,8 @@ gboolean moloch_session_decr_outstanding(MolochSession_t *session)
     if (session->needSave && session->outstandingQueries == 0) {
         needSave[session->thread]--;
         session->needSave = 0; /* Stop endless loop if plugins add tags */
+
+        moloch_rules_run_before_save(session, 1);
         moloch_db_save_session(session, TRUE);
         moloch_session_free(session);
         return FALSE;
@@ -430,9 +430,9 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
     HASH_ADD_HASH(h_, sessions[thread][ses], hash, sessionId, session);
     DLL_PUSH_TAIL(q_, &sessionsQ[thread][ses], session);
 
-    if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 10) {
+    if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
         char buf[100];
-        LOG("Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+        LOG("ERROR - Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);

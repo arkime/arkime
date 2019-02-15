@@ -657,11 +657,11 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
 
     for (f = 0; good && f < rule->fieldsLen; f++) {
         int p = rule->fields[f];
-
         if (p == skipPos)
             continue;
 
-        if (p >= session->maxFields) {
+        // Check fields that are directly in session
+        if (p >= MOLOCH_FIELD_EXSPECIAL_START) {
             switch (p) {
             case MOLOCH_FIELD_EXSPECIAL_SRC_IP:
                 good = moloch_rules_check_ip(rule, p, &session->addr1);
@@ -678,21 +678,93 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]);
                 break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_FIN:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_URG:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]);
+                break;
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->packets[0]);
                 break;
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->packets[1]);
                 break;
+            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->databytes[0]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->databytes[1]);
+                break;
+            default:
+                good = 0;
             }
             continue;
         }
 
-        if (!session->fields[p]) {
-            good = 0;
-            break;
+        // Check count fields
+        if (p >= MOLOCH_FIELDS_CNT_MIN) {
+            int cp = p - MOLOCH_FIELDS_CNT_MIN; // cp is the field we are getting the count of
+            if (cp >= session->maxFields) {
+                good = 0;
+                continue;
+            }
+
+            if (!session->fields[cp]) {
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)0);
+                continue;
+            }
+
+            switch (config.fields[cp]->type) {
+            case MOLOCH_FIELD_TYPE_IP:
+            case MOLOCH_FIELD_TYPE_INT:
+            case MOLOCH_FIELD_TYPE_STR:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)1);
+                break;
+
+            case MOLOCH_FIELD_TYPE_INT_ARRAY:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
+                break;
+            case MOLOCH_FIELD_TYPE_INT_HASH:
+                ihash = session->fields[cp]->ihash;
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *ihash));
+                break;
+            case MOLOCH_FIELD_TYPE_IP_GHASH:
+            case MOLOCH_FIELD_TYPE_STR_GHASH:
+            case MOLOCH_FIELD_TYPE_INT_GHASH:
+                ghash = session->fields[cp]->ghash;
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)g_hash_table_size(ghash));
+                break;
+            case MOLOCH_FIELD_TYPE_STR_ARRAY:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->sarray->len);
+                break;
+            case MOLOCH_FIELD_TYPE_STR_HASH:
+                shash = session->fields[cp]->shash;
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *shash));
+                break;
+            } /* switch */
+            continue;
         }
 
+        // This session doesn't have the field or it isn't set
+        if (p >= session->maxFields || !session->fields[p]) {
+            good = 0;
+            continue;
+        }
+
+        // Check a real field
         switch (config.fields[p]->type) {
         case MOLOCH_FIELD_TYPE_IP:
             good = moloch_rules_check_ip(rule, p, session->fields[p]->ip);

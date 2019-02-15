@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 57;
+var MIN_DB_VERSION = 58;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -92,9 +92,20 @@ if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
 
 function userCleanup(suser) {
   suser.settings = suser.settings || {};
-  if (suser.emailSearch === undefined) {suser.emailSearch = false;}
-  if (suser.removeEnabled === undefined) {suser.removeEnabled = false;}
-  if (Config.get("multiES", false)) {suser.createEnabled = false;}
+  if (suser.emailSearch === undefined) { suser.emailSearch = false; }
+  if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
+  if (Config.get('multiES', false)) { suser.createEnabled = false; }
+  let now = Date.now();
+  let timespan = Config.get('regressionTests', false) ? 1 : 60000;
+  // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
+  if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
+    suser.lastUsed = now;
+    Db.setUser(suser.userId, suser, function (err, info) {
+      if (err) {
+        console.log('user lastUsed update error', err, info);
+      }
+    });
+  }
 }
 
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
@@ -181,6 +192,7 @@ app.use('/cyberchef.htm', function(req, res, next) {
 
 
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
+
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
   app.use(function(req, res, next) {
@@ -255,12 +267,12 @@ if (Config.get("passwordSecret")) {
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     var username = req.query.molochRegressionUser || "anonymous";
-    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
+    req.user = {userId: username, enabled: true, createEnabled: username === "anonymous", webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
     Db.getUserCache(username, function(err, suser) {
-        if (!err && suser && suser.found) {
-          userCleanup(suser._source);
-          req.user = suser._source;
-        }
+      if (!err && suser && suser.found) {
+        userCleanup(suser._source);
+        req.user = suser._source;
+      }
       next();
     });
   });
@@ -269,7 +281,7 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}};
+    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
     Db.getUserCache("anonymous", function(err, suser) {
         if (!err && suser && suser.found) {
           req.user.settings = suser._source.settings || {};
@@ -684,7 +696,7 @@ function proxyRequest (req, res, errCb) {
       if (errCb) {
         return errCb(e);
       }
-      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
+      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e, "You might want to run viewer with two --debug for more info");
       res.send(`Error talking to node '${safeStr(req.params.nodeName)}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
     });
     preq.end();
@@ -717,12 +729,18 @@ function makeRequest (node, path, user, cb) {
 
 function isLocalView (node, yesCb, noCb) {
   if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
+    }
     return yesCb();
   }
 
   var pcapWriteMethod = Config.getFull(node, "pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
   if (writer && writer.localNode === false) {
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is local view because of writer`);
+    }
     return yesCb();
   }
   return Db.isLocalView(node, yesCb, noCb);
@@ -1026,15 +1044,14 @@ let settingDefaults = {
 
 // gets the current user
 app.get('/user/current', function(req, res) {
-
   let userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+    'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
 
   let clone = {};
 
   for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
-    var prop = userProps[i];
+    let prop = userProps[i];
     if (req.user.hasOwnProperty(prop)) {
       clone[prop] = req.user[prop];
     }
@@ -3190,6 +3207,11 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
       }
     }
 
+    let size = parseInt(req.query.size) || 1000;
+    if (tasks.length > size) {
+      tasks = tasks.slice(0, size);
+    }
+
     res.send(tasks);
   });
 });
@@ -4045,6 +4067,8 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
     var field = req.query.field || 'node';
 
+    if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
+
     if (field === 'ip.dst:port') {
       query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggs: {sub: {terms: {field: 'dstPort', size: size}}}};
     } else {
@@ -4451,8 +4475,11 @@ function buildConnections(req, res, cb) {
         for (let vsrc of asrc) {
           for (let vdst of adst) {
             if (dstIsIp && dstipport) {
-              if (vdst.includes(':')) { vdst = `[${vdst}]`; }
-              vdst += ':' + f.dstPort;
+              if (vdst.includes(':')) {
+                vdst += '.' + f.dstPort;
+              } else {
+                vdst += ':' + f.dstPort;
+              }
             }
             process(vsrc, vdst, f, fields);
           }
@@ -5731,24 +5758,26 @@ app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
 });
 
 internals.usersMissing = {
-  userId: "",
-  userName: "",
-  expression: "",
+  userId: '',
+  userName: '',
+  expression: '',
   enabled: 0,
   createEnabled: 0,
   webEnabled: 0,
   headerAuthEnabled: 0,
   emailSearch: 0,
-  removeEnabled: 0
+  removeEnabled: 0,
+  lastUsed: 0
 };
+
 app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
-  var columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  let columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
 
-  var query = {
+  let query = {
     _source: columns,
     sort: {},
     from: +req.body.start || 0,
@@ -5766,7 +5795,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
   }
 
   req.body.sortField = req.body.sortField || 'userId';
-  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc': 'asc'};
+  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc': 'asc' };
   query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
 
   Promise.all([Db.searchUsers(query),
@@ -5792,6 +5821,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
       recordsFiltered: results.total,
       data: results.results
     };
+
     res.send(r);
   }).catch((err) => {
     console.log('ERROR - /user/list', err);
@@ -5820,7 +5850,7 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       return res.molochError(403, 'User already exists');
     }
 
-    var nuser = {
+    let nuser = {
       userId: req.body.userId,
       userName: req.body.userName,
       expression: req.body.expression,
@@ -5831,7 +5861,8 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       headerAuthEnabled: req.body.headerAuthEnabled === true,
       createEnabled: req.body.createEnabled === true,
       removeEnabled: req.body.removeEnabled === true,
-      packetSearch: req.body.packetSearch === true
+      packetSearch: req.body.packetSearch === true,
+      welcomeMsgNum: 0
     };
 
     // console.log('Creating new user', nuser);
@@ -5842,6 +5873,32 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
         console.log('ERROR - add user', err, info);
         return res.molochError(403, err);
       }
+    });
+  });
+});
+
+app.put('/user/:userId/acknowledgeMsg', logAction(), checkCookieToken, function (req, res) {
+  if (!req.body.msgNum) {
+    return res.molochError(403, 'Message number required');
+  }
+
+  Db.getUser(req.params.userId, function (err, user) {
+    if (err || !user.found) {
+      console.log('update user failed', err, user);
+      return res.molochError(403, 'User not found');
+    }
+    user = user._source;
+
+    user.welcomeMsgNum = parseInt(req.body.msgNum);
+
+    Db.setUser(req.params.userId, user, function (err, info) {
+      if (Config.debug) {
+        console.log('setUser', user, err, info);
+      }
+      return res.send(JSON.stringify({
+        success: true,
+        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
+      }));
     });
   });
 });
@@ -7368,8 +7425,7 @@ app.post('/sendSessions', function(req, res) {
 });
 
 app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
-  var exec = require('child_process').exec,
-     child;
+  var exec = require('child_process').exec;
 
   var tags = '';
   if (req.body.tags) {
@@ -7859,5 +7915,6 @@ Db.initialize({host: internals.elasticBase,
                nodeName: Config.nodeName(),
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
-               ca: loadCaTrust(internals.nodeName)
+               ca: loadCaTrust(internals.nodeName),
+               debug: Config.debug
               }, main);

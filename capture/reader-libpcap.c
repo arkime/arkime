@@ -108,6 +108,7 @@ void reader_libpcap_start() {
             if (pcap_setfilter(pcaps[i], &bpf) == -1) {
                 LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
+            pcap_freecode(&bpf);
         }
 
         char name[100];

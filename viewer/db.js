@@ -38,7 +38,10 @@ var internals = {fileId2File: {},
 
 exports.initialize = function (info, cb) {
   internals.dontMapTags = info.dontMapTags === 'true' || info.dontMapTags === true || false;
+  internals.debug = info.debug || 0;
   delete info.dontMapTags;
+  delete info.debug;
+
   internals.info = info;
 
   if (info.prefix && info.prefix.charAt(info.prefix.length-1) !== "_") {
@@ -744,13 +747,22 @@ exports.checkVersion = function(minVersion, checkUsers) {
 
 exports.isLocalView = function(node, yesCB, noCB) {
   if (node === internals.nodeName) {
+    if (internals.debug > 1) {
+      console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
+    }
     return yesCB();
   }
 
   exports.molochNodeStatsCache(node, (err, stat) => {
     if (err || stat.hostname !== os.hostname()) {
+      if (internals.debug > 1) {
+        console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()}`);
+      }
       noCB();
     } else {
+      if (internals.debug > 1) {
+        console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()}`);
+      }
       yesCB();
     }
   });

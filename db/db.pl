@@ -52,6 +52,7 @@
 # 55 - user hideStats, hideFiles, hidePcap, and disablePcapDownload
 # 56 - notifiers
 # 57 - hunt notifiers
+# 58 - users message count and last used date
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -60,7 +61,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 57;
+my $VERSION = 58;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1573,6 +1574,12 @@ sub usersUpdate
         "type": "object",
         "dynamic": "true",
         "enabled": "false"
+      },
+      "welcomeMsgNum": {
+        "type": "integer"
+      },
+      "lastUsed": {
+        "type": "date"
       }
     }
   }
@@ -2488,7 +2495,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
-    } elsif ($main::versionNumber <= 57) {
+    } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
         setPriority();
         usersUpdate();
