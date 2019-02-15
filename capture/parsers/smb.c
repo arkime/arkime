@@ -108,7 +108,7 @@ LOCAL void smb_security_blob(MolochSession_t *session, unsigned char *data, int 
     BSB_INIT(bsb, value, alen);
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (atag != 4 || memcmp("NTLMSSP", value, 7) != 0)
+    if (atag != 4 || alen < 7 || memcmp("NTLMSSP", value, 7) != 0)
         return;
 
     /* Woot, have the part we need to decode */

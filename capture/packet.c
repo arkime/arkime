@@ -775,12 +775,9 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     }
 }
 /******************************************************************************/
+#ifndef FUZZLOCH
 LOCAL void *moloch_packet_thread(void *threadp)
 {
-#ifdef FUZZLOCH
-    return NULL;
-#endif
-
     MolochPacket_t  *packet;
     int thread = (long)threadp;
     const uint32_t maxPackets75 = config.maxPackets*0.75;
@@ -820,7 +817,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
     return NULL;
 }
-
+#endif
 /******************************************************************************/
 static FILE *unknownPacketFile[3];
 LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const packet)
@@ -2070,7 +2067,9 @@ void moloch_packet_init()
         MOLOCH_LOCK_INIT(packetQ[t].lock);
         MOLOCH_COND_INIT(packetQ[t].lock);
         snprintf(name, sizeof(name), "moloch-pkt%d", t);
+#ifndef FUZZLOCH
         g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
+#endif
     }
 
     HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, moloch_packet_frag_cmp);
