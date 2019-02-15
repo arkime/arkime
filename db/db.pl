@@ -1210,7 +1210,7 @@ sub sessions2Update
           },
           "useragent" : {
             "type" : "keyword",
-            "copy_to": "http.useragentTokens"
+            "copy_to": "quic.useragentTokens"
           }
         }
       },

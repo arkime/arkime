@@ -353,7 +353,6 @@ exports.loadFields = function(data) {
       if (source.exp === "host" || source.exp.startsWith("host.")) {
         source.transform = "removeProtocolAndURI";
       }
-      console.log("ALW", source.exp, source.transform);
     }
 
     internals.fieldsMap[field._id] = source;
