@@ -361,7 +361,7 @@
             :key="cluster.id"
             :id="cluster.id"
             class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-            <div class="card bg-light">
+            <div class="card">
               <div class="card-body">
                 <!-- cluster title -->
                 <span v-if="cluster.type !== 'disabled'"

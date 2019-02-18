@@ -392,7 +392,7 @@
             <div class="col-12 col-xl-6"
               v-for="notifier of settings.notifiers"
               :key="notifier.name">
-              <div class="card bg-light mb-3">
+              <div class="card mb-3">
                 <div class="card-body">
                   <!-- notifier title -->
                   <h4 class="mb-3">
