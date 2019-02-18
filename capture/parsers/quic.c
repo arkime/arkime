@@ -102,6 +102,10 @@ LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         offset += 8;
     }
 
+    if ( len < offset+5) {
+        return 0;
+    }
+
     // Get version
     if (data[0] & 0x01 && data[offset] == 'Q') {
         version = (data[offset+1] - '0') * 100 +

@@ -1121,7 +1121,7 @@ LOCAL void moloch_packet_log(int ses)
       moloch_session_idle_seconds(ses),
       stats.total,
       stats.dropped - initialDropped,
-      (stats.dropped - initialDropped)*(double)100.0/stats.total,
+      (stats.total?(stats.dropped - initialDropped)*(double)100.0/stats.total:0),
       moloch_http_queue_length(esServer),
       moloch_writer_queue_length(),
       moloch_packet_outstanding(),

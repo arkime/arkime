@@ -119,7 +119,7 @@ LOCAL void krb5_parse_req(MolochSession_t *session, const unsigned char *data, i
     MolochASNSeq_t seq[5];
 
     int num = moloch_parsers_asn_get_sequence(seq, 5, data, len, TRUE);
-    if (num < 3)
+    if (num < 3 || seq[0].len == 0 || seq[1].len == 0)
         return;
 
     if (!seq[0].pc || seq[0].tag != 1 || seq[0].value[seq[0].len - 1] != 5) {

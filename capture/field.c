@@ -79,25 +79,20 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     info->expression = g_strndup((char*)expression, expression_len);
     for (i = 0; out[i]; i += 4) {
         if (strncmp("group", (char*)data + out[i], 5) == 0) {
-            if (info->group)
-                g_free(info->group);
+            g_free(info->group);
             info->group = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("dbField2", (char*)data + out[i], 7) == 0) {
-            if (info->dbFieldFull)
-                g_free(info->dbFieldFull);
+            g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen  = out[i+3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
-            if (info->kind)
-                g_free(info->kind);
+            g_free(info->kind);
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
-            if (info->category)
-                g_free(info->category);
+            g_free(info->category);
             info->category = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("transform", (char*)data + out[i], 8) == 0) {
-            if (info->transform)
-                g_free(info->transform);
+            g_free(info->transform);
             info->transform = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
@@ -352,6 +347,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         g_free(minfo->dbField);
         g_free(minfo->group);
         g_free(minfo->kind);
+        g_free(minfo->transform);
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, minfo);
@@ -1325,8 +1321,7 @@ void moloch_field_ops_free(MolochFieldOps_t *ops)
     if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY) {
         int i;
         for (i = 0; i < ops->num; i++) {
-            if (ops->ops[i].str)
-                g_free(ops->ops[i].str);
+            g_free(ops->ops[i].str);
         }
     }
     if (ops->ops)
@@ -1469,18 +1464,12 @@ void moloch_field_exit()
     MolochFieldInfo_t *info = 0;
 
     HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
-        if (info->dbFieldFull)
-            g_free(info->dbFieldFull);
-        if (info->expression)
-            g_free(info->expression);
-        if (info->group)
-            g_free(info->group);
-        if (info->kind)
-            g_free(info->kind);
-        if (info->category)
-            g_free(info->category);
-        if (info->transform)
-            g_free(info->transform);
+        g_free(info->dbFieldFull);
+        g_free(info->expression);
+        g_free(info->group);
+        g_free(info->kind);
+        g_free(info->category);
+        g_free(info->transform);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
     );
 }
