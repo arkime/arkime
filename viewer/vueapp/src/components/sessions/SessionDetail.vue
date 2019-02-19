@@ -75,7 +75,7 @@
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.showFrames}"
               @click="toggleShowFrames">
-              Show Frames
+              Show Packets
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
@@ -295,7 +295,7 @@
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.showFrames}"
               @click="toggleShowFrames">
-              Show Frames
+              Show Packets
             </button>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
