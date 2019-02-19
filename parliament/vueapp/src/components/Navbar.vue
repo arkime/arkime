@@ -44,6 +44,19 @@
       <div class="form-inline"
         @keyup.enter="login"
         @keyup.esc="clearLogin">
+        <!-- dark/light mode -->
+        <button type="button"
+          class="btn btn-outline-secondary cursor-pointer mr-2"
+          @click="toggleTheme"
+          v-b-tooltip.hover.left
+          title="Toggle light/dark theme">
+          <span v-if="theme === 'light'"
+            class="fa fa-sun-o">
+          </span>
+          <span v-if="theme === 'dark'"
+            class="fa fa-moon-o">
+          </span>
+        </button> <!-- /dark/light mode -->
         <!-- refresh interval select -->
         <span class="form-group"
           v-if="!showLoginInput">
@@ -133,7 +146,9 @@ export default {
       // password input vars
       password: '',
       showLoginInput: false,
-      focusPassInput: false
+      focusPassInput: false,
+      // default theme is light
+      theme: 'light'
     };
   },
   computed: {
@@ -161,6 +176,13 @@ export default {
     AuthService.hasAuth();
     AuthService.isLoggedIn();
     this.loadRefreshInterval();
+
+    if (localStorage.getItem('parliamentTheme')) {
+      this.theme = localStorage.getItem('parliamentTheme');
+      if (this.theme === 'dark') {
+        document.body.classList = [ this.theme ];
+      }
+    }
   },
   methods: {
     /* page functions -------------------------------------------------------- */
@@ -199,6 +221,17 @@ export default {
     },
     loadRefreshInterval: function () {
       this.refreshInterval = localStorage.getItem('refreshInterval') || 15000;
+    },
+    toggleTheme: function () {
+      if (this.theme === 'light') {
+        this.theme = 'dark';
+        document.body.classList = [ this.theme ];
+      } else {
+        this.theme = 'light';
+        document.body.classList = [];
+      }
+
+      localStorage.setItem('parliamentTheme', this.theme);
     }
   }
 };

@@ -281,7 +281,7 @@
                 </span>
               </button> <!-- /acknowledge issues button -->
               <!-- remove selected issues button -->
-              <button class="btn btn-outline-danger btn-xs pull-right cursor-pointer"
+              <button class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
                 v-b-tooltip.hover.bottom-right
                 title="Remove selected acknowledged issues"
                 @click="removeSelectedAcknowledgedIssues">
@@ -692,6 +692,7 @@ select.page-select {
   padding-bottom: var(--px-xs);
   border-right: none;
   -webkit-appearance: none;
+  border-radius: 4px 0 0 4px;
 }
 
 .pagination-info {
