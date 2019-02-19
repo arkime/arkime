@@ -5160,7 +5160,6 @@ function localSessionDetail(req, res) {
     session.id = req.params.id;
     sortFields(session);
 
-    // TODO ECR
     if (req.query.showFrames && packets.length !== 0) {
       Pcap.packetFlow(session, packets, +req.query.packets || 200, function (err, results) {
         session._err = err;
