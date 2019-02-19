@@ -1539,7 +1539,15 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
     packet->protocol = nxt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+
+    if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
+#ifdef DEBUG_PACKET
+        LOG ("ERROR - %d + %d < %d", ip_len, sizeof(struct ip6_hdr), ip_hdr_len);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
     packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
+
     if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
 #ifdef DEBUG_PACKET
         LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);

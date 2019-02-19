@@ -359,7 +359,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^-/) {
+    } elsif ($ARGV[0] =~ /^--/) {
         print "Unknown option $ARGV[0]\n";
         $main::cmd = "--help";
         last;
