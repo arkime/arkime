@@ -17,20 +17,51 @@ else
       h4
         span.dstcol Destination
           span.dst-col-tip
-  each item, i in data
-    div.row
-      if item.client == 0
-        div.col-md-6.sessionsrc
-          if (item.ts)
-            div.session-detail-ts(value=item.ts)
-              em.ts-value #{item.ts}
-              span.pull-right #{item.bytes} bytes
-          |!{item.html}
-        div.col-md-6
-      else
-        div.col-md-6.offset-md-6.sessiondst
-          if (item.ts)
-            div.session-detail-ts(value=item.ts)
-              em.ts-value #{item.ts}
-              span.pull-right #{item.bytes} bytes
-          |!{item.html}
+
+  if (showFrames)
+    each item, i in data
+      div.row
+        if (item.src)
+          div.col-md-6.sessionsrc
+            if (item.ts)
+              div.session-detail-ts(value=item.ts)
+                em.ts-value #{item.ts}
+                if (item.tcpflags)
+                  | &nbsp;&nbsp;
+                  each flag, key in item.tcpflags
+                    if (flag > 0)
+                     | &nbsp; #{key} &nbsp;
+                span.pull-right #{item.bytes} bytes
+            |!{item.html}
+          div.col-md-6
+        else
+          div.col-md-6.offset-md-6.sessiondst
+            if (item.ts)
+              div.session-detail-ts(value=item.ts)
+                em.ts-value #{item.ts}
+                if (item.tcpflags)
+                  | &nbsp;&nbsp;
+                  each flag, key in item.tcpflags
+                    if (flag > 0)
+                     | &nbsp; #{key} &nbsp;
+                span.pull-right #{item.bytes} bytes
+            |!{item.html}
+
+  else
+    each item, i in data
+      div.row
+        if item.client == 0
+          div.col-md-6.sessionsrc
+            if (item.ts)
+              div.session-detail-ts(value=item.ts)
+                em.ts-value #{item.ts}
+                span.pull-right #{item.bytes} bytes
+            |!{item.html}
+          div.col-md-6
+        else
+          div.col-md-6.offset-md-6.sessiondst
+            if (item.ts)
+              div.session-detail-ts(value=item.ts)
+                em.ts-value #{item.ts}
+                span.pull-right #{item.bytes} bytes
+            |!{item.html}

@@ -21,7 +21,8 @@
 'use strict';
 
 var fs             = require('fs'),
-    crypto         = require('crypto');
+    crypto         = require('crypto'),
+    ipaddr         = require('ipaddr.js');
 
 var Pcap = module.exports = exports = function Pcap (key) {
   this.key     = key;
@@ -490,8 +491,8 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     len:    buffer.readUInt16BE(4),
     p: buffer[6],
     hopLimt:  buffer[7],
-    addr1:  buffer.slice(8,24).toString("hex"),
-    addr2:  buffer.slice(24,40).toString("hex")
+    addr1:  ipaddr.fromByteArray(buffer.slice(8,24)),
+    addr2:  ipaddr.fromByteArray(buffer.slice(24,40))
   };
 
   var offset = 40;
@@ -986,6 +987,70 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
   }
 };
 
+exports.packetFlow = function (session, packets, numPackets, cb) {
+  let sKey;
+  let error = false;
+
+  packets = packets.slice(0, numPackets);
+
+  let results = packets.map((item, index) => {
+    let result = {
+      key: Pcap.key(item),
+      ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+    };
+
+    if (!sKey) {
+      sKey = Pcap.keyFromSession(session);
+      if (packets[0].ip.p !== 6) {
+        sKey = Pcap.key(packets[0]);
+      }
+    }
+
+    switch (item.ip.p) {
+      case 1:
+      case 58:
+        result.data = item.icmp.data;
+        result.src = result.key === sKey;
+        break;
+      case 6:
+        result.data = item.tcp.data;
+        result.src = result.key === sKey;
+        result.tcpflags = {
+          syn: item.tcp.synflag,
+          ack: item.tcp.ackflag,
+          psh: item.tcp.pshflag,
+          rst: item.tcp.rstflag,
+          fin: item.tcp.finflag,
+          urg: item.tcp.urgflag
+        };
+        break;
+      case 17:
+        result.data = item.udp.data;
+        result.src = result.key === sKey;
+        break;
+      case 132:
+        result.data = item.sctp.data;
+        result.src = result.key === sKey;
+        break;
+      case 50:
+        result.data = item.esp.data;
+        result.src = result.key === sKey;
+        break;
+      default:
+        error = 'Couldn\'t decode pcap file, check viewer log';
+        break;
+    }
+
+    return result;
+  });
+
+  sKey = undefined;
+
+  if (error) { return cb(error, null); }
+
+  return cb(null, results);
+};
+
 exports.key = function(packet) {
   switch(packet.ip.p) {
   case 6: // tcp
@@ -1002,8 +1067,11 @@ exports.key = function(packet) {
 exports.keyFromSession = function(session) {
   switch(session.ipProtocol) {
   case 6: // tcp
+  case 'tcp':
   case 17: // udp
+  case 'udp':
   case 132: // sctp
+  case 'sctp':
     return session.srcIp + ':' + session.srcPort;
   default:
     return session.srcIp;
