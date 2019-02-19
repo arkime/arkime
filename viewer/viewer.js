@@ -4611,7 +4611,14 @@ function csvListWriter(req, res, list, fields, pcapWriter, extension) {
         let singleValue = '"' + value.join(', ') +  '"';
         values.push(singleValue);
       } else {
-        if (value === undefined) { value = ''; }
+        if (value === undefined) {
+          value = '';
+        } else if (typeof(value) === 'string' && value.includes(',')) {
+          if (value.includes('"')) {
+            value = value.replace(/"/g, '""');
+          }
+          value = '"' + value + '"';
+        }
         values.push(value);
       }
     }
