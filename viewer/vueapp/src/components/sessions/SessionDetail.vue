@@ -239,7 +239,7 @@
       class="inner packet-container mr-1 ml-1"
       v-html="packetHtml"
       ref="packetContainer"
-      :class="{'show-ts':params.ts === true}">
+      :class="{'show-ts':params.ts}">
     </div> <!-- packets -->
 
     <!-- packet options -->
@@ -495,11 +495,16 @@ export default {
     },
     toggleShowFrames: function () {
       this.params.showFrames = !this.params.showFrames;
+
       if (this.params.showFrames) {
+        // show timestamps and info by default for show frames option
+        this.params.ts = true;
+        // disable other options
         this.params.gzip = false;
         this.params.image = false;
         this.params.decode = {};
       }
+      
       this.getPackets();
     },
     toggleLineNumbers: function () {
