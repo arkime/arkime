@@ -504,7 +504,7 @@ export default {
         this.params.image = false;
         this.params.decode = {};
       }
-      
+
       this.getPackets();
     },
     toggleLineNumbers: function () {
