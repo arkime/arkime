@@ -2324,7 +2324,7 @@ void moloch_db_init()
     if (!config.dryRun) {
         int t = 0;
         if (!config.noStats) {
-            g_thread_new("moloch-stats", &moloch_db_stats_thread, NULL);
+            g_thread_unref(g_thread_new("moloch-stats", &moloch_db_stats_thread, NULL));
         }
         timers[t++] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
         if (moloch_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {

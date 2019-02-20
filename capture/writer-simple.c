@@ -533,7 +533,7 @@ void writer_simple_init(char *name)
         MOLOCH_LOCK_INIT(freeList[thread].lock);
     }
 
-    g_thread_new("moloch-simple", &writer_simple_thread, NULL);
+    g_thread_unref(g_thread_new("moloch-simple", &writer_simple_thread, NULL));
 
     g_timeout_add_seconds(1, writer_simple_check_gfunc, 0);
 }

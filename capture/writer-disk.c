@@ -423,7 +423,7 @@ void writer_disk_init(char *name)
 #endif
 
     if (writeMethod & MOLOCH_WRITE_THREAD) {
-        g_thread_new("moloch-output", &writer_disk_output_thread, NULL);
+        g_thread_unref(g_thread_new("moloch-output", &writer_disk_output_thread, NULL));
     }
 
     if ((writeMethod & MOLOCH_WRITE_DIRECT) && sizeof(off_t) == 4 && config.maxFileSizeG > 2)

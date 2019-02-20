@@ -2076,7 +2076,7 @@ void moloch_packet_init()
         MOLOCH_COND_INIT(packetQ[t].lock);
         snprintf(name, sizeof(name), "moloch-pkt%d", t);
 #ifndef FUZZLOCH
-        g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
+        g_thread_unref(g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t));
 #endif
     }
 

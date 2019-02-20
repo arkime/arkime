@@ -111,7 +111,7 @@ void reader_daq_start() {
 
         char name[100];
         snprintf(name, sizeof(name), "moloch-daq%d", i);
-        g_thread_new(name, &reader_daq_thread, NULL);
+        g_thread_unref(g_thread_new(name, &reader_daq_thread, NULL));
     }
 }
 /******************************************************************************/

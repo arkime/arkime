@@ -96,7 +96,7 @@ void reader_pfring_start() {
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         char name[100];
         snprintf(name, sizeof(name), "moloch-pfring%d", i);
-        g_thread_new(name, &reader_pfring_thread, (gpointer)(long)i);
+        g_thread_unref(g_thread_new(name, &reader_pfring_thread, (gpointer)(long)i));
     }
 }
 /******************************************************************************/

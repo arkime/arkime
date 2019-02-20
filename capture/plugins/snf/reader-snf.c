@@ -99,7 +99,7 @@ void reader_snf_start() {
         for (r = 0; r < snfNumRings; r++) {
             char name[100];
             snprintf(name, sizeof(name), "moloch-snf%d-%d", i, r);
-            g_thread_new(name, &reader_snf_thread, (gpointer)(long)(i | r << 8));
+            g_thread_unref(g_thread_new(name, &reader_snf_thread, (gpointer)(long)(i | r << 8)));
         }
         snf_start(handles[i]);
     }

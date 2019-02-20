@@ -113,7 +113,7 @@ void reader_libpcap_start() {
 
         char name[100];
         snprintf(name, sizeof(name), "moloch-pcap%d", i);
-        g_thread_new(name, &reader_libpcap_thread, (gpointer)(long)i);
+        g_thread_unref(g_thread_new(name, &reader_libpcap_thread, (gpointer)(long)i));
     }
 }
 /******************************************************************************/

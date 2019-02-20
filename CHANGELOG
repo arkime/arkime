@@ -16,6 +16,10 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.8.0 2019/03/XX
   - NOTICE: This will be the last version to support ES 5
+  - all - support tokens for host.*/http.uri/http.useragent field
+  - viewer - should output csv with commas in fields correctly
+  - viewer - new Show Packets view in session detail
+  - capture - libfuzzer fixes
 
 1.7.1 2019/02/14
   - NOTICE: db.pl upgrade is required

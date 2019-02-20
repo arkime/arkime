@@ -176,7 +176,7 @@ void reader_tpacketv3_start() {
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "moloch-af3%d-%d", i, t);
-            g_thread_new(name, &reader_tpacketv3_thread, (gpointer)(long)i);
+            g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, (gpointer)(long)i));
         }
     }
 }
