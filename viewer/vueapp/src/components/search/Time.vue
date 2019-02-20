@@ -26,14 +26,38 @@
           @blur="onOffTimeRangeFocus"
           v-focus-input="focusTimeRange">
           <option value="1">Last hour</option>
-          <option value="6">Last 6 hours</option>
-          <option value="24">Last 24 hours</option>
-          <option value="48">Last 48 hours</option>
-          <option value="72">Last 72 hours</option>
-          <option value="168">Last week</option>
-          <option value="720">Last month</option>
-          <option value="4380">Last 6 months</option>
-          <option value="-1">All (careful)</option>
+          <option value="6"
+            v-if="!user.timeLimit || user.timeLimit >= 6">
+            Last 6 hours
+          </option>
+          <option value="24"
+            v-if="!user.timeLimit || user.timeLimit >= 24">
+            Last 24 hours
+          </option>
+          <option value="48"
+            v-if="!user.timeLimit || user.timeLimit >= 48">
+            Last 48 hours
+          </option>
+          <option value="72"
+            v-if="!user.timeLimit || user.timeLimit >= 72">
+            Last 72 hours
+          </option>
+          <option value="168"
+            v-if="!user.timeLimit || user.timeLimit >= 168">
+            Last week
+          </option>
+          <option value="720"
+            v-if="!user.timeLimit || user.timeLimit >= 720">
+            Last month
+          </option>
+          <option value="4380"
+            v-if="!user.timeLimit || user.timeLimit >= 4380">
+            Last 6 months
+          </option>
+          <option value="-1"
+            v-if="!user.timeLimit || user.timeLimit > 4380">
+            All (careful)
+          </option>
           <option value="0" disabled>Custom</option>
         </select>
       </div>
@@ -199,6 +223,38 @@ export default {
       }
     };
   },
+  computed: {
+    user: function () {
+      return this.$store.state.user;
+    },
+    time: {
+      get: function () {
+        return this.$store.state.time;
+      },
+      set: function (newValue) {
+        this.$store.commit('setTime', newValue);
+      }
+    },
+    timeRange: {
+      get: function () {
+        return this.$store.state.timeRange;
+      },
+      set: function (newValue) {
+        this.$store.commit('setTimeRange', newValue);
+      }
+    },
+    focusTimeRange: {
+      get: function () {
+        return this.$store.state.focusTimeRange;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusTimeRange', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
+    }
+  },
   watch: {
     // watch for the date, startTime, stopTime, interval, and bounding
     // route parameters to change, then update the view
@@ -248,35 +304,6 @@ export default {
       this.$route.query.stopTime
     );
   },
-  computed: {
-    time: {
-      get: function () {
-        return this.$store.state.time;
-      },
-      set: function (newValue) {
-        this.$store.commit('setTime', newValue);
-      }
-    },
-    timeRange: {
-      get: function () {
-        return this.$store.state.timeRange;
-      },
-      set: function (newValue) {
-        this.$store.commit('setTimeRange', newValue);
-      }
-    },
-    focusTimeRange: {
-      get: function () {
-        return this.$store.state.focusTimeRange;
-      },
-      set: function (newValue) {
-        this.$store.commit('setFocusTimeRange', newValue);
-      }
-    },
-    shiftKeyHold: function () {
-      return this.$store.state.shiftKeyHold;
-    }
-  },
   methods: {
     /* exposed page functions ------------------------------------ */
     /**
@@ -288,6 +315,11 @@ export default {
       this.deltaTime = null;
       this.timeError = '';
       this.focusTimeRange = false;
+
+      if (this.timeRange > this.user.timeLimit ||
+        (this.timeRange === '-1' && this.user.timeLimit)) {
+        this.timeRange = this.user.timeLimit;
+      }
 
       this.$router.push({
         query: {
@@ -307,7 +339,6 @@ export default {
     closePicker: function () {
       // start or stop time was udpated, so set the timerange to custom
       this.timeRange = '0';
-      this.validateDate();
     },
     /* Fired when start datetime is changed */
     changeStartTime: function (event) {
@@ -372,7 +403,16 @@ export default {
       }
 
       // update the displayed time range
-      this.deltaTime = stopSec - startSec;
+      let deltaTime = stopSec - startSec;
+
+      // make sure the time range does not exceed the user setting
+      let deltaTimeHrs = deltaTime / 3600;
+      if (deltaTimeHrs > this.user.timeLimit) {
+        this.timeError = `Your query cannot exceed ${this.user.timeLimit} hours`;
+        return;
+      }
+
+      this.deltaTime = deltaTime;
     },
     onOffTimeRangeFocus: function () {
       this.focusTimeRange = false;
@@ -413,6 +453,12 @@ export default {
      */
     setupTimeParams: function (date, startTime, stopTime) {
       if (date) { // time range is available
+        // make sure the time range does not exceed the user setting
+        if (date > this.user.timeLimit ||
+          (date === '-1' && this.user.timeLimit)) {
+          date = this.user.timeLimit;
+        }
+
         this.timeRange = date;
         if (parseInt(this.timeRange, 10) === -1) { // all time
           this.localStartTime = moment(0);
@@ -431,13 +477,6 @@ export default {
         let start = startTime;
 
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
-          // if we can parse start and stop time, set them
-          this.timeRange = '0'; // custom time range
-          this.localStopTime = moment(stop * 1000);
-          this.time.stopTime = stop;
-          this.localStartTime = moment(start * 1000);
-          this.time.startTime = start;
-
           stop = parseInt(stop, 10);
           start = parseInt(start, 10);
 
@@ -446,7 +485,23 @@ export default {
           }
 
           // update the displayed time range
-          this.deltaTime = stop - start;
+          let deltaTime = stop - start;
+
+          // make sure the time range does not exceed the user setting
+          let deltaTimeHrs = deltaTime / 3600;
+          if (deltaTimeHrs > this.user.timeLimit) {
+            start = stop - (this.user.timeLimit * 3600);
+            deltaTime = stop - start;
+          }
+
+          this.deltaTime = deltaTime;
+
+          // if we can parse start and stop time, set them
+          this.timeRange = '0'; // custom time range
+          this.localStopTime = moment(stop * 1000);
+          this.time.stopTime = stop;
+          this.localStartTime = moment(start * 1000);
+          this.time.startTime = start;
         } else { // if we can't parse stop or start time, set default
           this.timeRange = '1'; // default to 1 hour
         }
@@ -472,22 +527,44 @@ export default {
       if (newParams.date !== oldParams.date) {
         change = true;
         if (newParams.date !== this.timeRange) {
+          // don't allow the time range to exceed the user setting
+          if (newParams.date > this.user.timeLimit ||
+            (newParams.date === '-1' && this.user.timeLimit)) {
+            newParams.date = this.user.timeLimit;
+          }
           this.timeRange = newParams.date || 0;
         }
         // calculate the new stop/start times because the range changed
         this.updateStartStopTime();
       }
 
+      let stopTimeChanged = false;
+      let startTimeChanged = false;
       if (newParams.stopTime && newParams.stopTime !== oldParams.stopTime) {
         change = true;
-        this.time.stopTime = newParams.stopTime;
-        this.localStopTime = moment(newParams.stopTime * 1000);
+        stopTimeChanged = true;
       }
 
       if (newParams.startTime && newParams.startTime !== oldParams.startTime) {
         change = true;
-        this.time.startTime = newParams.startTime;
-        this.localStartTime = moment(newParams.startTime * 1000);
+        startTimeChanged = true;
+      }
+
+      if (stopTimeChanged || startTimeChanged) {
+        // make sure the time window does not exceed the user setting
+        let deltaTime = newParams.stopTime - newParams.startTime;
+
+        let deltaTimeHrs = deltaTime / 3600;
+        if (deltaTimeHrs <= this.user.timeLimit) {
+          if (startTimeChanged) {
+            this.time.startTime = newParams.startTime;
+            this.localStartTime = moment(newParams.startTime * 1000);
+          }
+          if (stopTimeChanged) {
+            this.time.stopTime = newParams.stopTime;
+            this.localStopTime = moment(newParams.stopTime * 1000);
+          }
+        }
       }
 
       if (change) { this.$emit('timeChange'); }

@@ -294,6 +294,27 @@
                         Disable PCAP Download
                       </label>
                     </span>
+                    <div class="input-group input-group-sm ml-3 mt-1">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          Time Limit
+                        </span>
+                      </div>
+                      <select id="timeLimit"
+                        class="form-control time-limit-select"
+                        v-model="listUser.timeLimit"
+                        @change="userChanged(listUser)">
+                        <option value="1">Last hour</option>
+                        <option value="6">Last 6 hours</option>
+                        <option value="24">Last 24 hours</option>
+                        <option value="48">Last 48 hours</option>
+                        <option value="72">Last 72 hours</option>
+                        <option value="168">Last week</option>
+                        <option value="720">Last month</option>
+                        <option value="4380">Last 6 months</option>
+                        <option value=undefined>All (careful)</option>
+                      </select>
+                    </div>
                   </div>
                 </td>
               </tr> <!-- /advanced user settings -->
@@ -782,5 +803,15 @@ td input[type="checkbox"] {
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user.btn-success {
   background: linear-gradient(135deg, #28a745 1%, #28a745 75%, #28a745 75%, #1c7730 77%, #1c7730 100%);
+}
+
+.form-control.time-limit-select {
+  -webkit-appearance: none;
+  border-radius: 0 4px 4px 0;
+  max-width: 120px;
+}
+
+.form-check-inline {
+  white-space: nowrap;
 }
 </style>

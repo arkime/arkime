@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 58;
+var MIN_DB_VERSION = 60;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -1044,9 +1044,10 @@ let settingDefaults = {
 
 // gets the current user
 app.get('/user/current', function(req, res) {
-  let userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+  let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
     'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+    'lastUsed', 'timeLimit' ];
 
   let clone = {};
 
@@ -2548,7 +2549,36 @@ function lookupQueryItems(query, doneCb) {
   finished = 1;
 }
 
-function buildSessionQuery(req, buildCb) {
+function buildSessionQuery(req, res, buildCb) {
+  // validate time limit is not exceeded
+  let timeLimitExceeded = false;
+
+  if (req.query.date > req.user.timeLimit ||
+    (req.query.date === '-1') && req.user.timeLimit) {
+    timeLimitExceeded = true;
+  } else if (req.query.startTime && req.query.stopTime) {
+    if (! /^[0-9]+$/.test(req.query.startTime)) {
+      req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
+    } else {
+      req.query.startTime = parseInt(req.query.startTime, 10);
+    }
+
+    if (! /^[0-9]+$/.test(req.query.stopTime)) {
+      req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
+    } else {
+      req.query.stopTime = parseInt(req.query.stopTime, 10);
+    }
+
+    if (req.user.timeLimit && (req.query.stopTime - req.query.startTime) / 3600 > req.user.timeLimit) {
+      timeLimitExceeded = true;
+    }
+  }
+
+  if (timeLimitExceeded) {
+    console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`); // TODO
+    return res.molochError(403, `User time limit (${req.user.timeLimit} hours) exceeded`);
+  }
+
   var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
@@ -2565,18 +2595,6 @@ function buildSessionQuery(req, buildCb) {
       (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
   } else if (req.query.startTime && req.query.stopTime) {
-    if (! /^[0-9]+$/.test(req.query.startTime)) {
-      req.query.startTime = Date.parse(req.query.startTime.replace("+", " "))/1000;
-    } else {
-      req.query.startTime = parseInt(req.query.startTime, 10);
-    }
-
-    if (! /^[0-9]+$/.test(req.query.stopTime)) {
-      req.query.stopTime = Date.parse(req.query.stopTime.replace("+", " "))/1000;
-    } else {
-      req.query.stopTime = parseInt(req.query.stopTime, 10);
-    }
-
     switch (req.query.bounding) {
     case "first":
       query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
@@ -2818,7 +2836,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
     fields.push("rootId");
   }
 
-  buildSessionQuery(req, function(err, query, indices) {
+  buildSessionQuery(req, res, function(err, query, indices) {
     if (err) {
       return res.send("Could not build query.  Err: " + err);
     }
@@ -2843,7 +2861,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
   });
 }
 
-function sessionsListFromIds(req, ids, fields, cb) {
+function sessionsListFromIds(req, res, ids, fields, cb) {
   var processSegments = false;
   if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
     if (fields.indexOf("rootId") === -1) { fields.push("rootId"); }
@@ -2872,7 +2890,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
     });
   }, function(err) {
     if (processSegments) {
-      buildSessionQuery(req, function(err, query, indices) {
+      buildSessionQuery(req, res, function(err, query, indices) {
         query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
           cb(err, list);
@@ -3932,7 +3950,7 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
     next();
   }
 
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     if (bsqErr) {
       res.send({ recordsTotal: 0,
                  recordsFiltered: 0,
@@ -3953,7 +3971,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 
   var graph = {};
   var map = {};
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {recordsTotal: 0,
                recordsFiltered: 0,
@@ -4055,7 +4073,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, noCacheJson, function(req, res) {
 
   req.query.facets = 1;
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
       return res.molochError(403, bsqErr.toString());
@@ -4181,7 +4199,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
     return res.send({spi: {}, bsqErr: "'All' date range not allowed for spiview query"});
   }
 
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {spi: {},
                bsqErr: bsqErr.toString(),
@@ -4422,7 +4440,7 @@ function buildConnections(req, res, cb) {
     updateValues(f, connects[linkId], fields);
   }
 
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     if (bsqErr) {
       return cb(bsqErr, 0, 0, 0);
     }
@@ -4645,7 +4663,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
 
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
-    sessionsListFromIds(req, ids, fields, function(err, list) {
+    sessionsListFromIds(req, res, ids, fields, function(err, list) {
       csvListWriter(req, res, list, reqFields);
     });
   } else {
@@ -4686,7 +4704,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     }
   }
 
-  buildSessionQuery(req, function(err, query, indices) {
+  buildSessionQuery(req, res, function(err, query, indices) {
     delete query.sort;
     delete query.aggregations;
     query.size = 0;
@@ -4793,7 +4811,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     };
   }
 
-  buildSessionQuery(req, function(err, query, indices) {
+  buildSessionQuery(req, res, function(err, query, indices) {
     delete query.sort;
     delete query.aggregations;
 
@@ -5363,7 +5381,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
   var nodeName = null;
   var sessionID = null;
 
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, res, function(bsqErr, query, indices) {
     if (bsqErr) {
       res.status(400);
       return res.end(bsqErr);
@@ -5749,7 +5767,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
 
-    sessionsListFromIds(req, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
@@ -5785,9 +5803,10 @@ internals.usersMissing = {
 app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
-  let columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+    'lastUsed', 'timeLimit' ];
 
   let query = {
     _source: columns,
@@ -5825,6 +5844,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
       fields.removeEnabled = fields.removeEnabled || false;
       fields.userName = safeStr(fields.userName || '');
       fields.packetSearch = fields.packetSearch || false;
+      fields.timeLimit = fields.timeLimit || undefined;
       results.results.push(fields);
     }
 
@@ -5979,6 +5999,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     user.hideFiles = req.body.hideFiles === true;
     user.hidePcap = req.body.hidePcap === true;
     user.disablePcapDownload = req.body.disablePcapDownload === true;
+    user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
 
     // Can only change createEnabled if it is currently turned on
     if (req.body.createEnabled !== undefined && req.user.createEnabled) {
@@ -6140,7 +6161,7 @@ app.post('/addTags', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["tags", "node"], function(err, list) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
@@ -6173,7 +6194,7 @@ app.post('/removeTags', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["tags"], function(err, list) {
       removeTagsList(res, tags, list);
     });
   } else {
@@ -6988,7 +7009,7 @@ app.post('/scrub', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else if (req.query.expression) {
@@ -7006,7 +7027,7 @@ app.post('/delete', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else if (req.query.expression) {
@@ -7426,7 +7447,7 @@ app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   } else {

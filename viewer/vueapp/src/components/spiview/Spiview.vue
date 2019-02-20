@@ -888,7 +888,7 @@ export default {
             pendingPromise = null;
           })
           .catch((error) => {
-            this.error = error;
+            this.error = error.text || error;
             this.dataLoading = false;
             pendingPromise = null;
           });
