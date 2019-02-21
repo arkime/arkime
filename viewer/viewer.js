@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 58;
+var MIN_DB_VERSION = 60;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -1044,9 +1044,10 @@ let settingDefaults = {
 
 // gets the current user
 app.get('/user/current', function(req, res) {
-  let userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+  let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
     'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+    'lastUsed', 'timeLimit' ];
 
   let clone = {};
 
@@ -2549,6 +2550,35 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
+  // validate time limit is not exceeded
+  let timeLimitExceeded = false;
+
+  if (parseInt(req.query.date) > parseInt(req.user.timeLimit) ||
+    (req.query.date === '-1') && req.user.timeLimit) {
+    timeLimitExceeded = true;
+  } else if (req.query.startTime && req.query.stopTime) {
+    if (! /^[0-9]+$/.test(req.query.startTime)) {
+      req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
+    } else {
+      req.query.startTime = parseInt(req.query.startTime, 10);
+    }
+
+    if (! /^[0-9]+$/.test(req.query.stopTime)) {
+      req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
+    } else {
+      req.query.stopTime = parseInt(req.query.stopTime, 10);
+    }
+
+    if (req.user.timeLimit && (req.query.stopTime - req.query.startTime) / 3600 > req.user.timeLimit) {
+      timeLimitExceeded = true;
+    }
+  }
+
+  if (timeLimitExceeded) {
+    console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
+    return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
+  }
+
   var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
@@ -2565,18 +2595,6 @@ function buildSessionQuery(req, buildCb) {
       (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
   } else if (req.query.startTime && req.query.stopTime) {
-    if (! /^[0-9]+$/.test(req.query.startTime)) {
-      req.query.startTime = Date.parse(req.query.startTime.replace("+", " "))/1000;
-    } else {
-      req.query.startTime = parseInt(req.query.startTime, 10);
-    }
-
-    if (! /^[0-9]+$/.test(req.query.stopTime)) {
-      req.query.stopTime = Date.parse(req.query.stopTime.replace("+", " "))/1000;
-    } else {
-      req.query.stopTime = parseInt(req.query.stopTime, 10);
-    }
-
     switch (req.query.bounding) {
     case "first":
       query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
@@ -5785,9 +5803,10 @@ internals.usersMissing = {
 app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
-  let columns = ['userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'];
+    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+    'lastUsed', 'timeLimit' ];
 
   let query = {
     _source: columns,
@@ -5825,6 +5844,7 @@ app.post('/user/list', logAction('users'), recordResponseTime, function(req, res
       fields.removeEnabled = fields.removeEnabled || false;
       fields.userName = safeStr(fields.userName || '');
       fields.packetSearch = fields.packetSearch || false;
+      fields.timeLimit = fields.timeLimit || undefined;
       results.results.push(fields);
     }
 
@@ -5979,6 +5999,7 @@ app.post('/user/update', logAction(), checkCookieToken, postSettingUser, functio
     user.hideFiles = req.body.hideFiles === true;
     user.hidePcap = req.body.hidePcap === true;
     user.disablePcapDownload = req.body.disablePcapDownload === true;
+    user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
 
     // Can only change createEnabled if it is currently turned on
     if (req.body.createEnabled !== undefined && req.user.createEnabled) {
