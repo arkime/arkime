@@ -1077,10 +1077,12 @@ LOCAL void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * con
     MolochFrags_t *frags;
 
     // ALW - Should change frags_process to make the copy when needed
-    uint8_t *pkt = malloc(packet->pktlen);
-    memcpy(pkt, packet->pkt, packet->pktlen);
-    packet->pkt = pkt;
-    packet->copied = 1;
+    if (!packet->copied) {
+        uint8_t *pkt = malloc(packet->pktlen);
+        memcpy(pkt, packet->pkt, packet->pktlen);
+        packet->pkt = pkt;
+        packet->copied = 1;
+    }
 
     MOLOCH_LOCK(frags);
     // Remove expired entries
