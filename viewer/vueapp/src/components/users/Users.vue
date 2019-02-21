@@ -239,7 +239,7 @@
                 v-if="listUser.expanded">
                 <td colspan="13">
                   <div class="form-check form-check-inline mt-1 mb-1">
-                    <strong>
+                    <strong class="mt-1">
                       Configure additional user permissions:
                     </strong>
                     <span v-b-tooltip.hover
