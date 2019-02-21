@@ -250,7 +250,7 @@ my $pwd = "*/pcap";
     $users = viewerPost("/user/list", "");
     eq_or_diff($users->{data}->[1]->{timeLimit}, 72, "time limit updated");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=-1");
-    ok(!$json->{success}, "user can't exceed their time range");
+    eq_or_diff($json->{bsqErr}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
 

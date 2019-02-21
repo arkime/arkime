@@ -2549,11 +2549,11 @@ function lookupQueryItems(query, doneCb) {
   finished = 1;
 }
 
-function buildSessionQuery(req, res, buildCb) {
+function buildSessionQuery(req, buildCb) {
   // validate time limit is not exceeded
   let timeLimitExceeded = false;
 
-  if (req.query.date > req.user.timeLimit ||
+  if (parseInt(req.query.date) > parseInt(req.user.timeLimit) ||
     (req.query.date === '-1') && req.user.timeLimit) {
     timeLimitExceeded = true;
   } else if (req.query.startTime && req.query.stopTime) {
@@ -2576,7 +2576,7 @@ function buildSessionQuery(req, res, buildCb) {
 
   if (timeLimitExceeded) {
     console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
-    return res.molochError(403, `User time limit (${req.user.timeLimit} hours) exceeded`);
+    return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
   }
 
   var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
@@ -2836,7 +2836,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
     fields.push("rootId");
   }
 
-  buildSessionQuery(req, res, function(err, query, indices) {
+  buildSessionQuery(req, function(err, query, indices) {
     if (err) {
       return res.send("Could not build query.  Err: " + err);
     }
@@ -2861,7 +2861,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
   });
 }
 
-function sessionsListFromIds(req, res, ids, fields, cb) {
+function sessionsListFromIds(req, ids, fields, cb) {
   var processSegments = false;
   if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
     if (fields.indexOf("rootId") === -1) { fields.push("rootId"); }
@@ -2890,7 +2890,7 @@ function sessionsListFromIds(req, res, ids, fields, cb) {
     });
   }, function(err) {
     if (processSegments) {
-      buildSessionQuery(req, res, function(err, query, indices) {
+      buildSessionQuery(req, function(err, query, indices) {
         query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
           cb(err, list);
@@ -3950,7 +3950,7 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
     next();
   }
 
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       res.send({ recordsTotal: 0,
                  recordsFiltered: 0,
@@ -3971,7 +3971,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 
   var graph = {};
   var map = {};
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {recordsTotal: 0,
                recordsFiltered: 0,
@@ -4073,7 +4073,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, noCacheJson, function(req, res) {
 
   req.query.facets = 1;
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
       return res.molochError(403, bsqErr.toString());
@@ -4199,7 +4199,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
     return res.send({spi: {}, bsqErr: "'All' date range not allowed for spiview query"});
   }
 
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {spi: {},
                bsqErr: bsqErr.toString(),
@@ -4440,7 +4440,7 @@ function buildConnections(req, res, cb) {
     updateValues(f, connects[linkId], fields);
   }
 
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       return cb(bsqErr, 0, 0, 0);
     }
@@ -4663,7 +4663,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
 
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
-    sessionsListFromIds(req, res, ids, fields, function(err, list) {
+    sessionsListFromIds(req, ids, fields, function(err, list) {
       csvListWriter(req, res, list, reqFields);
     });
   } else {
@@ -4704,7 +4704,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     }
   }
 
-  buildSessionQuery(req, res, function(err, query, indices) {
+  buildSessionQuery(req, function(err, query, indices) {
     delete query.sort;
     delete query.aggregations;
     query.size = 0;
@@ -4811,7 +4811,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     };
   }
 
-  buildSessionQuery(req, res, function(err, query, indices) {
+  buildSessionQuery(req, function(err, query, indices) {
     delete query.sort;
     delete query.aggregations;
 
@@ -5381,7 +5381,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
   var nodeName = null;
   var sessionID = null;
 
-  buildSessionQuery(req, res, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       res.status(400);
       return res.end(bsqErr);
@@ -5767,7 +5767,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   if (req.query.ids) {
     var ids = queryValueToArray(req.query.ids);
 
-    sessionsListFromIds(req, res, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
+    sessionsListFromIds(req, ids, ["lastPacket", "node", "totBytes", "totPackets", "rootId"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
@@ -6161,7 +6161,7 @@ app.post('/addTags', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, res, ids, ["tags", "node"], function(err, list) {
+    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
@@ -6194,7 +6194,7 @@ app.post('/removeTags', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, res, ids, ["tags"], function(err, list) {
+    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
       removeTagsList(res, tags, list);
     });
   } else {
@@ -7009,7 +7009,7 @@ app.post('/scrub', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, false, list);
     });
   } else if (req.query.expression) {
@@ -7027,7 +7027,7 @@ app.post('/delete', logAction(), function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       scrubList(req, res, true, list);
     });
   } else if (req.query.expression) {
@@ -7447,7 +7447,7 @@ app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
     var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, res, ids, ["node"], function(err, list) {
+    sessionsListFromIds(req, ids, ["node"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   } else {
