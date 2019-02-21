@@ -245,15 +245,13 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
 
-# TODO user time limit
+# user time limit
     $json = viewerPostToken2("/user/update", '{"userId":"test2", "timeLimit":"72"}', $token2);
     $users = viewerPost("/user/list", "");
     eq_or_diff($users->{data}->[1]->{timeLimit}, 72, "time limit updated");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=-1");
     ok(!$json->{success}, "user can't exceed their time range");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=72");
-    # ok($json->{success}, "user can make a query within their time range");
-    # diag(Dumper($json));
     is (exists $json->{data}, 1, "user can make a query within their time range");
 
 # Delete Users

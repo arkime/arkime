@@ -453,13 +453,15 @@ export default {
     timeUpdate: function () {
       if (this.$store.state.timeRange === '0' &&
         this.$store.state.time.startTime && this.$store.state.time.stopTime) {
-        // make sure the query doesn't exceed the user time limit
-        let deltaTime = this.$store.state.time.stopTime - this.$store.state.time.startTime;
+        if (this.user.timeLimit) {
+          // make sure the query doesn't exceed the user time limit
+          let deltaTime = this.$store.state.time.stopTime - this.$store.state.time.startTime;
 
-        // make sure the time range does not exceed the user setting
-        let deltaTimeHrs = deltaTime / 3600;
-        if (deltaTimeHrs > this.user.timeLimit) {
-          return;
+          // make sure the time range does not exceed the user setting
+          let deltaTimeHrs = deltaTime / 3600;
+          if (deltaTimeHrs > this.user.timeLimit) {
+            return;
+          }
         }
 
         this.$router.push({

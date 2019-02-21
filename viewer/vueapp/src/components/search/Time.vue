@@ -219,7 +219,8 @@ export default {
         showClose: true,
         focusOnShow: false,
         showTodayButton: true,
-        allowInputToggle: true
+        allowInputToggle: true,
+        minDate: moment(0)
       }
     };
   },
@@ -316,9 +317,11 @@ export default {
       this.timeError = '';
       this.focusTimeRange = false;
 
-      if (this.timeRange > this.user.timeLimit ||
-        (this.timeRange === '-1' && this.user.timeLimit)) {
-        this.timeRange = this.user.timeLimit;
+      if (this.user.timeLimit) {
+        if (this.timeRange > this.user.timeLimit ||
+          (this.timeRange === '-1' && this.user.timeLimit)) {
+          this.timeRange = this.user.timeLimit;
+        }
       }
 
       this.$router.push({
@@ -406,10 +409,12 @@ export default {
       let deltaTime = stopSec - startSec;
 
       // make sure the time range does not exceed the user setting
-      let deltaTimeHrs = deltaTime / 3600;
-      if (deltaTimeHrs > this.user.timeLimit) {
-        this.timeError = `Your query cannot exceed ${this.user.timeLimit} hours`;
-        return;
+      if (this.user.timeLimit) {
+        let deltaTimeHrs = deltaTime / 3600;
+        if (deltaTimeHrs > this.user.timeLimit) {
+          this.timeError = `Your query cannot exceed ${this.user.timeLimit} hours`;
+          return;
+        }
       }
 
       this.deltaTime = deltaTime;
@@ -454,11 +459,12 @@ export default {
     setupTimeParams: function (date, startTime, stopTime) {
       if (date) { // time range is available
         // make sure the time range does not exceed the user setting
-        if (date > this.user.timeLimit ||
-          (date === '-1' && this.user.timeLimit)) {
-          date = this.user.timeLimit;
+        if (this.user.timeLimit) {
+          if (date > this.user.timeLimit ||
+            (date === '-1' && this.user.timeLimit)) {
+            date = this.user.timeLimit;
+          }
         }
-
         this.timeRange = date;
         if (parseInt(this.timeRange, 10) === -1) { // all time
           this.localStartTime = moment(0);
@@ -489,9 +495,11 @@ export default {
 
           // make sure the time range does not exceed the user setting
           let deltaTimeHrs = deltaTime / 3600;
-          if (deltaTimeHrs > this.user.timeLimit) {
-            start = stop - (this.user.timeLimit * 3600);
-            deltaTime = stop - start;
+          if (this.user.timeLimit) {
+            if (deltaTimeHrs > this.user.timeLimit) {
+              start = stop - (this.user.timeLimit * 3600);
+              deltaTime = stop - start;
+            }
           }
 
           this.deltaTime = deltaTime;
@@ -528,9 +536,11 @@ export default {
         change = true;
         if (newParams.date !== this.timeRange) {
           // don't allow the time range to exceed the user setting
-          if (newParams.date > this.user.timeLimit ||
-            (newParams.date === '-1' && this.user.timeLimit)) {
-            newParams.date = this.user.timeLimit;
+          if (this.user.timeLimit) {
+            if (newParams.date > this.user.timeLimit ||
+              (newParams.date === '-1' && this.user.timeLimit)) {
+              newParams.date = this.user.timeLimit;
+            }
           }
           this.timeRange = newParams.date || 0;
         }
@@ -555,7 +565,7 @@ export default {
         let deltaTime = newParams.stopTime - newParams.startTime;
 
         let deltaTimeHrs = deltaTime / 3600;
-        if (deltaTimeHrs <= this.user.timeLimit) {
+        if (!this.user.timeLimit || deltaTimeHrs <= this.user.timeLimit) {
           if (startTimeChanged) {
             this.time.startTime = newParams.startTime;
             this.localStartTime = moment(newParams.startTime * 1000);

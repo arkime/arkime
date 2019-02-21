@@ -303,7 +303,7 @@
                       <select id="timeLimit"
                         class="form-control time-limit-select"
                         v-model="listUser.timeLimit"
-                        @change="userChanged(listUser)">
+                        @change="changeTimeLimit(listUser)">
                         <option value="1">Last hour</option>
                         <option value="6">Last 6 hours</option>
                         <option value="24">Last 24 hours</option>
@@ -611,6 +611,14 @@ export default {
       this.msg = null;
       this.msgType = null;
     },
+    changeTimeLimit: function (user) {
+      if (user.timeLimit === 'undefined') {
+        delete user.timeLimit;
+      } else {
+        user.timeLimit = parseInt(user.timeLimit);
+      }
+      this.userChanged(user);
+    },
     userChanged: function (user) {
       this.$set(user, 'changed', true);
     },
@@ -629,6 +637,8 @@ export default {
                 this.user[field] = user[field];
               }
             }
+            // time limit is special because it can be undefined
+            this.user.timeLimit = user.timeLimit || undefined;
           }
           this.$set(user, 'changed', false);
         }, (error) => {

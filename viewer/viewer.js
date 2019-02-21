@@ -2575,7 +2575,7 @@ function buildSessionQuery(req, res, buildCb) {
   }
 
   if (timeLimitExceeded) {
-    console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`); // TODO
+    console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
     return res.molochError(403, `User time limit (${req.user.timeLimit} hours) exceeded`);
   }
 
