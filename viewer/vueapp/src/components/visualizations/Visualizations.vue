@@ -469,7 +469,8 @@ export default {
         };
 
         if (result.startTime && result.stopTime) {
-          this.$store.commit('setTime', result);
+          this.$store.commit('setTimeRange', 0); // set time range to custom
+          this.$store.commit('setTime', result); // set start/stop time
         }
       });
 
