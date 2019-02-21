@@ -104,8 +104,8 @@
               <!-- user settings -->
               <tr :key="listUser.id + 'user'">
                 <!-- /toggle settings button -->
-                <td :class="{'btn-indicator':listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload}">
-                  <toggle-btn v-if="listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload"
+                <td :class="{'btn-indicator':listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit}">
+                  <toggle-btn v-if="listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit"
                     :opened="listUser.expanded"
                     v-b-tooltip.hover
                     title="This user has additional restricted permissions"
