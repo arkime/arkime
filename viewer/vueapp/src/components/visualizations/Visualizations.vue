@@ -453,8 +453,20 @@ export default {
         stopTime: (xAxis[0].max / 1000).toFixed()
       };
 
-      if (result.startTime && result.stopTime) {
-        this.$store.commit('setTime', result);
+      this.updateStopStartTime(result);
+    },
+    updateStopStartTime: function (times) {
+      if (times.startTime && times.stopTime) {
+        this.$store.commit('setTimeRange', 0); // set time range to custom
+        this.$store.commit('setTime', times); // set start/stop time
+        this.$router.push({ // issue a search with the new time params
+          query: {
+            ...this.$route.query,
+            date: undefined,
+            stopTime: times.stopTime,
+            startTime: times.startTime
+          }
+        });
       }
     },
     setupGraphElement: function () {
@@ -468,10 +480,7 @@ export default {
           stopTime: (ranges.xaxis.to / 1000).toFixed()
         };
 
-        if (result.startTime && result.stopTime) {
-          this.$store.commit('setTimeRange', 0); // set time range to custom
-          this.$store.commit('setTime', result); // set start/stop time
-        }
+        this.updateStopStartTime(result);
       });
 
       let previousPoint;
