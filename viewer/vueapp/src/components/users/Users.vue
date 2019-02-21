@@ -180,12 +180,14 @@
                   />
                 </td>
                 <td class="no-wrap">
-                  <span v-if="listUser.lastUsed">
+                  <div v-if="listUser.lastUsed"
+                    class="cell-text">
                     {{ listUser.lastUsed / 1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
-                  </span>
-                  <span v-else>
+                  </div>
+                  <div v-else
+                    class="cell-text">
                     Never
-                  </span>
+                  </div>
                 </td>
                 <td class="no-wrap">
                   <span class="pull-right">
@@ -295,7 +297,9 @@
                       </label>
                     </span>
                     <div class="input-group input-group-sm ml-3 mt-1">
-                      <div class="input-group-prepend">
+                      <div class="input-group-prepend cursor-help"
+                        v-b-tooltip.hover
+                        title="Restrict the maximum time window of a users query">
                         <span class="input-group-text">
                           Time Limit
                         </span>
@@ -304,14 +308,14 @@
                         class="form-control time-limit-select"
                         v-model="listUser.timeLimit"
                         @change="changeTimeLimit(listUser)">
-                        <option value="1">Last hour</option>
-                        <option value="6">Last 6 hours</option>
-                        <option value="24">Last 24 hours</option>
-                        <option value="48">Last 48 hours</option>
-                        <option value="72">Last 72 hours</option>
-                        <option value="168">Last week</option>
-                        <option value="720">Last month</option>
-                        <option value="4380">Last 6 months</option>
+                        <option value="1">1 hour</option>
+                        <option value="6">6 hours</option>
+                        <option value="24">24 hours</option>
+                        <option value="48">48 hours</option>
+                        <option value="72">72 hours</option>
+                        <option value="168">1 week</option>
+                        <option value="720">1 month</option>
+                        <option value="4380">6 months</option>
                         <option value=undefined>All (careful)</option>
                       </select>
                     </div>
