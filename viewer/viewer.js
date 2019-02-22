@@ -7949,5 +7949,6 @@ Db.initialize({host: internals.elasticBase,
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),
+               requestTimeout: Config.get("elasticsearchTimeout"),
                debug: Config.debug
               }, main);

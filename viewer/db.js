@@ -62,7 +62,7 @@ exports.initialize = function (info, cb) {
   internals.elasticSearchClient = new ESC.Client({
     host: internals.info.host,
     apiVersion: internals.apiVersion,
-    requestTimeout: 300000,
+    requestTimeout: internals.requestTimeout*1000 || 300000,
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
