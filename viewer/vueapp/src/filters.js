@@ -212,17 +212,22 @@ Vue.filter('readableTime', function (ms) {
  * Looks for the term in field friendlyName, exp, and aliases
  *
  * @example
- * '{{ searchTerm | searchFields(fields) }}'
- * this.$options.filters.searchFields('test', this.fields);
+ * '{{ searchTerm | searchFields(fields, true) }}'
+ * this.$options.filters.searchFields('test', this.fields, true);
  *
- * @param {string} searchTerm The string to search for within the fields
- * @param {array} fields      The list of fields to search
- * @returns {array}           An array of fields that match the search term
+ * @param {string} searchTerm     The string to search for within the fields
+ * @param {array} fields          The list of fields to search
+ * @param {boolean} excludeTokens Whether to exclude token fields
+ * @returns {array}               An array of fields that match the search term
  */
-Vue.filter('searchFields', function (searchTerm, fields) {
+Vue.filter('searchFields', function (searchTerm, fields, excludeTokens) {
   if (!searchTerm) { searchTerm = ''; }
   return fields.filter((field) => {
     if (field.regex !== undefined || field.noFacet === 'true') {
+      return false;
+    }
+
+    if (excludeTokens && field.type && field.type.includes('textfield')) {
       return false;
     }
 

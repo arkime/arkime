@@ -122,8 +122,8 @@ export default {
       if (inputTimeout) { clearTimeout(inputTimeout); }
 
       inputTimeout = setTimeout(() => {
-        this.filteredFields = this.$options.filters.searchFields(searchFilter, this.fields);
-        this.filteredFieldHistory = this.$options.filters.searchFields(searchFilter, this.fieldHistory);
+        this.filteredFields = this.$options.filters.searchFields(searchFilter, this.fields, true);
+        this.filteredFieldHistory = this.$options.filters.searchFields(searchFilter, this.fieldHistory, true);
       }, 250);
     },
     changeField: function (field) {
