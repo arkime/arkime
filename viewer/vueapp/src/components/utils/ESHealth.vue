@@ -137,7 +137,6 @@ export default {
 }
 .es-stats-dl dd {
   margin-left: 145px;
-  width: 100px;
   text-align: left;
   font-weight: bold;
 }
