@@ -132,11 +132,11 @@ export default {
 }
 
 .es-stats-dl dt {
-  width: 140px;
+  width: 135px;
   font-weight: normal;
 }
 .es-stats-dl dd {
-  margin-left: 150px;
+  margin-left: 145px;
   width: 100px;
   text-align: left;
   font-weight: bold;
