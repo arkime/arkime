@@ -3,8 +3,11 @@
   <div class="loading">
     <img src="../../assets/watching.gif" />
     <div class="loader circles"></div>
-    <div class="loader-section square"></div>
-    <div class="im-hootin text-center">I'm hootin</div>
+    <div class="loader-section square">
+      <div class="im-hootin text-center">
+        I'm hootin
+      </div>
+    </div>
   </div>
 
 </template>
@@ -29,12 +32,8 @@ export default {
 }
 
 .loading .im-hootin {
-  display     : block;
-  width       : 100%;
-  z-index     : 1499;
-  position    : fixed;
-  margin-left : -15px;
-  top         : calc(50% + 80px);
+  position    : relative;
+  top         : calc(50% + 70px);
   color       : var(--color-gray-dark);
   font-weight : bold;
   opacity     : .7;
