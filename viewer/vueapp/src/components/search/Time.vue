@@ -46,16 +46,28 @@
             v-if="!user.timeLimit || user.timeLimit >= 168">
             Last week
           </option>
+          <option value="336"
+            v-if="!user.timeLimit || user.timeLimit >= 336">
+            Last 2 weeks
+          </option>
           <option value="720"
             v-if="!user.timeLimit || user.timeLimit >= 720">
             Last month
+          </option>
+          <option value="1440"
+            v-if="!user.timeLimit || user.timeLimit >= 1440">
+            Last 2 months
           </option>
           <option value="4380"
             v-if="!user.timeLimit || user.timeLimit >= 4380">
             Last 6 months
           </option>
+          <option value="8760"
+            v-if="!user.timeLimit || user.timeLimit >= 8760">
+            Last year
+          </option>
           <option value="-1"
-            v-if="!user.timeLimit || user.timeLimit > 4380">
+            v-if="!user.timeLimit || user.timeLimit > 8760">
             All (careful)
           </option>
           <option value="0" disabled>Custom</option>

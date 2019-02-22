@@ -732,14 +732,17 @@
                     v-b-tooltip.hover
                     title="Start processing cron query since">
                     <option value="0">Now</option>
-                    <option value="1">1 hr ago</option>
-                    <option value="6">6 hrs ago</option>
-                    <option value="24">24 hrs ago</option>
-                    <option value="48">48 hrs ago</option>
-                    <option value="72">3 days ago</option>
+                    <option value="1">1 hour ago</option>
+                    <option value="6">6 hours ago</option>
+                    <option value="24">24 hours ago</option>
+                    <option value="48">48 hours ago</option>
+                    <option value="72">72 hours ago</option>
                     <option value="168">1 week ago</option>
+                    <option value="336">2 weeks ago</option>
                     <option value="720">1 month ago</option>
+                    <option value="1440">2 months ago</option>
                     <option value="4380">6 months ago</option>
+                    <option value="8760">1 year ago</option>
                     <option value="-1">All (careful)</option>
                   </select>
                 </td>

@@ -314,8 +314,11 @@
                         <option value="48">48 hours</option>
                         <option value="72">72 hours</option>
                         <option value="168">1 week</option>
+                        <option value="336">2 weeks</option>
                         <option value="720">1 month</option>
+                        <option value="1440">2 months</option>
                         <option value="4380">6 months</option>
+                        <option value="8760">1 year</option>
                         <option value=undefined>All (careful)</option>
                       </select>
                     </div>
