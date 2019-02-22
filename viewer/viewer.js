@@ -5894,6 +5894,11 @@ app.post('/user/create', logAction(), checkCookieToken, function(req, res) {
       createEnabled: req.body.createEnabled === true,
       removeEnabled: req.body.removeEnabled === true,
       packetSearch: req.body.packetSearch === true,
+      timeLimit: req.body.timeLimit,
+      hideStats: req.body.hideStats === true,
+      hideFiles: req.body.hideFiles === true,
+      hidePcap: req.body.hidePcap === true,
+      disablePcapDownload: req.body.disablePcapDownload === true,
       welcomeMsgNum: 0
     };
 
