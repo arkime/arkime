@@ -45,7 +45,7 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
             }
         }
 
-        if (remaining > 5 && memcmp("JOIN ", data, 5) == 0) {
+        if (remaining > 6 && memcmp("JOIN ", data, 5) == 0) {
             const unsigned char *end = data + remaining;
             const unsigned char *ptr = data + 5;
 
@@ -53,10 +53,11 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
                 ptr++;
             }
 
-            moloch_field_string_add(channelsField, session, (char*)data + 5, ptr - data - 5, TRUE);
+            if (ptr - data - 5 > 0)
+                moloch_field_string_add(channelsField, session, (char*)data + 5, ptr - data - 5, TRUE);
         }
 
-        if (remaining > 5 && memcmp("NICK ", data, 5) == 0) {
+        if (remaining > 6 && memcmp("NICK ", data, 5) == 0) {
             const unsigned char *end = data + remaining;
             const unsigned char *ptr = data + 5;
 
@@ -64,7 +65,8 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
                 ptr++;
             }
 
-            moloch_field_string_add(nickField, session, (char*)data + 5, ptr - data - 5, TRUE);
+            if (ptr - data - 5 > 0)
+                moloch_field_string_add(nickField, session, (char*)data + 5, ptr - data - 5, TRUE);
         }
 
         if (remaining > 0) {

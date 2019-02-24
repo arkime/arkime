@@ -1,0 +1,83 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:k96H39F7ImRu5hB1dQ2ksaY2vgE=",
+            "dstASN" : "AS15169 Google LLC",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2607:f8b0:4005:001e:0000:0000:0000:0008",
+            "dstMac" : [
+               "00:10:db:ff:20:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 443,
+            "fileId" : [],
+            "firstPacket" : 1550968206562,
+            "ipProtocol" : 17,
+            "lastPacket" : 1550968206562,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               1428
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "udp",
+               "quic"
+            ],
+            "protocolCnt" : 2,
+            "quic" : {
+               "host" : [
+                  "r3---sn-n4v7knl6.googlevideo.com"
+               ],
+               "hostCnt" : 1,
+               "useragent" : [
+                  "Chrome/72.0.3626.109 Intel Mac OS X 10_14_3"
+               ],
+               "useragentCnt" : 1,
+               "version" : [
+                  "Q043"
+               ],
+               "versionCnt" : 1
+            },
+            "segmentCnt" : 1,
+            "srcASN" : "AS7233 Yahoo",
+            "srcBytes" : 1412,
+            "srcDataBytes" : 1404,
+            "srcGEO" : "US",
+            "srcIp" : "2001:4998:effd:7801:0000:0000:0000:1058",
+            "srcMac" : [
+               "a4:93:4c:43:04:fb"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "0da4b104dcf2fe28",
+            "srcPort" : 51485,
+            "timestamp" : "SET",
+            "totBytes" : 1412,
+            "totDataBytes" : 1404,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-190224",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

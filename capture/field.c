@@ -329,7 +329,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     if (flags & MOLOCH_FIELD_FLAG_NODB)
         return minfo->pos;
 
-    MolochFieldInfo_t *info = 0;
+    MolochFieldInfo_t *info;
     if (flags & MOLOCH_FIELD_FLAG_CNT) {
         snprintf(dbField2, sizeof(dbField2), "%sCnt", dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
@@ -1461,7 +1461,7 @@ void moloch_field_init()
 /******************************************************************************/
 void moloch_field_exit()
 {
-    MolochFieldInfo_t *info = 0;
+    MolochFieldInfo_t *info;
 
     HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
         g_free(info->dbFieldFull);

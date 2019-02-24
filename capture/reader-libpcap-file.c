@@ -437,7 +437,7 @@ LOCAL gboolean reader_libpcapfile_read()
     // pause reading if too many waiting disk operations
     if (moloch_writer_queue_length() > 10) {
         if (config.debug)
-            LOG("Waiting to start next file, write q: %d", moloch_writer_queue_length());
+            LOG("Waiting to start next file, write q: %u", moloch_writer_queue_length());
         return G_SOURCE_CONTINUE;
     }
 

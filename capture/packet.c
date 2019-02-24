@@ -162,14 +162,11 @@ LOCAL int64_t moloch_packet_sequence_diff (int64_t a, int64_t b)
 void moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which)
 {
     int i;
-    int totConsumed = 0;
-    int consumed = 0;
 
     for (i = 0; i < session->parserNum; i++) {
         if (session->parserInfo[i].parserFunc) {
-            consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
+            int consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
             if (consumed) {
-                totConsumed += consumed;
                 session->consumed[which] += consumed;
             }
 
@@ -778,12 +775,13 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 #ifndef FUZZLOCH
 LOCAL void *moloch_packet_thread(void *threadp)
 {
-    MolochPacket_t  *packet;
     int thread = (long)threadp;
     const uint32_t maxPackets75 = config.maxPackets*0.75;
     uint32_t skipCount = 0;
 
     while (1) {
+        MolochPacket_t  *packet;
+
         MOLOCH_LOCK(packetQ[thread].lock);
         inProgress[thread] = 0;
         if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
@@ -1544,7 +1542,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
     if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
 #ifdef DEBUG_PACKET
-        LOG ("ERROR - %d + %d < %d", ip_len, sizeof(struct ip6_hdr), ip_hdr_len);
+        LOG ("ERROR - %d + %ld < %d", ip_len, sizeof(struct ip6_hdr), ip_hdr_len);
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }

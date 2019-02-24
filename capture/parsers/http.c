@@ -335,7 +335,7 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
-    MolochString_t        *hstring = 0;
+    MolochString_t        *hstring;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d value: %.*s", http->which, (int)length, at);

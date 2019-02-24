@@ -50,7 +50,8 @@ LOCAL void krb5_parse_principal_name(MolochSession_t *session, int field, const 
     const char *value0, *value1;
     if (num == 1) {
         value0 = moloch_parsers_asn_sequence_to_string(&seq[0], &len0);
-        moloch_field_string_add(field, session, value0, len0, TRUE);
+        if (value0 && len0 > 0)
+            moloch_field_string_add(field, session, value0, len0, TRUE);
     } else if (num == 2) {
         char str[255];
         value0 = moloch_parsers_asn_sequence_to_string(&seq[0], &len0);
@@ -96,7 +97,8 @@ LOCAL void krb5_parse_req_body(MolochSession_t *session, const unsigned char *da
             break;
         case 2:
             value = moloch_parsers_asn_sequence_to_string(&seq[i], &vlen);
-            moloch_field_string_add(realmField, session, value, vlen, TRUE);
+            if (value && vlen > 0)
+                moloch_field_string_add(realmField, session, value, vlen, TRUE);
             break;
         case 3:
             krb5_parse_principal_name(session, snameField, seq[i].value, seq[i].len);
@@ -185,7 +187,7 @@ LOCAL void krb5_parse(MolochSession_t *session, const unsigned char *data, int l
     BSB_INIT(obsb, data, len);
     ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &msgType, &olen);
 #ifdef KRB5_DEBUG
-    LOG("DEBUG1 - opc:%uumsgType:%u olen:%u", opc, msgType, olen);
+    LOG("DEBUG1 - opc:%u msgType:%u olen:%u", opc, msgType, olen);
 #endif
     if (!opc)
         return;

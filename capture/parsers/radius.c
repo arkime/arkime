@@ -39,6 +39,8 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
     while (BSB_REMAINING(bsb) > 2) {
         BSB_IMPORT_u08(bsb, type);
         BSB_IMPORT_u08(bsb, length);
+        if (length < 3)
+            break;
         length -= 2; // length includes the type/length
         BSB_IMPORT_ptr(bsb, value, length);
         if (BSB_IS_ERROR(bsb)) {

@@ -193,11 +193,11 @@ end:
 /******************************************************************************/
 void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char **g, char **as, char **rir, int *asFree)
 {
-    MolochIpInfo_t *ii = 0;
     *g = *as = *rir = 0;
     *asFree = 0;
 
     if (ipTree4) {
+        MolochIpInfo_t *ii;
         if ((ii = moloch_db_get_local_ip6(session, &addr))) {
             *g = ii->country;
             *as = ii->asn;
@@ -1866,11 +1866,10 @@ LOCAL void moloch_db_load_geo_country(char *name)
         LOGEXIT("Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
 
     }
-    if (geoCountry)
+    if (geoCountry) {
         LOG("Loading new version of country file");
-
-    if (geoCountry)
         moloch_free_later(geoCountry, (GDestroyNotify) moloch_db_free_mmdb);
+    }
     geoCountry = country;
 }
 /******************************************************************************/
@@ -1882,11 +1881,10 @@ LOCAL void moloch_db_load_geo_asn(char *name)
         LOGEXIT("Couldn't initialize ASN file %s error %s", name, MMDB_strerror(status));
 
     }
-    if (geoASN)
+    if (geoASN) {
         LOG("Loading new version of asn file");
-
-    if (geoASN)
         moloch_free_later(geoASN, (GDestroyNotify) moloch_db_free_mmdb);
+    }
     geoASN = asn;
 }
 /******************************************************************************/

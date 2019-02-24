@@ -163,10 +163,13 @@ LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         int dataLen = BSB_REMAINING(bsb);
         if (type & 0x20) {
             BSB_LIMPORT_u16(bsb, dataLen);
+            if (dataLen == 4) // Sometimes dataLen is BE, not sure why
+                dataLen = 1024;
         }
 
-        if (BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb)) {
             return 0;
+        }
 
         BSB dbsb;
         BSB_INIT(dbsb, BSB_WORK_PTR(bsb), MIN(dataLen, BSB_REMAINING(bsb)));
