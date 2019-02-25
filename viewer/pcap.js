@@ -491,8 +491,8 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     len:    buffer.readUInt16BE(4),
     p: buffer[6],
     hopLimt:  buffer[7],
-    addr1:  ipaddr.fromByteArray(buffer.slice(8,24)),
-    addr2:  ipaddr.fromByteArray(buffer.slice(24,40))
+    addr1:  ipaddr.fromByteArray(buffer.slice(8,24)).toString(),
+    addr2:  ipaddr.fromByteArray(buffer.slice(24,40)).toString()
   };
 
   var offset = 40;
@@ -988,7 +988,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
 };
 
 exports.packetFlow = function (session, packets, numPackets, cb) {
-  let sKey;
+  let sKey, dKey;
   let error = false;
 
   packets = packets.slice(0, numPackets);
@@ -1006,15 +1006,17 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
       }
     }
 
+    const match = result.key === sKey;
+    if (!dKey && !match) { dKey = result.key; }
+    result.src = match;
+
     switch (item.ip.p) {
       case 1:
       case 58:
         result.data = item.icmp.data;
-        result.src = result.key === sKey;
         break;
       case 6:
         result.data = item.tcp.data;
-        result.src = result.key === sKey;
         result.tcpflags = {
           syn: item.tcp.synflag,
           ack: item.tcp.ackflag,
@@ -1026,15 +1028,12 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
         break;
       case 17:
         result.data = item.udp.data;
-        result.src = result.key === sKey;
         break;
       case 132:
         result.data = item.sctp.data;
-        result.src = result.key === sKey;
         break;
       case 50:
         result.data = item.esp.data;
-        result.src = result.key === sKey;
         break;
       default:
         error = 'Couldn\'t decode pcap file, check viewer log';
@@ -1044,11 +1043,9 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
     return result;
   });
 
-  sKey = undefined;
-
   if (error) { return cb(error, null); }
 
-  return cb(null, results);
+  return cb(null, results, sKey, dKey);
 };
 
 exports.key = function(packet) {

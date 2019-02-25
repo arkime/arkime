@@ -898,7 +898,7 @@ export default {
             allowedTags: [ 'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img' ],
             allowedClasses: {
               'div': [ 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
-              'span': [ 'pull-right', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip' ],
+              'span': [ 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip' ],
               'em': [ 'ts-value' ],
               'h5': [ 'text-theme-quaternary' ],
               'a': [ 'imagetag', 'file' ]

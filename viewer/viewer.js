@@ -5186,8 +5186,10 @@ function localSessionDetail(req, res) {
     sortFields(session);
 
     if (req.query.showFrames && packets.length !== 0) {
-      Pcap.packetFlow(session, packets, +req.query.packets || 200, function (err, results) {
+      Pcap.packetFlow(session, packets, +req.query.packets || 200, function (err, results, sourceKey, destinationKey) {
         session._err = err;
+        session.sourceKey = sourceKey;
+        session.destinationKey = destinationKey;
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets.length === 0) {
