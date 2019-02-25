@@ -302,7 +302,7 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col form-inline form-group">
+                    <div class="col form-group">
                       <div class="input-group input-group-sm">
                         <div class="input-group-prepend cursor-help"
                           v-b-tooltip.hover
@@ -317,7 +317,11 @@
                           @input="userChanged(listUser)"
                         />
                       </div>
-                      <div class="input-group input-group-sm ml-3">
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col form-group">
+                      <div class="input-group input-group-sm">
                         <div class="input-group-prepend cursor-help"
                           v-b-tooltip.hover
                           :title="columns[11].help">
@@ -325,8 +329,7 @@
                             {{ columns[11].name }}
                           </span>
                         </div>
-                        <select id="timeLimit"
-                          class="form-control time-limit-select"
+                        <select class="form-control time-limit-select"
                           v-model="listUser[columns[11].sort]"
                           @change="changeTimeLimit(listUser)">
                           <option value="1">1 hour</option>
@@ -364,57 +367,57 @@
             </div>
             <form>
               <div class="form-group row">
-                <label for="userid"
+                <label :for="columns[0].sort"
                   class="col-sm-3 col-form-label text-right">
-                  User ID<sup>*</sup>
+                  {{ columns[0].name }}<sup v-if="columns[0].required">*</sup>
                 </label>
                 <div class="col-sm-9">
-                  <input id="userid"
+                  <input :id="columns[0].sort"
                     type="text"
                     class="form-control form-control-sm"
-                    v-model="newuser.userId"
+                    v-model="newuser[columns[0].sort]"
                   />
                 </div>
               </div>
               <div class="form-group row">
-                <label for="username"
+                <label :for="columns[1].sort"
                   class="col-sm-3 col-form-label text-right">
-                  User Name<sup>*</sup>
+                  {{ columns[1].name }}<sup v-if="columns[1].required">*</sup>
                 </label>
                 <div class="col-sm-9">
-                  <input id="username"
+                  <input :id="columns[1].sort"
                     type="text"
                     class="form-control form-control-sm"
-                    v-model="newuser.userName"
+                    v-model="newuser[columns[1].sort]"
                   />
                 </div>
               </div>
               <div class="form-group row">
-                <label for="expression"
+                <label :for="columns[10].sort"
                   class="col-sm-3 col-form-label text-right cursor-help"
                   v-b-tooltip.hover
                   :title="columns[10].help">
-                  Forced Expression
+                  {{ columns[10].name }}
                 </label>
                 <div class="col-sm-9">
-                  <input id="expression"
+                  <input :id="columns[10].sort"
                     type="text"
                     class="form-control form-control-sm"
-                    v-model="newuser.expression"
+                    v-model="newuser[columns[10].sort]"
                   />
                 </div>
               </div>
               <div class="form-group row">
-                <label for="timeLimit"
+                <label :for="columns[11].sort"
                   class="col-sm-3 col-form-label text-right cursor-help"
                   v-b-tooltip.hover
                   :title="columns[11].help">
-                  Query Time Limit
+                  {{ columns[11].name }}
                 </label>
                 <div class="col-sm-9">
-                  <select id="timeLimit"
+                  <select :id="columns[11].sort"
                     class="form-control form-control-sm"
-                    v-model="newuser.timeLimit">
+                    v-model="newuser[columns[11].sort]">
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
                     <option value="24">24 hours</option>
@@ -649,8 +652,8 @@ export default {
         desc: false
       },
       columns: [
-        { name: 'User ID', sort: 'userId', nowrap: true, help: 'The id used for login, can not be changed once created' },
-        { name: 'User Name', sort: 'userName', nowrap: true, help: 'Friendly name for user' },
+        { name: 'User ID', sort: 'userId', nowrap: true, required: true, help: 'The id used for login, can not be changed once created' },
+        { name: 'User Name', sort: 'userName', nowrap: true, required: true, help: 'Friendly name for user' },
         { name: 'Enabled', sort: 'enabled', nowrap: true, help: 'Is the account currently enabled for anything?' },
         { name: 'Admin', sort: 'createEnabled', nowrap: true, help: 'Can create new accounts and change the settings for other accounts' },
         { name: 'Web Interface', sort: 'webEnabled', help: 'Can access the web interface. When off only APIs can be used' },
