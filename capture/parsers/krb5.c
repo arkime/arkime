@@ -275,19 +275,19 @@ void moloch_parser_init()
     realmField = moloch_field_define("krb5", "termfield",
         "krb5.realm", "Realm", "krb5.realm",
         "Kerberos 5 Realm",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     cnameField = moloch_field_define("krb5", "termfield",
         "krb5.cname", "cname", "krb5.cname",
         "Kerberos 5 cname",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     snameField = moloch_field_define("krb5", "termfield",
         "krb5.sname", "sname", "krb5.sname",
         "Kerberos 5 sname",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     moloch_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
