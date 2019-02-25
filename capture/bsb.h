@@ -265,6 +265,25 @@ do {                                              \
 #define BSB_IMPORT_rewind BSB_EXPORT_rewind
 #define BSB_LIMPORT_rewind BSB_EXPORT_rewind
 
+#define BSB_memchr(b, ch, pos)                    \
+do {                                              \
+    if (BSB_IS_ERROR(b)) {                        \
+        pos = 0;                                  \
+        break;                                    \
+    }                                             \
+    char *s = memchr((char*)b.ptr, ch, BSB_REMAINING(b));\
+    if (s)                                        \
+        pos = (char *)s - (char *)b.ptr;          \
+    else                                          \
+        pos = 0;                                  \
+} while (0)
+
+#define BSB_memcmp(str, b, len) ((b).ptr + len <= (b).end?memcmp(str, b.ptr, len):-1)
+
+#define BSB_PEEK(b) ((b).ptr + 1 <= (b).end?*b.ptr:-1)
+
+
+
 #define BSB_IMPORT_zbyte(b, x, size)              \
 do {                                              \
     if ((b).ptr + size <= (b).end) {              \

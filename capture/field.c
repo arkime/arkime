@@ -551,12 +551,14 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
         goto added;
     case MOLOCH_FIELD_TYPE_STR_GHASH:
-        if (g_hash_table_lookup(field->ghash, string)) {
-            field->jsonSize -= (6 + 2*len);
-            return NULL;
-        }
         if (copy)
             string = g_strndup(string, len);
+        if (g_hash_table_lookup(field->ghash, string)) {
+            field->jsonSize -= (6 + 2*len);
+            if (copy)
+                g_free((gpointer)string);
+            return NULL;
+        }
         g_hash_table_add(field->ghash, (gpointer)string);
         goto added;
     default:
