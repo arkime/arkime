@@ -132,6 +132,8 @@ sub showHelp($)
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "  rmusers <days>               - Remove users that have not been active\n";
+    print "      days                     - Number of days of inactivity (integer)\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
@@ -1896,7 +1898,8 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+# TODO
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|rmusers|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
@@ -2083,6 +2086,35 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     }
     esPost("/_flush/synced", "", 1);
     logmsg "\n";
+    exit 0;
+} elsif ($ARGV[1] eq "rmusers") {
+    showHelp("Invalid number of <hours>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
+
+    my $users = esGet("/${PREFIX}users/_search?size=1000");
+    my $rmcount = 0;
+
+    foreach my $hit (@{$users->{hits}->{hits}}) {
+        if (exists $hit->{_source}->{lastUsed} && !$hit->{_source}->{createEnabled} && $hit->{_source}->{enabled}) {
+            my $epoc = time();
+            my $lastUsed = $hit->{_source}->{lastUsed};
+            $lastUsed = $lastUsed / 1000;  # convert to seconds
+            $lastUsed = $epoc - $lastUsed; # in seconds
+            $lastUsed = $lastUsed / 86400; # days since last used
+            if ($lastUsed > $ARGV[2]) {
+              my $userId = $hit->{_source}->{userId};
+              print "Disabling user: $userId\n";
+              esPost("/${PREFIX}users/user/$userId/_update", '{"doc": {"enabled": false}}');
+              $rmcount++;
+            }
+        }
+    }
+
+    if ($rmcount == 0) {
+      print "No users disabled\n";
+    } else {
+      print "$rmcount user(s) disabled\n";
+    }
+
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
