@@ -2087,24 +2087,22 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     logmsg "\n";
     exit 0;
 } elsif ($ARGV[1] eq "rmusers") {
-    showHelp("Invalid number of <hours>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
+    showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
 
-    my $users = esGet("/${PREFIX}users/_search?size=1000");
+    my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed");
     my $rmcount = 0;
 
     foreach my $hit (@{$users->{hits}->{hits}}) {
-        if (exists $hit->{_source}->{lastUsed} && !$hit->{_source}->{createEnabled} && $hit->{_source}->{enabled}) {
-            my $epoc = time();
-            my $lastUsed = $hit->{_source}->{lastUsed};
-            $lastUsed = $lastUsed / 1000;  # convert to seconds
-            $lastUsed = $epoc - $lastUsed; # in seconds
-            $lastUsed = $lastUsed / 86400; # days since last used
-            if ($lastUsed > $ARGV[2]) {
-              my $userId = $hit->{_source}->{userId};
-              print "Disabling user: $userId\n";
-              esPost("/${PREFIX}users/user/$userId/_update", '{"doc": {"enabled": false}}');
-              $rmcount++;
-            }
+        my $epoc = time();
+        my $lastUsed = $hit->{_source}->{lastUsed};
+        $lastUsed = $lastUsed / 1000;  # convert to seconds
+        $lastUsed = $epoc - $lastUsed; # in seconds
+        $lastUsed = $lastUsed / 86400; # days since last used
+        if ($lastUsed > $ARGV[2]) {
+            my $userId = $hit->{_source}->{userId};
+            print "Disabling user: $userId\n";
+            esPost("/${PREFIX}users/user/$userId/_update", '{"doc": {"enabled": false}}');
+            $rmcount++;
         }
     }
 
