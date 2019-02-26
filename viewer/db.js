@@ -522,6 +522,9 @@ exports.healthCache = function (cb) {
     }
 
     internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
+      if (err) {
+        return cb(null, health);
+      }
       health.molochDbVersion = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
