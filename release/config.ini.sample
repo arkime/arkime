@@ -219,6 +219,11 @@ spiDataMaxIndices=4
 # Number of threads processing packets
 packetThreads=2
 
+# HSTS Header
+# If set to true, adds a Strict-Transport-Security response header with a max age of a year
+# and includes subdomains (the app must be served over https)
+#hstsHeader=true
+
 # ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=

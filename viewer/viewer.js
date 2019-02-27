@@ -43,7 +43,8 @@ var Config         = require('./config.js'),
     PNG            = require('pngjs').PNG,
     decode         = require('./decode.js'),
     onHeaders      = require('on-headers'),
-    glob           = require('glob');
+    glob           = require('glob'),
+    helmet         = require('helmet');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -146,6 +147,13 @@ app.locals.molochClusters = Config.configMap("moloch-clusters");
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(passport.initialize());
+
+app.use(helmet.hidePoweredBy());
+app.use(helmet.hsts({
+  maxAge: 31536000,
+  includeSubDomains: true,
+  setIf: (req, res) => Config.get('hstsHeader', false) && Config.isHTTPS()
+}));
 
 function molochError (status, text) {
   /* jshint validthis: true */
