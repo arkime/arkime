@@ -3633,15 +3633,6 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
     }
   }
 
-  if (req.query.sortField !== undefined || req.query.desc !== undefined) {
-    query.sort = {};
-    req.query.sortField = req.query.sortField || "nodeName";
-    query.sort[req.query.sortField] = { order: req.query.desc === "true" ? "desc": "asc"};
-    query.sort[req.query.sortField].missing = internals.usersMissing[req.query.sortField];
-  } else {
-    addSortToQuery(query, req.query, "_uid");
-  }
-
   Promise.all([Db.search('stats', 'stat', query),
                Db.numberOfDocuments('stats')
   ]).then(([stats, total]) => {
@@ -3654,7 +3645,7 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
       if (stats.hits.hits[i]._source) {
         mergeUnarray(fields, stats.hits.hits[i].fields);
       }
-      fields.id        = stats.hits.hits[i]._id;
+      fields.id = stats.hits.hits[i]._id;
 
       for (const key of ["totalPackets", "totalK", "totalSessions",
        "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions", "espSessions",
@@ -3682,9 +3673,31 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
       results.results.push(fields);
     }
 
-    var r = {recordsTotal: total.count,
-             recordsFiltered: results.total,
-             data: results.results};
+    // sort after all the results are aggregated
+    req.query.sortField = req.query.sortField || 'nodeName';
+    if (results.results[0][req.query.sortField]) { // make sure the field exists to sort on
+      results.results = results.results.sort((a, b) => {
+        if (req.query.desc === "true") {
+          if (!isNaN(a[req.query.sortField])) {
+            return b[req.query.sortField] - a[req.query.sortField];
+          } else {
+            return b[req.query.sortField].localeCompare(a[req.query.sortField]);
+          }
+        } else {
+          if (!isNaN(a[req.query.sortField])) {
+            return a[req.query.sortField] - b[req.query.sortField];
+          } else {
+            return a[req.query.sortField].localeCompare(b[req.query.sortField]);
+          }
+        }
+      });
+    }
+
+    let r = {
+      recordsTotal: total.count,
+      recordsFiltered: results.total,
+      data: results.results
+    };
     res.send(r);
   }).catch((err) => {
     console.log("ERROR - /stats.json", query, err);
