@@ -149,6 +149,8 @@ app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(passport.initialize());
 
 app.use(helmet.hidePoweredBy());
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
 app.use(helmet.hsts({
   maxAge: 31536000,
   includeSubDomains: true,
