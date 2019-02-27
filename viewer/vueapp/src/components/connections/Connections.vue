@@ -130,6 +130,7 @@
             <option value="totPackets">Packets</option>
             <option value="totBytes">Total Raw Bytes</option>
             <option value="totDataBytes">Total Data Bytes</option>
+            <option value="">None</option>
           </select>
         </div> <!-- /weight select -->
 
@@ -614,7 +615,7 @@ export default {
       });
     },
     changeWeight: function () {
-      this.getMinMaxForScale();
+      if (this.weight) { this.getMinMaxForScale(); }
 
       svg.selectAll('.node')
         .attr('r', this.calculateNodeWeight);
@@ -1014,13 +1015,17 @@ export default {
       if (linkScaleFactor < 1) { linkScaleFactor = 1; }
     },
     calculateLinkWeight: function (l) {
-      let val = l[this.weight] || l.value;
-      val = Math.max(Math.log((val - linkMin) / linkScaleFactor), 0);
+      let val = this.weight ? l[this.weight] || l.value : 1;
+      if (this.weight) {
+        val = Math.max(Math.log((val - linkMin) / linkScaleFactor), 0);
+      }
       return 1 + val;
     },
     calculateNodeWeight: function (n) {
-      let val = n[this.weight] || n.sessions;
-      val = Math.max(Math.log((val - nodeMin) / nodeScaleFactor), 0);
+      let val = this.weight ? n[this.weight] || n.sessions : 1;
+      if (this.weight) {
+        val = Math.max(Math.log((val - nodeMin) / nodeScaleFactor), 0);
+      }
       return 3 + val;
     },
     calculateNodeLabelOffset: function (nl) {
