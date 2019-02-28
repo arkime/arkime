@@ -606,15 +606,7 @@ export default {
   font-size: 12px;
 }
 
-select.form-control {
-  font-size: var(--px-lg);
-}
-
 .time-range-control {
   -webkit-appearance: none;
-}
-
-.input-group-time input.form-control {
-  font-size: 75%;
 }
 </style>
