@@ -151,11 +151,12 @@ app.use(passport.initialize());
 app.use(helmet.hidePoweredBy());
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
-app.use(helmet.hsts({
-  maxAge: 31536000,
-  includeSubDomains: true,
-  setIf: (req, res) => Config.get('hstsHeader', false) && Config.isHTTPS()
-}));
+if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
+  app.use(helmet.hsts({
+    maxAge: 31536000,
+    includeSubDomains: true
+  }));
+}
 
 function molochError (status, text) {
   /* jshint validthis: true */
