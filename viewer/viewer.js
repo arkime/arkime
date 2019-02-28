@@ -2663,38 +2663,48 @@ function buildSessionQuery(req, buildCb) {
     if (req.query.date <= 5*24) {
       interval = 60; // minute
     } else {
-      interval = 60*60; // hour
+      interval = 60 * 60; // hour
     }
   }
 
   switch (req.query.interval) {
-  case "second":
-    interval = 1;
-    break;
-  case "minute":
-    interval = 60;
-    break;
-  case "hour":
-    interval = 60*60;
-    break;
-  case "day":
-    interval = 60*60*24;
-    break;
-  case "week":
-    interval = 60*60*24*7;
-    break;
+    case 'second':
+      interval = 1;
+      break;
+    case 'minute':
+      interval = 60;
+      break;
+    case 'hour':
+      interval = 60 * 60;
+      break;
+    case 'day':
+      interval = 60 * 60 * 24;
+      break;
+    case 'week':
+      interval = 60 * 60 * 24 * 7;
+      break;
   }
 
   if (req.query.facets) {
-    query.aggregations = {mapG1: {terms: {field: "srcGEO", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "dstGEO", size:1000, min_doc_count:1}}};
-    query.aggregations.dbHisto = {aggregations: {srcDataBytes: {sum: {field:"srcDataBytes"}}, dstDataBytes: {sum: {field:"dstDataBytes"}}, srcPackets: {sum: {field:"srcPackets"}}, dstPackets: {sum: {field:"dstPackets"}}}};
+    query.aggregations = {
+      mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1} },
+      mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1} },
+      mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1} }
+    };
+    query.aggregations.dbHisto = {
+      aggregations: {
+        srcDataBytes: { sum: { field: 'srcDataBytes' } },
+        dstDataBytes: { sum: { field: 'dstDataBytes' } },
+        srcPackets: { sum: { field: 'srcPackets' } },
+        dstPackets: { sum: { field: 'dstPackets' } }
+      }
+    };
 
     switch (req.query.bounding) {
-    case "first":
+    case 'first':
        query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval*1000, min_doc_count:1 };
       break;
-    case "database":
+    case 'database':
       query.aggregations.dbHisto.histogram = { field:'timestamp', interval:interval*1000, min_doc_count:1 };
       break;
     default:
@@ -2703,7 +2713,7 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-  addSortToQuery(query, req.query, "firstPacket");
+  addSortToQuery(query, req.query, 'firstPacket');
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
@@ -2879,9 +2889,9 @@ function sessionsListFromIds(req, ids, fields, cb) {
     processSegments = true;
   }
 
-  var list = [];
-  var nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId"];
-  var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
+  let list = [];
+  let nonArrayFields = ["ipProtocol", "firstPacket", "lastPacket", "srcIp", "srcPort", "srcGEO", "dstIp", "dstPort", "dstGEO", "totBytes", "totDataBytes", "totPackets", "node", "rootId", "http.xffGEO"];
+  let fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   async.eachLimit(ids, 10, function(id, nextCb) {
     Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: fields.join(",")}, function(err, session) {
@@ -3824,7 +3834,6 @@ app.get('/dstats.json', noCacheJson, function(req, res) {
 });
 
 app.get('/:nodeName/:fileNum/filesize.json', noCacheJson, function(req, res) {
-
   Db.fileIdToFile(req.params.nodeName, req.params.fileNum, function(file) {
     if (!file) {
       return res.send({filesize: -1});
@@ -3840,8 +3849,9 @@ app.get('/:nodeName/:fileNum/filesize.json', noCacheJson, function(req, res) {
   });
 });
 
-function mapMerge(aggregations) {
-  var map = {src: {}, dst: {}};
+function mapMerge (aggregations) {
+  let map = { src: {}, dst: {}, xffGeo: {} };
+
   if (!aggregations || !aggregations.mapG1) {
     return {};
   }
@@ -3854,11 +3864,15 @@ function mapMerge(aggregations) {
     map.dst[item.key] = item.doc_count;
   });
 
+  aggregations.mapG3.buckets.forEach(function (item) {
+    map.xffGeo[item.key] = item.doc_count;
+  });
+
   return map;
 }
 
 function graphMerge(req, query, aggregations) {
-  var graph = {
+  let graph = {
     lpHisto: [],
     db1Histo: [],
     db2Histo: [],
@@ -3866,22 +3880,24 @@ function graphMerge(req, query, aggregations) {
     pa2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval/1000 || 60 : 60
+    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60
   };
 
   if (!aggregations || !aggregations.dbHisto) {
     return graph;
   }
 
-  graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
+  graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval / 1000) || 60 : 60;
+
   aggregations.dbHisto.buckets.forEach(function (item) {
-    var key = item.key;
+    let key = item.key;
     graph.lpHisto.push([key, item.doc_count]);
     graph.pa1Histo.push([key, item.srcPackets.value]);
     graph.pa2Histo.push([key, item.dstPackets.value]);
     graph.db1Histo.push([key, item.srcDataBytes.value]);
     graph.db2Histo.push([key, item.dstDataBytes.value]);
   });
+
   return graph;
 }
 
@@ -3991,23 +4007,24 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
   });
 });
 
-app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function(req, res) {
-
+app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function (req, res) {
   var graph = {};
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      var r = {recordsTotal: 0,
-               recordsFiltered: 0,
-               graph: {},
-               map: {},
-               bsqErr: bsqErr.toString(),
-               health: Db.healthCache(),
-               data:[]};
+      const r = {
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        graph: {},
+        map: {},
+        bsqErr: bsqErr.toString(),
+        health: Db.healthCache(),
+        data:[]
+      };
       res.send(r);
       return;
     }
-    var addMissing = false;
+    let addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
       ["node", "srcIp", "srcPort", "dstIp", "dstPort"].forEach(function(item) {
@@ -4017,7 +4034,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
       });
     } else {
       addMissing = true;
-      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel"];
+      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel", "http.xffGEO"];
     }
 
     if (query.aggregations && query.aggregations.dbHisto) {
@@ -4036,7 +4053,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
         console.log("sessions.json result", util.inspect(sessions, false, 50));
       }
 
-      if (sessions.error) {throw sessions.err;}
+      if (sessions.error) { throw sessions.err; }
 
       graph = graphMerge(req, query, sessions.aggregations);
       map = mapMerge(sessions.aggregations);

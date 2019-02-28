@@ -14,6 +14,7 @@ const store = new Vuex.Store({
     showMaps: true,
     mapSrc: true,
     mapDst: true,
+    xffGeo: false,
     graphType: undefined,
     seriesType: undefined,
     focusSearch: undefined,
@@ -70,6 +71,9 @@ const store = new Vuex.Store({
     },
     toggleMapDst (state, value) {
       state.mapDst = value;
+    },
+    toggleMapXffGeo (state, value) {
+      state.xffGeo = value;
     },
     updateGraphType (state, value) {
       state.graphType = value;

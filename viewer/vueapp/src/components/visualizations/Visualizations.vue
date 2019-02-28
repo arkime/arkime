@@ -51,7 +51,7 @@
               <button type="button"
                 class="btn btn-xs btn-default"
                 :class="{'active':src}"
-                @click="toggleSrcDst('src')"
+                @click="toggleSrcDstXff('src')"
                 v-b-tooltip.hover
                 title="Toggle source countries">
                 <strong>S</strong>
@@ -59,12 +59,20 @@
               <button type="button"
                 class="btn btn-xs btn-default"
                 :class="{'active':dst}"
-                @click="toggleSrcDst('dst')"
+                @click="toggleSrcDstXff('dst')"
                 v-b-tooltip.hover
                 title="Toggle destination countries">
                 <strong>D</strong>
               </button>
-            </div> <!-- /map buttons -->
+            </div>
+            <button v-if="primary"
+              type="button"
+              class="btn btn-xs btn-default btn-fw xff-btn"
+              @click="toggleSrcDstXff('xffGeo')"
+              :class="{'active':xffGeo}"
+              title="Toggle XFF Countries">
+              <small>XFF</small>
+            </button> <!-- /map buttons -->
 
             <!-- map legend -->
             <div class="map-legend"
@@ -255,6 +263,16 @@ export default {
         }
       }
     },
+    xffGeo: {
+      get: function (value) {
+        return this.$store.state.xffGeo;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('toggleMapXffGeo', newValue);
+        }
+      }
+    },
     graphType: {
       get: function (value) {
         return this.$store.state.graphType;
@@ -281,6 +299,9 @@ export default {
       this.setupMapData(this.mapData);
     },
     dst: function (newVal, oldVal) {
+      this.setupMapData(this.mapData);
+    },
+    xffGeo: function (newVal, oldVal) {
       this.setupMapData(this.mapData);
     },
     graphType: function (newVal, oldVal) {
@@ -392,8 +413,8 @@ export default {
         $(document).off('mouseup', this.isOutsideClick);
       }
     },
-    toggleSrcDst: function (type) {
-      if (this.primary) { // primary map sets all other map's src/dst
+    toggleSrcDstXff: function (type) {
+      if (this.primary) { // primary map sets all other map's src/dst/xff
         this[type] = !this[type];
       }
     },
@@ -682,28 +703,26 @@ export default {
       delete this.map.series.regions[0].params.min;
       delete this.map.series.regions[0].params.max;
 
-      if (this.src && this.dst) {
-        if (!this.mapData.tot) {
-          this.mapData.tot = {};
-          let k;
-          for (k in this.mapData.src) {
-            this.mapData.tot[k] = this.mapData.src[k];
-          }
-
-          for (k in this.mapData.dst) {
-            if (this.mapData.tot[k]) {
-              this.mapData.tot[k] += this.mapData.dst[k];
-            } else {
-              this.mapData.tot[k] = this.mapData.dst[k];
-            }
-          }
+      this.mapData.tot = {};
+      if (this.src) {
+        for (let k in this.mapData.src) {
+          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
+          this.mapData.tot[k] += this.mapData.src[k];
         }
-        this.map.series.regions[0].setValues(this.mapData.tot);
-      } else if (this.src) {
-        this.map.series.regions[0].setValues(this.mapData.src);
-      } else if (this.dst) {
-        this.map.series.regions[0].setValues(this.mapData.dst);
       }
+      if (this.dst) {
+        for (let k in this.mapData.dst) {
+          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
+          this.mapData.tot[k] += this.mapData.dst[k];
+        }
+      }
+      if (this.xffGeo) {
+        for (let k in this.mapData.xffGeo) {
+          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
+          this.mapData.tot[k] += this.mapData.xffGeo[k];
+        }
+      }
+      this.map.series.regions[0].setValues(this.mapData.tot);
 
       let region = this.map.series.regions[0];
       this.legend = [];
@@ -913,8 +932,17 @@ export default {
   z-index: 3;
 }
 
+.xff-btn {
+  position: absolute;
+  top: 100px;
+  right: 2px;
+  z-index: 3;
+  padding: 0;
+}
+
 /* show the buttons on top of the map */
 .expanded .src-dst-btns,
+.expanded .xff-btn,
 .expanded .btn-close-map,
 .expanded .btn-expand-map {
   z-index : 6;
