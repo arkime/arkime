@@ -125,7 +125,8 @@
           :graph-data="graphData"
           :map-data="mapData"
           :primary="true"
-          :timezone="user.settings.timezone">
+          :timezone="user.settings.timezone"
+          @fetchMapData="loadData">
         </moloch-visualizations>
       </div> <!-- /main visualization -->
 
@@ -365,6 +366,11 @@ export default {
       respondedAt = undefined;
       this.loading = true;
       this.error = false;
+
+      // set whether map is open on the sessions page
+      if (localStorage.getItem('spigraph-open-map') === 'true') {
+        this.query.map = true;
+      }
 
       this.$http.get('spigraph.json', { params: this.query })
         .then((response) => {

@@ -139,7 +139,8 @@
           :graph-data="graphData"
           :map-data="mapData"
           :primary="true"
-          :timezone="user.settings.timezone">
+          :timezone="user.settings.timezone"
+          @fetchMapData="fetchMapData">
         </moloch-visualizations>
       </div> <!-- /session visualizations -->
 
@@ -749,9 +750,43 @@ export default {
         this.getSpiData(this.spiQuery);
       }
     },
+    fetchMapData: function () {
+      let spiParamsArray = this.spiQuery.split(',');
+      let field = spiParamsArray[0].split(':')[0];
+      if (!field) { field = 'dstIp'; }
+
+      let query = this.constructQuery(field, 100);
+
+      this.get(query).promise
+        .then((response) => {
+          if (response.bsqErr) { this.error = response.bsqErr; }
+          this.mapData = response.map;
+        })
+        .catch((error) => {
+          this.error = error.text;
+        });
+    },
     /* helper functions ---------------------------------------------------- */
+    constructQuery: function (dbField, count) {
+      return {
+        facets: 1,
+        spi: `${dbField}:${count}`,
+        date: this.query.date,
+        startTime: this.query.startTime,
+        stopTime: this.query.stopTime,
+        expression: this.query.expression,
+        bounding: this.query.bounding,
+        interval: this.query.interval,
+        view: this.query.view
+      };
+    },
     get: function (query) {
       let source = Vue.axios.CancelToken.source();
+
+      // set whether map is open on the spiview page
+      if (localStorage.getItem('spiview-open-map') === 'true') {
+        query.map = true;
+      }
 
       let promise = new Promise((resolve, reject) => {
         let options = {
@@ -916,17 +951,7 @@ export default {
       Vue.set(spiData, 'loading', true);
       Vue.set(spiData, 'error', false);
 
-      let query = {
-        facets: 1,
-        spi: `${field.dbField}:${count}`,
-        date: this.query.date,
-        startTime: this.query.startTime,
-        stopTime: this.query.stopTime,
-        expression: this.query.expression,
-        bounding: this.query.bounding,
-        interval: this.query.interval,
-        view: this.query.view
-      };
+      let query = this.constructQuery(field.dbField, count);
 
       pendingPromise = this.get(query);
 

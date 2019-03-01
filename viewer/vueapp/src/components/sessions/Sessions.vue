@@ -33,7 +33,8 @@
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
-        :timezone="user.settings.timezone">
+        :timezone="user.settings.timezone"
+        @fetchMapData="loadData">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->

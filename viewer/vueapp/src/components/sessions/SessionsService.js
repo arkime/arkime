@@ -60,6 +60,11 @@ export default {
         }
       }
 
+      // set whether map is open on the sessions page
+      if (localStorage.getItem('sessions-open-map') === 'true') {
+        params.map = true;
+      }
+
       let options = {
         url: 'sessions.json',
         method: 'GET',

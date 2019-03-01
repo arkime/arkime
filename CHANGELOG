@@ -19,6 +19,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - support tokens for host.*/http.uri/http.useragent field
   - viewer - should output csv with commas in fields correctly
   - viewer - new Show Packets view in session detail
+  - viewer - map show xff countries
   - capture - libfuzzer fixes
 
 1.7.1 2019/02/14

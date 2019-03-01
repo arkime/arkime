@@ -401,6 +401,11 @@ export default {
         this.showMap = !this.showMap;
         this.$store.commit('toggleMaps', this.showMap);
         localStorage[`${basePath}-open-map`] = this.showMap;
+        // let the parent know that there's no map data but the
+        // map has been toggled open, so go fetch data
+        if (this.showMap && !Object.keys(this.mapData).length) {
+          this.$emit('fetchMapData');
+        }
       }
     },
     toggleMapSize: function () {
@@ -702,6 +707,8 @@ export default {
       this.map.series.regions[0].clear();
       delete this.map.series.regions[0].params.min;
       delete this.map.series.regions[0].params.max;
+
+      if (!Object.keys(this.mapData).length) { return; }
 
       this.mapData.tot = {};
       if (this.src) {

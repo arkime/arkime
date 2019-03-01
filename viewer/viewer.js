@@ -2560,7 +2560,7 @@ function lookupQueryItems(query, doneCb) {
   finished = 1;
 }
 
-function buildSessionQuery(req, buildCb) {
+function buildSessionQuery (req, buildCb) {
   // validate time limit is not exceeded
   let timeLimitExceeded = false;
 
@@ -2686,11 +2686,15 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {
-      mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1} },
-      mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1} },
-      mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1} }
-    };
+    query.aggregations = {};
+    // only add map aggregations if requested
+    if (req.query.map === 'true') {
+      query.aggregations = {
+        mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1} },
+        mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1} },
+        mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1} }
+      };
+    }
     query.aggregations.dbHisto = {
       aggregations: {
         srcDataBytes: { sum: { field: 'srcDataBytes' } },
@@ -4010,7 +4014,7 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
 app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function (req, res) {
   var graph = {};
   var map = {};
-  buildSessionQuery(req, function(bsqErr, query, indices) {
+  buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
         recordsTotal: 0,
