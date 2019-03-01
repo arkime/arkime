@@ -146,6 +146,7 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
     ES_VERSION=6.5.4
     if [ -f "/etc/redhat-release" ]; then
+        yum install java-openjdk-headless
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}.rpm
     else
         wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}.deb
