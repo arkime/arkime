@@ -97,7 +97,7 @@ my $pwd = "*/pcap";
 
 # Delete item no index
     $json = viewerDelete("/history/list/$item->{id}");
-    eq_or_diff($json, from_json('{"success": false, "text": "Error deleting history item"}', {relaxed => 1}), "Test Delete No Index", { context => 3 });
+    eq_or_diff($json, from_json('{"success": false, "text": "Missing history index"}', {relaxed => 1}), "Test Delete No Index", { context => 3 });
 
 # Delete item
     $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");

@@ -4332,6 +4332,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
             delete result.aggregations.dbHisto;
             delete result.aggregations.mapG1;
             delete result.aggregations.mapG2;
+            delete result.aggregations.mapG3;
             delete result.aggregations.protocols;
           }
 
