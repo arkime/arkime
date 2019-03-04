@@ -72,6 +72,9 @@ export default {
     }
   },
   mounted: function () {
+    const hash = this.$route.hash;
+    if (hash) { this.scrollFix(hash); }
+
     this.compatibleBrowser = (typeof Object['__defineSetter__'] === 'function') &&
       !!String.prototype.includes;
 
@@ -201,6 +204,22 @@ export default {
         },
         hash: this.$route.hash
       });
+    },
+    scrollFix: function (hash) {
+      // remove the hash from the url
+      this.$router.replace({
+        ...this.$route,
+        hash: undefined
+      });
+
+      setTimeout(() => {
+        // add the hash back to the url so that router/index.js
+        // scrollBehavior actually triggers on page load
+        this.$router.replace({
+          ...this.$route,
+          hash: hash
+        });
+      }, 750);
     }
   }
 };

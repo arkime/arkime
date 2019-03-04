@@ -29,10 +29,6 @@ const router = new Router({
         yoffset = 50;
       }
 
-      console.log('has hash', to.hash); // TODO
-      console.log('yoffset', yoffset);
-      console.log('savedPosition', savedPosition);
-
       return {
         selector: to.hash,
         offset: { x: 0, y: yoffset }

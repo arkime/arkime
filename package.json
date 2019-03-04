@@ -40,7 +40,7 @@
     "vue": "^2.5.16",
     "vue-axios": "^2.1.2",
     "vue-moment": "^4.0.0",
-    "vue-router": "^3.0.1",
+    "vue-router": "^3.0.2",
     "vue-server-renderer": "^2.5.13",
     "vue-template-compiler": "^2.5.2",
     "vuex": "^3.0.1"
