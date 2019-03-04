@@ -2930,8 +2930,8 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/history/list', recordResponseTime, function(req, res) {
-  var userId;
+app.get('/history/list', recordResponseTime, function (req, res) {
+  let userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
     // if the admin has requested a specific user
     if (req.query.userId) { userId = req.query.userId; }
@@ -2940,7 +2940,7 @@ app.get('/history/list', recordResponseTime, function(req, res) {
     userId = req.user.userId;
   }
 
-  var query = {
+  let query = {
     sort: {},
     from: +req.query.start  || 0,
     size: +req.query.length || 1000
@@ -3013,10 +3013,10 @@ app.get('/history/list', recordResponseTime, function(req, res) {
   .then(([logs, total]) => {
     if (logs.error) { throw logs.error; }
 
-    var results = { total:logs.hits.total, results:[] };
+    let results = { total:logs.hits.total, results:[] };
     for (let i = 0, ilen = logs.hits.hits.length; i < ilen; i++) {
-      var hit = logs.hits.hits[i];
-      var log = hit._source;
+      let hit = logs.hits.hits[i];
+      let log = hit._source;
       log.id = hit._id;
       log.index = hit._index;
       if (!req.user.createEnabled) {
@@ -3025,28 +3025,29 @@ app.get('/history/list', recordResponseTime, function(req, res) {
       }
       results.results.push(log);
     }
-    var r = {
+    let r = {
       recordsTotal: total.count,
       recordsFiltered: results.total,
       data: results.results
     };
     res.send(r);
   }).catch(err => {
-    console.log("ERROR - /history/logs", err);
+    console.log('ERROR - /history/logs', err);
     return res.molochError(500, 'Error retrieving log history - ' + err);
   });
 });
 
-app.delete('/history/list/:id', function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
-  if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
+app.delete('/history/list/:id', function (req, res) {
+  if (!req.user.createEnabled)  { return res.molochError(403, 'Need admin privileges'); }
+  if (!req.user.removeEnabled)  { return res.molochError(403, 'Need remove data privileges'); }
+  if (!req.query.index)         { return res.molochError(403, 'Missing history index'); }
 
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
     if (err || result.error) {
-      console.log("ERROR - deleting history item", err || result.error);
+      console.log('ERROR - deleting history item', err || result.error);
       return res.molochError(500, 'Error deleting history item');
     } else {
-      res.send(JSON.stringify({success: true, text: "Deleted history item successfully"}));
+      res.send(JSON.stringify({success: true, text: 'Deleted history item successfully'}));
     }
   });
 });

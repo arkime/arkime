@@ -74,6 +74,12 @@
           @changePaging="changePaging"
           length-default=100>
         </moloch-paging>
+        <moloch-toast
+          class="ml-2 mb-3 mt-1"
+          :message="msg"
+          :type="msgType"
+          :done="messageDone">
+        </moloch-toast>
       </div>
     </form> <!-- /paging navbar -->
 
@@ -316,6 +322,7 @@ import MolochLoading from '../utils/Loading';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochTime from '../search/Time';
 import FocusInput from '../utils/FocusInput';
+import MolochToast from '../utils/Toast';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -326,7 +333,8 @@ export default {
     MolochError,
     MolochLoading,
     MolochTime,
-    ToggleBtn
+    ToggleBtn,
+    MolochToast
   },
   directives: { FocusInput },
   data: function () {
@@ -341,6 +349,8 @@ export default {
       sortField: 'timestamp',
       searchTerm: '',
       desc: true,
+      msg: '',
+      msgType: undefined,
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 10, help: 'The time of the request' },
         { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
@@ -437,16 +447,21 @@ export default {
       }
     },
     deleteLog: function (log, index) {
-      this.HistoryService.delete(log.id, log.index)
+      this.$http.delete(`history/list/${log.id}`, { params: { index: log.index } })
         .then((response) => {
-          this.msg = response.text || 'Successfully deleted history item';
+          this.msg = response.data.text || 'Successfully deleted history item';
           this.msgType = 'success';
           this.history.data.splice(index, 1);
         })
         .catch((error) => {
-          this.msg = error.data.text || 'Error deleting history item';
+          this.msg = error.text || 'Error deleting history item';
           this.msgType = 'danger';
         });
+    },
+    /* remove the message when user is done with it or duration ends */
+    messageDone: function () {
+      this.msg = '';
+      this.msgType = undefined;
     },
     /* helper functions ------------------------------------------ */
     loadData: function () {
