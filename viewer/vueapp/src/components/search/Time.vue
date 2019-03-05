@@ -95,6 +95,26 @@
           id="startTime"
           tabindex="4">
         </date-picker>
+        <span class="input-group-append cursor-pointer"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Snap to the beginning of this day"
+          @click="snapToBeginningOfDay('start')">
+          <div class="input-group-text">
+            <span class="fa fa-step-backward">
+            </span>
+          </div>
+        </span>
+        <span class="input-group-append cursor-pointer"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Snap to the end of this day"
+          @click="snapToEndOfDay('start')">
+          <div class="input-group-text">
+            <span class="fa fa-step-forward">
+            </span>
+          </div>
+        </span>
       </div>
     </div> <!-- /start time -->
 
@@ -118,6 +138,26 @@
           id="stopTime"
           tabindex="5">
         </date-picker>
+        <span class="input-group-append cursor-pointer"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Snap to the beginning of this day"
+          @click="snapToBeginningOfDay('stop')">
+          <div class="input-group-text">
+            <span class="fa fa-step-backward">
+            </span>
+          </div>
+        </span>
+        <span class="input-group-append cursor-pointer"
+          placement="topright"
+          v-b-tooltip.hover
+          title="Snap to the end of this day"
+          @click="snapToEndOfDay('stop')">
+          <div class="input-group-text">
+            <span class="fa fa-step-forward">
+            </span>
+          </div>
+        </span>
       </div>
     </div> <!-- /stop time -->
 
@@ -364,8 +404,34 @@ export default {
     /* Fired when stop datetime is changed */
     changeStopTime: function (event) {
       let msDate = event.date.valueOf();
-      this.time.stopTime = Math.ceil(msDate / 1000);
+      this.time.stopTime = Math.floor(msDate / 1000);
       this.validateDate();
+    },
+    /**
+     * Fired when clicking the snap to beginning to day button on a time input
+     * @param startOrStop whether to update the start time or stop time
+     */
+    snapToBeginningOfDay: function (startOrStop) {
+      if (startOrStop === 'start') {
+        this.localStartTime = moment(this.time.startTime * 1000).startOf('day');
+        this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
+      } else {
+        this.localStopTime = moment(this.time.stopTime * 1000).startOf('day');
+        this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
+      }
+    },
+    /**
+     * Fired when clicking the snap to end to day button on a time input
+     * @param startOrStop whether to update the start time or stop time
+     */
+    snapToEndOfDay: function (startOrStop) {
+      if (startOrStop === 'start') {
+        this.localStartTime = moment(this.time.startTime * 1000).endOf('day');
+        this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
+      } else {
+        this.localStopTime = moment(this.time.stopTime * 1000).endOf('day');
+        this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
+      }
     },
     /**
      * Fired when change bounded select box is changed
