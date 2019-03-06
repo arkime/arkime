@@ -251,7 +251,7 @@ void moloch_parser_init()
     hostField = moloch_field_define("quic", "lotermfield",
         "host.quic", "Hostname", "quic.host",
         "QUIC host header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "host",
         "aliases", "[\"quic.host\"]",
         (char *)NULL);
@@ -259,19 +259,19 @@ void moloch_parser_init()
     moloch_field_define("quic", "lotextfield",
         "host.quic.tokens", "Hostname Tokens", "quic.hostTokens",
         "QUIC host tokens header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_FAKE,
         "aliases", "[\"quic.host.tokens\"]",
         (char *)NULL);
 
     uaField = moloch_field_define("quic", "termfield",
         "quic.user-agent", "User-Agent", "quic.useragent",
         "User-Agent",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     versionField = moloch_field_define("quic", "termfield",
         "quic.version", "Version", "quic.version",
         "QUIC Version",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 }

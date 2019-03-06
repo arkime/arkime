@@ -108,14 +108,14 @@ void moloch_parser_init()
     userField = moloch_field_define("radius", "termfield",
         "radius.user", "User", "radius.user",
         "RADIUS user",
-        MOLOCH_FIELD_TYPE_STR_HASH,  0,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  0,
         "category", "user",
         (char *)NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
         "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     endpointIpField = moloch_field_define("radius", "ip",
