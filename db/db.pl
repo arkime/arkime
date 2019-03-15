@@ -2070,6 +2070,9 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         }
     }
     esPost("/_flush/synced", "", 1);
+
+    # Give the cluster a kick to rebalance
+    esPost("/_cluster/reroute?master_timeout=${ESTIMEOUT}s&retry_failed");
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
