@@ -3623,8 +3623,8 @@ app.get('/parliament.json', noCacheJson, function (req, res) {
 app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  var query = {from: +req.query.start || 0,
-               size: Math.min(10000, +req.query.length || 500),
+  var query = {from:  0,
+               size: 10000,
                query: {
                  bool: {
                    must: [
@@ -3719,11 +3719,14 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
       });
     }
 
+    let from = +req.query.start || 0;
+    let stop = from + (+req.query.length || 500)
+
     let r = {
       recordsTotal: total.count,
-      recordsFiltered: results.total,
-      data: results.results
+      data: results.results.slice(from, stop)
     };
+    r.recordsFiltered = r.data.length;
     res.send(r);
   }).catch((err) => {
     console.log("ERROR - /stats.json", query, err);
