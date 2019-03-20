@@ -3722,7 +3722,7 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
     }
 
     let from = +req.query.start || 0;
-    let stop = from + (+req.query.length || 500)
+    let stop = from + (+req.query.length || 500);
 
     let r = {
       recordsTotal: total.count,
