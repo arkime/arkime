@@ -96,20 +96,28 @@
           tabindex="4">
         </date-picker>
         <span class="input-group-append cursor-pointer"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Snap to the beginning of this day"
-          @click="snapToBeginningOfDay('start')">
+          id="prevStartTime"
+          @click="prevTime('start')">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
           </div>
         </span>
+        <b-tooltip
+          v-if="isStartOfDay(time.startTime)"
+          target="prevStartTime">
+          Beginning of previous day
+        </b-tooltip>
+        <b-tooltip
+          v-else
+          target="prevStartTime">
+          Beginning of this day
+        </b-tooltip>
         <span class="input-group-append cursor-pointer"
           placement="topright"
           v-b-tooltip.hover
-          title="Snap to the end of this day"
-          @click="snapToEndOfDay('start')">
+          title="Beginning of next day"
+          @click="nextTime('start')">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
             </span>
@@ -141,23 +149,31 @@
         <span class="input-group-append cursor-pointer"
           placement="topright"
           v-b-tooltip.hover
-          title="Snap to the beginning of this day"
-          @click="snapToBeginningOfDay('stop')">
+          title="End of previous day"
+          @click="prevTime('stop')">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
           </div>
         </span>
         <span class="input-group-append cursor-pointer"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Snap to the end of this day"
-          @click="snapToEndOfDay('stop')">
+          id="nextStopTime"
+          @click="nextTime('stop')">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
             </span>
           </div>
         </span>
+        <b-tooltip
+          v-if="isEndOfDay(time.stopTime)"
+          target="prevStartTime">
+          End of next day
+        </b-tooltip>
+        <b-tooltip
+          v-else
+          target="nextStopTime">
+          End of this day
+        </b-tooltip>
       </div>
     </div> <!-- /stop time -->
 
@@ -408,28 +424,64 @@ export default {
       this.validateDate();
     },
     /**
-     * Fired when clicking the snap to beginning to day button on a time input
-     * @param startOrStop whether to update the start time or stop time
+     * Determines whether the supplied time is the start of a day
+     * Fired from the previous start time button to determine tooltip text
+     * @param {number} time date in seconds from 1970
      */
-    snapToBeginningOfDay: function (startOrStop) {
+    isStartOfDay: function (time) {
+      const currentTime = moment(time * 1000);
+      const startOfDayTime = moment(time * 1000).startOf('day');
+      return startOfDayTime.isSame(currentTime, 'seconds');
+    },
+    /**
+     * Determines whether the supplied time is the end of a day
+     * Fired from the next end time button to determine tooltip text
+     * @param {number} time date in seconds from 1970
+     */
+    isEndOfDay: function (time) {
+      const currentTime = moment(time * 1000);
+      const endOfDayTime = moment(time * 1000).endOf('day');
+      return endOfDayTime.isSame(currentTime, 'seconds');
+    },
+    /**
+     * Fired when clicking the previous time button on a time input
+     * @param {string} startOrStop whether to update the start time or stop time
+     */
+    prevTime: function (startOrStop) {
       if (startOrStop === 'start') {
-        this.localStartTime = moment(this.time.startTime * 1000).startOf('day');
+        let newTime = moment(this.time.startTime * 1000).startOf('day');
+        if (this.isStartOfDay(this.time.startTime)) {
+          // it's the beginning of the day, so go to the beginning of the PREV day
+          newTime = newTime.subtract(1, 'days');
+        }
+        this.localStartTime = newTime;
         this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
       } else {
-        this.localStopTime = moment(this.time.stopTime * 1000).startOf('day');
+        // stop time always goes to end of day of the previous day
+        let newTime = moment(this.time.stopTime * 1000).endOf('day');
+        newTime = newTime.subtract(1, 'days');
+        this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
     },
     /**
-     * Fired when clicking the snap to end to day button on a time input
-     * @param startOrStop whether to update the start time or stop time
+     * Fired when clicking the next time button on a time input
+     * @param {string} startOrStop whether to update the start time or stop time
      */
-    snapToEndOfDay: function (startOrStop) {
+    nextTime: function (startOrStop) {
       if (startOrStop === 'start') {
-        this.localStartTime = moment(this.time.startTime * 1000).endOf('day');
+        // star time always goes to the beginning of the next day
+        let newTime = moment(this.time.startTime * 1000).startOf('day');
+        newTime = newTime.add(1, 'days');
+        this.localStartTime = newTime;
         this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
       } else {
-        this.localStopTime = moment(this.time.stopTime * 1000).endOf('day');
+        let newTime = moment(this.time.stopTime * 1000).endOf('day');
+        if (this.isEndOfDay(this.time.stopTime)) {
+          // it's the end of the day, so go to the end of the NEXT day
+          newTime = newTime.add(1, 'days');
+        }
+        this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
     },
