@@ -21,6 +21,10 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - new Show Packets view in session detail
   - viewer - map show xff countries
   - capture - libfuzzer fixes
+  - capture - fix core on exit if a pcapDir doesn't exist (issue #1030)
+  - viewer - new elasticsearchTimeout var that is used with ES queries
+  - viewer - can now limit query time frame per user
+  - viewer - node stats now paginates correctly
 
 1.7.1 2019/02/14
   - NOTICE: db.pl upgrade is required
