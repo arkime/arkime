@@ -63,6 +63,7 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
+  esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
@@ -2594,6 +2595,7 @@ function buildSessionQuery (req, buildCb) {
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
                size: limit,
+               timeout: internals.esQueryTimeout,
                query: {bool: {filter: []}}
               };
 
@@ -8006,6 +8008,6 @@ Db.initialize({host: internals.elasticBase,
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),
-               requestTimeout: Config.get("elasticsearchTimeout"),
+               requestTimeout: Config.get("elasticsearchTimeout", 300),
                debug: Config.debug
               }, main);

@@ -62,7 +62,7 @@ exports.initialize = function (info, cb) {
   internals.elasticSearchClient = new ESC.Client({
     host: internals.info.host,
     apiVersion: internals.apiVersion,
-    requestTimeout: info.requestTimeout*1000 || 300000,
+    requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
@@ -204,7 +204,7 @@ function searchScrollInternal(index, type, query, options, cb) {
 }
 
 exports.searchScroll = function (index, type, query, options, cb) {
-  if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
+  if ((query.size || 0) + (parseInt(query.from, 10) || 0) >= 10000) {
     if (cb) {
       return searchScrollInternal(index, type, query, options, cb);
     } else {
