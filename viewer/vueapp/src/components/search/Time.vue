@@ -288,7 +288,8 @@ export default {
         focusOnShow: false,
         showTodayButton: true,
         allowInputToggle: true,
-        minDate: moment(0)
+        minDate: moment(0),
+        keyBinds: null // disable all key binds and manually monitor enter and escape
       }
     };
   },
@@ -372,6 +373,14 @@ export default {
       this.$route.query.startTime,
       this.$route.query.stopTime
     );
+
+    // register key up event listeners on start and stop time
+    // to close the datetimepickers because keyBinds for this
+    // component have been removed because of usability issues
+    setTimeout(() => { // wait for datetimepicker to load
+      $('#stopTime').on('keyup', this.stopDatePickerClose);
+      $('#startTime').on('keyup', this.startDatePickerClose);
+    });
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -470,7 +479,7 @@ export default {
      */
     nextTime: function (startOrStop) {
       if (startOrStop === 'start') {
-        // star time always goes to the beginning of the next day
+        // start time always goes to the beginning of the next day
         let newTime = moment(this.time.startTime * 1000).startOf('day');
         newTime = newTime.add(1, 'days');
         this.localStartTime = newTime;
@@ -553,6 +562,26 @@ export default {
       this.focusTimeRange = false;
     },
     /* helper functions ------------------------------------------ */
+    /**
+     * Fired when a key is released from the start time input
+     * Closes the start datetimepicker if the key pressed is enter or escape
+     * @param {object} key The keyup event
+     */
+    startDatePickerClose: function (key) {
+      if (key.keyCode === 13 || key.keyCode === 27) {
+        this.$refs.startTime.dp.hide();
+      }
+    },
+    /**
+     * Fired when a key is released from the stop time input
+     * Closes the stop datetimepicker if the key pressed is enter or escape
+     * @param {object} key The keyup event
+     */
+    stopDatePickerClose: function (key) {
+      if (key.keyCode === 13 || key.keyCode === 27) {
+        this.$refs.stopTime.dp.hide();
+      }
+    },
     /* Sets the current time in seconds */
     setCurrentTime: function () {
       currentTimeSec = Math.floor(new Date().getTime() / 1000);
@@ -709,6 +738,10 @@ export default {
 
       if (change) { this.$emit('timeChange'); }
     }
+  },
+  beforeDestroy: function () {
+    $('#stopTime').off('keyup', this.stopDatePickerClose);
+    $('#startTime').off('keyup', this.startDatePickerClose);
   }
 };
 </script>
