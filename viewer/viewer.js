@@ -3140,34 +3140,50 @@ app.get('/eshealth.json', noCacheJson, function(req, res) {
 app.get('/esindices/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  Db.indicesCache(function(err, indices) {
-    // Implement filtering
-    if (req.query.filter !== undefined) {
-      let findices = [];
-      let regex = new RegExp(req.query.filter);
-      for (let i = 0, ilen = indices.length; i < ilen; i++) {
-        if (!indices[i].index.match(regex)) {continue;}
-        findices.push(indices[i]);
-      }
-      indices = findices;
+  Db.indicesCache(function (err, indices) {
+    if (err) {
+      console.log ('ERROR -  /esindices/list', err);
+      return res.send({
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
     }
 
-    // Implement sorting
-    var sortField = req.query.sortField || "index";
-    if (sortField === "index" || sortField === "status" || sortField === "health") {
-      if (req.query.desc === "true") {
-        indices = indices.sort(function(a,b){ return b[sortField].localeCompare(a[sortField]); });
-      } else {
-        indices = indices.sort(function(a,b){ return a[sortField].localeCompare(b[sortField]); });
+    let findices = [];
+
+    // filtering
+    if (req.query.filter !== undefined) {
+      const regex = new RegExp(req.query.filter);
+      for (const index of indices) {
+        if (!index.index.match(regex)) { continue; }
+        findices.push(index);
       }
     } else {
-      if (req.query.desc === "true") {
-        indices = indices.sort(function(a,b){ return b[sortField] - a[sortField]; });
+      findices = indices;
+    }
+
+    // sorting
+    const sortField = req.query.sortField || 'index';
+    if (sortField === 'index' || sortField === 'status' || sortField === 'health') {
+      if (req.query.desc === 'true') {
+        findices = findices.sort(function (a, b) { return b[sortField].localeCompare(a[sortField]); });
       } else {
-        indices = indices.sort(function(a,b){ return a[sortField] - b[sortField]; });
+        findices = findices.sort(function (a, b) { return a[sortField].localeCompare(b[sortField]); });
+      }
+    } else {
+      if (req.query.desc === 'true') {
+        findices = findices.sort(function (a,b) { return b[sortField] - a[sortField]; });
+      } else {
+        findices = findices.sort(function (a,b) { return a[sortField] - b[sortField]; });
       }
     }
-    res.send(indices);
+
+    return res.send({
+      recordsTotal: indices.length,
+      recordsFiltered: findices.length,
+      data: findices
+    });
   });
 });
 
@@ -3207,19 +3223,28 @@ app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(r
 app.get('/estask/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  Db.tasks(function(err, tasks) {
+  Db.tasks(function (err, tasks) {
+    if (err) {
+      console.log ('ERROR -  /estask/list', err);
+      return res.send({
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
+
     tasks = tasks.tasks;
 
-    var regex;
+    let regex;
     if (req.query.filter !== undefined) {
       regex = new RegExp(req.query.filter);
     }
 
     let rtasks = [];
-    for (var key in tasks) {
+    for (const key in tasks) {
       let task = tasks[key];
 
-      if (regex && !task.action.match(regex)) {continue;}
+      if (regex && !task.action.match(regex)) { continue; }
 
       task.taskId = key;
       if (task.children) {
@@ -3236,20 +3261,18 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
       rtasks.push(task);
     }
 
-    tasks = rtasks;
-
-    var sortField = req.query.sortField || "action";
-    if (sortField === "action") {
-      if (req.query.desc === "true") {
-        tasks = tasks.sort(function(a,b){ return b.action.localeCompare(a.index); });
+    const sortField = req.query.sortField || 'action';
+    if (sortField === 'action') {
+      if (req.query.desc === 'true') {
+        rtasks = rtasks.sort(function (a, b) { return b.action.localeCompare(a.index); });
       } else {
-        tasks = tasks.sort(function(a,b){ return a.action.localeCompare(b.index); });
+        rtasks = rtasks.sort(function (a, b) { return a.action.localeCompare(b.index); });
       }
     } else {
-      if (req.query.desc === "true") {
-        tasks = tasks.sort(function(a,b){ return b[sortField] - a[sortField]; });
+      if (req.query.desc === 'true') {
+        rtasks = rtasks.sort(function (a, b) { return b[sortField] - a[sortField]; });
       } else {
-        tasks = tasks.sort(function(a,b){ return a[sortField] - b[sortField]; });
+        rtasks = rtasks.sort(function (a, b) { return a[sortField] - b[sortField]; });
       }
     }
 
@@ -3258,7 +3281,11 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
       tasks = tasks.slice(0, size);
     }
 
-    res.send(tasks);
+    return res.send({
+      recordsTotal: Object.keys(tasks).length,
+      recordsFiltered: rtasks.length,
+      data: rtasks
+    });
   });
 });
 
@@ -3412,38 +3439,53 @@ app.post('/esshard/include/:type/:value', logAction(), checkCookieToken, functio
 app.get('/esrecovery/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  var sortField = (req.query.sortField || "index") + (req.query.desc === "true"?":desc":"");
+  const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
   Promise.all([Db.recovery(sortField)]).then(([recoveries]) => {
-
-    var regex;
+    let regex;
     if (req.query.filter !== undefined) {
       regex = new RegExp(req.query.filter);
     }
 
     let result = [];
 
-    for (var recovery of recoveries) {
+    for (const recovery of recoveries) {
       if (! (req.query.show === 'all' ||
-            recovery.stage === req.query.show ||    //  Show only matching stage
-            (recovery.stage !== 'done' && req.query.show === 'notdone'))) {
+        recovery.stage === req.query.show || // Show only matching stage
+        (recovery.stage !== 'done' && req.query.show === 'notdone'))) {
         continue;
       }
 
-      if (regex && !recovery.index.match(regex) && !recovery.target_node.match(regex) && !recovery.source_node.match(regex)) { continue; }
+      // filtering
+      if (regex && !recovery.index.match(regex) &&
+        !recovery.target_node.match(regex) &&
+        !recovery.source_node.match(regex)) {
+        continue;
+      }
 
       result.push(recovery);
     }
 
-    res.send(result);
+    res.send({
+      recordsTotal: recoveries.length,
+      recordsFiltered: result.length,
+      data: result
+    });
+  }).catch((err) => {
+    console.log ('ERROR -  /esrecovery/list', err);
+    return res.send({
+      recordsTotal: 0,
+      recordsFiltered: 0,
+      data: []
+    });
   });
 });
 
 app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  var stats = [];
-  var r;
+  let stats = [];
+  let r;
 
   Promise.all([Db.nodesStatsCache(),
                Db.nodesInfoCache(),
@@ -3461,21 +3503,21 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
       nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
     }
 
-    var now = new Date().getTime();
+    const now = new Date().getTime();
     while (internals.previousNodesStats.length > 1 && internals.previousNodesStats[1].timestamp + 10000 < now) {
       internals.previousNodesStats.shift();
     }
 
-    var regex;
+    let regex;
     if (req.query.filter !== undefined) {
       regex = new RegExp(req.query.filter);
     }
 
-    var nodeKeys = Object.keys(nodesStats.nodes);
-    for (var n = 0, nlen = nodeKeys.length; n < nlen; n++) {
-      var node = nodesStats.nodes[nodeKeys[n]];
+    const nodeKeys = Object.keys(nodesStats.nodes);
+    for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+      let node = nodesStats.nodes[nodeKeys[n]];
 
-      if (nodeKeys[n] === 'timestamp' || (regex && !node.name.match(regex))) {continue;}
+      if (nodeKeys[n] === 'timestamp' || (regex && !node.name.match(regex))) { continue; }
 
       let read = 0;
       let write = 0;
@@ -3484,9 +3526,9 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
 
       let writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
-      var oldnode = internals.previousNodesStats[0][nodeKeys[n]];
-      if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && "total" in node.fs.io_stats) {
-        var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
+      const oldnode = internals.previousNodesStats[0][nodeKeys[n]];
+      if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && 'total' in node.fs.io_stats) {
+        const timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
         read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024));
         write = Math.max(0, Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024));
 
@@ -3496,13 +3538,13 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
         rejected = Math.max(0, Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec*1024));
       }
 
-      var ip = (node.ip?node.ip.split(":")[0]:node.host);
+      const ip = (node.ip ? node.ip.split(':')[0] : node.host);
 
       let threadpoolInfo;
       if (nodesInfo.nodes[nodeKeys[n]]) {
         threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
       } else {
-        threadpoolInfo = {queue_size: 0};
+        threadpoolInfo = { queue_size: 0 };
       }
 
       stats.push({
@@ -3530,15 +3572,15 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
     }
 
     if (req.query.sortField) {
-      if (req.query.sortField === "nodeName") {
-        if (req.query.desc === "true") {
+      if (req.query.sortField === 'nodeName') {
+        if (req.query.desc === 'true') {
           stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); });
         } else {
           stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); });
         }
       } else {
         var field = req.query.sortField;
-        if (req.query.desc === "true") {
+        if (req.query.desc === 'true') {
           stats = stats.sort(function(a,b){ return b[field] - a[field]; });
         } else {
           stats = stats.sort(function(a,b){ return a[field] - b[field]; });
@@ -3549,17 +3591,22 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
     nodesStats.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(nodesStats.nodes);
 
-    r = {health: health,
-         recordsTotal: stats.length,
-         recordsFiltered: stats.length,
-         data: stats};
+    r = {
+      health: health,
+      recordsTotal: nodeKeys.length,
+      recordsFiltered: stats.length,
+      data: stats
+    };
+
     res.send(r);
   }).catch((err) => {
-    console.log ("ERROR -  /esstats.json", err);
-    r = {health: Db.healthCache(),
-         recordsTotal: 0,
-         recordsFiltered: 0,
-         data: []};
+    console.log ('ERROR -  /esstats.json', err);
+    r = {
+      health: Db.healthCache(),
+      recordsTotal: 0,
+      recordsFiltered: 0,
+      data: []
+    };
     return res.send(r);
   });
 });
@@ -3625,62 +3672,61 @@ app.get('/parliament.json', noCacheJson, function (req, res) {
 app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  var query = {from:  0,
-               size: 10000,
-               query: {
-                 bool: {
-                   must: [
-                   ],
-                   should: [
-                   ],
-                   must_not: [
-                     {term: {hide: true}}
-                   ]
-                 }
-               }
-              };
+  let query = {
+    from: 0,
+    size: 10000,
+    query: {
+      bool: {
+        must: [],
+        should: [],
+        must_not: [
+          { term: { hide: true } }
+        ]
+      }
+    }
+  };
 
   if (req.query.filter !== undefined && req.query.filter !== '') {
-    let names = req.query.filter.split(',');
-    for (let i = 0, len = names.length; i < len; ++i) {
-      let name = names[i].trim();
+    const names = req.query.filter.split(',');
+    for (let name of names) {
+      name = name.trim();
       if (name !== '') {
         query.query.bool.should.push({
-          wildcard: {nodeName: '*' + name + '*'}
+          wildcard: { nodeName: '*' + name + '*' }
         });
       }
     }
   }
 
-  if (req.query.hide !== undefined && req.query.hide !== "none") {
-    if (req.query.hide === "old" || req.query.hide === "both") {
-      query.query.bool.must.push({range: {currentTime: {gte: "now-5m"}}});
+  if (req.query.hide !== undefined && req.query.hide !== 'none') {
+    if (req.query.hide === 'old' || req.query.hide === 'both') {
+      query.query.bool.must.push({ range: { currentTime: { gte: 'now-5m'} } });
     }
-    if (req.query.hide === "nosession" || req.query.hide === "both") {
-      query.query.bool.must.push({range: {monitoring: {gte: "1"}}});
+    if (req.query.hide === 'nosession' || req.query.hide === 'both') {
+      query.query.bool.must.push({ range: { monitoring: { gte: '1'} } });
     }
   }
 
   Promise.all([Db.search('stats', 'stat', query),
                Db.numberOfDocuments('stats')
   ]).then(([stats, total]) => {
-    if (stats.error) {throw stats.error;}
+    if (stats.error) { throw stats.error; }
 
-    var results = {total: stats.hits.total, results: []};
+    let results = { total: stats.hits.total, results: [] };
 
     for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
-      var fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+      let fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
       if (stats.hits.hits[i]._source) {
         mergeUnarray(fields, stats.hits.hits[i].fields);
       }
       fields.id = stats.hits.hits[i]._id;
 
-      for (const key of ["totalPackets", "totalK", "totalSessions",
-       "monitoring", "tcpSessions", "udpSessions", "icmpSessions", "sctpSessions", "espSessions",
-       "usedSpaceM", "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu", "esHealthMS",
-       "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-       "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped",
-        "deltaWrittenBytes", "deltaUnwrittenBytes"
+      for (const key of ['totalPackets', 'totalK', 'totalSessions',
+       'monitoring', 'tcpSessions', 'udpSessions', 'icmpSessions', 'sctpSessions', 'espSessions',
+       'usedSpaceM', 'freeSpaceM', 'freeSpaceP', 'memory', 'memoryP', 'frags', 'cpu', 'esHealthMS',
+       'diskQueue', 'esQueue', 'packetQueue', 'closeQueue', 'needSave', 'fragsQueue',
+       'deltaFragsDropped', 'deltaOverloadDropped', 'deltaESDropped',
+        'deltaWrittenBytes', 'deltaUnwrittenBytes'
       ]) {
         fields[key] = fields[key] || 0;
       }
@@ -3703,9 +3749,9 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
 
     // sort after all the results are aggregated
     req.query.sortField = req.query.sortField || 'nodeName';
-    if (results.results[0][req.query.sortField]) { // make sure the field exists to sort on
+    if (results.results[0] && results.results[0][req.query.sortField]) { // make sure the field exists to sort on
       results.results = results.results.sort((a, b) => {
-        if (req.query.desc === "true") {
+        if (req.query.desc === 'true') {
           if (!isNaN(a[req.query.sortField])) {
             return b[req.query.sortField] - a[req.query.sortField];
           } else {
@@ -3726,13 +3772,14 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
 
     let r = {
       recordsTotal: total.count,
+      recordsFiltered: results.results.length,
       data: results.results.slice(from, stop)
     };
-    r.recordsFiltered = r.data.length;
+
     res.send(r);
   }).catch((err) => {
-    console.log("ERROR - /stats.json", query, err);
-    res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
+    console.log('ERROR - /stats.json', query, err);
+    res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
   });
 });
 

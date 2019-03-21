@@ -17,7 +17,7 @@
       </span>
 
       <moloch-paging v-if="stats"
-        class="mt-1"
+        class="mt-1 ml-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"

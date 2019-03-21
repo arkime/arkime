@@ -11,6 +11,13 @@
 
     <div v-show="!error">
 
+      <moloch-paging v-if="stats"
+        class="mt-1 ml-2"
+        :info-only="true"
+        :records-total="recordsTotal"
+        :records-filtered="recordsFiltered">
+      </moloch-paging>
+
       <moloch-table
         id="esIndicesTable"
         :data="stats"
@@ -22,7 +29,7 @@
         :desc="query.desc"
         :sortField="query.sortField"
         table-animation="list"
-        table-classes="table-sm text-right small"
+        table-classes="table-sm text-right small mt-2"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths">
         <template slot="actions"
@@ -51,9 +58,10 @@
 <script>
 import Vue from 'vue';
 
+import MolochTable from '../utils/Table';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
-import MolochTable from '../utils/Table';
+import MolochPaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load succesfully responded
@@ -73,7 +81,12 @@ export default {
     'issueConfirmation',
     'searchTerm'
   ],
-  components: { MolochError, MolochLoading, MolochTable },
+  components: {
+    MolochTable,
+    MolochError,
+    MolochPaging,
+    MolochLoading
+  },
   data: function () {
     return {
       stats: null,
@@ -81,6 +94,8 @@ export default {
       initialLoading: true,
       totalValues: null,
       averageValues: null,
+      recordsTotal: null,
+      recordsFiltered: null,
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'index',
@@ -193,7 +208,9 @@ export default {
           this.error = '';
           this.loading = false;
           this.initialLoading = false;
-          this.stats = response.data;
+          this.stats = response.data.data;
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;

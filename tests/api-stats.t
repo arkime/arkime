@@ -46,21 +46,21 @@ my $test1Token = getTokenCookie("test1");
 
 # esindices
     my $indices = viewerGet("/esindices/list");
-    cmp_ok (@{$indices}, ">=", 30, "indices array size");
-    cmp_ok ($indices->[0]->{index} cmp $indices->[1]->{index}, "<", 0, "indices index sorted");
+    cmp_ok (@{$indices->{data}}, ">=", 30, "indices array size");
+    cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, "<", 0, "indices index sorted");
 
     $indices = viewerGet("/esindices/list?desc=true");
-    cmp_ok ($indices->[0]->{index} cmp $indices->[1]->{index}, ">", 0, "indices index sorted reverse");
+    cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, ">", 0, "indices index sorted reverse");
 
     $indices = viewerGet("/esindices/list?sortField=store.size");
-    cmp_ok ($indices->[0]->{"store.size"}, "<=", $indices->[1]->{"store.size"}, "indices store.size sorted");
+    cmp_ok ($indices->{data}->[0]->{"store.size"}, "<=", $indices->{data}->[1]->{"store.size"}, "indices store.size sorted");
 
     $indices = viewerGet("/esindices/list?desc=true&sortField=store.size");
-    cmp_ok ($indices->[0]->{"store.size"}, ">=", $indices->[1]->{"store.size"}, "indices store.size sorted reverse");
+    cmp_ok ($indices->{data}->[0]->{"store.size"}, ">=", $indices->{data}->[1]->{"store.size"}, "indices store.size sorted reverse");
 
 # estasks
     my $tasks = viewerGet("/estask/list");
-    cmp_ok (@{$tasks}, ">=", 1, "tasks array size");
+    cmp_ok (@{$tasks->{data}}, ">=", 1, "tasks array size");
 
 # esshards
     my $shards = viewerGet("/esshard/list?show=all");
@@ -69,7 +69,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
-    my $shards = viewerGet("/esshard/list?show=notstarted");
+    $shards = viewerGet("/esshard/list?show=notdone");
     cmp_ok (@{$shards->{indices}}, "==", 0, "esshards: indices array size");
 
     my $result = viewerPost("/esshard/exclude/ip/1.2.3.4", "");
@@ -112,13 +112,13 @@ my $test1Token = getTokenCookie("test1");
 
 # esrecovery
     my $recovery = viewerGet("/esrecovery/list?show=all");
-    cmp_ok (@{$recovery}, ">=", 100, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, ">=", 100, "tasks array size");
 
     $recovery = viewerGet("/esrecovery/list");
-    cmp_ok (@{$recovery}, "==", 0, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
 
     $recovery = viewerGet("/esrecovery/list?show=notdone");
-    cmp_ok (@{$recovery}, "==", 0, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
 
 # parliament.json
     my $stats = viewerGet("/parliament.json");

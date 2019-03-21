@@ -1,40 +1,47 @@
 <template>
 
   <div>
-    <!-- page size -->
-    <select class="form-control page-select"
-      v-model="length">
-      <option v-for="option of lengthOptions"
-        :key="option.value"
-        :value="option.value">
-        {{ option.label }}
-      </option>
-    </select> <!-- /page size -->
-    <!-- paging -->
-    <b-pagination size="sm"
-      v-model="currentPage"
-      :limit="5"
-      hide-ellipsis
-      :per-page="length"
-      :total-rows="recordsFiltered"
-      @input="notifyParent">
-    </b-pagination> <!-- paging -->
-    <!-- page info -->
-    <div class="pagination-info cursor-help"
-      v-b-tooltip.hover
-      :title="pagingInfoTitle">
-      Showing
-      <span v-if="recordsFiltered">
-        {{ start + 1 }}
-      </span>
-      <span v-else>
-        {{ start }}
-      </span>
-      <span v-if="recordsFiltered">
-        - {{ Math.min((start + length), recordsFiltered) }}
-      </span>
-      of {{ recordsFiltered | commaString }} entries
-    </div> <!-- /page info -->
+    <div v-if="!infoOnly">
+      <!-- page size -->
+      <select class="form-control page-select"
+        v-model="length">
+        <option v-for="option of lengthOptions"
+          :key="option.value"
+          :value="option.value">
+          {{ option.label }}
+        </option>
+      </select> <!-- /page size -->
+      <!-- paging -->
+      <b-pagination size="sm"
+        v-model="currentPage"
+        :limit="5"
+        hide-ellipsis
+        :per-page="length"
+        :total-rows="recordsFiltered"
+        @input="notifyParent">
+      </b-pagination> <!-- paging -->
+      <!-- page info -->
+      <div class="pagination-info cursor-help"
+        v-b-tooltip.hover
+        :title="pagingInfoTitle">
+        Showing
+        <span v-if="recordsFiltered">
+          {{ start + 1 }}
+        </span>
+        <span v-else>
+          {{ start }}
+        </span>
+        <span v-if="recordsFiltered">
+          - {{ Math.min((start + length), recordsFiltered) }}
+        </span>
+        of {{ recordsFiltered | commaString }} entries
+      </div> <!-- /page info -->
+    </div>
+    <div v-else
+      class="pagination-info info-only">
+      Showing {{ recordsFiltered | commaString }} entries,
+      filtered from {{ recordsTotal }} total entries
+    </div>
   </div>
 
 </template>
@@ -42,7 +49,12 @@
 <script>
 export default {
   name: 'MolochPaging',
-  props: [ 'recordsTotal', 'recordsFiltered', 'lengthDefault' ],
+  props: [
+    'recordsTotal',
+    'recordsFiltered',
+    'lengthDefault',
+    'infoOnly'
+  ],
   watch: {
     length: function (newVal, oldVal) {
       if (newVal !== oldVal) {
@@ -149,5 +161,9 @@ select.page-select {
   margin-left: -6px;
   border-radius: 0 var(--px-sm) var(--px-sm) 0;
   background-color: var(--color-white);
+}
+
+.pagination-info.info-only {
+  border-radius: var(--px-sm);
 }
 </style>
