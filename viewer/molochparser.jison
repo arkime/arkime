@@ -641,8 +641,14 @@ function termOrTermsInt(dbField, str) {
     });
   } else {
     str = stripQuotes(str);
-    if (str.match(/[^\d]+/))
+    let match;
+    if ((match = str.match(/(-?\d+)-(-?\d+)/))) {
+      obj = {range: {}};
+      obj.range[dbField] = {gte: match[1], lte: match[2]};
+      return obj;
+    } else if (str.match(/[^\d]+/)) {
       throw str + " is not a number";
+    }
     obj = {term: {}};
     obj.term[dbField] = str;
   }
