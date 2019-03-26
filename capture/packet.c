@@ -1136,6 +1136,10 @@ LOCAL void moloch_packet_log(int ses)
       packetStats[MOLOCH_PACKET_UNKNOWN],
       packetStats[MOLOCH_PACKET_IPPORT_DROPPED]
       );
+
+      if (config.debug > 0) {
+          moloch_rules_stats();
+      }
 }
 /******************************************************************************/
 LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)

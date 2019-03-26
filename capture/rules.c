@@ -54,6 +54,7 @@ typedef struct {
 typedef struct {
     uint16_t            *fields;
     char                *filename;
+    char                *name;
     char                *bpf;
     struct bpf_program   bpfp;
     GHashTable          *hash[MOLOCH_FIELDS_MAX];
@@ -62,6 +63,7 @@ typedef struct {
     MolochFieldOps_t     ops;
     int                  fieldsLen;
     int                  saveFlags;
+    uint64_t             matched;
 } MolochRule_t;
 
 #define MOLOCH_RULES_MAX     100
@@ -77,11 +79,12 @@ typedef struct {
     MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX+1];
 } MolochRulesInfo_t;
 
-LOCAL MolochRulesInfo_t current;
-LOCAL MolochRulesInfo_t loading;
+LOCAL MolochRulesInfo_t    current;
+LOCAL MolochRulesInfo_t    loading;
+LOCAL char               **rulesFiles;
 
-LOCAL pcap_t                *deadPcap;
-extern MolochPcapFileHdr_t   pcapFileHeader;
+LOCAL pcap_t              *deadPcap;
+extern MolochPcapFileHdr_t pcapFileHeader;
 /******************************************************************************/
 void moloch_rules_free_node(YamlNode_t *node)
 {
@@ -382,6 +385,7 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
 
     int n = loading.rulesLen[type]++;
     MolochRule_t *rule = loading.rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+    rule->name = g_strdup(name);
     rule->filename = filename;
     rule->saveFlags = saveFlags;
     if (bpf)
@@ -546,6 +550,7 @@ void moloch_rules_free(MolochRulesInfo_t *freeing)
         for (r = 0; r < freeing->rulesLen[t]; r++) {
             MolochRule_t *rule = freeing->rules[t][r];
 
+            g_free(rule->name);
             if (rule->bpf)
                 g_free(rule->bpf);
 
@@ -841,6 +846,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
         } /* switch */
     }
     if (good) {
+        MOLOCH_THREAD_INCR(rule->matched);
         moloch_field_ops_run(session, &rule->ops);
     }
 }
@@ -873,6 +879,7 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
 
                 // If there is only 1 field we are checking for then the ops can be run since it matched above
                 if (rule->fieldsLen == 1) {
+                    MOLOCH_THREAD_INCR(rule->matched);
                     moloch_field_ops_run(session, &rule->ops);
                     continue;
                 }
@@ -892,6 +899,7 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
 
             // If there is only 1 field we are checking for then the ops can be run since it matched above
             if (rule->fieldsLen == 1) {
+                MOLOCH_THREAD_INCR(rule->matched);
                 moloch_field_ops_run(session, &rule->ops);
                 return;
             }
@@ -910,6 +918,7 @@ void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *pa
         if (rule->fieldsLen) {
             moloch_rules_check_rule_fields(session, rule, -1);
         } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            MOLOCH_THREAD_INCR(rule->matched);
             moloch_field_ops_run(session, &rule->ops);
         }
     }
@@ -965,17 +974,40 @@ void moloch_rules_session_create(MolochSession_t *session)
     }
 }
 /******************************************************************************/
+void moloch_rules_stats()
+{
+    int t, r;
+    int header = 0;
+
+    for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
+        if (!current.rulesLen[t])
+            continue;
+        for (r = 0; r < current.rulesLen[t]; r++) {
+            if (current.rules[t][r]->matched) {
+                if (!header) {
+                    printf("%-35s %-30s %s\n", "File", "Rule", "Matched");
+                    header = 1;
+                }
+                printf("%-35s %-30s %" PRIu64 "\n",
+                        current.rules[t][r]->filename,
+                        current.rules[t][r]->name,
+                        current.rules[t][r]->matched);
+            }
+        }
+    }
+}
+/******************************************************************************/
 void moloch_rules_init()
 {
-    char **rulesFiles = moloch_config_str_list(NULL, "rulesFiles", NULL);
+    rulesFiles = moloch_config_str_list(NULL, "rulesFiles", NULL);
 
     if (rulesFiles) {
         moloch_config_monitor_files("rules files", rulesFiles, moloch_rules_load);
-        g_strfreev(rulesFiles);
     } else
         moloch_rules_load_complete();
 }
 /******************************************************************************/
 void moloch_rules_exit()
 {
+    g_strfreev(rulesFiles);
 }
