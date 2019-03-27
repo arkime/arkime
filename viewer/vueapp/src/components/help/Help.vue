@@ -148,10 +148,10 @@
           </h3>
           <div class="row">
             <div class="col-sm-12">
-              <a class="btn btn-link" href="http://molo.ch">Home Page</a> |
-              <a class="btn btn-link" href="http://github.com/aol/moloch/wiki/FAQ">FAQ</a> |
-              <a class="btn btn-link" href="http://github.com/aol/moloch/wiki">Wiki</a> |
-              <a class="btn btn-link" href="http://github.com/aol/moloch">GitHub</a> |
+              <a class="btn btn-link" href="https://molo.ch">Home Page</a> |
+              <a class="btn btn-link" href="https://molo.ch/faq">FAQ</a> |
+              <a class="btn btn-link" href="https://github.com/aol/moloch/wiki">Wiki</a> |
+              <a class="btn btn-link" href="https://github.com/aol/moloch">GitHub</a> |
               <a class="btn btn-link" href="https://slackinvite.molo.ch/">Request Slack Invite</a>
             </div>
           </div>
