@@ -1742,7 +1742,7 @@ sub dbCheck {
               "* 5.6.x is recommended\n",
               "* >= 6.x is supported but not well tested\n",
               "\n",
-              "Instructions: https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_elasticsearch\n",
+              "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
              );
         exit (1);

@@ -31,8 +31,8 @@ Basic Moloch Installation steps:
       password: THEPASSWORD from step #6
 
 Any configuration changes can be made to /data/moloch/etc/config.ini
-See https://github.com/aol/moloch/wiki/FAQ#moloch-is-not-working for issues
+See https://molo.ch/faq#moloch-is-not-working for issues
 
 Additional information can be found at:
-  * https://github.com/aol/moloch/wiki/FAQ
+  * https://molo.ch/faq
   * https://github.com/aol/moloch/wiki/Settings

@@ -1,4 +1,4 @@
-NOTICE: Please see https://github.com/aol/moloch/wiki/FAQ#upgrading-moloch for upgrading info
+NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
@@ -505,7 +505,7 @@ NOTICE: Restart wiseService before capture when upgrading
             New 0.18.0 wiseService can be used with older moloch-capture.
   - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
   - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
-    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+    ES 5 users READ: https://molo.ch/faq#how_do_i_upgrade_to_es_5x
   - NOTICE: 0.18.0 has a new look and feel. Some features have been added, removed,
     or temporarily are missing.  Feedback using slack or github issues welcome.
   - wise - md5 lookups now associated with contentType
@@ -531,7 +531,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
-    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+    ES 5 users READ: https://molo.ch/faq#how_do_i_upgrade_to_es_5x
   - NOTICE: Can only update directly from Moloch 0.11.1 or later
   - capture - handle missing syn/ack better
   - capture - better mongo detection
@@ -624,9 +624,6 @@ NOTICE: Restart wiseService before capture when upgrading
 
 0.15.0 2016/09/14
   - NOTICE: Requires ES 2.1 or later (recommend 2.4)
-  - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
-            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
-            should be run BEFORE upgrading.
   - capture - basic flap detection
   - db.pl - fixed hourly expiration (issue #501)
   - capture - detect tcp syslog, udp sip, tcp nsclient
@@ -646,9 +643,6 @@ NOTICE: Restart wiseService before capture when upgrading
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0
-  - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
-            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
-            should be run BEFORE upgrading.
   - viewer - limit autocomplete indexes searched (issue #479)
   - db.pl - support setting shards and replicas for sessions
   - capture - simple tds5 parser
@@ -720,9 +714,6 @@ NOTICE: Restart wiseService before capture when upgrading
 0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version.
   - NOTICE: Requires running npm update
-  - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
-            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
-            should be run BEFORE upgrading.
   - all - added support for ES 2
   - viewer - upgraded to express 4
   - viewer - ES load is now a single number to support ES 2

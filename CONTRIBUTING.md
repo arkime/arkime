@@ -6,7 +6,7 @@
 
 ### Just have a question :question:
 
-* Visit our [FAQs](https://github.com/aol/moloch/wiki/FAQ)
+* Visit our [FAQs](https://molo.ch/faq)
 * Or talk to us directly in the [Moloch-FPC Slack](https://slackinvite.molo.ch/)
 
 ---
@@ -53,7 +53,7 @@ Documentation, READMEs, examples, and FAQs are important. Please help improve an
 **Before submitting a bug report:**
 * Ensure the bug was not already reported by searching for [existing issues in Moloch](https://github.com/aol/moloch/issues)
   * If an issues is already open, make a comment that you are experiencing the same thing and provide any additional details
-* Check the [FAQs](https://github.com/aol/moloch/wiki/FAQ) for a list of common questions and problems
+* Check the [FAQs](https://molo.ch/faq) for a list of common questions and problems
 
 Bugs are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 **Please follow these guidelines when submitting a bug:**
