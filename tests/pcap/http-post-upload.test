@@ -1,0 +1,305 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:BM8tY6UHl8ahbGVWJK1yhn8kyQ4=",
+            "dstBytes" : 3834,
+            "dstDataBytes" : 1509,
+            "dstIp" : "192.168.57.14",
+            "dstMac" : [
+               "00:1c:54:38:1a:4b",
+               "1e:16:fb:2a:17:7d"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "Hillstone Networks Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 14,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 8080,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1553758814359,
+            "http" : {
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "cookieKey" : [
+                  "JSESSIONID"
+               ],
+               "cookieKeyCnt" : 1,
+               "cookieValue" : [
+                  "969AC5FBD069EE6218EB10513726B244",
+                  "400CC78DF5784F303702CC7F02C6122C"
+               ],
+               "cookieValueCnt" : 2,
+               "host" : [
+                  "192.168.57.14",
+                  "192.168.57.14:8080"
+               ],
+               "hostCnt" : 2,
+               "md5" : [
+                  "2b8cd757ab5ffba85acac26c008a1ffc",
+                  "550be33bf0ac01b6f7ac175bb8f4522a",
+                  "3fa07f3ec9f9fefed96e9886f80760bb"
+               ],
+               "md5Cnt" : 3,
+               "method" : [
+                  "POST",
+                  "GET"
+               ],
+               "methodCnt" : 2,
+               "path" : [
+                  "/fileupload/servlet/UploadHandleServlet",
+                  "/fileupload/"
+               ],
+               "pathCnt" : 2,
+               "request-referer" : [
+                  "http://192.168.57.14:8080/fileupload/"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "origin",
+                  "content-type",
+                  "accept",
+                  "user-agent",
+                  "referer",
+                  "cache-control",
+                  "accept-encoding",
+                  "content-length",
+                  "connection",
+                  "host",
+                  "cookie",
+                  "accept-language"
+               ],
+               "requestHeaderCnt" : 12,
+               "requestHeaderField" : [
+                  "connection",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "cookie",
+                  "connection",
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "cookie",
+                  "connection",
+                  "content-length",
+                  "cache-control",
+                  "accept",
+                  "origin",
+                  "content-type",
+                  "accept-encoding",
+                  "accept-language",
+                  "cookie"
+               ],
+               "requestHeaderValue" : [
+                  "keep-alive",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "gzip,deflate,sdch",
+                  "zh-cn,zh;q=0.8",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
+                  "keep-alive",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "gzip,deflate,sdch",
+                  "zh-cn,zh;q=0.8",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
+                  "keep-alive",
+                  "449",
+                  "max-age=0",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "http://192.168.57.14:8080",
+                  "multipart/form-data; boundary=----webkitformboundaryae47vgj7ybae6rwo",
+                  "gzip,deflate,sdch",
+                  "zh-cn,zh;q=0.8",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c"
+               ],
+               "requestHeaderValueCnt" : 19,
+               "responseHeader" : [
+                  "content-type",
+                  "content-length",
+                  "date",
+                  "server"
+               ],
+               "responseHeaderCnt" : 4,
+               "responseHeaderField" : [
+                  "server",
+                  "content-type",
+                  "content-length",
+                  "date",
+                  "server",
+                  "content-type",
+                  "content-length",
+                  "date",
+                  "server",
+                  "content-type",
+                  "content-length",
+                  "date"
+               ],
+               "responseHeaderValue" : [
+                  "apache-coyote/1.1",
+                  "text/html;charset=utf-8",
+                  "468",
+                  "thu, 28 mar 2019 08:13:33 gmt",
+                  "apache-coyote/1.1",
+                  "text/html;charset=utf-8",
+                  "468",
+                  "thu, 28 mar 2019 08:13:33 gmt",
+                  "apache-coyote/1.1",
+                  "text/html;charset=utf-8",
+                  "144",
+                  "thu, 28 mar 2019 08:13:37 gmt"
+               ],
+               "responseHeaderValueCnt" : 12,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "22195633c931aec184e0e71f6fa277d9290d5e7ec3896be53a860472b6503791",
+                  "14e3eded5dd1fc782b8062d20ee805c71ceb00029674e6d59c67ef053417f314",
+                  "f6f3ed08d2b46dbf2bd6664b213b8c227c667ade0a2301d55b1e2ec7224f767a"
+               ],
+               "sha256Cnt" : 3,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "192.168.57.14:8080/fileupload/servlet/UploadHandleServlet",
+                  "192.168.57.14:8080/fileupload/"
+               ],
+               "uriCnt" : 2,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 5.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36"
+               ],
+               "useragentCnt" : 1
+            },
+            "initRTT" : 2,
+            "ipProtocol" : 6,
+            "lastPacket" : 1553758844367,
+            "length" : 30007,
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               82,
+               82,
+               76,
+               76,
+               516,
+               516,
+               681,
+               681,
+               516,
+               516,
+               681,
+               681,
+               76,
+               76,
+               758,
+               519,
+               758,
+               519,
+               76,
+               76,
+               357,
+               357,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               24,
+               106,
+               188,
+               270,
+               352,
+               428,
+               504,
+               1020,
+               1536,
+               2217,
+               2898,
+               3414,
+               3930,
+               4611,
+               5292,
+               5368,
+               5444,
+               6202,
+               6721,
+               7479,
+               7998,
+               8074,
+               8150,
+               8507,
+               8864,
+               8940,
+               9016,
+               9092,
+               9168,
+               9244,
+               9320,
+               9396,
+               9472,
+               9548
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 5222,
+            "srcDataBytes" : 2029,
+            "srcIp" : "192.168.8.97",
+            "srcMac" : [
+               "00:1c:54:38:1a:4c",
+               "ce:62:91:ee:0b:98"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "Hillstone Networks Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 20,
+            "srcPayload8" : "474554202f66696c",
+            "srcPort" : 11371,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 12,
+               "dstZero" : 0,
+               "fin" : 4,
+               "psh" : 14,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 2,
+               "syn-ack" : 2,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 9056,
+            "totDataBytes" : 3538,
+            "totPackets" : 34
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-190328",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
