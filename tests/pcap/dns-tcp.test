@@ -205,11 +205,11 @@
             "communityId" : "1:Ni+vClyYvGtwxC4Wu5dkGjaQ8ts=",
             "dns" : {
                "ASN" : [
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network"
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc."
                ],
                "GEO" : [
                   "US",
@@ -238,10 +238,10 @@
                ],
                "ipCnt" : 5,
                "nameserverASN" : [
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network",
-                  "AS1668 AOL Transit Data Network"
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc.",
+                  "AS1668 Oath Holdings Inc."
                ],
                "nameserverGEO" : [
                   "US",
