@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "hashtable-patch-valeriansaliou": "",
+    "hashtable": "",
     "iptrie": "https://github.com/postwait/node-iptrie/tarball/master",
     "lru-cache": "^4.0.1",
     "native-dns": "^0.7.0"
