@@ -93,6 +93,8 @@ sub showHelp($)
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  info                         - Information about the database\n";
+    print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
+    print "  restore <filename>           - Restore single index\n";
     print "  users-export <fn>            - Save the users info to <fn>\n";
     print "  users-import <fn>            - Load the users info from <fn>\n";
     print "  optimize                     - Optimize all indices in ES\n";
@@ -128,6 +130,23 @@ sub waitFor
     }
 }
 
+################################################################################
+sub esIndexExists
+{
+    my ($index) = @_;
+    print "HEAD ${main::elasticsearch}/$index\n" if ($verbose > 2);
+    my $response = $main::userAgent->head("${main::elasticsearch}/$index");
+    print "HEAD RESULT:", $response->code, "\n" if ($verbose > 3);
+    return $response->code == 200;
+}
+################################################################################
+sub esCheckAlias
+{
+    my ($alias, $index) = @_;
+    my $result = esGet("/_alias/$alias", 1);
+
+    return (exists $result->{$index} && exists $result->{$index}->{aliases}->{$alias});
+}
 ################################################################################
 sub esGet
 {
@@ -227,7 +246,7 @@ sub esCopy
     }
 
     print "\n";
-    $main::userAgent->timeout(30);
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub esScroll
@@ -306,6 +325,12 @@ sub sequenceUpdate
 ################################################################################
 sub sequenceUpgrade
 {
+    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v1") && esIndexExists("${PREFIX}sequence_v1")) {
+        print ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v1\n");
+        return;
+    }
+
+    $main::userAgent->timeout(7200);
     sequenceCreate();
     my $results = esGet("/${PREFIX}sequence/_search?version=1&size=10000", 0);
     return if ($results->{hits}->{total} == 0);
@@ -315,6 +340,7 @@ sub sequenceUpgrade
     }
     esDelete("/${PREFIX}sequence");
     esAlias("add", "sequence_v1", "sequence");
+    $main::userAgent->timeout(60);
 }
 ################################################################################
 sub filesCreate
@@ -991,6 +1017,16 @@ sub sessions2Update
         }
       },
       {
+        "template_word_split": {
+          "match": "*Tokens",
+          "mapping": {
+            "analyzer": "wordSplit",
+            "type": "text",
+            "omit_norms": true
+          }
+        }
+      },
+      {
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
@@ -1009,11 +1045,11 @@ sub sessions2Update
       "lastPacket": {
         "type": "date"
       },
-      "packetPosArray": {
+      "packetPos": {
         "type": "long",
         "index": false
       },
-      "packetLenArray": {
+      "packetLen": {
         "type": "integer",
         "index": false
       },
@@ -1025,6 +1061,90 @@ sub sessions2Update
           },
           "notAfter": {
             "type": "date"
+          }
+        }
+      },
+      "dhcp": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dhcp.hostTokens"
+          }
+        }
+      },
+      "dns": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "dns.hostTokens"
+          }
+        }
+      },
+      "email": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "email.hostTokens"
+          }
+        }
+      },
+      "http": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "http.hostTokens"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "http.useragentTokens"
+          },
+          "uri" : {
+            "type" : "keyword",
+            "copy_to": "http.uriTokens"
+          }
+        }
+      },
+      "quic": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "quic.hostTokens"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to": "quic.useragentTokens"
+          }
+        }
+      },
+      "smb": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "smb.hostTokens"
+          }
+        }
+      },
+      "socks": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "socks.hostTokens"
+          }
+        }
+      },
+      "oracle": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "keyword",
+            "copy_to": "oracle.hostTokens"
           }
         }
       }
@@ -1044,7 +1164,16 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
       "refresh_interval": "60s",
       "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . '
+      "number_of_replicas": ' . $REPLICAS . ',
+      "analysis": {
+        "analyzer": {
+          "wordSplit": {
+            "type": "custom",
+            "tokenizer": "pattern",
+            "filter": ["lowercase"]
+          }
+        }
+      }
     }
   },
   "mappings":' . $mapping . '
@@ -1264,6 +1393,16 @@ sub createAliasedFromNonAliased
 sub createNewAliasesFromOld
 {
     my ($alias, $newName, $oldName, $createFunction) = @_;
+
+    if (esCheckAlias("${PREFIX}$alias", "${PREFIX}$newName") && esIndexExists("${PREFIX}$newName")) {
+        print ("SKIPPING - ${PREFIX}$alias already points to ${PREFIX}$newName\n");
+        return;
+    }
+
+    if (!esIndexExists("${PREFIX}$oldName")) {
+        die "ERROR - ${PREFIX}$oldName doesn't exist!";
+    }
+
     $createFunction->();
     esAlias("remove", $oldName, $alias);
     esCopy($oldName, $newName);
@@ -1517,15 +1656,15 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|users-?export|backup|rm|rm-?missing|rm-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-files)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 30);
+$main::userAgent = LWP::UserAgent->new(timeout => 60);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
@@ -1533,12 +1672,29 @@ if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = "http://$ARGV[0]";
 }
 
-if ($ARGV[1] =~ /^users-?import$/) {
+if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     my $data = do { local $/; <$fh> };
     esPost("/_bulk", $data);
     close($fh);
     exit 0;
+} elsif ($ARGV[1] =~ /^backup$/) {
+    foreach my $index ("users", "sequence", "stats", "queries", "files", "fields", "dstats") {
+        my $data = esScroll($index, "", '{"version": true}');
+        next if (scalar(@{$data}) == 0);
+        open(my $fh, ">", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
+        foreach my $hit (@{$data}) {
+            print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            if (exists $hit->{_source}) {
+                print $fh to_json($hit->{_source}) . "\n";
+            } else {
+                print $fh "{}\n";
+            }
+        }
+        close($fh);
+    }
+    exit 0;
+
 } elsif ($ARGV[1] =~ /^users-?export$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/${PREFIX}users/_search?size=1000");
@@ -1867,7 +2023,7 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n\n";
+print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding. Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
     print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
@@ -1991,4 +2147,3 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 print "Finished\n";
 
 sleep 1;
-#esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");

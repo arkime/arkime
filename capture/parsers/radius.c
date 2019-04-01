@@ -39,6 +39,8 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
     while (BSB_REMAINING(bsb) > 2) {
         BSB_IMPORT_u08(bsb, type);
         BSB_IMPORT_u08(bsb, length);
+        if (length < 3)
+            break;
         length -= 2; // length includes the type/length
         BSB_IMPORT_ptr(bsb, value, length);
         if (BSB_IS_ERROR(bsb)) {
@@ -52,6 +54,8 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
             LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
             break;*/
         case 8:
+            if (length != 4)
+                return 0;
             memcpy(&in.s_addr, value, 4);
             moloch_field_ip4_add(framedIpField, session, in.s_addr);
             break;
@@ -86,7 +90,7 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
 /******************************************************************************/
 LOCAL void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len != ((data[2] << 8) | data[3])) {
+    if (len < 4 || len != ((data[2] << 8) | data[3])) {
         return;
     }
 
@@ -104,27 +108,27 @@ void moloch_parser_init()
     userField = moloch_field_define("radius", "termfield",
         "radius.user", "User", "radius.user",
         "RADIUS user",
-        MOLOCH_FIELD_TYPE_STR_HASH,     0, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  0,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
         "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL); 
+        (char *)NULL);
 
     endpointIpField = moloch_field_define("radius", "ip",
         "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
         "Radius endpoint ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
     framedIpField = moloch_field_define("radius", "ip",
         "radius.framed-ip", "Framed IP", "radius.framedIp",
         "Radius framed ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        NULL);
+        (char *)NULL);
 
 
     moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x01", 1, radius_udp_classify);

@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstASN" : "AS1668 Oath Holdings Inc.",
             "dstBytes" : 1402,
             "dstDataBytes" : 470,
             "dstGEO" : "US",
@@ -13,10 +13,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 14,
             "dstPayload8" : "3232302078787878",
             "dstPort" : 25,

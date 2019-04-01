@@ -913,14 +913,14 @@ typedef struct
 LOCAL MolochClassifyHead_t classifersTcp0;
 LOCAL MolochClassifyHead_t classifersTcp1[256];
 LOCAL MolochClassifyHead_t classifersTcp2[256][256];
-LOCAL MolochClassifyHead_t classifersTcpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersTcpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersTcpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersTcpPortDst[0x10000];
 
 LOCAL MolochClassifyHead_t classifersUdp0;
 LOCAL MolochClassifyHead_t classifersUdp1[256];
 LOCAL MolochClassifyHead_t classifersUdp2[256][256];
-LOCAL MolochClassifyHead_t classifersUdpPortSrc[0xffff];
-LOCAL MolochClassifyHead_t classifersUdpPortDst[0xffff];
+LOCAL MolochClassifyHead_t classifersUdpPortSrc[0x10000];
+LOCAL MolochClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
@@ -984,11 +984,11 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n size %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n num %u %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);

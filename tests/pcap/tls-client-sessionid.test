@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS10913 Internap Network Services Corporation",
+            "dstASN" : "AS10913 Internap Corporation",
             "dstBytes" : 983,
             "dstDataBytes" : 459,
             "dstGEO" : "US",

@@ -45,8 +45,8 @@
             "fileId" : [],
             "firstPacket" : 1417577703821,
             "greASN" : [
-               "AS71 Hewlett-Packard Company",
-               "AS8100 QuadraNet, Inc"
+               "---",
+               "AS8100 QuadraNet Enterprises LLC"
             ],
             "greGEO" : [
                "US",

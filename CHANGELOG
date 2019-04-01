@@ -15,6 +15,12 @@ NOTICE: Upgrading from versions prior to 0.18.0 or prior to ES 5 require an
 
 NOTICE: Restart wiseService before capture when upgrading
 
+1.1.2 2019/01/18
+  - all - Includes backports of fixes for those upgrading from pre 1.x
+  - db - Backport of  backup/restore commands, saves everything but sessions
+  - capture - Backport of tokens for host.*/http.uri/http.useragent field,
+              can't use in viewer though until Moloch 1.8
+
 1.1.1 2018/05/31
   - all - fix http.statuscode
   - capture - fix _dropByDst/_dropBySrc crash

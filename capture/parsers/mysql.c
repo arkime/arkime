@@ -39,7 +39,7 @@ LOCAL int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *
         return 0;
     }
 
-    if (len < 35 || data[1] != 0 || data[2] != 0 || data[3] > 2) {
+    if ((len < 35 && len != 8) || data[1] != 0 || data[2] != 0 || data[3] > 2) {
         moloch_parsers_unregister(session, info);
         return 0;
     }
@@ -121,12 +121,12 @@ void moloch_parser_init()
         "Mysql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     versionField = moloch_field_define("mysql", "termfield",
         "mysql.ver", "Version", "mysql.version",
         "Mysql server version string",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 }
 

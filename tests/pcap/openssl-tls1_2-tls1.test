@@ -100,7 +100,7 @@
                }
             ],
             "certCnt" : 2,
-            "dstASN" : "AS1668 AOL Transit Data Network",
+            "dstASN" : "AS1668 Oath Holdings Inc.",
             "dstBytes" : 4467,
             "dstDataBytes" : 4005,
             "dstGEO" : "US",
@@ -111,10 +111,9 @@
             ],
             "dstMacCnt" : 2,
             "dstOui" : [
-               "Cisco",
                "Cisco Systems, Inc"
             ],
-            "dstOuiCnt" : 2,
+            "dstOuiCnt" : 1,
             "dstPackets" : 8,
             "dstPayload8" : "1603010f75020000",
             "dstPort" : 443,

@@ -230,16 +230,13 @@ LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int l
 LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
-    unsigned char cmd    = 0;
-
-    int          offset;
 
     switch (*state) {
     case SMB_SMBHEADER: {
-        unsigned char flags = 0;
+        uint8_t  cmd    = 0;
+        uint8_t  flags = 0;
         if (BSB_REMAINING(*bsb) < 32) {
             return 1;
-            break;
         }
         BSB_IMPORT_skip(*bsb, 4);
         BSB_IMPORT_u08(*bsb, cmd);
@@ -331,7 +328,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
             BSB_IMPORT_skip(*bsb, securitylen);
 
-            offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
@@ -347,7 +344,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
             BSB_IMPORT_skip(*bsb, 10 + ansipw + upw);
 
-            offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
@@ -375,7 +372,6 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
 
         if (BSB_REMAINING(*bsb) < 64) {
             return 1;
-            break;
         }
         BSB_IMPORT_skip(*bsb, 12);
         BSB_LIMPORT_u16(*bsb, cmd);
@@ -490,7 +486,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
         }
 
         if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
-            LOG("ERROR - Not enough room for SMB packet %d", *remlen);
+            LOG("ERROR - Not enough room for SMB packet %u", *remlen);
             moloch_parsers_unregister(session, smb);
             return 0;
         }

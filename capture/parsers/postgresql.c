@@ -14,6 +14,8 @@
  */
 #include "moloch.h"
 
+extern MolochConfig_t        config;
+
 typedef struct {
     int       which;
 } Info_t;
@@ -23,7 +25,7 @@ LOCAL  int dbField;
 LOCAL  int appField;
 
 /******************************************************************************/
-LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
+LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != info->which)
@@ -50,16 +52,16 @@ LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned c
         goto cleanup;
     }
 
-    while (*(BSB_WORK_PTR(bsb)) != 0) {
+    while (BSB_NOT_ERROR(bsb) && BSB_REMAINING(bsb) > 1 && *(BSB_WORK_PTR(bsb)) != 0) {
         char *key = (char*)BSB_WORK_PTR(bsb);
-        int klen = strlen(key);
+        int klen = strnlen(key, BSB_REMAINING(bsb));
         BSB_IMPORT_skip(bsb, klen+1);
 
         if (BSB_IS_ERROR(bsb))
             break;
 
         char *value = (char*)BSB_WORK_PTR(bsb);
-        int vlen = strlen(value);
+        int vlen = strnlen(value, BSB_REMAINING(bsb));
         BSB_IMPORT_skip(bsb, vlen+1);
 
         if (BSB_IS_ERROR(bsb))
@@ -109,18 +111,18 @@ void moloch_parser_init()
         "Postgresql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
-        NULL);
+        (char *)NULL);
 
     dbField = moloch_field_define("postgresql", "termfield",
         "postgresql.db", "Database", "postgresql.db",
         "Postgresql database",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 
     appField = moloch_field_define("postgresql", "termfield",
         "postgresql.app", "Application", "postgresql.app",
         "Postgresql application",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
+        (char *)NULL);
 }
 

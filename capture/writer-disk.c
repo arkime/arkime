@@ -177,7 +177,8 @@ LOCAL gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointe
     // The last write for this fd
     if (out->close) {
         if (filelen) {
-            (void)ftruncate(outputFd, filelen);
+            if (ftruncate(outputFd, filelen) < 0 && config.debug)
+                LOG("Truncate failed");
         } else {
             filelen = lseek(outputFd, 0, SEEK_CUR);
         }
@@ -422,7 +423,7 @@ void writer_disk_init(char *name)
 #endif
 
     if (writeMethod & MOLOCH_WRITE_THREAD) {
-        g_thread_new("moloch-output", &writer_disk_output_thread, NULL);
+        g_thread_unref(g_thread_new("moloch-output", &writer_disk_output_thread, NULL));
     }
 
     if ((writeMethod & MOLOCH_WRITE_DIRECT) && sizeof(off_t) == 4 && config.maxFileSizeG > 2)
