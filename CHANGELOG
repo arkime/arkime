@@ -14,7 +14,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-1.8.0 2019/03/XX
+1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5
   - all - support tokens for host.*/http.uri/http.useragent field
   - viewer - should output csv with commas in fields correctly
@@ -25,6 +25,10 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - new elasticsearchTimeout var that is used with ES queries
   - viewer - can now limit query time frame per user
   - viewer - node stats now paginates correctly
+  - viewer - track users last usage time
+  - viewer - support hsts (issue #853)
+  - viewer - support simple range queries field == min-max (no spaces)
+  - viewer - Users page refactor
 
 1.7.1 2019/02/14
   - NOTICE: db.pl upgrade is required
