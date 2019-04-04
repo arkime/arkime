@@ -1,4 +1,4 @@
-AC_INIT([moloch], [1.8.0])
+AC_INIT([moloch], [2.0.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX

@@ -208,6 +208,32 @@ Vue.filter('readableTime', function (ms) {
 });
 
 /**
+ * Turns milliseconds into a human readable time range
+ *
+ * @example
+ * '{{ 1524680821790 | readableTime }}'
+ * this.$options.filters.timezoneDateString(1524680821790);
+ *
+ * @param {int} ms    The time in ms from epoch
+ * @returns {string}  The human readable time range
+ *                    Output example: 1 day 10:42:01
+ */
+Vue.filter('readableTimeCompact', function (ms) {
+  if (isNaN(ms)) { return '?'; }
+
+  let hours = parseInt((ms / (1000 * 60 * 60)) % 24);
+  let days = parseInt((ms / (1000 * 60 * 60 * 24)));
+
+  let result = '';
+
+  if (days) {
+    result += days + 'd ';
+  }
+  result += hours + 'h';
+  return result;
+});
+
+/**
  * Searches fields for a term
  * Looks for the term in field friendlyName, exp, and aliases
  *

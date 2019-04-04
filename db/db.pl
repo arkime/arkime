@@ -369,7 +369,6 @@ sub sequenceUpdate
 {
   "sequence": {
     "_source" : { "enabled": "false" },
-    "_all"    : { "enabled": "false" },
     "enabled" : "false"
   }
 }';
@@ -425,7 +424,6 @@ sub filesUpdate
     my $mapping = '
 {
   "file": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "true",
     "dynamic_templates": [
@@ -492,7 +490,6 @@ sub statsUpdate
 my $mapping = '
 {
   "stat": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "true",
     "dynamic_templates": [
@@ -548,7 +545,6 @@ sub dstatsUpdate
 my $mapping = '
 {
   "dstat": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "true",
     "dynamic_templates": [
@@ -629,7 +625,6 @@ sub fieldsUpdate
     my $mapping = '
 {
   "field": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic_templates": [
       {
@@ -1035,7 +1030,6 @@ sub queriesUpdate
     my $mapping = '
 {
   "query": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
@@ -1093,7 +1087,6 @@ sub sessions2Update
     "_meta": {
       "molochDbVersion": ' . $VERSION . '
     },
-    "_all": {"enabled": "false"},
     "dynamic": "true",
     "dynamic_templates": [
       {
@@ -1118,7 +1111,7 @@ sub sessions2Update
           "mapping": {
             "analyzer": "wordSplit",
             "type": "text",
-            "omit_norms": true
+            "norms": false
           }
         }
       },
@@ -1255,7 +1248,7 @@ $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE >
 
     my $template = '
 {
-  "template": "' . $PREFIX . 'sessions2-*",
+  "index_patterns": "' . $PREFIX . 'sessions2-*",
   "settings": {
     "index": {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
@@ -1297,7 +1290,6 @@ sub historyUpdate
     my $mapping = '
 {
   "history": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
@@ -1354,7 +1346,7 @@ sub historyUpdate
 
  my $template = '
 {
-  "template": "' . $PREFIX . 'history_v1-*",
+  "index_patterns": "' . $PREFIX . 'history_v1-*",
   "settings": {
       "number_of_shards": 2,
       "number_of_replicas": 0,
@@ -1402,7 +1394,6 @@ sub huntsUpdate
     my $mapping = '
 {
   "hunt": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
@@ -1501,7 +1492,6 @@ sub usersUpdate
     my $mapping = '
 {
   "user": {
-    "_all": {"enabled": "false"},
     "_source": {"enabled": "true"},
     "dynamic": "strict",
     "properties": {
@@ -1734,13 +1724,12 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 50500 ||
+    if ($main::esVersion < 60600 ||
         $main::esVersion >= 70000)
     {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 5.5.0 are not supported\n",
-              "* 5.6.x is recommended\n",
-              "* >= 6.x is supported but not well tested\n",
+              "* < 6.6.0 are not supported\n",
+              "* > 7.x are not supported\n",
               "\n",
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"

@@ -33,7 +33,7 @@ var internals = {fileId2File: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
                  qInProgress: 0,
-                 apiVersion: "5.5",
+                 apiVersion: "6.6",
                  q: []};
 
 exports.initialize = function (info, cb) {
@@ -73,8 +73,8 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(2.[0-3]|1|0)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 2.4.x or later required.");
+    if (data.version.number.match(/^(6.[0-5]|[0-5]|7)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 6.6.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
@@ -178,6 +178,9 @@ function searchScrollInternal(index, type, query, options, cb) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
+        if (response && response._scroll_id) {
+          exports.clearScroll({body:{scroll_id: response._scroll_id}});
+        }
         return cb(error, totalResults);
       }
 
@@ -198,6 +201,7 @@ function searchScrollInternal(index, type, query, options, cb) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
+        exports.clearScroll({body:{scroll_id: response._scroll_id}});
         return cb(null, totalResults);
       }
     });
@@ -229,6 +233,7 @@ exports.searchPrimary = function (index, type, query, options, cb) {
     options = undefined;
   }
 
+  // ALW - FIXME - 6.1+ has removed primary_first :(
   var params = {preference: "_primary_first", ignore_unavailable: "true"};
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
@@ -247,6 +252,10 @@ exports.msearch = function (index, type, queries, cb) {
 
 exports.scroll = function (params, callback) {
   return internals.elasticSearchClient.scroll(params, callback);
+};
+
+exports.clearScroll = function (params, callback) {
+  return internals.elasticSearchClient.clearScroll(params, callback);
 };
 
 exports.bulk = function (params, callback) {

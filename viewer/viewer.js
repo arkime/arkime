@@ -400,6 +400,15 @@ function safeStr(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
 }
 
+// https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
+function arrayToObject(array, key)
+{
+  return array.reduce((obj, item) => {
+    obj[item[key]] = item;
+      return obj;
+  }, {});
+}
+
 function queryValueToArray(val) {
   if (val === undefined || val === null) {
     return [];
@@ -3698,6 +3707,19 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
     }
   }
 
+  let rquery = {
+    query: {term: {locked: 0}},
+    size: 0,
+    aggs: {
+      buckets: {
+        terms: {field: "node"},
+        aggs: {
+          first: {min: {field: "first"}}
+        }
+      }
+    }
+  }
+
   if (req.query.hide !== undefined && req.query.hide !== 'none') {
     if (req.query.hide === 'old' || req.query.hide === 'both') {
       query.query.bool.must.push({ range: { currentTime: { gte: 'now-5m'} } });
@@ -3708,9 +3730,16 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
   }
 
   Promise.all([Db.search('stats', 'stat', query),
-               Db.numberOfDocuments('stats')
-  ]).then(([stats, total]) => {
+               Db.numberOfDocuments('stats'),
+               Db.search('files', 'file', rquery)
+  ]).then(([stats, total, retention]) => {
     if (stats.error) { throw stats.error; }
+
+    if (retention.aggregations.buckets && retention.aggregations.buckets.buckets) {
+      retention = arrayToObject(retention.aggregations.buckets.buckets, "key");
+    } else {
+      retention = {};
+    }
 
     let results = { total: stats.hits.total, results: [] };
 
@@ -3728,7 +3757,12 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
        'deltaFragsDropped', 'deltaOverloadDropped', 'deltaESDropped',
         'deltaWrittenBytes', 'deltaUnwrittenBytes'
       ]) {
-        fields[key] = fields[key] || 0;
+      }
+
+      if (retention[fields.id]) {
+        fields.firstPacket                  = retention[fields.id].first.value;
+      } else {
+        fields.firstPacket                  = 0;
       }
 
       fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
@@ -6588,8 +6622,10 @@ function runHuntJob (huntId, hunt, query, user) {
 
       // There might be more, issue another scroll
       if (result.hits.hits.length !== 0) {
-        return Db.scroll({ body: { scroll_id: result._scroll_id, }, scroll: '600s' }, getMoreUntilDone);
+        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: '600s' }, getMoreUntilDone);
       }
+
+      Db.clearScroll({ body: { scroll_id: result._scroll_id } });
 
       // We are totally done with this hunt
       hunt.status = 'finished';
@@ -7770,6 +7806,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
 
         // No more data, all done
         if (result.hits.hits.length === 0) {
+          Db.clearScroll({ body: { scroll_id: query._scroll_id } });
           return setImmediate(whilstCb, "DONE");
         } else {
           var document = { doc: { count: (query.count || 0) + count} };

@@ -1,6 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 2.0.0  supports ES >= 6.6.0, not 7.x or later
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
@@ -14,8 +15,14 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.0.0 2019/05/xx
+  - NOTICE: This versions requires ES 6.6.x or later
+  - Can display pcap retention in Capture Stats tab
+  - Fix some elasticsearch deprecation warnings
+
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5
+  - NOTICE: db.pl upgrade is required
   - all - support tokens for host.*/http.uri/http.useragent field
   - viewer - should output csv with commas in fields correctly
   - viewer - new Show Packets view in session detail
@@ -25,7 +32,6 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - new elasticsearchTimeout var that is used with ES queries
   - viewer - can now limit query time frame per user
   - viewer - node stats now paginates correctly
-  - viewer - track users last usage time
   - viewer - support hsts (issue #853)
   - viewer - support simple range queries field == min-max (no spaces)
   - viewer - Users page refactor

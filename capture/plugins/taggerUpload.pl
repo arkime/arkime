@@ -28,7 +28,7 @@ showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 my $userAgent = LWP::UserAgent->new(timeout => 20);
 my $response = $userAgent->request(HTTP::Request::Common::PUT("$host/tagger",
                                "Content-Type" => "application/json;charset=UTF-8",
-                                Content => '{"mappings": {"file": { _all: {enabled: 0}, "properties":{"tags":{"type":"string","index": "no"}, "type": {"type":"string","index": "no"}, "data": {"type":"string","index": "no"}, "md5": {"type":"string","index": "no"}}}}}'));
+                                Content => '{"mappings": {"file": { _all: {enabled: 0}, "properties":{"tags":{"type":"keyword","index": false}, "type": {"type":"keyword","index": false}, "data": {"type":"keyword","index": false}, "md5": {"type":"keyword","index": false}}}}}'));
 
 my @ELEMENTS;
 open (FILE, $ARGV[2]);
