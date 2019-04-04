@@ -19,7 +19,7 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:1.6.3
+        image: andywick/moloch-build-6:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -42,7 +42,7 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.6.3
+        image: andywick/moloch-build-7:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -66,7 +66,7 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:1.6.3
+        image: andywick/moloch-build-14:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -89,7 +89,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.6.3
+        image: andywick/moloch-build-16:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -117,7 +117,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:1.6.3
+        image: andywick/moloch-build-18:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -141,7 +141,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:1.6.4
+        image: andywick/moloch-build-7:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -171,7 +171,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:1.6.3
+        image: andywick/moloch-build-16:2.0.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -217,7 +217,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:1.6.3
+        image: andywick/moloch-build-6:2.0.0
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -227,7 +227,7 @@ jobs:
 
     release-centos-6:
         requires: [release-build]
-        image: andywick/moloch-build-6:1.6.3
+        image: andywick/moloch-build-6:2.0.0
         steps:
             - rm -rf /data/moloch
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -249,7 +249,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/moloch-build-7:1.6.3
+        image: andywick/moloch-build-7:2.0.0
         steps:
             - rm -rf /data/moloch
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -271,7 +271,7 @@ jobs:
 
     release-ubuntu-14:
         requires: [release-build]
-        image: andywick/moloch-build-14:1.6.3
+        image: andywick/moloch-build-14:2.0.0
         steps:
             - rm -rf /data/moloch
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -294,7 +294,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/moloch-build-16:1.6.3
+        image: andywick/moloch-build-16:2.0.0
         steps:
             - rm -rf /data/moloch
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -316,7 +316,7 @@ jobs:
 
     release-ubuntu-18:
         requires: [release-build]
-        image: andywick/moloch-build-18:1.6.3
+        image: andywick/moloch-build-18:2.0.0
         steps:
             - rm -rf /data/moloch
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)

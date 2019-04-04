@@ -1,5 +1,5 @@
 #!/bin/sh
-export VER=1.6.4
+export VER=2.0.0
 #docker images -a | grep "moloch-build" | awk '{print $3}' | xargs docker rmi
 
 docker image build build7 --tag andywick/moloch-build-7:$VER
