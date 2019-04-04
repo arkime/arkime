@@ -3712,7 +3712,7 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
     size: 0,
     aggs: {
       buckets: {
-        terms: {field: "node"},
+        terms: {field: "node", size: 1000},
         aggs: {
           first: {min: {field: "first"}}
         }
@@ -3728,6 +3728,8 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
       query.query.bool.must.push({ range: { monitoring: { gte: '1'} } });
     }
   }
+
+  let now = Math.floor(Date.now() / 1000);
 
   Promise.all([Db.search('stats', 'stat', query),
                Db.numberOfDocuments('stats'),
@@ -3760,9 +3762,9 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
       }
 
       if (retention[fields.id]) {
-        fields.firstPacket                  = retention[fields.id].first.value;
+        fields.retention                  = now - retention[fields.id].first.value;
       } else {
-        fields.firstPacket                  = 0;
+        fields.retention                  = 0;
       }
 
       fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
