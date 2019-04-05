@@ -177,7 +177,7 @@ fi
 if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
   tar zxf libpcap-$PCAP.tar.gz
   echo "MOLOCH: Building libpcap";
-  (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth --with-snf=no; $MAKE)
+  (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
