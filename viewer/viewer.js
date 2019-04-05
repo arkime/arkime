@@ -3710,10 +3710,10 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
   let rquery = {
     query: {term: {locked: 0}},
     size: 0,
-    aggs: {
+    aggregations: {
       buckets: {
         terms: {field: "node", size: 1000},
-        aggs: {
+        aggregations: {
           first: {min: {field: "first"}}
         }
       }
@@ -4222,7 +4222,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
     if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
     if (field === 'ip.dst:port') {
-      query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggs: {sub: {terms: {field: 'dstPort', size: size}}}};
+      query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggregations: {sub: {terms: {field: 'dstPort', size: size}}}};
     } else {
       query.aggregations.field = {terms: {field: field, size: size*2}};
     }
@@ -4355,7 +4355,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
     queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
-        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggs: {fileId: {terms: {field: "fileId", size: parts.length>1?parseInt(parts[1],10):10}}}};
+        query.aggregations[parts[0]] = {terms: {field: "node", size: 1000}, aggregations: {fileId: {terms: {field: "fileId", size: parts.length>1?parseInt(parts[1],10):10}}}};
       } else {
         query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 

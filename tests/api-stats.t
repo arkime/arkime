@@ -1,4 +1,4 @@
-use Test::More tests => 62;
+use Test::More tests => 63;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -32,6 +32,9 @@ my $test1Token = getTokenCookie("test1");
     foreach my $i ("deltaPackets", "deltaBytes", "deltaBytesPerSec", "deltaPacketsPerSec", "deltaSessions", "deltaSessionsPerSec") {
         is (exists $stats->{data}->[0]->{$i}, 1, "stats.json $i");
     }
+
+    my $mstats = multiGet("/stats.json");
+    is (@{$mstats->{data}}, 1, "multi stats.json data set ");
 
 # dstats.json
     my $dstats = viewerGet("/dstats.json?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
