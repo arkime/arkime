@@ -7808,7 +7808,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
 
         // No more data, all done
         if (result.hits.hits.length === 0) {
-          Db.clearScroll({ body: { scroll_id: query._scroll_id } });
+          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
           return setImmediate(whilstCb, "DONE");
         } else {
           var document = { doc: { count: (query.count || 0) + count} };
