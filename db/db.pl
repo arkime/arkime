@@ -138,6 +138,7 @@ sub showHelp($)
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
     print "  restore <filename>           - Restore single index\n";
+    print "  rollback <basename>          - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
     print "  users-export <filename>      - Save the users info to <filename>\n";
     print "  users-import <filename>      - Load the users info from <filename>\n";
     print "\n";
@@ -1887,7 +1888,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|restore|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|restore|rollback|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
@@ -1895,6 +1896,7 @@ showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
+parseArgs(3) if ($ARGV[1] =~ /^(rollback)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5);
 
@@ -2495,6 +2497,147 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersCreate();
         queriesCreate();
     }
+} elsif ($ARGV[1] =~ /^rollback$/) {
+
+    logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n";
+
+    waitFor("ROLLBACK", "do you want to rollback?");
+
+    dbCheckForActivity();
+
+    logmsg "Starting Rollback...\n";
+
+    logmsg "Erasing all indexes except Sessions and History...\n";
+    esDelete("/${PREFIX}tags_v3", 1);
+    esDelete("/${PREFIX}tags_v2", 1);
+    esDelete("/${PREFIX}tags", 1);
+    esDelete("/${PREFIX}sequence", 1);
+    esDelete("/${PREFIX}sequence_v1", 1);
+    esDelete("/${PREFIX}sequence_v2", 1);
+    esDelete("/${PREFIX}files_v5", 1);
+    esDelete("/${PREFIX}files_v4", 1);
+    esDelete("/${PREFIX}files_v3", 1);
+    esDelete("/${PREFIX}files", 1);
+    esDelete("/${PREFIX}stats", 1);
+    esDelete("/${PREFIX}stats_v1", 1);
+    esDelete("/${PREFIX}stats_v2", 1);
+    esDelete("/${PREFIX}stats_v3", 1);
+    esDelete("/${PREFIX}dstats", 1);
+    esDelete("/${PREFIX}dstats_v1", 1);
+    esDelete("/${PREFIX}dstats_v2", 1);
+    esDelete("/${PREFIX}dstats_v3", 1);
+    esDelete("/${PREFIX}fields", 1);
+    esDelete("/${PREFIX}fields_v1", 1);
+    esDelete("/${PREFIX}fields_v2", 1);
+    esDelete("/${PREFIX}hunts_v1", 1);
+    esDelete("/${PREFIX}hunts", 1);
+    esDelete("/${PREFIX}users_v3", 1);
+    esDelete("/${PREFIX}users_v4", 1);
+    esDelete("/${PREFIX}users_v5", 1);
+    esDelete("/${PREFIX}users_v6", 1);
+    esDelete("/${PREFIX}users", 1);
+    esDelete("/${PREFIX}queries", 1);
+    esDelete("/${PREFIX}queries_v1", 1);
+    esDelete("/${PREFIX}queries_v2", 1);
+    esDelete("/_template/${PREFIX}template_1", 1);
+    esDelete("/_template/${PREFIX}sessions_template", 1);
+    esDelete("/_template/${PREFIX}sessions2_template", 1);
+    esDelete("/_template/${PREFIX}history_v1_template", 1);
+
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
+    logmsg "Importings settings...\n";
+    foreach my $index (@indexes) { # import settings
+        if (-e "$ARGV[2].$index.settings.json") {
+            open(my $fh, "<", "$ARGV[2].$index.settings.json") or die "cannot open > $ARGV[2].$index.settings.json: $!";
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            my @index = keys %{$data};
+
+            delete $data->{$index[0]}->{settings}->{index}->{creation_date} if (exists $data->{$index[0]}->{settings}->{index}->{creation_date});
+            delete $data->{$index[0]}->{settings}->{index}->{provided_name} if (exists $data->{$index[0]}->{settings}->{index}->{provided_name});
+            delete $data->{$index[0]}->{settings}->{index}->{uuid} if (exists $data->{$index[0]}->{settings}->{index}->{uuid});
+            delete $data->{$index[0]}->{settings}->{index}->{version} if (exists $data->{$index[0]}->{settings}->{index}->{version});
+            my $settings = to_json($data->{$index[0]});
+            esPut("/${PREFIX}$index[0]", $settings);
+            close($fh);
+        } else {
+            logmsg "file does not exist > $ARGV[2].$index.settings.json: $!\n"
+        }
+    }
+
+    logmsg "Importings aliases...\n";
+    if (-e "$ARGV[2].aliases.json") { # import alias
+            open(my $fh, "<", "$ARGV[2].aliases.json") or die "cannot open > $ARGV[2].aliases.json: $!";
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            foreach my $alias (@{$data}) {
+                esAlias("add", $alias->{index}, $alias->{alias});
+            }
+    } else {
+        logmsg "file does not exist > $ARGV[2].aliases.json: $!\n";
+    }
+
+    logmsg "Importings mappings...\n";
+    foreach my $index (@indexes) { # import mappings
+        if (-e "$ARGV[2].$index.mappings.json") {
+            open(my $fh, "<", "$ARGV[2].$index.mappings.json") or die "cannot open > $ARGV[2].$index.mappings.json: $!";
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            my @index = keys %{$data};
+            my $mappings = $data->{$index[0]}->{mappings};
+            my @type = keys %{$mappings};
+            esPut("/${PREFIX}$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+            close($fh);
+        } else {
+            logmsg "file does not exist > $ARGV[2].$index.mappings.json: $!\n"
+        }
+    }
+
+    logmsg "Importings documents...\n";
+    foreach my $index (@indexes) { # import documents
+        if (-e "$ARGV[2].$index.json") {
+            open(my $fh, "<", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
+            my $data = do { local $/; <$fh> };
+            esPost("/_bulk", $data);
+            close($fh);
+        } else {
+            logmsg "file does not exist > $ARGV[2].$index.json: $!\n"
+        }
+    }
+
+    logmsg "Importings templates for Sessions and History...\n";
+    my @templates = ("sessions2", "history");
+    foreach my $template (@templates) { # import templates
+        if (-e "$ARGV[2].$template.template.json") {
+            open(my $fh, "<", "$ARGV[2].$template.template.json") or die "cannot open > $ARGV[2].$template.template.json: $!";
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            my @template_name = keys %{$data};
+            my $mapping = $data->{$template_name[0]};
+            esPut("/_template/${PREFIX}$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+            if (($template cmp "sessions2") == 0 && $UPGRADEALLSESSIONS) {
+                my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
+                logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+                foreach my $i (keys %{$indices}) {
+                    progress("$i ");
+                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                }
+                logmsg "\n";
+            } elsif (($template cmp "history") == 0) {
+                my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
+                logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+                foreach my $i (keys %{$indices}) {
+                    progress("$i ");
+                    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                }
+                logmsg "\n";
+            }
+            close($fh);
+        } else {
+            logmsg "file does not exist > $ARGV[2].$template.template.json: $!\n"
+        }
+    }
+    logmsg "Finished Rollback. Have Fun!\n";
 } else {
 
 # Remaing is upgrade or upgradenoprompt
