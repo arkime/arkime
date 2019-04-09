@@ -1911,7 +1911,10 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
-    foreach my $index ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats") {
+    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
+    @indexes = (@indexes, "hunts") if ($main::versionNumber > 51);
+    logmsg "Exporting documents...\n";
+    foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
         open(my $fh, ">", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
@@ -1925,8 +1928,38 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         }
         close($fh);
     }
+    logmsg "Exporting up templates...\n";
+    my @templates = ("sessions2_template", "history_v1_template");
+    foreach my $template (@templates) {
+        my $data = esGet("/_template/${PREFIX}${template}");
+        my @name = split(/_/, $template);
+        open(my $fh, ">", "$ARGV[2].$name[0].template.json") or die "cannot open > $ARGV[2].$name[0].template.json: $!";
+        print $fh to_json($data);
+        close($fh);
+    }
+    logmsg "Exporting settings...\n";
+    foreach my $index (@indexes) {
+        my $data = esGet("/${PREFIX}${index}/_settings");
+        open(my $fh, ">", "$ARGV[2].${index}.settings.json") or die "cannot open > $ARGV[2].${index}.settings.json: $!";
+        print $fh to_json($data);
+        close($fh);
+    }
+    logmsg "Exporting mappings...\n";
+    foreach my $index (@indexes) {
+        my $data = esGet("/${PREFIX}${index}/_mappings");
+        open(my $fh, ">", "$ARGV[2].${index}.mappings.json") or die "cannot open > $ARGV[2].${index}.mappings.json: $!";
+        print $fh to_json($data);
+        close($fh);
+    }
+    logmsg "Exporting aliaes...\n";
+    my $aliases = join(',', @indexes);
+    $aliases = "/_cat/aliases/${aliases}?format=json";
+    my $data = esGet($aliases), "\n";
+    open(my $fh, ">", "$ARGV[2].aliases.json") or die "cannot open > $ARGV[2].aliases.json: $!";
+    print $fh to_json($data);
+    close($fh);
+    logmsg "Finished\n";
     exit 0;
-
 } elsif ($ARGV[1] =~ /^users-?export$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/${PREFIX}users/_search?size=1000");
