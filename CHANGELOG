@@ -17,8 +17,9 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.0.0 2019/05/xx
   - NOTICE: This versions requires ES 6.6.x or later
-  - Can display pcap retention in Capture Stats tab
-  - Fix some elasticsearch deprecation warnings
+  - viewer - Can display pcap retention in Capture Stats tab
+  - all - Fix some elasticsearch deprecation warnings
+  - viewer - Added uploadFileSizeLimit
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

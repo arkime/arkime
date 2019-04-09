@@ -75,6 +75,8 @@ var internals = {
   writers: {},
   oldDBFields: {},
   isLocalViewRegExp: Config.get("isLocalViewRegExp")?new RegExp(Config.get("isLocalViewRegExp")):undefined,
+  uploadLimits: {
+  },
 
   cronTimeout: +Config.get("dbFlushTimeout", 5) + // How long capture holds items
                60 +                               // How long before ES reindexs
@@ -87,6 +89,10 @@ var internals = {
   proccessHuntJobsInitialized: false,
   notifiers: undefined
 };
+
+if (Config.get("uploadFileSizeLimit")) {
+  internals.uploadLimits.fileSize = parseInt(Config.get("uploadFileSizeLimit"));
+}
 
 if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
   internals.elasticBase[0] = "http://" + internals.elasticBase[0];
@@ -7601,7 +7607,7 @@ app.post('/sendSessions', function(req, res) {
   }
 });
 
-app.post('/upload', multer({dest:'/tmp'}).single('file'), function (req, res) {
+app.post('/upload', multer({dest:'/tmp', limits: internals.uploadLimits}).single('file'), function (req, res) {
   var exec = require('child_process').exec;
 
   var tags = '';
