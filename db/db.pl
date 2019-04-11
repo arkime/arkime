@@ -138,7 +138,8 @@ sub showHelp($)
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
     print "  restore <filename>           - Restore single index\n";
-    print "  rollback <basename>          - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
+    print "  rollback <basename> [<opts>] - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
+    print "    --skipupgradeall           - Do not upgrade Sessions\n";
     print "  users-export <filename>      - Save the users info to <filename>\n";
     print "  users-import <filename>      - Load the users info from <filename>\n";
     print "\n";
@@ -1930,7 +1931,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         }
         close($fh);
     }
-    logmsg "Exporting up templates...\n";
+    logmsg "Exporting templates...\n";
     my @templates = ("sessions2_template", "history_v1_template");
     foreach my $template (@templates) {
         my $data = esGet("/_template/${PREFIX}${template}");
@@ -2501,13 +2502,36 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n";
 
-    waitFor("ROLLBACK", "do you want to rollback?");
-
     dbCheckForActivity();
 
-    logmsg "Starting Rollback...\n";
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
+    my @filelist = ();
+    foreach my $index (@indexes) { # list of data, settings, and mappings files
+        @filelist = (@filelist, "$ARGV[2].$index.json\n") if (-e "$ARGV[2].$index.json");
+        @filelist = (@filelist, "$ARGV[2].$index.settings.json\n") if (-e "$ARGV[2].$index.settings.json");
+        @filelist = (@filelist, "$ARGV[2].$index.mappings.json\n") if (-e "$ARGV[2].$index.mappings.json");
+    }
+    foreach my $index ("sessions2", "history") { # list of templates
+        @filelist = (@filelist, "$ARGV[2].$index.template.json\n") if (-e "$ARGV[2].$index.template.json");
+    }
 
-    logmsg "Erasing all indexes except Sessions and History...\n";
+    @filelist = (@filelist, "$ARGV[2].aliases.json\n") if (-e "$ARGV[2].aliases.json");
+
+    my @directory = split(/\//,$ARGV[2]);
+    my $basename = $directory[scalar(@directory)-1];
+    splice(@directory, scalar(@directory)-1, 1);
+    my $path = join("/", @directory);
+
+    die "Cannot find files start with $basename in $path" if (scalar(@filelist) == 0);
+
+    logmsg "\nFollowing files will be used for rollback\n\n@filelist\n\n";
+
+    waitFor("ROLLBACK", "do you want to rollback? This will delete ALL data [@indexes] but sessions and history and restore from backups: files start with $basename in $path");
+
+    logmsg "\nStarting Rollback...\n\n";
+
+    logmsg "Erasing data ...\n\n";
+
     esDelete("/${PREFIX}tags_v3", 1);
     esDelete("/${PREFIX}tags_v2", 1);
     esDelete("/${PREFIX}tags", 1);
@@ -2544,11 +2568,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${PREFIX}sessions2_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
-    logmsg "Importings settings...\n";
+    logmsg "Importing settings...\n\n";
     foreach my $index (@indexes) { # import settings
         if (-e "$ARGV[2].$index.settings.json") {
-            open(my $fh, "<", "$ARGV[2].$index.settings.json") or die "cannot open > $ARGV[2].$index.settings.json: $!";
+            open(my $fh, "<", "$ARGV[2].$index.settings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
@@ -2560,27 +2583,23 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my $settings = to_json($data->{$index[0]});
             esPut("/${PREFIX}$index[0]", $settings);
             close($fh);
-        } else {
-            logmsg "file does not exist > $ARGV[2].$index.settings.json: $!\n"
         }
     }
 
-    logmsg "Importings aliases...\n";
+    logmsg "Importing aliases...\n\n";
     if (-e "$ARGV[2].aliases.json") { # import alias
-            open(my $fh, "<", "$ARGV[2].aliases.json") or die "cannot open > $ARGV[2].aliases.json: $!";
+            open(my $fh, "<", "$ARGV[2].aliases.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             foreach my $alias (@{$data}) {
                 esAlias("add", $alias->{index}, $alias->{alias});
             }
-    } else {
-        logmsg "file does not exist > $ARGV[2].aliases.json: $!\n";
     }
 
-    logmsg "Importings mappings...\n";
+    logmsg "Importing mappings...\n\n";
     foreach my $index (@indexes) { # import mappings
         if (-e "$ARGV[2].$index.mappings.json") {
-            open(my $fh, "<", "$ARGV[2].$index.mappings.json") or die "cannot open > $ARGV[2].$index.mappings.json: $!";
+            open(my $fh, "<", "$ARGV[2].$index.mappings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
@@ -2588,28 +2607,24 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my @type = keys %{$mappings};
             esPut("/${PREFIX}$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
             close($fh);
-        } else {
-            logmsg "file does not exist > $ARGV[2].$index.mappings.json: $!\n"
         }
     }
 
-    logmsg "Importings documents...\n";
+    logmsg "Importing documents...\n\n";
     foreach my $index (@indexes) { # import documents
         if (-e "$ARGV[2].$index.json") {
-            open(my $fh, "<", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
+            open(my $fh, "<", "$ARGV[2].$index.json");
             my $data = do { local $/; <$fh> };
             esPost("/_bulk", $data);
             close($fh);
-        } else {
-            logmsg "file does not exist > $ARGV[2].$index.json: $!\n"
         }
     }
 
-    logmsg "Importings templates for Sessions and History...\n";
+    logmsg "Importing templates for Sessions and History...\n\n";
     my @templates = ("sessions2", "history");
     foreach my $template (@templates) { # import templates
         if (-e "$ARGV[2].$template.template.json") {
-            open(my $fh, "<", "$ARGV[2].$template.template.json") or die "cannot open > $ARGV[2].$template.template.json: $!";
+            open(my $fh, "<", "$ARGV[2].$template.template.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @template_name = keys %{$data};
@@ -2633,11 +2648,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "\n";
             }
             close($fh);
-        } else {
-            logmsg "file does not exist > $ARGV[2].$template.template.json: $!\n"
         }
     }
-    logmsg "Finished Rollback. Have Fun!\n";
+    logmsg "Finished Rollback.\n";
 } else {
 
 # Remaing is upgrade or upgradenoprompt
