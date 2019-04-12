@@ -184,7 +184,7 @@ export default {
           this.loading = false;
           this.initialLoading = false;
           this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
+          this.recordsTotal = Math.min(response.data.recordsTotal, this.pageSize);
           this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           respondedAt = undefined;
