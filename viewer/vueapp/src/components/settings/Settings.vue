@@ -146,7 +146,7 @@
                     <b-radio value="gmt"
                       v-b-tooltip.hover
                       class="btn-radio">
-                      GMT
+                      UTC
                     </b-radio>
                   </b-form-radio-group>
                 </b-form-group>

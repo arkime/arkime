@@ -283,7 +283,7 @@ export default {
       datePickerOptions: {
         useCurrent: false,
         format: 'YYYY/MM/DD HH:mm:ss',
-        timeZone: this.timezone === 'local' || this.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'GMT',
+        timeZone: this.timezone === 'local' || this.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
         showClose: true,
         focusOnShow: false,
         showTodayButton: true,

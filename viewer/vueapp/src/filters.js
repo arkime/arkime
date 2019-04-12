@@ -139,7 +139,7 @@ Vue.filter('timezoneDateString', (seconds, timezone, format) => {
   let time = 1000 * seconds;
 
   if (timezone === 'gmt') {
-    return moment.tz(time, 'gmt').format(format);
+    return moment.tz(time, 'utc').format(format);
   } else if (timezone === 'localtz') {
     return moment.tz(time, Intl.DateTimeFormat().resolvedOptions().timeZone).format(format);
   }
