@@ -261,9 +261,11 @@ export default {
       if (field === 'starttime') {
         value = Math.floor(value / 1000); // seconds not milliseconds
         this.$store.commit('setTime', { startTime: value });
+        this.$store.commit('setTimeRange', '0'); // custom time range
       } else {
         value = Math.ceil(value / 1000); // seconds not milliseconds
         this.$store.commit('setTime', { stopTime: value });
+        this.$store.commit('setTimeRange', '0'); // custom time range
       }
     },
     /**
