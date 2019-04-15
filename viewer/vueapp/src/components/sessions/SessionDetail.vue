@@ -71,6 +71,24 @@
                 </b-radio>
               </b-form-radio-group>
             </b-form-group>
+            <div class="btn-group mr-1 mb-1">
+              <button type="button"
+                class="btn btn-secondary btn-checkbox btn-sm"
+                :class="{'active':params.showSrc}"
+                @click="toggleShowSrc"
+                v-b-tooltip
+                title="Toggle source packet visibility">
+                Src
+              </button>
+              <button type="button"
+                class="btn btn-secondary btn-checkbox btn-sm"
+                :class="{'active':params.showDst}"
+                @click="toggleShowDst"
+                v-b-tooltip
+                title="Toggle destination packet visibility">
+                Dst
+              </button>
+            </div>
             <button type="button"
               class="btn btn-secondary btn-checkbox btn-sm mr-1 mb-1"
               :class="{'active':params.showFrames}"
@@ -239,7 +257,7 @@
       class="inner packet-container mr-1 ml-1"
       v-html="packetHtml"
       ref="packetContainer"
-      :class="{'show-ts':params.ts}">
+      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}">
     </div> <!-- packets -->
 
     <!-- packet options -->
@@ -463,7 +481,9 @@ export default {
         ts: false,
         decode: {},
         packets: 200,
-        showFrames: false
+        showFrames: false,
+        showSrc: true,
+        showDst: true
       }
     };
   },
@@ -506,6 +526,12 @@ export default {
       }
 
       this.getPackets();
+    },
+    toggleShowSrc: function () {
+      this.params.showSrc = !this.params.showSrc;
+    },
+    toggleShowDst: function () {
+      this.params.showDst = !this.params.showDst;
     },
     toggleLineNumbers: function () {
       // can only have line numbers in hex mode
@@ -1091,6 +1117,22 @@ export default {
 }
 .packet-container.show-ts .session-detail-ts {
   display: block !important;
+}
+
+/* src/dst packet visiblity */
+.packet-container .sessionsrc {
+  visibility: visible;
+}
+.packet-container .sessiondst {
+  visibility: visible;
+}
+.packet-container.hide-src .sessionsrc {
+  height: 0px;
+  visibility: hidden;
+}
+.packet-container.hide-dst .sessiondst {
+  height: 0px;
+  visibility: hidden;
 }
 
 /* packets */
