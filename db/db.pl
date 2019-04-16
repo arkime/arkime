@@ -137,6 +137,7 @@ sub showHelp($)
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
+    print "  export <index> <basename>    - Save a single index into a file, fielname starts with <basename>\n";
     print "  restore <filename>           - Restore single index\n";
     print "  rollback <basename> [<opts>] - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
@@ -1889,9 +1890,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|restore|rollback|users-?export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|restore|rollback|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|rollback|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
@@ -1911,6 +1912,24 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     my $data = do { local $/; <$fh> };
     esPost("/_bulk", $data);
+    close($fh);
+    exit 0;
+} elsif ($ARGV[1] =~ /^export$/) {
+    my $index = $ARGV[2];
+    my $data = esScroll($index, "", '{"version": true}');
+    if (scalar(@{$data}) == 0){
+        logmsg "The index is empty\n";
+        exit 0;
+    }
+    open(my $fh, ">", "$ARGV[3].$index.json") or die "cannot open > $ARGV[3].$index.json: $!";
+    foreach my $hit (@{$data}) {
+        print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+        if (exists $hit->{_source}) {
+            print $fh to_json($hit->{_source}) . "\n";
+        } else {
+            print $fh "{}\n";
+        }
+    }
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
