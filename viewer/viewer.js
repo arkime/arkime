@@ -102,7 +102,10 @@ function userCleanup(suser) {
   suser.settings = suser.settings || {};
   if (suser.emailSearch === undefined) { suser.emailSearch = false; }
   if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
-  if (Config.get('multiES', false)) { suser.createEnabled = false; }
+  // if multies and not users elasticsearch, disable admin privelages
+  if (Config.get('multiES', false) && !Config.get('usersElasticsearch')) {
+    suser.createEnabled = false;
+  }
   let now = Date.now();
   let timespan = Config.get('regressionTests', false) ? 1 : 60000;
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
@@ -5943,7 +5946,7 @@ internals.usersMissing = {
   lastUsed: 0
 };
 
-app.post('/user/list', logAction('users'), recordResponseTime, function(req, res) {
+app.post('/user/list', logAction('users'), recordResponseTime, function (req, res) {
   if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
 
   let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
