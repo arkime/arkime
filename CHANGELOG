@@ -20,6 +20,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Can display pcap retention in Capture Stats tab
   - all - Fix some elasticsearch deprecation warnings
   - viewer - Added uploadFileSizeLimit
+  - viewer - Can interact with users in multiES if usersElasticsearch is set
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5
