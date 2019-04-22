@@ -4,8 +4,8 @@ const Notifme = require('notifme-sdk');
 
 exports.init = function (api) {
   api.register('slack', {
-    name: 'slack',
-    type: 'Slack',
+    name: 'Slack',
+    type: 'slack',
     fields: [{
       name: 'slackWebhookUrl',
       required: true,
@@ -16,8 +16,8 @@ exports.init = function (api) {
   });
 
   api.register('twilio', {
-    name: 'twilio',
-    type: 'Twilio',
+    name: 'Twilio',
+    type: 'twilio',
     fields: [{
       name: 'accountSid',
       required: true,
@@ -41,8 +41,8 @@ exports.init = function (api) {
   });
 
   api.register('email', {
-    name: 'email',
-    type: 'Email',
+    name: 'Email',
+    type: 'email',
     fields: [{
       name: 'secure',
       type: 'checkbox',

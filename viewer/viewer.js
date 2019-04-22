@@ -1387,6 +1387,12 @@ app.put('/notifiers/:name', getSettingUser, checkCookieToken, function (req, res
 
     req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
+    if (req.body.notifier.name !== req.body.key &&
+      sharedUser.notifiers[req.body.notifier.name]) {
+      return res.molochError(403, `${req.body.notifier.name} already exists`);
+    }
+
+
     if (!internals.notifiers) { buildNotifiers(); }
 
     let foundNotifier;

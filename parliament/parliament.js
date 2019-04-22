@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 2;
+const MIN_PARLIAMENT_VERSION = 3;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -222,14 +222,14 @@ router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
 let internals = {
-  notifiers: {}
+  notifierTypes: {}
 };
 
 // Load notifier plugins for Parliament alerting
 function loadNotifiers () {
-  var api = {
+  let api = {
     register: function (str, info) {
-      internals.notifiers[str] = info;
+      internals.notifierTypes[str] = info;
     }
   };
 
@@ -369,39 +369,40 @@ function formatIssueMessage (cluster, issue) {
 }
 
 function buildAlert (cluster, issue) {
+  // if there are no notifiers set, skip everything, there's nowhere to alert
+  if (!parliament.settings.notifiers) { return; }
+
   issue.alerted = Date.now();
 
   const message = `${cluster.title} - ${issue.message}`;
 
-  for (let n in internals.notifiers) {
-    // quit before sending the alert if the notifier is off
-    if (!parliament.settings.notifiers || !parliament.settings.notifiers[n] || !parliament.settings.notifiers[n].on) {
-      continue;
-    }
+  for (let n in parliament.settings.notifiers) {
+    let setNotifier = parliament.settings.notifiers[n];
 
-    const notifier = internals.notifiers[n];
+    // keep looking for notifiers if the notifier is off
+    if (!setNotifier.on) { continue; }
 
     // quit before sending the alert if the alert is off
-    if (!parliament.settings.notifiers[n].alerts[issue.type]) {
-      continue;
-    }
+    if (!setNotifier.alerts[issue.type]) { continue; }
 
     let config = {};
+    const notifierDef = internals.notifierTypes[setNotifier.type];
 
-    for (let f of notifier.fields) {
-      let field = parliament.settings.notifiers[n].fields[f.name];
-      if (!field || (field.required && !field.value)) {
+    for (let f in notifierDef.fields) {
+      let fieldDef = notifierDef.fields[f];
+      let field = setNotifier.fields[fieldDef.name];
+      if (!field || (fieldDef.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
         continue;
       }
-      config[f.name] = field.value;
+      config[fieldDef.name] = field.value;
     }
 
     alerts.push({
       config: config,
       message: message,
-      notifier: notifier,
+      notifier: notifierDef,
       cluster: cluster.title
     });
   }
@@ -653,62 +654,21 @@ function getStats (cluster) {
   });
 }
 
-function buildNotifiers () {
-  // build/update notifiers
-  for (let n in internals.notifiers) {
-    // if the notifier is not in settings, add it
-    const notifier = internals.notifiers[n];
-
-    let notifierData = { name: n, fields: {}, alerts: {} };
-
-    // add fields (and existing values) to notifier
+function buildNotifierTypes () {
+  for (let n in internals.notifierTypes) {
+    let notifier = internals.notifierTypes[n];
+    // add alert issue types to notifiers
+    notifier.alerts = issueTypes;
+    // make fields a map
+    let fieldsMap = {};
     for (let field of notifier.fields) {
-      let fieldData = field;
-      let value = '';  // has empty value to start
-      if (parliament.settings.notifiers[n] &&
-        parliament.settings.notifiers[n].fields[field.name]) {
-        value = parliament.settings.notifiers[n].fields[field.name].value;
-      }
-      fieldData.value = value;
-      notifierData.fields[field.name] = fieldData;
+      fieldsMap[field.name] = field;
     }
-
-    // build alerts
-    for (let a in issueTypes) {
-      let value = true;
-      if (parliament.settings.notifiers[n] &&
-        parliament.settings.notifiers[n].alerts.hasOwnProperty(a)) {
-        value = parliament.settings.notifiers[n].alerts[a];
-      }
-      notifierData.alerts[a] = value;
-    }
-
-    if (parliament.settings.notifiers[n] &&
-      parliament.settings.notifiers[n].on) {
-      notifierData.on = true;
-    }
-
-    parliament.settings.notifiers[n] = notifierData;
+    notifier.fields = fieldsMap;
   }
 
   if (app.get('debug')) {
-    console.log('Built notifiers:', JSON.stringify(parliament.settings.notifiers, null, 2));
-  }
-}
-
-function describeNotifierAlerts (settings) {
-  for (let n in settings.notifiers) {
-    const notifier = settings.notifiers[n];
-
-    for (let a in notifier.alerts) {
-      // describe alerts
-      if (issueTypes.hasOwnProperty(a)) {
-        const alert = JSON.parse(JSON.stringify(issueTypes[a]));
-        alert.id = a;
-        alert.on = notifier.alerts[a];
-        notifier.alerts[a] = alert;
-      }
-    }
+    console.log('Built notifier alerts:', JSON.stringify(internals.notifierTypes, null, 2));
   }
 }
 
@@ -724,7 +684,7 @@ function initializeParliament () {
       );
 
       // do the upgrade
-      parliament = upgrade.upgrade(parliament);
+      parliament = upgrade.upgrade(parliament, internals.notifierTypes);
 
       try { // write the upgraded file
         fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
@@ -787,7 +747,7 @@ function initializeParliament () {
       console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
     }
 
-    buildNotifiers();
+    buildNotifierTypes();
 
     fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
       (err) => {
@@ -1093,6 +1053,10 @@ router.put('/auth/update', (req, res, next) => {
   });
 });
 
+router.get('/notifierTypes', verifyToken, (req, res) => {
+  return res.json(internals.notifierTypes || {});
+});
+
 // Get the parliament settings object
 router.get('/settings', verifyToken, (req, res, next) => {
   if (!parliament.settings) {
@@ -1107,52 +1071,11 @@ router.get('/settings', verifyToken, (req, res, next) => {
     settings.general = settingsDefault.general;
   }
 
-  describeNotifierAlerts(settings);
-
   return res.json(settings);
 });
 
-// Update the parliament settings object
+// Update the parliament general settings object
 router.put('/settings', verifyToken, (req, res, next) => {
-  // save notifiers
-  for (let n in req.body.settings.notifiers) {
-    const notifier = req.body.settings.notifiers[n];
-    let savedNotifiers = parliament.settings.notifiers;
-
-    // notifier exists in settings, so update notifier and the fields
-    if (savedNotifiers[notifier.name]) {
-      savedNotifiers[notifier.name].on = !!notifier.on;
-
-      for (let f in notifier.fields) {
-        const field = notifier.fields[f];
-        // notifier has field
-        if (savedNotifiers[notifier.name].fields[field.name]) {
-          savedNotifiers[notifier.name].fields[field.name].value = field.value;
-        } else { // notifier does not have field
-          const error = new Error('Unable to find notifier field to update.');
-          error.httpStatusCode = 500;
-          return next(error);
-        }
-      }
-
-      for (let a in notifier.alerts) {
-        const alert = notifier.alerts[a];
-        // alert exists in settings, so update value
-        if (savedNotifiers[notifier.name].alerts.hasOwnProperty(alert.id)) {
-          savedNotifiers[notifier.name].alerts[alert.id] = alert.on;
-        } else { // alert doesn't exist on this notifier
-          const error = new Error('Unable to find alert to update.');
-          error.httpStatusCode = 500;
-          return next(error);
-        }
-      }
-    } else { // notifier doesn't exist
-      const error = new Error('Unable to find notifier. Is it loaded?');
-      error.httpStatusCode = 500;
-      return next(error);
-    }
-  }
-
   // save general settings
   for (let s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
@@ -1170,7 +1093,191 @@ router.put('/settings', verifyToken, (req, res, next) => {
   writeParliament(req, res, next, successObj, errorText);
 });
 
-// Update the parliament settings object to the defaults
+// Update an existing notifier
+router.put('/notifiers/:name', verifyToken, (req, res, next) => {
+  if (!parliament.settings.notifiers[req.params.name]) {
+    const error = new Error(`${req.params.name} not fount.`);
+    error.httpStatusCode = 404;
+    return next(error);
+  }
+
+  if (!req.body.key) {
+    const error = new Error('Missing notifier key');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier) {
+    const error = new Error('Missing notifier');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.name) {
+    const error = new Error('Missing notifier name');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.type) {
+    const error = new Error('Missing notifier type');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.fields) {
+    const error = new Error('Missing notifier fields');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.alerts) {
+    const error = new Error('Missing notifier alerts');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+  if (req.body.notifier.name !== req.body.key &&
+    parliament.settings.notifiers[req.body.notifier.name]) {
+    const error = new Error(`${req.body.notifier.name} already exists. Notifier names must be unique`);
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  let foundNotifier;
+  for (let n in internals.notifierTypes) {
+    let notifier = internals.notifierTypes[n];
+    if (notifier.type === req.body.notifier.type) {
+      foundNotifier = notifier;
+    }
+  }
+
+  if (!foundNotifier) {
+    const error = new Error('Unknown notifier type');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  // check that required notifier fields exist
+  for (let f in foundNotifier.fields) {
+    let field = foundNotifier.fields[f];
+    for (let sf in req.body.notifier.fields) {
+      let sentField = req.body.notifier.fields[sf];
+      if (sentField.name === field.name && field.required && !sentField.value) {
+        const error = new Error(`Missing a value for ${field.name}`);
+        error.httpStatusCode = 403;
+        return next(error);
+      }
+    }
+  }
+
+  parliament.settings.notifiers[req.body.notifier.name] = req.body.notifier;
+  // delete the old one if the key (notifier name) has changed
+  if (parliament.settings.notifiers[req.body.key] &&
+    req.body.notifier.name !== req.body.key) {
+    parliament.settings.notifiers[req.body.key] = null;
+    delete parliament.settings.notifiers[req.body.key];
+  }
+
+  let successObj = {
+    success: true,
+    newKey: req.body.notifier.name,
+    text: `Successfully updated ${req.params.name} notifier.`
+  };
+  let errorText = `Cannot update ${req.params.name} notifier`;
+  writeParliament(req, res, next, successObj, errorText);
+});
+
+// Remove a notifier
+router.delete('/notifiers/:name', verifyToken, (req, res, next) => {
+  if (!parliament.settings.notifiers[req.params.name]) {
+    const error = new Error(`Cannot find ${req.params.name} notifier to remove`);
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  parliament.settings.notifiers[req.params.name] = undefined;
+
+  let successObj  = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
+  let errorText   = `Cannot remove ${req.params.name} notifier`;
+  writeParliament(req, res, next, successObj, errorText);
+});
+
+// Create a new notifier
+router.post('/notifiers', verifyToken, (req, res, next) => {
+  if (!req.body.notifier) {
+    const error = new Error('Missing notifier');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.name) {
+    const error = new Error('Missing a unique notifier name');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.type) {
+    const error = new Error('Missing notifier type');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.notifier.fields) {
+    const error = new Error('Missing notifier fields');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+  if (parliament.settings.notifiers[req.body.notifier.name]) {
+    const error = new Error(`${req.body.notifier.name} already exists. Notifier names must be unique`);
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  let foundNotifier;
+  for (let n in internals.notifierTypes) {
+    let notifier = internals.notifierTypes[n];
+    if (notifier.type === req.body.notifier.type) {
+      foundNotifier = notifier;
+    }
+  }
+
+  if (!foundNotifier) {
+    const error = new Error('Unknown notifier type');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  // check that required notifier fields exist
+  for (let f in foundNotifier.fields) {
+    let field = foundNotifier.fields[f];
+    for (let sf in req.body.notifier.fields) {
+      let sentField = req.body.notifier.fields[sf];
+      if (sentField.name === field.name && field.required && !sentField.value) {
+        const error = new Error(`Missing a value for ${field.name}`);
+        error.httpStatusCode = 403;
+        return next(error);
+      }
+    }
+  }
+
+  parliament.settings.notifiers[req.body.notifier.name] = req.body.notifier;
+
+  let successObj = {
+    success: true,
+    name: req.body.notifier.name,
+    text: `Successfully added ${req.body.notifier.name} notifier.`
+  };
+  let errorText  = `Unable to add ${req.body.notifier.name} notifier.`;
+  writeParliament(req, res, next, successObj, errorText);
+});
+
+// Update the parliament general settings object to the defaults
 router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
   let type = 'all'; // default
   if (req.body.type) {
@@ -1183,10 +1290,7 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
     parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
   }
 
-  buildNotifiers();
-
   let settings = JSON.parse(JSON.stringify(parliament.settings));
-  describeNotifierAlerts(settings);
 
   fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
@@ -1749,32 +1853,41 @@ router.post('/testAlert', (req, res, next) => {
     return next(error);
   }
 
-  for (let n in internals.notifiers) {
-    if (n !== req.body.notifier) { continue; }
+  const notifier = parliament.settings.notifiers[req.body.notifier];
 
-    const notifier = internals.notifiers[n];
-
-    let config = {};
-
-    for (let f of notifier.fields) {
-      let field = parliament.settings.notifiers[n].fields[f.name];
-      if (!field || (field.required && !field.value)) {
-        // field doesn't exist, or field is required and doesn't have a value
-        let message = `Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`;
-        console.log(message);
-
-        const error = new Error(message);
-        error.httpStatusCode = 422;
-        return next(error);
-      }
-      config[f.name] = field.value;
-    }
-
-    notifier.sendAlert(config, 'Test alert');
+  if (!notifier) {
+    let errorText = 'Unable to find the requested notifier';
+    const error = new Error(errorText);
+    error.httpStatusCode = 500;
+    return next(error);
   }
 
-  let successObj  = { success:true, text:`Successfully issued alert using the ${req.body.notifier} notifier.` };
-  let errorText   = `Unable to issue alert using the ${req.body.notifier} notifier.`;
+  let config = {};
+
+  for (let f in notifier.fields) {
+    let field = notifier.fields[f];
+    if (!field || (field.required && !field.value)) {
+      // field doesn't exist, or field is required and doesn't have a value
+      let message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
+      console.log(message);
+
+      const error = new Error(message);
+      error.httpStatusCode = 422;
+      return next(error);
+    }
+    config[f] = field.value;
+  }
+
+  internals.notifierTypes[notifier.type].sendAlert(
+    config,
+    `Test alert from the ${notifier.name} notifier!`
+  );
+
+  let successObj = {
+    success: true,
+    text: `Successfully issued alert using the ${notifier.name} notifier.`
+  };
+  let errorText = `Unable to issue alert using the ${notifier.name} notifier.`;
   writeParliament(req, res, next, successObj, errorText);
 });
 

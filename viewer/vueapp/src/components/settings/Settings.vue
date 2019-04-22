@@ -1618,7 +1618,7 @@
               @click="createNewNotifier(notifier)">
               <span class="fa fa-plus-circle">
               </span>&nbsp;
-              Create {{ notifier.type }} Notifier
+              Create {{ notifier.name }} Notifier
             </button>
           </h3>
 
@@ -1649,7 +1649,7 @@
                 <div class="card-body">
                   <!-- newNotifier title -->
                   <h4 class="mb-3">
-                    {{ newNotifier.type }}
+                    Create new {{ newNotifier.type }} notifier
                     <span v-if="newNotifierError"
                       class="alert alert-sm alert-danger pull-right pr-2">
                       {{ newNotifierError }}
@@ -1659,7 +1659,7 @@
                     </span>
                   </h4> <!-- /new notifier title -->
                   <!-- new notifier name -->
-                  <div class="input-group">
+                  <div class="input-group mb-2">
                     <span class="input-group-prepend cursor-help"
                       :title="`Give your ${newNotifier.type} notifier a unique name`"
                       v-b-tooltip.hover.bottom-left>
@@ -1672,9 +1672,7 @@
                       v-model="newNotifier.name"
                       type="text"
                     />
-                  </div>
-                  <!-- /new notifier name -->
-                  <hr>
+                  </div> <!-- /new notifier name -->
                   <!-- new notifier fields -->
                   <div v-for="field of newNotifier.fields"
                     :key="field.name">
@@ -1749,7 +1747,7 @@
                     {{ notifier.type }} Notifier
                   </h4> <!-- /notifier title -->
                   <!-- notifier name -->
-                  <div class="input-group">
+                  <div class="input-group mb-2">
                     <span class="input-group-prepend cursor-help"
                       :title="`Give your notifier a unique name`"
                       v-b-tooltip.hover.bottom-left>
@@ -1762,9 +1760,7 @@
                       v-model="notifier.name"
                       type="text"
                     />
-                  </div>
-                  <!-- /notifier name -->
-                  <hr>
+                  </div> <!-- /notifier name -->
                   <!-- notifier fields -->
                   <div v-for="field of notifier.fields"
                     :key="field.name">
@@ -2598,7 +2594,7 @@ export default {
     /* NOTIFIERS --------------------------------------- */
     /* opens the form to create a new notifier */
     createNewNotifier: function (notifier) {
-      this.newNotifier = notifier;
+      this.newNotifier = JSON.parse(JSON.stringify(notifier));
     },
     /* gets the type of input associated with a field */
     getFieldInputType: function (field) {
