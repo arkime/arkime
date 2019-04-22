@@ -41,6 +41,18 @@
           </router-link>
         </li>
       </ul> <!-- /page links -->
+      <!-- login error -->
+      <div v-if="error"
+        class="alert alert-danger alert-sm mt-2 mr-3">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        {{ error }}&nbsp;&nbsp;
+        <button type="button"
+          class="close cursor-pointer"
+          @click="error = ''">
+          <span>&times;</span>
+        </button>
+      </div> <!-- /login error -->
       <div class="form-inline"
         @keyup.enter="login"
         @keyup.esc="clearLogin">
@@ -112,21 +124,6 @@
         </button> <!-- /logout btn -->
       </div>
     </nav> <!-- /parliament nav -->
-
-    <!-- login error -->
-    <div class="container-fluid mt-3">
-      <div v-if="error"
-        class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-        <button type="button"
-          class="close cursor-pointer"
-          @click="error = ''">
-          <span>&times;</span>
-        </button>
-      </div>
-    </div> <!-- /login error -->
 
   </div>
 

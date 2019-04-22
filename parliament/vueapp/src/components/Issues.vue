@@ -119,7 +119,8 @@
     </div> <!-- /search & paging -->
 
     <!-- issues table -->
-    <table class="table table-hover table-sm">
+    <table v-if="issues && issues.length"
+      class="table table-hover table-sm">
       <thead>
         <tr>
           <th v-if="loggedIn && issues.length">
@@ -345,21 +346,23 @@
     </table> <!-- /issues table -->
 
     <!-- no issues -->
-    <div v-if="!loading && (!issues || !issues.length)"
-      class="info-area vertical-center text-center">
-      <div class="text-muted mt-5">
-        <span v-if="!searchTerm">
-          <span class="fa fa-3x fa-smile-o text-muted-more">
+    <div v-if="!loading && (!issues || !issues.length)">
+      <hr>
+      <div class="info-area vertical-center text-center">
+        <div class="text-muted mt-5">
+          <span v-if="!searchTerm">
+            <span class="fa fa-3x fa-smile-o text-muted-more">
+            </span>
+            No issues in your Parliament
           </span>
-          No issues in your Parliament
-        </span>
-        <span v-else>
-          <span class="fa fa-3x fa-folder-open-o text-muted-more">
+          <span v-else>
+            <span class="fa fa-3x fa-folder-open-o text-muted-more">
+            </span>
+            No issues match your search
           </span>
-          No issues match your search
-        </span>
+        </div>
       </div>
-    </div> <!-- no clusters -->
+    </div> <!-- /no issues -->
 
   </div>
 
