@@ -21,6 +21,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Fix some elasticsearch deprecation warnings
   - viewer - Added uploadFileSizeLimit
   - viewer - Can interact with users in multiES if usersElasticsearch is set
+  - capture - no longer send packet lengths to ES by default (enablePacketLen)
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

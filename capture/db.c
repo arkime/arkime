@@ -63,6 +63,7 @@ LOCAL struct timespec startHealthCheck;
 LOCAL uint64_t        esHealthMS;
 
 LOCAL int             dbExit;
+LOCAL char            enablePacketLen;
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -665,13 +666,15 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
-    for(i = 0; i < session->fileLenArray->len; i++) {
-        if (i != 0)
-            BSB_EXPORT_u08(jbsb, ',');
-        BSB_EXPORT_sprintf(jbsb, "%u", (uint16_t)g_array_index(session->fileLenArray, uint16_t, i));
+    if (enablePacketLen) {
+        BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
+        for(i = 0; i < session->fileLenArray->len; i++) {
+            if (i != 0)
+                BSB_EXPORT_u08(jbsb, ',');
+            BSB_EXPORT_sprintf(jbsb, "%u", (uint16_t)g_array_index(session->fileLenArray, uint16_t, i));
+        }
+        BSB_EXPORT_cstr(jbsb, "],");
     }
-    BSB_EXPORT_cstr(jbsb, "],");
 
     BSB_EXPORT_cstr(jbsb, "\"fileId\":[");
     for (i = 0; i < session->fileNumArray->len; i++) {
@@ -2333,6 +2336,8 @@ void moloch_db_init()
     for (thread = 0; thread < config.packetThreads; thread++) {
         MOLOCH_LOCK_INIT(dbInfo[thread].lock);
     }
+
+    enablePacketLen = moloch_config_boolean(NULL, "enablePacketLen", FALSE);
 }
 /******************************************************************************/
 void moloch_db_exit()

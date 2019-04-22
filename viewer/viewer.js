@@ -5067,7 +5067,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = { _source: 'node,totPackets,packetPos,packetLen,srcIp,srcPort,ipProtocol' };
+    options  = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol' };
   }
 
   Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function(err, session) {
@@ -7054,7 +7054,7 @@ function pcapScrub(req, res, sid, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), {_source: "node,ipProtocol,packetPos,packetLen"}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), {_source: "node,ipProtocol,packetPos"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
