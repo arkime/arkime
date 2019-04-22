@@ -3727,7 +3727,7 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
         }
       }
     }
-  }
+  };
 
   if (req.query.hide !== undefined && req.query.hide !== 'none') {
     if (req.query.hide === 'old' || req.query.hide === 'both') {
@@ -3760,15 +3760,6 @@ app.get('/stats.json', recordResponseTime, noCacheJson, function(req, res) {
         mergeUnarray(fields, stats.hits.hits[i].fields);
       }
       fields.id = stats.hits.hits[i]._id;
-
-      for (const key of ['totalPackets', 'totalK', 'totalSessions',
-       'monitoring', 'tcpSessions', 'udpSessions', 'icmpSessions', 'sctpSessions', 'espSessions',
-       'usedSpaceM', 'freeSpaceM', 'freeSpaceP', 'memory', 'memoryP', 'frags', 'cpu', 'esHealthMS',
-       'diskQueue', 'esQueue', 'packetQueue', 'closeQueue', 'needSave', 'fragsQueue',
-       'deltaFragsDropped', 'deltaOverloadDropped', 'deltaESDropped',
-        'deltaWrittenBytes', 'deltaUnwrittenBytes'
-      ]) {
-      }
 
       if (retention[fields.id]) {
         fields.retention                  = now - retention[fields.id].first.value;
