@@ -25,18 +25,13 @@
         </b-dropdown-item>
         <b-dropdown-item @click="removeTags"
           v-has-permission="'removeEnabled'">
-          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
+          <span class="fa fa-fw fa-eraser"></span>&nbsp;
           Remove Tags
         </b-dropdown-item>
-        <b-dropdown-item @click="scrubPCAP"
+        <b-dropdown-item @click="removeData"
           v-has-permission="'removeEnabled'">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
-          Scrub PCAP Storage
-        </b-dropdown-item>
-        <b-dropdown-item @click="deleteSession"
-          v-has-permission="'removeEnabled'">
-          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
-          Delete SPI & PCAP
+          Remove Data
         </b-dropdown-item>
         <b-dropdown-item v-for="(cluster, key) in molochClusters"
           :key="key"
@@ -185,7 +180,7 @@
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
             </moloch-tag-sessions>
-            <moloch-delete-sessions v-else-if="actionForm === 'delete:session'"
+            <!-- <moloch-delete-sessions v-else-if="actionForm === 'delete:session'"
               :start="start"
               :done="actionFormDone"
               :sessions="openSessions"
@@ -200,7 +195,15 @@
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-scrub-pcap>
+            </moloch-scrub-pcap> -->
+            <moloch-remove-data v-else-if="actionForm === 'remove:data'"
+              :start="start"
+              :done="actionFormDone"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio">
+            </moloch-remove-data>
             <moloch-send-sessions v-else-if="actionForm === 'send:session'"
               :start="start"
               :cluster="cluster"
@@ -248,8 +251,7 @@ import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
 import MolochCreateView from '../sessions/CreateView';
 import MolochTagSessions from '../sessions/Tags';
-import MolochDeleteSessions from '../sessions/Delete';
-import MolochScrubPcap from '../sessions/Scrub';
+import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochExportCsv from '../sessions/ExportCsv';
@@ -263,8 +265,7 @@ export default {
     MolochToast,
     MolochCreateView,
     MolochTagSessions,
-    MolochDeleteSessions,
-    MolochScrubPcap,
+    MolochRemoveData,
     MolochSendSessions,
     MolochExportPcap,
     MolochExportCsv,
@@ -382,12 +383,8 @@ export default {
       this.actionForm = 'remove:tags';
       this.showApplyButtons = true;
     },
-    scrubPCAP: function () {
-      this.actionForm = 'scrub:pcap';
-      this.showApplyButtons = true;
-    },
-    deleteSession: function () {
-      this.actionForm = 'delete:session';
+    removeData: function () {
+      this.actionForm = 'remove:data';
       this.showApplyButtons = true;
     },
     sendSession: function (cluster) {
@@ -403,7 +400,7 @@ export default {
       this.actionForm = 'view:intersection';
       this.showApplyButtons = false;
     },
-    actionFormDone: function (message, success, reloadData) {
+    actionFormDone: function (message, success) {
       this.actionForm = undefined;
       if (message) {
         this.message = message;

@@ -14,38 +14,34 @@ ul.nav.nav-pills.mb-3
   li.nav-item
     a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.nav-item
-    a.nav-link.cursor-pointer(@click="openPermalink()") Permalink
+    a.nav-link.cursor-pointer(@click="openPermalink") Permalink
   b-dropdown.nav-item(text="Actions", size="sm")
-    b-dropdown-item(@click="exportPCAP()", v-has-permission="'!disablePcapDownload'")
+    b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
       | Export PCAP
-    b-dropdown-item(@click="addTags()")
+    b-dropdown-item(@click="addTags")
       | Add Tags
-    b-dropdown-item(@click="removeTags()", v-has-permission="'removeEnabled'")
+    b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
       | Remove Tags
-    b-dropdown-item(@click="scrubPCAP()", v-has-permission="'removeEnabled'")
-      | Scrub PCAP Storage
-    b-dropdown-item(@click="deleteSession()", v-has-permission="'removeEnabled'")
-      | Delete SPI &amp; PCAP
+    b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
+      | Remove Data
     b-dropdown-item(v-for="(value, key) in molochclusters", key="key", @click="sendSession(key)")
       | Send Session to {{ value.name }}
+
+div.mb-2
+  moloch-toast(:message="message", :type="messageType", :done="messageDone")
 
 div.mb-2.mr-5
   - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
-    moloch-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone")
+    moloch-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
   div(v-if="form === 'remove:tags'")
-    moloch-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone")
+    moloch-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
   div(v-if="form === 'export:pcap'")
     moloch-export-pcap(:sessions=sessions, :done="actionFormDone")
-  div(v-if="form === 'scrub:pcap'")
-    moloch-scrub-pcap(:sessions=sessions, :done="actionFormDone")
-  div(v-if="form === 'delete:session'")
-    moloch-delete-sessions(:sessions=sessions, :done="actionFormDone")
+  div(v-if="form === 'remove:data'")
+    moloch-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
   div(v-if="form === 'send:session'")
     moloch-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
-
-div.mb-2
-  moloch-toast(:message="message", :type="messageType", :done="messageDone")
 
 dl
   dt Id

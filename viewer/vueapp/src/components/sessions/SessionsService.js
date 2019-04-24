@@ -185,7 +185,7 @@ export default {
   },
 
   /**
-   * Deletes a session
+   * Removes PCAP and/or SPI data
    * @param {object} params       The parameters to be passed to server
    * @param {object} routeParams  The current url route parameters
    * @returns {Promise} Promise   A promise object that signals the completion
@@ -194,27 +194,6 @@ export default {
   remove: function (params, routeParams) {
     return new Promise((resolve, reject) => {
       let options = this.getReqOptions('delete', 'POST', params, routeParams);
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
-   * Scrubs pcap data in session
-   * @param {object} params       The parameters to be passed to server
-   * @param {object} routeParams  The current url route parameters
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
-   */
-  scrub: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('scrub', 'POST', params, routeParams);
 
       Vue.axios(options)
         .then((response) => {

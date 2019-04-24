@@ -19,6 +19,7 @@
 
     <!-- detail -->
     <div class="detail-container"
+      v-if="stupid"
       ref="detailContainer">
     </div> <!-- /detail -->
 
@@ -444,8 +445,7 @@ import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
 import FieldService from '../search/FieldService';
 import MolochTagSessions from '../sessions/Tags';
-import MolochDeleteSessions from '../sessions/Delete';
-import MolochScrubPcap from '../sessions/Scrub';
+import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochToast from '../utils/Toast';
@@ -461,6 +461,7 @@ export default {
   props: [ 'session' ],
   data: function () {
     return {
+      stupid: true,
       error: '',
       loading: true,
       hidePackets: true,
@@ -648,7 +649,7 @@ export default {
               return {
                 form: undefined,
                 cluster: undefined,
-                message: undefined,
+                message: message,
                 messageType: undefined
               };
             },
@@ -678,11 +679,23 @@ export default {
                 return this.$parent.fields[expr];
               },
               actionFormDone: function (message, success, reload) {
+                this.form = undefined;
+
+                if (reload) {
+                  console.log('reload', message);
+                  SessionsService.getDetail(this.session.id, this.session.node)
+                    .then((response) => {
+                      // TODO this doesn't work
+                      responses[2].data = response.data;
+                      this.$forceUpdate();
+                    });
+                  return;
+                }
+
                 if (message) {
                   this.message = message;
                   this.messageType = success ? 'success' : 'warning';
                 }
-                this.form = undefined;
               },
               messageDone: function () {
                 this.message = undefined;
@@ -697,11 +710,8 @@ export default {
               exportPCAP: function () {
                 this.form = 'export:pcap';
               },
-              scrubPCAP: function () {
-                this.form = 'scrub:pcap';
-              },
-              deleteSession: function () {
-                this.form = 'delete:session';
+              removeData: function () {
+                this.form = 'remove:data';
               },
               sendSession: function (cluster) {
                 this.form = 'send:session';
@@ -787,8 +797,7 @@ export default {
             },
             components: {
               MolochTagSessions,
-              MolochDeleteSessions,
-              MolochScrubPcap,
+              MolochRemoveData,
               MolochSendSessions,
               MolochExportPcap,
               MolochToast
