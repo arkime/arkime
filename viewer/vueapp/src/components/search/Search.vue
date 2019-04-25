@@ -180,22 +180,6 @@
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
             </moloch-tag-sessions>
-            <!-- <moloch-delete-sessions v-else-if="actionForm === 'delete:session'"
-              :start="start"
-              :done="actionFormDone"
-              :sessions="openSessions"
-              :num-visible="numVisibleSessions"
-              :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </moloch-delete-sessions>
-            <moloch-scrub-pcap v-else-if="actionForm === 'scrub:pcap'"
-              :start="start"
-              :done="actionFormDone"
-              :sessions="openSessions"
-              :num-visible="numVisibleSessions"
-              :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </moloch-scrub-pcap> -->
             <moloch-remove-data v-else-if="actionForm === 'remove:data'"
               :start="start"
               :done="actionFormDone"
