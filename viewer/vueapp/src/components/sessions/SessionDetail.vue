@@ -19,8 +19,8 @@
 
     <!-- detail -->
     <div class="detail-container"
-      v-if="stupid"
-      ref="detailContainer">
+      :ref="`detailContainer-${sessionIndex}`"
+      :id="`detailContainer-${sessionIndex}`">
     </div> <!-- /detail -->
 
     <!-- packet options -->
@@ -458,10 +458,13 @@ const defaultUserSettings = {
 
 export default {
   name: 'MolochSessionDetail',
-  props: [ 'session' ],
+  props: [
+    'session',
+    'sessionIndex'
+  ],
   data: function () {
     return {
-      stupid: true,
+      component: undefined,
       error: '',
       loading: true,
       hidePackets: true,
@@ -614,12 +617,18 @@ export default {
      * Gets the session detail from the server
      * @param {string} message An optional message to display to the user
      */
-    getDetailData: function (message) {
+    getDetailData: function (message, messageType) {
       this.loading = true;
 
       let p1 = FieldService.get();
       let p2 = ConfigService.getMolochClusters();
       let p3 = SessionsService.getDetail(this.session.id, this.session.node);
+
+      if (this.component) {
+        this.component.$destroy(true);
+        this.component.$el.parentNode.removeChild(this.component.$el);
+        this.component = undefined;
+      }
 
       Promise.all([p1, p2, p3])
         .then((responses) => {
@@ -631,7 +640,7 @@ export default {
           }
           this.fields = responses[0];
 
-          new Vue({
+          this.component = new Vue({
             // template string here
             template: responses[2].data,
             // makes $parent work
@@ -650,7 +659,7 @@ export default {
                 form: undefined,
                 cluster: undefined,
                 message: message,
-                messageType: undefined
+                messageType: messageType
               };
             },
             computed: {
@@ -679,22 +688,18 @@ export default {
                 return this.$parent.fields[expr];
               },
               actionFormDone: function (message, success, reload) {
-                this.form = undefined;
+                this.form = undefined; // clear the form
+                const messageType = success ? 'success' : 'warning';
 
                 if (reload) {
-                  console.log('reload', message);
-                  SessionsService.getDetail(this.session.id, this.session.node)
-                    .then((response) => {
-                      // TODO this doesn't work
-                      responses[2].data = response.data;
-                      this.$forceUpdate();
-                    });
+                  this.$parent.getDetailData(message, messageType);
+                  this.getPackets();
                   return;
                 }
 
                 if (message) {
                   this.message = message;
-                  this.messageType = success ? 'success' : 'warning';
+                  this.messageType = messageType;
                 }
               },
               messageDone: function () {
@@ -802,7 +807,9 @@ export default {
               MolochExportPcap,
               MolochToast
             }
-          }).$mount(this.$refs.detailContainer);
+          }).$mount();
+
+          $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
         })
         .catch((error) => {
           this.loading = false;

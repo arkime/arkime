@@ -90,14 +90,14 @@
 
     <!-- cancel button -->
     <div class="col-md-1">
-      <div class="btn btn-sm btn-warning pull-right"
-        @click="done(null)">
+      <button class="btn btn-sm btn-warning pull-right"
+        v-b-tooltip.hover
+        title="cancel"
+        @click="done(null)"
+        type="button">
         <span class="fa fa-ban">
         </span>
-        <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
-          &nbsp;Cancel
-        </span>
-      </div>
+      </button>
     </div> <!-- /cancel button -->
 
   </div> <!-- /tag sessions form -->
@@ -115,6 +115,7 @@ export default {
     add: Boolean,
     start: Number,
     done: Function,
+    single: Boolean,
     applyTo: String,
     sessions: Array,
     numVisible: Number,
@@ -152,14 +153,7 @@ export default {
         .then((response) => {
           this.tags = '';
           this.loading = false;
-
-          let reloadData = false;
-          //  only reload data if tags were added to only one
-          if (data.sessions && data.sessions.length === 1) {
-            reloadData = true;
-          }
-
-          this.done(response.data.text, response.data.success, reloadData);
+          this.done(response.data.text, response.data.success, this.single);
         })
         .catch((error) => {
           // display the error under the form so that user

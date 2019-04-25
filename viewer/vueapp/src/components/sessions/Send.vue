@@ -73,14 +73,14 @@
 
     <!-- cancel button -->
     <div class="col-md-1">
-      <div class="btn btn-sm btn-warning pull-right"
-        @click="done(null)">
+      <button class="btn btn-sm btn-warning pull-right"
+        v-b-tooltip.hover
+        title="cancel"
+        @click="done(null)"
+        type="button">
         <span class="fa fa-ban">
         </span>
-        <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
-          &nbsp;Cancel
-        </span>
-      </div>
+      </button>
     </div> <!-- /cancel button -->
 
     <!-- info -->
