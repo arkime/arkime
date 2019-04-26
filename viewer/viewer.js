@@ -2773,7 +2773,7 @@ function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
       viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
       query.query.bool.filter.push(viewExpression);
     } catch (e) {
-      console.log(`ERROR - User expression (${viewExpression}) doesn't compile : ${e}`);
+      console.log(`ERROR - User expression (${req.query.view}) doesn't compile -`, e);
       err = e;
     }
     continueBuildQueryCb(req, query, err, finalCb);
@@ -2793,7 +2793,7 @@ function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
             viewExpression = molochparser.parse(sharedUser.views[req.query.view].expression);
             query.query.bool.filter.push(viewExpression);
           } catch (e) {
-            console.log(`ERROR - Shared user expression (${viewExpression}) doesn't compile : ${e}`);
+            console.log(`ERROR - Shared user expression (${req.query.view}) doesn't compile -`, e);
             err = e;
           }
         }
@@ -2811,7 +2811,7 @@ function continueBuildQuery(req, query, err, finalCb) {
       var userExpression = molochparser.parse(req.user.expression);
       query.query.bool.filter.push(userExpression);
     } catch (e) {
-      console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile : ${e}`);
+      console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);
       err = e;
     }
   }
@@ -7038,7 +7038,7 @@ function pcapScrub(req, res, sid, whatToRemove, endCb) {
             pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
             pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], whatToRemove === 'all');
           } catch (e) {
-            console.log(`Couldn't scrub packet at ${pos} - ${e}`);
+            console.log(`Couldn't scrub packet at ${pos} -`, e);
           }
           return nextCb(null);
         } else {
