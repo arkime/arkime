@@ -171,6 +171,8 @@ export default {
       let url = addTags ? 'addTags' : 'removeTags';
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
+      if (options.error) { return reject({text: options.error}); }
+
       // add tags to data instead of url params
       options.data.tags = params.tags;
       delete options.params.tags;
@@ -185,7 +187,7 @@ export default {
   },
 
   /**
-   * Deletes a session
+   * Removes PCAP and/or SPI data
    * @param {object} params       The parameters to be passed to server
    * @param {object} routeParams  The current url route parameters
    * @returns {Promise} Promise   A promise object that signals the completion
@@ -195,26 +197,7 @@ export default {
     return new Promise((resolve, reject) => {
       let options = this.getReqOptions('delete', 'POST', params, routeParams);
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
-   * Scrubs pcap data in session
-   * @param {object} params       The parameters to be passed to server
-   * @param {object} routeParams  The current url route parameters
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
-   */
-  scrub: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('scrub', 'POST', params, routeParams);
+      if (options.error) { return reject({text: options.error}); }
 
       Vue.axios(options)
         .then((response) => {
@@ -236,6 +219,8 @@ export default {
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
       let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
+
+      if (options.error) { return reject({text: options.error}); };
 
       // add tags and cluster to data instead of url params
       options.data.tags = params.tags;
@@ -259,23 +244,29 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   exportPcap: function (params, routeParams) {
-    let baseUrl = `sessions.pcap/${params.filename}`;
-    // save segments for later because getReqOptions deletes it
-    let segments = params.segments;
+    return new Promise((resolve, reject) => {
+      let baseUrl = `sessions.pcap/${params.filename}`;
+      // save segments for later because getReqOptions deletes it
+      let segments = params.segments;
 
-    delete params.filename; // don't need this anymore
+      delete params.filename; // don't need this anymore
 
-    let options = this.getReqOptions(baseUrl, '', params, routeParams);
+      let options = this.getReqOptions(baseUrl, '', params, routeParams);
 
-    // add missing params
-    options.params.segments = segments;
-    if (options.data.ids) {
-      options.params.ids = options.data.ids;
-    }
+      if (options.error) { return reject({text: options.error}); };
 
-    let url = `${baseUrl}?${qs.stringify(options.params)}`;
+      // add missing params
+      options.params.segments = segments;
+      if (options.data.ids) {
+        options.params.ids = options.data.ids;
+      }
 
-    window.location = url;
+      let url = `${baseUrl}?${qs.stringify(options.params)}`;
+
+      window.location = url;
+
+      return resolve({text: 'PCAP Exported'});
+    });
   },
 
   /**
@@ -284,23 +275,29 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   exportCsv: function (params, routeParams) {
-    let baseUrl = `sessions.csv/${params.filename}`;
-    // save segments for later because getReqOptions deletes it
-    let segments = params.segments;
+    return new Promise((resolve, reject) => {
+      let baseUrl = `sessions.csv/${params.filename}`;
+      // save segments for later because getReqOptions deletes it
+      let segments = params.segments;
 
-    delete params.filename; // don't need this anymore
+      delete params.filename; // don't need this anymore
 
-    let options = this.getReqOptions(baseUrl, '', params, routeParams);
+      let options = this.getReqOptions(baseUrl, '', params, routeParams);
 
-    // add missing params
-    options.params.segments = segments;
-    if (options.data.ids) {
-      options.params.ids = options.data.ids;
-    }
+      if (options.error) { return reject({text: options.error}); };
 
-    let url = `${baseUrl}?${qs.stringify(options.params)}`;
+      // add missing params
+      options.params.segments = segments;
+      if (options.data.ids) {
+        options.params.ids = options.data.ids;
+      }
 
-    window.location = url;
+      let url = `${baseUrl}?${qs.stringify(options.params)}`;
+
+      window.location = url;
+
+      return resolve({text: 'CSV Exported'});
+    });
   },
 
   /**
@@ -368,6 +365,7 @@ export default {
    * @returns { url: {string}, method: {string}, data: {object} }
    */
   getReqOptions: function (baseUrl, method, params, routeParams) {
+    let error; // keep track of any errors
     // add segments to data instead of url parameters
     let data = { segments: params.segments };
 
@@ -384,6 +382,7 @@ export default {
         delete params.expression;
       }
       data.ids = data.ids.join(',');
+      if (!data.ids) { error = 'There are no matching sessions open.'; }
     } else if (params.applyTo === 'visible') {
       // all sessions visible on the sessions page
       params.length = params.numVisible;
@@ -403,6 +402,7 @@ export default {
     return {
       data: data,
       url: baseUrl,
+      error: error,
       method: method,
       params: params
     };

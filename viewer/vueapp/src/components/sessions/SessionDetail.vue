@@ -19,7 +19,8 @@
 
     <!-- detail -->
     <div class="detail-container"
-      ref="detailContainer">
+      :ref="`detailContainer-${sessionIndex}`"
+      :id="`detailContainer-${sessionIndex}`">
     </div> <!-- /detail -->
 
     <!-- packet options -->
@@ -444,8 +445,7 @@ import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
 import FieldService from '../search/FieldService';
 import MolochTagSessions from '../sessions/Tags';
-import MolochDeleteSessions from '../sessions/Delete';
-import MolochScrubPcap from '../sessions/Scrub';
+import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochToast from '../utils/Toast';
@@ -458,9 +458,13 @@ const defaultUserSettings = {
 
 export default {
   name: 'MolochSessionDetail',
-  props: [ 'session' ],
+  props: [
+    'session',
+    'sessionIndex'
+  ],
   data: function () {
     return {
+      component: undefined,
       error: '',
       loading: true,
       hidePackets: true,
@@ -613,12 +617,18 @@ export default {
      * Gets the session detail from the server
      * @param {string} message An optional message to display to the user
      */
-    getDetailData: function (message) {
+    getDetailData: function (message, messageType) {
       this.loading = true;
 
       let p1 = FieldService.get();
       let p2 = ConfigService.getMolochClusters();
       let p3 = SessionsService.getDetail(this.session.id, this.session.node);
+
+      if (this.component) {
+        this.component.$destroy(true);
+        this.component.$el.parentNode.removeChild(this.component.$el);
+        this.component = undefined;
+      }
 
       Promise.all([p1, p2, p3])
         .then((responses) => {
@@ -630,7 +640,7 @@ export default {
           }
           this.fields = responses[0];
 
-          new Vue({
+          this.component = new Vue({
             // template string here
             template: responses[2].data,
             // makes $parent work
@@ -648,8 +658,8 @@ export default {
               return {
                 form: undefined,
                 cluster: undefined,
-                message: undefined,
-                messageType: undefined
+                message: message,
+                messageType: messageType
               };
             },
             computed: {
@@ -678,11 +688,19 @@ export default {
                 return this.$parent.fields[expr];
               },
               actionFormDone: function (message, success, reload) {
+                this.form = undefined; // clear the form
+                const messageType = success ? 'success' : 'warning';
+
+                if (reload) {
+                  this.$parent.getDetailData(message, messageType);
+                  this.getPackets();
+                  return;
+                }
+
                 if (message) {
                   this.message = message;
-                  this.messageType = success ? 'success' : 'warning';
+                  this.messageType = messageType;
                 }
-                this.form = undefined;
               },
               messageDone: function () {
                 this.message = undefined;
@@ -697,11 +715,8 @@ export default {
               exportPCAP: function () {
                 this.form = 'export:pcap';
               },
-              scrubPCAP: function () {
-                this.form = 'scrub:pcap';
-              },
-              deleteSession: function () {
-                this.form = 'delete:session';
+              removeData: function () {
+                this.form = 'remove:data';
               },
               sendSession: function (cluster) {
                 this.form = 'send:session';
@@ -787,13 +802,14 @@ export default {
             },
             components: {
               MolochTagSessions,
-              MolochDeleteSessions,
-              MolochScrubPcap,
+              MolochRemoveData,
               MolochSendSessions,
               MolochExportPcap,
               MolochToast
             }
-          }).$mount(this.$refs.detailContainer);
+          }).$mount();
+
+          $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
         })
         .catch((error) => {
           this.loading = false;

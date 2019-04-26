@@ -828,7 +828,7 @@ function checkHuntAccess (req, res, next) {
       if (huntHit._source.userId === req.user.userId) {
         return next();
       }
-      return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
+      return res.molochError(403, `You cannot change another user's hunt unless you have admin privileges`);
     });
   }
 }
@@ -1726,7 +1726,7 @@ app.post('/user/views/delete', [checkCookieToken, logAction(), postSettingUser, 
         if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can delete the shared view
         if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, 'Need admin privelages to delete another user\'s shared view');
+          return res.molochError(401, `Need admin privelages to delete another user's shared view`);
         }
         delete sharedUser.views[req.body.name];
       }
@@ -1794,7 +1794,7 @@ app.post('/user/views/toggleShare', [checkCookieToken, logAction(), postSettingU
       if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
       // only admins or the user that created the view can update the shared view
       if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-        return res.molochError(401, 'Need admin privelages to unshare another user\'s shared view');
+        return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
       }
       // save the view for later to determine who the view belongs to
       view = sharedUser.views[req.body.name];
@@ -1822,7 +1822,7 @@ app.post('/user/views/update', [checkCookieToken, logAction(), postSettingUser, 
         if (sharedUser.views[req.body.key] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
         if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, 'Need admin privelages to update another user\'s shared view');
+          return res.molochError(401, `Need admin privelages to update another user's shared view`);
         }
         sharedUser.views[req.body.name] = {
           expression: req.body.expression,
@@ -2773,7 +2773,7 @@ function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
       viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
       query.query.bool.filter.push(viewExpression);
     } catch (e) {
-      console.log('ERR - User expression doesn\'t compile', viewExpression, e);
+      console.log(`ERROR - User expression (${req.query.view}) doesn't compile -`, e);
       err = e;
     }
     continueBuildQueryCb(req, query, err, finalCb);
@@ -2793,7 +2793,7 @@ function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
             viewExpression = molochparser.parse(sharedUser.views[req.query.view].expression);
             query.query.bool.filter.push(viewExpression);
           } catch (e) {
-            console.log('ERR - Shared user view expression doesn\'t compile', viewExpression, e);
+            console.log(`ERROR - Shared user expression (${req.query.view}) doesn't compile -`, e);
             err = e;
           }
         }
@@ -2811,7 +2811,7 @@ function continueBuildQuery(req, query, err, finalCb) {
       var userExpression = molochparser.parse(req.user.expression);
       query.query.bool.filter.push(userExpression);
     } catch (e) {
-      console.log("ERR - Forced expression doesn't compile", req.user.expression, e);
+      console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);
       err = e;
     }
   }
@@ -7012,180 +7012,174 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
 });
 
 //////////////////////////////////////////////////////////////////////////////////
-//// Pcap Delete/Scrub
+//// SPI/PCAP Delete/Scrub
 //////////////////////////////////////////////////////////////////////////////////
-
-function pcapScrub(req, res, sid, entire, endCb) {
+function pcapScrub(req, res, sid, whatToRemove, endCb) {
   if (pcapScrub.scrubbingBuffers === undefined) {
     pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
     pcapScrub.scrubbingBuffers[0].fill(0);
     pcapScrub.scrubbingBuffers[1].fill(1);
-    var str = "Scrubbed! Hoot! ";
+    const str = 'Scrubbed! Hoot! ';
     for (let i = 0; i < 5000;) {
       i += pcapScrub.scrubbingBuffers[2].write(str, i);
     }
   }
 
-  function processFile(pcap, pos, i, nextCb) {
+  function processFile (pcap, pos, i, nextCb) {
     pcap.ref();
-    pcap.readPacket(pos, function(packet) {
+    pcap.readPacket(pos, function (packet) {
       pcap.unref();
-
       if (packet) {
         if (packet.length > 16) {
           try {
-            var obj = {};
+            let obj = {};
             pcap.decode(packet, obj);
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], entire);
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], entire);
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], entire);
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], whatToRemove === 'all');
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], whatToRemove === 'all');
           } catch (e) {
-            console.log("Couldn't scrub packet at ", pos, e);
+            console.log(`Couldn't scrub packet at ${pos} -`, e);
           }
           return nextCb(null);
         } else {
-          console.log("Couldn't scrub packet at ", pos);
+          console.log(`Couldn't scrub packet at ${pos}`);
           return nextCb(null);
         }
       }
     });
   }
 
-  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), {_source: "node,ipProtocol,packetPos"}, function(err, session) {
-    var fields = session._source || session.fields;
+  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), {_source: 'node,ipProtocol,packetPos'}, function (err, session) {
+    let fileNum;
+    let itemPos = 0;
+    const fields = session._source || session.fields;
 
-    var fileNum;
-    var itemPos = 0;
-    async.eachLimit(fields.packetPos, 10, function(pos, nextCb) {
-      if (pos < 0) {
-        fileNum = pos * -1;
-        return nextCb(null);
-      }
+    if (whatToRemove === 'spi') { // just removing es data for session
+      Db.deleteDocument(session._index, 'session', session._id, function (err, data) {
+        return endCb(err, fields);
+      });
+    } else { // scrub the pcap
+      async.eachLimit(fields.packetPos, 10, function (pos, nextCb) {
+        if (pos < 0) {
+          fileNum = pos * -1;
+          return nextCb(null);
+        }
 
-      // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-      var opcap = Pcap.get("write"+fields.node + ":" + fileNum);
-      if (!opcap.isOpen()) {
-        Db.fileIdToFile(fields.node, fileNum, function(file) {
+        // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+        let opcap = Pcap.get(`write${fields.node}:${fileNum}`);
+        if (!opcap.isOpen()) {
+          Db.fileIdToFile(fields.node, fileNum, function (file) {
+            if (!file) {
+              console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
+              return nextCb(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
+            }
 
-          if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
-            return nextCb("Only have SPI data, PCAP file no longer available for " + fields.node + '-' + fileNum);
-          }
+            let ipcap = Pcap.get(`write${fields.node}:${file.num}`);
 
-          var ipcap = Pcap.get("write"+fields.node + ":" + file.num);
+            try {
+              ipcap.openReadWrite(file.name, file);
+            } catch (err) {
+              const errorMsg = `Couldn't open file for writing: ${err}`;
+              console.log(`Error - ${errorMsg}`);
+              return nextCb(errorMsg);
+            }
 
-          try {
-            ipcap.openReadWrite(file.name, file);
-          } catch (err) {
-            console.log("ERROR - Couldn't open file for writing", err);
-            return nextCb("Couldn't open file for writing " + err);
-          }
-
-          processFile(ipcap, pos, itemPos++, nextCb);
-        });
-      } else {
-        processFile(opcap, pos, itemPos++, nextCb);
-      }
-    },
-    function (pcapErr, results) {
-      if (entire) {
-        Db.deleteDocument(session._index, 'session', session._id, function(err, data) {
-          endCb(pcapErr, fields);
-        });
-      } else {
-        // Do the ES update
-        var document = {
-          doc: {
-            scrubby: req.user.userId || "-",
-            scrubat: new Date().getTime()
-          }
-        };
-        Db.update(session._index, 'session', session._id, document, function(err, data) {
-          endCb(pcapErr, fields);
-        });
-      }
-    });
+            processFile(ipcap, pos, itemPos++, nextCb);
+          });
+        } else {
+          processFile(opcap, pos, itemPos++, nextCb);
+        }
+      },
+      function (pcapErr, results) {
+        if (whatToRemove === 'all') { // also remove the session data
+          Db.deleteDocument(session._index, 'session', session._id, function (err, data) {
+            return endCb(pcapErr, fields);
+          });
+        } else { // just set who/when scrubbed the pcap
+          // Do the ES update
+          const document = {
+            doc: {
+              scrubby: req.user.userId || '-',
+              scrubat: new Date().getTime()
+            }
+          };
+          Db.update(session._index, 'session', session._id, document, function (err, data) {
+            return endCb(pcapErr, fields);
+          });
+        }
+      });
+    }
   });
 }
 
-app.get('/:nodeName/scrub/:sid', checkProxyRequest, function(req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
+app.get('/:nodeName/delete/:whatToRemove/:sid', checkProxyRequest, function (req, res) {
+  if (!req.user.removeEnabled) { return res.molochError(200, 'Need remove data privileges'); }
 
   noCache(req, res);
   res.statusCode = 200;
 
-  pcapScrub(req, res, req.params.sid, false, function(err) {
+  pcapScrub(req, res, req.params.sid, req.params.whatToRemove, function (err) {
     res.end();
   });
 });
 
-app.get('/:nodeName/delete/:sid', checkProxyRequest, function(req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
+function scrubList(req, res, whatToRemove, list) {
+  if (!list) { return res.molochError(200, 'Missing list of sessions'); }
 
-  noCache(req, res);
-  res.statusCode = 200;
-
-  pcapScrub(req, res, req.params.sid, true, function(err) {
-    res.end();
-  });
-});
-
-
-function scrubList(req, res, entire, list) {
-  if (!list) { return res.molochError(200, "Missing list of sessions"); }
-
-  async.eachLimit(list, 10, function(item, nextCb) {
-    var fields = item._source || item.fields;
+  async.eachLimit(list, 10, function (item, nextCb) {
+    const fields = item._source || item.fields;
 
     isLocalView(fields.node, function () {
       // Get from our DISK
-      pcapScrub(req, res, Db.session2Sid(item), entire, nextCb);
+      pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
     },
     function () {
       // Get from remote DISK
-      let path = fields.node + (entire?"/delete/":"/scrub/") + Db.session2Sid(item);
+      let path = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
       makeRequest(fields.node, path, req.user, function (err, response) {
         setImmediate(nextCb);
       });
     });
-  }, function(err) {
-    return res.end(JSON.stringify({success: true, text: (entire?"Deleting of ":"Scrubbing of ") + list.length + " sessions complete"}));
+  }, function (err) {
+    let text;
+    if (whatToRemove === 'all') {
+      text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+    } else if (whatToRemove === 'spi') {
+      text = `Deletion SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+    } else {
+      text = `Scrubbing PCAP of ${list.length} sessions complete`;
+    }
+    return res.end(JSON.stringify({ success: true, text: text }));
   });
 }
 
-app.post('/scrub', logAction(), function(req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
+app.post('/delete', [checkCookieToken, logAction()], function (req, res) {
+  if (!req.user.removeEnabled) { return res.molochError(403, 'Need remove data privileges'); }
 
-  if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
-
-    sessionsListFromIds(req, ids, ["node"], function(err, list) {
-      scrubList(req, res, false, list);
-    });
-  } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["node"], function(err, list) {
-      scrubList(req, res, false, list);
-    });
-  } else {
-    return res.molochError(403, "Error: Missing expression. An expression is required so you don't scrub everything.");
+  if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
+    return res.molochError(403, `You can't delete nothing`);
   }
-});
 
-app.post('/delete', logAction(), function(req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(200, "Need remove data privileges"); }
+  let whatToRemove;
+  if (req.query.removeSpi === 'true' && req.query.removePcap === 'true') {
+    whatToRemove = 'all';
+  } else if (req.query.removeSpi === 'true') {
+    whatToRemove = 'spi';
+  } else {
+    whatToRemove = 'pcap';
+  }
 
   if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
-
-    sessionsListFromIds(req, ids, ["node"], function(err, list) {
-      scrubList(req, res, true, list);
+    const ids = queryValueToArray(req.body.ids);
+    sessionsListFromIds(req, ids, ['node'], function (err, list) {
+      scrubList(req, res, whatToRemove, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ["node"], function(err, list) {
-      scrubList(req, res, true, list);
+    sessionsListFromQuery(req, res, ['node'], function (err, list) {
+      scrubList(req, res, whatToRemove, list);
     });
   } else {
-    return res.molochError(403, "Error: Missing expression. An expression is required so you don't delete everything.");
+    return res.molochError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
   }
 });
 

@@ -57,7 +57,15 @@
 
     <!-- cancel button -->
     <div class="col-md-5">
-      <button class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+      <button class="btn btn-sm btn-warning pull-right"
+        v-b-tooltip.hover
+        title="cancel"
+        @click="done(null)"
+        type="button">
+        <span class="fa fa-ban">
+        </span>
+      </button>
+      <button class="btn btn-sm btn-theme-tertiary pull-right mr-1"
         @click="openIntersection"
         type="button">
         <span class="fa fa-venn">
@@ -68,14 +76,6 @@
         </span>&nbsp;
         Export Intersection
       </button>
-      <div class="btn btn-sm btn-warning pull-right"
-        @click="done(null)">
-        <span class="fa fa-ban">
-        </span>
-        <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
-          &nbsp;Cancel
-        </span>
-      </div>
     </div> <!-- /cancel button -->
 
   </div> <!-- /export csv form -->
