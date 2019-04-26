@@ -158,8 +158,17 @@ app.locals.molochClusters = Config.configMap("moloch-clusters");
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(passport.initialize());
 
+const iframeOption = Config.get('iframe', 'deny');
+if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
+  app.use(helmet.frameguard({ action: iframeOption }));
+} else {
+  app.use(helmet.frameguard({
+    action: 'allow-from',
+    domain: iframeOption
+  }));
+}
+
 app.use(helmet.hidePoweredBy());
-app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
   app.use(helmet.hsts({
