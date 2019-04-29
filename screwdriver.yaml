@@ -99,7 +99,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -154,7 +154,7 @@ jobs:
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - install-for-tests: (cd wiseService; npm ci --production)
             - sleep 30
             - cat /tmp/es
@@ -184,7 +184,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
