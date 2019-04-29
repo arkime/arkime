@@ -102,6 +102,7 @@ jobs:
             - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
+            - cat /tmp/es
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; ./tests.pl --viewer)
             - build-package: |
@@ -155,7 +156,8 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - install-for-tests: (cd wiseService; npm ci --production)
-            - sleep 10
+            - sleep 30
+            - cat /tmp/es
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
@@ -184,7 +186,8 @@ jobs:
             - install-for-tests: (cd wiseService; npm ci --production)
             - run-es: (cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
-            - sleep 10
+            - sleep 30
+            - cat /tmp/es
             - export TZ=US/Eastern
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
