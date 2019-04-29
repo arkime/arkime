@@ -77,6 +77,8 @@ my $REVERSE = 0;
 my $SHARDSPERNODE = 1;
 my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
+my $DOHOTWARM = 0;
+my $WARMAFTER = -1;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -116,11 +118,13 @@ sub showHelp($)
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -130,6 +134,7 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --warmafter <num>          - Set molochwarm on indices after <num> <tpye>\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  disableusers <days>          - Disable user accounts that have not been active\n";
@@ -1246,12 +1251,18 @@ $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
 
+my $hotwarm = '';
+if ($DOHOTWARM) {
+  $hotwarm = ',
+      "routing.allocation.require.molochtype": "hot"';
+}
+
     my $template = '
 {
   "index_patterns": "' . $PREFIX . 'sessions2-*",
   "settings": {
     "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
+      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $hotwarm . ',
       "refresh_interval": "60s",
       "number_of_shards": ' . $SHARDS . ',
       "number_of_replicas": ' . $REPLICAS . ',
@@ -1348,7 +1359,7 @@ sub historyUpdate
 {
   "index_patterns": "' . $PREFIX . 'history_v1-*",
   "settings": {
-      "number_of_shards": 2,
+      "number_of_shards": 1,
       "number_of_replicas": 0,
       "auto_expand_replicas": "0-1"
     },
@@ -1617,6 +1628,70 @@ sub createNewAliasesFromOld
     esDelete("/${PREFIX}${oldName}", 1);
 }
 ################################################################################
+sub kind2time
+{
+    my ($kind, $num) = @_;
+
+    my @theTime = gmtime;
+
+    if ($kind eq "hourly") {
+        $theTime[2] -= $num;
+    } elsif ($kind =~ /^hourly([23468])$/) {
+        $theTime[2] -= $num * int($1);
+    } elsif ($kind eq "hourly12") {
+        $theTime[2] -= $num * 12;
+    } elsif ($kind eq "daily") {
+        $theTime[3] -= $num;
+    } elsif ($kind eq "weekly") {
+        $theTime[3] -= 7*$num;
+    } elsif ($kind eq "monthly") {
+        $theTime[4] -= $num;
+    }
+
+    return @theTime;
+}
+################################################################################
+sub mktimegm
+{
+  local $ENV{TZ} = 'UTC';
+  return mktime(@_);
+}
+################################################################################
+sub index2time
+{
+my($index) = @_;
+
+  return 0 if ($index !~ /sessions2-(.*)$/);
+  $index = $1;
+
+  my @t;
+
+  $t[0] = 59;
+  $t[1] = 59;
+  $t[5] = int (substr($index, 0, 2));
+  $t[5] += 100 if ($t[5] < 50);
+
+  if ($index =~ /m/) {
+      $t[2] = 23;
+      $t[3] = 28;
+      $t[4] = int(substr($index, 3, 2)) - 1;
+  } elsif ($index =~ /w/) {
+      $t[2] = 23;
+      $t[3] = int(substr($index, 3, 2)) * 7 + 3;
+  } elsif ($index =~ /h/) {
+      $t[4] = int(substr($index, 2, 2)) - 1;
+      $t[3] = int(substr($index, 4, 2));
+      $t[2] = int(substr($index, 7, 2));
+  } else {
+      $t[2] = 23;
+      $t[3] = int(substr($index, 4, 2));
+      $t[4] = int(substr($index, 2, 2)) - 1;
+  }
+
+  return mktimegm(@t);
+}
+
+################################################################################
 sub time2index
 {
 my($type, $prefix, $t) = @_;
@@ -1861,6 +1936,11 @@ sub parseArgs {
             } else {
                 $SHARDSPERNODE = int($ARGV[$pos]);
             }
+        } elsif ($ARGV[$pos] eq "--hotwarm") {
+            $DOHOTWARM = 1;
+        } elsif ($ARGV[$pos] eq "--warmafter") {
+            $pos++;
+            $WARMAFTER = int($ARGV[$pos]);
         } else {
             logmsg "Unknown option '$ARGV[$pos]'\n";
         }
@@ -1946,39 +2026,26 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
     delete $indices->{$endTimeIndex}; # Don't optimize current index
 
-    my @startTime = gmtime;
-    if ($ARGV[2] eq "hourly") {
-        $startTime[2] -= int($ARGV[3]);
-    } elsif ($ARGV[2] =~ /^hourly([23468])$/) {
-        $startTime[2] -= int($ARGV[3]) * int($1);
-    } elsif ($ARGV[2] eq "hourly12") {
-        $startTime[2] -= int($ARGV[3]) * 12;
-    } elsif ($ARGV[2] eq "daily") {
-        $startTime[3] -= int($ARGV[3]);
-    } elsif ($ARGV[2] eq "weekly") {
-        $startTime[3] -= 7*int($ARGV[3]);
-    } elsif ($ARGV[2] eq "monthly") {
-        $startTime[4] -= int($ARGV[3]);
-    }
+    my @startTime = kind2time($ARGV[2], int($ARGV[3]));
 
     parseArgs(4);
 
-    my $startTime = mktime(@startTime) * 1000;
+    my $startTime = mktimegm(@startTime);
+    my @warmTime = kind2time($ARGV[2], $WARMAFTER);
+    my $warmTime = mktimegm(@warmTime);
     my $optimizecnt = 0;
-    my $optimizeRest = 0;
+    my $warmcnt = 0;
     my @indiceskeys = sort (keys %{$indices});
 
     foreach my $i (@indiceskeys) {
-        if ($optimizeRest) {
+        my $t = index2time($i);
+        if ($t >= $startTime) {
             $indices->{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        } else {
-            my $json = esPost("/$i/session/_search?size=0", '{ "aggs" : { "max" : { "max" : { "field" : "lastPacket" } } } }');
-            if (int($json->{aggregations}->{max}->{value}) >= $startTime) {
-                $indices->{$i}->{OPTIMIZEIT} = 1;
-                $optimizecnt++;
-                $optimizeRest = !$FULL;
-            }
+        }
+        if ($WARMAFTER != -1 && $t < $warmTime) {
+            $indices->{$i}->{WARMIT} = 1;
+            $warmcnt++;
         }
     }
 
@@ -1990,7 +2057,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     dbESVersion();
     $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
-    logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
+    logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s, warming %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt), commify($warmcnt));
     esPost("/_flush/synced", "", 1);
 
     @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
@@ -1998,11 +2065,15 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     # Get all the settings at once, we use below to see if we need to change them
     my $settings = esGet("/_settings?flat_settings&master_timeout=${ESTIMEOUT}s", 1);
 
-    # Find all the shards that have too many segments and increment the OPTIMIZEIT count
+    # Find all the shards that have too many segments and increment the OPTIMIZEIT count or not warm
     my $shards = esGet("/_cat/shards?h=i,sc&format=json");
     for my $i (@{$shards}) {
         if (exists $indices->{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} & int($i->{sc}) > $SEGMENTS) {
             $indices->{$i->{i}}->{OPTIMIZEIT}++;
+        }
+
+        if (exists $indices->{$i->{i}}->{WARMIT} && $settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} ne "warm") {
+            $indices->{$i->{i}}->{WARMIT}++;
         }
     }
 
@@ -2018,13 +2089,18 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
             if ($REPLICAS != -1) {
                 if (!exists $settings->{$i} ||
                     $settings->{$i}->{settings}->{"index.number_of_replicas"} ne "$REPLICAS" ||
-                    $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode") {
+                    ("$shardsPerNode" eq "null" && exists $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"}) ||
+                    ("$shardsPerNode" ne "null" && $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode")) {
 
                     esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
                 }
             }
         } else {
             esDelete("/$i", 1);
+        }
+
+        if ($indices->{$i}->{WARMIT} > 1) {
+            esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"routing.allocation.require.molochtype": "warm"}}', 1);
         }
     }
     esPost("/_flush/synced", "", 1);
@@ -2039,7 +2115,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     $startTime[3] -= 7 * $HISTORY;
 
     $optimizecnt = 0;
-    $startTime = mktime(@startTime);
+    $startTime = mktimegm(@startTime);
     while ($startTime <= $endTime) {
         my $iname = time2index("weekly", "history_v1-", $startTime);
         if (exists $hindices->{$iname} && $hindices->{$iname}->{OPTIMIZEIT} != 1) {
