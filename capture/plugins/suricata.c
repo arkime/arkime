@@ -307,7 +307,7 @@ LOCAL void suricata_process()
         if (MATCH(line, "timestamp")) {
             struct tm tm;
             strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
-            item->timestamp = mktime(&tm);
+            item->timestamp = timegm(&tm);
 
             if (item->timestamp < currentTime.tv_sec - suricataExpireSeconds) {
                 suricata_item_free(item);

@@ -321,7 +321,7 @@ LOCAL uint64_t tls_parse_time(MolochSession_t *session, int tag, unsigned char* 
         }
     gtdone:
         if (pos == len) {
-            val = mktime(&tm);
+            val = timegm(&tm);
         } else {
             if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
                 offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
