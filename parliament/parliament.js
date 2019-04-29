@@ -1936,8 +1936,8 @@ server
       .then(() => {
         updateParliament();
       })
-      .catch(() => {
-        console.log(`ERROR - never mind, couldn't initialize Parliament`);
+      .catch((err) => {
+        console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
         process.exit(1);
       });
 

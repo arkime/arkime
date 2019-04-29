@@ -31,7 +31,7 @@ module.exports = {
     }
 
     // fix notifiers
-    if (parliament.settings.notifiers) {
+    if (parliament.settings && parliament.settings.notifiers) {
       // only save the notifiers with values
       for (let n in parliament.settings.notifiers) {
         let notifier = parliament.settings.notifiers[n];
