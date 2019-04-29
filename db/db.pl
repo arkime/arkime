@@ -137,7 +137,7 @@ sub showHelp($)
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
-    print "  export <index> <basename>    - Save a single index into a file, fielname starts with <basename>\n";
+    print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
     print "  restore <filename>           - Restore single index\n";
     print "  rollback <basename> [<opts>] - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
@@ -1934,7 +1934,7 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
     my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
-    @indexes = (@indexes, "hunts") if ($main::versionNumber > 51);
+    push(@indexes, "hunts") if ($main::versionNumber > 51);
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -2526,15 +2526,15 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
-        @filelist = (@filelist, "$ARGV[2].$index.json\n") if (-e "$ARGV[2].$index.json");
-        @filelist = (@filelist, "$ARGV[2].$index.settings.json\n") if (-e "$ARGV[2].$index.settings.json");
-        @filelist = (@filelist, "$ARGV[2].$index.mappings.json\n") if (-e "$ARGV[2].$index.mappings.json");
+        push(@filelist, "$ARGV[2].$index.json\n") if (-e "$ARGV[2].$index.json");
+        push(@filelist, "$ARGV[2].$index.settings.json\n") if (-e "$ARGV[2].$index.settings.json");
+        push(@filelist, "$ARGV[2].$index.mappings.json\n") if (-e "$ARGV[2].$index.mappings.json");
     }
     foreach my $index ("sessions2", "history") { # list of templates
         @filelist = (@filelist, "$ARGV[2].$index.template.json\n") if (-e "$ARGV[2].$index.template.json");
     }
 
-    @filelist = (@filelist, "$ARGV[2].aliases.json\n") if (-e "$ARGV[2].aliases.json");
+    push(@filelist, "$ARGV[2].aliases.json\n") if (-e "$ARGV[2].aliases.json");
 
     my @directory = split(/\//,$ARGV[2]);
     my $basename = $directory[scalar(@directory)-1];
@@ -2595,10 +2595,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             $data = from_json($data);
             my @index = keys %{$data};
 
-            delete $data->{$index[0]}->{settings}->{index}->{creation_date} if (exists $data->{$index[0]}->{settings}->{index}->{creation_date});
-            delete $data->{$index[0]}->{settings}->{index}->{provided_name} if (exists $data->{$index[0]}->{settings}->{index}->{provided_name});
-            delete $data->{$index[0]}->{settings}->{index}->{uuid} if (exists $data->{$index[0]}->{settings}->{index}->{uuid});
-            delete $data->{$index[0]}->{settings}->{index}->{version} if (exists $data->{$index[0]}->{settings}->{index}->{version});
+            delete $data->{$index[0]}->{settings}->{index}->{creation_date};
+            delete $data->{$index[0]}->{settings}->{index}->{provided_name};
+            delete $data->{$index[0]}->{settings}->{index}->{uuid};
+            delete $data->{$index[0]}->{settings}->{index}->{version};
             my $settings = to_json($data->{$index[0]});
             esPut("/${PREFIX}$index[0]", $settings);
             close($fh);
