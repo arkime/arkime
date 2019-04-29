@@ -9,7 +9,7 @@ use strict;
 
 my $result;
 
-my $version = 2;
+my $version = 3;
 
 
 # Get parliament, empty

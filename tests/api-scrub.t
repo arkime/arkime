@@ -7,6 +7,7 @@ use JSON;
 use strict;
 
 my $copytest = getcwd() . "/copytest.pcap";
+my $token = getTokenCookie();
 
 countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
@@ -22,7 +23,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # scrub 1 id
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$copytest"));
 
-    viewerPost("/scrub?date=-1", "ids=" . $idQuery->{data}->[0]->{id});
+    viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1", "ids=" . $idQuery->{data}->[0]->{id}, $token);
+
     esGet("/_refresh");
     esGet("/_flush");
 
@@ -35,7 +37,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==/Anon.*mous/"));
 
 # scrub expression
-    viewerPost("/scrub?date=-1&expression=" . uri_escape("file=$copytest"));
+    viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+
     esGet("/_refresh");
     esGet("/_flush");
 
@@ -48,9 +51,11 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==/Anon.*mous/"));
 
 # delete
-    viewerPost("/delete?date=-1&expression=" . uri_escape("file=$copytest"));
+    viewerPostToken("/delete?removePcap=true&removeSpi=true&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+
     esGet("/_refresh");
     esGet("/_flush");
+
     countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
 # cleanup

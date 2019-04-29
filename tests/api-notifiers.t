@@ -43,15 +43,15 @@ my $notAdminToken = getTokenCookie('notadmin');
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
 
 # create notifier
-  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"Slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
+  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
   ok($json->{success}, "notifier create success");
 
 # create notifier requires unique notifier name
-  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"Slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
+  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
   is($json->{text}, "Notifier already exists", "notifier must have a unique name");
 
 # create notifier sanitizes notifier name
-  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test2`~!@#$%^&*+[]{}(),.<>?","type":"Slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
+  $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test2`~!@#$%^&*+[]{}(),.<>?","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}}', $token);
   is($json->{name}, "test2", "notifier name sanitization");
 
 # update notifier requires admin access
@@ -79,7 +79,7 @@ my $notAdminToken = getTokenCookie('notadmin');
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
 
 # update notifier
-  $json = viewerPutToken("/notifiers/test1", '{"notifier":{"name":"test1a","type":"Slack","fields":[{"slackWebhookUrl":{"value":"test1aurl"}}]}}', $token);
+  $json = viewerPutToken("/notifiers/test1", '{"notifier":{"name":"test1a","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1aurl"}}]}}', $token);
   ok($json->{success}, "notifier update success");
   is($json->{name}, "test1a", "notifier name update");
   $notifiers = viewerGetToken("/notifiers", $token);

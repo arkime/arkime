@@ -28,7 +28,7 @@ sub doGeo {
     }
 
     if (! -f "oui.txt") {
-        system("wget -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
+        system("wget --no-check-certificate -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
