@@ -1900,7 +1900,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2") {
+    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2", "${PREFIX}hunts_v1") {
         progress("$i ");
         esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
     }
@@ -1980,7 +1980,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(rollback)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5);
+$main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
@@ -2183,12 +2183,11 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     logmsg sprintf ("Expiring %s history indices, %s optimizing %s\n", commify(scalar(keys %{$hindices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt));
     foreach my $i (sort (keys %{$hindices})) {
         progress("$i ");
-        if (exists $hindices->{$i}->{OPTIMIZEIT}) {
-            esPost("/$i/_forcemerge?max_num_segments=1", "", 1) unless $NOOPTIMIZE ;
-        } else {
+        if (! exists $hindices->{$i}->{OPTIMIZEIT}) {
             esDelete("/$i", 1);
         }
     }
+    esPost("/${PREFIX}history_*/_forcemerge?max_num_segments=1", "", 1) unless $NOOPTIMIZE ;
     esPost("/_flush/synced", "", 1);
 
     # Give the cluster a kick to rebalance
