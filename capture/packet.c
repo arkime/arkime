@@ -1869,6 +1869,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     case 127: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
+    case 228: //RAW IPv4
+        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
     case 239: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
