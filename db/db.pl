@@ -2724,13 +2724,23 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     logmsg "Importing templates for Sessions and History...\n\n";
     my @templates = ("sessions2", "history");
     foreach my $template (@templates) { # import templates
-        if (-e "$ARGV[2].$PREFIX$template.template.json") {
-            open(my $fh, "<", "$ARGV[2].$PREFIX$template.template.json");
+        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @template_name = keys %{$data};
-            my $mapping = $data->{$template_name[0]};
             esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+            close($fh);
+        }
+    }
+
+    foreach my $template (@templates) { # update mappings
+        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            my @template_name = keys %{$data};
+            my $mapping = $data->{$template_name[0]}->{mappings};
             if (($template cmp "sessions2") == 0 && $UPGRADEALLSESSIONS) {
                 my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
                 logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
