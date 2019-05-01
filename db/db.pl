@@ -2004,9 +2004,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         logmsg "The index is empty\n";
         exit 0;
     }
-    open(my $fh, ">", "$ARGV[3].$index.json") or die "cannot open > $ARGV[3].$index.json: $!";
+    open(my $fh, ">", "$ARGV[3].${PREFIX}${index}.json") or die "cannot open > $ARGV[3].${PREFIX}${index}.json: $!";
     foreach my $hit (@{$data}) {
-        print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
         if (exists $hit->{_source}) {
             print $fh to_json($hit->{_source}) . "\n";
         } else {
@@ -2022,9 +2022,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
-        open(my $fh, ">", "$ARGV[2].$PREFIX$index.json") or die "cannot open > $ARGV[2].$PREFIX$index.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
         foreach my $hit (@{$data}) {
-            print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
                 print $fh to_json($hit->{_source}) . "\n";
             } else {
@@ -2038,21 +2038,21 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $template (@templates) {
         my $data = esGet("/_template/${PREFIX}${template}");
         my @name = split(/_/, $template);
-        open(my $fh, ">", "$ARGV[2].$PREFIX$name[0].template.json") or die "cannot open > $ARGV[2].$PREFIX$name[0].template.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}$name[0].template.json") or die "cannot open > $ARGV[2].${PREFIX}$name[0].template.json: $!";
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting settings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_settings");
-        open(my $fh, ">", "$ARGV[2].$PREFIX$index.settings.json") or die "cannot open > $ARGV[2].$PREFIX$index.settings.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.settings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.settings.json: $!";
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_mappings");
-        open(my $fh, ">", "$ARGV[2].$PREFIX$index.mappings.json") or die "cannot open > $ARGV[2].$PREFIX$index.mappings.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.mappings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.mappings.json: $!";
         print $fh to_json($data);
         close($fh);
     }
@@ -2609,12 +2609,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
-        push(@filelist, "$ARGV[2].$PREFIX$index.json\n") if (-e "$ARGV[2].$PREFIX$index.json");
-        push(@filelist, "$ARGV[2].$PREFIX$index.settings.json\n") if (-e "$ARGV[2].$PREFIX$index.settings.json");
-        push(@filelist, "$ARGV[2].$PREFIX$index.mappings.json\n") if (-e "$ARGV[2].$PREFIX$index.mappings.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
     }
     foreach my $index ("sessions2", "history") { # list of templates
-        @filelist = (@filelist, "$ARGV[2].$PREFIX$index.template.json\n") if (-e "$ARGV[2].$PREFIX$index.template.json");
+        @filelist = (@filelist, "$ARGV[2].${PREFIX}${index}.template.json\n") if (-e "$ARGV[2].${PREFIX}${index}.template.json");
     }
 
     push(@filelist, "$ARGV[2].${PREFIX}aliases.json\n") if (-e "$ARGV[2].${PREFIX}aliases.json");
@@ -2672,8 +2672,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing settings...\n\n";
     foreach my $index (@indexes) { # import settings
-        if (-e "$ARGV[2].$PREFIX$index.settings.json") {
-            open(my $fh, "<", "$ARGV[2].$PREFIX$index.settings.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.settings.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
@@ -2699,8 +2699,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing mappings...\n\n";
     foreach my $index (@indexes) { # import mappings
-        if (-e "$ARGV[2].$PREFIX$index.mappings.json") {
-            open(my $fh, "<", "$ARGV[2].$PREFIX$index.mappings.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.mappings.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
@@ -2713,8 +2713,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing documents...\n\n";
     foreach my $index (@indexes) { # import documents
-        if (-e "$ARGV[2].$PREFIX$index.json") {
-            open(my $fh, "<", "$ARGV[2].$PREFIX$index.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
             my $data = do { local $/; <$fh> };
             esPost("/_bulk", $data);
             close($fh);
