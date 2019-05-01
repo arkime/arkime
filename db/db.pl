@@ -2624,7 +2624,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     splice(@directory, scalar(@directory)-1, 1);
     my $path = join("/", @directory);
 
-    die "Cannot find files start with $basename in $path" if (scalar(@filelist) == 0);
+    die "Cannot find files start with ${basename}.${PREFIX} in $path" if (scalar(@filelist) == 0);
+
 
     logmsg "\nFollowing files will be used for restore\n\n@filelist\n\n";
 
