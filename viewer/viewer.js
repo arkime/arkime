@@ -6857,7 +6857,7 @@ app.post('/hunt', logAction('hunt'), checkCookieToken, function (req, res) {
     return res.molochError(403, 'The hunt must search source or destination packets (or both)');
   }
   if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
-  if (!req.body.hunt.query.startTime || !req.body.hunt.query.stopTime) {
+  if (req.body.hunt.query.startTime === undefined || req.body.hunt.query.stopTime === undefined) {
     return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
   }
 
