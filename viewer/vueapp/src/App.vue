@@ -618,4 +618,9 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   margin-top: 0;
   color: var(--color-primary);
 }
+
+/* apply theme foreground to tables */
+table.table {
+  color: var(--color-foreground, #555);
+}
 </style>
