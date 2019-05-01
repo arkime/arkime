@@ -69,7 +69,8 @@ struct suricatahead_t {
 
 LOCAL char                  *suricataAlertFile;
 LOCAL FILE                  *file;
-LOCAL char                   line[0xfffff];
+LOCAL int                    lineSize = 0xffff;
+LOCAL char                  *line;
 LOCAL int                    lineLen;
 LOCAL ino_t                  fileInode;
 LOCAL off_t                  fileSize;
@@ -366,11 +367,14 @@ LOCAL void suricata_process()
 /******************************************************************************/
 LOCAL void suricata_read()
 {
-    while (fgets(line + lineLen, 0xffffe - lineLen, file)) {
+    while (fgets(line + lineLen, lineSize - lineLen, file)) {
         lineLen = strlen(line);
         if (line[lineLen-1] == '\n') {
             suricata_process();
             lineLen = 0;
+        } else if (lineLen == lineSize - 1) {
+            lineSize *= 1.5;
+            line = realloc(line, lineSize);
         }
     }
     clearerr(file);
@@ -460,6 +464,8 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
  */
 void moloch_plugin_init()
 {
+    line = malloc(lineSize);
+
     suricataAlertFile     = moloch_config_str(NULL, "suricataAlertFile", NULL);
     suricataExpireSeconds = moloch_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
 
