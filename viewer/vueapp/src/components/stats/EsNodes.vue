@@ -64,8 +64,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
-
 import MolochTable from '../utils/Table';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -73,11 +71,6 @@ import MolochPaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load succesfully responded
-
-function roundCommaString (val) {
-  let result = Vue.options.filters.commaString(Vue.options.filters.round(val, 0));
-  return result;
-};
 
 export default {
   name: 'EsStats',
@@ -102,27 +95,27 @@ export default {
       },
       columns: [ // es stats table columns
         // default columns
-        { id: 'nodeName', name: 'Name', sort: 'nodeName', dataField: 'name', doStats: false, default: true, width: 120 },
-        { id: 'docs', name: 'Documents', sort: 'docs', dataField: 'docs', doStats: true, default: true, width: 120, dataFunction: roundCommaString },
-        { id: 'storeSize', name: 'Disk Used', sort: 'storeSize', dataField: 'storeSize', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'freeSize', name: 'Disk Free', sort: 'freeSize', dataField: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'heapSize', name: 'Heap Size', sort: 'heapSize', dataField: 'heapSize', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'load', name: 'OS Load', sort: 'load', dataField: 'load', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 2)); } },
-        { id: 'cpu', name: 'CPU', sort: 'cpu', dataField: 'cpu', doStats: true, default: true, width: 80, dataFunction: (val) => { return this.$options.filters.commaString(this.$options.filters.round(val, 1)) + '%'; } },
-        { id: 'read', name: 'Read/s', sort: 'read', dataField: 'read', doStats: true, default: true, width: 90, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'write', name: 'Write/s', sort: 'write', dataField: 'write', doStats: true, default: true, width: 90, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'searches', name: 'Searches/s', sort: 'searches', dataField: 'searches', doStats: true, width: 100, default: true, dataFunction: roundCommaString },
+        { id: 'name', name: 'Name', sort: 'nodeName', doStats: false, default: true, width: 120 },
+        { id: 'docs', name: 'Documents', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.docs); } },
+        { id: 'storeSize', name: 'Disk Used', sort: 'storeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.storeSize); } },
+        { id: 'freeSize', name: 'Disk Free', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSize); } },
+        { id: 'heapSize', name: 'Heap Size', sort: 'heapSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.heapSize); } },
+        { id: 'load', name: 'OS Load', sort: 'load', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.load, 2); } },
+        { id: 'cpu', name: 'CPU', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.cpu, 1) + '%'; } },
+        { id: 'read', name: 'Read/s', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.read); } },
+        { id: 'write', name: 'Write/s', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.write); } },
+        { id: 'searches', name: 'Searches/s', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.searches); } },
         // all the rest of the available stats
-        { id: 'ip', name: 'IP', sort: 'ip', dataField: 'ip', doStats: false, width: 100 },
-        { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', dataField: 'ipExcluded', doStats: false, width: 100 },
-        { id: 'nodeExcluded', name: 'Node Excluded', sort: 'nodeExcluded', dataField: 'nodeExcluded', doStats: false, width: 125 },
-        { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', dataField: 'nonHeapSize', doStats: false, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', dataField: 'searchesTime', doStats: true, width: 100, dataFunction: roundCommaString },
-        { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', dataField: 'writesRejected', doStats: true, width: 100, dataFunction: roundCommaString },
-        { id: 'writesRejectedDelta', name: 'Write Tasks Rejected/s', sort: 'writesRejectedDelta', dataField: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: roundCommaString },
-        { id: 'writesCompleted', name: 'Write Tasks Completed', sort: 'writesCompleted', dataField: 'writesCompleted', doStats: true, width: 100, dataFunction: roundCommaString },
-        { id: 'writesCompletedDelta', name: 'Write Tasks Completed/s', sort: 'writesCompletedDelta', dataField: 'writesCompletedDelta', doStats: true, width: 100, dataFunction: roundCommaString },
-        { id: 'writesQueueSize', name: 'Write Tasks Q Limit', sort: 'writesQueueSize', dataField: 'writesQueueSize', doStats: true, width: 100, dataFunction: roundCommaString }
+        { id: 'ip', name: 'IP', sort: 'ip', doStats: false, width: 100 },
+        { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', doStats: false, width: 100 },
+        { id: 'nodeExcluded', name: 'Node Excluded', sort: 'nodeExcluded', doStats: false, width: 125 },
+        { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.nonHeapSize); } },
+        { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.searchesTime); } },
+        { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesRejected); } },
+        { id: 'writesRejectedDelta', name: 'Write Tasks Rejected/s', sort: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesRejectedDelta); } },
+        { id: 'writesCompleted', name: 'Write Tasks Completed', sort: 'writesCompleted', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesCompleted); } },
+        { id: 'writesCompletedDelta', name: 'Write Tasks Completed/s', sort: 'writesCompletedDelta', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesCompletedDelta); } },
+        { id: 'writesQueueSize', name: 'Write Tasks Q Limit', sort: 'writesQueueSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesQueueSize); } }
       ]
     };
   },

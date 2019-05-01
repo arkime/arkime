@@ -17,6 +17,25 @@ Vue.filter('commaString', (input) => {
 });
 
 /**
+ * Rounds a number then adds commas so it's easier to read
+ *
+ * @example
+ * '{{ 123456789 | roundCommaString }}'
+ * this.$options.filters.roundCommaString(123456789);
+ *
+ * @param {int} input     The number to add commas to
+ * @param {int} decimals  The number of decimals to preserve, default = 0
+ * @returns {string}      The number string with commas
+ */
+Vue.filter('roundCommaString', (input, decimals) => {
+  if (isNaN(input)) { return 0; }
+
+  if (!decimals) { decimals = 0; }
+
+  return Vue.options.filters.commaString(Vue.options.filters.round(input, decimals));
+});
+
+/**
  * Parses ipv6
  *
  * @example

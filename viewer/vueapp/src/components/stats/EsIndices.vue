@@ -56,8 +56,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
-
 import MolochTable from '../utils/Table';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -65,11 +63,6 @@ import MolochPaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load succesfully responded
-
-function roundCommaString (val) {
-  let result = Vue.options.filters.commaString(Vue.options.filters.round(val, 0));
-  return result;
-};
 
 export default {
   name: 'EsIndices',
@@ -103,19 +96,19 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Name', sort: 'index', dataField: 'index', doStats: false, default: true, width: 200 },
-        { id: 'docs.count', name: 'Documents', sort: 'docs.count', dataField: 'docs.count', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'store.size', name: 'Disk Size', sort: 'store.size', dataField: 'store.size', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'pri', name: 'Shards', sort: 'pri', dataField: 'pri', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'segmentsCount', name: 'Segments', sort: 'segmentsCount', dataField: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'rep', name: 'Replicas', sort: 'rep', dataField: 'rep', doStats: true, default: true, width: 100, dataFunction: roundCommaString },
-        { id: 'memoryTotal', name: 'Memory', sort: 'memoryTotal', dataField: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (val) => { return this.$options.filters.humanReadableBytes(val); } },
-        { id: 'health', name: 'Health', sort: 'health', dataField: 'health', doStats: false, default: true, width: 100 },
-        { id: 'status', name: 'Status', sort: 'status', dataField: 'status', doStats: false, default: true, width: 100 },
+        { id: 'index', name: 'Name', sort: 'index', doStats: false, default: true, width: 200 },
+        { id: 'docs.count', name: 'Documents', sort: 'docs.count', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docs.count']); } },
+        { id: 'store.size', name: 'Disk Size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item['store.size']); } },
+        { id: 'pri', name: 'Shards', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.pri); } },
+        { id: 'segmentsCount', name: 'Segments', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segmentsCount); } },
+        { id: 'rep', name: 'Replicas', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.rep); } },
+        { id: 'memoryTotal', name: 'Memory', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memoryTotal); } },
+        { id: 'health', name: 'Health', sort: 'health', doStats: false, default: true, width: 100 },
+        { id: 'status', name: 'Status', sort: 'status', doStats: false, default: true, width: 100 },
         // all the rest of the available stats
-        { id: 'cd', name: 'Created Date', sort: 'cd', dataField: 'cd', doStats: false, width: 150, dataFunction: (val) => { return this.$options.filters.timezoneDateString(Math.floor(val / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
-        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', sort: 'pri.search.query_current', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: roundCommaString },
-        { id: 'uuid', name: 'UUID', sort: 'uuid', dataField: 'uuid', doStats: false, width: 100 }
+        { id: 'cd', name: 'Created Date', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return this.$options.filters.timezoneDateString(Math.floor(item.cd / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
+        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['pri.search.query_current']); } },
+        { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 }
       ]
     };
   },
