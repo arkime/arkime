@@ -94,7 +94,7 @@
           </td>
           <td v-for="(column, index) in computedColumns"
             :key="column.id + index + 'avg'">
-            {{ calculateTotAvgValue(column, averageValues) }}
+            {{ calculateAvgTotValue(column, averageValues) }}
           </td>
         </tr>
         <tr class="border-bottom-bold bold total-row"
@@ -104,7 +104,7 @@
           </td>
           <td v-for="(column, index) in computedColumns"
             :key="column.id + index + 'total'">
-            {{ calculateTotAvgValue(column, totalValues) }}
+            {{ calculateAvgTotValue(column, totalValues) }}
           </td>
         </tr>
       </template> <!-- /avg/total top rows -->
@@ -159,7 +159,7 @@
         </td>
         <td v-for="(column, index) in computedColumns"
           :key="column.id + index + 'avgfoot'">
-          {{ calculateTotAvgValue(column, averageValues) }}
+          {{ calculateAvgTotValue(column, averageValues) }}
         </td>
       </tr>
       <tr class="bold total-row">
@@ -168,7 +168,7 @@
         </td>
         <td v-for="(column, index) in computedColumns"
           :key="column.id + index + 'totalfoot'">
-          {{ calculateTotAvgValue(column, totalValues) }}
+          {{ calculateAvgTotValue(column, totalValues) }}
         </td>
       </tr>
     </tfoot> <!-- /avg/total bottom rows -->
@@ -449,14 +449,13 @@ export default {
 
       return column.dataFunction ? column.dataFunction(itemClone) : value;
     },
-    calculateTotAvgValue: function (column, map) {
+    calculateAvgTotValue: function (column, map) {
       // if it's not a computed field value return empty immediately
       if (!column.doStats) { return ' '; }
 
       let value = map[column.id];
       if (this.zeroMap[column.id]) {
         // subtract all zeroed values for this column
-
         for (let zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
         }
