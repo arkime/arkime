@@ -441,7 +441,7 @@ export default {
       }
 
       if (value < 0) { // server reset, so update zeroMap
-        this.zeroMap[column.id] = item[column.id];
+        this.$set(this.zeroMap[column.id], index, item[column.id]);
         value = 0;
       }
 
@@ -456,6 +456,7 @@ export default {
       let value = map[column.id];
       if (this.zeroMap[column.id]) {
         // subtract all zeroed values for this column
+
         for (let zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
         }
@@ -679,9 +680,10 @@ table {
   position: relative;
 }
 button.fit-btn {
-  position: absolute;
-  right: 0;
   top: 0;
+  right: 0;
+  z-index: 9;
+  position: absolute;
   visibility: hidden;
 }
 table > thead:hover button.fit-btn {
