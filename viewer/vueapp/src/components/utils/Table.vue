@@ -94,7 +94,7 @@
           </td>
           <td v-for="(column, index) in computedColumns"
             :key="column.id + index + 'avg'">
-            {{ calculateAvgTotValue(column, averageValues) }}
+            {{ calculateFormatAvgValue(column) }}
           </td>
         </tr>
         <tr class="border-bottom-bold bold total-row"
@@ -104,7 +104,7 @@
           </td>
           <td v-for="(column, index) in computedColumns"
             :key="column.id + index + 'total'">
-            {{ calculateAvgTotValue(column, totalValues) }}
+            {{ calculateFormatTotValue(column) }}
           </td>
         </tr>
       </template> <!-- /avg/total top rows -->
@@ -128,7 +128,7 @@
           <!-- cell value -->
           <td v-for="(column, colindex) in computedColumns"
             :key="column.id + colindex">
-            {{ calculateValue(column, item, index) }}
+            {{ calculateFormatValue(column, item, index) }}
           </td> <!-- /cell value -->
         </tr>
         <!-- more info row -->
@@ -159,7 +159,7 @@
         </td>
         <td v-for="(column, index) in computedColumns"
           :key="column.id + index + 'avgfoot'">
-          {{ calculateAvgTotValue(column, averageValues) }}
+          {{ calculateFormatAvgValue(column) }}
         </td>
       </tr>
       <tr class="bold total-row">
@@ -168,7 +168,7 @@
         </td>
         <td v-for="(column, index) in computedColumns"
           :key="column.id + index + 'totalfoot'">
-          {{ calculateAvgTotValue(column, totalValues) }}
+          {{ calculateFormatTotValue(column) }}
         </td>
       </tr>
     </tfoot> <!-- /avg/total bottom rows -->
@@ -430,7 +430,7 @@ export default {
         this.$set(this.zeroMap[column.id], i, data[column.id]);
       }
     },
-    calculateValue: function (column, item, index) {
+    calculateFormatValue: function (column, item, index) {
       // if it's not a computed field value return it immediately
       if (!column.doStats && !column.dataFunction) { return item[column.id]; }
 
@@ -449,16 +449,45 @@ export default {
 
       return column.dataFunction ? column.dataFunction(itemClone) : value;
     },
-    calculateAvgTotValue: function (column, map) {
-      // if it's not a computed field value return empty immediately
-      if (!column.doStats) { return ' '; }
+    calculateFormatTotValue: function (column) {
+      // if it's not a computed field or there's not data return empty immediately
+      if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
-      let value = map[column.id];
+      let value = this.totalValues[column.id];
+      // need to recalucate the value if this column has been zeroed
       if (this.zeroMap[column.id]) {
         // subtract all zeroed values for this column
         for (let zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
         }
+      }
+
+      let mock = {};
+      mock[column.id] = value;
+
+      if (column.avgTotFunction) {
+        return column.avgTotFunction(mock);
+      } else if (column.dataFunction) {
+        return column.dataFunction(mock);
+      }
+
+      return value;
+    },
+    calculateFormatAvgValue: function (column) {
+      // if it's not a computed field or there's not data return empty immediately
+      if (!column.doStats || !this.data || !this.data.length) { return ' '; }
+
+      let sum = 0;
+      let value = this.averageValues[column.id];
+      // need to recalucate the value if this column has been zeroed
+      if (this.zeroMap[column.id]) {
+        for (let v = 0; v < this.data.length; v++) {
+          let realValue = this.data[v];
+          let value = realValue[column.id];
+          value = value - this.zeroMap[column.id][v];
+          sum += value;
+        }
+        value = sum / this.data.length;
       }
 
       let mock = {};
