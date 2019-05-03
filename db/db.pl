@@ -141,11 +141,11 @@ sub showHelp($)
     print "      days                     - Number of days of inactivity (integer)\n";
     print "\n";
     print "Backup and Restore Commands:\n";
-    print "  backup <basename>            - Backup important indices into a file per index, filenames start with <basename>\n";
-    print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
-    print "  restore <filename>           - Restore single index\n";
-    print "  rollback <basename> [<opts>] - Rollback to a particular version; filenames of settings, mappings, templates, and documents start with <basename>\n";
+    print "  backup <basename>            - Backup important indices, settings, mappings, and templates into a file per index, setting, mapping, and template; filenames start with <basename>\n";
+    print "  restore <basename> [<opts>]  - Restore a particular version of indices, settings, mappings, and templates; filenames of settings, mappings, templates, and data start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
+    print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
+    print "  import <filename>            - Import single index from <filename>\n";
     print "  users-export <filename>      - Save the users info to <filename>\n";
     print "  users-import <filename>      - Load the users info from <filename>\n";
     print "\n";
@@ -345,10 +345,13 @@ sub esScroll
 ################################################################################
 sub esAlias
 {
-    my ($cmd, $index, $alias) = @_;
-
+    my ($cmd, $index, $alias, $dontaddprefix) = @_;
     logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
+    if (!$dontaddprefix){ # append PREFIX
     esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
+    } else { # do not append PREFIX
+        esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
+    }
 }
 
 ################################################################################
@@ -1970,15 +1973,15 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|restore|rollback|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|restore|rollback|users-?export|backup|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
-parseArgs(3) if ($ARGV[1] =~ /^(rollback)$/);
+parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
@@ -1988,7 +1991,7 @@ if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = "http://$ARGV[0]";
 }
 
-if ($ARGV[1] =~ /^(users-?import|restore)$/) {
+if ($ARGV[1] =~ /^(users-?import|import)$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     my $data = do { local $/; <$fh> };
     esPost("/_bulk", $data);
@@ -2001,9 +2004,9 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
         logmsg "The index is empty\n";
         exit 0;
     }
-    open(my $fh, ">", "$ARGV[3].$index.json") or die "cannot open > $ARGV[3].$index.json: $!";
+    open(my $fh, ">", "$ARGV[3].${PREFIX}${index}.json") or die "cannot open > $ARGV[3].${PREFIX}${index}.json: $!";
     foreach my $hit (@{$data}) {
-        print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
         if (exists $hit->{_source}) {
             print $fh to_json($hit->{_source}) . "\n";
         } else {
@@ -2019,9 +2022,9 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
-        open(my $fh, ">", "$ARGV[2].$index.json") or die "cannot open > $ARGV[2].$index.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
         foreach my $hit (@{$data}) {
-            print $fh "{\"index\": {\"_index\": \"$PREFIX$index\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
                 print $fh to_json($hit->{_source}) . "\n";
             } else {
@@ -2035,29 +2038,34 @@ if ($ARGV[1] =~ /^(users-?import|restore)$/) {
     foreach my $template (@templates) {
         my $data = esGet("/_template/${PREFIX}${template}");
         my @name = split(/_/, $template);
-        open(my $fh, ">", "$ARGV[2].$name[0].template.json") or die "cannot open > $ARGV[2].$name[0].template.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}$name[0].template.json") or die "cannot open > $ARGV[2].${PREFIX}$name[0].template.json: $!";
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting settings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_settings");
-        open(my $fh, ">", "$ARGV[2].${index}.settings.json") or die "cannot open > $ARGV[2].${index}.settings.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.settings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.settings.json: $!";
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_mappings");
-        open(my $fh, ">", "$ARGV[2].${index}.mappings.json") or die "cannot open > $ARGV[2].${index}.mappings.json: $!";
+        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.mappings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.mappings.json: $!";
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting aliaes...\n";
-    my $aliases = join(',', @indexes);
+
+    my @indexes_prefixed = ();
+    foreach my $index (@indexes) {
+        push(@indexes_prefixed, $PREFIX . $index);
+    }
+    my $aliases = join(',', @indexes_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
     my $data = esGet($aliases), "\n";
-    open(my $fh, ">", "$ARGV[2].aliases.json") or die "cannot open > $ARGV[2].aliases.json: $!";
+    open(my $fh, ">", "$ARGV[2].${PREFIX}aliases.json") or die "cannot open > $ARGV[2].${PREFIX}aliases.json: $!";
     print $fh to_json($data);
     close($fh);
     logmsg "Finished\n";
@@ -2592,7 +2600,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersCreate();
         queriesCreate();
     }
-} elsif ($ARGV[1] =~ /^rollback$/) {
+} elsif ($ARGV[1] =~ /^restore$/) {
 
     logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n";
 
@@ -2601,28 +2609,29 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
-        push(@filelist, "$ARGV[2].$index.json\n") if (-e "$ARGV[2].$index.json");
-        push(@filelist, "$ARGV[2].$index.settings.json\n") if (-e "$ARGV[2].$index.settings.json");
-        push(@filelist, "$ARGV[2].$index.mappings.json\n") if (-e "$ARGV[2].$index.mappings.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
+        push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
     }
     foreach my $index ("sessions2", "history") { # list of templates
-        @filelist = (@filelist, "$ARGV[2].$index.template.json\n") if (-e "$ARGV[2].$index.template.json");
+        @filelist = (@filelist, "$ARGV[2].${PREFIX}${index}.template.json\n") if (-e "$ARGV[2].${PREFIX}${index}.template.json");
     }
 
-    push(@filelist, "$ARGV[2].aliases.json\n") if (-e "$ARGV[2].aliases.json");
+    push(@filelist, "$ARGV[2].${PREFIX}aliases.json\n") if (-e "$ARGV[2].${PREFIX}aliases.json");
 
     my @directory = split(/\//,$ARGV[2]);
     my $basename = $directory[scalar(@directory)-1];
     splice(@directory, scalar(@directory)-1, 1);
     my $path = join("/", @directory);
 
-    die "Cannot find files start with $basename in $path" if (scalar(@filelist) == 0);
+    die "Cannot find files start with ${basename}.${PREFIX} in $path" if (scalar(@filelist) == 0);
 
-    logmsg "\nFollowing files will be used for rollback\n\n@filelist\n\n";
 
-    waitFor("ROLLBACK", "do you want to rollback? This will delete ALL data [@indexes] but sessions and history and restore from backups: files start with $basename in $path");
+    logmsg "\nFollowing files will be used for restore\n\n@filelist\n\n";
 
-    logmsg "\nStarting Rollback...\n\n";
+    waitFor("RESTORE", "do you want to restore? This will delete ALL data [@indexes] but sessions and history and restore from backups: files start with $basename in $path");
+
+    logmsg "\nStarting Restore...\n\n";
 
     logmsg "Erasing data ...\n\n";
 
@@ -2664,50 +2673,49 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing settings...\n\n";
     foreach my $index (@indexes) { # import settings
-        if (-e "$ARGV[2].$index.settings.json") {
-            open(my $fh, "<", "$ARGV[2].$index.settings.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.settings.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
-
             delete $data->{$index[0]}->{settings}->{index}->{creation_date};
             delete $data->{$index[0]}->{settings}->{index}->{provided_name};
             delete $data->{$index[0]}->{settings}->{index}->{uuid};
             delete $data->{$index[0]}->{settings}->{index}->{version};
             my $settings = to_json($data->{$index[0]});
-            esPut("/${PREFIX}$index[0]", $settings);
+            esPut("/$index[0]", $settings);
             close($fh);
         }
     }
 
     logmsg "Importing aliases...\n\n";
-    if (-e "$ARGV[2].aliases.json") { # import alias
-            open(my $fh, "<", "$ARGV[2].aliases.json");
+    if (-e "$ARGV[2].${PREFIX}aliases.json") { # import alias
+            open(my $fh, "<", "$ARGV[2].${PREFIX}aliases.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             foreach my $alias (@{$data}) {
-                esAlias("add", $alias->{index}, $alias->{alias});
+                esAlias("add", $alias->{index}, $alias->{alias}, 1);
             }
     }
 
     logmsg "Importing mappings...\n\n";
     foreach my $index (@indexes) { # import mappings
-        if (-e "$ARGV[2].$index.mappings.json") {
-            open(my $fh, "<", "$ARGV[2].$index.mappings.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.mappings.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @index = keys %{$data};
             my $mappings = $data->{$index[0]}->{mappings};
             my @type = keys %{$mappings};
-            esPut("/${PREFIX}$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
             close($fh);
         }
     }
 
     logmsg "Importing documents...\n\n";
     foreach my $index (@indexes) { # import documents
-        if (-e "$ARGV[2].$index.json") {
-            open(my $fh, "<", "$ARGV[2].$index.json");
+        if (-e "$ARGV[2].${PREFIX}${index}.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
             my $data = do { local $/; <$fh> };
             esPost("/_bulk", $data);
             close($fh);
@@ -2717,13 +2725,23 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     logmsg "Importing templates for Sessions and History...\n\n";
     my @templates = ("sessions2", "history");
     foreach my $template (@templates) { # import templates
-        if (-e "$ARGV[2].$template.template.json") {
-            open(my $fh, "<", "$ARGV[2].$template.template.json");
+        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @template_name = keys %{$data};
-            my $mapping = $data->{$template_name[0]};
-            esPut("/_template/${PREFIX}$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+            close($fh);
+        }
+    }
+
+    foreach my $template (@templates) { # update mappings
+        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
+            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
+            my $data = do { local $/; <$fh> };
+            $data = from_json($data);
+            my @template_name = keys %{$data};
+            my $mapping = $data->{$template_name[0]}->{mappings};
             if (($template cmp "sessions2") == 0 && $UPGRADEALLSESSIONS) {
                 my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
                 logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
@@ -2744,7 +2762,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             close($fh);
         }
     }
-    logmsg "Finished Rollback.\n";
+    logmsg "Finished Restore.\n";
 } else {
 
 # Remaing is upgrade or upgradenoprompt
