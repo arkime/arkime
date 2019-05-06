@@ -29,6 +29,7 @@ var internals = {fileId2File: {},
                  molochNodeStatsCache: {},
                  healthCache: {},
                  indicesCache: {},
+                 indicesSettingsCache: {},
                  usersCache: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
@@ -338,6 +339,10 @@ exports.indices = function(cb, index) {
   return internals.elasticSearchClient.cat.indices({format: "json", index: fixIndex(index), bytes: "b", h: "health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal"}, cb);
 };
 
+exports.indicesSettings = function(cb, index) {
+  return internals.elasticSearchClient.indices.getSettings({flatSettings: true, index: fixIndex(index)}, cb);
+};
+
 exports.shards = function(cb) {
   return internals.elasticSearchClient.cat.shards({format: "json", bytes: "b", h: "index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm"}, cb);
 };
@@ -611,6 +616,30 @@ exports.indicesCache = function (cb) {
     internals.indicesCache = indices;
     internals.indicesCache._timeStamp = Date.now();
     cb(null, indices);
+  });
+};
+
+exports.indicesSettingsCache = function (cb) {
+  if (!cb) {
+    return internals.indicesSettingsCache;
+  }
+
+  if (internals.indicesSettingsCache._timeStamp !== undefined && internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
+    return cb(null, internals.indicesSettingsCache);
+  }
+
+  return exports.indicesSettings((err, indicesSettings) => {
+    if (err) {
+      // Even if an error, if we have a cache use it
+      if (internals.indicesSettingsCache._timeStamp !== undefined) {
+        return cb(null, internals.indicesSettingsCache);
+      }
+      return cb(err, null);
+    }
+
+    internals.indicesSettingsCache = indicesSettings;
+    internals.indicesSettingsCache._timeStamp = Date.now();
+    cb(null, indicesSettings);
   });
 };
 

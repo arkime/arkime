@@ -108,7 +108,11 @@ export default {
         // all the rest of the available stats
         { id: 'cd', name: 'Created Date', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return this.$options.filters.timezoneDateString(Math.floor(item.cd / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
         { id: 'pri.search.query_current', name: 'Current Query Phase Ops', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['pri.search.query_current']); } },
-        { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 }
+        { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 },
+        { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
+        { id: 'shardsPerNode', name: 'Shards/Node', sort: 'shardsPerNode', doStats: false, width: 100 },
+        { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 },
+        { id: 'creationDate', name: 'Create Date', sort: 'creationDate', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.timezoneDateString(Math.floor(item.creationDate / 1000), this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } }
       ]
     };
   },
