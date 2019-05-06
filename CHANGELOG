@@ -17,6 +17,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.0.0 2019/05/xx
   - NOTICE: This versions requires ES 6.6.x or later
+  - release - cyberchef 8.30.0
   - viewer - Can display pcap retention in Capture Stats tab
   - all - Fix some elasticsearch deprecation warnings
   - viewer - Added uploadFileSizeLimit
