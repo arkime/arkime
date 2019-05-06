@@ -11,6 +11,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 const env = require('../config/prod.env')
 
@@ -45,6 +46,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     }
   },
   plugins: [
+    new CleanWebpackPlugin(),
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
       'process.env': env
@@ -82,6 +84,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // you can customize output by editing /index.html
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
+      title: 'Production Moloch',
       filename: config.build.index,
       template: 'index.html',
       inject: true,
