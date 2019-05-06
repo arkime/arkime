@@ -3173,7 +3173,10 @@ app.get('/eshealth.json', noCacheJson, function(req, res) {
 app.get('/esindices/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
-  Db.indicesCache(function (err, indices) {
+  async.parallel({
+    indices: Db.indicesCache,
+    indicesSettings: Db.indicesSettingsCache
+  }, function (err, results) {
     if (err) {
       console.log ('ERROR -  /esindices/list', err);
       return res.send({
@@ -3182,6 +3185,9 @@ app.get('/esindices/list', recordResponseTime, function(req, res) {
         data: []
       });
     }
+
+    const indices = results.indices;
+    const indicesSettings = results.indicesSettings;
 
     let findices = [];
 
@@ -3211,6 +3217,22 @@ app.get('/esindices/list', recordResponseTime, function(req, res) {
         findices = findices.sort(function (a,b) { return a[sortField] - b[sortField]; });
       }
     }
+
+    for (const index of findices) {
+      if (!indicesSettings[index.index]) { continue; }
+
+      if (indicesSettings[index.index].settings['index.routing.allocation.require.molochtype']) {
+        index.molochtype = indicesSettings[index.index].settings['index.routing.allocation.require.molochtype'];
+      }
+
+      if (indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node']) {
+        index.shardsPerNode = indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node'];
+      }
+
+      index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
+      index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
+    }
+
 
     return res.send({
       recordsTotal: indices.length,
