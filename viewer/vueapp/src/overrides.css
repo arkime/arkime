@@ -162,26 +162,24 @@ input.field-typeahead + ul[uib-typeahead-popup] {
 }
 .dropdown-menu a.dropdown-item {
   padding: 2px 8px;
-  color: var(--color-foreground);
+  color: var(--color-foreground, #212529);
 }
 
 .dropdown-menu a.dropdown-item:hover,
 .dropdown-menu a.dropdown-item:focus {
-  color: var(--color-foreground);
+  color: var(--color-foreground, #212529);
   background-color: var(--color-gray-light);
 }
 .dropdown-menu a.dropdown-item.active,
-.dropdown-menu a.dropdown-item.active:hover,
-.dropdown-menu a.dropdown-item.active:focus {
-  color: var(--color-white);
+.dropdown-menu li.active a.dropdown-item {
+  color: var(--color-white, #FFF);
   background-color: var(--color-primary);
 }
-.dropdown-menu li.active a,
-.dropdown-menu > li.active > a,
-.dropdown-menu div li.active a,
-.dropdown-menu > .active > div a,
-.dropdown-menu > .active > div:focus a {
-  color: #FFF !important;
+.dropdown-menu a.dropdown-item.active:hover,
+.dropdown-menu li.active:hover a.dropdown-item,
+.dropdown-menu a.dropdown-item.active:focus,
+.dropdown-menu li.active:focus a.dropdown-item {
+  background-color: var(--color-primary-light);
 }
 
 /* give cards theme color -------------------------------------------------- */
