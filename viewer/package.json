@@ -94,7 +94,6 @@
     "vue-color": "^2.4.6",
     "vue-loader": "^15.7.0",
     "vue-style-loader": "^3.0.1",
-    "vue-template-compiler": "^2.6.10",
     "webpack": "^4.30.0",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.3.1",
