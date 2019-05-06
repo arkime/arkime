@@ -37,11 +37,11 @@
     "sqlite3": "^4.0.2",
     "stylus": "^0.54.5",
     "unzip": "^0.1.11",
-    "vue": "^2.5.16",
+    "vue": "^2.6.10",
     "vue-axios": "^2.1.2",
     "vue-moment": "^4.0.0",
     "vue-router": "^3.0.2",
-    "vue-server-renderer": "^2.5.13",
+    "vue-server-renderer": "^2.6.10",
     "vue-template-compiler": "^2.5.2",
     "vuex": "^3.0.1"
   },
