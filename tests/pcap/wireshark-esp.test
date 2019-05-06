@@ -52,6 +52,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1500,
             "totDataBytes" : 0,
@@ -116,6 +120,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1340,
             "totDataBytes" : 0,
@@ -180,6 +188,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1340,
             "totDataBytes" : 0,
@@ -244,6 +256,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1220,
             "totDataBytes" : 0,
@@ -308,6 +324,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1500,
             "totDataBytes" : 0,
@@ -372,6 +392,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1340,
             "totDataBytes" : 0,
@@ -436,6 +460,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1340,
             "totDataBytes" : 0,
@@ -500,6 +528,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1220,
             "totDataBytes" : 0,
@@ -564,6 +596,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1380,
             "totDataBytes" : 0,
@@ -628,6 +664,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1220,
             "totDataBytes" : 0,
@@ -692,6 +732,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1220,
             "totDataBytes" : 0,
@@ -756,6 +800,10 @@
             "srcPackets" : 10,
             "srcPort" : 0,
             "srcRIR" : "LACNIC",
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1100,
             "totDataBytes" : 0,
@@ -814,6 +862,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1700,
             "totDataBytes" : 0,
@@ -872,6 +924,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1540,
             "totDataBytes" : 0,
@@ -930,6 +986,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1540,
             "totDataBytes" : 0,
@@ -988,6 +1048,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1420,
             "totDataBytes" : 0,
@@ -1046,6 +1110,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1700,
             "totDataBytes" : 0,
@@ -1104,6 +1172,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1540,
             "totDataBytes" : 0,
@@ -1162,6 +1234,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1540,
             "totDataBytes" : 0,
@@ -1220,6 +1296,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1420,
             "totDataBytes" : 0,
@@ -1278,6 +1358,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1580,
             "totDataBytes" : 0,
@@ -1336,6 +1420,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1420,
             "totDataBytes" : 0,
@@ -1394,6 +1482,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1420,
             "totDataBytes" : 0,
@@ -1452,6 +1544,10 @@
             "srcOuiCnt" : 1,
             "srcPackets" : 10,
             "srcPort" : 0,
+            "tags" : [
+               "truncate-pcap"
+            ],
+            "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1300,
             "totDataBytes" : 0,

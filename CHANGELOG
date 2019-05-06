@@ -24,6 +24,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - no longer send packet lengths to ES by default (enablePacketLen)
   - parliament - Can configure multiple of each type of notifier
   - viewer - Can just delete SPI
+  - db - backup command now saves meta data so restore can do a rollback
+         (thanks codesniffer)
+  - capture - add truncate-pcap tag to sessions where all pcap isn't written
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

@@ -702,6 +702,9 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
             moloch_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
+        if (packets == session->stopSaving + 1) {
+            moloch_session_add_tag(session, "truncate-pcap");
+        }
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
     }
 
@@ -724,9 +727,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
                 n += 4;
             }
 
-            if (packet->vlan)
-                moloch_field_int_add(vlanField, session, packet->vlan);
         }
+
+        if (packet->vlan)
+            moloch_field_int_add(vlanField, session, packet->vlan);
 
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
             ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);

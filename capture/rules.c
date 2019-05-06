@@ -846,6 +846,9 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
         } /* switch */
     }
     if (good) {
+#ifdef RULES_DEBUG
+        LOG("%s %s matched", rule->filename, rule->name);
+#endif
         MOLOCH_THREAD_INCR(rule->matched);
         moloch_field_ops_run(session, &rule->ops);
     }
