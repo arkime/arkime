@@ -628,7 +628,7 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
 #endif
         if (len <= 0) {
             http->wParsers &= ~(1 << http->which);
-            if (http->wParsers) {
+            if (!http->wParsers) {
                 moloch_parsers_unregister(session, uw);
             }
             break;
