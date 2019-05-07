@@ -287,7 +287,7 @@
       </div>
       <b-tabs v-model="tabIndex">
         <b-tab title="Capture Graphs"
-          @click="tabIndexChange">
+          @click="tabIndexChange(0)">
           <capture-graphs v-if="user && tabIndex === 0"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -299,7 +299,7 @@
           </capture-graphs>
         </b-tab>
         <b-tab title="Capture Stats"
-          @click="tabIndexChange">
+          @click="tabIndexChange(1)">
           <capture-stats v-if="user && tabIndex === 1"
             :graph-hide="graphHide"
             :refreshData="refreshData"
@@ -309,7 +309,7 @@
           </capture-stats>
         </b-tab>
         <b-tab title="ES Nodes"
-          @click="tabIndexChange">
+          @click="tabIndexChange(2)">
           <es-nodes v-if="user && tabIndex === 2"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -317,7 +317,7 @@
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
-          @click="tabIndexChange"
+          @click="tabIndexChange(3)"
           v-if="!multiviewer">
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
@@ -330,7 +330,7 @@
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
-          @click="tabIndexChange"
+          @click="tabIndexChange(4)"
           v-if="!multiviewer">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
@@ -341,7 +341,7 @@
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
-          @click="tabIndexChange"
+          @click="tabIndexChange(5)"
           v-if="!multiviewer">
           <es-shards v-if="user && tabIndex === 5"
             :shards-show="shardsShow"
@@ -351,7 +351,7 @@
           </es-shards>
         </b-tab>
         <b-tab title="ES Recovery"
-          @click="tabIndexChange"
+          @click="tabIndexChange(6)"
           v-if="!multiviewer">
           <es-recovery v-if="user && tabIndex === 6"
             :recovery-show="recoveryShow"
@@ -457,8 +457,8 @@ export default {
     pageSizeChange: function () {
       this.$router.push({ query: { ...this.$route.query, size: this.pageSize } });
     },
-    tabIndexChange: function () {
-      this.$router.push({ query: { ...this.$route.query, statsTab: this.tabIndex } });
+    tabIndexChange: function (newTabIndex) {
+      this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
     },
     updateParams: function () {
       let queryParams = this.$route.query;
