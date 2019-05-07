@@ -3589,8 +3589,8 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
 
         let writeInfoOld = oldnode.thread_pool.bulk || oldnode.thread_pool.write;
 
-        completed = Math.max(0, Math.ceil((writeInfo.completed - writeInfoOld.completed)/timediffsec*1024));
-        rejected = Math.max(0, Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec*1024));
+        completed = Math.max(0, Math.ceil((writeInfo.completed - writeInfoOld.completed)/timediffsec));
+        rejected = Math.max(0, Math.ceil((writeInfo.rejected - writeInfoOld.rejected)/timediffsec));
       }
 
       const ip = (node.ip ? node.ip.split(':')[0] : node.host);
