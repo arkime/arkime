@@ -66,15 +66,24 @@
           :class="{'cursor-pointer':column.sort}"
           :style="{'width': column.width + 'px'}">
           {{ column.name }}
-          <button v-if="column.canClear"
-            type="button"
-            v-b-tooltip.hover
-            @click="zeroColValues(column)"
-            title="Set this column's values to 0"
-            class="btn btn-xs btn-secondary btn-zero">
-            <span class="fa fa-ban">
-            </span>
-          </button>
+          <span v-if="column.canClear"
+            class="btn-zero">
+            <b-tooltip :target="`zero-btn-${column.name}`">
+              Set this column's values to 0.
+              <strong v-if="zeroedAt && zeroedAt[column.id]">
+                <br>
+                Last cleared at
+                {{ zeroedAt[column.id] | timezoneDateString(user.settings.timezone || 'local') }}
+              </strong>
+            </b-tooltip>
+            <button :id="`zero-btn-${column.name}`"
+              type="button"
+              @click="zeroColValues(column)"
+              class="btn btn-xs btn-secondary">
+              <span class="fa fa-ban">
+              </span>
+            </button>
+          </span>
           <span v-if="column.sort">
             <span v-show="tableSortField === column.sort && !tableDesc" class="fa fa-sort-asc"></span>
             <span v-show="tableSortField === column.sort && tableDesc" class="fa fa-sort-desc"></span>
@@ -273,10 +282,14 @@ export default {
       openedRows: {}, // save the opened rows so they don't get unopened when the table data refreshes
       averageValues: {}, // list of total values
       totalValues: {}, // list of total values
-      zeroMap: {} // list of values that have been cleared
+      zeroMap: {}, // list of values that have been cleared
+      zeroedAt: {} // list of times each column was cleared
     };
   },
   computed: {
+    user: function () {
+      return this.$store.state.user;
+    },
     filteredColumns: function () {
       // let filteredColumns = [];
       return this.columns.filter((column) => {
@@ -424,6 +437,7 @@ export default {
       this.initializeColResizable();
     },
     zeroColValues: function (column) {
+      this.$set(this.zeroedAt, column.id, Math.floor(new Date().getTime() / 1000));
       this.$set(this.zeroMap, column.id, []);
       for (let i = 0; i < this.data.length; i++) {
         let data = this.data[i];
