@@ -27,7 +27,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Can just delete SPI
   - db - backup command now saves meta data so restore can do a rollback
          (thanks codesniffer)
-  - capture - add truncate-pcap tag to sessions where all pcap isn't written
+  - capture - add truncated-pcap tag to sessions where all pcap isn't written
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

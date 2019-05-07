@@ -703,7 +703,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         }
     } else {
         if (packets == session->stopSaving + 1) {
-            moloch_session_add_tag(session, "truncate-pcap");
+            moloch_session_add_tag(session, "truncated-pcap");
         }
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
     }
