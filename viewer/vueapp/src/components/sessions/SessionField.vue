@@ -621,8 +621,10 @@ export default {
   left: 0;
   right: auto;
 }
+</style>
 
-.session-field-dropdown a {
+<style>
+.session-field-dropdown a.dropdown-item {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
@@ -630,11 +632,11 @@ export default {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: var(--color-black);
+  color: var(--color-foreground, #212529);
   white-space: nowrap;
 }
 
-.session-field-dropdown a:hover {
+.session-field-dropdown a.dropdown-item:hover {
   text-decoration: none;
   color: var(--color-black);
   background-color: var(--color-gray-lighter);
