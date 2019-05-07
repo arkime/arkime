@@ -1156,6 +1156,9 @@ export default {
     }
   },
   created: function () {
+    const hash = this.$route.hash;
+    if (hash) { this.scrollFix(hash); }
+
     this.loadFields();
     this.debounceGetFilteredFields();
   },
@@ -1218,6 +1221,22 @@ export default {
       });
 
       return fields;
+    },
+    scrollFix: function (hash) {
+      // remove the hash from the url
+      this.$router.replace({
+        ...this.$route,
+        hash: undefined
+      });
+
+      setTimeout(() => {
+        // add the hash back to the url so that router/index.js
+        // scrollBehavior actually triggers on page load
+        this.$router.replace({
+          ...this.$route,
+          hash: hash
+        });
+      }, 750);
     }
   }
 };
