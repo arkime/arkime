@@ -152,6 +152,8 @@ my $pwd = "*/pcap";
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");
 
+    sleep 1;
+
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
