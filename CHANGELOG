@@ -28,6 +28,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - backup command now saves meta data so restore can do a rollback
          (thanks codesniffer)
   - capture - add truncated-pcap tag to sessions where all pcap isn't written
+  - suricata - support timezones better
+  - db - improve optimize to deal with connection closed better
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

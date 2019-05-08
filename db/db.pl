@@ -141,8 +141,8 @@ sub showHelp($)
     print "      days                     - Number of days of inactivity (integer)\n";
     print "\n";
     print "Backup and Restore Commands:\n";
-    print "  backup <basename>            - Backup important indices, settings, mappings, and templates into a file per index, setting, mapping, and template; filenames start with <basename>\n";
-    print "  restore <basename> [<opts>]  - Restore a particular version of indices, settings, mappings, and templates; filenames of settings, mappings, templates, and data start with <basename>\n";
+    print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
+    print "  restore <basename> [<opts>]  - Restore everything but sessions; filenames restored from start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
     print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
     print "  import <filename>            - Import single index from <filename>\n";
@@ -233,6 +233,8 @@ sub esPost
     logmsg "POST DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json");
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
+      return from_json("{}") if ($dontcheck == 2);
+
       logmsg "POST RESULT:", $response->content, "\n" if ($verbose > 3);
       die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
@@ -352,6 +354,30 @@ sub esAlias
     } else { # do not append PREFIX
         esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
     }
+}
+
+################################################################################
+sub esWaitForNoTask
+{
+    my ($str) = @_;
+    while (1) {
+        logmsg "GET ${main::elasticsearch}/_cat/tasks\n" if ($verbose > 1);
+        my $response = $main::userAgent->get("${main::elasticsearch}/_cat/tasks");
+        if ($response->code != 200) {
+            sleep(30);
+        }
+
+        return 1 if (index ($response->content, $str) == -1);
+        sleep 10;
+    }
+}
+################################################################################
+sub esForceMerge
+{
+    my ($index, $segments) = @_;
+    esWaitForNoTask("forcemerge");
+    esPost("/$index/_forcemerge?max_num_segments=$segments", "", 2);
+    esWaitForNoTask("forcemerge");
 }
 
 ################################################################################
@@ -1905,7 +1931,7 @@ sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
     foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2", "${PREFIX}hunts_v1") {
         progress("$i ");
-        esPost("/$i/_forcemerge?max_num_segments=1", "", 1);
+        esForceMerge($i, 1);
     }
     logmsg "\n";
     logmsg "\n" if ($verbose > 0);
@@ -2118,7 +2144,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
 
     dbESVersion();
-    $main::userAgent->timeout(7200);
     optimizeOther() unless $NOOPTIMIZE ;
     logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s, warming %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt), commify($warmcnt));
     esPost("/_flush/synced", "", 1);
@@ -2146,7 +2171,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
             # 1 is set if it shouldn't be expired, > 1 means it needs to be optimized
             if ($indices->{$i}->{OPTIMIZEIT} > 1) {
-                esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1) unless $NOOPTIMIZE ;
+                esForceMerge($i, $SEGMENTS) unless $NOOPTIMIZE;
             }
 
             if ($REPLICAS != -1) {
@@ -2195,7 +2220,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
     }
-    esPost("/${PREFIX}history_*/_forcemerge?max_num_segments=1", "", 1) unless $NOOPTIMIZE ;
+    esForceMerge("${PREFIX}history_*", 1) unless $NOOPTIMIZE;
     esPost("/_flush/synced", "", 1);
 
     # Give the cluster a kick to rebalance
@@ -2211,7 +2236,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg sprintf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
-        esPost("/$i/_forcemerge?max_num_segments=$SEGMENTS", "", 1);
+        esForceMerge($i, $SEGMENTS);
     }
     esPost("/_flush/synced", "", 1);
     logmsg "\n";
