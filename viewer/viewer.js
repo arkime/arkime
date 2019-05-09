@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 60;
+const MIN_DB_VERSION = 61;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -7040,6 +7040,108 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
       console.log('ERROR - hunt/remote', err);
       res.send({ matched: false, error: err });
     });
+});
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Lookups
+//////////////////////////////////////////////////////////////////////////////////
+app.get('/lookups', recordResponseTime, function (req, res) {
+  // TODO only get lookups for this user or shared
+  const query = {};
+
+  Db.searchLookups(query)
+    .then((lookups) => {
+      if (lookups.error) { throw lookups.error; }
+
+      let results = { total:lookups.hits.total, results:[] };
+      for (const hit of lookups.hits.hits) {
+        let lookup = hit._source;
+        lookup.id = hit._id;
+        lookup.index = hit._index;
+
+        if (lookup.number) {
+          lookup.type = 'number';
+        } else if (lookup.ip) {
+          lookup.type = 'ip';
+        } else {
+          lookup.type = 'string'
+        }
+
+        lookup.value = lookup[lookup.type];
+        delete lookup[lookup.type];
+
+        results.results.push(lookup);
+      }
+
+      res.send(results.results);
+    }).catch(err => {
+      console.log('ERROR - /lookups', err);
+      return res.molochError(500, 'Error retrieving lookups - ' + err);
+    });
+});
+
+app.post('/lookups', logAction('lookups'), checkCookieToken, function (req, res) {
+  // make sure all the necessary data is included in the post body
+  if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
+  if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
+  if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
+  if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
+
+  // TODO make sure name is unique?
+  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9_: ]/g, ''); // TODO
+
+  let variable = req.body.var;
+  variable.userId = req.user.userId; // TODO get settings user?
+
+  // TODO parse comma separated value into multiple values
+  variable.string = req.body.var.value;
+  variable[variable.type] = req.body.var.value;
+
+  const type = variable.type;
+  delete variable.type;
+  const value = variable.value;
+  delete variable.value;
+
+  Db.createLookup(variable, function (err, result) {
+    if (err) { console.log('create variable error', err, result); }
+    variable.id = result._id;
+    variable.type = type;
+    variable.value = value;
+    delete variable.id;
+    delete variable.string;
+    delete variable.number;
+    return res.send(JSON.stringify({ success: true, var: variable }));
+  });
+});
+
+app.put('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (req, res) {
+  // TODO check for required variable fields
+  const variable = req.body.var;
+  // TODO update changed fields instead of entire document?
+  Db.setLookup(id, variable, (err, info) => {
+    if (err) {
+      console.log('variable update failed', err, info);
+      return res.molochError(500, 'Updating variable failed');
+    }
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Successfully updated variable',
+      name    : variable.name
+    }));
+  });
+});
+
+app.delete('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (req, res) {
+  Db.deleteLookup(req.params.id, function (err, result) {
+    if (err || result.error) {
+      console.log('ERROR - deleting variable', err || result.error);
+      return res.molochError(500, 'Error deleting variable');
+    } else {
+      res.send(JSON.stringify({success: true, text: 'Deleted variable successfully'}));
+    }
+  });
 });
 
 //////////////////////////////////////////////////////////////////////////////////

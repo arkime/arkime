@@ -106,6 +106,13 @@
             </span>&nbsp;
             Notifiers
           </a>
+          <a class="nav-link cursor-pointer"
+            @click="openView('vars')"
+            :class="{'active':visibleTab === 'vars'}">
+            <span class="fa fa-fw fa-list">
+            </span>&nbsp;
+            Variables
+          </a>
         </div>
       </div> <!-- /navigation -->
 
@@ -435,8 +442,6 @@
              and can be activated in the search bar.
           </p>
 
-          <hr>
-
           <table class="table table-striped table-sm">
             <thead>
               <tr>
@@ -608,8 +613,6 @@
             delayed by 90 second to make sure all updates have been completed
             for that session.
           </p>
-
-          <hr>
 
           <table class="table table-striped table-sm">
             <thead>
@@ -833,8 +836,6 @@
             table's column layout for future use.
           </p>
 
-          <hr>
-
           <table class="table table-striped table-sm">
             <thead>
               <tr>
@@ -956,8 +957,6 @@
             Custom visible field configurations allow the user to save their
             visible fields on the SPI View page for future use.
           </p>
-
-          <hr>
 
           <table class="table table-striped table-sm">
             <thead>
@@ -1827,6 +1826,186 @@
         </form>
         <!-- /notifiers settings -->
 
+        <!-- TODO variable settings -->
+        <form class="form-horizontal"
+          v-if="visibleTab === 'vars'"
+          id="vars">
+
+          <h3>Variables</h3>
+
+          <p>
+            Create a list of values that can be used in queries as variables.
+            For example: create a list of IPs and use them in a query
+            expression <code>ip.src == $MY_IPS</code>
+          </p>
+
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>Shared</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Value(s)</th>
+                <th>Type</th>
+                <th>&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- user vars -->
+              <tr v-for="(item, index) in vars"
+                @keyup.enter="updateVar(item)"
+                @keyup.esc="cancelVarChange(item)"
+                :key="item.id">
+                <td>
+                  <input type="checkbox"
+                    v-model="item.shared"
+                    @input="varChanged(item)"
+                  />
+                </td>
+                <td>
+                  <input type="text"
+                    maxlength="20"
+                    v-model="item.name"
+                    class="form-control form-control-sm"
+                    @input="varChanged(item)"
+                  />
+                </td>
+                <td>
+                  <input type="text"
+                    v-model="item.description"
+                    class="form-control form-control-sm"
+                    @input="varChanged(item)"
+                  />
+                </td>
+                <td>
+                  <!-- TODO input or text area? -->
+                  <!-- TODO comma separated? or newline? -->
+                  <input type="text"
+                    v-model="item.value"
+                    class="form-control form-control-sm"
+                    @input="varChanged(item)"
+                  />
+                </td>
+                <td>
+                  <select v-model="item.type"
+                    class="form-control form-control-sm"
+                    @input="varChanged(item)">
+                    <option value="ip">IP(s)</option>
+                    <option value="string">String(s)</option>
+                    <option value="number">Number(s)</option>
+                  </select>
+                </td>
+                <td>
+                  <div v-if="user.createEnabled || item.user === user.userId || !item.user">
+                    <div class="btn-group btn-group-sm pull-right"
+                      v-if="item.changed">
+                      <button type="button"
+                        v-b-tooltip.hover
+                        @click="updateVar(item)"
+                        title="Save changes to this variable"
+                        class="btn btn-theme-tertiary">
+                        <span class="fa fa-save">
+                        </span>
+                      </button>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        class="btn btn-warning"
+                        @click="cancelVarChange(item)"
+                        title="Undo changes to this variable">
+                        <span class="fa fa-ban">
+                        </span>
+                      </button>
+                    </div>
+                    <button v-else
+                      type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteVar(item, index)">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr> <!-- /user vars -->
+              <!-- user vars list error -->
+              <tr v-if="varsListError">
+                <td colspan="6">
+                  <p class="text-danger mb-0">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ varsListError }}
+                  </p>
+                </td>
+              </tr> <!-- /user vars list error -->
+              <!-- new user var form -->
+              <tr @keyup.enter="createVar">
+                <td>
+                  <input type="checkbox"
+                    v-model="newVarShared"
+                    class="form-check mt-2"
+                  />
+                </td>
+                <td>
+                  <input type="text"
+                    v-model="newVarName"
+                    class="form-control form-control-sm"
+                    maxlength="20"
+                    v-b-tooltip.hover
+                    title="Enter a new name for your varaible (20 chars or less)"
+                    placeholder="Variable name"
+                  />
+                </td>
+                <td>
+                  <input type="text"
+                    v-model="newVarDescription"
+                    class="form-control form-control-sm"
+                    v-b-tooltip.hover
+                    title="Enter a description of your new variable"
+                    placeholder="Variable description"
+                  />
+                </td>
+                <td>
+                  <input type="text"
+                    v-model="newVarValue"
+                    class="form-control form-control-sm"
+                    v-b-tooltip.hover
+                    title="Enter a comma separated list of value(s)"
+                    placeholder="Comma separated list of value(s)"
+                  />
+                </td>
+                <td>
+                  <select v-model="newVarType"
+                    class="form-control form-control-sm">
+                    <option value="ip">IP(s)</option>
+                    <option value="string">String(s)</option>
+                    <option value="number">Number(s)</option>
+                  </select>
+                </td>
+                <td>
+                  <button class="btn btn-theme-tertiary btn-sm pull-right"
+                    type="button"
+                    @click="createVar">
+                    <span class="fa fa-plus-circle">
+                    </span>&nbsp;
+                    Create
+                  </button>
+                </td>
+              </tr> <!-- /new user var form -->
+              <!-- user var form error -->
+              <tr v-if="userFormError">
+                <td colspan="6">
+                  <p class="small text-danger mb-0">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ userFormError }}
+                  </p>
+                </td>
+              </tr> <!-- /user var form error -->
+            </tbody>
+          </table>
+
+        </form> <!-- / variable settings -->
+
       </div>
 
     </div> <!-- /content -->
@@ -1935,7 +2114,16 @@ export default {
       notifierTypes: [],
       notifiersError: '',
       newNotifier: undefined,
-      newNotifierError: ''
+      newNotifierError: '',
+      // variable settings vars
+      vars: undefined,
+      varsListError: '',
+      newVarShared: false,
+      newVarName: '',
+      newVarDescription: '',
+      newVarValue: '',
+      newVarType: 'string',
+      userFormError: ''
     };
   },
   computed: {
@@ -1958,7 +2146,7 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers') {
+        tab === 'spiview' || tab === 'notifiers' || tab === 'vars') {
         this.visibleTab = tab;
       }
 
@@ -2010,6 +2198,7 @@ export default {
         this.getSpiviewConfigs();
         this.getNotifierTypes();
         this.getNotifiers();
+        this.getVars();
       })
       .catch((error) => {
         this.error = error.text;
@@ -2699,6 +2888,69 @@ export default {
           this.msgType = 'danger';
         });
     },
+    /* VARIABLES --------------------------------------- */
+    cancelVarChange: function (variable) {
+      this.getVars();
+    },
+    varChanged: function (variable) {
+      this.$set(variable, 'changed', true);
+    },
+    createVar: function () {
+      if (!this.newVarName) {
+        this.userFormError = 'Enter a unique variable name';
+        return;
+      }
+
+      if (!this.newVarValue) {
+        this.userFormError = 'Enter a value for your new variable';
+        return;
+      }
+
+      const data = {
+        name: this.newVarName,
+        type: this.newVarType,
+        value: this.newVarValue,
+        shared: this.newVarShared,
+        description: this.newVarDescription
+      };
+
+      this.$http.post('lookups', { var: data })
+        .then((response) => {
+          // add it to the list
+          this.vars.push(response.data.var);
+          // clear the inputs and any error
+          this.userFormError = false;
+          this.newVarName = '';
+          this.newVarValue = '';
+          this.newVarShared = false;
+          this.newVarDescription = '';
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    // TODO
+    updateVar: function (variable) {
+      console.log('IMPLEMENT THIS');
+    },
+    deleteVar: function (variable, index) {
+      this.$http.delete(`lookups/${variable.id}`)
+        .then((response) => {
+          this.vars.splice(index, 1);
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.data.text;
+          this.msgType = 'danger';
+        });
+    },
 
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
@@ -2866,6 +3118,14 @@ export default {
           this.notifiers = response.data;
         }, (error) => {
           this.notifiersError = error.text || error;
+        });
+    },
+    getVars: function () {
+      this.$http.get('lookups')
+        .then((response) => {
+          this.vars = response.data;
+        }, (error) => {
+          this.varsListError = error.text || error;
         });
     },
     /**

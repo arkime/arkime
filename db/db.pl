@@ -55,6 +55,7 @@
 # 58 - users message count and last used date
 # 59 - tokens
 # 60 - users time query limit
+# 61 - variables
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -63,7 +64,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 60;
+my $VERSION = 61;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1511,6 +1512,64 @@ esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $m
 }
 ################################################################################
 
+# TODO
+################################################################################
+sub lookupsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating lookups_v1 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}lookups_v1", $settings);
+  esAlias("add", "lookups_v1", "lookups");
+  lookupsUpdate();
+}
+
+sub lookupsUpdate
+{
+    my $mapping = '
+{
+  "lookup": {
+    "_source": {"enabled": "true"},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "shared": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "keyword"
+      },
+      "number": {
+        "type": "integer"
+      },
+      "ip": {
+        "type": "ip"
+      },
+      "string": {
+        "type": "keyword"
+      }
+    }
+  }
+}';
+
+logmsg "Setting lookups_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}lookups_v1/lookup/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+
 ################################################################################
 sub usersCreate
 {
@@ -2856,10 +2915,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
-    } elsif ($main::versionNumber <= 60) {
+    } elsif ($main::versionNumber <= 61) {
         checkForOld5Indices();
         sessions2Update();
         usersUpdate();
+        lookupsCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }
