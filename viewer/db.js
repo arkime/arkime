@@ -494,13 +494,13 @@ exports.searchLookups = function (query, cb) {
 };
 exports.createLookup = function (doc, cb) {
   return internals.elasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for"}, cb);
-}
+};
 exports.deleteLookup = function (id, cb) {
   return internals.elasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
-}
+};
 exports.setLookup = function (id, doc, cb) {
   return internals.elasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true}, cb);
-}
+};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, (err, stat) => {

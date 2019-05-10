@@ -1853,78 +1853,42 @@
             <tbody>
               <!-- user vars -->
               <tr v-for="(item, index) in vars"
-                @keyup.enter="updateVar(item)"
-                @keyup.esc="cancelVarChange(item)"
                 :key="item.id">
                 <td>
                   <input type="checkbox"
                     v-model="item.shared"
-                    @input="varChanged(item)"
+                    @input="toggleVarShared(item)"
                   />
                 </td>
                 <td>
-                  <input type="text"
-                    maxlength="20"
-                    v-model="item.name"
-                    class="form-control form-control-sm"
-                    @input="varChanged(item)"
-                  />
+                  {{ item.name }}
                 </td>
                 <td>
-                  <input type="text"
-                    v-model="item.description"
-                    class="form-control form-control-sm"
-                    @input="varChanged(item)"
-                  />
+                  {{ item.description }}
                 </td>
                 <td>
-                  <!-- TODO input or text area? -->
-                  <!-- TODO comma separated? or newline? -->
-                  <input type="text"
-                    v-model="item.value"
-                    class="form-control form-control-sm"
-                    @input="varChanged(item)"
-                  />
+                  {{ item.value }}
                 </td>
                 <td>
-                  <select v-model="item.type"
-                    class="form-control form-control-sm"
-                    @input="varChanged(item)">
-                    <option value="ip">IP(s)</option>
-                    <option value="string">String(s)</option>
-                    <option value="number">Number(s)</option>
-                  </select>
+                  {{ item.type }}
                 </td>
                 <td>
-                  <div v-if="user.createEnabled || item.user === user.userId || !item.user">
-                    <div class="btn-group btn-group-sm pull-right"
-                      v-if="item.changed">
-                      <button type="button"
-                        v-b-tooltip.hover
-                        @click="updateVar(item)"
-                        title="Save changes to this variable"
-                        class="btn btn-theme-tertiary">
-                        <span class="fa fa-save">
-                        </span>
-                      </button>
-                      <button type="button"
-                        v-b-tooltip.hover
-                        class="btn btn-warning"
-                        @click="cancelVarChange(item)"
-                        title="Undo changes to this variable">
-                        <span class="fa fa-ban">
-                        </span>
-                      </button>
-                    </div>
-                    <button v-else
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
-                      @click="deleteVar(item, index)">
-                      <span class="fa fa-trash-o">
-                      </span>&nbsp;
-                      Delete
-                    </button>
-                  </div>
+                  <button type="button"
+                    v-b-tooltip.hover
+                    @click="toggleEditVar(item)"
+                    title="Make changes to this variable's value"
+                    class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                    <span class="fa fa-pencil">
+                    </span>
+                  </button>
+                  <button type="button"
+                    v-b-tooltip.hover
+                    title="Delete this variable"
+                    class="btn btn-sm btn-danger pull-right"
+                    @click="deleteVar(item, index)">
+                    <span class="fa fa-trash-o">
+                    </span>
+                  </button>
                 </td>
               </tr> <!-- /user vars -->
               <!-- user vars list error -->
@@ -1937,51 +1901,83 @@
                   </p>
                 </td>
               </tr> <!-- /user vars list error -->
-              <!-- new user var form -->
-              <tr @keyup.enter="createVar">
-                <td>
-                  <input type="checkbox"
-                    v-model="newVarShared"
-                    class="form-check mt-2"
-                  />
-                </td>
-                <td>
-                  <input type="text"
+            </tbody>
+          </table>
+          <!-- new var form -->
+          <div class="row var-form mr-1 ml-1 mt-2">
+            <div class="col-12">
+              <div class="row mb-3 mt-4">
+                <div class="col-10 offset-2">
+                  <h3 class="mt-3">
+                    New Variable
+                  </h3>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarName"
+                  class="col-2 col-form-label text-right">
+                  Name<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <input id="newVarName"
+                    type="text"
+                    class="form-control form-control-sm"
                     v-model="newVarName"
-                    class="form-control form-control-sm"
-                    maxlength="20"
-                    v-b-tooltip.hover
-                    title="Enter a new name for your varaible (20 chars or less)"
-                    placeholder="Variable name"
+                    placeholder="MY_AMAZING_VAR"
                   />
-                </td>
-                <td>
-                  <input type="text"
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarDescription"
+                  class="col-2 col-form-label text-right">
+                  Description
+                </label>
+                <div class="col-10">
+                  <input id="newVarDescription"
+                    type="text"
+                    class="form-control form-control-sm"
                     v-model="newVarDescription"
-                    class="form-control form-control-sm"
-                    v-b-tooltip.hover
-                    title="Enter a description of your new variable"
-                    placeholder="Variable description"
                   />
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="newVarValue"
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarValue"
+                  class="col-2 col-form-label text-right">
+                  Value(s)<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <textarea id="newVarValue"
+                    type="text"
                     class="form-control form-control-sm"
-                    v-b-tooltip.hover
-                    title="Enter a comma separated list of value(s)"
-                    placeholder="Comma separated list of value(s)"
-                  />
-                </td>
-                <td>
-                  <select v-model="newVarType"
+                    v-model="newVarValue">
+                  </textarea>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarType"
+                  class="col-2 col-form-label text-right">
+                  Type<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <select id="newVarType"
+                    v-model="newVarType"
                     class="form-control form-control-sm">
                     <option value="ip">IP(s)</option>
                     <option value="string">String(s)</option>
                     <option value="number">Number(s)</option>
                   </select>
-                </td>
-                <td>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarShared"
+                  class="col-2 col-form-label text-right">
+                  Shared
+                </label>
+                <div class="col-10">
+                  <input id="newVarShared"
+                    type="checkbox"
+                    v-model="newVarShared"
+                  />
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
                     @click="createVar">
@@ -1989,20 +1985,21 @@
                     </span>&nbsp;
                     Create
                   </button>
-                </td>
-              </tr> <!-- /new user var form -->
-              <!-- user var form error -->
-              <tr v-if="userFormError">
-                <td colspan="6">
-                  <p class="small text-danger mb-0">
+                </div>
+              </div>
+              <!-- var form error -->
+              <div class="row mb-4 text-right">
+                <div class="col-12">
+                  <p v-if="varFormError"
+                    class="small text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
-                    {{ userFormError }}
+                    {{ varFormError }}
                   </p>
-                </td>
-              </tr> <!-- /user var form error -->
-            </tbody>
-          </table>
+                </div>
+              </div> <!-- /var form error -->
+            </div>
+          </div> <!-- /new var form -->
 
         </form> <!-- / variable settings -->
 
@@ -2123,7 +2120,7 @@ export default {
       newVarDescription: '',
       newVarValue: '',
       newVarType: 'string',
-      userFormError: ''
+      varFormError: ''
     };
   },
   computed: {
@@ -2889,20 +2886,21 @@ export default {
         });
     },
     /* VARIABLES --------------------------------------- */
-    cancelVarChange: function (variable) {
-      this.getVars();
+    toggleVarShared: function (variable) {
+      this.$set(variable, 'shared', !variable.shared);
+      this.updateVar(variable);
     },
-    varChanged: function (variable) {
-      this.$set(variable, 'changed', true);
+    toggleEditVar: function (variable) {
+      this.$set(variable, 'edit', !variable.edit);
     },
     createVar: function () {
       if (!this.newVarName) {
-        this.userFormError = 'Enter a unique variable name';
+        this.varFormError = 'Enter a unique variable name';
         return;
       }
 
       if (!this.newVarValue) {
-        this.userFormError = 'Enter a value for your new variable';
+        this.varFormError = 'Enter a value for your new variable';
         return;
       }
 
@@ -2919,7 +2917,7 @@ export default {
           // add it to the list
           this.vars.push(response.data.var);
           // clear the inputs and any error
-          this.userFormError = false;
+          this.varFormError = false;
           this.newVarName = '';
           this.newVarValue = '';
           this.newVarShared = false;
@@ -3203,6 +3201,17 @@ export default {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
   background-color: var(--color-gray-lighter);
   border: 1px solid var(--color-gray-light);
+}
+
+/* var form */
+.settings-page .var-form {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 3px;
+}
+.settings-page .var-form input[type='checkbox'] {
+  margin-top: 0.75rem;
 }
 
 /* theme displays ----------------- */

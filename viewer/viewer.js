@@ -7043,7 +7043,6 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
 });
 
 
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Lookups
 //////////////////////////////////////////////////////////////////////////////////
@@ -7066,7 +7065,7 @@ app.get('/lookups', recordResponseTime, function (req, res) {
         } else if (lookup.ip) {
           lookup.type = 'ip';
         } else {
-          lookup.type = 'string'
+          lookup.type = 'string';
         }
 
         lookup.value = lookup[lookup.type];
@@ -7082,20 +7081,23 @@ app.get('/lookups', recordResponseTime, function (req, res) {
     });
 });
 
-app.post('/lookups', logAction('lookups'), checkCookieToken, function (req, res) {
+app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, function (req, res) {
   // make sure all the necessary data is included in the post body
   if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
   if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
   if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
   if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
 
-  // TODO make sure name is unique?
-  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9_: ]/g, ''); // TODO
+  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9: ]/g, '');
+
+  // return nothing if we can't find the user
+  const user = req.settingUser;
+  if (!user) { return res.send({}); }
 
   let variable = req.body.var;
-  variable.userId = req.user.userId; // TODO get settings user?
+  variable.userId = user.userId;
 
-  // TODO parse comma separated value into multiple values
+  // TODO parse newline or comma separated value into multiple values
   variable.string = req.body.var.value;
   variable[variable.type] = req.body.var.value;
 
@@ -7120,7 +7122,7 @@ app.put('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (re
   // TODO check for required variable fields
   const variable = req.body.var;
   // TODO update changed fields instead of entire document?
-  Db.setLookup(id, variable, (err, info) => {
+  Db.setLookup(req.params.id, variable, (err, info) => {
     if (err) {
       console.log('variable update failed', err, info);
       return res.molochError(500, 'Updating variable failed');
