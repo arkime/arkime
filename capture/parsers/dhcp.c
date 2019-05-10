@@ -103,7 +103,8 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             BSB_IMPORT_u08(bsb, value);
             if (l == 7 && value == 1) {
                 BSB_IMPORT_ptr(bsb, valueStr, 6);
-                moloch_field_macoui_add(session, macField, ouiField, valueStr);
+                if (valueStr)
+                    moloch_field_macoui_add(session, macField, ouiField, valueStr);
             } else {
                 BSB_IMPORT_skip(bsb, l-1);
             }

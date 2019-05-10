@@ -375,6 +375,8 @@ LOCAL void suricata_read()
         } else if (lineLen == lineSize - 1) {
             lineSize *= 1.5;
             line = realloc(line, lineSize);
+            if (!line)
+                LOGEXIT("ERROR - OOM %d", lineSize);
         }
     }
     clearerr(file);

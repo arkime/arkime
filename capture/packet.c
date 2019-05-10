@@ -702,7 +702,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
             moloch_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
-        if (packets == session->stopSaving + 1) {
+        if (packets - 1 == session->stopSaving) {
             moloch_session_add_tag(session, "truncated-pcap");
         }
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
@@ -1550,7 +1550,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
     if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
 #ifdef DEBUG_PACKET
-        LOG ("ERROR - %d + %ld < %d", ip_len, sizeof(struct ip6_hdr), ip_hdr_len);
+        LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
