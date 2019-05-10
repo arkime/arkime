@@ -368,7 +368,7 @@ sub esWaitForNoTask
         }
 
         return 1 if (index ($response->content, $str) == -1);
-        sleep 10;
+        sleep 20;
     }
 }
 ################################################################################
@@ -1929,11 +1929,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2", "${PREFIX}hunts_v1") {
-        progress("$i ");
-        esForceMerge($i, 1);
-    }
-    logmsg "\n";
+    esForceMerge("${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1", 1);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
