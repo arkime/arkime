@@ -6,7 +6,7 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 import VueMoment from 'vue-moment';
 import moment from 'moment-timezone';
-import VueClipboard from 'vue-clipboard2';
+import VueClipboards from 'vue-clipboards';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -32,7 +32,7 @@ import './themes/dark-3.css';
 Vue.config.productionTip = false;
 
 Vue.use(Vuex);
-Vue.use(VueClipboard);
+Vue.use(VueClipboards);
 Vue.use(BootstrapVue);
 Vue.use(VueAxios, axios);
 Vue.use(VueMoment, { moment });
