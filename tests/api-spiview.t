@@ -17,8 +17,8 @@ my $fpwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"src": {}, "dst":{}, "xffGeo":{}}'), "map bigendian");
     eq_or_diff($json->{protocols}, from_json('{"icmp": 1}'), "protocols bigendian");
-    eq_or_diff($json->{graph}, from_json('{"xmin":null,"pa2Histo":[[1335956400000,0]],"pa1Histo":[[1335956400000,2]],"xmax":null,"db2Histo":[[1335956400000,0]],"interval":3600,"lpHisto":[[1335956400000,1]],"db1Histo":[[1335956400000,0]]}'), "graph bigendian");
-    eq_or_diff($djson->{graph}, from_json('{"xmin":1332734457000,"pa2Histo":[[1335956400000,0]],"pa1Histo":[[1335956400000,2]],"db2Histo":[[1335956400000,0]],"interval":3600,"xmax":1389743152000,"lpHisto":[[1335956400000,1]],"db1Histo":[[1335956400000,0]]}'), "date graph bigendian");
+    eq_or_diff($json->{graph}, from_json('{"lpHisto":[[1335956400000,1]],"by2Histo":[[1335956400000,0]],"pa1Histo":[[1335956400000,2]],"by1Histo":[[1335956400000,196]],"xmax":null,"db1Histo":[[1335956400000,0]],"interval":3600,"xmin":null,"db2Histo":[[1335956400000,0]],"pa2Histo":[[1335956400000,0]]}'), "graph bigendian");
+    eq_or_diff($djson->{graph}, from_json('{"db1Histo":[[1335956400000,0]],"xmax":1389743152000,"by1Histo":[[1335956400000,196]],"db2Histo":[[1335956400000,0]],"interval":3600,"xmin":1332734457000,"pa2Histo":[[1335956400000,0]],"by2Histo":[[1335956400000,0]],"lpHisto":[[1335956400000,1]],"pa1Histo":[[1335956400000,2]]}'), "date graph bigendian");
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"192.168.177.160"}]}'), "bigendian srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"10.64.11.49"}]}'), "bigendian dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol");
