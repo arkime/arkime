@@ -7098,7 +7098,6 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
   variable.userId = user.userId;
 
   // TODO parse newline or comma separated value into multiple values
-  variable.string = req.body.var.value;
   variable[variable.type] = req.body.var.value;
 
   const type = variable.type;
@@ -7111,7 +7110,7 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
     variable.id = result._id;
     variable.type = type;
     variable.value = value;
-    delete variable.id;
+    delete variable.ip;
     delete variable.string;
     delete variable.number;
     return res.send(JSON.stringify({ success: true, var: variable }));
@@ -7119,9 +7118,20 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
 });
 
 app.put('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (req, res) {
-  // TODO check for required variable fields
-  const variable = req.body.var;
-  // TODO update changed fields instead of entire document?
+  // make sure all the necessary data is included in the post body
+  if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
+  if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
+  if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
+  if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
+
+  let variable = req.body.var;
+
+  // TODO parse newline or comma separated value into multiple values
+  variable[variable.type] = req.body.var.value;
+
+  delete variable.type;
+  delete variable.value;
+
   Db.setLookup(req.params.id, variable, (err, info) => {
     if (err) {
       console.log('variable update failed', err, info);
@@ -7129,8 +7139,7 @@ app.put('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (re
     }
     return res.send(JSON.stringify({
       success : true,
-      text    : 'Successfully updated variable',
-      name    : variable.name
+      text    : 'Successfully updated variable'
     }));
   });
 });

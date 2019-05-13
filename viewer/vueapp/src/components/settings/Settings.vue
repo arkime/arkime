@@ -1851,47 +1851,78 @@
               </tr>
             </thead>
             <tbody>
-              <!-- user vars -->
-              <tr v-for="(item, index) in vars"
-                :key="item.id">
-                <td>
-                  <input type="checkbox"
-                    v-model="item.shared"
-                    @input="toggleVarShared(item)"
-                  />
-                </td>
-                <td>
-                  {{ item.name }}
-                </td>
-                <td>
-                  {{ item.description }}
-                </td>
-                <td>
-                  {{ item.value }}
-                </td>
-                <td>
-                  {{ item.type }}
-                </td>
-                <td>
-                  <button type="button"
-                    v-b-tooltip.hover
-                    @click="toggleEditVar(item)"
-                    title="Make changes to this variable's value"
-                    class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                    <span class="fa fa-pencil">
+              <!-- vars -->
+              <template v-for="(item, index) in vars">
+                <tr :key="`${item.id}-content`">
+                  <td>
+                    <input type="checkbox"
+                      v-model="item.shared"
+                      @input="toggleVarShared(item)"
+                    />
+                  </td>
+                  <td>
+                    {{ item.name }}
+                  </td>
+                  <td>
+                    {{ item.description }}
+                  </td>
+                  <td>
+                    {{ item.value }}
+                  </td>
+                  <td>
+                    {{ item.type }}
+                  </td>
+                  <td>
+                    <span v-if="!item.newValue">
+                      <button type="button"
+                        v-b-tooltip.hover
+                        @click="toggleEditVar(item)"
+                        title="Make changes to this variable's value"
+                        class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                        <span class="fa fa-pencil">
+                        </span>
+                      </button>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        title="Delete this variable"
+                        class="btn btn-sm btn-danger pull-right"
+                        @click="deleteVar(item, index)">
+                        <span class="fa fa-trash-o">
+                        </span>
+                      </button>
                     </span>
-                  </button>
-                  <button type="button"
-                    v-b-tooltip.hover
-                    title="Delete this variable"
-                    class="btn btn-sm btn-danger pull-right"
-                    @click="deleteVar(item, index)">
-                    <span class="fa fa-trash-o">
+                    <span v-else>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        @click="updateVar(item)"
+                        title="Save changes to this variable's value"
+                        class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                        <span class="fa fa-save">
+                        </span>
+                      </button>
+                      <button type="button"
+                        v-b-tooltip.hover
+                        title="Cancel chnages to this varaible's variable"
+                        class="btn btn-sm btn-warning pull-right"
+                        @click="toggleEditVar(item)">
+                        <span class="fa fa-ban">
+                        </span>
+                      </button>
                     </span>
-                  </button>
-                </td>
-              </tr> <!-- /user vars -->
-              <!-- user vars list error -->
+                  </td>
+                </tr>
+                <tr :key="`${item.id}-edit`"
+                  v-if="item.newValue">
+                  <td colspan="6">
+                    <textarea
+                      type="text"
+                      class="form-control form-control-sm m-1"
+                      v-model="item.newValue">
+                    </textarea>
+                  </td>
+                </tr>
+              </template> <!-- /vars -->
+              <!-- vars list error -->
               <tr v-if="varsListError">
                 <td colspan="6">
                   <p class="text-danger mb-0">
@@ -1900,7 +1931,7 @@
                     {{ varsListError }}
                   </p>
                 </td>
-              </tr> <!-- /user vars list error -->
+              </tr> <!-- /vars list error -->
             </tbody>
           </table>
           <!-- new var form -->
@@ -2886,13 +2917,20 @@ export default {
         });
     },
     /* VARIABLES --------------------------------------- */
+    /* toggles shared var on a variable and saves the variable */
     toggleVarShared: function (variable) {
       this.$set(variable, 'shared', !variable.shared);
       this.updateVar(variable);
     },
+    /* opens up text area to edit variable value */
     toggleEditVar: function (variable) {
-      this.$set(variable, 'edit', !variable.edit);
+      if (!variable.newValue) {
+        this.$set(variable, 'newValue', variable.value);
+      } else {
+        this.$set(variable, 'newValue', undefined);
+      }
     },
+    /* creates a new variable */
     createVar: function () {
       if (!this.newVarName) {
         this.varFormError = 'Enter a unique variable name';
@@ -2931,13 +2969,43 @@ export default {
           this.msgType = 'danger';
         });
     },
-    // TODO
+    /* updates a specified variable (only shared and value are editable) */
     updateVar: function (variable) {
-      console.log('IMPLEMENT THIS');
+      let data = {
+        name: variable.name,
+        type: variable.type,
+        value: variable.value,
+        shared: variable.shared,
+        description: variable.description
+      };
+
+      if (variable.newValue) {
+        data.value = variable.newValue;
+      }
+
+      this.$http.put(`lookups/${variable.id}`, { var: data })
+        .then((response) => {
+          // update value and clear out new value
+          // so it can be used to determine editing
+          if (variable.newValue) {
+            this.$set(variable, 'value', variable.newValue);
+            this.$set(variable, 'newValue', undefined);
+            delete variable.newValue;
+          }
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     },
+    /* deletes a variable and removes it from the variables array */
     deleteVar: function (variable, index) {
       this.$http.delete(`lookups/${variable.id}`)
         .then((response) => {
+          // remove it from the array
           this.vars.splice(index, 1);
           // display success message to user
           this.msg = response.data.text;
