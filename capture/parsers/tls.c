@@ -237,8 +237,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
             BSB_IMPORT_u16 (ebsb, etype);
             BSB_IMPORT_u16 (ebsb, elen);
 
-            if (etype != 10 && etype != 11)
-                BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
+            BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
             if (elen > BSB_REMAINING(ebsb))
                 break;
