@@ -7046,9 +7046,23 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', function (req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Lookups
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/lookups', recordResponseTime, function (req, res) {
-  // TODO only get lookups for this user or shared
-  const query = {};
+app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
+  // return nothing if we can't find the user
+  const user = req.settingUser;
+  if (!user) { return res.send({}); }
+
+  // only get lookups for this user or shared
+  const query = {
+    query: {
+      bool: {
+        should: [
+          { term: { shared: true } },
+          { term: { userId: user.userId }}
+        ]
+      }
+    },
+    sort: { name: { order: 'asc' } }
+  };
 
   Db.searchLookups(query)
     .then((lookups) => {
@@ -7068,14 +7082,14 @@ app.get('/lookups', recordResponseTime, function (req, res) {
           lookup.type = 'string';
         }
 
-        lookup.value = lookup[lookup.type];
+        lookup.value = lookup[lookup.type].join('\n');
         delete lookup[lookup.type];
 
         results.results.push(lookup);
       }
 
       res.send(results.results);
-    }).catch(err => {
+    }).catch((err) => {
       console.log('ERROR - /lookups', err);
       return res.molochError(500, 'Error retrieving lookups - ' + err);
     });
@@ -7088,7 +7102,7 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
   if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
   if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
 
-  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9: ]/g, '');
+  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9_]/g, '');
 
   // return nothing if we can't find the user
   const user = req.settingUser;
@@ -7097,19 +7111,22 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
   let variable = req.body.var;
   variable.userId = user.userId;
 
-  // TODO parse newline or comma separated value into multiple values
-  variable[variable.type] = req.body.var.value;
+  // comma separated value -> array of values
+  const values = req.body.var.value.split(/[,\n]+/g);
+  variable[variable.type] = values;
 
   const type = variable.type;
   delete variable.type;
-  const value = variable.value;
   delete variable.value;
 
   Db.createLookup(variable, function (err, result) {
-    if (err) { console.log('create variable error', err, result); }
+    if (err) {
+      console.log('variable create failed', err, result);
+      return res.molochError(500, 'Creating variable failed');
+    }
     variable.id = result._id;
     variable.type = type;
-    variable.value = value;
+    variable.value = values.join('\n');
     delete variable.ip;
     delete variable.string;
     delete variable.number;
@@ -7117,41 +7134,67 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
   });
 });
 
-app.put('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (req, res) {
+app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieToken, function (req, res) {
   // make sure all the necessary data is included in the post body
   if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
   if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
   if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
   if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
 
-  let variable = req.body.var;
+  let sentVar = req.body.var;
 
-  // TODO parse newline or comma separated value into multiple values
-  variable[variable.type] = req.body.var.value;
-
-  delete variable.type;
-  delete variable.value;
-
-  Db.setLookup(req.params.id, variable, (err, info) => {
+  Db.getLookup(req.params.id, (err, fetchedVar) => { // fetch variable
     if (err) {
-      console.log('variable update failed', err, info);
-      return res.molochError(500, 'Updating variable failed');
+      console.log('fetching variable to update failed', err, fetchedVar);
+      return res.molochError(500, 'Fetching variable to update failed');
     }
-    return res.send(JSON.stringify({
-      success : true,
-      text    : 'Successfully updated variable'
-    }));
+
+    // only allow admins or lookup creator to update lookup item
+    if (!req.user.createEnabled && req.settingUser.userId !== fetchedVar._source.userId) {
+      return res.molochError(403, 'Permission denied');
+    }
+
+    // comma separated value -> array of values
+    const values = req.body.var.value.split(/[,\n]+/g);
+    sentVar[sentVar.type] = values;
+    sentVar.userId = fetchedVar._source.userId;
+
+    delete sentVar.type;
+    delete sentVar.value;
+
+    Db.setLookup(req.params.id, sentVar, (err, info) => {
+      if (err) {
+        console.log('variable update failed', err, info);
+        return res.molochError(500, 'Updating variable failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Successfully updated variable'
+      }));
+    });
   });
 });
 
-app.delete('/lookups/:id', logAction('lookups/:id'), checkCookieToken, function (req, res) {
-  Db.deleteLookup(req.params.id, function (err, result) {
-    if (err || result.error) {
-      console.log('ERROR - deleting variable', err || result.error);
-      return res.molochError(500, 'Error deleting variable');
-    } else {
-      res.send(JSON.stringify({success: true, text: 'Deleted variable successfully'}));
+app.delete('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieToken, function (req, res) {
+  Db.getLookup(req.params.id, (err, variable) => { // fetch variable
+    if (err) {
+      console.log('fetching variable to delete failed', err, variable);
+      return res.molochError(500, 'Fetching variable to delete failed');
     }
+
+    // only allow admins or lookup creator to delete lookup item
+    if (!req.user.createEnabled && req.settingUser.userId !== variable._source.userId) {
+      return res.molochError(403, 'Permission denied');
+    }
+
+    Db.deleteLookup(req.params.id, function (err, result) {
+      if (err || result.error) {
+        console.log('ERROR - deleting variable', err || result.error);
+        return res.molochError(500, 'Error deleting variable');
+      } else {
+        res.send(JSON.stringify({success: true, text: 'Deleted variable successfully'}));
+      }
+    });
   });
 });
 

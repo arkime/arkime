@@ -1826,7 +1826,7 @@
         </form>
         <!-- /notifiers settings -->
 
-        <!-- TODO variable settings -->
+        <!-- variable settings -->
         <form class="form-horizontal"
           v-if="visibleTab === 'vars'"
           id="vars">
@@ -1839,7 +1839,8 @@
             expression <code>ip.src == $MY_IPS</code>
           </p>
 
-          <table class="table table-striped table-sm">
+          <table v-if="vars && vars.length"
+            class="table table-striped table-sm">
             <thead>
               <tr>
                 <th>Shared</th>
@@ -1856,6 +1857,7 @@
                 <tr :key="`${item.id}-content`">
                   <td>
                     <input type="checkbox"
+                      :disabled="!user.createEnabled && item.userId !== user.userId"
                       v-model="item.shared"
                       @input="toggleVarShared(item)"
                     />
@@ -1873,48 +1875,50 @@
                     {{ item.type }}
                   </td>
                   <td>
-                    <span v-if="!item.newValue">
-                      <button type="button"
-                        v-b-tooltip.hover
-                        @click="toggleEditVar(item)"
-                        title="Make changes to this variable's value"
-                        class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                        <span class="fa fa-pencil">
-                        </span>
-                      </button>
-                      <button type="button"
-                        v-b-tooltip.hover
-                        title="Delete this variable"
-                        class="btn btn-sm btn-danger pull-right"
-                        @click="deleteVar(item, index)">
-                        <span class="fa fa-trash-o">
-                        </span>
-                      </button>
-                    </span>
-                    <span v-else>
-                      <button type="button"
-                        v-b-tooltip.hover
-                        @click="updateVar(item)"
-                        title="Save changes to this variable's value"
-                        class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                        <span class="fa fa-save">
-                        </span>
-                      </button>
-                      <button type="button"
-                        v-b-tooltip.hover
-                        title="Cancel chnages to this varaible's variable"
-                        class="btn btn-sm btn-warning pull-right"
-                        @click="toggleEditVar(item)">
-                        <span class="fa fa-ban">
-                        </span>
-                      </button>
+                    <span v-if="user.createEnabled || item.userId === user.userId">
+                      <span v-if="!item.newValue">
+                        <button type="button"
+                          v-b-tooltip.hover
+                          @click="toggleEditVar(item)"
+                          title="Make changes to this variable's value"
+                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                          <span class="fa fa-pencil">
+                          </span>
+                        </button>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          title="Delete this variable"
+                          class="btn btn-sm btn-danger pull-right"
+                          @click="deleteVar(item, index)">
+                          <span class="fa fa-trash-o">
+                          </span>
+                        </button>
+                      </span>
+                      <span v-else>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          @click="updateVar(item)"
+                          title="Save changes to this variable's value"
+                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          title="Cancel changes to this varaible's value"
+                          class="btn btn-sm btn-warning pull-right"
+                          @click="toggleEditVar(item)">
+                          <span class="fa fa-ban">
+                          </span>
+                        </button>
+                      </span>
                     </span>
                   </td>
                 </tr>
                 <tr :key="`${item.id}-edit`"
                   v-if="item.newValue">
                   <td colspan="6">
-                    <textarea
+                    <textarea rows="5"
                       type="text"
                       class="form-control form-control-sm m-1"
                       v-model="item.newValue">
@@ -1954,7 +1958,7 @@
                     type="text"
                     class="form-control form-control-sm"
                     v-model="newVarName"
-                    placeholder="MY_AMAZING_VAR"
+                    placeholder="MY_MOLOCH_VAR"
                   />
                 </div>
               </div>
@@ -1979,8 +1983,10 @@
                 <div class="col-10">
                   <textarea id="newVarValue"
                     type="text"
+                    rows="5"
                     class="form-control form-control-sm"
-                    v-model="newVarValue">
+                    v-model="newVarValue"
+                    placeholder="Enter a comma or newline separated list of values">
                   </textarea>
                 </div>
               </div>
@@ -2976,6 +2982,7 @@ export default {
         type: variable.type,
         value: variable.value,
         shared: variable.shared,
+        userId: variable.userId,
         description: variable.description
       };
 
@@ -3013,7 +3020,7 @@ export default {
         })
         .catch((error) => {
           // display error message to user
-          this.msg = error.data.text;
+          this.msg = error.text;
           this.msgType = 'danger';
         });
     },
