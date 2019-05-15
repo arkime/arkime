@@ -30,7 +30,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - add truncated-pcap tag to sessions where all pcap isn't written
   - suricata - support timezones better
   - db - improve optimize to deal with connection closed better
-  - capture - fixed ja3s mishandling of 10/11 extension types (thanks Kjell Tore Fossbakk)
+  - capture - fixed ja3s mishandling of 10/11 extension types (thanks Norwegian Healthcare CERT)
   - viewer - add bytes as a graphing choice
 
 1.8.0 2019/04/03
