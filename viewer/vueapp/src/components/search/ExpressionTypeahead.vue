@@ -538,6 +538,22 @@ export default {
         return;
       }
 
+      // autocomplete variables
+      if (/^(\$)/.test(lastToken)) {
+        this.loadingValues = true;
+        this.$http.get('lookups?fieldFormat=true&map=true')
+          .then((response) => {
+            this.loadingValues = false;
+            let escapedToken = lastToken.replace('$', '\\$');
+            this.results = this.findMatch(escapedToken, response.data);
+          }, (error) => {
+            this.loadingValues = false;
+            this.loadingError = error.text || error;
+          });
+
+        return;
+      }
+
       // autocomplete other values after 2 chars
       if (lastToken.trim().length >= 2) {
         let params = { // build parameters for getting value(s)

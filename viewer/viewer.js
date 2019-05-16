@@ -7051,6 +7051,8 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
   const user = req.settingUser;
   if (!user) { return res.send({}); }
 
+  const map = req.query.map && req.query.map === 'true';
+
   // only get lookups for this user or shared
   const query = {
     query: {
@@ -7068,11 +7070,10 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
     .then((lookups) => {
       if (lookups.error) { throw lookups.error; }
 
-      let results = { total:lookups.hits.total, results:[] };
+      let results = { list: [], map: {} };
       for (const hit of lookups.hits.hits) {
         let lookup = hit._source;
         lookup.id = hit._id;
-        lookup.index = hit._index;
 
         if (lookup.number) {
           lookup.type = 'number';
@@ -7082,13 +7083,27 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
           lookup.type = 'string';
         }
 
-        lookup.value = lookup[lookup.type].join('\n');
+        const value = lookup[lookup.type].join('\n');
+
+        if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
+          const name = `$${lookup.name}`;
+          lookup.exp = name;
+          lookup.dbField = name;
+          lookup.help = `${lookup.description}: ${value}`;
+        }
+
+        lookup.value = value;
         delete lookup[lookup.type];
 
-        results.results.push(lookup);
+        if (map) {
+          results.map[lookup.id] = lookup;
+        } else {
+          results.list.push(lookup);
+        }
       }
 
-      res.send(results.results);
+      const sendResults = map ? results.map : results.list;
+      res.send(sendResults);
     }).catch((err) => {
       console.log('ERROR - /lookups', err);
       return res.molochError(500, 'Error retrieving lookups - ' + err);

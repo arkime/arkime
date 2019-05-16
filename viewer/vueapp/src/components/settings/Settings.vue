@@ -1835,8 +1835,11 @@
 
           <p>
             Create a list of values that can be used in queries as variables.
-            For example: create a list of IPs and use them in a query
-            expression <code>ip.src == $MY_IPS</code>
+            For example, create a list of IPs and use them in a query
+            expression <code>ip.src == $MY_IPS</code>.
+            <br>
+            <strong>Tip:</strong>
+            Use <code>$</code> to autocomplete variables in search expressions.
           </p>
 
           <table v-if="vars && vars.length"
