@@ -3550,6 +3550,7 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
                Db.getClusterSettings({flatSettings: true})
              ])
   .then(([nodesStats, nodesInfo, health, settings]) => {
+
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -3598,8 +3599,14 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
       const ip = (node.ip ? node.ip.split(':')[0] : node.host);
 
       let threadpoolInfo;
+      let version = "";
+      let molochtype;
       if (nodesInfo.nodes[nodeKeys[n]]) {
         threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
+        version = nodesInfo.nodes[nodeKeys[n]].version;
+        if (nodesInfo.nodes[nodeKeys[n]].attributes) {
+          molochtype = nodesInfo.nodes[nodeKeys[n]].attributes.molochtype;
+        }
       } else {
         threadpoolInfo = { queue_size: 0 };
       }
@@ -3624,7 +3631,9 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
         writesRejectedDelta: rejected,
         writesCompletedDelta: completed,
         writesQueueSize: threadpoolInfo.queue_size,
-        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
+        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"],
+        version: version,
+        molochtype: molochtype
       });
     }
 
