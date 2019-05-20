@@ -322,6 +322,15 @@ if (Config.get("passwordSecret")) {
   });
 }
 
+// add lookups for queries
+app.use(function (req, res, next) {
+  if (!req.user) { return next(); }
+  Db.getLookupsCache(req.user.userId, (err, lookupsMap) => {
+    req.lookups = lookupsMap || {};
+    return next();
+  });
+});
+
 app.use(function(req, res, next) {
   if (!req.user || !req.user.userId) {
     return next();
@@ -2754,10 +2763,16 @@ function buildSessionQuery (req, buildCb) {
 
   addSortToQuery(query, req.query, 'firstPacket');
 
-  var err = null;
-  molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
-                                  views: req.user.views,
-                              fieldsMap: Config.getFieldsMap()};
+  let err = null;
+
+  molochparser.parser.yy = {
+    views: req.user.views,
+    fieldsMap: Config.getFieldsMap(),
+    prefix: Config.get('prefix', ''),
+    emailSearch: req.user.emailSearch === true,
+    lookups: req.lookups
+  };
+
   if (req.query.expression) {
     //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
     try {
@@ -4154,6 +4169,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
       res.send(r);
       return;
     }
+
     let addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
@@ -6718,64 +6734,68 @@ function processHuntJob (huntId, hunt) {
 
     user = user._source;
 
-    molochparser.parser.yy = {
-      emailSearch: user.emailSearch === true,
-      fieldsMap: Config.getFieldsMap()
-    };
-
-    // build session query
-    var query = {
-      from: 0,
-      size: 100, // Only fetch 100 items at a time
-      query: { bool: { must: [{ exists: { field: 'fileId' } }], filter: [{}] } },
-      _source: ['_id', 'node'],
-      sort: { lastPacket: { order: 'asc' } }
-    };
-
-    // get the size of the query if it is being restarted
-    if (hunt.lastPacketTime) {
-      query.size = hunt.totalSessions - hunt.searchedSessions;
-    }
-
-    if (hunt.query.expression) {
-      try {
-        query.query.bool.filter.push(molochparser.parse(hunt.query.expression));
-      } catch (e) {
-        pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile hunt query expression: ${e}` });
-        return;
-      }
-    }
-
-    if (user.expression && user.expression.length > 0) {
-      try {
-        // Expression was set by admin, so assume email search ok
-        molochparser.parser.yy.emailSearch = true;
-        var userExpression = molochparser.parse(user.expression);
-        query.query.bool.filter.push(userExpression);
-      } catch (e) {
-        pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile user forced expression (${user.expression}): ${e}` });
-        return;
-      }
-    }
-
-    lookupQueryItems(query.query.bool.filter, function (lerr) {
-      query.query.bool.filter[0] = {
-        range: {
-          lastPacket: {
-            gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-            lt: hunt.query.stopTime * 1000
-          }
-        }
+    Db.getLookupsCache(hunt.userId, (err, lookups) => {
+      molochparser.parser.yy = {
+        emailSearch: user.emailSearch === true,
+        fieldsMap: Config.getFieldsMap(),
+        prefix: Config.get('prefix', ''),
+        lookups: lookups || {}
       };
 
-      query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+      // build session query
+      let query = {
+        from: 0,
+        size: 100, // Only fetch 100 items at a time
+        query: { bool: { must: [{ exists: { field: 'fileId' } }], filter: [{}] } },
+        _source: ['_id', 'node'],
+        sort: { lastPacket: { order: 'asc' } }
+      };
 
-      if (Config.debug > 2) {
-        console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+      // get the size of the query if it is being restarted
+      if (hunt.lastPacketTime) {
+        query.size = hunt.totalSessions - hunt.searchedSessions;
       }
 
-      // do sessions query
-      runHuntJob(huntId, hunt, query, user);
+      if (hunt.query.expression) {
+        try {
+          query.query.bool.filter.push(molochparser.parse(hunt.query.expression));
+        } catch (e) {
+          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile hunt query expression: ${e}` });
+          return;
+        }
+      }
+
+      if (user.expression && user.expression.length > 0) {
+        try {
+          // Expression was set by admin, so assume email search ok
+          molochparser.parser.yy.emailSearch = true;
+          var userExpression = molochparser.parse(user.expression);
+          query.query.bool.filter.push(userExpression);
+        } catch (e) {
+          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile user forced expression (${user.expression}): ${e}` });
+          return;
+        }
+      }
+
+      lookupQueryItems(query.query.bool.filter, function (lerr) {
+        query.query.bool.filter[0] = {
+          range: {
+            lastPacket: {
+              gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+              lt: hunt.query.stopTime * 1000
+            }
+          }
+        };
+
+        query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+
+        if (Config.debug > 2) {
+          console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+        }
+
+        // do sessions query
+        runHuntJob(huntId, hunt, query, user);
+      });
     });
   });
 }
@@ -7059,7 +7079,7 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
       bool: {
         should: [
           { term: { shared: true } },
-          { term: { userId: user.userId }}
+          { term: { userId: user.userId } }
         ]
       }
     },
@@ -7123,30 +7143,54 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
   const user = req.settingUser;
   if (!user) { return res.send({}); }
 
-  let variable = req.body.var;
-  variable.userId = user.userId;
-
-  // comma separated value -> array of values
-  const values = req.body.var.value.split(/[,\n]+/g);
-  variable[variable.type] = values;
-
-  const type = variable.type;
-  delete variable.type;
-  delete variable.value;
-
-  Db.createLookup(variable, function (err, result) {
-    if (err) {
-      console.log('variable create failed', err, result);
-      return res.molochError(500, 'Creating variable failed');
+  const query = {
+    query: {
+      bool: {
+        must: [
+          { term: { name: req.body.var.name } }
+        ]
+      }
     }
-    variable.id = result._id;
-    variable.type = type;
-    variable.value = values.join('\n');
-    delete variable.ip;
-    delete variable.string;
-    delete variable.number;
-    return res.send(JSON.stringify({ success: true, var: variable }));
-  });
+  };
+
+  Db.searchLookups(query)
+    .then((lookups) => {
+      // search for lookup name collision
+      for (const hit of lookups.hits.hits) {
+        let lookup = hit._source;
+        if (lookup.name === req.body.var.name) {
+          return res.molochError(403, `A shortcut with the name, ${req.body.var.name}, already exists`);
+        }
+      }
+
+      let variable = req.body.var;
+      variable.userId = user.userId;
+
+      // comma separated value -> array of values
+      const values = req.body.var.value.split(/[,\n]+/g);
+      variable[variable.type] = values;
+
+      const type = variable.type;
+      delete variable.type;
+      delete variable.value;
+
+      Db.createLookup(variable, user.userId, function (err, result) {
+        if (err) {
+          console.log('variable create failed', err, result);
+          return res.molochError(500, 'Creating variable failed');
+        }
+        variable.id = result._id;
+        variable.type = type;
+        variable.value = values.join('\n');
+        delete variable.ip;
+        delete variable.string;
+        delete variable.number;
+        return res.send(JSON.stringify({ success: true, var: variable }));
+      });
+    }).catch((err) => {
+      console.log('ERROR - /lookups', err);
+      return res.molochError(500, 'Error creating lookup - ' + err);
+    });
 });
 
 app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieToken, function (req, res) {
@@ -7177,7 +7221,7 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
     delete sentVar.type;
     delete sentVar.value;
 
-    Db.setLookup(req.params.id, sentVar, (err, info) => {
+    Db.setLookup(req.params.id, fetchedVar.userId, sentVar, (err, info) => {
       if (err) {
         console.log('variable update failed', err, info);
         return res.molochError(500, 'Updating variable failed');
@@ -7202,7 +7246,7 @@ app.delete('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookie
       return res.molochError(403, 'Permission denied');
     }
 
-    Db.deleteLookup(req.params.id, function (err, result) {
+    Db.deleteLookup(req.params.id, variable.userId, function (err, result) {
       if (err || result.error) {
         console.log('ERROR - deleting variable', err || result.error);
         return res.molochError(500, 'Error deleting variable');
@@ -8113,13 +8157,13 @@ function processCronQueries() {
           cluster = cq.action.substring(8);
         }
 
-        Db.getUserCache(cq.creator, function(err, user) {
+        Db.getUserCache(cq.creator, function (err, user) {
           if (err && !user) {return forQueriesCb();}
           if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return forQueriesCb(null);}
           if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return forQueriesCb();}
           user = user._source;
 
-          var options = {
+          let options = {
             user: user,
             cluster: cluster,
             saveId: Config.nodeName() + "-" + new Date().getTime().toString(36),
@@ -8127,66 +8171,73 @@ function processCronQueries() {
             qid: qid
           };
 
-          molochparser.parser.yy = {emailSearch: user.emailSearch === true,
-                                      fieldsMap: Config.getFieldsMap()};
+          Db.getLookupsCache(cq.creator, (err, lookups) => {
+            molochparser.parser.yy = {
+              emailSearch: user.emailSearch === true,
+              fieldsMap: Config.getFieldsMap(),
+              prefix: Config.get('prefix', ''),
+              lookups: lookups
+            };
 
-          var query = {from: 0,
-                       size: 1000,
-                       query: {bool: {filter: [{}]}},
-                       _source: ["_id", "node"]
-                      };
+            let query = {
+              from: 0,
+              size: 1000,
+              query: {bool: {filter: [{}]}},
+              _source: ["_id", "node"]
+            };
 
-          try {
-            query.query.bool.filter.push(molochparser.parse(cq.query));
-          } catch (e) {
-            console.log("Couldn't compile cron query expression", cq, e);
-            return forQueriesCb();
-          }
-
-          if (user.expression && user.expression.length > 0) {
             try {
-              // Expression was set by admin, so assume email search ok
-              molochparser.parser.yy.emailSearch = true;
-              var userExpression = molochparser.parse(user.expression);
-              query.query.bool.filter.push(userExpression);
+              query.query.bool.filter.push(molochparser.parse(cq.query));
             } catch (e) {
-              console.log("Couldn't compile user forced expression", user.expression, e);
+              console.log("Couldn't compile cron query expression", cq, e);
               return forQueriesCb();
             }
-          }
 
-          lookupQueryItems(query.query.bool.filter, function (lerr) {
-            processCronQuery(cq, options, query, endTime, function (count, lpValue) {
-              if (Config.debug > 1) {
-                console.log("CRON - setting lpValue", new Date(lpValue*1000));
+            if (user.expression && user.expression.length > 0) {
+              try {
+                // Expression was set by admin, so assume email search ok
+                molochparser.parser.yy.emailSearch = true;
+                var userExpression = molochparser.parse(user.expression);
+                query.query.bool.filter.push(userExpression);
+              } catch (e) {
+                console.log("Couldn't compile user forced expression", user.expression, e);
+                return forQueriesCb();
               }
-              // Do the ES update
-              let document = {
-                doc: {
-                  lpValue: lpValue,
-                  lastRun: Math.floor(Date.now()/1000),
-                  count: (queries[qid].count || 0) + count
+            }
+
+            lookupQueryItems(query.query.bool.filter, function (lerr) {
+              processCronQuery(cq, options, query, endTime, function (count, lpValue) {
+                if (Config.debug > 1) {
+                  console.log("CRON - setting lpValue", new Date(lpValue*1000));
                 }
-              };
+                // Do the ES update
+                let document = {
+                  doc: {
+                    lpValue: lpValue,
+                    lastRun: Math.floor(Date.now()/1000),
+                    count: (queries[qid].count || 0) + count
+                  }
+                };
 
-              function continueProcess () {
-                Db.update('queries', 'query', qid, document, { refresh: true }, function () {
-                  // If there is more time to catch up on, repeat the loop, although other queries
-                  // will get processed first to be fair
-                  if (lpValue !== endTime) { repeat = true; }
-                  return forQueriesCb();
-                });
-              }
+                function continueProcess () {
+                  Db.update('queries', 'query', qid, document, { refresh: true }, function () {
+                    // If there is more time to catch up on, repeat the loop, although other queries
+                    // will get processed first to be fair
+                    if (lpValue !== endTime) { repeat = true; }
+                    return forQueriesCb();
+                  });
+                }
 
-              // issue alert via notifier if the count has changed and it has been at least 10 minutes
-              if (cq.notifier && count && queries[qid].count !== document.doc.count &&
-                (!cq.lastNotified || (Math.floor(Date.now()/1000) - cq.lastNotified >= 600))) {
-                let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
-                let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
-                issueAlert(cq.notifier, message, continueProcess);
-              } else {
-                return continueProcess();
-              }
+                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                if (cq.notifier && count && queries[qid].count !== document.doc.count &&
+                  (!cq.lastNotified || (Math.floor(Date.now()/1000) - cq.lastNotified >= 600))) {
+                  let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+                  let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+                  issueAlert(cq.notifier, message, continueProcess);
+                } else {
+                  return continueProcess();
+                }
+              });
             });
           });
         });

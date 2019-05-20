@@ -31,6 +31,7 @@ var internals = {fileId2File: {},
                  indicesCache: {},
                  indicesSettingsCache: {},
                  usersCache: {},
+                 lookupsCache: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
                  qInProgress: 0,
@@ -407,10 +408,9 @@ exports.flushCache = function () {
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
   internals.usersCache = {};
+  internals.lookupsCache = {};
   delete internals.aliasesCache;
 };
-
-
 exports.searchUsers = function(query, cb) {
   return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query}, cb);
 };
@@ -492,17 +492,51 @@ exports.setHunt = function (id, doc, cb) {
 exports.searchLookups = function (query, cb) {
   return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query}, cb);
 };
-exports.createLookup = function (doc, cb) {
+exports.createLookup = function (doc, username, cb) {
+  internals.lookupsCache = {};
   return internals.elasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for"}, cb);
 };
-exports.deleteLookup = function (id, cb) {
+exports.deleteLookup = function (id, username, cb) {
+  internals.lookupsCache = {};
   return internals.elasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
 };
-exports.setLookup = function (id, doc, cb) {
+exports.setLookup = function (id, username, doc, cb) {
+  internals.lookupsCache = {};
   return internals.elasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true}, cb);
 };
 exports.getLookup = function (id, cb) {
   return internals.elasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
+};
+exports.getLookupsCache = function (name, cb) {
+  if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.lookupsCache[name]);
+  }
+
+  // only get lookups for this user or shared
+  const query = {
+    query: {
+      bool: {
+        should: [
+          { term: { shared: true } },
+          { term: { userId: name } }
+        ]
+      }
+    }
+  };
+
+  exports.searchLookups(query, (err, lookups) => {
+    if (err) { return cb(err, lookups); }
+
+    let lookupsMap = {};
+    for (let lookup of lookups.hits.hits) {
+      lookupsMap[lookup._source.name] = lookup._id;
+    }
+
+    internals.lookupsCache[name] = lookupsMap;
+    internals.lookupsCache._timeStamp = Date.now();
+
+    cb(null, lookupsMap);
+  });
 };
 
 exports.molochNodeStats = function (name, cb) {

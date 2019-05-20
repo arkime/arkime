@@ -7,7 +7,7 @@
 \s+                        /* skip whitespace */
 \"(?:\\?.)*?\"             return 'QUOTEDSTR'
 \/(?:\\?.)*?\/             return 'REGEXSTR'
-[-+a-zA-Z0-9_.@:*?/]+      return 'STR'
+[-+a-zA-Z0-9_.@:*?/$]+      return 'STR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
@@ -312,6 +312,50 @@ function formatQuery(yy, field, op, value)
     else
       return {bool: {should: obj}};
     throw "Invalid operator '" + op + "' for " + field;
+  }
+
+  /* look for value that starts with $ */
+  if (value[0] === '$') {
+    value = value.substr(1); /* remove $ */
+    if (!yy.lookups || !yy.lookups[value]) {
+      throw value + ' - Shortcut not found';
+    }
+
+    obj = { terms: {} };
+    obj.terms[info.dbField] = {
+      index : `${yy.prefix}_lookups`,
+      id : yy.lookups[value],
+      type: 'lookup'
+    };
+
+    switch (info.type2 || info.type) {
+    case 'ip':
+      obj.terms[info.dbField].path = 'ip';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
+      }
+      return obj;
+    case 'integer':
+      /* TODO ECR check ><>=<= */
+      obj.terms[info.dbField].path = 'number';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
+      }
+      return obj;
+    case 'lotermfield':
+    case 'lotextfield':
+    case 'termfield':
+    case 'textfield':
+    case 'uptermfield':
+    case 'uptextfield':
+      obj.terms[info.dbField].path = 'string';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
+      }
+      return obj;
+    default:
+      throw "Unsupported field type: " + info.type;
+    }
   }
 
   switch (info.type2 || info.type) {

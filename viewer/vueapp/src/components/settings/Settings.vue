@@ -111,7 +111,7 @@
             :class="{'active':visibleTab === 'vars'}">
             <span class="fa fa-fw fa-list">
             </span>&nbsp;
-            Variables
+            Shortcuts
           </a>
         </div>
       </div> <!-- /navigation -->
@@ -1826,20 +1826,20 @@
         </form>
         <!-- /notifiers settings -->
 
-        <!-- variable settings -->
+        <!-- shortcut settings -->
         <form class="form-horizontal"
           v-if="visibleTab === 'vars'"
           id="vars">
 
-          <h3>Variables</h3>
+          <h3>Shortcuts</h3>
 
           <p>
-            Create a list of values that can be used in queries as variables.
+            Create a list of values that can be used in queries as shortcuts.
             For example, create a list of IPs and use them in a query
             expression <code>ip.src == $MY_IPS</code>.
             <br>
             <strong>Tip:</strong>
-            Use <code>$</code> to autocomplete variables in search expressions.
+            Use <code>$</code> to autocomplete shortcuts in search expressions.
           </p>
 
           <table v-if="vars && vars.length"
@@ -1862,7 +1862,7 @@
                     <input type="checkbox"
                       :disabled="!user.createEnabled && item.userId !== user.userId"
                       v-model="item.shared"
-                      @input="toggleVarShared(item)"
+                      @input="toggleShortcutShared(item)"
                     />
                   </td>
                   <td>
@@ -1882,17 +1882,17 @@
                       <span v-if="!item.newValue">
                         <button type="button"
                           v-b-tooltip.hover
-                          @click="toggleEditVar(item)"
-                          title="Make changes to this variable's value"
+                          @click="toggleEditShortcut(item)"
+                          title="Make changes to this shortcut's value"
                           class="btn btn-sm btn-theme-tertiary pull-right ml-1">
                           <span class="fa fa-pencil">
                           </span>
                         </button>
                         <button type="button"
                           v-b-tooltip.hover
-                          title="Delete this variable"
+                          title="Delete this shortcut"
                           class="btn btn-sm btn-danger pull-right"
-                          @click="deleteVar(item, index)">
+                          @click="deleteShortcut(item, index)">
                           <span class="fa fa-trash-o">
                           </span>
                         </button>
@@ -1900,17 +1900,17 @@
                       <span v-else>
                         <button type="button"
                           v-b-tooltip.hover
-                          @click="updateVar(item)"
-                          title="Save changes to this variable's value"
+                          @click="updateShortcut(item)"
+                          title="Save changes to this shortcut's value"
                           class="btn btn-sm btn-theme-tertiary pull-right ml-1">
                           <span class="fa fa-save">
                           </span>
                         </button>
                         <button type="button"
                           v-b-tooltip.hover
-                          title="Cancel changes to this varaible's value"
+                          title="Cancel changes to this shortcut's value"
                           class="btn btn-sm btn-warning pull-right"
-                          @click="toggleEditVar(item)">
+                          @click="toggleEditShortcut(item)">
                           <span class="fa fa-ban">
                           </span>
                         </button>
@@ -1947,7 +1947,7 @@
               <div class="row mb-3 mt-4">
                 <div class="col-10 offset-2">
                   <h3 class="mt-3">
-                    New Variable
+                    New Shortcut
                   </h3>
                 </div>
               </div>
@@ -2020,7 +2020,7 @@
                   />
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
-                    @click="createVar">
+                    @click="createShortcut">
                     <span class="fa fa-plus-circle">
                     </span>&nbsp;
                     Create
@@ -2041,7 +2041,7 @@
             </div>
           </div> <!-- /new var form -->
 
-        </form> <!-- / variable settings -->
+        </form> <!-- / shortcut settings -->
 
       </div>
 
@@ -2152,7 +2152,7 @@ export default {
       notifiersError: '',
       newNotifier: undefined,
       newNotifierError: '',
-      // variable settings vars
+      // shortcut settings vars
       vars: undefined,
       varsListError: '',
       newVarShared: false,
@@ -2925,29 +2925,29 @@ export default {
           this.msgType = 'danger';
         });
     },
-    /* VARIABLES --------------------------------------- */
-    /* toggles shared var on a variable and saves the variable */
-    toggleVarShared: function (variable) {
-      this.$set(variable, 'shared', !variable.shared);
-      this.updateVar(variable);
+    /* SHORTCUTS --------------------------------------- */
+    /* toggles shared var on a shortcut and saves the shortcut */
+    toggleShortcutShared: function (shortcut) {
+      this.$set(shortcut, 'shared', !shortcut.shared);
+      this.updateShortcut(shortcut);
     },
-    /* opens up text area to edit variable value */
-    toggleEditVar: function (variable) {
-      if (!variable.newValue) {
-        this.$set(variable, 'newValue', variable.value);
+    /* opens up text area to edit shortcut value */
+    toggleEditShortcut: function (shortcut) {
+      if (!shortcut.newValue) {
+        this.$set(shortcut, 'newValue', shortcut.value);
       } else {
-        this.$set(variable, 'newValue', undefined);
+        this.$set(shortcut, 'newValue', undefined);
       }
     },
-    /* creates a new variable */
-    createVar: function () {
+    /* creates a new shortcut */
+    createShortcut: function () {
       if (!this.newVarName) {
-        this.varFormError = 'Enter a unique variable name';
+        this.varFormError = 'Enter a unique shortcut name';
         return;
       }
 
       if (!this.newVarValue) {
-        this.varFormError = 'Enter a value for your new variable';
+        this.varFormError = 'Enter a value for your new shortcut';
         return;
       }
 
@@ -2978,29 +2978,29 @@ export default {
           this.msgType = 'danger';
         });
     },
-    /* updates a specified variable (only shared and value are editable) */
-    updateVar: function (variable) {
+    /* updates a specified shortcut (only shared and value are editable) */
+    updateShortcut: function (shortcut) {
       let data = {
-        name: variable.name,
-        type: variable.type,
-        value: variable.value,
-        shared: variable.shared,
-        userId: variable.userId,
-        description: variable.description
+        name: shortcut.name,
+        type: shortcut.type,
+        value: shortcut.value,
+        shared: shortcut.shared,
+        userId: shortcut.userId,
+        description: shortcut.description
       };
 
-      if (variable.newValue) {
-        data.value = variable.newValue;
+      if (shortcut.newValue) {
+        data.value = shortcut.newValue;
       }
 
-      this.$http.put(`lookups/${variable.id}`, { var: data })
+      this.$http.put(`lookups/${shortcut.id}`, { var: data })
         .then((response) => {
           // update value and clear out new value
           // so it can be used to determine editing
-          if (variable.newValue) {
-            this.$set(variable, 'value', variable.newValue);
-            this.$set(variable, 'newValue', undefined);
-            delete variable.newValue;
+          if (shortcut.newValue) {
+            this.$set(shortcut, 'value', shortcut.newValue);
+            this.$set(shortcut, 'newValue', undefined);
+            delete shortcut.newValue;
           }
           // display success message to user
           this.msg = response.data.text;
@@ -3011,9 +3011,9 @@ export default {
           this.msgType = 'danger';
         });
     },
-    /* deletes a variable and removes it from the variables array */
-    deleteVar: function (variable, index) {
-      this.$http.delete(`lookups/${variable.id}`)
+    /* deletes a shortcut and removes it from the shortcuts array */
+    deleteShortcut: function (shortcut, index) {
+      this.$http.delete(`lookups/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
           this.vars.splice(index, 1);
