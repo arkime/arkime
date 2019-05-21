@@ -316,6 +316,10 @@ function formatQuery(yy, field, op, value)
 
   /* look for value that starts with $ */
   if (value[0] === '$') {
+    if (op !== "eq" && op !== "ne") {
+      throw 'Shortcuts only support == and !=';
+    }
+
     value = value.substr(1); /* remove $ */
     if (!yy.lookups || !yy.lookups[value]) {
       throw value + ' - Shortcut not found';
@@ -336,7 +340,6 @@ function formatQuery(yy, field, op, value)
       }
       return obj;
     case 'integer':
-      /* TODO ECR check ><>=<= */
       obj.terms[info.dbField].path = 'number';
       if (op === "ne") {
         return { bool: { must_not: obj } };

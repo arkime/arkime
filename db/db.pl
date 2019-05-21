@@ -1555,7 +1555,7 @@ sub lookupsUpdate
         "type": "integer"
       },
       "ip": {
-        "type": "ip"
+        "type": "keyword"
       },
       "string": {
         "type": "keyword"
@@ -2102,6 +2102,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^backup$/) {
     my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
     push(@indexes, "hunts") if ($main::versionNumber > 51);
+    push(@indexes, "lookups") if ($main::versionNumber > 60);
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -2654,6 +2655,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}history_v1-*", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
     esDelete("/${PREFIX}hunts_v1", 1);
+    esDelete("/${PREFIX}lookups_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2679,6 +2681,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     fieldsCreate();
     historyUpdate();
     huntsCreate();
+    lookupsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2689,7 +2692,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity();
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -2749,6 +2752,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}queries", 1);
     esDelete("/${PREFIX}queries_v1", 1);
     esDelete("/${PREFIX}queries_v2", 1);
+    esDelete("/${PREFIX}lookups_v1", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
     esDelete("/_template/${PREFIX}sessions_template", 1);
     esDelete("/_template/${PREFIX}sessions2_template", 1);
@@ -2888,6 +2892,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         huntsCreate();
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
@@ -2895,6 +2900,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         huntsCreate();
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         queriesUpdate();
         sessions2Update();
@@ -2902,12 +2908,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
     } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         usersUpdate();
         huntsUpdate();
