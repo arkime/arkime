@@ -2369,7 +2369,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $shortcutName = $ARGV[2];
     my $shortcutUserId = $ARGV[3];
 
-    # TODO make sure username exists?
     my $shortcuts = esGet("/${PREFIX}lookups/_search?q=name:${shortcutName}");
 
     my $existingShortcut;
