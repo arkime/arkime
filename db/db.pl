@@ -55,7 +55,7 @@
 # 58 - users message count and last used date
 # 59 - tokens
 # 60 - users time query limit
-# 61 - variables
+# 61 - shortcuts
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -80,6 +80,9 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $WARMAFTER = -1;
+my $TYPE = "string";
+my $SHARED = 0;
+my $DESCRIPTION = "";
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -140,6 +143,13 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  disableusers <days>          - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
+    print "  setshortcut <name> <userid> <file> [<opts>]  - Create/update shortcut\n";
+    print "       name                                    - Name of the shortcut (no special characters except '_')\n";
+    print "       userid                                  - UserId of the user to add the shortcut for\n";
+    print "       file                                    - File that includes a comma or newline separated list of values\n";
+    print "    --type                                     - Type of shortcut = string, ip, number, default is string\n";
+    print "    --shared                                   - Whether the shortcut is shared to all users\n";
+    print "    --description                              - Description of the shortcut\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
@@ -2012,11 +2022,11 @@ sub parseArgs {
             $pos++;
             $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
-	    $NOOPTIMIZE = 1;
+	         $NOOPTIMIZE = 1;
         } elsif ($ARGV[$pos] eq "--full") {
-	    $FULL = 1;
+	         $FULL = 1;
         } elsif ($ARGV[$pos] eq "--reverse") {
-	    $REVERSE = 1;
+	         $REVERSE = 1;
         } elsif ($ARGV[$pos] eq "--skipupgradeall") {
             $UPGRADEALLSESSIONS = 0;
         } elsif ($ARGV[$pos] eq "--shardsPerNode") {
@@ -2031,6 +2041,15 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--shared") {
+            $pos++;
+            $SHARED = 1;
+        } elsif ($ARGV[$pos] eq "--type") {
+            $pos++;
+            $TYPE = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--description") {
+            $pos++;
+            $DESCRIPTION = $ARGV[$pos];
         } else {
             logmsg "Unknown option '$ARGV[$pos]'\n";
         }
@@ -2057,10 +2076,10 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|setshortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|setshortcut)$/);
+showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|setshortcut)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2325,6 +2344,72 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     } else {
       print "$rmcount user(s) disabled\n";
     }
+
+    exit 0;
+} elsif ($ARGV[1] eq "setshortcut") {
+    showHelp("Invalid name $ARGV[2], names cannot have special characters except '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]$/);
+    showHelp("file '$ARGV[4]' not found") if (! -e $ARGV[4]);
+    showHelp("file '$ARGV[4]' empty") if (-z $ARGV[4]);
+
+    parseArgs(5);
+
+    showHelp("Type must be ip, string, or number instead of $TYPE") if ($TYPE !~ /^(string|ip|number)$/);
+
+    # read shortcuts file
+    my $shortcutValues;
+    open(my $fh, '<', $ARGV[4]);
+    {
+      local $/;
+      $shortcutValues = <$fh>;
+    }
+    close($fh);
+
+    my $shortcutsArray = [split /[\n,]/, $shortcutValues];
+
+    my $shortcutName = $ARGV[2];
+    my $shortcutUserId = $ARGV[3];
+
+    # TODO make sure username exists?
+    my $shortcuts = esGet("/${PREFIX}lookups/_search?q=name:${shortcutName}");
+
+    my $existingShortcut;
+    foreach my $shortcut (@{$shortcuts->{hits}->{hits}}) {
+      if ($shortcut->{_source}->{name} == $shortcutName) {
+        $existingShortcut = $shortcut;
+        last;
+      }
+    }
+
+    # create shortcut object
+    my $newShortcut;
+    $newShortcut->{name} = $shortcutName;
+    $newShortcut->{userId} = $shortcutUserId;
+    $newShortcut->{$TYPE} = $shortcutsArray;
+    if ($existingShortcut) { # use existing optional fields
+      if ($existingShortcut->{_source}->{description}) {
+        $newShortcut->{description} = $existingShortcut->{_source}->{description};
+      }
+      if ($existingShortcut->{_source}->{shared}) {
+        $newShortcut->{shared} = $existingShortcut->{_source}->{shared};
+      }
+    }
+    if ($DESCRIPTION) {
+      $newShortcut->{description} = $DESCRIPTION;
+    }
+    if ($SHARED) {
+      $newShortcut->{shared} = \1;
+    }
+
+    my $verb = "Created";
+    if ($existingShortcut) { # update the shortcut
+      $verb = "Updated";
+      my $id = $existingShortcut->{_id};
+      esPost("/${PREFIX}lookups/lookup/${id}", to_json($newShortcut));
+    } else { # create the shortcut
+      esPost("/${PREFIX}lookups/lookup", to_json($newShortcut));
+    }
+
+    print "${verb} shortcut ${shortcutName}\n";
 
     exit 0;
 } elsif ($ARGV[1] eq "info") {
