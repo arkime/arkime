@@ -1929,7 +1929,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1", 1);
+    esForceMerge("${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1", 1);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -2312,6 +2312,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     printIndex($status, "stats_v3");
     printIndex($status, "stats_v2");
+    printIndex($status, "fields_v2");
     printIndex($status, "files_v5");
     printIndex($status, "files_v4");
     printIndex($status, "users_v6");
@@ -2862,9 +2863,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";
