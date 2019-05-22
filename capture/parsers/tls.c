@@ -24,6 +24,8 @@ LOCAL  int                   ja3Field;
 LOCAL  int                   ja3sField;
 LOCAL  int                   srcIdField;
 LOCAL  int                   dstIdField;
+LOCAL  int                   ja3StrField;
+LOCAL  int                   ja3sStrField;
 
 typedef struct {
     unsigned char       buf[8192];
@@ -248,6 +250,8 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     }
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
+
+    moloch_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
     if (!moloch_field_string_add(ja3sField, session, md5, 32, FALSE)) {
@@ -656,6 +660,8 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
         if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb)) {
             BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, ecfja3);
 
+            moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+
             gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
             if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
                 g_free(md5);
@@ -857,10 +863,22 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
+    ja3StrField = moloch_field_define("tls","lotermfield",
+        "tls.ja3string", "JA3STR", "tls.ja3string",
+        "SSL/TLS JA3 String field",
+        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
     ja3sField = moloch_field_define("tls", "lotermfield",
         "tls.ja3s", "JA3S", "tls.ja3s",
         "SSL/TLS JA3S field",
         MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    ja3sStrField = moloch_field_define("tls","lotermfield",
+        "tls.ja3sstring", "JA3SSTR", "tls.ja3sstring",
+        "SSL/TLS JA3S String field",
+        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     dstIdField = moloch_field_define("tls", "lotermfield",
