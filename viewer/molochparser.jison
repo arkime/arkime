@@ -86,10 +86,56 @@ e
 var    util           = require('util');
 var    moment         = require('moment');
 
+/* Build a list of all the field infos for ip field types.
+ * Can specify if a port field needs to be available for the type or not
+ */
+function getIpInfoList(yy, needPort)
+{
+  let ors = [];
+  let completed = {};
+
+  for (field in yy.fieldsMap) {
+    let info = yy.fieldsMap[field];
+
+    // If ip itself or not an ip field stop
+    if (field === "ip" || info.type !== "ip")
+      continue;
+
+    // Already completed
+    if (completed[info.dbField])
+      continue;
+    completed[info.dbField] = 1;
+
+    // If port specified then skip ips without ports
+    if (needPort && !info.portField) {
+      continue;
+    }
+
+    if (info.requiredRight && yy[info.requiredRight] !== true) {
+      continue;
+    }
+
+    ors.push(info);
+  }
+
+  return ors;
+}
+
+/* Do all the magic around ip field parsing.
+ * Supports many formats such as
+ * ip
+ * ip/cidr
+ * ip1 = ip1.0.0.0/24
+ * ip1.ip2 = ip1.ip2.0.0/16
+ * ip1.ip2.ip3 = ip1.ip2.ip3.0/8
+ * All of the above with a :port(v4) or .port(v6) at the end
+ * Arrays of all of the above
+ */
 function parseIpPort(yy, field, ipPortStr) {
   var dbField = yy.fieldsMap[field].dbField;
 
-  function singleIp(dbField, ip, port) {
+  // Have just a single Ip, create obj for it
+  function singleIp(exp, dbField, ip, port) {
     var obj;
 
     if (ip !== undefined) {
@@ -98,11 +144,11 @@ function parseIpPort(yy, field, ipPortStr) {
     }
 
     if (port !== -1) {
-      if (yy.fieldsMap[field].portField) {
+      if (yy.fieldsMap[exp].portField) {
         obj = {bool: {must: [obj, {term: {}}]}};
-        obj.bool.must[1].term[yy.fieldsMap[field].portField] = port;
+        obj.bool.must[1].term[yy.fieldsMap[exp].portField] = port;
       } else {
-        throw field + " doesn't support port";
+        throw exp + " doesn't support port";
       }
 
       if (ip === undefined) {
@@ -113,29 +159,13 @@ function parseIpPort(yy, field, ipPortStr) {
     return obj;
   }
 
+  // Special case of ip=
   function allIp(ip, port) {
+    let infos = getIpInfoList(yy, port !== -1);
+
     var ors = [];
-    var completed = {};
-    for (field in yy.fieldsMap) {
-      var info = yy.fieldsMap[field];
-
-      // If ip itself or not an ip field stop
-      if (field === "ip" || info.type !== "ip")
-        continue;
-
-      // Already completed
-      if (completed[info.dbField])
-        continue;
-      completed[info.dbField] = 1;
-
-      // If port specified then skip ips without ports
-      if (port !== -1 && !info.portField)
-        continue;
-
-      if (info.requiredRight && yy[info.requiredRight] !== true) {
-        continue;
-      }
-      obj = singleIp(info.dbField, ip, port);
+    for (let info of infos) {
+      obj = singleIp(info.exp, info.dbField, ip, port);
       if (obj) {
         ors.push(obj);
       }
@@ -166,7 +196,7 @@ function parseIpPort(yy, field, ipPortStr) {
   if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
       (ipPortStr[0] === '.')) {
     if (dbField !== "ipall") {
-      return singleIp(dbField, undefined, +ipPortStr.slice(1));
+      return singleIp(field, dbField, undefined, +ipPortStr.slice(1));
     } else {
       return allIp(undefined, +ipPortStr.slice(1));
     }
@@ -224,7 +254,7 @@ function parseIpPort(yy, field, ipPortStr) {
   }
 
   if (dbField !== "ipall") {
-    return singleIp(dbField, ip, port);
+    return singleIp(field, dbField, ip, port);
   } else {
     return allIp(ip, port);
   }
@@ -334,7 +364,20 @@ function formatQuery(yy, field, op, value)
 
     switch (info.type2 || info.type) {
     case 'ip':
-      obj.terms[info.dbField].path = 'ip';
+      if (field === 'ip') {
+        let infos = getIpInfoList(yy, false);
+        var ors = [];
+        for (let info of infos) {
+          obj = formatQuery(yy, info.exp, op, '$' + value);
+          if (obj) {
+            ors.push(obj);
+          }
+        }
+        obj = {bool: {should: ors}};
+      } else {
+        obj.terms[info.dbField].path = 'ip';
+      }
+
       if (op === "ne") {
         return { bool: { must_not: obj } };
       }
