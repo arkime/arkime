@@ -2743,6 +2743,8 @@ function buildSessionQuery (req, buildCb) {
       aggregations: {
         srcDataBytes: { sum: { field: 'srcDataBytes' } },
         dstDataBytes: { sum: { field: 'dstDataBytes' } },
+        srcBytes: { sum: { field: 'srcBytes' } },
+        dstBytes: { sum: { field: 'dstBytes' } },
         srcPackets: { sum: { field: 'srcPackets' } },
         dstPackets: { sum: { field: 'dstPackets' } }
       }
@@ -3563,6 +3565,7 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
                Db.getClusterSettings({flatSettings: true})
              ])
   .then(([nodesStats, nodesInfo, health, settings]) => {
+
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -3611,8 +3614,14 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
       const ip = (node.ip ? node.ip.split(':')[0] : node.host);
 
       let threadpoolInfo;
+      let version = "";
+      let molochtype;
       if (nodesInfo.nodes[nodeKeys[n]]) {
         threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
+        version = nodesInfo.nodes[nodeKeys[n]].version;
+        if (nodesInfo.nodes[nodeKeys[n]].attributes) {
+          molochtype = nodesInfo.nodes[nodeKeys[n]].attributes.molochtype;
+        }
       } else {
         threadpoolInfo = { queue_size: 0 };
       }
@@ -3637,7 +3646,9 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
         writesRejectedDelta: rejected,
         writesCompletedDelta: completed,
         writesQueueSize: threadpoolInfo.queue_size,
-        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
+        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"],
+        version: version,
+        molochtype: molochtype
       });
     }
 
@@ -4023,6 +4034,8 @@ function graphMerge(req, query, aggregations) {
     db2Histo: [],
     pa1Histo: [],
     pa2Histo: [],
+    by1Histo: [],
+    by2Histo: [],
     xmin: req.query.startTime * 1000|| null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations?query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60
@@ -4041,6 +4054,8 @@ function graphMerge(req, query, aggregations) {
     graph.pa2Histo.push([key, item.dstPackets.value]);
     graph.db1Histo.push([key, item.srcDataBytes.value]);
     graph.db2Histo.push([key, item.dstDataBytes.value]);
+    graph.by1Histo.push([key, item.srcBytes.value]);
+    graph.by2Histo.push([key, item.dstBytes.value]);
   });
 
   return graph;
@@ -4348,11 +4363,13 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
           results.items.push(r);
           r.lpHisto = 0.0;
           r.dbHisto = 0.0;
+          r.byHisto = 0.0;
           r.paHisto = 0.0;
           var graph = r.graph;
           for (let i = 0; i < graph.lpHisto.length; i++) {
             r.lpHisto += graph.lpHisto[i][1];
             r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+            r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
             r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
           }
           if (results.items.length === result.responses.length) {
@@ -4471,6 +4488,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
             });
 
             delete result.aggregations.dbHisto;
+            delete result.aggregations.byHisto;
             delete result.aggregations.mapG1;
             delete result.aggregations.mapG2;
             delete result.aggregations.mapG3;

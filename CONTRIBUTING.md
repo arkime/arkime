@@ -13,7 +13,7 @@
 
 ### Where do I start? :traffic_light:
 
-First, checkout the main [Moloch README](README.rst) for information on how to build and run Moloch.
+First, checkout the main [Moloch README](README.md) for information on how to build and run Moloch.
 
 **Then, get some test data!**
 

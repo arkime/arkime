@@ -122,13 +122,13 @@ sub showHelp($)
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
-    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices\n";
+    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
-    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices\n";
+    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -379,7 +379,7 @@ sub esWaitForNoTask
         }
 
         return 1 if (index ($response->content, $str) == -1);
-        sleep 10;
+        sleep 20;
     }
 }
 ################################################################################
@@ -1997,11 +1997,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}stats_v3", "${PREFIX}dstats_v3", "${PREFIX}files_v5", "${PREFIX}sequence_v2",  "${PREFIX}users_v6", "${PREFIX}queries_v2", "${PREFIX}hunts_v1") {
-        progress("$i ");
-        esForceMerge($i, 1);
-    }
-    logmsg "\n";
+    esForceMerge("${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1", 1);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -2458,6 +2454,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     printIndex($status, "stats_v3");
     printIndex($status, "stats_v2");
+    printIndex($status, "fields_v2");
     printIndex($status, "files_v5");
     printIndex($status, "files_v4");
     printIndex($status, "users_v6");
@@ -3013,6 +3010,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     } else {
         logmsg "db.pl is hosed\n";
     }
+}
+
+if ($DOHOTWARM) {
+    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+} else {
+    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

@@ -237,8 +237,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
             BSB_IMPORT_u16 (ebsb, etype);
             BSB_IMPORT_u16 (ebsb, elen);
 
-            if (etype != 10 && etype != 11)
-                BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
+            BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
             if (elen > BSB_REMAINING(ebsb))
                 break;
@@ -251,6 +250,9 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
+    if (config.debug > 1) {
+        LOG("JA3s: %s => %s", ja3, md5);
+    }
     if (!moloch_field_string_add(ja3sField, session, md5, 32, FALSE)) {
         g_free(md5);
     }
@@ -516,16 +518,17 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
     BSB sslbsb;
     char ja3[30000];
     BSB ja3bsb;
-    char ecfja3[10];
+    char ecfja3[1000];
+    BSB ecfja3bsb;
     char eja3[10000];
     BSB eja3bsb;
     char ecja3[10000];
     BSB ecja3bsb;
 
-    ecfja3[0] = 0;
     BSB_INIT(sslbsb, data, len);
     BSB_INIT(ja3bsb, ja3, sizeof(ja3));
     BSB_INIT(ecja3bsb, ecja3, sizeof(ecja3));
+    BSB_INIT(ecfja3bsb, ecfja3, sizeof(ecfja3));
     BSB_INIT(eja3bsb, eja3, sizeof(eja3));
 
     if (BSB_REMAINING(sslbsb) > 5) {
@@ -639,11 +642,20 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                                 len -= 2;
                             }
                             BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
-                        } else if (etype == 0x000b && elen == 2) { // Elliptic Curves point formats
-                            uint8_t ecf = 0;
-                            BSB_IMPORT_skip(ebsb, 1); // formats length
-                            BSB_IMPORT_u08(ebsb, ecf);
-                            sprintf(ecfja3, "%d", ecf);
+                        } else if (etype == 0x000b) { // Elliptic Curves point formats
+                            BSB bsb;
+                            BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
+                            BSB_IMPORT_skip (ebsb, elen);
+
+                            uint16_t len = 0;
+                            BSB_IMPORT_u08(bsb, len); // list len
+                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
+                                uint8_t c = 0;
+                                BSB_IMPORT_u08(bsb, c);
+                                BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
+                                len -= 1;
+                            }
+                            BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                         } else {
                             BSB_IMPORT_skip (ebsb, elen);
                         }
@@ -655,9 +667,13 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
 
         if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb)) {
-            BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, ecfja3);
+            BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
             gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
+
+            if (config.debug > 1) {
+                LOG("JA3: %s => %s", ja3, md5);
+            }
             if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
                 g_free(md5);
             }

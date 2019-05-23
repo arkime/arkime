@@ -193,7 +193,7 @@ void reader_libpcap_init(char *UNUSED(name))
         pcap_setnonblock(pcaps[i], FALSE, errbuf);
     }
 
-    if (i == MAX_INTERFACES) {
+    if (i == MAX_INTERFACES && config.interface[MAX_INTERFACES]) {
         LOGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }
 

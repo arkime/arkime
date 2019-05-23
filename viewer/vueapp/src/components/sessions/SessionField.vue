@@ -99,7 +99,7 @@
             </b-dropdown-item>
             <b-dropdown-item
               @click="isOpen = false"
-              v-clipboard:copy="pd.value"
+              v-clipboard="pd.value"
               title="Copy value to clipboard">
               <span class="fa fa-clipboard"></span>&nbsp;
               Copy value

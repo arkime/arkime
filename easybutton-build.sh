@@ -277,12 +277,11 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
         wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz
     fi
     sudo tar xfC node-v$NODE-linux-x64.tar.xz $TDIR
-    (cd $TDIR/bin ; sudo ln -s ../node-v$NODE-linux-x64/bin/* .)
+    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-x64/bin/* .)
 fi
 
 if [ $DOINSTALL -eq 1 ]; then
-    export PATH=$TDIR/bin:$PATH
-    sudo make install
+    sudo env "PATH=$TDIR/bin:$PATH" make install
     echo "MOLOCH: Installed, now type sudo make config'"
 else
     echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"

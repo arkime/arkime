@@ -1258,6 +1258,8 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
                 break;
             case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
                 session->stopSaving = op->strLenOrInt;
+                if (session->packets[0] + session->packets[1] >=session->stopSaving)
+                    moloch_session_add_tag(session, "truncated-pcap");
                 break;
             case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
                 session->minSaving = op->strLenOrInt;

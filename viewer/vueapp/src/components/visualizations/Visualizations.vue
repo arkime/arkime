@@ -148,6 +148,10 @@
               class="btn-radio">
               Packets
             </b-radio>
+            <b-radio value="byHisto"
+              class="btn-radio">
+              Bytes
+            </b-radio>
             <b-radio value="dbHisto"
               class="btn-radio">
               Databytes
@@ -524,7 +528,7 @@ export default {
             };
 
             let type;
-            if (this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
+            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
@@ -552,6 +556,11 @@ export default {
         this.graph = [
           { data: this.graphData.db1Histo, color: srcColor },
           { data: this.graphData.db2Histo, color: dstColor }
+        ];
+      } else if (this.graphType === 'byHisto') {
+        this.graph = [
+          { data: this.graphData.by1Histo, color: srcColor },
+          { data: this.graphData.by2Histo, color: dstColor }
         ];
       } else if (this.graphType === 'paHisto') {
         this.graph = [
@@ -602,7 +611,7 @@ export default {
           zoomRange: false,
           autoscaleMargin: 0.2,
           tickFormatter: (v) => {
-            if (this.graphType === 'dbHisto') {
+            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto') {
               return this.$options.filters.humanReadableBytes(v);
             } else {
               return this.$options.filters.humanReadableNumber(v);
