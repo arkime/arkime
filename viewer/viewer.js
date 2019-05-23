@@ -7121,16 +7121,18 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
           lookup.type = 'string';
         }
 
-        const value = lookup[lookup.type].join('\n');
+        const values = lookup[lookup.type];
 
         if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
           const name = `$${lookup.name}`;
           lookup.exp = name;
           lookup.dbField = name;
-          lookup.help = `${lookup.description}: ${value}`;
+          lookup.help = lookup.description ?
+            `${lookup.description}: ${values.join(', ')}` :
+            `${values.join(',')}`;
         }
 
-        lookup.value = value;
+        lookup.value = values.join('\n');
         delete lookup[lookup.type];
 
         if (map) {
@@ -7147,6 +7149,18 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
       return res.molochError(500, 'Error retrieving lookups - ' + err);
     });
 });
+
+function createLookupsArray (lookupsString) {
+  // split string on commas and newlines
+  let values = lookupsString.split(/[,\n]+/g);
+
+  // remove any empty values
+  values = values.filter(function (val) {
+    return val !== '';
+  });
+
+  return values;
+}
 
 app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, function (req, res) {
   // make sure all the necessary data is included in the post body
@@ -7184,8 +7198,8 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
       let variable = req.body.var;
       variable.userId = user.userId;
 
-      // comma separated value -> array of values
-      const values = req.body.var.value.split(/[,\n]+/g);
+      // comma/newline separated value -> array of values
+      const values = createLookupsArray(variable.value);
       variable[variable.type] = values;
 
       const type = variable.type;
@@ -7231,8 +7245,8 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
       return res.molochError(403, 'Permission denied');
     }
 
-    // comma separated value -> array of values
-    const values = req.body.var.value.split(/[,\n]+/g);
+    // comma/newline separated value -> array of values
+    const values = createLookupsArray(sentVar.value);
     sentVar[sentVar.type] = values;
     sentVar.userId = fetchedVar._source.userId;
 
@@ -7244,8 +7258,12 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
         console.log('variable update failed', err, info);
         return res.molochError(500, 'Updating variable failed');
       }
+
+      sentVar.value = values.join('\n');
+
       return res.send(JSON.stringify({
         success : true,
+        var     : sentVar,
         text    : 'Successfully updated variable'
       }));
     });

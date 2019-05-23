@@ -1871,13 +1871,13 @@
                   <td>
                     {{ item.description }}
                   </td>
-                  <td>
+                  <td class="shortcut-value">
                     {{ item.value }}
                   </td>
                   <td>
                     {{ item.type }}
                   </td>
-                  <td>
+                  <td class="shortcut-btns">
                     <span v-if="user.createEnabled || item.userId === user.userId">
                       <span v-if="!item.newValue">
                         <button type="button"
@@ -2998,7 +2998,7 @@ export default {
           // update value and clear out new value
           // so it can be used to determine editing
           if (shortcut.newValue) {
-            this.$set(shortcut, 'value', shortcut.newValue);
+            this.$set(shortcut, 'value', response.data.var.value);
             this.$set(shortcut, 'newValue', undefined);
             delete shortcut.newValue;
           }
@@ -3281,7 +3281,7 @@ export default {
   border: 1px solid var(--color-gray-light);
 }
 
-/* var form */
+/* shortcuts form */
 .settings-page .var-form {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
   background-color: var(--color-gray-lighter);
@@ -3290,6 +3290,17 @@ export default {
 }
 .settings-page .var-form input[type='checkbox'] {
   margin-top: 0.75rem;
+}
+
+/* shorcuts table */
+.settings-page .shortcut-value {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-page .shortcut-btns {
+  min-width: 80px;
 }
 
 /* theme displays ----------------- */

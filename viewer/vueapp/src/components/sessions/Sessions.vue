@@ -91,18 +91,23 @@
                     class="group-header">
                     {{ key }}
                   </b-dropdown-header>
-                  <!-- TODO fix tooltip placement -->
-                  <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
-                  <b-dropdown-item
-                    v-for="(field, k) in group"
-                    :key="key + k"
-                    :class="{'active':isColVisible(field.dbField) >= 0}"
-                    @click.stop.prevent="toggleColVis(field.dbField)"
-                    v-b-tooltip.hover.top
-                    :title="field.help">
-                    {{ field.friendlyName }}
-                    <small>({{ field.exp }})</small>
-                  </b-dropdown-item>
+                  <template v-for="(field, k) in group">
+                    <b-dropdown-item
+                      :id="key + k + 'item'"
+                      :key="key + k + 'item'"
+                      :class="{'active':isColVisible(field.dbField) >= 0}"
+                      @click.stop.prevent="toggleColVis(field.dbField)">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                    </b-dropdown-item>
+                    <b-tooltip v-if="field.help"
+                      :key="key + k + 'tooltip'"
+                      :target="key + k + 'item'"
+                      placement="right"
+                      boundary="window">
+                      {{ field.help }}
+                    </b-tooltip>
+                  </template>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
@@ -131,9 +136,7 @@
                       <button type="button"
                         class="btn btn-theme-secondary"
                         :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration"
-                        v-b-tooltip.hover
-                        title="Save this custom column configuration">
+                        @click="saveColumnConfiguration">
                         <span class="fa fa-save">
                         </span>
                       </button>
@@ -152,12 +155,18 @@
                   class="text-success">
                   {{ colConfigSuccess }}
                 </b-dropdown-item>
-                <b-dropdown-item
-                  v-b-tooltip.hover
-                  @click.stop.prevent="loadColumnConfiguration(-1)"
-                  title="Reset table to default columns">
-                  Moloch Default
-                </b-dropdown-item>
+                <template>
+                  <b-dropdown-item
+                    id="coldefault"
+                    @click.stop.prevent="loadColumnConfiguration(-1)">
+                    Moloch Default
+                  </b-dropdown-item>
+                  <b-tooltip target="coldefault"
+                    placement="right"
+                    boundary="window">
+                    Reset table to default columns
+                  </b-tooltip>
+                </template>
                 <b-dropdown-item
                   v-for="(config, key) in colConfigs"
                   :key="key"
@@ -215,12 +224,18 @@
                   </b-dropdown-header>
                   <b-dropdown-divider>
                   </b-dropdown-divider>
-                  <b-dropdown-item
-                    @click.stop.prevent="resetInfoVisibility"
-                    v-b-tooltip.hover.top
-                    title="Reset info column to default fields">
-                    Moloch Default
-                  </b-dropdown-item>
+                  <template>
+                    <b-dropdown-item
+                      id="infodefault"
+                      @click.stop.prevent="resetInfoVisibility">
+                      Moloch Default
+                    </b-dropdown-item>
+                    <b-tooltip target="infodefault"
+                      placement="left"
+                      boundary="window">
+                      Reset info column to default fields
+                    </b-tooltip>
+                  </template>
                   <b-dropdown-divider>
                   </b-dropdown-divider>
                   <template v-if="infoFieldVisMenuOpen"
@@ -231,18 +246,23 @@
                       class="group-header">
                       {{ key }}
                     </b-dropdown-header>
-                    <!-- TODO fix tooltip placement -->
-                    <!-- https://github.com/bootstrap-vue/bootstrap-vue/issues/1352 -->
-                    <b-dropdown-item
-                      v-for="(field, k) in group"
-                      :key="key + k"
-                      :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                      @click.stop.prevent="toggleInfoVis(field.dbField)"
-                      v-b-tooltip.hover.top
-                      :title="field.help">
-                      {{ field.friendlyName }}
-                      <small>({{ field.exp }})</small>
-                    </b-dropdown-item>
+                    <template v-for="(field, k) in group">
+                      <b-dropdown-item
+                        :id="key + k + 'infoitem'"
+                        :key="key + k + 'infoitem'"
+                        :class="{'active':isInfoVisible(field.dbField) >= 0}"
+                        @click.stop.prevent="toggleInfoVis(field.dbField)">
+                        {{ field.friendlyName }}
+                        <small>({{ field.exp }})</small>
+                      </b-dropdown-item>
+                      <b-tooltip v-if="field.help"
+                        :key="key + k + 'infotooltip'"
+                        :target="key + k + 'infoitem'"
+                        placement="left"
+                        boundary="window">
+                        {{ field.help }}
+                      </b-tooltip>
+                    </template>
                   </template>
                 </b-dropdown> <!-- /info field visibility button -->
               </span> <!-- /non-sortable column -->
