@@ -34,6 +34,7 @@
 
 extern MolochConfig_t        config;
 
+LOCAL GRegex     *slashslashRegex;
 
 typedef struct suricataitem_t SuricataItem_t;
 struct suricataitem_t {
@@ -261,8 +262,8 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
         } else if (MATCH(data, "rev")) {
             item->rev = atoi(data + out[i+2]);
         } else if (MATCH(data, "signature")) {
-            item->signature = g_strndup(data + out[i+2], out[i+3]);
-            item->signature_len = out[i+3];
+            item->signature = g_regex_replace_literal(slashslashRegex, data + out[i+2], out[i+3], 0, "/", 0, NULL);
+            item->signature_len = strlen(item->signature);
         } else if (MATCH(data, "severity")) {
             item->severity = atoi(data + out[i+2]);
         } else if (MATCH(data, "category")) {
@@ -476,9 +477,6 @@ void moloch_plugin_init()
     if (!suricataAlertFile)
         LOGEXIT("No suricataAlertFile set");
 
-    g_timeout_add_seconds(1, suricata_timer, 0);
-    suricata_timer(NULL);
-
     moloch_plugins_register("suricata", FALSE);
 
     moloch_plugins_set_cb("suricata",
@@ -533,4 +531,9 @@ void moloch_plugin_init()
         "Suricata Severity",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
+
+    slashslashRegex = g_regex_new("\\\\/", 0, 0, 0);
+
+    g_timeout_add_seconds(1, suricata_timer, 0);
+    suricata_timer(NULL);
 }
