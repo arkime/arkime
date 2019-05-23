@@ -141,15 +141,15 @@ sub showHelp($)
     print "    --warmafter <num>          - Set molochwarm on indices after <num> <tpye>\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
-    print "  disableusers <days>          - Disable user accounts that have not been active\n";
+    print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
-    print "  setshortcut <name> <userid> <file> [<opts>]  - Create/update shortcut\n";
-    print "       name                                    - Name of the shortcut (no special characters except '_')\n";
-    print "       userid                                  - UserId of the user to add the shortcut for\n";
-    print "       file                                    - File that includes a comma or newline separated list of values\n";
-    print "    --type                                     - Type of shortcut = string, ip, number, default is string\n";
-    print "    --shared                                   - Whether the shortcut is shared to all users\n";
-    print "    --description                              - Description of the shortcut\n";
+    print "  set-shortcut <name> <userid> <file> [<opts>]\n";
+    print "       name                    - Name of the shortcut (no special characters except '_')\n";
+    print "       userid                  - UserId of the user to add the shortcut for\n";
+    print "       file                    - File that includes a comma or newline separated list of values\n";
+    print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
+    print "    --shared                   - Whether the shortcut is shared to all users\n";
+    print "    --description <description>- Description of the shortcut\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
@@ -1531,7 +1531,7 @@ sub lookupsCreate
     "index.priority": 30,
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-3"
+    "auto_expand_replicas": "0-all"
   }
 }';
 
@@ -2022,11 +2022,11 @@ sub parseArgs {
             $pos++;
             $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
-	         $NOOPTIMIZE = 1;
+            $NOOPTIMIZE = 1;
         } elsif ($ARGV[$pos] eq "--full") {
-	         $FULL = 1;
+            $FULL = 1;
         } elsif ($ARGV[$pos] eq "--reverse") {
-	         $REVERSE = 1;
+            $REVERSE = 1;
         } elsif ($ARGV[$pos] eq "--skipupgradeall") {
             $UPGRADEALLSESSIONS = 0;
         } elsif ($ARGV[$pos] eq "--shardsPerNode") {
@@ -2042,7 +2042,6 @@ sub parseArgs {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--shared") {
-            $pos++;
             $SHARED = 1;
         } elsif ($ARGV[$pos] eq "--type") {
             $pos++;
@@ -2076,10 +2075,10 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|setshortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|setshortcut)$/);
-showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|setshortcut)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut)$/);
+showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2319,7 +2318,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/_flush/synced", "", 1);
     logmsg "\n";
     exit 0;
-} elsif ($ARGV[1] eq "disableusers") {
+} elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
 
     my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed");
@@ -2346,7 +2345,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
 
     exit 0;
-} elsif ($ARGV[1] eq "setshortcut") {
+} elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
     showHelp("Invalid name $ARGV[2], names cannot have special characters except '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]$/);
     showHelp("file '$ARGV[4]' not found") if (! -e $ARGV[4]);
     showHelp("file '$ARGV[4]' empty") if (-z $ARGV[4]);
