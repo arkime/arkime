@@ -55,6 +55,7 @@
 # 58 - users message count and last used date
 # 59 - tokens
 # 60 - users time query limit
+# 61 - shortcuts
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -63,7 +64,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 60;
+my $VERSION = 61;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -79,6 +80,9 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $WARMAFTER = -1;
+my $TYPE = "string";
+my $SHARED = 0;
+my $DESCRIPTION = "";
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -137,8 +141,15 @@ sub showHelp($)
     print "    --warmafter <num>          - Set molochwarm on indices after <num> <tpye>\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
-    print "  disableusers <days>          - Disable user accounts that have not been active\n";
+    print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
+    print "  set-shortcut <name> <userid> <file> [<opts>]\n";
+    print "       name                    - Name of the shortcut (no special characters except '_')\n";
+    print "       userid                  - UserId of the user to add the shortcut for\n";
+    print "       file                    - File that includes a comma or newline separated list of values\n";
+    print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
+    print "    --shared                   - Whether the shortcut is shared to all users\n";
+    print "    --description <description>- Description of the shortcut\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
@@ -1512,6 +1523,63 @@ esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $m
 ################################################################################
 
 ################################################################################
+sub lookupsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-all"
+  }
+}';
+
+  logmsg "Creating lookups_v1 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}lookups_v1", $settings);
+  esAlias("add", "lookups_v1", "lookups");
+  lookupsUpdate();
+}
+
+sub lookupsUpdate
+{
+    my $mapping = '
+{
+  "lookup": {
+    "_source": {"enabled": "true"},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "shared": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "keyword"
+      },
+      "number": {
+        "type": "integer"
+      },
+      "ip": {
+        "type": "keyword"
+      },
+      "string": {
+        "type": "keyword"
+      }
+    }
+  }
+}';
+
+logmsg "Setting lookups_v1 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}lookups_v1/lookup/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -1950,11 +2018,11 @@ sub parseArgs {
             $pos++;
             $SEGMENTS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
-	    $NOOPTIMIZE = 1;
+            $NOOPTIMIZE = 1;
         } elsif ($ARGV[$pos] eq "--full") {
-	    $FULL = 1;
+            $FULL = 1;
         } elsif ($ARGV[$pos] eq "--reverse") {
-	    $REVERSE = 1;
+            $REVERSE = 1;
         } elsif ($ARGV[$pos] eq "--skipupgradeall") {
             $UPGRADEALLSESSIONS = 0;
         } elsif ($ARGV[$pos] eq "--shardsPerNode") {
@@ -1969,6 +2037,14 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--shared") {
+            $SHARED = 1;
+        } elsif ($ARGV[$pos] eq "--type") {
+            $pos++;
+            $TYPE = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--description") {
+            $pos++;
+            $DESCRIPTION = $ARGV[$pos];
         } else {
             logmsg "Unknown option '$ARGV[$pos]'\n";
         }
@@ -1995,10 +2071,10 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disableusers|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut)$/);
+showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2040,6 +2116,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^backup$/) {
     my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
     push(@indexes, "hunts") if ($main::versionNumber > 51);
+    push(@indexes, "lookups") if ($main::versionNumber > 60);
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -2237,7 +2314,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/_flush/synced", "", 1);
     logmsg "\n";
     exit 0;
-} elsif ($ARGV[1] eq "disableusers") {
+} elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
 
     my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed");
@@ -2262,6 +2339,71 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     } else {
       print "$rmcount user(s) disabled\n";
     }
+
+    exit 0;
+} elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
+    showHelp("Invalid name $ARGV[2], names cannot have special characters except '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]$/);
+    showHelp("file '$ARGV[4]' not found") if (! -e $ARGV[4]);
+    showHelp("file '$ARGV[4]' empty") if (-z $ARGV[4]);
+
+    parseArgs(5);
+
+    showHelp("Type must be ip, string, or number instead of $TYPE") if ($TYPE !~ /^(string|ip|number)$/);
+
+    # read shortcuts file
+    my $shortcutValues;
+    open(my $fh, '<', $ARGV[4]);
+    {
+      local $/;
+      $shortcutValues = <$fh>;
+    }
+    close($fh);
+
+    my $shortcutsArray = [split /[\n,]/, $shortcutValues];
+
+    my $shortcutName = $ARGV[2];
+    my $shortcutUserId = $ARGV[3];
+
+    my $shortcuts = esGet("/${PREFIX}lookups/_search?q=name:${shortcutName}");
+
+    my $existingShortcut;
+    foreach my $shortcut (@{$shortcuts->{hits}->{hits}}) {
+      if ($shortcut->{_source}->{name} == $shortcutName) {
+        $existingShortcut = $shortcut;
+        last;
+      }
+    }
+
+    # create shortcut object
+    my $newShortcut;
+    $newShortcut->{name} = $shortcutName;
+    $newShortcut->{userId} = $shortcutUserId;
+    $newShortcut->{$TYPE} = $shortcutsArray;
+    if ($existingShortcut) { # use existing optional fields
+      if ($existingShortcut->{_source}->{description}) {
+        $newShortcut->{description} = $existingShortcut->{_source}->{description};
+      }
+      if ($existingShortcut->{_source}->{shared}) {
+        $newShortcut->{shared} = $existingShortcut->{_source}->{shared};
+      }
+    }
+    if ($DESCRIPTION) {
+      $newShortcut->{description} = $DESCRIPTION;
+    }
+    if ($SHARED) {
+      $newShortcut->{shared} = \1;
+    }
+
+    my $verb = "Created";
+    if ($existingShortcut) { # update the shortcut
+      $verb = "Updated";
+      my $id = $existingShortcut->{_id};
+      esPost("/${PREFIX}lookups/lookup/${id}", to_json($newShortcut));
+    } else { # create the shortcut
+      esPost("/${PREFIX}lookups/lookup", to_json($newShortcut));
+    }
+
+    print "${verb} shortcut ${shortcutName}\n";
 
     exit 0;
 } elsif ($ARGV[1] eq "info") {
@@ -2593,6 +2735,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}history_v1-*", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
     esDelete("/${PREFIX}hunts_v1", 1);
+    esDelete("/${PREFIX}lookups_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v3", 1);
         esDelete("/${PREFIX}users_v4", 1);
@@ -2618,6 +2761,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     fieldsCreate();
     historyUpdate();
     huntsCreate();
+    lookupsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -2628,7 +2772,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity();
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats");
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -2688,6 +2832,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}queries", 1);
     esDelete("/${PREFIX}queries_v1", 1);
     esDelete("/${PREFIX}queries_v2", 1);
+    esDelete("/${PREFIX}lookups_v1", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
     esDelete("/_template/${PREFIX}sessions_template", 1);
     esDelete("/_template/${PREFIX}sessions2_template", 1);
@@ -2827,6 +2972,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         huntsCreate();
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
     } elsif ($main::versionNumber < 52) {
         historyUpdate();
@@ -2834,6 +2980,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         huntsCreate();
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         queriesUpdate();
         sessions2Update();
@@ -2841,22 +2988,25 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
     } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
+        lookupsCreate();
         setPriority();
         usersUpdate();
         huntsUpdate();
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
-    } elsif ($main::versionNumber <= 60) {
+    } elsif ($main::versionNumber <= 61) {
         checkForOld5Indices();
         sessions2Update();
         usersUpdate();
+        lookupsCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }

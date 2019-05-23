@@ -106,6 +106,13 @@
             </span>&nbsp;
             Notifiers
           </a>
+          <a class="nav-link cursor-pointer"
+            @click="openView('vars')"
+            :class="{'active':visibleTab === 'vars'}">
+            <span class="fa fa-fw fa-list">
+            </span>&nbsp;
+            Shortcuts
+          </a>
         </div>
       </div> <!-- /navigation -->
 
@@ -435,8 +442,6 @@
              and can be activated in the search bar.
           </p>
 
-          <hr>
-
           <table class="table table-striped table-sm">
             <thead>
               <tr>
@@ -608,8 +613,6 @@
             delayed by 90 second to make sure all updates have been completed
             for that session.
           </p>
-
-          <hr>
 
           <table class="table table-striped table-sm">
             <thead>
@@ -833,8 +836,6 @@
             table's column layout for future use.
           </p>
 
-          <hr>
-
           <table class="table table-striped table-sm">
             <thead>
               <tr>
@@ -956,8 +957,6 @@
             Custom visible field configurations allow the user to save their
             visible fields on the SPI View page for future use.
           </p>
-
-          <hr>
 
           <table class="table table-striped table-sm">
             <thead>
@@ -1827,6 +1826,223 @@
         </form>
         <!-- /notifiers settings -->
 
+        <!-- shortcut settings -->
+        <form class="form-horizontal"
+          v-if="visibleTab === 'vars'"
+          id="vars">
+
+          <h3>Shortcuts</h3>
+
+          <p>
+            Create a list of values that can be used in queries as shortcuts.
+            For example, create a list of IPs and use them in a query
+            expression <code>ip.src == $MY_IPS</code>.
+            <br>
+            <strong>Tip:</strong>
+            Use <code>$</code> to autocomplete shortcuts in search expressions.
+          </p>
+
+          <table v-if="vars && vars.length"
+            class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>Shared</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Value(s)</th>
+                <th>Type</th>
+                <th>&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- vars -->
+              <template v-for="(item, index) in vars">
+                <tr :key="`${item.id}-content`">
+                  <td>
+                    <input type="checkbox"
+                      :disabled="!user.createEnabled && item.userId !== user.userId"
+                      v-model="item.shared"
+                      @input="toggleShortcutShared(item)"
+                    />
+                  </td>
+                  <td>
+                    {{ item.name }}
+                  </td>
+                  <td>
+                    {{ item.description }}
+                  </td>
+                  <td>
+                    {{ item.value }}
+                  </td>
+                  <td>
+                    {{ item.type }}
+                  </td>
+                  <td>
+                    <span v-if="user.createEnabled || item.userId === user.userId">
+                      <span v-if="!item.newValue">
+                        <button type="button"
+                          v-b-tooltip.hover
+                          @click="toggleEditShortcut(item)"
+                          title="Make changes to this shortcut's value"
+                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                          <span class="fa fa-pencil">
+                          </span>
+                        </button>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          title="Delete this shortcut"
+                          class="btn btn-sm btn-danger pull-right"
+                          @click="deleteShortcut(item, index)">
+                          <span class="fa fa-trash-o">
+                          </span>
+                        </button>
+                      </span>
+                      <span v-else>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          @click="updateShortcut(item)"
+                          title="Save changes to this shortcut's value"
+                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          title="Cancel changes to this shortcut's value"
+                          class="btn btn-sm btn-warning pull-right"
+                          @click="toggleEditShortcut(item)">
+                          <span class="fa fa-ban">
+                          </span>
+                        </button>
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+                <tr :key="`${item.id}-edit`"
+                  v-if="item.newValue">
+                  <td colspan="6">
+                    <textarea rows="5"
+                      type="text"
+                      class="form-control form-control-sm m-1"
+                      v-model="item.newValue">
+                    </textarea>
+                  </td>
+                </tr>
+              </template> <!-- /vars -->
+              <!-- vars list error -->
+              <tr v-if="varsListError">
+                <td colspan="6">
+                  <p class="text-danger mb-0">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ varsListError }}
+                  </p>
+                </td>
+              </tr> <!-- /vars list error -->
+            </tbody>
+          </table>
+          <!-- new var form -->
+          <div class="row var-form mr-1 ml-1 mt-2">
+            <div class="col-12">
+              <div class="row mb-3 mt-4">
+                <div class="col-10 offset-2">
+                  <h3 class="mt-3">
+                    New Shortcut
+                  </h3>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarName"
+                  class="col-2 col-form-label text-right">
+                  Name<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <input id="newVarName"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="newVarName"
+                    placeholder="MY_MOLOCH_VAR"
+                  />
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarDescription"
+                  class="col-2 col-form-label text-right">
+                  Description
+                </label>
+                <div class="col-10">
+                  <input id="newVarDescription"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="newVarDescription"
+                  />
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarValue"
+                  class="col-2 col-form-label text-right">
+                  Value(s)<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <textarea id="newVarValue"
+                    type="text"
+                    rows="5"
+                    class="form-control form-control-sm"
+                    v-model="newVarValue"
+                    placeholder="Enter a comma or newline separated list of values">
+                  </textarea>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarType"
+                  class="col-2 col-form-label text-right">
+                  Type<sup>*</sup>
+                </label>
+                <div class="col-10">
+                  <select id="newVarType"
+                    v-model="newVarType"
+                    class="form-control form-control-sm">
+                    <option value="ip">IP(s)</option>
+                    <option value="string">String(s)</option>
+                    <option value="number">Number(s)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="newVarShared"
+                  class="col-2 col-form-label text-right">
+                  Shared
+                </label>
+                <div class="col-10">
+                  <input id="newVarShared"
+                    type="checkbox"
+                    v-model="newVarShared"
+                  />
+                  <button class="btn btn-theme-tertiary btn-sm pull-right"
+                    type="button"
+                    @click="createShortcut">
+                    <span class="fa fa-plus-circle">
+                    </span>&nbsp;
+                    Create
+                  </button>
+                </div>
+              </div>
+              <!-- var form error -->
+              <div class="row mb-4 text-right">
+                <div class="col-12">
+                  <p v-if="varFormError"
+                    class="small text-danger mb-0">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ varFormError }}
+                  </p>
+                </div>
+              </div> <!-- /var form error -->
+            </div>
+          </div> <!-- /new var form -->
+
+        </form> <!-- / shortcut settings -->
+
       </div>
 
     </div> <!-- /content -->
@@ -1935,7 +2151,16 @@ export default {
       notifierTypes: [],
       notifiersError: '',
       newNotifier: undefined,
-      newNotifierError: ''
+      newNotifierError: '',
+      // shortcut settings vars
+      vars: undefined,
+      varsListError: '',
+      newVarShared: false,
+      newVarName: '',
+      newVarDescription: '',
+      newVarValue: '',
+      newVarType: 'string',
+      varFormError: ''
     };
   },
   computed: {
@@ -1958,7 +2183,7 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers') {
+        tab === 'spiview' || tab === 'notifiers' || tab === 'vars') {
         this.visibleTab = tab;
       }
 
@@ -2010,6 +2235,7 @@ export default {
         this.getSpiviewConfigs();
         this.getNotifierTypes();
         this.getNotifiers();
+        this.getVars();
       })
       .catch((error) => {
         this.error = error.text;
@@ -2699,6 +2925,108 @@ export default {
           this.msgType = 'danger';
         });
     },
+    /* SHORTCUTS --------------------------------------- */
+    /* toggles shared var on a shortcut and saves the shortcut */
+    toggleShortcutShared: function (shortcut) {
+      this.$set(shortcut, 'shared', !shortcut.shared);
+      this.updateShortcut(shortcut);
+    },
+    /* opens up text area to edit shortcut value */
+    toggleEditShortcut: function (shortcut) {
+      if (!shortcut.newValue) {
+        this.$set(shortcut, 'newValue', shortcut.value);
+      } else {
+        this.$set(shortcut, 'newValue', undefined);
+      }
+    },
+    /* creates a new shortcut */
+    createShortcut: function () {
+      if (!this.newVarName) {
+        this.varFormError = 'Enter a unique shortcut name';
+        return;
+      }
+
+      if (!this.newVarValue) {
+        this.varFormError = 'Enter a value for your new shortcut';
+        return;
+      }
+
+      const data = {
+        name: this.newVarName,
+        type: this.newVarType,
+        value: this.newVarValue,
+        shared: this.newVarShared,
+        description: this.newVarDescription
+      };
+
+      this.$http.post('lookups', { var: data })
+        .then((response) => {
+          // add it to the list
+          this.vars.push(response.data.var);
+          // clear the inputs and any error
+          this.varFormError = false;
+          this.newVarName = '';
+          this.newVarValue = '';
+          this.newVarShared = false;
+          this.newVarDescription = '';
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    /* updates a specified shortcut (only shared and value are editable) */
+    updateShortcut: function (shortcut) {
+      let data = {
+        name: shortcut.name,
+        type: shortcut.type,
+        value: shortcut.value,
+        shared: shortcut.shared,
+        userId: shortcut.userId,
+        description: shortcut.description
+      };
+
+      if (shortcut.newValue) {
+        data.value = shortcut.newValue;
+      }
+
+      this.$http.put(`lookups/${shortcut.id}`, { var: data })
+        .then((response) => {
+          // update value and clear out new value
+          // so it can be used to determine editing
+          if (shortcut.newValue) {
+            this.$set(shortcut, 'value', shortcut.newValue);
+            this.$set(shortcut, 'newValue', undefined);
+            delete shortcut.newValue;
+          }
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    /* deletes a shortcut and removes it from the shortcuts array */
+    deleteShortcut: function (shortcut, index) {
+      this.$http.delete(`lookups/${shortcut.id}`)
+        .then((response) => {
+          // remove it from the array
+          this.vars.splice(index, 1);
+          // display success message to user
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
 
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
@@ -2868,6 +3196,14 @@ export default {
           this.notifiersError = error.text || error;
         });
     },
+    getVars: function () {
+      this.$http.get('lookups')
+        .then((response) => {
+          this.vars = response.data;
+        }, (error) => {
+          this.varsListError = error.text || error;
+        });
+    },
     /**
      * Setup this.columns with a list of field objects
      * @param {array} colIdArray The array of column ids
@@ -2943,6 +3279,17 @@ export default {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
   background-color: var(--color-gray-lighter);
   border: 1px solid var(--color-gray-light);
+}
+
+/* var form */
+.settings-page .var-form {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 3px;
+}
+.settings-page .var-form input[type='checkbox'] {
+  margin-top: 0.75rem;
 }
 
 /* theme displays ----------------- */
