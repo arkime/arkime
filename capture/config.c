@@ -537,6 +537,7 @@ void moloch_config_load()
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMTPHeaderAll    = moloch_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
+    config.ja3Strings            = moloch_config_boolean(keyfile, "ja3Strings", FALSE);
     config.parseDNSRecordAll     = moloch_config_boolean(keyfile, "parseDNSRecordAll", FALSE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);

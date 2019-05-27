@@ -251,7 +251,9 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 
-    moloch_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
+    if (config.ja3Strings) {
+        moloch_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
+    }
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
     if (config.debug > 1) {
@@ -673,7 +675,9 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
         if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb)) {
             BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
-            moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+            if (config.ja3Strings) {
+                moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+            }
 
             gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
 
