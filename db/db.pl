@@ -3002,11 +3002,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         sessions2Update();
         fieldsIpDst();
-    } elsif ($main::versionNumber <= 61) {
+    } elsif ($main::versionNumber <= 60) {
         checkForOld5Indices();
         sessions2Update();
         usersUpdate();
         lookupsCreate();
+    } elsif ($main::versionNumber <= 61) {
+        checkForOld5Indices();
+        sessions2Update();
     } else {
         logmsg "db.pl is hosed\n";
     }
