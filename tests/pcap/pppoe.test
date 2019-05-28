@@ -162,6 +162,10 @@
                   "1f8f5a3d2fd435e36084db890693eafd"
                ],
                "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "768,4,"
+               ],
+               "ja3sstringCnt" : 1,
                "version" : [
                   "SSLv3"
                ],

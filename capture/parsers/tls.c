@@ -24,6 +24,8 @@ LOCAL  int                   ja3Field;
 LOCAL  int                   ja3sField;
 LOCAL  int                   srcIdField;
 LOCAL  int                   dstIdField;
+LOCAL  int                   ja3StrField;
+LOCAL  int                   ja3sStrField;
 
 typedef struct {
     unsigned char       buf[8192];
@@ -248,6 +250,10 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     }
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
+
+    if (config.ja3Strings) {
+        moloch_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
+    }
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
     if (config.debug > 1) {
@@ -669,6 +675,10 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
         if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb)) {
             BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
+            if (config.ja3Strings) {
+                moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+            }
+
             gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
 
             if (config.debug > 1) {
@@ -898,6 +908,20 @@ void moloch_parser_init()
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
         (char *)NULL);
+
+    if (config.ja3Strings) {
+        ja3sStrField = moloch_field_define("tls","lotermfield",
+            "tls.ja3sstring", "JA3SSTR", "tls.ja3sstring",
+            "SSL/TLS JA3S String field",
+            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            (char *)NULL);
+
+        ja3StrField = moloch_field_define("tls","lotermfield",
+            "tls.ja3string", "JA3STR", "tls.ja3string",
+            "SSL/TLS JA3 String field",
+            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            (char *)NULL);
+    }
 
     moloch_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 
