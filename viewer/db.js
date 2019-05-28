@@ -490,22 +490,22 @@ exports.setHunt = function (id, doc, cb) {
 };
 
 exports.searchLookups = function (query, cb) {
-  return internals.usersElasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query}, cb);
 };
 exports.createLookup = function (doc, username, cb) {
   internals.lookupsCache = {};
-  return internals.usersElasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for"}, cb);
+  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for"}, cb);
 };
 exports.deleteLookup = function (id, username, cb) {
   internals.lookupsCache = {};
-  return internals.usersElasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
 };
 exports.setLookup = function (id, username, doc, cb) {
   internals.lookupsCache = {};
-  return internals.usersElasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true}, cb);
+  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true}, cb);
 };
 exports.getLookup = function (id, cb) {
-  return internals.usersElasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
+  return internals.elasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
 };
 exports.getLookupsCache = function (name, cb) {
   if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
