@@ -884,22 +884,10 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    ja3StrField = moloch_field_define("tls","lotermfield",
-        "tls.ja3string", "JA3STR", "tls.ja3string",
-        "SSL/TLS JA3 String field",
-        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
-
     ja3sField = moloch_field_define("tls", "lotermfield",
         "tls.ja3s", "JA3S", "tls.ja3s",
         "SSL/TLS JA3S field",
         MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
-
-    ja3sStrField = moloch_field_define("tls","lotermfield",
-        "tls.ja3sstring", "JA3SSTR", "tls.ja3sstring",
-        "SSL/TLS JA3S String field",
-        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     dstIdField = moloch_field_define("tls", "lotermfield",
@@ -920,6 +908,20 @@ void moloch_parser_init()
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
         (char *)NULL);
+
+    if (config.ja3Strings) {
+        ja3sStrField = moloch_field_define("tls","lotermfield",
+            "tls.ja3sstring", "JA3SSTR", "tls.ja3sstring",
+            "SSL/TLS JA3S String field",
+            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            (char *)NULL);
+
+        ja3StrField = moloch_field_define("tls","lotermfield",
+            "tls.ja3string", "JA3STR", "tls.ja3string",
+            "SSL/TLS JA3 String field",
+            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            (char *)NULL);
+    }
 
     moloch_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 
