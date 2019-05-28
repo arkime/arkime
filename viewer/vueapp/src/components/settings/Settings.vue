@@ -44,7 +44,7 @@
        v-if="!loading && !error">
 
       <!-- navigation -->
-      <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4"
+      <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
         role="tablist"
         aria-orientation="vertical">
         <div class="nav flex-column nav-pills">
@@ -116,7 +116,7 @@
         </div>
       </div> <!-- /navigation -->
 
-      <div class="col">
+      <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
 
         <!-- general settings -->
         <form class="form-horizontal"
@@ -1855,7 +1855,7 @@
               </tr>
             </thead>
             <tbody>
-              <!-- vars -->
+              <!-- shortcuts -->
               <template v-for="(item, index) in vars">
                 <tr :key="`${item.id}-content`">
                   <td>
@@ -1928,8 +1928,8 @@
                     </textarea>
                   </td>
                 </tr>
-              </template> <!-- /vars -->
-              <!-- vars list error -->
+              </template> <!-- /shortcuts -->
+              <!-- shortcuts list error -->
               <tr v-if="varsListError">
                 <td colspan="6">
                   <p class="text-danger mb-0">
@@ -1938,12 +1938,12 @@
                     {{ varsListError }}
                   </p>
                 </td>
-              </tr> <!-- /vars list error -->
+              </tr> <!-- /shortcuts list error -->
             </tbody>
           </table>
-          <!-- new var form -->
+          <!-- new shortcut form -->
           <div class="row var-form mr-1 ml-1 mt-2">
-            <div class="col-12">
+            <div class="col">
               <div class="row mb-3 mt-4">
                 <div class="col-10 offset-2">
                   <h3 class="mt-3">
@@ -2027,7 +2027,7 @@
                   </button>
                 </div>
               </div>
-              <!-- var form error -->
+              <!-- shortcut form error -->
               <div class="row mb-4 text-right">
                 <div class="col-12">
                   <p v-if="varFormError"
@@ -2037,9 +2037,9 @@
                     {{ varFormError }}
                   </p>
                 </div>
-              </div> <!-- /var form error -->
+              </div> <!-- /shortcut form error -->
             </div>
-          </div> <!-- /new var form -->
+          </div> <!-- /new shortcut form -->
 
         </form> <!-- / shortcut settings -->
 
@@ -3253,6 +3253,10 @@ export default {
   margin-top: 90px;
   margin-left: 0;
   margin-right: 0;
+  overflow-x: hidden;
+}
+.settings-content .settings-right-panel {
+  overflow-x: auto;
 }
 
 .settings-page .sub-navbar {
