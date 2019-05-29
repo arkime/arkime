@@ -551,6 +551,7 @@ void moloch_config_load()
     config.trackESP              = moloch_config_boolean(keyfile, "trackESP", FALSE);
     config.yaraEveryPacket       = moloch_config_boolean(keyfile, "yaraEveryPacket", TRUE);
     config.autoGenerateId        = moloch_config_boolean(keyfile, "autoGenerateId", FALSE);
+    config.enablePacketLen       = moloch_config_boolean(NULL, "enablePacketLen", FALSE);
 
     config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads*1.25);
     config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads/20);
