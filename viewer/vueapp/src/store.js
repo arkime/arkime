@@ -33,10 +33,10 @@ const store = new Vuex.Store({
       state.timeRange = value.toString();
     },
     setTime (state, value) {
-      if (value.startTime) {
+      if (value.startTime !== undefined) {
         state.time.startTime = value.startTime.toString();
       }
-      if (value.stopTime) {
+      if (value.stopTime !== undefined) {
         state.time.stopTime = value.stopTime.toString();
       }
     },

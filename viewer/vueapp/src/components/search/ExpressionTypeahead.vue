@@ -581,7 +581,8 @@ export default {
 
         if (this.$route.query.date) {
           params.date = this.$route.query.date;
-        } else if (this.$route.query.startTime && this.$route.query.stopTime) {
+        } else if (this.$route.query.startTime !== undefined &&
+          this.$route.query.stopTime !== undefined) {
           params.startTime = this.$route.query.startTime;
           params.stopTime = this.$route.query.stopTime;
         }

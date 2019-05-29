@@ -2649,7 +2649,7 @@ function buildSessionQuery (req, buildCb) {
   if ((req.query.date && req.query.date === '-1') ||
       (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
-  } else if (req.query.startTime && req.query.stopTime) {
+  } else if (req.query.startTime !== undefined && req.query.stopTime) {
     switch (req.query.bounding) {
     case "first":
       query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
