@@ -1,4 +1,4 @@
-use Test::More tests => 29;
+use Test::More tests => 30;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -12,7 +12,7 @@ my $otherToken = getTokenCookie('user2');
 
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");
-is (@{$shortcuts}, 0, "Empty shortcuts");
+is(@{$shortcuts}, 0, "Empty shortcuts");
 
 # create shortcut required fields
 my $json = viewerPostToken("/lookups", '{}', $token);
@@ -34,7 +34,7 @@ ok($json->{success}, "create shortcut success");
 ok(exists $json->{var}->{id}, "returns shorcut with id");
 my $shortcut1Id = $json->{var}->{id}; # save id for cleanup later
 
-# removes special chars from shortcut name
+# remove special chars from shortcut name
 is($json->{var}->{name}, "test_shortcut", "returns shortcut");
 
 # shortcut names must be unique
@@ -43,7 +43,7 @@ ok(!$json->{success}, "unique shortcut names");
 
 # update shortcut requires token
 $json = viewerPutToken("/lookups/$shortcut1Id", "notatoken");
-is($json->{text}, "Missing token", "udpate shortcut requires token");
+is($json->{text}, "Missing token", "update shortcut requires token");
 
 # update shortcut required fields
 $json = viewerPutToken("/lookups/$shortcut1Id", '{}', $token);
@@ -67,7 +67,7 @@ my $shortcut2Id = $json->{var}->{id}; # save id for cleanup later
 
 # get shortcuts should have 1
 $shortcuts = viewerGet("/lookups");
-is (@{$shortcuts}, 1, "1 shortcut for this user");
+is(@{$shortcuts}, 1, "1 shortcut for this user");
 
 # create shared shortcut by another user
 $json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"var":{"shared":true,"name":"other_test_shortcut_2","type":"string","value":"udp"}}', $otherToken);
@@ -77,7 +77,7 @@ my $shortcut3Id = $json->{var}->{id}; # save id for cleanup later
 
 # shared shortcut exists for user
 $shortcuts = viewerGet("/lookups");
-is (@{$shortcuts}, 2, "2 shortcuts for this user");
+is(@{$shortcuts}, 2, "2 shortcuts for this user");
 
 # get shortcuts map
 $shortcuts = viewerGet("/lookups?map=true");
@@ -96,6 +96,10 @@ is($json->{text}, "Missing token", "delete shortcut requires token");
 # can't delete another user's shortcuts
 $json = viewerDeleteToken("/lookups/$shortcut1Id?molochRegressionUser=user2", $otherToken);
 ok(!$json->{success}, "can't delete another user's shortcut");
+
+# can't delete shortcut that doesn't exist
+$json = viewerDeleteToken("/lookups/fakeshortcutid", $token);
+ok(!$json->{success}, "can't delete a nonexisting shortcut");
 
 # delete shortcut (plus bonus cleanup)
 $json = viewerDeleteToken("/lookups/$shortcut1Id", $token);
