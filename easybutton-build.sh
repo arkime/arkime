@@ -26,6 +26,7 @@ DODAQ=0
 DOCLEAN=0
 DONODE=1
 DOINSTALL=0
+DORMINSTALL=0
 
 while :
 do
@@ -50,6 +51,10 @@ do
     DOINSTALL=1
     shift
     ;;
+  --rminstall)
+    DORMINSTALL=1
+    shift
+    ;;
   --nonode)
     DONODE=0
     shift
@@ -58,6 +63,7 @@ do
     echo "Make it easier to build Moloch!  This will download and build thirdparty libraries plus build Moloch."
     echo "--dir <directory>   = The directory to install everything into [/data/moloch]"
     echo "--clean             = Do a 'make clean' first"
+    echo "--rminstall         = Do a 'rm -rf <dir>' first"
     echo "--install           = Do a 'make install' at the end, adding our node to the path"
     echo "--nonode            = Do NOT download and install nodejs into the moloch directory"
     echo "--pfring            = Build pfring support"
@@ -278,6 +284,10 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     fi
     sudo tar xfC node-v$NODE-linux-x64.tar.xz $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-x64/bin/* .)
+fi
+
+if [ $DORMINSTALL -eq 1 ]; then
+    rm -rf $TDIR
 fi
 
 if [ $DOINSTALL -eq 1 ]; then
