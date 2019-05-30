@@ -276,6 +276,12 @@ if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
 fi
 
+# Remove old install dir
+if [ $DORMINSTALL -eq 1 ]; then
+    rm -rf $TDIR
+fi
+
+# Install node if not already there
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "MOLOCH: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
@@ -284,10 +290,6 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     fi
     sudo tar xfC node-v$NODE-linux-x64.tar.xz $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-x64/bin/* .)
-fi
-
-if [ $DORMINSTALL -eq 1 ]; then
-    rm -rf $TDIR
 fi
 
 if [ $DOINSTALL -eq 1 ]; then
