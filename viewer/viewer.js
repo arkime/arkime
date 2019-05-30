@@ -2649,7 +2649,7 @@ function buildSessionQuery (req, buildCb) {
   if ((req.query.date && req.query.date === '-1') ||
       (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
-  } else if (req.query.startTime && req.query.stopTime) {
+  } else if (req.query.startTime !== undefined && req.query.stopTime) {
     switch (req.query.bounding) {
     case "first":
       query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
@@ -7164,10 +7164,10 @@ function createLookupsArray (lookupsString) {
 
 app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, function (req, res) {
   // make sure all the necessary data is included in the post body
-  if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
-  if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
-  if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
-  if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
+  if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
+  if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
+  if (!req.body.var.type) { return res.molochError(403, 'Missing shortcut type'); }
+  if (!req.body.var.value) { return res.molochError(403, 'Missing shortcut value'); }
 
   req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9_]/g, '');
 
@@ -7208,8 +7208,8 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
 
       Db.createLookup(variable, user.userId, function (err, result) {
         if (err) {
-          console.log('variable create failed', err, result);
-          return res.molochError(500, 'Creating variable failed');
+          console.log('shortcut create failed', err, result);
+          return res.molochError(500, 'Creating shortcut failed');
         }
         variable.id = result._id;
         variable.type = type;
@@ -7227,17 +7227,17 @@ app.post('/lookups', getSettingUser, logAction('lookups'), checkCookieToken, fun
 
 app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieToken, function (req, res) {
   // make sure all the necessary data is included in the post body
-  if (!req.body.var) { return res.molochError(403, 'Missing variable object'); }
-  if (!req.body.var.name) { return res.molochError(403, 'Missing variable name'); }
-  if (!req.body.var.type) { return res.molochError(403, 'Missing variable type'); }
-  if (!req.body.var.value) { return res.molochError(403, 'Missing variable value'); }
+  if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
+  if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
+  if (!req.body.var.type) { return res.molochError(403, 'Missing shortcut type'); }
+  if (!req.body.var.value) { return res.molochError(403, 'Missing shortcut value'); }
 
   let sentVar = req.body.var;
 
   Db.getLookup(req.params.id, (err, fetchedVar) => { // fetch variable
     if (err) {
-      console.log('fetching variable to update failed', err, fetchedVar);
-      return res.molochError(500, 'Fetching variable to update failed');
+      console.log('fetching shortcut to update failed', err, fetchedVar);
+      return res.molochError(500, 'Fetching shortcut to update failed');
     }
 
     // only allow admins or lookup creator to update lookup item
@@ -7255,8 +7255,8 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
 
     Db.setLookup(req.params.id, fetchedVar.userId, sentVar, (err, info) => {
       if (err) {
-        console.log('variable update failed', err, info);
-        return res.molochError(500, 'Updating variable failed');
+        console.log('shortcut update failed', err, info);
+        return res.molochError(500, 'Updating shortcut failed');
       }
 
       sentVar.value = values.join('\n');
@@ -7264,7 +7264,7 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
       return res.send(JSON.stringify({
         success : true,
         var     : sentVar,
-        text    : 'Successfully updated variable'
+        text    : 'Successfully updated shortcut'
       }));
     });
   });
@@ -7273,8 +7273,8 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
 app.delete('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieToken, function (req, res) {
   Db.getLookup(req.params.id, (err, variable) => { // fetch variable
     if (err) {
-      console.log('fetching variable to delete failed', err, variable);
-      return res.molochError(500, 'Fetching variable to delete failed');
+      console.log('fetching shortcut to delete failed', err, variable);
+      return res.molochError(500, 'Fetching shortcut to delete failed');
     }
 
     // only allow admins or lookup creator to delete lookup item
@@ -7284,10 +7284,10 @@ app.delete('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookie
 
     Db.deleteLookup(req.params.id, variable.userId, function (err, result) {
       if (err || result.error) {
-        console.log('ERROR - deleting variable', err || result.error);
-        return res.molochError(500, 'Error deleting variable');
+        console.log('ERROR - deleting shortcut', err || result.error);
+        return res.molochError(500, 'Error deleting shortcut');
       } else {
-        res.send(JSON.stringify({success: true, text: 'Deleted variable successfully'}));
+        res.send(JSON.stringify({success: true, text: 'Deleted shortcut successfully'}));
       }
     });
   });

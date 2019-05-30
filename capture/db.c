@@ -63,7 +63,6 @@ LOCAL struct timespec startHealthCheck;
 LOCAL uint64_t        esHealthMS;
 
 LOCAL int             dbExit;
-LOCAL char            enablePacketLen;
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -401,7 +400,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len + 10*session->fileLenArray->len;
+    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
+    if (config.enablePacketLen) {
+        jsonSize += 10*session->fileLenArray->len;
+    }
+
     for (pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
@@ -666,7 +669,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    if (enablePacketLen) {
+    if (config.enablePacketLen) {
         BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
         for(i = 0; i < session->fileLenArray->len; i++) {
             if (i != 0)
@@ -2336,8 +2339,6 @@ void moloch_db_init()
     for (thread = 0; thread < config.packetThreads; thread++) {
         MOLOCH_LOCK_INIT(dbInfo[thread].lock);
     }
-
-    enablePacketLen = moloch_config_boolean(NULL, "enablePacketLen", FALSE);
 }
 /******************************************************************************/
 void moloch_db_exit()

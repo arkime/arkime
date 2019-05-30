@@ -684,24 +684,35 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         MOLOCH_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
         moloch_writer_write(session, packet);
 
+        // If the last fileNum used in the session isn't the same as the
+        // lastest packets fileNum then we need to add to the filePos and
+        // fileNum arrays.
         int16_t len;
         if (session->lastFileNum != packet->writerFileNum) {
             session->lastFileNum = packet->writerFileNum;
             g_array_append_val(session->fileNumArray, packet->writerFileNum);
             int64_t pos = -1LL * packet->writerFileNum;
             g_array_append_val(session->filePosArray, pos);
-            len = 0;
-            g_array_append_val(session->fileLenArray, len);
+
+            if (config.enablePacketLen) {
+                len = 0;
+                g_array_append_val(session->fileLenArray, len);
+            }
         }
 
         g_array_append_val(session->filePosArray, packet->writerFilePos);
-        len = 16 + packet->pktlen;
-        g_array_append_val(session->fileLenArray, len);
+
+        if (config.enablePacketLen) {
+            len = 16 + packet->pktlen;
+            g_array_append_val(session->fileLenArray, len);
+        }
 
         if (packets >= config.maxPackets || session->midSave) {
             moloch_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
+        // If we hit stopSaving for this session and try and save 1 more packet then
+        // add truncated-pcap tag to the session
         if (packets - 1 == session->stopSaving) {
             moloch_session_add_tag(session, "truncated-pcap");
         }

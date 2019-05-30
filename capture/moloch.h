@@ -450,6 +450,7 @@ typedef struct moloch_config {
     char      corruptSavePcap;
     char      autoGenerateId;
     char      ignoreErrors;
+    char      enablePacketLen;
 } MolochConfig_t;
 
 typedef struct {

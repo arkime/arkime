@@ -30,12 +30,8 @@ export default {
         if (parseInt(query.date, 10) === -1) {
           params.date = query.date;
         } else {
-          if (query.startTime) {
-            params.startTime = query.startTime;
-          }
-          if (query.stopTime) {
-            params.stopTime = query.stopTime;
-          }
+          params.startTime = query.startTime;
+          params.stopTime = query.stopTime;
         }
 
         let i, len, item;

@@ -232,7 +232,9 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     }
 
     g_array_free(session->filePosArray, TRUE);
-    g_array_free(session->fileLenArray, TRUE);
+    if (config.enablePacketLen) {
+        g_array_free(session->fileLenArray, TRUE);
+    }
     g_array_free(session->fileNumArray, TRUE);
 
     if (session->rootId && session->rootId != (void *)1L)
@@ -315,7 +317,9 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     moloch_rules_run_before_save(session, 0);
     moloch_db_save_session(session, FALSE);
     g_array_set_size(session->filePosArray, 0);
-    g_array_set_size(session->fileLenArray, 0);
+    if (config.enablePacketLen) {
+        g_array_set_size(session->fileLenArray, 0);
+    }
     g_array_set_size(session->fileNumArray, 0);
     session->lastFileNum = 0;
 
@@ -436,7 +440,9 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
-    session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);
+    if (config.enablePacketLen) {
+        session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);
+    }
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
     session->fields = MOLOCH_SIZE_ALLOC0(fields, sizeof(MolochField_t *)*config.maxField);
     session->maxFields = config.maxField;
