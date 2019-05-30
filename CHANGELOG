@@ -8,7 +8,8 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Moloch >= 1.6.0 requires NodeJS 8.x of 8.12 or later
+  * Moloch >= 2.0.0 requires NodeJS 10.x
+  * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
   * Moloch >= 1.0.0 requires NodeJS 8.x
   * Moloch >= 0.20.0 requires NodeJS 6.x
   * Moloch >= 0.18.1 requires NodeJS 4.x
@@ -17,7 +18,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.0.0 2019/05/xx
   - NOTICE: This versions requires ES 6.6.x or later
-  - release - cyberchef 8.30.0
+  - release - cyberchef 8.30.0, node 10.15.3
   - viewer - Can display pcap retention in Capture Stats tab
   - all - Fix some elasticsearch deprecation warnings
   - viewer - Added uploadFileSizeLimit

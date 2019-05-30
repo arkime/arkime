@@ -18,7 +18,7 @@ PCAP=1.9.0
 CURL=7.61.1
 LUA=5.3.5
 DAQ=2.0.6
-NODE=8.15.0
+NODE=10.15.3
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -26,6 +26,7 @@ DODAQ=0
 DOCLEAN=0
 DONODE=1
 DOINSTALL=0
+DORMINSTALL=0
 
 while :
 do
@@ -50,6 +51,10 @@ do
     DOINSTALL=1
     shift
     ;;
+  --rminstall)
+    DORMINSTALL=1
+    shift
+    ;;
   --nonode)
     DONODE=0
     shift
@@ -58,6 +63,7 @@ do
     echo "Make it easier to build Moloch!  This will download and build thirdparty libraries plus build Moloch."
     echo "--dir <directory>   = The directory to install everything into [/data/moloch]"
     echo "--clean             = Do a 'make clean' first"
+    echo "--rminstall         = Do a 'rm -rf <dir>' first"
     echo "--install           = Do a 'make install' at the end, adding our node to the path"
     echo "--nonode            = Do NOT download and install nodejs into the moloch directory"
     echo "--pfring            = Build pfring support"
@@ -270,6 +276,12 @@ if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
 fi
 
+# Remove old install dir
+if [ $DORMINSTALL -eq 1 ]; then
+    rm -rf $TDIR
+fi
+
+# Install node if not already there
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "MOLOCH: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc

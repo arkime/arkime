@@ -659,7 +659,7 @@ function stringQuery(yy, field, str) {
 
 if (!global.moloch) global.moloch = {};
 global.moloch.utf8ToHex = function (utf8) {
-    var hex = new Buffer(stripQuotes(utf8)).toString("hex").toLowerCase();
+    var hex = Buffer.from(stripQuotes(utf8)).toString("hex").toLowerCase();
     hex = hex.replace(/2a/g, '*');
     return hex;
 }

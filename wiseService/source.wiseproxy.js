@@ -29,7 +29,7 @@ function WiseProxySource (api, section) {
   this.url          = api.getConfig(section, "url");
   this.types        = api.getConfig(section, "types");
   this.mapping      = [];
-  this.buffer       = new Buffer(10000);
+  this.buffer       = Buffer.alloc(10000);
   this.offset       = 0;
   this.bufferInfo   = [];
 
@@ -99,7 +99,7 @@ WiseProxySource.prototype.performQuery = function() {
       return;
     }
 
-    body = new Buffer(body, "binary");
+    body = Buffer.from(body, "binary");
     var offset = 0;
     var fieldsTS = body.readUInt32BE(offset); offset += 4;
     if (fieldsTS !== this.fieldsTS) {
@@ -149,7 +149,7 @@ WiseProxySource.prototype.updateInfo = function() {
       console.log(this.section, "problem fetching /fields", this.section, err || response);
       return;
     }
-    var buf = new Buffer(body, "binary");
+    var buf = Buffer.from(body, "binary");
     var offset = 0;
     this.fieldsTS = buf.readUInt32BE(offset); offset += 4;
     var version = buf.readUInt32BE(offset); offset += 4;

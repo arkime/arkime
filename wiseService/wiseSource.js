@@ -104,7 +104,7 @@ function WISESource (api, section) {
 
 module.exports = WISESource;
 
-WISESource.emptyResult = {num: 0, buffer: new Buffer(0)};
+WISESource.emptyResult = {num: 0, buffer: Buffer.alloc(0)};
 WISESource.field2Pos = {};
 WISESource.field2Info = {};
 WISESource.pos2Field = {};
@@ -257,7 +257,7 @@ WISESource.combineResults = function(results)
     len += results[a].buffer.length;
   }
 
-  var buf = new Buffer(len);
+  var buf = Buffer.allocUnsafe(len);
   var offset = 1;
   for (a = 0; a < results.length; a++) {
     if (!results[a]) {
@@ -303,7 +303,7 @@ WISESource.encode = function ()
     len += 3 + Buffer.byteLength(arguments[a]);
   }
 
-  var buf = new Buffer(len);
+  var buf = Buffer.allocUnsafe(len);
   var offset = 0;
   for (a = 1; a < arguments.length; a += 2) {
       buf.writeUInt8(arguments[a-1], offset);

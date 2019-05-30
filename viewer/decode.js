@@ -154,7 +154,7 @@ function createUncompressStream (options, context) {
 ////////////////////////////////////////////////////////////////////////////////
 function createUnbase64Stream (options, context) {
   return through(function(data, encoding, callback) {
-    callback(null, new Buffer(data.toString("binary"), "base64"));
+    callback(null, Buffer.from(data.toString("binary"), "base64"));
   });
 }
 
@@ -175,7 +175,7 @@ function createKeyUnxorStream (options, context) {
 
       }
       if (options["BODY-UNXOR"].key !== undefined) {
-        this.key = new Buffer(options["BODY-UNXOR"].key, "hex");
+        this.key = Buffer.from(options["BODY-UNXOR"].key, "hex");
       } else if (+options["BODY-UNXOR"].keyLength) {
         this.key = data.slice(0, +options["BODY-UNXOR"].keyLength);
         data = data.slice(+options["BODY-UNXOR"].keyLength);
@@ -206,7 +206,7 @@ function createUnxorBruteGzip (options, context) {
         return callback(null, data);
       }
 
-      var gzip = new Buffer("1f8b08000000000002", "hex");
+      var gzip = Buffer.from("1f8b08000000000002", "hex");
       var tmp = Buffer.alloc(gzip.length*2);
       this.state = 2;
 
@@ -325,11 +325,11 @@ ItemSMTPStream.prototype._process = function(item, callback) {
       self.runningStreams++;
       var heb = new CollectBodyStream(self, item, headerInfo);
       pipes[pipes.length-1].pipe(heb);
-      bufferStream.end(new Buffer(self.buffers.join("\n")+"\n"));
+      bufferStream.end(Buffer.from(self.buffers.join("\n")+"\n"));
     } else {
       var buf = {client: item.client,
                      ts: item.ts,
-                   data: new Buffer(self.buffers.join("\n")+"\n"),
+                   data: Buffer.from(self.buffers.join("\n")+"\n"),
                 itemPos: ++self.itemPos};
 
       self.push(buf);

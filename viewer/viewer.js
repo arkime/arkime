@@ -83,7 +83,7 @@ var internals = {
                20,                                // Transmit and extra time
 
 //http://garethrees.org/2007/11/14/pngcrush/
-  emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
+  emptyPNG: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
   proccessHuntJobsInitialized: false,
