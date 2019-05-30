@@ -5,8 +5,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "hashtable": "http://github.com/awick/node-hashtable/tarball/master",
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/master",
-    "natives": "^1.1.6"
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/master"
   },
   "scripts": {
     "lint": "jshint *.js"

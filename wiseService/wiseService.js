@@ -160,7 +160,7 @@ function addField(field) {
 
   // Create version 0 of fields buf
   if (internals.fields.length < 256) {
-    internals.fieldsBuf0 = new Buffer(internals.fieldsSize + 9);
+    internals.fieldsBuf0 = Buffer.alloc(internals.fieldsSize + 9);
     internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
     internals.fieldsBuf0.writeUInt32BE(0, 4);
     internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
@@ -175,7 +175,7 @@ function addField(field) {
   }
 
   // Create version 1 of fields buf
-  internals.fieldsBuf1 = new Buffer(internals.fieldsSize + 9);
+  internals.fieldsBuf1 = Buffer.alloc(internals.fieldsSize + 9);
   internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
   internals.fieldsBuf1.writeUInt32BE(1, 4);
   internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
@@ -522,7 +522,7 @@ function processQuery(req, query, cb) {
 }
 //////////////////////////////////////////////////////////////////////////////////
 function processQueryResponse0(req, res, queries, results) {
-  var buf = new Buffer(8);
+  var buf = Buffer.allocUnsafe(8);
   buf.writeUInt32BE(internals.fieldsTS, 0);
   buf.writeUInt32BE(0, 4);
   res.write(buf);
@@ -541,7 +541,7 @@ function processQueryResponse2(req, res, queries, results) {
 
   const sendFields = !hashes.includes(internals.fieldsMd5);
 
-  var buf = new Buffer(42);
+  var buf = Buffer.allocUnsafe(42);
   buf.writeUInt32BE(0, 0);
   buf.writeUInt32BE(2, 4);
   buf.write(internals.fieldsMd5, 8);

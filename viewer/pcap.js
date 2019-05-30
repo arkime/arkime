@@ -86,11 +86,11 @@ Pcap.prototype.open = function(filename, info) {
     this.encoding = info.encoding || "normal";
     if (info.dek) {
       var decipher = crypto.createDecipher("aes-192-cbc", info.kek);
-      this.encKey = Buffer.concat([decipher.update(new Buffer(info.dek, 'hex')), decipher.final()]);
+      this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
     if (info.iv) {
-      var iv   = new Buffer(info.iv, 'hex');
+      var iv   = Buffer.from(info.iv, 'hex');
       this.iv  = Buffer.alloc(16);
       iv.copy(this.iv);
     }

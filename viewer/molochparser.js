@@ -73,7 +73,7 @@
 */
 var parser = (function(){
 var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,6],$V1=[1,3],$V2=[1,4],$V3=[1,5],$V4=[1,8],$V5=[1,9],$V6=[5,18,19,23],$V7=[14,15,16,17];
-var parser = {trace: function trace() { },
+var parser = {trace: function trace () { },
 yy: {},
 symbols_: {"error":2,"expressions":3,"e":4,"EOF":5,"OP":6,"lt":7,"lte":8,"gt":9,"gte":10,"==":11,"!=":12,"VALUE":13,"STR":14,"QUOTEDSTR":15,"REGEXSTR":16,"LIST":17,"&&":18,"||":19,"!":20,"-":21,"(":22,")":23,"EXISTS":24,"$accept":0,"$end":1},
 terminals_: {2:"error",5:"EOF",7:"lt",8:"lte",9:"gt",10:"gte",11:"==",12:"!=",14:"STR",15:"QUOTEDSTR",16:"REGEXSTR",17:"LIST",18:"&&",19:"||",20:"!",21:"-",22:"(",23:")",24:"EXISTS"},
@@ -134,7 +134,7 @@ break;
 },
 table: [{3:1,4:2,14:$V0,20:$V1,21:$V2,22:$V3},{1:[3]},{5:[1,7],18:$V4,19:$V5},{4:10,14:$V0,20:$V1,21:$V2,22:$V3},{4:11,14:$V0,20:$V1,21:$V2,22:$V3},{4:12,14:$V0,20:$V1,21:$V2,22:$V3},{6:15,7:[1,16],8:[1,17],9:[1,18],10:[1,19],11:[1,13],12:[1,14]},{1:[2,1]},{4:20,14:$V0,20:$V1,21:$V2,22:$V3},{4:21,14:$V0,20:$V1,21:$V2,22:$V3},o($V6,[2,14]),o($V6,[2,15]),{18:$V4,19:$V5,23:[1,22]},o($V7,[2,6],{24:[1,23]}),o($V7,[2,7],{24:[1,24]}),{13:25,14:[1,26],15:[1,27],16:[1,28],17:[1,29]},o($V7,[2,2]),o($V7,[2,3]),o($V7,[2,4]),o($V7,[2,5]),o($V6,[2,12]),o([5,19,23],[2,13],{18:$V4}),o($V6,[2,16]),o($V6,[2,17]),o($V6,[2,18]),o($V6,[2,19]),o($V6,[2,8]),o($V6,[2,9]),o($V6,[2,10]),o($V6,[2,11])],
 defaultActions: {7:[2,1]},
-parseError: function parseError(str, hash) {
+parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
     } else {
@@ -856,7 +856,7 @@ function stringQuery(yy, field, str) {
 
 if (!global.moloch) global.moloch = {};
 global.moloch.utf8ToHex = function (utf8) {
-    var hex = new Buffer(stripQuotes(utf8)).toString("hex").toLowerCase();
+    var hex = Buffer.from(stripQuotes(utf8)).toString("hex").toLowerCase();
     hex = hex.replace(/2a/g, '*');
     return hex;
 }
@@ -1177,7 +1177,7 @@ showPosition:function () {
     },
 
 // test the lexed token: return FALSE when not a match, otherwise return token
-test_match:function (match, indexed_rule) {
+test_match:function(match, indexed_rule) {
         var token,
             lines,
             backup;
@@ -1307,7 +1307,7 @@ next:function () {
     },
 
 // return next match that has a token
-lex:function lex() {
+lex:function lex () {
         var r = this.next();
         if (r) {
             return r;
@@ -1317,12 +1317,12 @@ lex:function lex() {
     },
 
 // activates a new lexer condition state (pushes the new lexer condition state onto the condition stack)
-begin:function begin(condition) {
+begin:function begin (condition) {
         this.conditionStack.push(condition);
     },
 
 // pop the previously active lexer condition state off the condition stack
-popState:function popState() {
+popState:function popState () {
         var n = this.conditionStack.length - 1;
         if (n > 0) {
             return this.conditionStack.pop();
@@ -1332,7 +1332,7 @@ popState:function popState() {
     },
 
 // produce the lexer rule set which is active for the currently active lexer condition state
-_currentRules:function _currentRules() {
+_currentRules:function _currentRules () {
         if (this.conditionStack.length && this.conditionStack[this.conditionStack.length - 1]) {
             return this.conditions[this.conditionStack[this.conditionStack.length - 1]].rules;
         } else {
@@ -1341,7 +1341,7 @@ _currentRules:function _currentRules() {
     },
 
 // return the currently active lexer condition state; when an index argument is provided it produces the N-th previous condition state, if available
-topState:function topState(n) {
+topState:function topState (n) {
         n = this.conditionStack.length - 1 - Math.abs(n || 0);
         if (n >= 0) {
             return this.conditionStack[n];
@@ -1351,7 +1351,7 @@ topState:function topState(n) {
     },
 
 // alias for begin(condition)
-pushState:function pushState(condition) {
+pushState:function pushState (condition) {
         this.begin(condition);
     },
 
@@ -1429,7 +1429,7 @@ if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
 exports.parser = parser;
 exports.Parser = parser.Parser;
 exports.parse = function () { return parser.parse.apply(parser, arguments); };
-exports.main = function commonjsMain(args) {
+exports.main = function commonjsMain (args) {
     if (!args[1]) {
         console.log('Usage: '+args[0]+' FILE');
         process.exit(1);
