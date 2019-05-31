@@ -144,7 +144,7 @@ done
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
-    ES_VERSION=6.5.4
+    ES_VERSION=6.7.2
     if [ -f "/etc/redhat-release" ]; then
         if ! [ -x "$(command -v java)" ]; then
           yum install java-openjdk-headless

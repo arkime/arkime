@@ -422,7 +422,7 @@ sub sequenceUpdate
 }';
 
     logmsg "Setting sequence_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v2/sequence/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
+    esPut("/${PREFIX}sequence_v2/sequence/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 }
 ################################################################################
 sub sequenceUpgrade
@@ -511,7 +511,7 @@ sub filesUpdate
 }';
 
     logmsg "Setting files_v5 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v5/file/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
+    esPut("/${PREFIX}files_v5/file/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -566,7 +566,7 @@ my $mapping = '
 }';
 
     logmsg "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v3/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
+    esPut("/${PREFIX}stats_v3/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -630,7 +630,7 @@ my $mapping = '
 }';
 
     logmsg "Setting dstats_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v3/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
+    esPut("/${PREFIX}dstats_v3/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -688,7 +688,7 @@ sub fieldsUpdate
 }';
 
     logmsg "Setting fields_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v2/field/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
+    esPut("/${PREFIX}fields_v2/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 
     esPost("/${PREFIX}fields_v2/field/ip", '{
       "friendlyName": "All IP fields",
@@ -1122,7 +1122,7 @@ sub queriesUpdate
 }';
 
     logmsg "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v2/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+    esPut("/${PREFIX}queries_v2/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
     esAlias("add", "queries_v2", "queries");
 }
 
@@ -1324,7 +1324,7 @@ if ($DOHOTWARM) {
 }';
 
     logmsg "Creating sessions template\n" if ($verbose > 0);
-    esPut("/_template/${PREFIX}sessions2_template?master_timeout=${ESTIMEOUT}s", $template);
+    esPut("/_template/${PREFIX}sessions2_template?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $template);
 
     my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
 
@@ -1332,7 +1332,7 @@ if ($DOHOTWARM) {
         logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
         foreach my $i (keys %{$indices}) {
             progress("$i ");
-            esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+            esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
         }
         logmsg "\n";
     }
@@ -1410,14 +1410,14 @@ sub historyUpdate
 }';
 
 logmsg "Creating history template\n" if ($verbose > 0);
-esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s", $template);
+esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
 logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
 foreach my $i (keys %{$indices}) {
     progress("$i ");
-    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
 }
 
 logmsg "\n";
@@ -1518,7 +1518,7 @@ sub huntsUpdate
 }';
 
 logmsg "Setting hunts_v1 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
 }
 ################################################################################
 
@@ -1575,7 +1575,7 @@ sub lookupsUpdate
 }';
 
 logmsg "Setting lookups_v1 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}lookups_v1/lookup/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+esPut("/${PREFIX}lookups_v1/lookup/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
 }
 ################################################################################
 
@@ -1694,7 +1694,7 @@ sub usersUpdate
 }';
 
     logmsg "Setting users_v6 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v6/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+    esPut("/${PREFIX}users_v6/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
 }
 ################################################################################
 sub setPriority
@@ -1899,17 +1899,15 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 60600 ||
-        $main::esVersion >= 70000)
-    {
+    if ($main::esVersion < 60700 || $main::esVersion >= 70000) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 6.6.0 are not supported\n",
-              "* > 7.x are not supported\n",
+              "* <  6.7.0 is not supported\n",
+              "* >= 7.x is experimental\n",
               "\n",
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
              );
-        exit (1);
+        exit (1) if ($main::esVersion <= 60700);
     }
 
     my $error = 0;
@@ -2874,7 +2872,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my @index = keys %{$data};
             my $mappings = $data->{$index[0]}->{mappings};
             my @type = keys %{$mappings};
-            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", to_json($mappings));
             close($fh);
         }
     }
@@ -2914,7 +2912,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
                 foreach my $i (keys %{$indices}) {
                     progress("$i ");
-                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($mapping), 1);
                 }
                 logmsg "\n";
             } elsif (($template cmp "history") == 0) {
@@ -2922,7 +2920,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
                 foreach my $i (keys %{$indices}) {
                     progress("$i ");
-                    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($mapping), 1);
                 }
                 logmsg "\n";
             }

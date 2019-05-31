@@ -18,7 +18,7 @@ my $notAdminToken = getTokenCookie('notadmin');
 
 # empty notifiers
   my $notifiers = viewerGetToken("/notifiers", $token);
-  ok(!keys $notifiers, "Empty notifiers");
+  ok(!keys %{$notifiers}, "Empty notifiers");
 
 # create notifier required items
   my $json = viewerPostToken("/notifiers", '{}', $token);

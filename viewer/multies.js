@@ -451,7 +451,8 @@ function fixQuery(node, body, doneCb) {
   if (body.size) {
     body.size = (+body.size) + ((+body.from) || 0);
   }
-  body.from = 0;
+
+  delete body.from;
 
   var outstanding = 0;
   var finished = 0;

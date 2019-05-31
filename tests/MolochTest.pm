@@ -30,9 +30,10 @@ my ($url, $debug) = @_;
 sub viewerGetToken {
 my ($url, $token, $debug) = @_;
 
+$debug = 1;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url", "x-moloch-cookie" => $token);
-    diag $url, " response:", $response->content if ($debug);
-    my $json = from_json($response->content);
+    diag $url, " response:>", $response->content, "<:\n" if ($debug);
+    my $json = decode_json($response->content);
     return ($json);
 }
 ################################################################################
