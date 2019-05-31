@@ -483,6 +483,7 @@ export default {
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.validateDate();
     },
     /**
      * Fired when clicking the next time button on a time input
@@ -504,6 +505,7 @@ export default {
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.validateDate();
     },
     /**
      * Fired when change bounded select box is changed
