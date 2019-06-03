@@ -1899,7 +1899,7 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 60700 || $main::esVersion >= 70000) {
+    if ($main::esVersion < 60700) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* <  6.7.0 is not supported\n",
               "* >= 7.x is experimental\n",
@@ -1907,7 +1907,11 @@ sub dbCheck {
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
              );
-        exit (1) if ($main::esVersion <= 60700);
+        exit (1)
+    }
+
+    if ($main::esVersion < 70000) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which is experimental\n");
     }
 
     my $error = 0;
@@ -1979,6 +1983,22 @@ sub checkForOld5Indices {
 
     if ($found) {
         logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 5.x otherwise ES 6.x will NOT start.\n\n";
+    }
+}
+################################################################################
+sub checkForOld6Indices {
+    my $result = esGet("/_all/_settings/index.version.created?pretty");
+    my $found = 0;
+
+    while ( my ($key, $value) = each (%{$result})) {
+        if ($value->{settings}->{index}->{version}->{created} < 6000000) {
+            logmsg "WARNING: You must delete index '$key' before upgrading to ES 7\n";
+            $found = 1;
+        }
+    }
+
+    if ($found) {
+        logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 6.x otherwise ES 7.x will NOT start.\n\n";
     }
 }
 ################################################################################
@@ -2970,6 +2990,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         huntsCreate();
         checkForOld5Indices();
+        checkForOld6Indices();
         lookupsCreate();
         setPriority();
     } elsif ($main::versionNumber < 52) {
@@ -2978,6 +2999,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         huntsCreate();
         checkForOld5Indices();
+        checkForOld6Indices();
         lookupsCreate();
         setPriority();
         queriesUpdate();
@@ -2986,6 +3008,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
         checkForOld5Indices();
+        checkForOld6Indices();
         lookupsCreate();
         setPriority();
         queriesUpdate();
@@ -2993,6 +3016,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         fieldsIpDst();
     } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
+        checkForOld6Indices();
         lookupsCreate();
         setPriority();
         usersUpdate();
@@ -3002,11 +3026,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         fieldsIpDst();
     } elsif ($main::versionNumber <= 60) {
         checkForOld5Indices();
+        checkForOld6Indices();
         sessions2Update();
         usersUpdate();
         lookupsCreate();
     } elsif ($main::versionNumber <= 61) {
         checkForOld5Indices();
+        checkForOld6Indices();
         sessions2Update();
     } else {
         logmsg "db.pl is hosed\n";

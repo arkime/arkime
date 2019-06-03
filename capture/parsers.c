@@ -774,8 +774,8 @@ void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, 
         } else {
             session->parserLen *= 1.67;
         }
+        session->parserInfo = realloc(session->parserInfo, sizeof(MolochParserInfo_t) * session->parserLen);
     }
-    session->parserInfo = realloc(session->parserInfo, sizeof(MolochParserInfo_t) * session->parserLen);
 
     session->parserInfo[session->parserNum].parserFunc     = func;
     session->parserInfo[session->parserNum].uw             = uw;
