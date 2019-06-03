@@ -200,7 +200,7 @@
                     :session-btn="true">
                   </moloch-session-field>
                 </strong>
-                <sup>({{ value | round(0) }})</sup>
+                <sup>({{ value | commaString }})</sup>
               </span>
             </span>
           </b-card-header>
@@ -312,7 +312,7 @@
                           :session-btn="true"
                           :timezone="user.settings.timezone">
                         </moloch-session-field>
-                        <sup>({{ bucket.doc_count | round(0) }})</sup>
+                        <sup>({{ bucket.doc_count | commaString }})</sup>
                       </span>
                     </span>
                   </span>
