@@ -90,7 +90,7 @@
     "vue": "^2.6.10",
     "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-clickaway": "^2.2.2",
-    "vue-clipboards": "^1.2.4",
+    "vue-clipboard2": "^0.3.0",
     "vue-color": "^2.4.6",
     "vue-loader": "^15.7.0",
     "vue-style-loader": "^3.0.1",
