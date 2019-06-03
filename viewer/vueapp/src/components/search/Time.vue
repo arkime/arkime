@@ -323,6 +323,14 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    expression: {
+      get: function () {
+        return this.$store.state.expression;
+      },
+      set: function (newValue) {
+        this.$store.commit('setExpression', newValue);
+      }
     }
   },
   watch: {
@@ -401,9 +409,12 @@ export default {
         }
       }
 
+      let routeQuery = this.$route.query;
+      routeQuery.expression = this.expression;
+
       this.$router.push({
         query: {
-          ...this.$route.query,
+          ...routeQuery,
           date: this.timeRange,
           stopTime: undefined,
           startTime: undefined
@@ -472,6 +483,7 @@ export default {
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.validateDate();
     },
     /**
      * Fired when clicking the next time button on a time input
@@ -493,6 +505,7 @@ export default {
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.validateDate();
     },
     /**
      * Fired when change bounded select box is changed

@@ -723,8 +723,11 @@ export default {
                 this.cluster = cluster;
               },
               openPermalink: function () {
+                const id = this.session.id.split(':');
+                const prefixlessId = id.length > 1 ? id[1] : id[0];
+
                 let params = {
-                  expression: `id == ${this.session.id}`,
+                  expression: `id == ${prefixlessId}`,
                   startTime: Math.floor(this.session.firstPacket / 1000),
                   stopTime: Math.ceil(this.session.lastPacket / 1000),
                   openAll: 1

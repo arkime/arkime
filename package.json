@@ -20,6 +20,7 @@
     "elasticsearch": "^15.4.1",
     "express": "^4.16.1",
     "font-awesome": "^4.7.0",
+    "fstream": "^1.0.12",
     "glob": "^7.1.2",
     "hoek": "^4.2.1",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",

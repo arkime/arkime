@@ -51,25 +51,28 @@ typedef struct {
     GPtrArray *values;
 } YamlNode_t;
 
+#define MOLOCH_SAVE_FLAG_MIDDLE 0x01
+#define MOLOCH_SAVE_FLAG_FINAL  0x02
+#define MOLOCH_SAVE_FLAG_BOTH   0x03
+
 typedef struct {
-    uint16_t            *fields;
     char                *filename;
     char                *name;
-    char                *bpf;
+    char                *bpf;                      // String version of bpf
     struct bpf_program   bpfp;
-    GHashTable          *hash[MOLOCH_FIELDS_MAX];
+    GHashTable          *hash[MOLOCH_FIELDS_MAX];  // For each non ip field in rule
     patricia_tree_t     *tree4[MOLOCH_FIELDS_MAX];
     patricia_tree_t     *tree6[MOLOCH_FIELDS_MAX];
     MolochFieldOps_t     ops;
-    int                  fieldsLen;
-    int                  saveFlags;
     uint64_t             matched;
+    uint16_t            *fields;                   // fieldsLen length array of field pos
+    uint16_t             fieldsLen;
+    int                  saveFlags;                // When to save for beforeSave
 } MolochRule_t;
 
 #define MOLOCH_RULES_MAX     100
 
-// Has all possible values to array of rules
-
+// Has all possible values to array of rules that use that value
 typedef struct {
     GHashTable            *fieldsHash[MOLOCH_FIELDS_MAX];
     patricia_tree_t       *fieldsTree4[MOLOCH_FIELDS_MAX];
@@ -247,7 +250,6 @@ void moloch_rules_free_array(gpointer data)
 void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
 {
     uint32_t         n;
-    char            *key2;
     GPtrArray       *rules;
     patricia_node_t *node;
 
@@ -300,11 +302,9 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
     case MOLOCH_FIELD_TYPE_STR_HASH:
     case MOLOCH_FIELD_TYPE_STR_GHASH:
         if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, moloch_rules_free_array);
+            loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, moloch_rules_free_array);
 
-        key2 = g_strdup(key);
-        if (!g_hash_table_add(rule->hash[pos], key2))
-            g_free(key2);
+        g_hash_table_add(rule->hash[pos], g_strdup(key));
 
         rules = g_hash_table_lookup(loading.fieldsHash[pos], key);
         if (!rules) {
@@ -363,17 +363,17 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
             LOGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeMiddleSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = 1;
+        saveFlags = MOLOCH_SAVE_FLAG_MIDDLE;
         if (bpf)
             LOGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeFinalSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = 2;
+        saveFlags = MOLOCH_SAVE_FLAG_FINAL;
         if (bpf)
             LOGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeBothSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = 3;
+        saveFlags = MOLOCH_SAVE_FLAG_BOTH;
         if (bpf)
             LOGEXIT("%s: %s doesn't support bpf", filename, when);
     } else {
@@ -419,7 +419,7 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
             case MOLOCH_FIELD_TYPE_STR_HASH:
             case MOLOCH_FIELD_TYPE_STR_GHASH:
-                rule->hash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
+                rule->hash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
                 break;
 
             case MOLOCH_FIELD_TYPE_CERTSINFO:
@@ -582,7 +582,6 @@ void moloch_rules_load(char **names)
 
     MolochRulesInfo_t *freeing = MOLOCH_TYPE_ALLOC0(MolochRulesInfo_t);
     memcpy(freeing, &current, sizeof(current));
-    moloch_free_later(freeing, (GDestroyNotify) moloch_rules_free);
 
     // Load all the rule files
     for (i = 0; names[i]; i++) {
@@ -609,6 +608,9 @@ void moloch_rules_load(char **names)
 
     // Part 2, which will also copy loading to current
     moloch_rules_load_complete();
+
+    // Now schedule free of current items
+    moloch_free_later(freeing, (GDestroyNotify) moloch_rules_free);
 }
 /******************************************************************************/
 /* Called at the start on main thread or each time a new file is open on single thread */
@@ -944,7 +946,7 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
     final = 1 << final;
     MolochRule_t *rule;
     for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r]); r++) {
-        if ((rule->saveFlags & final) == 0) {
+        if ((rule->saveFlags & (1 >> final)) == 0) {
             continue;
         }
 
