@@ -76,17 +76,29 @@ my ($url, $token, $debug) = @_;
 sub viewerPost {
 my ($url, $content, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content);
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content);
+    }
+
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
 ################################################################################
 sub viewerPost2 {
-my ($url, $content) = @_;
+my ($url, $content, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content);
-    #print $url, " response:", $response->content;
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content);
+    }
+
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }

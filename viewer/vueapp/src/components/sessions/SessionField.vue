@@ -98,8 +98,7 @@
               New Sessions Tab (with only this value)
             </b-dropdown-item>
             <b-dropdown-item
-              @click="isOpen = false"
-              v-clipboard="pd.value"
+              @click="doCopy(pd.value)"
               title="Copy value to clipboard">
               <span class="fa fa-clipboard"></span>&nbsp;
               Copy value
@@ -352,6 +351,15 @@ export default {
       });
 
       window.open(routeData.href, '_blank');
+    },
+    /**
+     * Triggered when a the Copy menu item is clicked for a field
+     * Copies the value provided to the user's clipboard and closes the menu
+     * @param {string} value The field value
+     */
+    doCopy: function (value) {
+      this.$copyText(value);
+      this.isOpen = false;
     },
     /* helper functions ---------------------------------------------------- */
     /**

@@ -3353,8 +3353,8 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
     }
 
     let size = parseInt(req.query.size) || 1000;
-    if (tasks.length > size) {
-      tasks = tasks.slice(0, size);
+    if (rtasks.length > size) {
+      rtasks = rtasks.slice(0, size);
     }
 
     return res.send({
