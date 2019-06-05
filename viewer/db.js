@@ -742,7 +742,7 @@ exports.fileNameToFiles = function (name, cb) {
     if (internals.fileName2File[name]) {
       return cb([internals.fileName2File[name]]);
     }
-    query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
+    query = {size: 100, query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
   }
 
   exports.search('files', 'file', query, (err, data) => {
