@@ -45,6 +45,14 @@
               @click="optimizeIndex(item.index)">
               Optimize Index {{ item.index }}
             </b-dropdown-item>
+            <b-dropdown-item
+              @click="closeIndex(item.index)">
+              Close Index {{ item.index }}
+            </b-dropdown-item>
+            <b-dropdown-item
+              @click="openIndex(item.index)">
+              Open Index {{ item.index }}
+            </b-dropdown-item>
           </b-dropdown>
         </template>
       </moloch-table>
@@ -177,6 +185,20 @@ export default {
     },
     optimizeIndex (indexName) {
       this.$http.post(`esindices/${indexName}/optimize`)
+        .then((response) => {
+        }, (error) => {
+          this.$emit('errored', error.text || error);
+        });
+    },
+    closeIndex (indexName) {
+      this.$http.post(`esindices/${indexName}/close`)
+        .then((response) => {
+        }, (error) => {
+          this.$emit('errored', error.text || error);
+        });
+    },
+    openIndex (indexName) {
+      this.$http.post(`esindices/${indexName}/open`)
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);

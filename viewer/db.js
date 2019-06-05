@@ -300,6 +300,28 @@ exports.optimizeIndex = function (index, options, cb) {
   return internals.elasticSearchClient.indices.forcemerge(params, cb);
 };
 
+// This API does not call fixIndex
+exports.closeIndex = function (index, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index};
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.close(params, cb);
+};
+
+// This API does not call fixIndex
+exports.openIndex = function (index, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index};
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.open(params, cb);
+};
+
 exports.indexStats = function(index, cb) {
   return internals.elasticSearchClient.indices.stats({index: fixIndex(index)}, cb);
 };
