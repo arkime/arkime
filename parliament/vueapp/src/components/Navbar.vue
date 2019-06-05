@@ -94,14 +94,23 @@
           </div>
         </span> <!-- /refresh interval select -->
         <!-- password input -->
-        <input class="form-control ml-1"
-          tabindex="2"
-          type="password"
-          v-model="password"
-          v-focus-input="focusPassInput"
-          placeholder="password please"
-          :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
-        /> <!-- /password input -->
+        <form>
+          <input type="text"
+            name="username"
+            value="..."
+            autocomplete="username"
+            class="d-none"
+          />
+          <input class="form-control ml-1"
+            tabindex="2"
+            type="password"
+            v-model="password"
+            v-focus-input="focusPassInput"
+            placeholder="password please"
+            autocomplete="password"
+            :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
+          />
+        </form> <!-- /password input -->
         <!-- login button -->
         <button type="button"
           class="btn btn-outline-success cursor-pointer ml-1"
