@@ -8,6 +8,8 @@ const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const portfinder = require('portfinder')
 
 const HOST = process.env.HOST
@@ -19,7 +21,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   },
   // cheap-module-eval-source-map is faster for development
   devtool: config.dev.devtool,
-
+  mode: 'development',
   // these devServer options should be customized in /config/index.js
   devServer: {
     clientLogLevel: 'warning',
@@ -45,6 +47,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     }
   },
   plugins: [
+    new VueLoaderPlugin(),
+    new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
       'process.env': require('../config/dev.env')
     }),
