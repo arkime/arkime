@@ -3279,7 +3279,7 @@ app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(r
   if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
 
   if (!req.params.index) {
-    return res.molochError(403, 'Missing index to delete');
+    return res.molochError(403, 'Missing index to optimize');
   }
 
   Db.optimizeIndex([req.params.index], {}, (err, result) => {
@@ -3289,6 +3289,39 @@ app.post('/esindices/:index/optimize', logAction(), checkCookieToken, function(r
   });
 
   // Always return right away, optimizeIndex might block
+  return res.send(JSON.stringify({ success: true, text: {} }));
+});
+
+app.post('/esindices/:index/close', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to close');
+  }
+
+  Db.closeIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      res.status(404);
+      return res.send(JSON.stringify({ success:false, text:'Error closing index' }));
+    }
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
+app.post('/esindices/:index/open', logAction(), checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  if (!req.params.index) {
+    return res.molochError(403, 'Missing index to open');
+  }
+
+  Db.openIndex([req.params.index], {}, (err, result) => {
+    if (err) {
+      console.log ("ERROR -", req.params.index, "open failed", err);
+    }
+  });
+
+  // Always return right away, openIndex might block
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
