@@ -580,6 +580,14 @@ export default {
         expression: this.$store.state.expression || undefined
       };
     },
+    sorts: {
+      get: function () {
+        return this.$store.state.sorts || 'firstPacket:desc';
+      },
+      set: function (newValue) {
+        this.$store.commit('setSorts', newValue);
+      }
+    },
     user: function () {
       return this.$store.state.user;
     },
@@ -709,7 +717,7 @@ export default {
         }
       }
 
-      this.query.sorts = this.tableState.order;
+      this.sorts = this.tableState.order;
 
       this.saveTableState();
 
@@ -783,8 +791,8 @@ export default {
           this.tableState.order.splice(sortIndex, 1);
         }
 
-        // update the query
-        this.query.sorts = this.tableState.order;
+        // update the sorts
+        this.sorts = this.tableState.order;
       }
 
       return updated;
@@ -900,7 +908,7 @@ export default {
         this.tableState.order = this.colConfigs[index].order.slice();
       }
 
-      this.query.sorts = this.tableState.order;
+      this.sorts = this.tableState.order;
 
       this.saveTableState();
 
@@ -1106,7 +1114,7 @@ export default {
           }
 
           // update the sort order for the session table query
-          this.query.sorts = this.tableState.order;
+          this.sorts = this.tableState.order;
 
           FieldService.get()
             .then((result) => {
@@ -1136,8 +1144,8 @@ export default {
       // exists in the table headers, apply it
       if (this.user.settings && this.user.settings.sortColumn !== 'last' &&
          this.tableState.visibleHeaders.indexOf(this.user.settings.sortColumn) > -1) {
-        this.query.sorts = [[this.user.settings.sortColumn, this.user.settings.sortDirection]];
-        this.tableState.order = this.query.sorts;
+        this.sorts = [[this.user.settings.sortColumn, this.user.settings.sortDirection]];
+        this.tableState.order = this.sorts;
       }
 
       // if user had infoFields set, update the info fields and custom info column
@@ -1176,14 +1184,14 @@ export default {
         expandedSessions.push(session.id);
       }
 
-      this.query.sorts = this.tableState.order || JSON.parse(JSON.stringify(defaultTableState.order));
+      this.sorts = this.tableState.order || JSON.parse(JSON.stringify(defaultTableState.order));
 
       if (this.viewChanged && this.views) {
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
             this.mapHeadersToFields();
-            this.query.sorts = this.tableState.order;
+            this.sorts = this.tableState.order;
             this.saveTableState();
           }
         }

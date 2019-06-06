@@ -6270,43 +6270,17 @@ app.get('/state/:name', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
-
-function addTagsList(allTagNames, list, doneCb) {
-  async.eachLimit(list, 10, function(session, nextCb) {
-    var fields = session._source || session.fields;
-
-    if (!fields) {
-      console.log("No Fields", session);
+function addTagsList (allTagNames, sessionList, doneCb) {
+  async.eachLimit(sessionList, 10, function (session, nextCb) {
+    if (!session._source && !session.fields) {
+      console.log('No Fields', session);
       return nextCb(null);
     }
 
-    if (fields.tags === undefined) {
-      fields.tags = [];
-    }
+    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
 
-
-    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-      if (fields.tags.indexOf(allTagNames[i]) === -1) {
-        fields.tags.push(allTagNames[i]);
-      }
-    }
-
-    // Do the ES update
-    var document = {
-      doc: {
-        tags: fields.tags,
-        tagsCnt: fields.tags.length
-      }
-    };
-
-    if (Config.get('multiES', false) && session._node) {
-      document._node = session._node;  // add tag to a session using MultiES
-    }
-
-    Db.update(session._index, 'session', session._id, document, function(err, data) {
-      if (err) {
-        console.log("addTagsList error", session, err, data);
-      }
+    Db.addTagsToSession(session._index, 'session', session._id, allTagNames, node, function (err, data) {
+      if (err) { console.log('addTagsList error', session, err, data); }
       nextCb(null);
     });
   }, doneCb);

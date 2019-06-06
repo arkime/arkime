@@ -399,6 +399,43 @@ exports.refresh = function (index, cb) {
   return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
 };
 
+exports.addTagsToSession = function (index, type, id, tags, node, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: type,
+    id: id
+  };
+
+  let script = `
+    if (ctx._source.tags != null) {
+      for (int i = 0; i < params.tags.length; i++) {
+        if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+          ctx._source.tags.add(params.tags[i]);
+        }
+      }
+      ctx._source.tagsCnt = ctx._source.tags.length;
+    } else {
+      ctx._source.tags = params.tags;
+      ctx._source.tagsCnt = params.tags.length;
+    }
+  `;
+
+  params.body = {
+    script: {
+      inline: script,
+      lang: 'painless',
+      params: {
+        tags: tags
+      }
+    }
+  };
+
+  if (node) { params.body._node = node; }
+
+  return internals.elasticSearchClient.update(params, cb);
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
