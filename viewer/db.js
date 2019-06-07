@@ -399,11 +399,11 @@ exports.refresh = function (index, cb) {
   return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
 };
 
-exports.addTagsToSession = function (index, type, id, tags, node, cb) {
+exports.addTagsToSession = function (index, id, tags, node, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
-    type: type,
+    type: 'session',
     id: id
   };
 
@@ -436,23 +436,25 @@ exports.addTagsToSession = function (index, type, id, tags, node, cb) {
   return internals.elasticSearchClient.update(params, cb);
 };
 
-exports.removeTagsFromSession = function (index, type, id, tags, node, cb) {
+exports.removeTagsFromSession = function (index, id, tags, node, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
-    type: type,
+    type: 'session',
     id: id
   };
 
   let script = `
-    for (int i = 0; i < params.tags.length; i++) {
-      int index = ctx._source.tags.indexOf(params.tags[i]);
-      if (index > -1) { ctx._source.tags.remove(index); }
-    }
-    ctx._source.tagsCnt = ctx._source.tags.length;
-    if (ctx._source.tagsCnt == 0) {
-      ctx._source.remove("tags");
-      ctx._source.remove("tagsCnt");
+    if (ctx._source.tags != null) {
+      for (int i = 0; i < params.tags.length; i++) {
+        int index = ctx._source.tags.indexOf(params.tags[i]);
+        if (index > -1) { ctx._source.tags.remove(index); }
+      }
+      ctx._source.tagsCnt = ctx._source.tags.length;
+      if (ctx._source.tagsCnt == 0) {
+        ctx._source.remove("tags");
+        ctx._source.remove("tagsCnt");
+      }
     }
   `;
 

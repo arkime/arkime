@@ -6283,7 +6283,7 @@ function addTagsList (allTagNames, sessionList, doneCb) {
 
     let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
 
-    Db.addTagsToSession(session._index, 'session', session._id, allTagNames, node, function (err, data) {
+    Db.addTagsToSession(session._index, session._id, allTagNames, node, function (err, data) {
       if (err) { console.log('addTagsList error', session, err, data); }
       nextCb(null);
     });
@@ -6303,7 +6303,7 @@ function removeTagsList(res, allTagNames, sessionList) {
 
     let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
 
-    Db.removeTagsFromSession(session._index, 'session', session._id, allTagNames, node, function (err, data) {
+    Db.removeTagsFromSession(session._index, session._id, allTagNames, node, function (err, data) {
       if (err) { console.log('removeTagsList error', session, err, data); }
       nextCb(null);
     });
