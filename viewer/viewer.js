@@ -6567,28 +6567,8 @@ function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
 }
 
 function updateSessionWithHunt (session, sessionId, hunt, huntId) {
-  if (session.huntId === undefined) {
-    session.huntId = [];
-  }
-  if (session.huntName === undefined) {
-    session.huntName = [];
-  }
-
-  session.huntId.push(huntId);
-  session.huntName.push(hunt.name);
-
-  // Do the ES update
-  let document = {
-    doc: {
-      huntId: session.huntId,
-      huntName: session.huntName
-    }
-  };
-
-  Db.update(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId), document, function (err, data) {
-    if (err) {
-      console.log('add hunt info error', session, err, data);
-    }
+  Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
+    if (err) { console.log('add hunt info error', session, err, data); }
   });
 }
 

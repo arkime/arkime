@@ -495,6 +495,41 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
   return internals.elasticSearchClient.update(params, cb);
 };
 
+exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: 'session',
+    id: id
+  };
+
+  let script = `
+    if (ctx._source.huntId != null) {
+      ctx._source.huntId.add(params.huntId);
+    } else {
+      ctx._source.huntId = [ params.huntId ];
+    }
+    if (ctx._source.huntName != null) {
+      ctx._source.huntName.add(params.huntName);
+    } else {
+      ctx._source.huntName = [ params.huntName ];
+    }
+  `;
+
+  params.body = {
+    script: {
+      inline: script,
+      lang: 'painless',
+      params: {
+        huntId: huntId,
+        huntName: huntName
+      }
+    }
+  };
+
+  return internals.elasticSearchClient.update(params, cb);
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
