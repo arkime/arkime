@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import qs from 'qs';
+import store from '../../store';
 
 let getDecodingsQIP;
 let _decodingsCache;
@@ -34,22 +35,14 @@ export default {
           params.stopTime = query.stopTime;
         }
 
-        let i, len, item;
-        // server takes one param (order)
-        if (query.sorts && query.sorts.length) {
-          params.order = '';
-          for (i = 0, len = query.sorts.length; i < len; ++i) {
-            item = query.sorts[i];
-            params.order += item[0] + ':' + item[1];
-            if (i < len - 1) { params.order += ','; }
-          }
-        }
+        // add sort to params
+        params.order = store.state.sortsParam;
 
         // server takes one param (fields)
         if (query.fields && query.fields.length) {
           params.fields = '';
-          for (i = 0, len = query.fields.length; i < len; ++i) {
-            item = query.fields[i];
+          for (let i = 0, len = query.fields.length; i < len; ++i) {
+            const item = query.fields[i];
             params.fields += item;
             if (i < len - 1) { params.fields += ','; }
           }
@@ -168,6 +161,9 @@ export default {
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
       if (options.error) { return reject({text: options.error}); }
+
+      // add sort to params
+      options.params.order = store.state.sortsParam;
 
       // add tags to data instead of url params
       options.data.tags = params.tags;

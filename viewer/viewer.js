@@ -6303,96 +6303,45 @@ app.get('/state/:name', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
+function addTagsList (allTagNames, sessionList, doneCb) {
+  if (!sessionList.length) {
+    return res.molochError(200, 'No sessions to add tags to');
+  }
 
-function addTagsList(allTagNames, list, doneCb) {
-  async.eachLimit(list, 10, function(session, nextCb) {
-    var fields = session._source || session.fields;
-
-    if (!fields) {
-      console.log("No Fields", session);
+  async.eachLimit(sessionList, 10, function (session, nextCb) {
+    if (!session._source && !session.fields) {
+      console.log('No Fields', session);
       return nextCb(null);
     }
 
-    if (fields.tags === undefined) {
-      fields.tags = [];
-    }
+    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
 
-
-    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-      if (fields.tags.indexOf(allTagNames[i]) === -1) {
-        fields.tags.push(allTagNames[i]);
-      }
-    }
-
-    // Do the ES update
-    var document = {
-      doc: {
-        tags: fields.tags,
-        tagsCnt: fields.tags.length
-      }
-    };
-
-    if (Config.get('multiES', false) && session._node) {
-      document._node = session._node;  // add tag to a session using MultiES
-    }
-
-    Db.update(session._index, 'session', session._id, document, function(err, data) {
-      if (err) {
-        console.log("addTagsList error", session, err, data);
-      }
+    Db.addTagsToSession(session._index, session._id, allTagNames, node, function (err, data) {
+      if (err) { console.log('addTagsList error', session, err, data); }
       nextCb(null);
     });
   }, doneCb);
 }
 
-function removeTagsList(res, allTagNames, list) {
-  if (!list.length) {
+function removeTagsList(res, allTagNames, sessionList) {
+  if (!sessionList.length) {
     return res.molochError(200, 'No sessions to remove tags from');
   }
 
-  async.eachLimit(list, 10, function(session, nextCb) {
-    var fields = session._source || session.fields;
-
-    if (!fields || !fields.tags) {
+  async.eachLimit(sessionList, 10, function(session, nextCb) {
+    if (!session._source && !session.fields) {
+      console.log('No Fields', session);
       return nextCb(null);
     }
 
-    for (let i = 0, ilen = allTagNames.length; i < ilen; i++) {
-      let pos = fields.tags.indexOf(allTagNames[i]);
-      if (pos !== -1) {
-        fields.tags.splice(pos, 1);
-      }
-    }
+    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
 
-    let document;
-    if (fields.tags.length === 0) {
-      // Remove fields if there are no tags, so tags.cnt == EXISTS! query still behaves normally
-      document = {
-        script: "ctx._source.remove(\"tags\");ctx._source.remove(\"tagsCnt\");"
-      };
-    } else {
-      // Do the ES update
-      document = {
-        doc: {
-          tags: fields.tags,
-          tagsCnt: fields.tags.length
-        }
-      };
-
-    }
-
-    if (Config.get('multiES', false) && session._node) {
-      document._node = session._node; // remove tag from a session using MultiES
-    }
-
-    Db.update(session._index, 'session', session._id, document, function(err, data) {
-      if (err) {
-        console.log("removeTagsList error", err);
-      }
+    Db.removeTagsFromSession(session._index, session._id, allTagNames, node, function (err, data) {
+      if (err) { console.log('removeTagsList error', session, err, data); }
       nextCb(null);
     });
   }, function (err) {
-    return res.send(JSON.stringify({success: true, text: "Tags removed successfully"}));
+    return res.send(JSON.stringify({success: true, text: 'Tags removed successfully'}));
   });
 }
 
