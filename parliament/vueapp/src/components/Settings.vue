@@ -304,49 +304,60 @@
             </span>
           </h3>
           <hr>
-          <div v-if="hasAuth && loggedIn"
-            class="input-group mb-2">
-            <span class="input-group-prepend">
-              <span class="input-group-text">
-                Current Password
-              </span>
-            </span>
-            <input class="form-control"
-              @keyup.enter="updatePassword"
-              name="currentPassword"
-              @input="passwordChanged = true"
-              v-model="currentPassword"
-              type="password"
+          <form>
+            <input type="text"
+              name="username"
+              value="..."
+              autocomplete="username"
+              class="d-none"
             />
-          </div>
-          <div class="input-group mb-2">
-            <span class="input-group-prepend">
-              <span class="input-group-text">
-                New Password
+            <div v-if="hasAuth && loggedIn"
+              class="input-group mb-2">
+              <span class="input-group-prepend">
+                <span class="input-group-text">
+                  Current Password
+                </span>
               </span>
-            </span>
-            <input class="form-control"
-              name="newPassword"
-              @keyup.enter="updatePassword"
-              @input="passwordChanged = true"
-              v-model="newPassword"
-              type="password"
-            />
-          </div>
-          <div class="input-group mb-2">
-            <span class="input-group-prepend">
-              <span class="input-group-text">
-                Confirm New Password
+              <input class="form-control"
+                @keyup.enter="updatePassword"
+                name="currentPassword"
+                @input="passwordChanged = true"
+                v-model="currentPassword"
+                autocomplete="current-password"
+                type="password"
+              />
+            </div>
+            <div class="input-group mb-2">
+              <span class="input-group-prepend">
+                <span class="input-group-text">
+                  New Password
+                </span>
               </span>
-            </span>
-            <input class="form-control"
-              name="newPasswordConfirm"
-              @keyup.enter="updatePassword"
-              @input="passwordChanged = true"
-              v-model="newPasswordConfirm"
-              type="password"
-            />
-          </div>
+              <input class="form-control"
+                name="newPassword"
+                @keyup.enter="updatePassword"
+                @input="passwordChanged = true"
+                v-model="newPassword"
+                autocomplete="new-password"
+                type="password"
+              />
+            </div>
+            <div class="input-group mb-2">
+              <span class="input-group-prepend">
+                <span class="input-group-text">
+                  Confirm New Password
+                </span>
+              </span>
+              <input class="form-control"
+                name="newPasswordConfirm"
+                @keyup.enter="updatePassword"
+                @input="passwordChanged = true"
+                v-model="newPasswordConfirm"
+                autocomplete="confirm-new-password"
+                type="password"
+              />
+            </div>
+          </form>
         </div> <!-- /password -->
 
         <!-- notifiers tab -->

@@ -300,6 +300,28 @@ exports.optimizeIndex = function (index, options, cb) {
   return internals.elasticSearchClient.indices.forcemerge(params, cb);
 };
 
+// This API does not call fixIndex
+exports.closeIndex = function (index, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index};
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.close(params, cb);
+};
+
+// This API does not call fixIndex
+exports.openIndex = function (index, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index};
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.open(params, cb);
+};
+
 exports.indexStats = function(index, cb) {
   return internals.elasticSearchClient.indices.stats({index: fixIndex(index)}, cb);
 };
@@ -397,6 +419,115 @@ exports.flush = function (index, cb) {
 
 exports.refresh = function (index, cb) {
   return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+};
+
+exports.addTagsToSession = function (index, id, tags, node, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: 'session',
+    id: id
+  };
+
+  let script = `
+    if (ctx._source.tags != null) {
+      for (int i = 0; i < params.tags.length; i++) {
+        if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+          ctx._source.tags.add(params.tags[i]);
+        }
+      }
+      ctx._source.tagsCnt = ctx._source.tags.length;
+    } else {
+      ctx._source.tags = params.tags;
+      ctx._source.tagsCnt = params.tags.length;
+    }
+  `;
+
+  params.body = {
+    script: {
+      inline: script,
+      lang: 'painless',
+      params: {
+        tags: tags
+      }
+    }
+  };
+
+  if (node) { params.body._node = node; }
+
+  return internals.elasticSearchClient.update(params, cb);
+};
+
+exports.removeTagsFromSession = function (index, id, tags, node, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: 'session',
+    id: id
+  };
+
+  let script = `
+    if (ctx._source.tags != null) {
+      for (int i = 0; i < params.tags.length; i++) {
+        int index = ctx._source.tags.indexOf(params.tags[i]);
+        if (index > -1) { ctx._source.tags.remove(index); }
+      }
+      ctx._source.tagsCnt = ctx._source.tags.length;
+      if (ctx._source.tagsCnt == 0) {
+        ctx._source.remove("tags");
+        ctx._source.remove("tagsCnt");
+      }
+    }
+  `;
+
+  params.body = {
+    script: {
+      inline: script,
+      lang: 'painless',
+      params: {
+        tags: tags
+      }
+    }
+  };
+
+  if (node) { params.body._node = node; }
+
+  return internals.elasticSearchClient.update(params, cb);
+};
+
+exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: 'session',
+    id: id
+  };
+
+  let script = `
+    if (ctx._source.huntId != null) {
+      ctx._source.huntId.add(params.huntId);
+    } else {
+      ctx._source.huntId = [ params.huntId ];
+    }
+    if (ctx._source.huntName != null) {
+      ctx._source.huntName.add(params.huntName);
+    } else {
+      ctx._source.huntName = [ params.huntName ];
+    }
+  `;
+
+  params.body = {
+    script: {
+      inline: script,
+      lang: 'painless',
+      params: {
+        huntId: huntId,
+        huntName: huntName
+      }
+    }
+  };
+
+  return internals.elasticSearchClient.update(params, cb);
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -742,7 +873,7 @@ exports.fileNameToFiles = function (name, cb) {
     if (internals.fileName2File[name]) {
       return cb([internals.fileName2File[name]]);
     }
-    query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
+    query = {size: 100, query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
   }
 
   exports.search('files', 'file', query, (err, data) => {

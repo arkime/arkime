@@ -34,12 +34,14 @@ rules:
   - name: "Don't save fields example2"
     when: "fieldSet"
     fields:
-      protocols: 
+      protocols:
         - tls
-      host.http: 
+      host.http:
         - www.aol.com
         - mail.yandex.com
         - foo.bar.com
+      host.http,endsWith:
+        - ample.com
 #      mac.src:
 #        - 00:11:f5:13:d7:a3
     ops:

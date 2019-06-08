@@ -291,11 +291,12 @@
                11342
             ],
             "protocol" : [
+               "tlsrulestest",
                "tls",
                "socks",
                "tcp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "socks" : {
                "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
@@ -662,11 +663,12 @@
                22733
             ],
             "protocol" : [
+               "tlsrulestest",
                "tls",
                "socks",
                "tcp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "socks" : {
                "host" : "www.example.com",
@@ -1036,11 +1038,12 @@
                34388
             ],
             "protocol" : [
+               "tlsrulestest",
                "tls",
                "socks",
                "tcp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "socks" : {
                "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
