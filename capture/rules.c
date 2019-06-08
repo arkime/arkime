@@ -61,10 +61,11 @@ typedef struct {
     char                *bpf;                      // String version of bpf
     struct bpf_program   bpfp;
     GHashTable          *hash[MOLOCH_FIELDS_MAX];  // For each non ip field in rule
+    GPtrArray           *tail[MOLOCH_FIELDS_MAX];  // For any string fields with ,tail modifier
     patricia_tree_t     *tree4[MOLOCH_FIELDS_MAX];
     patricia_tree_t     *tree6[MOLOCH_FIELDS_MAX];
-    MolochFieldOps_t     ops;
-    uint64_t             matched;
+    MolochFieldOps_t     ops;                      // Ops to run on match
+    uint64_t             matched;                  // How many times was matched
     uint16_t            *fields;                   // fieldsLen length array of field pos
     uint16_t             fieldsLen;
     int                  saveFlags;                // When to save for beforeSave
@@ -73,10 +74,20 @@ typedef struct {
 #define MOLOCH_RULES_MAX     100
 
 // Has all possible values to array of rules that use that value
+/* All the information about the rules.  To support reloading while running
+ * there can be multiple info variables.
+ * current - has the ones that the packetThreads are using
+ * loading - has the ones that the main thread is loading into
+ * anonymous - can be multiple, has the ones that will be freed later
+ *
+ * The fields* elements are a mapping from ALL possible values to rules with those values.
+ * Used by the field set object type
+ */
 typedef struct {
     GHashTable            *fieldsHash[MOLOCH_FIELDS_MAX];
     patricia_tree_t       *fieldsTree4[MOLOCH_FIELDS_MAX];
     patricia_tree_t       *fieldsTree6[MOLOCH_FIELDS_MAX];
+    GHashTable            *fieldsTail[MOLOCH_FIELDS_MAX];
 
     int                    rulesLen[MOLOCH_RULE_TYPE_NUM];
     MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX+1];
@@ -89,7 +100,7 @@ LOCAL char               **rulesFiles;
 LOCAL pcap_t              *deadPcap;
 extern MolochPcapFileHdr_t pcapFileHeader;
 /******************************************************************************/
-void moloch_rules_free_node(YamlNode_t *node)
+void moloch_rules_parser_free_node(YamlNode_t *node)
 {
     if (node->key)
         g_free(node->key);
@@ -100,7 +111,7 @@ void moloch_rules_free_node(YamlNode_t *node)
     MOLOCH_TYPE_FREE(YamlNode_t, node);
 }
 /******************************************************************************/
-YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value)
+YamlNode_t *moloch_rules_parser_add_node(YamlNode_t *parent, char *key, char *value)
 {
     YamlNode_t *node = MOLOCH_TYPE_ALLOC(YamlNode_t);
     node->key = key;
@@ -109,7 +120,7 @@ YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value)
     if (value) {
         node->values = NULL;
     } else {
-        node->values = g_ptr_array_new_with_free_func((GDestroyNotify)moloch_rules_free_node);
+        node->values = g_ptr_array_new_with_free_func((GDestroyNotify)moloch_rules_parser_free_node);
     }
 
     if (parent) {
@@ -124,7 +135,7 @@ YamlNode_t *moloch_rules_add_node(YamlNode_t *parent, char *key, char *value)
     return node;
 }
 /******************************************************************************/
-YamlNode_t *moloch_rules_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
+YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
 
     char *key = NULL;
     YamlNode_t *node;
@@ -150,9 +161,9 @@ YamlNode_t *moloch_rules_parse_yaml(char *filename, YamlNode_t *parent, yaml_par
 #endif
 
             if (sequence) {
-                moloch_rules_add_node(parent, g_strdup((gchar *)event.data.scalar.value), YAML_NODE_SEQUENCE_VALUE);
+                moloch_rules_parser_add_node(parent, g_strdup((gchar *)event.data.scalar.value), YAML_NODE_SEQUENCE_VALUE);
             } else if (key) {
-                moloch_rules_add_node(parent, key, g_strdup((gchar *)event.data.scalar.value));
+                moloch_rules_parser_add_node(parent, key, g_strdup((gchar *)event.data.scalar.value));
                 key = NULL;
             } else {
                 key = g_strdup((gchar *)event.data.scalar.value);
@@ -161,12 +172,12 @@ YamlNode_t *moloch_rules_parse_yaml(char *filename, YamlNode_t *parent, yaml_par
         case YAML_SEQUENCE_START_EVENT:
         case YAML_MAPPING_START_EVENT:
             if (parent == NULL) {
-                parent = node = moloch_rules_add_node(NULL, g_strdup("root"), NULL);
+                parent = node = moloch_rules_parser_add_node(NULL, g_strdup("root"), NULL);
             } else {
-                node = moloch_rules_add_node(parent, key, NULL);
+                node = moloch_rules_parser_add_node(parent, key, NULL);
             }
             key = NULL;
-            if (moloch_rules_parse_yaml(filename, node, parser, event.type == YAML_SEQUENCE_START_EVENT) == NULL)
+            if (moloch_rules_parser_parse_yaml(filename, node, parser, event.type == YAML_SEQUENCE_START_EVENT) == NULL)
                 return NULL;
 
             break;
@@ -181,7 +192,7 @@ YamlNode_t *moloch_rules_parse_yaml(char *filename, YamlNode_t *parent, yaml_par
     return parent;
 }
 /******************************************************************************/
-void moloch_rules_parse_print(YamlNode_t *node, int level)
+void moloch_rules_parser_print(YamlNode_t *node, int level)
 {
     static char indent[] = "                                                             ";
     if (node->value == YAML_NODE_SEQUENCE_VALUE) {
@@ -192,7 +203,7 @@ void moloch_rules_parse_print(YamlNode_t *node, int level)
         printf("%.*s %s:\n", level, indent, node->key);
         int i;
         for (i = 0; i < (int)node->values->len; i++)
-            moloch_rules_parse_print(g_ptr_array_index(node->values, i), level+1);
+            moloch_rules_parser_print(g_ptr_array_index(node->values, i), level+1);
     }
 }
 /******************************************************************************/
@@ -226,7 +237,7 @@ YamlNode_t *moloch_rules_get(YamlNode_t *node, char *path)
     }
 }
 /******************************************************************************/
-char *moloch_rules_get_value(YamlNode_t *parent, char *path)
+char *moloch_rules_parser_get_value(YamlNode_t *parent, char *path)
 {
     YamlNode_t *node = moloch_rules_get(parent, path);
     if (!node)
@@ -234,7 +245,7 @@ char *moloch_rules_get_value(YamlNode_t *parent, char *path)
     return node->value;
 }
 /******************************************************************************/
-GPtrArray *moloch_rules_get_values(YamlNode_t *parent, char *path)
+GPtrArray *moloch_rules_parser_get_values(YamlNode_t *parent, char *path)
 {
     YamlNode_t *node = moloch_rules_get(parent, path);
     if (!node)
@@ -316,19 +327,44 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
     }
 }
 /******************************************************************************/
-void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
+void moloch_rules_load_add_field_tail(MolochRule_t *rule, int pos, char *key)
 {
-    char *name = moloch_rules_get_value(parent, "name");
+    GPtrArray       *rules;
+    int              len = strlen(key);
+
+    if (len >= 255)
+        LOGEXIT("Tail %s is to too large", key);
+
+    uint8_t *nkey = g_malloc(len+2);
+    nkey[0] = len;
+    memcpy(nkey+1, key, len+1);
+
+    if (!loading.fieldsTail[pos])
+        loading.fieldsTail[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, moloch_rules_free_array);
+
+    g_hash_table_add(rule->hash[pos], (char *)nkey); // Just made a copy above
+
+    rules = g_hash_table_lookup(loading.fieldsTail[pos], nkey);
+    if (!rules) {
+        rules = g_ptr_array_new();
+        g_hash_table_insert(loading.fieldsTail[pos], g_strdup((char *)nkey), rules);
+    }
+    g_ptr_array_add(rules, rule);
+}
+/******************************************************************************/
+void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
+{
+    char *name = moloch_rules_parser_get_value(parent, "name");
     if (!name)
         LOGEXIT("%s: name required for rule", filename);
 
-    char *when = moloch_rules_get_value(parent, "when");
+    char *when = moloch_rules_parser_get_value(parent, "when");
     if (!when)
         LOGEXIT("%s: when required for rule '%s'", filename, name);
 
-    char *bpf = moloch_rules_get_value(parent, "bpf");
-    GPtrArray *fields = moloch_rules_get_values(parent, "fields");
-    char *expression = moloch_rules_get_value(parent, "expression");
+    char *bpf = moloch_rules_parser_get_value(parent, "bpf");
+    GPtrArray *fields = moloch_rules_parser_get_values(parent, "fields");
+    char *expression = moloch_rules_parser_get_value(parent, "expression");
 
     if (!bpf && !fields && !expression)
         LOGEXIT("%s: bpf, fields, or expressions required for rule '%s'", filename, name);
@@ -336,7 +372,7 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
     if ((bpf && fields) || (bpf && expression) || (fields && expression))
         LOGEXIT("%s: Only one of bpf, fields, or expressions can be set for rule '%s'", filename, name);
 
-    GPtrArray  *ops = moloch_rules_get_values(parent, "ops");
+    GPtrArray  *ops = moloch_rules_parser_get_values(parent, "ops");
     if (!ops)
         LOGEXIT("%s: ops required for rule '%s'", filename, name);
 
@@ -393,46 +429,83 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
 
     if (fields) {
         int i;
+        int type = 0;
         rule->fields = malloc((int)fields->len * 2);
         for (i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
+
+            char *comma = strchr(node->key, ',');
+            if (comma) {
+                *comma = 0;
+                comma++;
+                if (strcmp(comma, "tail") == 0 || strcmp(comma, "endsWith") == 0) {
+                    type = 1;
+                } else {
+                    LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
+                }
+            }
+
             int pos = moloch_field_by_exp(node->key);
             if (pos == -1)
                 LOGEXIT("%s Couldn't find field '%s'", filename, node->key);
-            rule->fields[(int)rule->fieldsLen++] = pos;
+
+            // Add this fieldPos to the list if not already there
+            if (!(rule->hash[pos] || rule->tree4[pos] || rule->tail[pos]))
+                rule->fields[(int)rule->fieldsLen++] = pos;
 
             switch (config.fields[pos]->type) {
             case MOLOCH_FIELD_TYPE_INT:
             case MOLOCH_FIELD_TYPE_INT_ARRAY:
             case MOLOCH_FIELD_TYPE_INT_HASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
-                rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
+                if (type == 1)
+                    LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
+
+                if (!rule->hash[pos])
+                    rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
                 break;
 
             case MOLOCH_FIELD_TYPE_IP:
             case MOLOCH_FIELD_TYPE_IP_GHASH:
-                rule->tree4[pos] = New_Patricia(32);
-                rule->tree6[pos] = New_Patricia(128);
+                if (type == 1)
+                    LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
+
+                if (!rule->tree4[pos]) {
+                    rule->tree4[pos] = New_Patricia(32);
+                    rule->tree6[pos] = New_Patricia(128);
+                }
                 break;
 
             case MOLOCH_FIELD_TYPE_STR:
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
             case MOLOCH_FIELD_TYPE_STR_HASH:
             case MOLOCH_FIELD_TYPE_STR_GHASH:
-                rule->hash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+                if (type == 1) {
+                    if (!rule->tail[pos])
+                        rule->tail[pos] = g_ptr_array_new_with_free_func(g_free);
+                } else {
+                    if (!rule->hash[pos])
+                        rule->hash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+                }
                 break;
 
             case MOLOCH_FIELD_TYPE_CERTSINFO:
                 LOGEXIT("%s: Currently don't support any certs fields", filename);
             }
 
-            if (node->value)
-                moloch_rules_load_add_field(rule, pos, node->value);
-            else {
+            if (node->value) {
+                if (type == 1)
+                    moloch_rules_load_add_field_tail(rule, pos, node->value);
+                else
+                    moloch_rules_load_add_field(rule, pos, node->value);
+            } else {
                 int j;
                 for (j = 0; j < (int)node->values->len; j++) {
                     YamlNode_t *fnode = g_ptr_array_index(node->values, j);
-                    moloch_rules_load_add_field(rule, pos, fnode->key);
+                    if (type == 1)
+                        moloch_rules_load_add_field_tail(rule, pos, fnode->key);
+                    else
+                        moloch_rules_load_add_field(rule, pos, fnode->key);
                 }
             }
         }
@@ -449,24 +522,24 @@ void moloch_rules_load_rule(char *filename, YamlNode_t *parent)
     }
 }
 /******************************************************************************/
-void moloch_rules_load_file(char *filename, YamlNode_t *parent)
+void moloch_rules_parser_load_file(char *filename, YamlNode_t *parent)
 {
     char       *str;
     GPtrArray  *rules;
 
-    str = moloch_rules_get_value(parent, "version");
+    str = moloch_rules_parser_get_value(parent, "version");
     if (!str || strcmp(str, "1") != 0) {
         LOGEXIT("%s: Missing version: 1", filename);
     }
 
-    rules = moloch_rules_get_values(parent, "rules");
+    rules = moloch_rules_parser_get_values(parent, "rules");
     if (!rules) {
         LOGEXIT("%s: Missing rules", filename);
     }
 
     int i;
     for (i = 0; i < (int)rules->len; i++) {
-        moloch_rules_load_rule(filename, g_ptr_array_index(rules, i));
+        moloch_rules_parser_load_rule(filename, g_ptr_array_index(rules, i));
     }
 }
 /******************************************************************************/
@@ -544,6 +617,9 @@ void moloch_rules_free(MolochRulesInfo_t *freeing)
         if (freeing->fieldsTree6[i]) {
             Destroy_Patricia(freeing->fieldsTree6[i], moloch_rules_free_array);
         }
+        if (freeing->fieldsTail[i]) {
+            g_hash_table_destroy(freeing->fieldsTail[i]);
+        }
     }
 
     for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
@@ -563,6 +639,9 @@ void moloch_rules_free(MolochRulesInfo_t *freeing)
                 }
                 if (rule->tree6[i]) {
                     Destroy_Patricia(rule->tree6[i], moloch_rules_free_array);
+                }
+                if (rule->tail[i]) {
+                    g_ptr_array_free(rule->tail[i], TRUE);
                 }
             }
 
@@ -592,17 +671,17 @@ void moloch_rules_load(char **names)
             LOGEXIT("ERROR - can not open rules file %s", names[i]);
 
         yaml_parser_set_input_file(&parser, input);
-        YamlNode_t *parent = moloch_rules_parse_yaml(names[i], NULL, &parser, FALSE);
+        YamlNode_t *parent = moloch_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
         yaml_parser_delete(&parser);
         if (!parent) {
             LOG("WARNING %s - has no rules", names[i]);
             continue;
         }
 #ifdef RULES_DEBUG
-        moloch_rules_parse_print(parent, 0);
+        moloch_rules_parser_print(parent, 0);
 #endif
-        moloch_rules_load_file(names[i], parent);
-        moloch_rules_free_node(parent);
+        moloch_rules_parser_load_file(names[i], parent);
+        moloch_rules_parser_free_node(parent);
         fclose(input);
     }
 
@@ -647,6 +726,22 @@ LOCAL gboolean moloch_rules_check_ip(const MolochRule_t *rule, const int p, cons
     } else {
         return patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128) != NULL;
     }
+}
+/******************************************************************************/
+LOCAL gboolean moloch_rules_check_tail(const GPtrArray *tails, const char *key)
+{
+    if (!tails)
+        return FALSE;
+
+    guint len = strlen(key);
+
+    for (guint i = 0; i < tails->len; i++) {
+        uint8_t *akey = g_ptr_array_index(tails, i);
+        if (len >= akey[0] && memcmp(akey+1, key + len - akey[0], akey[0]) == 0)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 /******************************************************************************/
 LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t *rule, int skipPos)
@@ -805,7 +900,9 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (moloch_rules_check_ip(rule, p, ikey)) {
+                if (moloch_rules_check_ip(rule, p, ikey) ||
+                    moloch_rules_check_tail(rule->tail[p], ikey)) {
+
                     good = 1;
                     break;
                 }
@@ -817,19 +914,25 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (g_hash_table_contains(rule->hash[p], ikey)) {
+
+                if (g_hash_table_contains(rule->hash[p], ikey) ||
+                    moloch_rules_check_tail(rule->tail[p], ikey)) {
+
                     good = 1;
                     break;
                 }
             }
             break;
         case MOLOCH_FIELD_TYPE_STR:
-            good = g_hash_table_contains(rule->hash[p], session->fields[p]->str);
+            good = g_hash_table_contains(rule->hash[p], session->fields[p]->str) ||
+                   moloch_rules_check_tail(rule->tail[p], session->fields[p]->str);
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
-                if (g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
+                if (g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i)) ||
+                    moloch_rules_check_tail(rule->tail[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
+
                     good = 1;
                     break;
                 }
@@ -839,13 +942,18 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             shash = session->fields[p]->shash;
             good = 0;
             HASH_FORALL(s_, *shash, hstring,
-                if (g_hash_table_contains(rule->hash[p], (gpointer)hstring->str)) {
+                if (g_hash_table_contains(rule->hash[p], (gpointer)hstring->str) ||
+                    moloch_rules_check_tail(rule->tail[p], (gpointer)hstring->str)) {
+
                     good = 1;
                     break;
                 }
             );
             break;
         } /* switch */
+#ifdef RULES_DEBUG
+        LOG("Field pos:%d %s type:%d good:%d", p, config.fields[p]->expression, config.fields[p]->type, good);
+#endif
     }
     if (good) {
 #ifdef RULES_DEBUG
@@ -853,12 +961,33 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
 #endif
         MOLOCH_THREAD_INCR(rule->matched);
         moloch_field_ops_run(session, &rule->ops);
+    } else {
+#ifdef RULES_DEBUG
+        LOG("%s %s didn't matched", rule->filename, rule->name);
+#endif
+    }
+}
+/******************************************************************************/
+void moloch_rules_run_field_set_rules(MolochSession_t *session, int pos, GPtrArray *rules)
+{
+    for (int r = 0; r < (int)rules->len; r++) {
+        MolochRule_t *rule = g_ptr_array_index(rules, r);
+
+        // If there is only 1 field we are checking for then the ops can be run since it matched above
+        if (rule->fieldsLen == 1) {
+            MOLOCH_THREAD_INCR(rule->matched);
+            moloch_field_ops_run(session, &rule->ops);
+            continue;
+        }
+
+        // Need to check other fields in rule
+        moloch_rules_check_rule_fields(session, rule, pos);
     }
 }
 /******************************************************************************/
 void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value)
 {
-    int                    r;
+    GPtrArray             *rules;
 
     if (config.fields[pos]->type == MOLOCH_FIELD_TYPE_IP ||
         config.fields[pos]->type == MOLOCH_FIELD_TYPE_IP_GHASH) {
@@ -877,41 +1006,26 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
         // These are all the possible rules that match
         int i;
         for (i = 0; i < cnt; i++) {
-            GPtrArray *rules = nodes[i]->data;
-
-            for (r = 0; r < (int)rules->len; r++) {
-                MolochRule_t *rule = g_ptr_array_index(rules, r);
-
-                // If there is only 1 field we are checking for then the ops can be run since it matched above
-                if (rule->fieldsLen == 1) {
-                    MOLOCH_THREAD_INCR(rule->matched);
-                    moloch_field_ops_run(session, &rule->ops);
-                    continue;
-                }
-
-                // Need to check other fields in rule
-                moloch_rules_check_rule_fields(session, rule, pos);
-            }
+            moloch_rules_run_field_set_rules(session, pos, nodes[i]->data);
         }
     } else {
-        // See if this value is in the hash table of values we are watching for
-        GPtrArray *rules = g_hash_table_lookup(current.fieldsHash[pos], value);
-        if (!rules)
-            return;
+        // See if this value is in the hash table of tails we are watching for
+        if (current.fieldsTail[pos]) {
+            GHashTableIter         iter;
+            uint8_t               *akey;
+            int                    len = strlen(value);
 
-        for (r = 0; r < (int)rules->len; r++) {
-            MolochRule_t *rule = g_ptr_array_index(rules, r);
-
-            // If there is only 1 field we are checking for then the ops can be run since it matched above
-            if (rule->fieldsLen == 1) {
-                MOLOCH_THREAD_INCR(rule->matched);
-                moloch_field_ops_run(session, &rule->ops);
-                return;
+            g_hash_table_iter_init (&iter, current.fieldsTail[pos]);
+            while (g_hash_table_iter_next (&iter, (gpointer *)&akey, (gpointer *)&rules)) {
+                if (len >= akey[0] && memcmp(akey+1, value + len - akey[0], akey[0]) == 0)
+                    moloch_rules_run_field_set_rules(session, pos, rules);
+                }
             }
 
-            // Need to check other fields in rule
-            moloch_rules_check_rule_fields(session, rule, pos);
-        }
+        // See if this value is in the hash table of values we are watching for
+        rules = g_hash_table_lookup(current.fieldsHash[pos], value);
+        if (rules)
+            moloch_rules_run_field_set_rules(session, pos, rules);
     }
 }
 /******************************************************************************/
