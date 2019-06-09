@@ -760,7 +760,7 @@ LOCAL gboolean moloch_rules_check_match(const GPtrArray *matches, const char *ke
                 return TRUE;
             break;
         case MOLOCH_RULES_STR_MATCH_CONTAINS:
-            if (strnstr((char*)akey+2, key, akey[1]) != 0)
+            if (moloch_memstr(key, len, (char*)akey+2, akey[1]) != 0)
                 return TRUE;
         }
     }
@@ -1055,7 +1055,7 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
                         moloch_rules_run_field_set_rules(session, pos, rules);
                     break;
                 case MOLOCH_RULES_STR_MATCH_CONTAINS:
-                    if (strnstr((char*)akey+2, value, akey[1]) != 0)
+                    if (moloch_memstr(value, len, (char*)akey+2, akey[1]) != 0)
                         moloch_rules_run_field_set_rules(session, pos, rules);
                 }
             }
