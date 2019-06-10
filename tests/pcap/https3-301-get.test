@@ -133,10 +133,11 @@
                6662
             ],
             "protocol" : [
+               "tlsrulestest",
                "tls",
                "tcp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 1530,
             "srcDataBytes" : 630,
