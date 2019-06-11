@@ -376,15 +376,10 @@ WISESource.prototype.formatSetting = function () {
   return true;
 };
 //////////////////////////////////////////////////////////////////////////////////
-var typeName2Func = {ip: "getIp", domain: "getDomain", md5: "getMd5", email: "getEmail", url: "getURL", tuple: "getTuple", ja3: "getJa3", sha256: "getSha256"};
 WISESource.prototype.typeSetting = function ()
 {
   this.type     = this.api.getConfig(this.section, "type");
-  this.typeFunc = typeName2Func[this.type];
-  if (this.typeFunc === undefined) {
-    console.log(this.section, "ERROR - unknown type", this.type);
-    return;
-  }
+  this.typeFunc = this.api.funcName(this.type);
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.emptyCombinedResult = WISESource.combineResults([]);
