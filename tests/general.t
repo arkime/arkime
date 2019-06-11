@@ -1,4 +1,4 @@
-use Test::More tests => 618;
+use Test::More tests => 626;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -133,6 +133,12 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=2001:6f8:900:7c0:0:0:0:2"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=2001:6f8:900:7c0::2.80"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/v6-http.pcap&&ip=.59201"));
+
+# ipv4 and ipv6 shorthand tests
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/v6-http.pcap||file=$pwd/bt-udp.pcap)&&ip.src=ipv4"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/v6-http.pcap||file=$pwd/bt-udp.pcap)&&ip.src=ipv6"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/v6-http.pcap||file=$pwd/bt-udp.pcap)&&ip.src!=ipv4"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/v6-http.pcap||file=$pwd/bt-udp.pcap)&&ip.src!=ipv6"));
 
 # ip boundary tests
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/ip-boundaries.pcap&&ip.src=0.0.0.0"));

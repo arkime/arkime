@@ -245,6 +245,7 @@
               first class searchable and may be searched for directly. For example:
               <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
               An IP search can also be done with list of IPs which may be in mixed representations: <code>ip == [1.2.3.4,1.3/16]</code>
+              If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
             </p>
             <h6 id="numericSearch">
               <span class="fa fa-search"></span>&nbsp;
