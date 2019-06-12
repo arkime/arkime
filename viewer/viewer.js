@@ -6305,7 +6305,8 @@ app.get('/state/:name', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 function addTagsList (allTagNames, sessionList, doneCb) {
   if (!sessionList.length) {
-    return res.molochError(200, 'No sessions to add tags to');
+    console.log('No sessions to add tags to');
+    return doneCb(null);
   }
 
   async.eachLimit(sessionList, 10, function (session, nextCb) {
