@@ -70,10 +70,11 @@
                2209
             ],
             "protocol" : [
+               "tlsrulestest",
                "tls",
                "tcp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 1022,
             "srcDataBytes" : 618,

@@ -36,7 +36,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - add bytes as a graphing choice
   - capture - fixed ja3 mishandling of 11 extension types (thanks Norwegian Healthcare CERT)
   - viewer - Added shortcuts
-  - capture - Added endsWith rule expression modifier
+  - capture - Added startsWith,contains,endsWith rule expression modifier
+  - viewer - support ip == ipv4 and ip == ipv6 expressions
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

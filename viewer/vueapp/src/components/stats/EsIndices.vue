@@ -46,10 +46,12 @@
               Optimize Index {{ item.index }}
             </b-dropdown-item>
             <b-dropdown-item
+              v-if="item.status === 'open'"
               @click="closeIndex(item.index)">
               Close Index {{ item.index }}
             </b-dropdown-item>
             <b-dropdown-item
+              v-if="item.status === 'close'"
               @click="openIndex(item.index)">
               Open Index {{ item.index }}
             </b-dropdown-item>

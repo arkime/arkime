@@ -412,6 +412,16 @@ function formatQuery(yy, field, op, value)
     if (value.indexOf("*") !== -1)
       throw value + " - Wildcard not supported for ip queries";
 
+    if (value === "ipv4") {
+      value = "0.0.0.0/0";
+    } if (value === "ipv6") {
+      value = "0.0.0.0/0";
+      if (op === "ne")
+        op = "eq";
+      else
+        op = "ne";
+    }
+
     if (op === "eq")
       return parseIpPort(yy, field, value);
     if (op === "ne")

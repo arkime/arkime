@@ -42,6 +42,10 @@ rules:
         - foo.bar.com
       host.http,endsWith:
         - ample.com
+      host.http,contains:
+        - b.c
+      host.http,startsWith:
+        - bl.a
 #      mac.src:
 #        - 00:11:f5:13:d7:a3
     ops:

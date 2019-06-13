@@ -24,13 +24,20 @@
           Create a packet search job
         </button>
         <div class="mt-1" style="display:inline-block;">
-          <span class="fa fa-info-circle fa-fw">
-          </span>&nbsp;
-          Creating a new packet search job will search the packets of
-          <strong>
-            {{ sessions.recordsFiltered | commaString }}
-          </strong>
-          sessions.
+          <span v-if="loadingSessions">
+            <span class="fa fa-spinner fa-spin fa-fw">
+            </span>
+            Loading sessions...
+          </span>
+          <span v-else>
+            <span class="fa fa-info-circle fa-fw">
+            </span>&nbsp;
+            Creating a new packet search job will search the packets of
+            <strong>
+              {{ sessions.recordsFiltered | commaString }}
+            </strong>
+            sessions.
+          </span>
         </div>
       </div>
     </form> <!-- /hunt create navbar -->
@@ -51,19 +58,27 @@
             @keyup.enter="createJob">
             <div class="row">
               <div class="col-12">
-                <div class="alert alert-info"
+                <div class="alert"
                   :class="{'alert-info':sessions.recordsFiltered < huntWarn,'alert-danger':sessions.recordsFiltered >= huntWarn}">
-                  <em v-if="sessions.recordsFiltered > huntWarn">
+                  <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
                     That's a lot of sessions, this job will take a while.
                     <strong>
                       Proceed with caution.
                     </strong>
                     <br>
                   </em>
+                  <em v-if="loadingSessions">
+                    <span class="fa fa-spinner fa-spin fa-fw">
+                    </span>&nbsp;
+                    Wait for session totals to be calculated.
+                    <br>
+                  </em>
+                  <span v-if="!loadingSessions">
                   <span class="fa fa-exclamation-triangle fa-fw">
-                  </span>&nbsp;
-                  Make sure your sessions search above contains only the sessions that
-                  you want in your packet search!
+                    </span>&nbsp;
+                    Make sure your sessions search above contains only the sessions that
+                    you want in your packet search!
+                  </span>
                 </div>
               </div>
             </div>
@@ -289,6 +304,7 @@
                 <!-- create search job button -->
                 <button type="button"
                   @click="createJob"
+                  :disabled="loadingSessions"
                   class="pull-right btn btn-theme-tertiary pull-right ml-1">
                   <span class="fa fa-plus fa-fw">
                   </span>&nbsp;
@@ -900,6 +916,7 @@ export default {
         recordsFiltered: 0
       },
       sessions: {}, // sessions a new job applies to
+      loadingSessions: false,
       // new job search form
       createFormError: '',
       createFormOpened: false,
@@ -1186,9 +1203,12 @@ export default {
         });
     },
     loadSessions: function () {
+      this.loadingSessions = true;
+
       SessionsService.get(this.sessionsQuery)
         .then((response) => {
           this.sessions = response.data;
+          this.loadingSessions = false;
         })
         .catch((error) => {
           this.sessions = undefined;

@@ -522,12 +522,12 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 /* make the shortcut letter the same size/position as the icon */
 .query-shortcut {
   color: var(--color-tertiary-lighter);
-  font-size: 18px;
+  font-size: 14px;
   width: 20px;
 }
 .time-shortcut {
   color: var(--color-tertiary-lighter);
-  font-size: 18px;
+  font-size: 14px;
   width: 20px;
 }
 /* make sure the width of the input prepend doesn't change */

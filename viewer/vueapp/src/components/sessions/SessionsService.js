@@ -191,6 +191,9 @@ export default {
 
       if (options.error) { return reject({text: options.error}); }
 
+      // add sort to params
+      options.params.order = store.state.sortsParam;
+
       Vue.axios(options)
         .then((response) => {
           resolve(response);
@@ -213,6 +216,9 @@ export default {
       let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
 
       if (options.error) { return reject({text: options.error}); };
+
+      // add sort to params
+      options.params.order = store.state.sortsParam;
 
       // add tags and cluster to data instead of url params
       options.data.tags = params.tags;
@@ -253,6 +259,9 @@ export default {
         options.params.ids = options.data.ids;
       }
 
+      // add sort to params
+      options.params.order = store.state.sortsParam;
+
       let url = `${baseUrl}?${qs.stringify(options.params)}`;
 
       window.location = url;
@@ -283,6 +292,9 @@ export default {
       if (options.data.ids) {
         options.params.ids = options.data.ids;
       }
+
+      // add sort to params
+      options.params.order = store.state.sortsParam;
 
       let url = `${baseUrl}?${qs.stringify(options.params)}`;
 
