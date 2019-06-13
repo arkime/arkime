@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 61;
+const MIN_DB_VERSION = 62;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -6505,8 +6505,16 @@ function sessionHunt (sessionId, options, cb) {
   }
 }
 
-function pauseHuntJobWithError (huntId, hunt, error) {
-  if (error) { console.log(error.value); }
+function pauseHuntJobWithError (huntId, hunt, error, node) {
+  let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
+  if (node) {
+    errorMsg += ` On ${node} node`;
+    error.node = node;
+  }
+
+  console.log(errorMsg);
+
+  error.time = Math.floor(Date.now() / 1000);
 
   hunt.status = 'paused';
 
@@ -6621,7 +6629,7 @@ function runHuntJob (huntId, hunt, query, user) {
       isLocalView(node, function () {
         sessionHunt(sessionId, options, function (err, matched) {
           if (err) {
-            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` });
+            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
           }
 
           if (matched) {
@@ -6637,12 +6645,12 @@ function runHuntJob (huntId, hunt, query, user) {
 
         makeRequest (node, path, user, (err, response) => {
           if (err) {
-            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` }, node);
           }
           let json = JSON.parse(response);
           if (json.error) {
             console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
-            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
           }
           if (json.matched) { hunt.matchedSessions++; }
           return updateHuntStats(hunt, huntId, session, searchedSessions, cb);

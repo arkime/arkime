@@ -558,6 +558,15 @@
                   <div class="col-12">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
+                    <span v-if="error.time">
+                      {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                    </span>
+                    <span v-if="error.node">
+                      ({{ error.node }} node)
+                    </span>
+                    <span v-if="error.time || error.node">
+                      -
+                    </span>
                     {{ error.value }}
                   </div>
                 </div>
@@ -843,6 +852,15 @@
                   <div class="col-12">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
+                    <span v-if="error.time">
+                      {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                    </span>
+                    <span v-if="error.node">
+                      ({{ error.node }} node)
+                    </span>
+                    <span v-if="error.time || error.node">
+                      -
+                    </span>
                     {{ error.value }}
                   </div>
                 </div>

@@ -56,6 +56,7 @@
 # 59 - tokens
 # 60 - users time query limit
 # 61 - shortcuts
+# 62 - hunt error timestamp and node
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -64,7 +65,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 61;
+my $VERSION = 62;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1506,6 +1507,12 @@ sub huntsUpdate
       "errors": {
         "properties": {
           "value": {
+            "type": "keyword"
+          },
+          "time": {
+            "type": "date"
+          },
+          "node": {
             "type": "keyword"
           }
         }
@@ -3007,9 +3014,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         usersUpdate();
         lookupsCreate();
-    } elsif ($main::versionNumber <= 61) {
+    } elsif ($main::versionNumber <= 62) {
         checkForOld5Indices();
         sessions2Update();
+        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
