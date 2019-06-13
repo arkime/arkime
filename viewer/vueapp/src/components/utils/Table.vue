@@ -319,7 +319,7 @@ export default {
           if (column.doStats) {
             let totalValue = 0;
             for (let item of this.data) {
-              if (!item[column.id || column.sort]) { continue; }
+              if (item[column.id || column.sort] == null) { continue; }
               totalValue += parseInt(item[column.id || column.sort]);
             }
             this.totalValues[column.id] = totalValue;
@@ -452,7 +452,7 @@ export default {
       let itemClone = JSON.parse(JSON.stringify(item));
       let value = itemClone[column.id];
 
-      if (!value) { return; }
+      if (value == null) { return; }
 
       if (this.zeroMap[column.id]) {
         value = value - this.zeroMap[column.id][index];
