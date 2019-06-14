@@ -272,6 +272,14 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
         if (bind(infos[i].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
             LOGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
+        
+        int fanout_group_id = moloch_config_int(NULL, "tpacketv3ClusterId", 0x0000, 0x0000, 0xffff);
+        if(fanout_group_id != 0) {
+            int fanout_type = PACKET_FANOUT_HASH;
+            int fanout_arg = (fanout_group_id | (fanout_type << 16));
+            if(setsockopt(infos[i].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
+                LOGEXIT("Error setting packet fanout parameters: (%d,%s)", fanout_group_id, strerror(errno));
+        }
     }
 
     if (i == MAX_INTERFACES) {
