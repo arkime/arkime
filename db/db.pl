@@ -2999,6 +2999,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         setPriority();
         queriesUpdate();
         sessions2Update();
+        huntsUpdate();
         fieldsIpDst();
     } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
@@ -3014,6 +3015,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         usersUpdate();
         lookupsCreate();
+        huntsUpdate();
     } elsif ($main::versionNumber <= 62) {
         checkForOld5Indices();
         sessions2Update();

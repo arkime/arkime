@@ -5,7 +5,10 @@ VIEWERDIR = @prefix@/viewer
 CP = /bin/cp
 
 
-all:
+all: molochparser.js
+
+molochparser.js: molochparser.jison
+	jison molochparser.jison
 
 check:
 	npm ci
