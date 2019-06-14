@@ -266,7 +266,7 @@ export default {
 
       window.location = url;
 
-      return resolve({text: 'PCAP Exported'});
+      return resolve({text: 'PCAP now exporting'});
     });
   },
 

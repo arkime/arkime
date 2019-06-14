@@ -161,6 +161,8 @@
 import ConfigService from '../utils/ConfigService';
 import MolochSessionInfo from './SessionInfo';
 
+const noCommas = { 'vlan': true, 'suricata.signatureId': true };
+
 export default {
   name: 'MolochSessionField',
   components: { MolochSessionInfo },
@@ -233,7 +235,7 @@ export default {
             }
             break;
           case 'integer':
-            if (this.field.category !== 'port' && this.field.exp !== 'vlan') {
+            if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
               qVal = val; // save original value as the query value
               val = this.$options.filters.commaString(val);
             }
