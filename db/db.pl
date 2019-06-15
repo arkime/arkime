@@ -57,6 +57,7 @@
 # 60 - users time query limit
 # 61 - shortcuts
 # 62 - hunt error timestamp and node
+# 63 - prepare for es 7
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -65,7 +66,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 62;
+my $VERSION = 63;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
