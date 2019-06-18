@@ -57,7 +57,7 @@
 # 60 - users time query limit
 # 61 - shortcuts
 # 62 - hunt error timestamp and node
-# 63 - prepare for es 7
+# 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v6, dstats_v4, stats_v4, hunts_v2
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -406,9 +406,9 @@ sub sequenceCreate
   }
 }';
 
-    logmsg "Creating sequence_v2 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v2", $settings, 1);
-    esAlias("add", "sequence_v2", "sequence");
+    logmsg "Creating sequence_v3 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}sequence_v3", $settings, 1);
+    esAlias("add", "sequence_v3", "sequence");
     sequenceUpdate();
 }
 
@@ -423,31 +423,31 @@ sub sequenceUpdate
   }
 }';
 
-    logmsg "Setting sequence_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v2/sequence/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    logmsg "Setting sequence_v3 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}sequence_v3/sequence/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 }
 ################################################################################
 sub sequenceUpgrade
 {
 
-    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v2") && esIndexExists("${PREFIX}sequence_v2")) {
-        logmsg ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v2\n");
+    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v3") && esIndexExists("${PREFIX}sequence_v3")) {
+        logmsg ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v3\n");
         return;
     }
 
     $main::userAgent->timeout(7200);
     sequenceCreate();
-    esAlias("remove", "sequence_v1", "sequence");
-    my $results = esGet("/${PREFIX}sequence_v1/_search?version=true&size=10000", 0);
+    esAlias("remove", "sequence_v2", "sequence");
+    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000", 0);
 
-    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v1 to ${PREFIX}sequence_v2\n";
+    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v2 to ${PREFIX}sequence_v3\n";
 
     return if ($results->{hits}->{total} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        esPost("/${PREFIX}sequence_v2/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
+        esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
     }
-    esDelete("/${PREFIX}sequence_v1");
+    esDelete("/${PREFIX}sequence_v2");
     $main::userAgent->timeout($ESTIMEOUT + 5);
 }
 ################################################################################
@@ -463,9 +463,9 @@ sub filesCreate
   }
 }';
 
-    logmsg "Creating files_v5 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v5", $settings);
-    esAlias("add", "files_v5", "files");
+    logmsg "Creating files_v6 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}files_v6", $settings);
+    esAlias("add", "files_v6", "files");
     filesUpdate();
 }
 ################################################################################
@@ -512,8 +512,8 @@ sub filesUpdate
   }
 }';
 
-    logmsg "Setting files_v5 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v5/file/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    logmsg "Setting files_v6 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}files_v6/file/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -529,8 +529,8 @@ sub statsCreate
 }';
 
     logmsg "Creating stats index\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v3", $settings);
-    esAlias("add", "stats_v3", "stats");
+    esPut("/${PREFIX}stats_v4", $settings);
+    esAlias("add", "stats_v4", "stats");
     statsUpdate();
 }
 
@@ -568,7 +568,7 @@ my $mapping = '
 }';
 
     logmsg "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v3/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
+    esPut("/${PREFIX}stats_v4/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -583,9 +583,9 @@ sub dstatsCreate
   }
 }';
 
-    logmsg "Creating dstats_v3 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v3", $settings);
-    esAlias("add", "dstats_v3", "dstats");
+    logmsg "Creating dstats_v4 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}dstats_v4", $settings);
+    esAlias("add", "dstats_v4", "dstats");
     dstatsUpdate();
 }
 
@@ -631,8 +631,8 @@ my $mapping = '
   }
 }';
 
-    logmsg "Setting dstats_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v3/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
+    logmsg "Setting dstats_v4 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}dstats_v4/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -648,15 +648,15 @@ sub fieldsCreate
 }';
 
     logmsg "Creating fields index\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v2", $settings);
-    esAlias("add", "fields_v2", "fields");
+    esPut("/${PREFIX}fields_v3", $settings);
+    esAlias("add", "fields_v3", "fields");
     fieldsUpdate();
 }
 ################################################################################
 # Not the fix I want, but it works for now
 sub fieldsIpDst
 {
-    esPost("/${PREFIX}fields_v2/field/ip.dst", '{
+    esPost("/${PREFIX}fields_v3/field/ip.dst", '{
       "friendlyName": "Dst IP",
       "group": "general",
       "help": "Destination IP",
@@ -689,10 +689,10 @@ sub fieldsUpdate
   }
 }';
 
-    logmsg "Setting fields_v2 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v2/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    logmsg "Setting fields_v3 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}fields_v3/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 
-    esPost("/${PREFIX}fields_v2/field/ip", '{
+    esPost("/${PREFIX}fields_v3/field/ip", '{
       "friendlyName": "All IP fields",
       "group": "general",
       "help": "Search all ip fields",
@@ -702,7 +702,7 @@ sub fieldsUpdate
       "portField": "portall",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v2/field/port", '{
+    esPost("/${PREFIX}fields_v3/field/port", '{
       "friendlyName": "All port fields",
       "group": "general",
       "help": "Search all port fields",
@@ -711,7 +711,7 @@ sub fieldsUpdate
       "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
-    esPost("/${PREFIX}fields_v2/field/rir", '{
+    esPost("/${PREFIX}fields_v3/field/rir", '{
       "friendlyName": "All rir fields",
       "group": "general",
       "help": "Search all rir fields",
@@ -720,7 +720,7 @@ sub fieldsUpdate
       "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
-    esPost("/${PREFIX}fields_v2/field/country", '{
+    esPost("/${PREFIX}fields_v3/field/country", '{
       "friendlyName": "All country fields",
       "group": "general",
       "help": "Search all country fields",
@@ -729,7 +729,7 @@ sub fieldsUpdate
       "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
-    esPost("/${PREFIX}fields_v2/field/asn", '{
+    esPost("/${PREFIX}fields_v3/field/asn", '{
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
@@ -738,7 +738,7 @@ sub fieldsUpdate
       "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
-    esPost("/${PREFIX}fields_v2/field/host", '{
+    esPost("/${PREFIX}fields_v3/field/host", '{
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
@@ -747,7 +747,7 @@ sub fieldsUpdate
       "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
-    esPost("/${PREFIX}fields_v2/field/ip.src", '{
+    esPost("/${PREFIX}fields_v3/field/ip.src", '{
       "friendlyName": "Src IP",
       "group": "general",
       "help": "Source IP",
@@ -758,7 +758,7 @@ sub fieldsUpdate
       "portField2": "srcPort",
       "category": "ip"
     }');
-    esPost("/${PREFIX}fields_v2/field/port.src", '{
+    esPost("/${PREFIX}fields_v3/field/port.src", '{
       "friendlyName": "Src Port",
       "group": "general",
       "help": "Source Port",
@@ -767,7 +767,7 @@ sub fieldsUpdate
       "dbField2": "srcPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v2/field/asn.src", '{
+    esPost("/${PREFIX}fields_v3/field/asn.src", '{
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
@@ -777,7 +777,7 @@ sub fieldsUpdate
       "rawField": "rawas1",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v2/field/country.src", '{
+    esPost("/${PREFIX}fields_v3/field/country.src", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
@@ -786,7 +786,7 @@ sub fieldsUpdate
       "dbField2": "srcGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v2/field/rir.src", '{
+    esPost("/${PREFIX}fields_v3/field/rir.src", '{
       "friendlyName": "Src RIR",
       "group": "general",
       "help": "Source RIR",
@@ -796,7 +796,7 @@ sub fieldsUpdate
       "category": "rir"
     }');
     fieldsIpDst();
-    esPost("/${PREFIX}fields_v2/field/port.dst", '{
+    esPost("/${PREFIX}fields_v3/field/port.dst", '{
       "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
@@ -805,7 +805,7 @@ sub fieldsUpdate
       "dbField2": "dstPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v2/field/asn.dst", '{
+    esPost("/${PREFIX}fields_v3/field/asn.dst", '{
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
@@ -815,7 +815,7 @@ sub fieldsUpdate
       "rawField": "rawas2",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v2/field/country.dst", '{
+    esPost("/${PREFIX}fields_v3/field/country.dst", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
@@ -824,7 +824,7 @@ sub fieldsUpdate
       "dbField2": "dstGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v2/field/rir.dst", '{
+    esPost("/${PREFIX}fields_v3/field/rir.dst", '{
       "friendlyName": "Dst RIR",
       "group": "general",
       "help": "Destination RIR",
@@ -833,7 +833,7 @@ sub fieldsUpdate
       "dbField2": "dstRIR",
       "category": "rir"
     }');
-    esPost("/${PREFIX}fields_v2/field/bytes", '{
+    esPost("/${PREFIX}fields_v3/field/bytes", '{
       "friendlyName": "Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
@@ -841,7 +841,7 @@ sub fieldsUpdate
       "dbField": "by",
       "dbField2": "totBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/bytes.src", '{
+    esPost("/${PREFIX}fields_v3/field/bytes.src", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
@@ -849,7 +849,7 @@ sub fieldsUpdate
       "dbField": "by1",
       "dbField2": "srcBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/bytes.dst", '{
+    esPost("/${PREFIX}fields_v3/field/bytes.dst", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
@@ -857,7 +857,7 @@ sub fieldsUpdate
       "dbField": "by2",
       "dbField2": "dstBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/databytes", '{
+    esPost("/${PREFIX}fields_v3/field/databytes", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
@@ -865,7 +865,7 @@ sub fieldsUpdate
       "dbField": "db",
       "dbField2": "totDataBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/databytes.src", '{
+    esPost("/${PREFIX}fields_v3/field/databytes.src", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
@@ -873,7 +873,7 @@ sub fieldsUpdate
       "dbField": "db1",
       "dbField2": "srcDataBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/databytes.dst", '{
+    esPost("/${PREFIX}fields_v3/field/databytes.dst", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
@@ -881,7 +881,7 @@ sub fieldsUpdate
       "dbField": "db2",
       "dbField2": "dstDataBytes"
     }');
-    esPost("/${PREFIX}fields_v2/field/packets", '{
+    esPost("/${PREFIX}fields_v3/field/packets", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
@@ -889,7 +889,7 @@ sub fieldsUpdate
       "dbField": "pa",
       "dbField2": "totPackets"
     }');
-    esPost("/${PREFIX}fields_v2/field/packets.src", '{
+    esPost("/${PREFIX}fields_v3/field/packets.src", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
@@ -897,7 +897,7 @@ sub fieldsUpdate
       "dbField": "pa1",
       "dbField2": "srcPackets"
     }');
-    esPost("/${PREFIX}fields_v2/field/packets.dst", '{
+    esPost("/${PREFIX}fields_v3/field/packets.dst", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
@@ -905,7 +905,7 @@ sub fieldsUpdate
       "dbField": "pa2",
       "dbField2": "dstPackets"
     }');
-    esPost("/${PREFIX}fields_v2/field/ip.protocol", '{
+    esPost("/${PREFIX}fields_v3/field/ip.protocol", '{
       "friendlyName": "IP Protocol",
       "group": "general",
       "help": "IP protocol number or friendly name",
@@ -914,7 +914,7 @@ sub fieldsUpdate
       "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
-    esPost("/${PREFIX}fields_v2/field/id", '{
+    esPost("/${PREFIX}fields_v3/field/id", '{
       "friendlyName": "Moloch ID",
       "group": "general",
       "help": "Moloch ID for the session",
@@ -924,7 +924,7 @@ sub fieldsUpdate
       "noFacet": "true"
 
     }');
-    esPost("/${PREFIX}fields_v2/field/rootId", '{
+    esPost("/${PREFIX}fields_v3/field/rootId", '{
       "friendlyName": "Moloch Root ID",
       "group": "general",
       "help": "Moloch ID of the first session in a multi session stream",
@@ -932,7 +932,7 @@ sub fieldsUpdate
       "dbField": "ro",
       "dbField2": "rootId"
     }');
-    esPost("/${PREFIX}fields_v2/field/node", '{
+    esPost("/${PREFIX}fields_v3/field/node", '{
       "friendlyName": "Moloch Node",
       "group": "general",
       "help": "Moloch node name the session was recorded on",
@@ -940,7 +940,7 @@ sub fieldsUpdate
       "dbField": "no",
       "dbField2": "node"
     }');
-    esPost("/${PREFIX}fields_v2/field/file", '{
+    esPost("/${PREFIX}fields_v3/field/file", '{
       "friendlyName": "Filename",
       "group": "general",
       "help": "Moloch offline pcap filename",
@@ -948,7 +948,7 @@ sub fieldsUpdate
       "dbField": "fileand",
       "dbField2": "fileand"
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.src.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.src.hex", '{
       "friendlyName": "Payload Src Hex",
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
@@ -957,7 +957,7 @@ sub fieldsUpdate
       "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.src.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.src.utf8", '{
       "friendlyName": "Payload Src UTF8",
       "group": "general",
       "help": "First 8 bytes of source payload in utf8",
@@ -967,7 +967,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.dst.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.dst.hex", '{
       "friendlyName": "Payload Dst Hex",
       "group": "general",
       "help": "First 8 bytes of destination payload in hex",
@@ -976,7 +976,7 @@ sub fieldsUpdate
       "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.dst.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.dst.utf8", '{
       "friendlyName": "Payload Dst UTF8",
       "group": "general",
       "help": "First 8 bytes of destination payload in utf8",
@@ -986,7 +986,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.hex", '{
       "friendlyName": "Payload Hex",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -995,7 +995,7 @@ sub fieldsUpdate
       "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
-    esPost("/${PREFIX}fields_v2/field/payload8.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.utf8", '{
       "friendlyName": "Payload UTF8",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -1004,7 +1004,7 @@ sub fieldsUpdate
       "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
-    esPost("/${PREFIX}fields_v2/field/scrubbed.by", '{
+    esPost("/${PREFIX}fields_v3/field/scrubbed.by", '{
       "friendlyName": "Scrubbed By",
       "group": "general",
       "help": "SPI data was scrubbed by",
@@ -1012,7 +1012,7 @@ sub fieldsUpdate
       "dbField": "scrubby",
       "dbField2": "scrubby"
     }');
-    esPost("/${PREFIX}fields_v2/field/view", '{
+    esPost("/${PREFIX}fields_v3/field/view", '{
       "friendlyName": "View Name",
       "group": "general",
       "help": "Moloch view name",
@@ -1021,7 +1021,7 @@ sub fieldsUpdate
       "dbField2": "viewand",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v2/field/starttime", '{
+    esPost("/${PREFIX}fields_v3/field/starttime", '{
       "friendlyName": "Start Time",
       "group": "general",
       "help": "Session Start Time",
@@ -1030,7 +1030,7 @@ sub fieldsUpdate
       "dbField": "fp",
       "dbField2": "firstPacket"
     }');
-    esPost("/${PREFIX}fields_v2/field/stoptime", '{
+    esPost("/${PREFIX}fields_v3/field/stoptime", '{
       "friendlyName": "Stop Time",
       "group": "general",
       "help": "Session Stop Time",
@@ -1039,7 +1039,7 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
-    esPost("/${PREFIX}fields_v2/field/huntId", '{
+    esPost("/${PREFIX}fields_v3/field/huntId", '{
       "friendlyName": "Hunt ID",
       "group": "general",
       "help": "The ID of the packet search job that matched this session",
@@ -1047,7 +1047,7 @@ sub fieldsUpdate
       "dbField": "huntId",
       "dbField2": "huntId"
     }');
-    esPost("/${PREFIX}fields_v2/field/huntName", '{
+    esPost("/${PREFIX}fields_v3/field/huntName", '{
       "friendlyName": "Hunt Name",
       "group": "general",
       "help": "The name of the packet search job that matched this session",
@@ -1071,7 +1071,7 @@ sub queriesCreate
 }';
 
     logmsg "Creating queries index\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v2", $settings);
+    esPut("/${PREFIX}queries_v3", $settings);
     queriesUpdate();
 }
 ################################################################################
@@ -1124,8 +1124,8 @@ sub queriesUpdate
 }';
 
     logmsg "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v2/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
-    esAlias("add", "queries_v2", "queries");
+    esPut("/${PREFIX}queries_v3/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+    esAlias("add", "queries_v3", "queries");
 }
 
 ################################################################################
@@ -1439,9 +1439,9 @@ sub huntsCreate
   }
 }';
 
-  logmsg "Creating hunts_v1 index\n" if ($verbose > 0);
-  esPut("/${PREFIX}hunts_v1", $settings);
-  esAlias("add", "hunts_v1", "hunts");
+  logmsg "Creating hunts_v2 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}hunts_v2", $settings);
+  esAlias("add", "hunts_v2", "hunts");
   huntsUpdate();
 }
 
@@ -1525,8 +1525,8 @@ sub huntsUpdate
   }
 }';
 
-logmsg "Setting hunts_v1 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunts_v1/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+logmsg "Setting hunts_v2 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}hunts_v2/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
 }
 ################################################################################
 
@@ -1918,7 +1918,7 @@ sub dbCheck {
         exit (1)
     }
 
-    if ($main::esVersion < 70000) {
+    if ($main::esVersion >= 70000) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which is experimental\n");
     }
 
@@ -2023,7 +2023,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1", 1);
+    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2", 1);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -2478,19 +2478,21 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/(scalar(keys %{$nodes->{nodes}})*scalar(@historys)))),
                                                        commify(int($historysBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@historys))));
     }
+    printIndex($status, "stats_v4");
     printIndex($status, "stats_v3");
-    printIndex($status, "stats_v2");
+    printIndex($status, "fields_v3");
     printIndex($status, "fields_v2");
+    printIndex($status, "files_v6");
     printIndex($status, "files_v5");
-    printIndex($status, "files_v4");
     printIndex($status, "users_v6");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
+    printIndex($status, "hunts_v2");
     printIndex($status, "hunts_v1");
+    printIndex($status, "dstats_v4");
     printIndex($status, "dstats_v3");
-    printIndex($status, "dstats_v2");
+    printIndex($status, "sequence_v3");
     printIndex($status, "sequence_v2");
-    printIndex($status, "sequence_v1");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -2737,6 +2739,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}sequence", 1);
     esDelete("/${PREFIX}sequence_v1", 1);
     esDelete("/${PREFIX}sequence_v2", 1);
+    esDelete("/${PREFIX}sequence_v3", 1);
+    esDelete("/${PREFIX}files_v6", 1);
     esDelete("/${PREFIX}files_v5", 1);
     esDelete("/${PREFIX}files_v4", 1);
     esDelete("/${PREFIX}files_v3", 1);
@@ -2745,11 +2749,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}stats_v1", 1);
     esDelete("/${PREFIX}stats_v2", 1);
     esDelete("/${PREFIX}stats_v3", 1);
+    esDelete("/${PREFIX}stats_v4", 1);
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
     esDelete("/${PREFIX}dstats_v2", 1);
     esDelete("/${PREFIX}dstats_v3", 1);
+    esDelete("/${PREFIX}dstats_v4", 1);
     esDelete("/${PREFIX}sessions-*", 1);
     esDelete("/${PREFIX}sessions2-*", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
@@ -2757,20 +2763,20 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${PREFIX}sessions2_template", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
-    esDelete("/${PREFIX}fields_v2", 1);
+    esDelete("/${PREFIX}fields_v3", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
     esDelete("/${PREFIX}hunts_v1", 1);
+    esDelete("/${PREFIX}hunts_v2", 1);
     esDelete("/${PREFIX}lookups_v1", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
-        esDelete("/${PREFIX}users_v3", 1);
-        esDelete("/${PREFIX}users_v4", 1);
         esDelete("/${PREFIX}users_v5", 1);
         esDelete("/${PREFIX}users_v6", 1);
         esDelete("/${PREFIX}users", 1);
         esDelete("/${PREFIX}queries", 1);
         esDelete("/${PREFIX}queries_v1", 1);
         esDelete("/${PREFIX}queries_v2", 1);
+        esDelete("/${PREFIX}queries_v3", 1);
     }
     esDelete("/tagger", 1);
 
@@ -2833,6 +2839,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}sequence", 1);
     esDelete("/${PREFIX}sequence_v1", 1);
     esDelete("/${PREFIX}sequence_v2", 1);
+    esDelete("/${PREFIX}sequence_v3", 1);
+    esDelete("/${PREFIX}files_v6", 1);
     esDelete("/${PREFIX}files_v5", 1);
     esDelete("/${PREFIX}files_v4", 1);
     esDelete("/${PREFIX}files_v3", 1);
@@ -2841,13 +2849,17 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}stats_v1", 1);
     esDelete("/${PREFIX}stats_v2", 1);
     esDelete("/${PREFIX}stats_v3", 1);
+    esDelete("/${PREFIX}stats_v4", 1);
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
     esDelete("/${PREFIX}dstats_v2", 1);
     esDelete("/${PREFIX}dstats_v3", 1);
+    esDelete("/${PREFIX}dstats_v4", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
     esDelete("/${PREFIX}fields_v2", 1);
+    esDelete("/${PREFIX}fields_v3", 1);
+    esDelete("/${PREFIX}hunts_v2", 1);
     esDelete("/${PREFIX}hunts_v1", 1);
     esDelete("/${PREFIX}hunts", 1);
     esDelete("/${PREFIX}users_v3", 1);
@@ -2858,6 +2870,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}queries", 1);
     esDelete("/${PREFIX}queries_v1", 1);
     esDelete("/${PREFIX}queries_v2", 1);
+    esDelete("/${PREFIX}queries_v3", 1);
     esDelete("/${PREFIX}lookups_v1", 1);
     esDelete("/_template/${PREFIX}template_1", 1);
     esDelete("/_template/${PREFIX}sessions_template", 1);
@@ -2961,8 +2974,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 50) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 1.0 or 1.1 first. (Db version $main::VersionNumber)\n\n";
+    if ($main::versionNumber < 57) {
+        logmsg "Can not upgrade directly, please upgrade to Moloch 1.7.x or 1.8.x first. (Db version $main::VersionNumber)\n\n";
         exit 1;
     }
 
@@ -2978,82 +2991,43 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     esDelete("/${PREFIX}dstats_v2/version/version", 1);
     esDelete("/${PREFIX}dstats_v3/version/version", 1);
-    if ($main::versionNumber < 51) {
+
+    if ($main::versionNumber <= 62) {
         dbCheckForActivity();
         esPost("/_flush/synced", "", 1);
         sequenceUpgrade();
-        createNewAliasesFromOld("fields", "fields_v2", "fields_v1", \&fieldsCreate);
-        createNewAliasesFromOld("queries", "queries_v2", "queries_v1", \&queriesCreate);
-        createNewAliasesFromOld("files", "files_v5", "files_v4", \&filesCreate);
-        createNewAliasesFromOld("users", "users_v6", "users_v4", \&usersCreate);
-        createNewAliasesFromOld("dstats", "dstats_v3", "dstats_v2", \&dstatsCreate);
-        createNewAliasesFromOld("stats", "stats_v3", "stats_v2", \&statsCreate);
-
-        historyUpdate();
-        sessions2Update();
-
-        esDelete("/${PREFIX}tags_v3", 1);
-        esDelete("/${PREFIX}tags_v2", 1);
-        esDelete("/${PREFIX}tags", 1);
-
-        huntsCreate();
-        checkForOld5Indices();
-        checkForOld6Indices();
-        lookupsCreate();
-        setPriority();
-    } elsif ($main::versionNumber < 52) {
-        historyUpdate();
-        fieldsUpdate();
+        createNewAliasesFromOld("fields", "fields_v3", "fields_v2", \&fieldsCreate);
+        createNewAliasesFromOld("queries", "queries_v3", "queries_v2", \&queriesCreate);
+        createNewAliasesFromOld("files", "files_v6", "files_v5", \&filesCreate);
         createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
-        huntsCreate();
-        checkForOld5Indices();
-        checkForOld6Indices();
-        lookupsCreate();
-        setPriority();
-        queriesUpdate();
-        sessions2Update();
-    } elsif ($main::versionNumber <= 53) {
+        createNewAliasesFromOld("dstats", "dstats_v4", "dstats_v3", \&dstatsCreate);
+        createNewAliasesFromOld("stats", "stats_v4", "stats_v3", \&statsCreate);
+        createNewAliasesFromOld("hunts", "hunts_v2", "hunts_v1", \&huntsCreate);
+
+        if ($main::versionNumber <= 60) {
+            lookupsCreate();
+        }
+            
         historyUpdate();
-        createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
-        checkForOld5Indices();
-        checkForOld6Indices();
-        lookupsCreate();
+        sessions2Update();
+
         setPriority();
-        queriesUpdate();
-        sessions2Update();
-        huntsUpdate();
-        fieldsIpDst();
-    } elsif ($main::versionNumber <= 58) {
+
         checkForOld5Indices();
         checkForOld6Indices();
-        lookupsCreate();
-        setPriority();
-        usersUpdate();
-        huntsUpdate();
-        queriesUpdate();
-        sessions2Update();
-        fieldsIpDst();
-    } elsif ($main::versionNumber <= 60) {
+    } elsif ($main::versionNumber <= 63) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
-        usersUpdate();
-        lookupsCreate();
-        huntsUpdate();
-    } elsif ($main::versionNumber <= 62) {
-        checkForOld5Indices();
-        checkForOld6Indices();
-        sessions2Update();
-        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v3,${PREFIX}dstats_v3,${PREFIX}fields_v2,${PREFIX}files_v5,${PREFIX}sequence_v2,${PREFIX}users_v6,${PREFIX}queries_v2,${PREFIX}hunts_v1,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";
