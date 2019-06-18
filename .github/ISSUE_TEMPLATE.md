@@ -1,7 +1,4 @@
-<!--
-For support questions use https://moloch-fpc.slack.com (sign up at http://slackinvite.molo.ch/)
-or the google group https://groups.google.com/forum/#!forum/moloch-fpc instead of opening an issue
--->
+<!-- For support questions use Slack (sign up at http://slackinvite.molo.ch/) instead of opening an issue -->
 
 <!-- For bugs please provide -->
 **Elasticsearch version**:
@@ -14,7 +11,4 @@ or the google group https://groups.google.com/forum/#!forum/moloch-fpc instead o
 
 **Provide logs, stack traces and steps to reproduce**:
 
-<!--
-For feature requests, please remove the above bug report block and describe the feature.
-Include pcaps or links to pcaps for new parser requests.
--->
+<!-- For feature requests, please remove the above bug report block and describe the feature.  Include pcaps or links to pcaps for new parser requests.  -->
