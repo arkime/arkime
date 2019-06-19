@@ -6440,6 +6440,7 @@ function packetSearch (packet, options) {
 }
 
 function sessionHunt (sessionId, options, cb) {
+  setTimeout(() => {
   if (options.type === 'reassembled') {
     processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, packets) {
       if (err) {
@@ -6503,6 +6504,7 @@ function sessionHunt (sessionId, options, cb) {
     },
     options.size || 10000, 10);
   }
+  }, 5000); // TODO ECR remove
 }
 
 function pauseHuntJobWithError (huntId, hunt, error, node) {
@@ -6971,19 +6973,27 @@ app.get('/hunt/list', recordResponseTime, function (req, res) {
     .then(([hunts, total]) => {
       if (hunts.error) { throw hunts.error; }
 
-      var results = { total:hunts.hits.total, results:[] };
+      let runningJob;
+
+      let results = { total: hunts.hits.total, results: [] };
       for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        var hit = hunts.hits.hits[i];
-        var hunt = hit._source;
+        const hit = hunts.hits.hits[i];
+        let hunt = hit._source;
         hunt.id = hit._id;
         hunt.index = hit._index;
+        // don't add the running job to the queue
+        if (internals.runningHuntJob && hunt.status === 'running') {
+          runningJob = hunt;
+          continue;
+        }
         results.results.push(hunt);
       }
 
-      var r = {
+      const r = {
         recordsTotal: total.count,
         recordsFiltered: results.total,
-        data: results.results
+        data: results.results,
+        runningJob: runningJob
       };
 
       res.send(r);
