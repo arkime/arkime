@@ -19,6 +19,7 @@
 #include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 //#define DEBUG_PACKET
 
@@ -861,6 +862,14 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 
         snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
         unknownPacketFile[type] = fopen(str, "w");
+
+	// TODO-- should we also add logic to pick right pcapDir when there are multiple?
+        if (unknownPacketFile[type] == NULL) {
+          LOGEXIT("Unable to open pcap file %s to store unknown type %s.  Error %s", str, names[type], strerror (errno));
+          MOLOCH_UNLOCK(lock);
+          return;
+        }
+
         fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
     }
 
