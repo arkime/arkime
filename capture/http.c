@@ -804,10 +804,10 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     }
 
     // Send client certs if so configured
-    if(request->server->clientAuth) {
+    if(server->clientAuth) {
        curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
        curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-       if(request->server->clientAuth->clientKeyPass) {
+       if(server->clientAuth->clientKeyPass) {
           curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
        }
     }
