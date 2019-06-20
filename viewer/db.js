@@ -585,11 +585,15 @@ exports.deleteUser = function (name, cb) {
   return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: true}, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
-  });};
+  });
+};
 
 exports.setUser = function(name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true}, cb);
+  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true}, (err) => {
+    delete internals.usersCache[name]; // Delete again after db says its done refreshing
+    cb(err);
+  });
 };
 
 function twoDigitString(value) {
