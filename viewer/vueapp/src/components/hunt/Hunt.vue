@@ -52,350 +52,371 @@
 
       <!-- create new packet search job -->
       <div class="mb-3">
-        <div v-if="createFormOpened"
-          class="card">
-          <form class="card-body"
-            @keyup.enter="createJob">
-            <div class="row">
-              <div class="col-12">
-                <div class="alert"
-                  :class="{'alert-info':sessions.recordsFiltered < huntWarn,'alert-danger':sessions.recordsFiltered >= huntWarn}">
-                  <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
-                    That's a lot of sessions, this job will take a while.
-                    <strong>
-                      Proceed with caution.
-                    </strong>
-                    <br>
-                  </em>
-                  <em v-if="loadingSessions">
-                    <span class="fa fa-spinner fa-spin fa-fw">
-                    </span>&nbsp;
-                    Wait for session totals to be calculated.
-                    <br>
-                  </em>
-                  <span v-if="!loadingSessions">
-                  <span class="fa fa-exclamation-triangle fa-fw">
-                    </span>&nbsp;
-                    Make sure your sessions search above contains only the sessions that
-                    you want in your packet search!
-                  </span>
+        <transition name="slide">
+          <div v-if="createFormOpened"
+            class="card">
+            <form class="card-body"
+              @keyup.enter="createJob">
+              <div class="row">
+                <div class="col-12">
+                  <div class="alert"
+                    :class="{'alert-info':sessions.recordsFiltered < huntWarn,'alert-danger':sessions.recordsFiltered >= huntWarn}">
+                    <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
+                      That's a lot of sessions, this job will take a while.
+                      <strong>
+                        Proceed with caution.
+                      </strong>
+                      <br>
+                    </em>
+                    <em v-if="loadingSessions">
+                      <span class="fa fa-spinner fa-spin fa-fw">
+                      </span>&nbsp;
+                      Wait for session totals to be calculated.
+                      <br>
+                    </em>
+                    <span v-if="!loadingSessions">
+                    <span class="fa fa-exclamation-triangle fa-fw">
+                      </span>&nbsp;
+                      Make sure your sessions search above contains only the sessions that
+                      you want in your packet search!
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="form-group col-lg-4 col-md-12">
-                <!-- packet search job name -->
-                <div class="input-group input-group-sm">
-                  <span class="input-group-prepend cursor-help"
-                    v-b-tooltip.hover
-                    title="Give your packet search job a short name (multiple jobs can have the same name)">
-                    <span class="input-group-text">
-                      Name
-                    </span>
-                  </span>
-                  <input type="text"
-                    v-model="jobName"
-                    v-focus-input="true"
-                    placeholder="Name your packet search job"
-                    class="form-control"
-                    maxlength="40"
-                  />
-                </div> <!-- /packet search job name -->
-              </div>
-              <!-- packet search size -->
-              <div class="form-group col-lg-4 col-md-12">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-prepend">
-                    <span class="input-group-text">
-                      Max number of packets to examine per session
-                    </span>
-                  </span>
-                  <select class="form-control"
-                    v-model="jobSize"
-                    style="-webkit-appearance: none;">
-                    <option value="50">50 packets</option>
-                    <option value="500">500 packets</option>
-                    <option value="5000">5000 packets</option>
-                    <option value="10000">All packets</option>
-                  </select>
-                </div>
-              </div> <!-- /packet search size -->
-              <!-- notifier -->
-              <div class="form-group col-lg-4 col-md-12">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-prepend cursor-help"
-                    v-b-tooltip.hover
-                    title="Notifies upon completion">
-                    <span class="input-group-text">
-                      Notify
-                    </span>
-                  </span>
-                  <select class="form-control"
-                    v-model="jobNotifier"
-                    style="-webkit-appearance: none;">
-                    <option value=undefined>none</option>
-                    <option v-for="notifier in notifiers"
-                      :key="notifier.name"
-                      :value="notifier.name">
-                      {{ notifier.name }} ({{ notifier.type }})
-                    </option>
-                  </select>
-                </div>
-              </div> <!-- /notifier -->
-            </div>
-            <div class="row">
-              <!-- packet search text & text type -->
-              <div class="form-group col-lg-6 col-md-12">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-prepend cursor-help"
-                    v-b-tooltip.hover
-                    title="Search for this text in packets">
-                    <span class="input-group-text">
-                      <span class="fa fa-search">
+              <div class="row">
+                <div class="form-group col-lg-4 col-md-12">
+                  <!-- packet search job name -->
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-prepend cursor-help"
+                      v-b-tooltip.hover
+                      title="Give your packet search job a short name (multiple jobs can have the same name)">
+                      <span class="input-group-text">
+                        Name
                       </span>
                     </span>
-                  </span>
-                  <input type="text"
-                    v-model="jobSearch"
-                    placeholder="Search packets for"
-                    class="form-control"
-                  />
+                    <input type="text"
+                      v-model="jobName"
+                      v-focus-input="true"
+                      placeholder="Name your packet search job"
+                      class="form-control"
+                      maxlength="40"
+                    />
+                  </div> <!-- /packet search job name -->
                 </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'ascii'"
-                    @click="setJobSearchType('ascii')"
-                    type="radio"
-                    id="ascii"
-                    value="ascii"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="ascii">
-                    ascii
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'asciicase'"
-                    @click="setJobSearchType('asciicase')"
-                    type="radio"
-                    id="asciicase"
-                    value="asciicase"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="asciicase">
-                    ascii (case sensitive)
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'hex'"
-                    @click="setJobSearchType('hex')"
-                    type="radio"
-                    id="hex"
-                    value="hex"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="hex">
-                    hex
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'regex'"
-                    @click="setJobSearchType('regex')"
-                    type="radio"
-                    id="regex"
-                    value="regex"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="regex">
-                    regex
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input"
-                    :checked="jobSearchType === 'hexregex'"
-                    @click="setJobSearchType('hexregex')"
-                    type="radio"
-                    id="hexregex"
-                    value="hexregex"
-                    name="packetSearchTextType"
-                  />
-                  <label class="form-check-label"
-                    for="hexregex">
-                    hex regex
-                  </label>
-                </div>
-              </div> <!-- /packet search text & text type -->
-              <!-- packet search direction -->
-              <div class="form-group col-lg-3 col-md-12">
-                <div class="form-check">
-                  <input class="form-check-input"
-                    :checked="jobSrc"
-                    @click="jobSrc = !jobSrc"
-                    type="checkbox"
-                    id="src"
-                    value="src"
-                  />
-                  <label class="form-check-label"
-                    for="src">
-                    search src packets
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input"
-                    :checked="jobDst"
-                    @click="jobDst = !jobDst"
-                    type="checkbox"
-                    id="dst"
-                    value="dst"
-                  />
-                  <label class="form-check-label"
-                    for="dst">
-                    search dst packets
-                  </label>
-                </div>
-              </div> <!-- /packet search direction -->
-              <!-- packet search type -->
-              <div class="form-group col-lg-3 col-md-12">
-                <div class="form-check">
-                  <input class="form-check-input"
-                    :checked="jobType === 'raw'"
-                    @click="setJobType('raw')"
-                    type="radio"
-                    id="raw"
-                    value="raw"
-                    name="packetSearchType"
-                  />
-                  <label class="form-check-label"
-                    for="raw">
-                    search raw packets
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input"
-                    :checked="jobType === 'reassembled'"
-                    @click="setJobType('reassembled')"
-                    type="radio"
-                    id="reassembled"
-                    value="reassembled"
-                    name="packetSearchType"
-                  />
-                  <label class="form-check-label"
-                    for="reassembled">
-                    search reassembled packets
-                  </label>
-                </div>
-              </div> <!-- /packet search type -->
-            </div>
-            <div class="row">
-              <div class="col-12 mt-1">
-                <div v-if="createFormError"
-                  class="pull-left alert alert-danger alert-sm">
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  {{ createFormError }}
-                </div>
-                <!-- create search job button -->
-                <button type="button"
-                  @click="createJob"
-                  :disabled="loadingSessions"
-                  class="pull-right btn btn-theme-tertiary pull-right ml-1">
-                  <span class="fa fa-plus fa-fw">
-                  </span>&nbsp;
-                  Create
-                </button> <!-- /create search job button -->
-                <!-- cancel create search job button -->
-                <button type="button"
-                  @click="cancelCreateForm"
-                  class="pull-right btn btn-warning pull-right">
-                  <span class="fa fa-ban fa-fw">
-                  </span>&nbsp;
-                  Cancel
-                </button> <!-- /cancel create search job button -->
+                <!-- packet search size -->
+                <div class="form-group col-lg-4 col-md-12">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-prepend">
+                      <span class="input-group-text">
+                        Max number of packets to examine per session
+                      </span>
+                    </span>
+                    <select class="form-control"
+                      v-model="jobSize"
+                      style="-webkit-appearance: none;">
+                      <option value="50">50 packets</option>
+                      <option value="500">500 packets</option>
+                      <option value="5000">5000 packets</option>
+                      <option value="10000">All packets</option>
+                    </select>
+                  </div>
+                </div> <!-- /packet search size -->
+                <!-- notifier -->
+                <div class="form-group col-lg-4 col-md-12">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-prepend cursor-help"
+                      v-b-tooltip.hover
+                      title="Notifies upon completion">
+                      <span class="input-group-text">
+                        Notify
+                      </span>
+                    </span>
+                    <select class="form-control"
+                      v-model="jobNotifier"
+                      style="-webkit-appearance: none;">
+                      <option value=undefined>none</option>
+                      <option v-for="notifier in notifiers"
+                        :key="notifier.name"
+                        :value="notifier.name">
+                        {{ notifier.name }} ({{ notifier.type }})
+                      </option>
+                    </select>
+                  </div>
+                </div> <!-- /notifier -->
               </div>
-            </div>
-          </form>
-        </div>
+              <div class="row">
+                <!-- packet search text & text type -->
+                <div class="form-group col-lg-6 col-md-12">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-prepend cursor-help"
+                      v-b-tooltip.hover
+                      title="Search for this text in packets">
+                      <span class="input-group-text">
+                        <span class="fa fa-search">
+                        </span>
+                      </span>
+                    </span>
+                    <input type="text"
+                      v-model="jobSearch"
+                      placeholder="Search packets for"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                      :checked="jobSearchType === 'ascii'"
+                      @click="setJobSearchType('ascii')"
+                      type="radio"
+                      id="ascii"
+                      value="ascii"
+                      name="packetSearchTextType"
+                    />
+                    <label class="form-check-label"
+                      for="ascii">
+                      ascii
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                      :checked="jobSearchType === 'asciicase'"
+                      @click="setJobSearchType('asciicase')"
+                      type="radio"
+                      id="asciicase"
+                      value="asciicase"
+                      name="packetSearchTextType"
+                    />
+                    <label class="form-check-label"
+                      for="asciicase">
+                      ascii (case sensitive)
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                      :checked="jobSearchType === 'hex'"
+                      @click="setJobSearchType('hex')"
+                      type="radio"
+                      id="hex"
+                      value="hex"
+                      name="packetSearchTextType"
+                    />
+                    <label class="form-check-label"
+                      for="hex">
+                      hex
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                      :checked="jobSearchType === 'regex'"
+                      @click="setJobSearchType('regex')"
+                      type="radio"
+                      id="regex"
+                      value="regex"
+                      name="packetSearchTextType"
+                    />
+                    <label class="form-check-label"
+                      for="regex">
+                      regex
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                      :checked="jobSearchType === 'hexregex'"
+                      @click="setJobSearchType('hexregex')"
+                      type="radio"
+                      id="hexregex"
+                      value="hexregex"
+                      name="packetSearchTextType"
+                    />
+                    <label class="form-check-label"
+                      for="hexregex">
+                      hex regex
+                    </label>
+                  </div>
+                </div> <!-- /packet search text & text type -->
+                <!-- packet search direction -->
+                <div class="form-group col-lg-3 col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input"
+                      :checked="jobSrc"
+                      @click="jobSrc = !jobSrc"
+                      type="checkbox"
+                      id="src"
+                      value="src"
+                    />
+                    <label class="form-check-label"
+                      for="src">
+                      search src packets
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input"
+                      :checked="jobDst"
+                      @click="jobDst = !jobDst"
+                      type="checkbox"
+                      id="dst"
+                      value="dst"
+                    />
+                    <label class="form-check-label"
+                      for="dst">
+                      search dst packets
+                    </label>
+                  </div>
+                </div> <!-- /packet search direction -->
+                <!-- packet search type -->
+                <div class="form-group col-lg-3 col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input"
+                      :checked="jobType === 'raw'"
+                      @click="setJobType('raw')"
+                      type="radio"
+                      id="raw"
+                      value="raw"
+                      name="packetSearchType"
+                    />
+                    <label class="form-check-label"
+                      for="raw">
+                      search raw packets
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input"
+                      :checked="jobType === 'reassembled'"
+                      @click="setJobType('reassembled')"
+                      type="radio"
+                      id="reassembled"
+                      value="reassembled"
+                      name="packetSearchType"
+                    />
+                    <label class="form-check-label"
+                      for="reassembled">
+                      search reassembled packets
+                    </label>
+                  </div>
+                </div> <!-- /packet search type -->
+              </div>
+              <div class="row">
+                <div class="col-12 mt-1">
+                  <div v-if="createFormError"
+                    class="pull-left alert alert-danger alert-sm">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ createFormError }}
+                  </div>
+                  <!-- create search job button -->
+                  <button type="button"
+                    @click="createJob"
+                    :disabled="loadingSessions"
+                    class="pull-right btn btn-theme-tertiary pull-right ml-1">
+                    <span class="fa fa-plus fa-fw">
+                    </span>&nbsp;
+                    Create
+                  </button> <!-- /create search job button -->
+                  <!-- cancel create search job button -->
+                  <button type="button"
+                    @click="cancelCreateForm"
+                    class="pull-right btn btn-warning pull-right">
+                    <span class="fa fa-ban fa-fw">
+                    </span>&nbsp;
+                    Cancel
+                  </button> <!-- /cancel create search job button -->
+                </div>
+              </div>
+            </form>
+          </div>
+        </transition>
       </div> <!-- /create new packet search job -->
 
       <!-- running job -->
-      <div v-if="runningJob"
-        class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            Running Hunt Job:
-            {{ runningJob.name }} by
-            {{ runningJob.userId }}
-            <span class="pull-right"
-              v-if="user.userId === runningJob.userId || user.createEnabled">
-              <button
-                @click="removeJob(runningJob, 'results')"
-                type="button"
-                v-b-tooltip.hover
-                title="Cancel and remove this job"
-                class="ml-1 pull-right btn btn-sm btn-danger">
-                <span class="fa fa-trash-o fa-fw">
-                </span>
-              </button>
-              <button type="button"
-                @click="openSessions(runningJob)"
-                v-if="runningJob.matchedSessions"
-                :id="`openresults${runningJob.id}`"
-                class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                <span class="fa fa-folder-open fa-fw">
-                </span>
-              </button>
-              <b-tooltip v-if="runningJob.matchedSessions"
-                :target="`openresults${runningJob.id}`">
-                Open <strong>partial</strong> results in a new Sessions tab.
-                <br>
-                <strong>Note:</strong> ES takes a while to update sessions, so your results
-                might take a minute to show up.
-              </b-tooltip>
-              <button @click="pauseJob(runningJob)"
-                type="button"
-                v-b-tooltip.hover
-                title="Pause this job"
-                class="pull-right btn btn-sm btn-warning">
-                <span class="fa fa-pause fa-fw">
-                </span>
-              </button>
-            </span>
-          </h5>
-          <div class="card-text">
-            <div class="row">
-              <div class="col">
-                <toggle-btn
-                  v-if="user.userId === runningJob.userId || user.createEnabled"
-                  :opened="runningJob.expanded"
-                  @toggle="toggleJobDetail(runningJob)">
-                </toggle-btn>
-                <div class="progress cursor-help"
-                  id="runningJob"
+      <transition name="slide">
+        <div v-if="runningJob"
+          class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">
+              Running Hunt Job:
+              {{ runningJob.name }} by
+              {{ runningJob.userId }}
+              <span class="pull-right"
+                v-if="user.userId === runningJob.userId || user.createEnabled">
+                <button
+                  @click="removeJob(runningJob, 'results')"
+                  type="button"
                   v-b-tooltip.hover
-                  style="height:26px;"
-                  :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled}">
-                  <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
-                    role="progressbar"
-                    :style="{width: runningJob.progress + '%'}"
-                    :aria-valuenow="runningJob.progress"
-                    aria-valuemin="0"
-                    aria-valuemax="100">
-                    {{ runningJob.progress | round(1) }}%
+                  title="Cancel and remove this job"
+                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  <span class="fa fa-trash-o fa-fw">
+                  </span>
+                </button>
+                <button type="button"
+                  @click="openSessions(runningJob)"
+                  v-if="runningJob.matchedSessions"
+                  :id="`openresults${runningJob.id}`"
+                  class="ml-1 pull-right btn btn-sm btn-theme-primary">
+                  <span class="fa fa-folder-open fa-fw">
+                  </span>
+                </button>
+                <b-tooltip v-if="runningJob.matchedSessions"
+                  :target="`openresults${runningJob.id}`">
+                  Open <strong>partial</strong> results in a new Sessions tab.
+                  <br>
+                  <strong>Note:</strong> ES takes a while to update sessions, so your results
+                  might take a minute to show up.
+                </b-tooltip>
+                <button @click="pauseJob(runningJob)"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Pause this job"
+                  class="pull-right btn btn-sm btn-warning">
+                  <span class="fa fa-pause fa-fw">
+                  </span>
+                </button>
+              </span>
+            </h5>
+            <div class="card-text">
+              <div class="row">
+                <div class="col">
+                  <toggle-btn
+                    v-if="user.userId === runningJob.userId || user.createEnabled"
+                    :opened="runningJob.expanded"
+                    @toggle="toggleJobDetail(runningJob)">
+                  </toggle-btn>
+                  <div class="progress cursor-help"
+                    id="runningJob"
+                    v-b-tooltip.hover
+                    style="height:26px;"
+                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled}">
+                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                      role="progressbar"
+                      :style="{width: runningJob.progress + '%'}"
+                      :aria-valuenow="runningJob.progress"
+                      aria-valuemin="0"
+                      aria-valuemax="100">
+                      {{ runningJob.progress | round(1) }}%
+                    </div>
                   </div>
+                  <b-tooltip target="runningJob">
+                    <div class="mt-2">
+                      Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
+                      <span v-if="user.userId === runningJob.userId || user.createEnabled">
+                        matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
+                      </span>
+                      out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
+                      sessions searched.
+                      (Still need to search
+                      <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
+                      of <strong>{{ runningJob.totalSessions }}</strong>
+                      total sessions.)
+                    </div>
+                  </b-tooltip>
                 </div>
-                <b-tooltip target="runningJob">
+              </div>
+              <transition name="grow">
+                <div v-if="runningJob.expanded"
+                  class="mt-3">
                   <div class="mt-2">
+                    <span class="fa fa-eye">
+                    </span>&nbsp;
                     Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                    <span v-if="user.userId === runningJob.userId || user.createEnabled">
-                      matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                    </span>
+                    matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                     out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
                     sessions searched.
                     (Still need to search
@@ -403,117 +424,102 @@
                     of <strong>{{ runningJob.totalSessions }}</strong>
                     total sessions.)
                   </div>
-                </b-tooltip>
-              </div>
-            </div>
-            <div v-if="runningJob.expanded"
-              class="mt-3">
-              <div class="mt-2">
-                <span class="fa fa-eye">
-                </span>&nbsp;
-                Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                sessions searched.
-                (Still need to search
-                <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                of <strong>{{ runningJob.totalSessions }}</strong>
-                total sessions.)
-              </div>
-              <div class="row">
-                <div class="col-12">
-                  <span class="fa fa-clock-o fa-fw">
-                  </span>&nbsp;
-                  Created:
-                  <strong>
-                    {{ runningJob.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
-                  </strong>
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="fa fa-clock-o fa-fw">
+                      </span>&nbsp;
+                      Created:
+                      <strong>
+                        {{ runningJob.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      </strong>
+                    </div>
+                  </div>
+                  <div v-if="runningJob.lastUpdated"
+                    class="row">
+                    <div class="col-12">
+                      <span class="fa fa-clock-o fa-fw">
+                      </span>&nbsp;
+                      Last Updated:
+                      <strong>
+                        {{ runningJob.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      </strong>
+                    </div>
+                  </div>
+                  <div class="row"
+                    v-if="runningJob.notifier">
+                    <div class="col-12">
+                      <span class="fa fa-bell fa-fw">
+                      </span>&nbsp;
+                      Notifying: {{ runningJob.notifier }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="fa fa-id-card fa-fw">
+                      </span>&nbsp;
+                      Hunt Job ID: {{ runningJob.id }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="fa fa-search fa-fw">
+                      </span>&nbsp;
+                      Examining
+                      <strong v-if="runningJob.size > 0">{{ runningJob.size }}</strong>
+                      <strong v-else>all</strong>
+                      <strong>{{ runningJob.type }}</strong>
+                      <strong v-if="runningJob.src">source</strong>
+                      <span v-if="runningJob.src && runningJob.dst">
+                        and
+                      </span>
+                      <strong v-if="runningJob.dst">destination</strong>
+                      packets per session
+                    </div>
+                  </div>
+                  <div v-if="runningJob.query.expression"
+                    class="row">
+                    <div class="col-12">
+                      <span class="fa fa-search fa-fw">
+                      </span>&nbsp;
+                      The sessions query expression was:
+                      <strong>{{ runningJob.query.expression }}</strong>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="fa fa-clock-o fa-fw">
+                      </span>&nbsp;
+                      The sessions query time range was from
+                      <strong>{{ runningJob.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                      to
+                      <strong>{{ runningJob.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    </div>
+                  </div>
+                  <div v-if="runningJob.errors"
+                    v-for="(error, index) in runningJob.errors"
+                    :key="index"
+                    class="row text-danger">
+                    <div class="col-12">
+                      <span class="fa fa-exclamation-triangle">
+                      </span>&nbsp;
+                      <span v-if="error.time">
+                        {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      </span>
+                      <span v-if="error.node">
+                        ({{ error.node }} node)
+                      </span>
+                      <span v-if="error.time || error.node">
+                        -
+                      </span>
+                      {{ error.value }}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div v-if="runningJob.lastUpdated"
-                class="row">
-                <div class="col-12">
-                  <span class="fa fa-clock-o fa-fw">
-                  </span>&nbsp;
-                  Last Updated:
-                  <strong>
-                    {{ runningJob.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
-                  </strong>
-                </div>
-              </div>
-              <div class="row"
-                v-if="runningJob.notifier">
-                <div class="col-12">
-                  <span class="fa fa-bell fa-fw">
-                  </span>&nbsp;
-                  Notifying: {{ runningJob.notifier }}
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-12">
-                  <span class="fa fa-id-card fa-fw">
-                  </span>&nbsp;
-                  Hunt Job ID: {{ runningJob.id }}
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-12">
-                  <span class="fa fa-search fa-fw">
-                  </span>&nbsp;
-                  Examining
-                  <strong v-if="runningJob.size > 0">{{ runningJob.size }}</strong>
-                  <strong v-else>all</strong>
-                  <strong>{{ runningJob.type }}</strong>
-                  <strong v-if="runningJob.src">source</strong>
-                  <span v-if="runningJob.src && runningJob.dst">
-                    and
-                  </span>
-                  <strong v-if="runningJob.dst">destination</strong>
-                  packets per session
-                </div>
-              </div>
-              <div v-if="runningJob.query.expression"
-                class="row">
-                <div class="col-12">
-                  <span class="fa fa-search fa-fw">
-                  </span>&nbsp;
-                  The sessions query expression was:
-                  <strong>{{ runningJob.query.expression }}</strong>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-12">
-                  <span class="fa fa-clock-o fa-fw">
-                  </span>&nbsp;
-                  The sessions query time range was from
-                  <strong>{{ runningJob.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
-                  to
-                  <strong>{{ runningJob.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
-                </div>
-              </div>
-              <div v-if="runningJob.errors"
-                v-for="(error, index) in runningJob.errors"
-                :key="index"
-                class="row text-danger">
-                <div class="col-12">
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  <span v-if="error.time">
-                    {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
-                  </span>
-                  <span v-if="error.node">
-                    ({{ error.node }} node)
-                  </span>
-                  <span v-if="error.time || error.node">
-                    -
-                  </span>
-                  {{ error.value }}
-                </div>
-              </div>
+              </transition>
             </div>
           </div>
         </div>
-      </div> <!-- /running job -->
+      </transition> <!-- /running job -->
 
       <h4 v-if="results.length">
         <span class="fa fa-list-ol">
@@ -564,7 +570,8 @@
             <th width="140px">&nbsp;</th>
           </tr>
         </thead>
-        <tbody>
+        <transition-group name="list"
+          tag="tbody">
           <!-- packet search jobs -->
           <template v-for="job in results">
             <tr :key="`${job.id}-row`">
@@ -764,7 +771,7 @@
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
-        </tbody>
+        </transition-group>
       </table>
 
       <h4>
@@ -868,7 +875,8 @@
             <th width="140px">&nbsp;</th>
           </tr>
         </thead>
-        <tbody>
+        <transition-group name="list"
+          tag="tbody">
           <!-- packet search jobs -->
           <template v-for="job in historyResults.data">
             <tr :key="`${job.id}-row`">
@@ -1058,7 +1066,7 @@
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
-        </tbody>
+        </transition-group>
       </table>
 
       <!-- no results -->
@@ -1272,7 +1280,7 @@ export default {
             this.loadData();
             return;
           }
-          this.$set(job, 'status', 'paused');
+          // this.$set(job, 'status', 'paused');
           this.calculateQueue();
         }, (error) => {
           this.setErrorForList('results', error.text || error);
@@ -1359,6 +1367,7 @@ export default {
       respondedAt = undefined;
 
       let expanded = [];
+      let runningJobExpanded = this.runningJob && this.runningJob.expanded;
       if (this.results && this.results.length) {
         // save the expanded ones
         for (let result of this.results) {
@@ -1416,7 +1425,12 @@ export default {
         this.results = response.data.data;
         this.runningJob = response.data.runningJob;
         if (this.runningJob) {
-          this.runningJob.progress = this.runningJob.searchedSessions / this.runningJob.totalSessions * 100;
+          this.$set(this.runningJob, 'expanded', runningJobExpanded);
+          this.$set(
+            this.runningJob,
+            'progress',
+            this.runningJob.searchedSessions / this.runningJob.totalSessions * 100
+          );
         }
         this.calculateQueue();
       }, (error) => {
@@ -1491,5 +1505,60 @@ form.hunt-create-navbar {
 .progress-toggle {
   margin-left: 40px;
   margin-top: -26px;
+}
+
+/* slide running job in/out animation */
+.slide-leave-active {
+  transition: all .3s;
+}
+.slide-enter-active {
+  max-height: 500px;
+  transition: max-height .8s;
+}
+.slide-enter,
+.slide-leave-active {
+  max-height: 0px;
+}
+.slide-leave {
+  max-height: 500px;
+}
+.slide-leave-to {
+  transform: translateY(-500px);
+}
+
+/* running job info animation */
+.grow-leave-active {
+  transition: all .3s;
+}
+.grow-enter-active {
+  max-height: 500px;
+  transition: max-height .3s;
+}
+.grow-enter,
+.grow-leave-active {
+  max-height: 0px;
+}
+.grow-leave {
+  max-height: 500px;
+}
+.grow-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+/* job list animation */
+.list-enter-active, .list-leave-active {
+  transition: all .8s;
+}
+.list-enter {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+.list-move {
+  transition: transform .8s;
 }
 </style>

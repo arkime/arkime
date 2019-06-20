@@ -6440,7 +6440,6 @@ function packetSearch (packet, options) {
 }
 
 function sessionHunt (sessionId, options, cb) {
-  setTimeout(() => {
   if (options.type === 'reassembled') {
     processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, packets) {
       if (err) {
@@ -6504,7 +6503,6 @@ function sessionHunt (sessionId, options, cb) {
     },
     options.size || 10000, 10);
   }
-  }, 5000); // TODO ECR remove
 }
 
 function pauseHuntJobWithError (huntId, hunt, error, node) {
