@@ -151,7 +151,7 @@ exports.sendTwilioAlert = function (config, message, links) {
 
 // Email
 exports.sendEmailAlert = function (config, message, links) {
-  if (!config.host || !config.port || !config.user || !config.password || !config.to || !config.from) {
+  if (!config.host || !config.port || !config.to || !config.from) {
     console.error('Please fill out the required fields for Email notifications on the Settings page.');
     return;
   }
