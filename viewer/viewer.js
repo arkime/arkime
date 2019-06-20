@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 62;
+const MIN_DB_VERSION = 61;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -6305,8 +6305,7 @@ app.get('/state/:name', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 function addTagsList (allTagNames, sessionList, doneCb) {
   if (!sessionList.length) {
-    console.log('No sessions to add tags to');
-    return doneCb(null);
+    return res.molochError(200, 'No sessions to add tags to');
   }
 
   async.eachLimit(sessionList, 10, function (session, nextCb) {
@@ -6505,16 +6504,8 @@ function sessionHunt (sessionId, options, cb) {
   }
 }
 
-function pauseHuntJobWithError (huntId, hunt, error, node) {
-  let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
-  if (node) {
-    errorMsg += ` On ${node} node`;
-    error.node = node;
-  }
-
-  console.log(errorMsg);
-
-  error.time = Math.floor(Date.now() / 1000);
+function pauseHuntJobWithError (huntId, hunt, error) {
+  if (error) { console.log(error.value); }
 
   hunt.status = 'paused';
 
@@ -6629,7 +6620,7 @@ function runHuntJob (huntId, hunt, query, user) {
       isLocalView(node, function () {
         sessionHunt(sessionId, options, function (err, matched) {
           if (err) {
-            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
+            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` });
           }
 
           if (matched) {
@@ -6645,12 +6636,12 @@ function runHuntJob (huntId, hunt, query, user) {
 
         makeRequest (node, path, user, (err, response) => {
           if (err) {
-            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` }, node);
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${err}` });
           }
           let json = JSON.parse(response);
           if (json.error) {
             console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
-            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
+            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` });
           }
           if (json.matched) { hunt.matchedSessions++; }
           return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
@@ -8351,6 +8342,9 @@ Db.initialize({host: internals.elasticBase,
                usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(","):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
+               clientKey: Config.get("clientKey", null),
+               clientCert: Config.get("clientCert", null),
+               clientKeyPass: Config.get("clientKeyPass", null),
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),

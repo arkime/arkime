@@ -201,6 +201,15 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
+    // Send client certs if so configured
+    if(config.clientKey) {
+       curl_easy_setopt(easy, CURLOPT_SSLCERT, config.clientCert);
+       curl_easy_setopt(easy, CURLOPT_SSLKEY, config.clientKey);
+       if(config.clientKeyPass) {
+          curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, config.clientKeyPass);
+       }
+    }
+
     if (method[0] != 'G') {
         curl_easy_setopt(easy, CURLOPT_CUSTOMREQUEST, method);
         curl_easy_setopt(easy, CURLOPT_POSTFIELDSIZE, data_len);
@@ -785,6 +794,15 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     if (config.insecure) {
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
+    // Send client certs if so configured
+    if(config.clientKey) {
+       curl_easy_setopt(request->easy, CURLOPT_SSLCERT, config.clientCert);
+       curl_easy_setopt(request->easy, CURLOPT_SSLKEY, config.clientKey);
+       if(config.clientKeyPass) {
+          curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, config.clientKeyPass);
+       }
     }
 
     curl_easy_setopt(request->easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);

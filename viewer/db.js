@@ -61,6 +61,16 @@ exports.initialize = function (info, cb) {
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
+  // SJS
+  var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
+  if(info.clientKey) {
+    esSSLOptions.key = fs.readFileSync(info.clientKey);
+    esSSLOptions.cert = fs.readFileSync(info.clientCert);
+    if(internals.clientKeyPass) {
+       esSSLOptions.passphrase = info.clientKeyPass;
+    }
+  }
+
   internals.elasticSearchClient = new ESC.Client({
     host: internals.info.host,
     apiVersion: internals.apiVersion,
@@ -68,7 +78,7 @@ exports.initialize = function (info, cb) {
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
-    ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
+    ssl: esSSLOptions
   });
 
   internals.elasticSearchClient.info((err,data) => {
@@ -573,18 +583,12 @@ exports.numberOfUsers = function(cb) {
 
 exports.deleteUser = function (name, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: true}, (err) => {
-    delete internals.usersCache[name]; // Delete again after db says its done refreshing
-    cb(err);
-  });
+  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: true}, cb);
 };
 
 exports.setUser = function(name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true}, (err) => {
-    delete internals.usersCache[name]; // Delete again after db says its done refreshing
-    cb(err);
-  });
+  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true}, cb);
 };
 
 function twoDigitString(value) {

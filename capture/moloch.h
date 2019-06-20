@@ -382,6 +382,9 @@ typedef struct moloch_config {
     char     *prefix;
     char     *nodeClass;
     char     *elasticsearch;
+    char     *clientKey;
+    char     *clientCert;
+    char     *clientKeyPass;
     char    **interface;
     int       pcapDirPos;
     char    **pcapDir;
