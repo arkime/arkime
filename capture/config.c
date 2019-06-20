@@ -465,9 +465,6 @@ void moloch_config_load()
     }
 
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
-    config.clientKey        = moloch_config_str(keyfile, "clientKey", NULL);
-    config.clientCert       = moloch_config_str(keyfile, "clientCert", NULL);
-    config.clientKeyPass    = moloch_config_str(keyfile, "clientKeyPass", NULL);
     config.interface        = moloch_config_str_list(keyfile, "interface", NULL);
     config.pcapDir          = moloch_config_str_list(keyfile, "pcapDir", NULL);
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);

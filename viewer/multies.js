@@ -38,14 +38,14 @@ var Config         = require('./config.js'),
 }
 
 var esSSLOptions = {rejectUnauthorized: !Config.insecure}
-var clientKey = Config.get("clientKey");
-var clientCert = Config.get("clientCert");
-if(clientKey) {
-  esSSLOptions.key = fs.readFileSync(clientKey);
-  esSSLOptions.cert = fs.readFileSync(clientCert);
-  var clientKeyPass = Config.get("clientKeyPass");
-  if(clientKeyPass) {
-     esSSLOptions.passphrase = clientKeyPass;
+var esClientKey = Config.get("esClientKey");
+var esClientCert = Config.get("esClientCert");
+if(esClientKey) {
+  esSSLOptions.key = fs.readFileSync(esClientKey);
+  esSSLOptions.cert = fs.readFileSync(esClientCert);
+  var esClientKeyPass = Config.get("esClientKeyPass");
+  if(esClientKeyPass) {
+     esSSLOptions.passphrase = esClientKeyPass;
   }
 }
 

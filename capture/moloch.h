@@ -382,9 +382,6 @@ typedef struct moloch_config {
     char     *prefix;
     char     *nodeClass;
     char     *elasticsearch;
-    char     *clientKey;
-    char     *clientCert;
-    char     *clientKeyPass;
     char    **interface;
     int       pcapDirPos;
     char    **pcapDir;
@@ -919,6 +916,7 @@ uint64_t moloch_http_dropped_count(void *server);
 
 void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
 void moloch_http_set_retries(void *server, uint16_t retries);
+void moloch_http_set_client_cert(void *serverV, char* clientCert, char* clientKey, char* clientKeyPass);
 void moloch_http_set_print_errors(void *server);
 void moloch_http_set_headers(void *server, char **headers);
 void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);

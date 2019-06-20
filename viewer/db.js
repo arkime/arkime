@@ -62,11 +62,11 @@ exports.initialize = function (info, cb) {
   delete info.nodeName;
 
   var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
-  if(info.clientKey) {
-    esSSLOptions.key = fs.readFileSync(info.clientKey);
-    esSSLOptions.cert = fs.readFileSync(info.clientCert);
-    if(internals.clientKeyPass) {
-       esSSLOptions.passphrase = info.clientKeyPass;
+  if(info.esClientKey) {
+    esSSLOptions.key = fs.readFileSync(info.esClientKey);
+    esSSLOptions.cert = fs.readFileSync(info.esClientCert);
+    if(info.esClientKeyPass) {
+       esSSLOptions.passphrase = info.esClientKeyPass;
     }
   }
 
