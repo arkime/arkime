@@ -2,7 +2,7 @@
 
   <a @click="toggle"
     :class="btnClass"
-    class="btn btn-sm btn-toggle">
+    class="btn btn-sm btn-toggle cursor-pointer">
     <span class="fa fa-close">
     </span>
   </a>
