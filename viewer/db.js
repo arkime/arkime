@@ -61,7 +61,6 @@ exports.initialize = function (info, cb) {
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
-  // SJS
   var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
   if(info.clientKey) {
     esSSLOptions.key = fs.readFileSync(info.clientKey);
