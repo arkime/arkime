@@ -56,7 +56,6 @@
 # 59 - tokens
 # 60 - users time query limit
 # 61 - shortcuts
-# 62 - hunt error timestamp and node
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -65,9 +64,12 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 62;
+my $VERSION = 61;
 my $verbose = 0;
 my $PREFIX = "";
+my $SECURE = 1;
+my $CLIENTCERT = "";
+my $CLIENTKEY = "";
 my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
@@ -1511,12 +1513,6 @@ sub huntsUpdate
         "properties": {
           "value": {
             "type": "keyword"
-          },
-          "time": {
-            "type": "date"
-          },
-          "node": {
-            "type": "keyword"
           }
         }
       },
@@ -2107,6 +2103,16 @@ if ($CLIENTCERT ne "") {
         SSL_cert_file => $CLIENTCERT,
         SSL_key_file => $CLIENTKEY
     )
+} else {
+    $main::userAgent->ssl_opts(
+        SSL_verify_mode => $SECURE,
+        verify_hostname=> $SECURE
+    )
+}
+
+if ($CLIENTKEY != "") {
+   $ENV{HTTPS_CERT_FILE} = $CLIENTCERT;
+   $ENV{HTTPS_KEY_FILE} = $CLIENTKEY
 }
 
 if ($ARGV[0] =~ /^http/) {
@@ -3018,7 +3024,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         setPriority();
         queriesUpdate();
         sessions2Update();
-        huntsUpdate();
         fieldsIpDst();
     } elsif ($main::versionNumber <= 58) {
         checkForOld5Indices();
@@ -3034,11 +3039,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions2Update();
         usersUpdate();
         lookupsCreate();
-        huntsUpdate();
-    } elsif ($main::versionNumber <= 62) {
+    } elsif ($main::versionNumber <= 61) {
         checkForOld5Indices();
         sessions2Update();
-        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
