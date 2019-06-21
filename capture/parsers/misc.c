@@ -322,7 +322,7 @@ LOCAL void safet_udp_classify(MolochSession_t *session, const unsigned char *dat
 /******************************************************************************/
 LOCAL void telnet_tcp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 3 || data[0] != 0xff || data[1] > 0xfa)
+    if (len < 3 || data[0] != 0xff || data[1] < 0xfa)
         return;
     moloch_session_add_protocol(session, "telnet");
 }
