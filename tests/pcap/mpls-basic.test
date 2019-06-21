@@ -282,10 +282,11 @@
                5078
             ],
             "protocol" : [
+               "telnet",
                "tcp",
                "mpls"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 678,
             "srcDataBytes" : 26,
