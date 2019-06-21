@@ -30,16 +30,29 @@ var Config         = require('./config.js'),
     URL            = require('url'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
-    https          = require('https');
+    https          = require('https'),
+    fs             = require('fs');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
 }
 
+var esSSLOptions = {rejectUnauthorized: !Config.insecure};
+var esClientKey = Config.get("esClientKey");
+var esClientCert = Config.get("esClientCert");
+if(esClientKey) {
+  esSSLOptions.key = fs.readFileSync(esClientKey);
+  esSSLOptions.cert = fs.readFileSync(esClientCert);
+  var esClientKeyPass = Config.get("esClientKeyPass");
+  if(esClientKeyPass) {
+     esSSLOptions.passphrase = esClientKeyPass;
+  }
+}
+
 var clients = {};
 var nodes = [];
 var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
-var httpsAgent =  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
+var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
 
 function hasBody(req) {
   var encoding = 'transfer-encoding' in req.headers;
@@ -755,7 +768,7 @@ nodes.forEach((node) => {
     apiVersion: "6.6",
     requestTimeout: 300000,
     keepAlive: true,
-    ssl: {rejectUnauthorized: !Config.insecure}
+    ssl: esSSLOptions
   });
 });
 

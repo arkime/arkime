@@ -1,4 +1,4 @@
-use Test::More tests => 214;
+use Test::More tests => 215;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -84,13 +84,18 @@ my $hToken = getTokenCookie('huntuser');
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a query starTime");
 
-# Add a valid hunt
+# Add a valid hunt, and it should immediately run
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 1, "Add hunt 1");
+  is (exists $hunts->{runningJob}, 1, "Running hunt 1");
 
 # Make sure the hunt's name doesn't contain special chars
   is ($json->{hunt}->{name}, "test hunt", "Strip special chars");
+
+# Hunt should finish
+  sleep(1);
+  $hunts = viewerGet("/hunt/list");
+  is (@{$hunts->{data}}, 1, "Add hunt 1");
 
 # If the user is not an admin they can only delete their own hunts
   my $id1 = $json->{hunt}->{id};

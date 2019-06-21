@@ -2305,6 +2305,12 @@ void moloch_db_init()
         headers[1] = NULL;
         moloch_http_set_headers(esServer, headers);
         moloch_http_set_print_errors(esServer);
+
+        char* clientCert = moloch_config_str(NULL, "esClientCert", NULL);
+        char* clientKey = moloch_config_str(NULL, "esClientKey", NULL);
+        char* clientKeyPass = moloch_config_str(NULL, "esClientKeyPass", NULL);
+        moloch_http_set_client_cert(esServer, clientCert, clientKey, clientKeyPass);
+
         moloch_db_health_check((gpointer)1L);
     }
     myPid = getpid() & 0xffff;

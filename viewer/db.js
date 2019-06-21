@@ -61,6 +61,15 @@ exports.initialize = function (info, cb) {
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
+  var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca};
+  if(info.esClientKey) {
+    esSSLOptions.key = fs.readFileSync(info.esClientKey);
+    esSSLOptions.cert = fs.readFileSync(info.esClientCert);
+    if(info.esClientKeyPass) {
+       esSSLOptions.passphrase = info.esClientKeyPass;
+    }
+  }
+
   internals.elasticSearchClient = new ESC.Client({
     host: internals.info.host,
     apiVersion: internals.apiVersion,
@@ -68,7 +77,7 @@ exports.initialize = function (info, cb) {
     keepAlive: true,
     minSockets: 20,
     maxSockets: 51,
-    ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
+    ssl: esSSLOptions
   });
 
   internals.elasticSearchClient.info((err,data) => {

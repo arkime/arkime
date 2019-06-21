@@ -19,6 +19,7 @@
 #include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 //#define DEBUG_PACKET
 
@@ -184,7 +185,7 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
     MolochTcpDataHead_t * const tcpData = &session->tcpData;
 
 #ifdef DEBUG_PACKET
-    LOG("START");
+    LOG("START %u %u", session->tcpSeq[0], session->tcpSeq[1]);
     DLL_FOREACH(td_, tcpData, ftd) {
         LOG("dir: %d seq: %8u ack: %8u len: %4u", ftd->packet->direction, ftd->seq, ftd->ack, ftd->len);
     }
@@ -194,7 +195,18 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
         const int which = ftd->packet->direction;
         const uint32_t tcpSeq = session->tcpSeq[which];
 
-        if (tcpSeq >= ftd->seq && tcpSeq < (ftd->seq + ftd->len)) {
+        /* The sequence number we are looking for is past the start of the packet */
+        if (tcpSeq >= ftd->seq) {
+
+            /* The sequence number we are looking for is past the end of the packet, free it */
+            if (tcpSeq >= ftd->seq + ftd->len) {
+                DLL_REMOVE(td_, tcpData, ftd);
+                moloch_packet_free(ftd->packet);
+                MOLOCH_TYPE_FREE(MolochTcpData_t, ftd);
+                continue;
+            }
+
+            /* This packet has the sequence number we are looking for */
             const int offset = tcpSeq - ftd->seq;
             const uint8_t *data = ftd->packet->pkt + ftd->dataOffset + offset;
             const int len = ftd->len - offset;
@@ -850,6 +862,14 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 
         snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
         unknownPacketFile[type] = fopen(str, "w");
+
+	// TODO-- should we also add logic to pick right pcapDir when there are multiple?
+        if (unknownPacketFile[type] == NULL) {
+          LOGEXIT("Unable to open pcap file %s to store unknown type %s.  Error %s", str, names[type], strerror (errno));
+          MOLOCH_UNLOCK(lock);
+          return;
+        }
+
         fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
     }
 

@@ -5580,7 +5580,7 @@ function reqGetRawBody(req, cb) {
       if (err) {
         return cb(err);
       }
-      if (items === undefined || items.length === 0) {
+      if (items === undefined || items.length === 0) {
         return cb("No match");
       }
       cb(err, items[0].data);
@@ -6975,19 +6975,27 @@ app.get('/hunt/list', recordResponseTime, function (req, res) {
     .then(([hunts, total]) => {
       if (hunts.error) { throw hunts.error; }
 
-      var results = { total:hunts.hits.total, results:[] };
+      let runningJob;
+
+      let results = { total: hunts.hits.total, results: [] };
       for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        var hit = hunts.hits.hits[i];
-        var hunt = hit._source;
+        const hit = hunts.hits.hits[i];
+        let hunt = hit._source;
         hunt.id = hit._id;
         hunt.index = hit._index;
+        // don't add the running job to the queue
+        if (internals.runningHuntJob && hunt.status === 'running') {
+          runningJob = hunt;
+          continue;
+        }
         results.results.push(hunt);
       }
 
-      var r = {
+      const r = {
         recordsTotal: total.count,
         recordsFiltered: results.total,
-        data: results.results
+        data: results.results,
+        runningJob: runningJob
       };
 
       res.send(r);
@@ -8355,6 +8363,9 @@ Db.initialize({host: internals.elasticBase,
                usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(","):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
+               esClientKey: Config.get("esClientKey", null),
+               esClientCert: Config.get("esClientCert", null),
+               esClientKeyPass: Config.get("esClientKeyPass", null),
                dontMapTags: Config.get("multiES", false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),

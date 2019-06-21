@@ -69,6 +69,9 @@ use strict;
 my $VERSION = 63;
 my $verbose = 0;
 my $PREFIX = "";
+my $SECURE = 1;
+my $CLIENTCERT = "";
+my $CLIENTKEY = "";
 my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
@@ -115,6 +118,9 @@ sub showHelp($)
     print "Global Options:\n";
     print "  -v                           - Verbose, multiple increases level\n";
     print "  --prefix <prefix>            - Prefix for table names\n";
+    print "  --clientkey <keypath>        - Path to key for client authentication.  Must not have a passphrase.\n";
+    print "  --clientcert <certpath>      - Path to cert for client authentication\n";
+    print "  --insecure                   - Don't verify http certificates\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
     print "\n";
@@ -2086,6 +2092,14 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $PREFIX .= "_" if ($PREFIX !~ /_$/);
     } elsif ($ARGV[0] =~ /-n$/) {
         $NOCHANGES = 1;
+    } elsif ($ARGV[0] =~ /--insecure$/) {
+        $SECURE = 0;
+    } elsif ($ARGV[0] =~ /--clientcert$/) {
+        $CLIENTCERT = $ARGV[1];
+        shift @ARGV;
+    } elsif ($ARGV[0] =~ /--clientkey$/) {
+        $CLIENTKEY = $ARGV[1];
+        shift @ARGV;
     } elsif ($ARGV[0] =~ /--timeout$/) {
         $ESTIMEOUT = int($ARGV[1]);
         shift @ARGV;
@@ -2108,6 +2122,19 @@ parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)
 parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
+if ($CLIENTCERT ne "") {
+    $main::userAgent->ssl_opts(
+        SSL_verify_mode => $SECURE,
+        verify_hostname=> $SECURE,
+        SSL_cert_file => $CLIENTCERT,
+        SSL_key_file => $CLIENTKEY
+    )
+} else {
+    $main::userAgent->ssl_opts(
+        SSL_verify_mode => $SECURE,
+        verify_hostname=> $SECURE
+    )
+}
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];

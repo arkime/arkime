@@ -77,6 +77,12 @@ typedef struct molochhttpconnhead_t {
 
 } MolochHttpConnHead_t;
 
+typedef struct {
+   char*    clientCert;
+   char*    clientKey;
+   char*    clientKeyPass;
+} MolochClientAuth_t;
+
 LOCAL HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
 LOCAL MOLOCH_LOCK_DEFINE(connections);
 
@@ -97,6 +103,7 @@ struct molochhttpserver_t {
     GHashTable              *fd2ev;
     char                   **names;
     MolochHttpServerName_t  *snames;
+    MolochClientAuth_t      *clientAuth;
     char                   **defaultHeaders;
     int                      namesCnt;
     int                      namesPos;
@@ -199,6 +206,15 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     if (config.insecure) {
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
+    // Send client certs if so configured
+    if(server->clientAuth) {
+       curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
+       curl_easy_setopt(easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
+       if(server->clientAuth->clientKeyPass) {
+          curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
+       }
     }
 
     if (method[0] != 'G') {
@@ -787,6 +803,15 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
+    // Send client certs if so configured
+    if(server->clientAuth) {
+       curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
+       curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
+       if(server->clientAuth->clientKeyPass) {
+          curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
+       }
+    }
+
     curl_easy_setopt(request->easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);
     curl_easy_setopt(request->easy, CURLOPT_WRITEDATA, (void *)request);
     curl_easy_setopt(request->easy, CURLOPT_PRIVATE, (void *)request);
@@ -882,6 +907,9 @@ void moloch_http_free_server(void *serverV)
     if (server->syncRequest.dataIn)
         free(server->syncRequest.dataIn);
 
+    if (server->clientAuth) {
+        MOLOCH_TYPE_FREE(MolochClientAuth_t, server->clientAuth);
+    }
     // Free multi info
     curl_multi_cleanup(server->multi);
 
@@ -906,6 +934,22 @@ void moloch_http_set_retries(void *serverV, uint16_t retries)
     MolochHttpServer_t        *server = serverV;
 
     server->maxRetries = retries;
+}
+/******************************************************************************/
+void moloch_http_set_client_cert(void *serverV, char* clientCert, 
+                                char* clientKey, char* clientKeyPass)
+{
+    MolochHttpServer_t        *server = serverV;
+    if(server->clientAuth != NULL) {
+        MOLOCH_TYPE_FREE(MolochClientAuth_t, server->clientAuth);
+    }
+    MolochClientAuth_t* clientAuth = MOLOCH_TYPE_ALLOC0(MolochClientAuth_t);
+
+    clientAuth->clientCert = clientCert;
+    clientAuth->clientKey  = clientKey;
+    clientAuth->clientKeyPass = clientKeyPass;
+
+    server->clientAuth = clientAuth;
 }
 /******************************************************************************/
 void moloch_http_set_print_errors(void *serverV)
@@ -940,6 +984,7 @@ void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->compress = compress;
     server->snames = malloc(server->namesCnt * sizeof(MolochHttpServerName_t));
     server->maxRetries = 3;
+    server->clientAuth = NULL;
 
     for (i = 0; server->names[i]; i++) {
         server->snames[i].server            = server;

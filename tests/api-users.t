@@ -182,8 +182,14 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
+    sleep(1);
+    esGet("/_refresh");
+
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=sfields1', $test1Token);
     ok($info->{success}, "spiview fields: delete found");
+
+    sleep(1);
+    esGet("/_refresh");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
