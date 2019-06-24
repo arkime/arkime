@@ -319,7 +319,9 @@ export default {
           if (column.doStats) {
             let totalValue = 0;
             for (let item of this.data) {
-              if (item[column.id || column.sort] == null) { continue; }
+              if (!item.hasOwnProperty(column.id) && !item.hasOwnProperty(column.sort)) {
+                continue;
+              }
               totalValue += parseInt(item[column.id || column.sort]);
             }
             this.totalValues[column.id] = totalValue;
@@ -452,9 +454,9 @@ export default {
       let itemClone = JSON.parse(JSON.stringify(item));
       let value = itemClone[column.id];
 
-      if (value == null) { return; }
+      if (value === null || value === undefined) { return; }
 
-      if (this.zeroMap[column.id]) {
+      if (this.zeroMap.hasOwnProperty(column.id)) {
         value = value - this.zeroMap[column.id][index];
       }
 
@@ -468,12 +470,12 @@ export default {
       return column.dataFunction ? column.dataFunction(itemClone) : value;
     },
     calculateFormatTotValue: function (column) {
-      // if it's not a computed field or there's not data return empty immediately
+      // if it's not a computed field or there's no data return empty immediately
       if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
       let value = this.totalValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap[column.id]) {
+      if (this.zeroMap.hasOwnProperty(column.id)) {
         // subtract all zeroed values for this column
         for (let zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
@@ -492,13 +494,13 @@ export default {
       return value;
     },
     calculateFormatAvgValue: function (column) {
-      // if it's not a computed field or there's not data return empty immediately
+      // if it's not a computed field or there's no data return empty immediately
       if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
       let sum = 0;
       let value = this.averageValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap[column.id]) {
+      if (this.zeroMap.hasOwnProperty(column.id)) {
         for (let v = 0; v < this.data.length; v++) {
           let realValue = this.data[v];
           let value = realValue[column.id];
