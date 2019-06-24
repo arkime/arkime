@@ -435,7 +435,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 
     if (fields) {
         int i;
-        int type = 0;
+        int mtype = 0;
         rule->fields = malloc((int)fields->len * 2);
         for (i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
@@ -445,11 +445,11 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 *comma = 0;
                 comma++;
                 if (strcmp(comma, "tail") == 0 || strcmp(comma, "endsWith") == 0) {
-                    type = MOLOCH_RULES_STR_MATCH_TAIL;
+                    mtype = MOLOCH_RULES_STR_MATCH_TAIL;
                 } else if (strcmp(comma, "head") == 0 || strcmp(comma, "startsWith") == 0) {
-                    type = MOLOCH_RULES_STR_MATCH_HEAD;
+                    mtype = MOLOCH_RULES_STR_MATCH_HEAD;
                 } else if (strcmp(comma, "contains") == 0) {
-                    type = MOLOCH_RULES_STR_MATCH_CONTAINS;
+                    mtype = MOLOCH_RULES_STR_MATCH_CONTAINS;
                 } else {
                     LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
                 }
@@ -468,7 +468,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_INT_ARRAY:
             case MOLOCH_FIELD_TYPE_INT_HASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
-                if (type != 0)
+                if (mtype != 0)
                     LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
                 if (!rule->hash[pos])
@@ -477,7 +477,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 
             case MOLOCH_FIELD_TYPE_IP:
             case MOLOCH_FIELD_TYPE_IP_GHASH:
-                if (type != 0)
+                if (mtype != 0)
                     LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
                 if (!rule->tree4[pos]) {
@@ -490,7 +490,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
             case MOLOCH_FIELD_TYPE_STR_HASH:
             case MOLOCH_FIELD_TYPE_STR_GHASH:
-                if (type != 0) {
+                if (mtype != 0) {
                     if (!rule->match[pos])
                         rule->match[pos] = g_ptr_array_new_with_free_func(g_free);
                 } else {
@@ -504,16 +504,16 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             }
 
             if (node->value) {
-                if (type != 0)
-                    moloch_rules_load_add_field_match(rule, pos, type, node->value);
+                if (mtype != 0)
+                    moloch_rules_load_add_field_match(rule, pos, mtype, node->value);
                 else
                     moloch_rules_load_add_field(rule, pos, node->value);
             } else {
                 int j;
                 for (j = 0; j < (int)node->values->len; j++) {
                     YamlNode_t *fnode = g_ptr_array_index(node->values, j);
-                    if (type != 0)
-                        moloch_rules_load_add_field_match(rule, pos, type, fnode->key);
+                    if (mtype != 0)
+                        moloch_rules_load_add_field_match(rule, pos, mtype, fnode->key);
                     else
                         moloch_rules_load_add_field(rule, pos, fnode->key);
                 }
@@ -1099,7 +1099,7 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
     final = 1 << final;
     MolochRule_t *rule;
     for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r]); r++) {
-        if ((rule->saveFlags & (1 >> final)) == 0) {
+        if ((rule->saveFlags & final) == 0) {
             continue;
         }
 
