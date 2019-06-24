@@ -98,7 +98,7 @@ exports.initialize = function (info, cb) {
         keepAlive: true,
         minSockets: 5,
         maxSockets: 6,
-        ssl: {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca}
+        ssl: esSSLOptions
       });
     } else {
       internals.usersElasticSearchClient = internals.elasticSearchClient;
