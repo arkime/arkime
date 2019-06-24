@@ -117,8 +117,8 @@ export default {
         { id: 'deltaDroppedPerSec', name: 'Packet Drops/s', sort: 'deltaDropped', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDropped); } },
         // all the rest of the available stats
         { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaBitsPerSec); } },
-        { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytes', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaWrittenBytes); } },
-        { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytes', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaUnwrittenBytes); } },
+        { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaWrittenBytesPerSec); } },
+        { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaUnwrittenBytesPerSec); } },
         { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.tcpSessions); } },
         { id: 'udpSessions', name: 'Active UDP Sessions', sort: 'udpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.udpSessions); } },
         { id: 'icmpSessions', name: 'Active ICMP Sessions', sort: 'icmpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.icmpSessions); } },
