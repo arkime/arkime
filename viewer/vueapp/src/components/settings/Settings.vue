@@ -2236,7 +2236,7 @@ export default {
         this.getSpiviewConfigs();
         this.getNotifierTypes();
         this.getNotifiers();
-        this.getVars();
+        this.getShortcuts();
       })
       .catch((error) => {
         this.error = error.text;
@@ -3197,8 +3197,10 @@ export default {
           this.notifiersError = error.text || error;
         });
     },
-    getVars: function () {
-      this.$http.get('lookups')
+    getShortcuts: function () {
+      let url = 'lookups';
+      if (this.userId) { url += `?userId=${this.userId}`; }
+      this.$http.get(url)
         .then((response) => {
           this.shortcuts = response.data;
         }, (error) => {

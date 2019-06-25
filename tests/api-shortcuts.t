@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 31;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -82,10 +82,6 @@ is(@{$shortcuts}, 2, "2 shortcuts for this user");
 # unshared shortcut can't be seen by nonadmin users
 $shortcuts = viewerGet('/lookups?molochRegressionUser=user3');
 is(@{$shortcuts}, 1, "nonadmin user can only see shared shortcuts");
-
-# unshared shortcut can be seen by admin users
-$shortcuts = viewerGet('/lookups');
-is(@{$shortcuts}, 3, "admin user can see all shortcuts");
 
 # get shortcuts map
 $shortcuts = viewerGet("/lookups?map=true");
