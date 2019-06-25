@@ -357,7 +357,7 @@ function formatQuery(yy, field, op, value)
 
     obj = { terms: {} };
     obj.terms[info.dbField] = {
-      index : `${yy.prefix}_lookups`,
+      index : `${yy.prefix}lookups`,
       id : yy.lookups[value],
       type: 'lookup'
     };

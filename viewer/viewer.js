@@ -87,8 +87,14 @@ var internals = {
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
   proccessHuntJobsInitialized: false,
-  notifiers: undefined
+  notifiers: undefined,
+  prefix: Config.get('prefix', '')
 };
+
+// make sure there's an _ after the prefix
+if (internals.prefix && !internals.prefix.endsWith('_')) {
+  internals.prefix = `${internals.prefix}_`;
+}
 
 if (Config.get("uploadFileSizeLimit")) {
   internals.uploadLimits.fileSize = parseInt(Config.get("uploadFileSizeLimit"));
@@ -2770,7 +2776,7 @@ function buildSessionQuery (req, buildCb) {
   molochparser.parser.yy = {
     views: req.user.views,
     fieldsMap: Config.getFieldsMap(),
-    prefix: Config.get('prefix', ''),
+    prefix: internals.prefix,
     emailSearch: req.user.emailSearch === true,
     lookups: req.lookups
   };
@@ -6727,7 +6733,7 @@ function processHuntJob (huntId, hunt) {
       molochparser.parser.yy = {
         emailSearch: user.emailSearch === true,
         fieldsMap: Config.getFieldsMap(),
-        prefix: Config.get('prefix', ''),
+        prefix: internals.prefix,
         lookups: lookups || {}
       };
 
@@ -8190,7 +8196,7 @@ function processCronQueries() {
             molochparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
-              prefix: Config.get('prefix', ''),
+              prefix: internals.prefix,
               lookups: lookups
             };
 

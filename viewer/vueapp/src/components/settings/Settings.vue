@@ -106,9 +106,10 @@
             </span>&nbsp;
             Notifiers
           </a>
-          <a class="nav-link cursor-pointer"
-            @click="openView('vars')"
-            :class="{'active':visibleTab === 'vars'}">
+          <a v-if="!multiviewer"
+            class="nav-link cursor-pointer"
+            @click="openView('shortcuts')"
+            :class="{'active':visibleTab === 'shortcuts'}">
             <span class="fa fa-fw fa-list">
             </span>&nbsp;
             Shortcuts
@@ -1828,8 +1829,8 @@
 
         <!-- shortcut settings -->
         <form class="form-horizontal"
-          v-if="visibleTab === 'vars'"
-          id="vars">
+          v-if="visibleTab === 'shortcuts'"
+          id="shortcuts">
 
           <h3>Shortcuts</h3>
 
@@ -1842,7 +1843,7 @@
             Use <code>$</code> to autocomplete shortcuts in search expressions.
           </p>
 
-          <table v-if="vars && vars.length"
+          <table v-if="shortcuts && shortcuts.length"
             class="table table-striped table-sm">
             <thead>
               <tr>
@@ -1856,7 +1857,7 @@
             </thead>
             <tbody>
               <!-- shortcuts -->
-              <template v-for="(item, index) in vars">
+              <template v-for="(item, index) in shortcuts">
                 <tr :key="`${item.id}-content`">
                   <td>
                     <input type="checkbox"
@@ -1930,12 +1931,12 @@
                 </tr>
               </template> <!-- /shortcuts -->
               <!-- shortcuts list error -->
-              <tr v-if="varsListError">
+              <tr v-if="shortcutsListError">
                 <td colspan="6">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
-                    {{ varsListError }}
+                    {{ shortcutsListError }}
                   </p>
                 </td>
               </tr> <!-- /shortcuts list error -->
@@ -1952,55 +1953,55 @@
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newVarName"
+                <label for="newShortcutName"
                   class="col-2 col-form-label text-right">
                   Name<sup>*</sup>
                 </label>
                 <div class="col-10">
-                  <input id="newVarName"
+                  <input id="newShortcutName"
                     type="text"
                     class="form-control form-control-sm"
-                    v-model="newVarName"
+                    v-model="newShortcutName"
                     placeholder="MY_MOLOCH_VAR"
                   />
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newVarDescription"
+                <label for="newShortcutDescription"
                   class="col-2 col-form-label text-right">
                   Description
                 </label>
                 <div class="col-10">
-                  <input id="newVarDescription"
+                  <input id="newShortcutDescription"
                     type="text"
                     class="form-control form-control-sm"
-                    v-model="newVarDescription"
+                    v-model="newShortcutDescription"
                   />
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newVarValue"
+                <label for="newShortcutValue"
                   class="col-2 col-form-label text-right">
                   Value(s)<sup>*</sup>
                 </label>
                 <div class="col-10">
-                  <textarea id="newVarValue"
+                  <textarea id="newShortcutValue"
                     type="text"
                     rows="5"
                     class="form-control form-control-sm"
-                    v-model="newVarValue"
+                    v-model="newShortcutValue"
                     placeholder="Enter a comma or newline separated list of values">
                   </textarea>
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newVarType"
+                <label for="newShortcutType"
                   class="col-2 col-form-label text-right">
                   Type<sup>*</sup>
                 </label>
                 <div class="col-10">
-                  <select id="newVarType"
-                    v-model="newVarType"
+                  <select id="newShortcutType"
+                    v-model="newShortcutType"
                     class="form-control form-control-sm">
                     <option value="ip">IP(s)</option>
                     <option value="string">String(s)</option>
@@ -2009,14 +2010,14 @@
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newVarShared"
+                <label for="newShortcutShared"
                   class="col-2 col-form-label text-right">
                   Shared
                 </label>
                 <div class="col-10">
-                  <input id="newVarShared"
+                  <input id="newShortcutShared"
                     type="checkbox"
-                    v-model="newVarShared"
+                    v-model="newShortcutShared"
                   />
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
@@ -2030,11 +2031,11 @@
               <!-- shortcut form error -->
               <div class="row mb-4 text-right">
                 <div class="col-12">
-                  <p v-if="varFormError"
+                  <p v-if="shortcutFormError"
                     class="small text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
-                    {{ varFormError }}
+                    {{ shortcutFormError }}
                   </p>
                 </div>
               </div> <!-- /shortcut form error -->
@@ -2153,14 +2154,14 @@ export default {
       newNotifier: undefined,
       newNotifierError: '',
       // shortcut settings vars
-      vars: undefined,
-      varsListError: '',
-      newVarShared: false,
-      newVarName: '',
-      newVarDescription: '',
-      newVarValue: '',
-      newVarType: 'string',
-      varFormError: ''
+      shortcuts: undefined,
+      shortcutsListError: '',
+      newShortcutShared: false,
+      newShortcutName: '',
+      newShortcutDescription: '',
+      newShortcutValue: '',
+      newShortcutType: 'string',
+      shortcutFormError: ''
     };
   },
   computed: {
@@ -2183,7 +2184,7 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers' || tab === 'vars') {
+        tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts') {
         this.visibleTab = tab;
       }
 
@@ -2941,34 +2942,34 @@ export default {
     },
     /* creates a new shortcut */
     createShortcut: function () {
-      if (!this.newVarName) {
-        this.varFormError = 'Enter a unique shortcut name';
+      if (!this.newShortcutName) {
+        this.shortcutFormError = 'Enter a unique shortcut name';
         return;
       }
 
-      if (!this.newVarValue) {
-        this.varFormError = 'Enter a value for your new shortcut';
+      if (!this.newShortcutValue) {
+        this.shortcutFormError = 'Enter a value for your new shortcut';
         return;
       }
 
       const data = {
-        name: this.newVarName,
-        type: this.newVarType,
-        value: this.newVarValue,
-        shared: this.newVarShared,
-        description: this.newVarDescription
+        name: this.newShortcutName,
+        type: this.newShortcutType,
+        value: this.newShortcutValue,
+        shared: this.newShortcutShared,
+        description: this.newShortcutDescription
       };
 
       this.$http.post('lookups', { var: data })
         .then((response) => {
           // add it to the list
-          this.vars.push(response.data.var);
+          this.shortcuts.push(response.data.var);
           // clear the inputs and any error
-          this.varFormError = false;
-          this.newVarName = '';
-          this.newVarValue = '';
-          this.newVarShared = false;
-          this.newVarDescription = '';
+          this.shortcutFormError = false;
+          this.newShortcutName = '';
+          this.newShortcutValue = '';
+          this.newShortcutShared = false;
+          this.newShortcutDescription = '';
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -3016,7 +3017,7 @@ export default {
       this.$http.delete(`lookups/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
-          this.vars.splice(index, 1);
+          this.shortcuts.splice(index, 1);
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -3199,9 +3200,9 @@ export default {
     getVars: function () {
       this.$http.get('lookups')
         .then((response) => {
-          this.vars = response.data;
+          this.shortcuts = response.data;
         }, (error) => {
-          this.varsListError = error.text || error;
+          this.shortcutsListError = error.text || error;
         });
     },
     /**
