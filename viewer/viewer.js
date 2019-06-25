@@ -7076,18 +7076,21 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
 
   const map = req.query.map && req.query.map === 'true';
 
-  // only get lookups for this user or shared
   const query = {
-    query: {
+    sort: { name: { order: 'asc' } }
+  };
+
+  if (!req.user.createEnabled) {
+    // only get lookups for this user or shared
+    query.query = {
       bool: {
         should: [
           { term: { shared: true } },
           { term: { userId: user.userId } }
         ]
       }
-    },
-    sort: { name: { order: 'asc' } }
-  };
+    }
+  }
 
   Db.searchLookups(query)
     .then((lookups) => {
