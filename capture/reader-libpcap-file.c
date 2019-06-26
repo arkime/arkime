@@ -21,6 +21,9 @@
 #include <sys/stat.h>
 #include "pcap.h"
 #include "molochconfig.h"
+#include <pwd.h>
+#include <grp.h>
+#include <sys/stat.h>
 
 extern MolochPcapFileHdr_t   pcapFileHeader;
 
@@ -179,6 +182,14 @@ LOCAL void reader_libpcapfile_init_monitor()
 LOCAL int reader_libpcapfile_process(char *filename)
 {
     char         errbuf[1024];
+    char         path[PATH_MAX];
+    struct       stat stats;
+    char         *token;
+    char         *save_ptr;
+    char         tmpFilename[PATH_MAX];
+    struct group *gr;
+    struct passwd *pw;
+
 
     if (!realpath(filename, offlinePcapFilename)) {
         LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", filename, errno);
@@ -195,6 +206,51 @@ LOCAL int reader_libpcapfile_process(char *filename)
         LOG("Can't reprocess %s", filename);
         return 1;
     }
+
+    // check to see if viewer might have access issues to non-copied pcap file
+    if (config.copyPcap == 0) {
+
+      if (strlen (filename) > PATH_MAX) {
+        // filename bigger than path buffer, skip check
+      } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
+        // drop.User,Group not defined -- skip check
+      } else if (strncmp (filename, "/", 1) != 0) {
+        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+      } else {
+
+    	  path[0] = 0;
+
+        // process copy of filename given strtok_r changes arg
+        strncpy (tmpFilename, filename, PATH_MAX);
+
+        token = strtok_r (tmpFilename, "/", &save_ptr);
+
+        while (token != NULL) {
+          strcat (path, "/");
+          strcat (path, token);
+
+          if (stat(path, &stats) != -1) {
+            gr = getgrgid (stats.st_gid);
+            pw = getpwuid (stats.st_uid);
+
+            if (stats.st_mode & S_IROTH)  {
+              // world readable
+            } else if ((stats.st_mode & S_IRGRP) && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+              // group readable and dropGroup matches file group
+              // TODO compare group id values as opposed to group name
+            } else if ((stats.st_mode & S_IRUSR) && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+              // user readable and dropUser matches file user
+              // TODO compare user id values as opposed to user name
+            } else
+              LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+          } else
+            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+
+          token = strtok_r (NULL, "/", &save_ptr);
+        }
+      }
+    }
+
 
     errbuf[0] = 0;
     LOG ("Processing %s", filename);
