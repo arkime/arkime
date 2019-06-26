@@ -275,31 +275,8 @@ if (Config.get("passwordSecret")) {
     if (internals.userNameHeader !== undefined) {
       if (req.headers[internals.userNameHeader] !== undefined) {
         var userName = req.headers[internals.userNameHeader];
-        // Auto-creation of users from headers
-        if (internals.userAutoCreateTmpl !== undefined) {
 
-           // Check to see if we need to auto-create.
-           Db.getUserCache(userName, function(err, suser) {
-              if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
-              if (!suser || !suser.found) {
-                 var nuser = JSON.parse(new Function("return `" + internals.userAutoCreateTmpl + "`;").call(req.headers));
-                 var res = Db.setUser(userName, nuser, (err, info) => {
-                   if (err) {
-                     console.log("Elastic search error adding user: (" +  userName + "):(" + JSON.stringify(nuser) + "):" + err);
-                   } else {
-                     console.log("Added user:" + userName + ":" + JSON.stringify(nuser));
-                   }
-                 });
-              }
-              if (suser) {
-                  userCleanup(suser._source);
-              }
-              return next();
-           });
-
-        }
-
-        Db.getUserCache(userName, function(err, suser) {
+        var ucb = function(err, suser) {
           if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
           if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(userName + " not enabled");}
@@ -308,12 +285,33 @@ if (Config.get("passwordSecret")) {
           userCleanup(suser._source);
           req.user = suser._source;
           return next();
+        };
+
+        Db.getUserCache(userName, function(err, suser) {
+          if (internals.userAutoCreateTmpl === undefined) {
+             return ucb(err, suser);
+          } else if ((err && (err+"").includes("Not Found")) ||
+                     (!suser || !suser.found)) { // Try dynamic creation
+             var nuser = JSON.parse(new Function("return `" +
+                   internals.userAutoCreateTmpl + "`;").call(req.headers));
+             Db.setUser(userName, nuser, (err, info) => {
+               if (err) {
+                 console.log("Elastic search error adding user: (" +  userName + "):(" + JSON.stringify(nuser) + "):" + err);
+               } else {
+                 console.log("Added user:" + userName + ":" + JSON.stringify(nuser));
+               }
+               return Db.getUserCache(userName, ucb);
+             });
+          } else {
+             return ucb(err, suser);
+          }
         });
         return;
       } else if (Config.debug) {
         console.log("DEBUG - Couldn't find userNameHeader of", internals.userNameHeader, "in", req.headers, "for", req.url);
       }
     }
+
 
     // Browser auth
     req.url = req.url.replace("/", Config.basePath());
