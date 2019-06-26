@@ -291,7 +291,7 @@ if (Config.get("passwordSecret")) {
                    }
                  });
               }
-              return;
+              return next();
            });
 
         }
