@@ -291,6 +291,9 @@ if (Config.get("passwordSecret")) {
                    }
                  });
               }
+              if (suser) {
+                  userCleanup(suser._source);
+              }
               return next();
            });
 
