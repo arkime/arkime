@@ -65,6 +65,7 @@ var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
+  userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodesStats: [],
@@ -274,6 +275,27 @@ if (Config.get("passwordSecret")) {
     if (internals.userNameHeader !== undefined) {
       if (req.headers[internals.userNameHeader] !== undefined) {
         var userName = req.headers[internals.userNameHeader];
+        // Auto-creation of users from headers
+        if (internals.userAutoCreateTmpl !== undefined) {
+
+           // Check to see if we need to auto-create.
+           Db.getUserCache(userName, function(err, suser) {
+              if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
+              if (!suser || !suser.found) {
+                 var nuser = JSON.parse(new Function("return `" + internals.userAutoCreateTmpl + "`;").call(req.headers));
+                 var res = Db.setUser(userName, nuser, (err, info) => {
+                   if (err) {
+                     console.log("Elastic search error adding user: (" +  userName + "):(" + JSON.stringify(nuser) + "):" + err);
+                   } else {
+                     console.log("Added user:" + userName + ":" + JSON.stringify(nuser));
+                   }
+                 });
+              }
+              return;
+           });
+
+        }
+
         Db.getUserCache(userName, function(err, suser) {
           if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
           if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
