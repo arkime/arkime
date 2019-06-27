@@ -276,7 +276,7 @@ if (Config.get("passwordSecret")) {
       if (req.headers[internals.userNameHeader] !== undefined) {
         var userName = req.headers[internals.userNameHeader];
 
-        var ucb = function(err, suser) {
+        function ucb(err, suser) {
           if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
           if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(userName + " not enabled");}
@@ -290,7 +290,7 @@ if (Config.get("passwordSecret")) {
         Db.getUserCache(userName, function(err, suser) {
           if (internals.userAutoCreateTmpl === undefined) {
              return ucb(err, suser);
-          } else if ((err && (err+"").includes("Not Found")) ||
+          } else if ((err && err.toString().includes("Not Found")) ||
                      (!suser || !suser.found)) { // Try dynamic creation
              var nuser = JSON.parse(new Function("return `" +
                    internals.userAutoCreateTmpl + "`;").call(req.headers));
