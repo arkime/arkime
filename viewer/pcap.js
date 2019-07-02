@@ -708,6 +708,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 127: // radiotap
     this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
+  case 228: // RAW
+    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
   case 239: // NFLOG
     this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
