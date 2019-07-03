@@ -559,7 +559,11 @@ export default {
       // autocomplete variables
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
-        this.$http.get('lookups?fieldFormat=true&map=true')
+        let url = 'lookups?fieldFormat=true&map=true';
+        if (field && field.type) {
+          url += `&fieldType=${field.type}`;
+        }
+        this.$http.get(url)
           .then((response) => {
             this.loadingValues = false;
             let escapedToken = lastToken.replace('$', '\\$');

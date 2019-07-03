@@ -675,7 +675,8 @@ exports.getLookupsCache = function (name, cb) {
 
     let lookupsMap = {};
     for (let lookup of lookups.hits.hits) {
-      lookupsMap[lookup._source.name] = lookup._id;
+      // need the whole object to test for type mismatch
+      lookupsMap[lookup._source.name] = lookup;
     }
 
     internals.lookupsCache[name] = lookupsMap;

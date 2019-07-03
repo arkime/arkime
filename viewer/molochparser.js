@@ -554,14 +554,27 @@ function formatQuery(yy, field, op, value)
       throw value + ' - Shortcut not found';
     }
 
+    var lookup = yy.lookups[value];
+
     obj = { terms: {} };
     obj.terms[info.dbField] = {
       index : `${yy.prefix}lookups`,
-      id : yy.lookups[value],
+      id : lookup._id,
       type: 'lookup'
     };
 
-    switch (info.type2 || info.type) {
+    var type = info.type2 || info.type;
+    var lookupType = yy.lookupTypeMap[type];
+
+    if (!lookupType) {
+      throw "Unsupported field type: " + type
+    }
+
+    if (!lookup._source[lookupType]) {
+      throw 'lookup must be of type ' + lookupType;
+    }
+
+    switch (type) {
     case 'ip':
       if (field === 'ip') {
         let infos = getIpInfoList(yy, false);
@@ -599,7 +612,7 @@ function formatQuery(yy, field, op, value)
       }
       return obj;
     default:
-      throw "Unsupported field type: " + info.type;
+      throw "Unsupported field type: " + type;
     }
   }
 

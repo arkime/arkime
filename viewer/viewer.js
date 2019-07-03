@@ -88,7 +88,14 @@ var internals = {
   runningHuntJob: undefined,
   proccessHuntJobsInitialized: false,
   notifiers: undefined,
-  prefix: Config.get('prefix', '')
+  prefix: Config.get('prefix', ''),
+  lookupTypeMap: {
+    ip: 'ip',
+    integer: 'number',
+    termfield: 'string',
+    uptermfield: 'string',
+    lotermfield: 'string'
+  }
 };
 
 // make sure there's an _ after the prefix
@@ -2778,7 +2785,8 @@ function buildSessionQuery (req, buildCb) {
     fieldsMap: Config.getFieldsMap(),
     prefix: internals.prefix,
     emailSearch: req.user.emailSearch === true,
-    lookups: req.lookups
+    lookups: req.lookups,
+    lookupTypeMap: internals.lookupTypeMap
   };
 
   if (req.query.expression) {
@@ -6734,7 +6742,8 @@ function processHuntJob (huntId, hunt) {
         emailSearch: user.emailSearch === true,
         fieldsMap: Config.getFieldsMap(),
         prefix: internals.prefix,
-        lookups: lookups || {}
+        lookups: lookups || {},
+        lookupTypeMap: internals.lookupTypeMap
       };
 
       // build session query
@@ -7077,7 +7086,7 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
   const map = req.query.map && req.query.map === 'true';
 
   // only get lookups for setting user or shared
-  const query = {
+  let query = {
     query: {
       bool: {
         should: [
@@ -7088,6 +7097,17 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
     },
     sort: { name: { order: 'asc' } }
   };
+
+  // if fieldType exists, filter it
+  if (req.query.fieldType) {
+    const fieldType = internals.lookupTypeMap[req.query.fieldType];
+
+    if (fieldType) {
+      query.query.bool.must = [{
+        exists: { field: fieldType }
+      }];
+    }
+  }
 
   Db.searchLookups(query)
     .then((lookups) => {
@@ -8197,7 +8217,8 @@ function processCronQueries() {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
               prefix: internals.prefix,
-              lookups: lookups
+              lookups: lookups,
+              lookupTypeMap: internals.lookupTypeMap
             };
 
             let query = {
