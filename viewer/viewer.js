@@ -65,6 +65,8 @@ var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
+  requiredAuthHeader: Config.get("requiredAuthHeader"),
+  requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
   userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
@@ -274,6 +276,23 @@ if (Config.get("passwordSecret")) {
     // Header auth
     if (internals.userNameHeader !== undefined) {
       if (req.headers[internals.userNameHeader] !== undefined) {
+        // Check if we require a certain header+value to be present
+        // as in the case of an apache plugin that sends AD groups
+        if (internals.requiredAuthHeader !== undefined && internals.requiredAuthHeaderVal !== undefined) {
+          var authHeader = req.headers[internals.requiredAuthHeader];
+          if (authHeader === undefined) {
+             return res.send("Missing authorization header");
+          }
+          var authorized = false;
+          authHeader.split(",").forEach(headerVal => {
+             if (headerVal.trim() == internals.requiredAuthHeaderVal) {
+                authorized = true;
+             }
+          });
+          if(!authorized) {
+              return res.send("Not authorized");
+          }
+        }
         var userName = req.headers[internals.userNameHeader];
 
         function ucb(err, suser) {
