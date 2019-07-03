@@ -289,7 +289,7 @@ if (Config.get("passwordSecret")) {
                 authorized = true;
              }
           });
-          if(!authorized) {
+          if (!authorized) {
               return res.send("Not authorized");
           }
         }
