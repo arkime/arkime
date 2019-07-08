@@ -132,7 +132,16 @@ if (process.argv.length < 5) {
   help();
 }
 
+// Use Xinsecure instead of insecure as node
+// consumes the --insecure flag anywhere in the command line
+var insecure = process.argv.includes("-Xinsecure") ||
+               process.argv.includes("--Xinsecure");
+
 Db.initialize({host : escInfo,
                prefix: Config.get("prefix", ""),
+               esClientKey: Config.get("esClientKey", null),
+               esClientCert: Config.get("esClientCert", null),
+               esClientKeyPass: Config.get("esClientKeyPass", null),
+               insecure: insecure,
                usersHost: Config.get("usersElasticsearch"),
                usersPrefix: Config.get("usersPrefix")}, main);
