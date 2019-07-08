@@ -52,7 +52,6 @@ jobs:
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - export TZ=US/Eastern
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -103,7 +102,6 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
-            - export TZ=US/Eastern
             - test-viewer: (cd tests ; ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
@@ -158,7 +156,6 @@ jobs:
             - install-for-tests: (cd wiseService; npm ci --production)
             - sleep 30
             - cat /tmp/es
-            - export TZ=US/Eastern
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
@@ -188,7 +185,6 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
-            - export TZ=US/Eastern
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
