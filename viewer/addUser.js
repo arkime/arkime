@@ -43,6 +43,7 @@ function help() {
   console.log("Config Options:");
   console.log("  -c <config file>      Config file to use");
   console.log("  -n <node name>        Node name section to use in config file");
+  console.log("  --insecure            Allow insecure HTTPS");
 
   process.exit(0);
 }
@@ -132,16 +133,11 @@ if (process.argv.length < 5) {
   help();
 }
 
-// Use Xinsecure instead of insecure as node
-// consumes the --insecure flag anywhere in the command line
-var insecure = process.argv.includes("-Xinsecure") ||
-               process.argv.includes("--Xinsecure");
-
 Db.initialize({host : escInfo,
                prefix: Config.get("prefix", ""),
                esClientKey: Config.get("esClientKey", null),
                esClientCert: Config.get("esClientCert", null),
                esClientKeyPass: Config.get("esClientKeyPass", null),
-               insecure: insecure,
+               insecure: Config.insecure,
                usersHost: Config.get("usersElasticsearch"),
                usersPrefix: Config.get("usersPrefix")}, main);
