@@ -19,6 +19,7 @@ my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 #my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://elastic:changeme\@127.0.0.1:9200";
 
 $ENV{'PERL5LIB'} = getcwd();
+$ENV{'TZ'} = 'US/Eastern';
 
 ################################################################################
 sub doGeo {

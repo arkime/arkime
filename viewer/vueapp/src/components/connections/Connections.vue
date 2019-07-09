@@ -279,7 +279,7 @@
       </moloch-no-results> <!-- /no results -->
 
       <!-- connections graph container -->
-      <svg></svg>
+      <svg class="connections-graph"></svg>
       <!-- /connections graph container -->
 
       <!-- popup area -->
@@ -1079,7 +1079,7 @@ export default {
               <div class="mb-2">
                 <strong>{{dataNode.id}}</strong>
                 <a class="pull-right cursor-pointer no-decoration"
-                  @click="closePopup()">
+                  @click="closePopup">
                   <span class="fa fa-close"></span>
                 </a>
               </div>
@@ -1333,6 +1333,9 @@ export default {
 .connections-page {
   /* account for main navbar height */
   margin-top: 36px;
+}
+
+.connections-graph {
   /* don't allow selecting text */
   -webkit-user-select: none;
   -moz-user-select: none;

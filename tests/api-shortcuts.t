@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 35;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -66,7 +66,7 @@ ok($json->{success}, "create shortcut success");
 my $shortcut2Id = $json->{var}->{id}; # save id for cleanup later
 
 # get shortcuts should have 1
-$shortcuts = viewerGet("/lookups");
+$shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
 is(@{$shortcuts}, 1, "1 shortcut for this user");
 
 # create shared shortcut by another user
@@ -76,8 +76,20 @@ ok($json->{var}->{shared}, "create shared shortcut");
 my $shortcut3Id = $json->{var}->{id}; # save id for cleanup later
 
 # shared shortcut exists for user
-$shortcuts = viewerGet("/lookups");
+$shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
 is(@{$shortcuts}, 2, "2 shortcuts for this user");
+
+# unshared shortcut can't be seen by nonadmin users
+$shortcuts = viewerGet('/lookups?molochRegressionUser=user3');
+is(@{$shortcuts}, 1, "nonadmin user can only see shared shortcuts");
+
+# get only shortcuts of a specific type
+$shortcuts = viewerGet("/lookups?fieldType=string");
+is(@{$shortcuts}, 2, "should be 2 shortcuts of type string");
+is($shortcuts->[0]->{type}, 'string', 'shortcut should be of type string');
+$shortcuts = viewerGet("/lookups?fieldType=ip");
+is(@{$shortcuts}, 1, "should be 2 shortcuts of type ip");
+is($shortcuts->[0]->{type}, 'ip', 'shortcut should be of type ip');
 
 # get shortcuts map
 $shortcuts = viewerGet("/lookups?map=true");

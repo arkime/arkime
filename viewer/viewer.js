@@ -87,8 +87,21 @@ var internals = {
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
   proccessHuntJobsInitialized: false,
-  notifiers: undefined
+  notifiers: undefined,
+  prefix: Config.get('prefix', ''),
+  lookupTypeMap: {
+    ip: 'ip',
+    integer: 'number',
+    termfield: 'string',
+    uptermfield: 'string',
+    lotermfield: 'string'
+  }
 };
+
+// make sure there's an _ after the prefix
+if (internals.prefix && !internals.prefix.endsWith('_')) {
+  internals.prefix = `${internals.prefix}_`;
+}
 
 if (Config.get("uploadFileSizeLimit")) {
   internals.uploadLimits.fileSize = parseInt(Config.get("uploadFileSizeLimit"));
@@ -2774,9 +2787,10 @@ function buildSessionQuery (req, buildCb) {
   molochparser.parser.yy = {
     views: req.user.views,
     fieldsMap: Config.getFieldsMap(),
-    prefix: Config.get('prefix', ''),
+    prefix: internals.prefix,
     emailSearch: req.user.emailSearch === true,
-    lookups: req.lookups
+    lookups: req.lookups,
+    lookupTypeMap: internals.lookupTypeMap
   };
 
   if (req.query.expression) {
@@ -6731,8 +6745,9 @@ function processHuntJob (huntId, hunt) {
       molochparser.parser.yy = {
         emailSearch: user.emailSearch === true,
         fieldsMap: Config.getFieldsMap(),
-        prefix: Config.get('prefix', ''),
-        lookups: lookups || {}
+        prefix: internals.prefix,
+        lookups: lookups || {},
+        lookupTypeMap: internals.lookupTypeMap
       };
 
       // build session query
@@ -7074,18 +7089,29 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
 
   const map = req.query.map && req.query.map === 'true';
 
-  // only get lookups for this user or shared
-  const query = {
+  // only get lookups for setting user or shared
+  let query = {
     query: {
       bool: {
         should: [
           { term: { shared: true } },
-          { term: { userId: user.userId } }
+          { term: { userId: req.settingUser.userId } }
         ]
       }
     },
     sort: { name: { order: 'asc' } }
   };
+
+  // if fieldType exists, filter it
+  if (req.query.fieldType) {
+    const fieldType = internals.lookupTypeMap[req.query.fieldType];
+
+    if (fieldType) {
+      query.query.bool.must = [{
+        exists: { field: fieldType }
+      }];
+    }
+  }
 
   Db.searchLookups(query)
     .then((lookups) => {
@@ -8194,8 +8220,9 @@ function processCronQueries() {
             molochparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
-              prefix: Config.get('prefix', ''),
-              lookups: lookups
+              prefix: internals.prefix,
+              lookups: lookups,
+              lookupTypeMap: internals.lookupTypeMap
             };
 
             let query = {

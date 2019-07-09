@@ -35,7 +35,6 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fixed ja3s mishandling of 10/11 extension types (thanks Norwegian Healthcare CERT)
   - viewer - add bytes as a graphing choice
   - capture - fixed ja3 mishandling of 11 extension types (thanks Norwegian Healthcare CERT)
-  - viewer - Added shortcuts
   - capture - Added startsWith,contains,endsWith rule expression modifier
   - viewer - support ip == ipv4 and ip == ipv6 expressions
 

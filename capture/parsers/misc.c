@@ -320,6 +320,13 @@ LOCAL void safet_udp_classify(MolochSession_t *session, const unsigned char *dat
     moloch_session_add_protocol(session, "safet");
 }
 /******************************************************************************/
+LOCAL void telnet_tcp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 3 || data[0] != 0xff || data[1] < 0xfa)
+        return;
+    moloch_session_add_protocol(session, "telnet");
+}
+/******************************************************************************/
 
 #define CLASSIFY_TCP(name, offset, bytes, cb) moloch_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
 #define CLASSIFY_UDP(name, offset, bytes, cb) moloch_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
@@ -497,6 +504,8 @@ void moloch_parser_init()
     SIMPLE_CLASSIFY_TCP("elasticsearch", "ES\x00\x00");
 
     moloch_parsers_classifier_register_port("safet",  NULL, 23294, MOLOCH_PARSERS_PORT_UDP, safet_udp_classify);
+
+    moloch_parsers_classifier_register_port("telnet",  NULL, 23, MOLOCH_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
 
     userField = moloch_field_by_db("user");
 }

@@ -26,11 +26,14 @@
 extern MolochConfig_t        config;
 
 #define MAX_RINGS 10
+#define MAX_PROCS 10
 
 LOCAL snf_handle_t           handles[MAX_INTERFACES];
 LOCAL snf_ring_t             rings[MAX_INTERFACES][MAX_RINGS];
 LOCAL int                    portnums[MAX_INTERFACES];
 LOCAL int                    snfNumRings;
+LOCAL int                    snfNumProcs;
+LOCAL int                    snfProcNum;
 
 /******************************************************************************/
 int reader_snf_stats(MolochReaderStats_t *stats)
@@ -94,9 +97,10 @@ LOCAL void *reader_snf_thread(gpointer posv)
 void reader_snf_start() {
     moloch_packet_set_linksnap(DLT_EN10MB, config.snapLen);
 
+    int ringStartOffset = (snfProcNum-1)*snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (r = 0; r < snfNumRings; r++) {
+        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
             char name[100];
             snprintf(name, sizeof(name), "moloch-snf%d-%d", i, r);
             g_thread_unref(g_thread_new(name, &reader_snf_thread, (gpointer)(long)(i | r << 8)));
@@ -110,6 +114,16 @@ void reader_snf_init(char *UNUSED(name))
     struct snf_ifaddrs *ifaddrs;
 
     snfNumRings = moloch_config_int(NULL, "snfNumRings", 1, 1, MAX_RINGS);
+    snfNumProcs = moloch_config_int(NULL, "snfNumProcs", 1, 1, MAX_PROCS);
+    snfProcNum  = moloch_config_int(NULL, "snfProcNum", 0, 0, MAX_PROCS);
+
+    // Quick config sanity check for clustered processes
+    if (snfNumProcs > 1 && snfProcNum == 0) {
+       LOGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
+    } else {
+       snfProcNum = 1;
+    }
+
     int snfDataRingSize = moloch_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
     int snfFlags = moloch_config_int(NULL, "snfFlags", -1, 0, -1);
 
@@ -122,6 +136,7 @@ void reader_snf_init(char *UNUSED(name))
         LOGEXIT("Myricom: failed in snf_getifaddrs %d", err);
     }
 
+    int ringStartOffset = (snfProcNum-1)*snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         struct snf_ifaddrs *ifa = ifaddrs;
@@ -139,12 +154,12 @@ void reader_snf_init(char *UNUSED(name))
             LOGEXIT("Myricom: Couldn't find interface '%s'", config.interface[i]);
         }
 
-        err  = snf_open(portnums[i], snfNumRings, NULL, snfDataRingSize, snfFlags, &handles[i]);
+        err  = snf_open(portnums[i], snfNumRings * snfNumProcs, NULL, snfDataRingSize, snfFlags, &handles[i]);
         if (err != 0) {
             LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
 
-        for (r = 0; r < snfNumRings; r++) {
+        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
             err = snf_ring_open(handles[i], &rings[i][r]);
             if (err != 0) {
                 LOGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);

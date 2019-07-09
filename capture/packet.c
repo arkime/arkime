@@ -1673,7 +1673,7 @@ LOCAL int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const
             return MOLOCH_PACKET_CORRUPT;
         }
 
-        int S = data[3] & 0x1;
+        int S = data[2] & 0x1;
 
         data += 4;
         len -= 4;

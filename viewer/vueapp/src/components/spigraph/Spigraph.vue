@@ -229,7 +229,7 @@ export default {
       recordsFiltered: 0,
       items: [],
       showDropdown: false,
-      fieldTypeahead: undefined,
+      fieldTypeahead: 'node',
       sortBy: this.$route.query.sort || 'graph'
     };
   },
