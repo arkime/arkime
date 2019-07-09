@@ -1849,7 +1849,7 @@ sub dbVersion {
 my ($loud) = @_;
     my $version;
 
-    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta", 1);
+    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta&include_type_name=true", 1);
 
     if (defined $version &&
         exists $version->{"${PREFIX}sessions2_template"} &&
