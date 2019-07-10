@@ -655,7 +655,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         packet->direction = (dir &&
                              session->port1 == ntohs(udphdr->uh_sport) &&
                              session->port2 == ntohs(udphdr->uh_dport))?0:1;
-        session->databytes[packet->direction] += (packet->pktlen - 8);
+        session->databytes[packet->direction] += (packet->pktlen -packet->payloadOffset - 8);
         break;
     case IPPROTO_SCTP:
         udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);

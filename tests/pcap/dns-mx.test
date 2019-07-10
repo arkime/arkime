@@ -53,7 +53,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 216,
-            "dstDataBytes" : 208,
+            "dstDataBytes" : 174,
             "dstIp" : "10.2.95.39",
             "dstMac" : [
                "00:00:0c:07:ac:01",
@@ -89,7 +89,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 66,
-            "srcDataBytes" : 58,
+            "srcDataBytes" : 24,
             "srcGEO" : "US",
             "srcIp" : "10.180.156.185",
             "srcMac" : [
@@ -105,7 +105,7 @@
             "srcPort" : 51427,
             "timestamp" : "SET",
             "totBytes" : 282,
-            "totDataBytes" : 266,
+            "totDataBytes" : 198,
             "totPackets" : 2
          },
          "header" : {

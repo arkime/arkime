@@ -315,7 +315,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS4589 EASYNET Easynet Global Services",
             "srcBytes" : 1782,
-            "srcDataBytes" : 1718,
+            "srcDataBytes" : 1286,
             "srcGEO" : "GB",
             "srcIp" : "2001:06f8:102d:0000:1033:0c4c:7e57:b19e",
             "srcMac" : [
@@ -331,7 +331,7 @@
             "srcPort" : 5353,
             "timestamp" : "SET",
             "totBytes" : 1782,
-            "totDataBytes" : 1718,
+            "totDataBytes" : 1286,
             "totPackets" : 8
          },
          "header" : {

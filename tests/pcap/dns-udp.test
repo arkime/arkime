@@ -60,7 +60,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 254,
-            "dstDataBytes" : 246,
+            "dstDataBytes" : 212,
             "dstIp" : "10.2.95.39",
             "dstMac" : [
                "00:00:0c:07:ac:01",
@@ -96,7 +96,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 74,
-            "srcDataBytes" : 66,
+            "srcDataBytes" : 32,
             "srcGEO" : "US",
             "srcIp" : "10.180.156.141",
             "srcMac" : [
@@ -112,7 +112,7 @@
             "srcPort" : 62563,
             "timestamp" : "SET",
             "totBytes" : 328,
-            "totDataBytes" : 312,
+            "totDataBytes" : 244,
             "totPackets" : 2
          },
          "header" : {
@@ -182,7 +182,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 254,
-            "dstDataBytes" : 246,
+            "dstDataBytes" : 212,
             "dstIp" : "10.178.8.71",
             "dstMac" : [
                "00:00:0c:07:ac:01",
@@ -217,7 +217,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 74,
-            "srcDataBytes" : 66,
+            "srcDataBytes" : 32,
             "srcGEO" : "US",
             "srcIp" : "10.180.156.141",
             "srcMac" : [
@@ -233,7 +233,7 @@
             "srcPort" : 62416,
             "timestamp" : "SET",
             "totBytes" : 328,
-            "totDataBytes" : 312,
+            "totDataBytes" : 244,
             "totPackets" : 2
          },
          "header" : {
@@ -296,7 +296,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 96,
-            "srcDataBytes" : 88,
+            "srcDataBytes" : 54,
             "srcIp" : "10.10.10.10",
             "srcMac" : [
                "ac:4b:c8:4c:9f:c1"
@@ -311,7 +311,7 @@
             "srcPort" : 5353,
             "timestamp" : "SET",
             "totBytes" : 96,
-            "totDataBytes" : 88,
+            "totDataBytes" : 54,
             "totPackets" : 1
          },
          "header" : {

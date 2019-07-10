@@ -107,7 +107,7 @@
                "statusCnt" : 2
             },
             "dstBytes" : 1328,
-            "dstDataBytes" : 1232,
+            "dstDataBytes" : 824,
             "dstIp" : "192.168.170.20",
             "dstMac" : [
                "00:c0:9f:32:41:8c"
@@ -186,7 +186,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 892,
-            "srcDataBytes" : 796,
+            "srcDataBytes" : 388,
             "srcIp" : "192.168.170.8",
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
@@ -202,7 +202,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 2220,
-            "totDataBytes" : 2028,
+            "totDataBytes" : 1212,
             "totPackets" : 24
          },
          "header" : {
@@ -238,7 +238,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 105,
-            "dstDataBytes" : 97,
+            "dstDataBytes" : 63,
             "dstIp" : "192.168.170.20",
             "dstMac" : [
                "00:c0:9f:32:41:8c"
@@ -273,7 +273,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 82,
-            "srcDataBytes" : 74,
+            "srcDataBytes" : 40,
             "srcIp" : "192.168.170.8",
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
@@ -289,7 +289,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 187,
-            "totDataBytes" : 171,
+            "totDataBytes" : 103,
             "totPackets" : 2
          },
          "header" : {
@@ -332,7 +332,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 166,
-            "dstDataBytes" : 158,
+            "dstDataBytes" : 124,
             "dstIp" : "192.168.170.20",
             "dstMac" : [
                "00:c0:9f:32:41:8c"
@@ -367,7 +367,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 67,
-            "srcDataBytes" : 59,
+            "srcDataBytes" : 25,
             "srcIp" : "192.168.170.8",
             "srcMac" : [
                "00:e0:18:b1:0c:ad"
@@ -383,7 +383,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 233,
-            "totDataBytes" : 217,
+            "totDataBytes" : 149,
             "totPackets" : 2
          },
          "header" : {
@@ -420,7 +420,7 @@
             },
             "dstASN" : "AS15659 NextGenTel AS",
             "dstBytes" : 129,
-            "dstDataBytes" : 121,
+            "dstDataBytes" : 87,
             "dstGEO" : "NO",
             "dstIp" : "217.13.4.24",
             "dstMac" : [
@@ -456,7 +456,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 129,
-            "srcDataBytes" : 121,
+            "srcDataBytes" : 87,
             "srcIp" : "192.168.170.56",
             "srcMac" : [
                "00:60:08:45:e4:55"
@@ -472,7 +472,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 258,
-            "totDataBytes" : 242,
+            "totDataBytes" : 174,
             "totPackets" : 2
          },
          "header" : {
@@ -509,7 +509,7 @@
             },
             "dstASN" : "AS15659 NextGenTel AS",
             "dstBytes" : 98,
-            "dstDataBytes" : 90,
+            "dstDataBytes" : 56,
             "dstGEO" : "NO",
             "dstIp" : "217.13.4.24",
             "dstMac" : [
@@ -545,7 +545,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 98,
-            "srcDataBytes" : 90,
+            "srcDataBytes" : 56,
             "srcIp" : "192.168.170.56",
             "srcMac" : [
                "00:60:08:45:e4:55"
@@ -561,7 +561,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 196,
-            "totDataBytes" : 180,
+            "totDataBytes" : 112,
             "totPackets" : 2
          },
          "header" : {
@@ -598,7 +598,7 @@
             },
             "dstASN" : "AS15659 NextGenTel AS",
             "dstBytes" : 140,
-            "dstDataBytes" : 132,
+            "dstDataBytes" : 98,
             "dstGEO" : "NO",
             "dstIp" : "217.13.4.24",
             "dstMac" : [
@@ -634,7 +634,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 140,
-            "srcDataBytes" : 132,
+            "srcDataBytes" : 98,
             "srcIp" : "192.168.170.56",
             "srcMac" : [
                "00:60:08:45:e4:55"
@@ -650,7 +650,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 280,
-            "totDataBytes" : 264,
+            "totDataBytes" : 196,
             "totPackets" : 2
          },
          "header" : {
@@ -687,7 +687,7 @@
             },
             "dstASN" : "AS15659 NextGenTel AS",
             "dstBytes" : 83,
-            "dstDataBytes" : 75,
+            "dstDataBytes" : 41,
             "dstGEO" : "NO",
             "dstIp" : "217.13.4.24",
             "dstMac" : [
@@ -723,7 +723,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 83,
-            "srcDataBytes" : 75,
+            "srcDataBytes" : 41,
             "srcIp" : "192.168.170.56",
             "srcMac" : [
                "00:60:08:45:e4:55"
@@ -739,7 +739,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 166,
-            "totDataBytes" : 150,
+            "totDataBytes" : 82,
             "totPackets" : 2
          },
          "header" : {
@@ -776,7 +776,7 @@
             },
             "dstASN" : "AS15659 NextGenTel AS",
             "dstBytes" : 83,
-            "dstDataBytes" : 75,
+            "dstDataBytes" : 41,
             "dstGEO" : "NO",
             "dstIp" : "217.13.4.24",
             "dstMac" : [
@@ -812,7 +812,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 83,
-            "srcDataBytes" : 75,
+            "srcDataBytes" : 41,
             "srcIp" : "192.168.170.56",
             "srcMac" : [
                "00:60:08:45:e4:55"
@@ -828,7 +828,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 166,
-            "totDataBytes" : 150,
+            "totDataBytes" : 82,
             "totPackets" : 2
          },
          "header" : {

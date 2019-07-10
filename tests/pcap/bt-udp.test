@@ -38,7 +38,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS0001 Cool Beans!",
             "srcBytes" : 145,
-            "srcDataBytes" : 137,
+            "srcDataBytes" : 103,
             "srcGEO" : "CA",
             "srcIp" : "10.0.0.2",
             "srcMac" : [
@@ -60,7 +60,7 @@
             "tagsCnt" : 2,
             "timestamp" : "SET",
             "totBytes" : 145,
-            "totDataBytes" : 137,
+            "totDataBytes" : 103,
             "totPackets" : 1
          },
          "header" : {
@@ -106,7 +106,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 329,
-            "srcDataBytes" : 321,
+            "srcDataBytes" : 287,
             "srcIp" : "10.0.0.4",
             "srcMac" : [
                "00:10:db:ff:26:00"
@@ -121,7 +121,7 @@
             "srcPort" : 44102,
             "timestamp" : "SET",
             "totBytes" : 329,
-            "totDataBytes" : 321,
+            "totDataBytes" : 287,
             "totPackets" : 1
          },
          "header" : {
@@ -166,7 +166,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 336,
-            "srcDataBytes" : 328,
+            "srcDataBytes" : 294,
             "srcIp" : "10.0.0.6",
             "srcMac" : [
                "00:10:db:ff:26:00"
@@ -181,7 +181,7 @@
             "srcPort" : 47061,
             "timestamp" : "SET",
             "totBytes" : 336,
-            "totDataBytes" : 328,
+            "totDataBytes" : 294,
             "totPackets" : 1
          },
          "header" : {

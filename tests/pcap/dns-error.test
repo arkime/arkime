@@ -27,7 +27,7 @@
             },
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 147,
-            "dstDataBytes" : 139,
+            "dstDataBytes" : 105,
             "dstGEO" : "CA",
             "dstIp" : "10.0.0.2",
             "dstMac" : [
@@ -65,7 +65,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS0000 This is neat",
             "srcBytes" : 72,
-            "srcDataBytes" : 64,
+            "srcDataBytes" : 30,
             "srcGEO" : "RU",
             "srcIp" : "10.0.0.1",
             "srcMac" : [
@@ -107,7 +107,7 @@
             },
             "timestamp" : "SET",
             "totBytes" : 219,
-            "totDataBytes" : 203,
+            "totDataBytes" : 135,
             "totPackets" : 2
          },
          "header" : {
