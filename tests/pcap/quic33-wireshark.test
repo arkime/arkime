@@ -5,7 +5,7 @@
             "communityId" : "1:p/vcUPTuHDxAg7xjWnl7DygZ6gk=",
             "dstASN" : "AS36040 Google LLC",
             "dstBytes" : 119,
-            "dstDataBytes" : 111,
+            "dstDataBytes" : 77,
             "dstGEO" : "US",
             "dstIp" : "64.15.116.182",
             "dstMac" : [
@@ -53,7 +53,7 @@
             },
             "segmentCnt" : 1,
             "srcBytes" : 2784,
-            "srcDataBytes" : 2768,
+            "srcDataBytes" : 2700,
             "srcIp" : "10.0.2.15",
             "srcMac" : [
                "08:00:27:cc:18:37"
@@ -68,7 +68,7 @@
             "srcPort" : 40482,
             "timestamp" : "SET",
             "totBytes" : 2903,
-            "totDataBytes" : 2879,
+            "totDataBytes" : 2777,
             "totPackets" : 3
          },
          "header" : {

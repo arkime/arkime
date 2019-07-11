@@ -48,7 +48,7 @@
             },
             "dstASN" : "AS0000 This is neat",
             "dstBytes" : 91,
-            "dstDataBytes" : 83,
+            "dstDataBytes" : 45,
             "dstGEO" : "RU",
             "dstIp" : "10.0.0.1",
             "dstMac" : [
@@ -85,7 +85,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS15169 Google LLC",
             "srcBytes" : 135,
-            "srcDataBytes" : 127,
+            "srcDataBytes" : 93,
             "srcGEO" : "US",
             "srcIp" : "8.8.8.8",
             "srcMac" : [
@@ -107,7 +107,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 226,
-            "totDataBytes" : 210,
+            "totDataBytes" : 138,
             "totPackets" : 2,
             "vlan" : [
                500

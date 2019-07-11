@@ -117,7 +117,7 @@
             "communityId" : "1:veIAhY2jaBSkfqgIosmVNpCkTpE=",
             "dstASN" : "AS3 Massachusetts Institute of Technology",
             "dstBytes" : 114,
-            "dstDataBytes" : 106,
+            "dstDataBytes" : 48,
             "dstGEO" : "US",
             "dstIp" : "18.26.4.105",
             "dstMac" : [
@@ -172,7 +172,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS11590 Cumberland Technologies International",
             "srcBytes" : 114,
-            "srcDataBytes" : 106,
+            "srcDataBytes" : 48,
             "srcGEO" : "US",
             "srcIp" : "66.59.111.190",
             "srcMac" : [
@@ -193,7 +193,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
-            "totDataBytes" : 212,
+            "totDataBytes" : 96,
             "totPackets" : 2
          },
          "header" : {
@@ -438,7 +438,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS11590 Cumberland Technologies International",
             "srcBytes" : 198,
-            "srcDataBytes" : 182,
+            "srcDataBytes" : 66,
             "srcGEO" : "US",
             "srcIp" : "66.59.111.190",
             "srcMac" : [
@@ -459,7 +459,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 198,
-            "totDataBytes" : 182,
+            "totDataBytes" : 66,
             "totPackets" : 2
          },
          "header" : {
@@ -474,7 +474,7 @@
             "communityId" : "1:tHxGdFYxUdQ1mRGmcwzADwdsxpk=",
             "dstASN" : "AS11590 Cumberland Technologies International",
             "dstBytes" : 114,
-            "dstDataBytes" : 106,
+            "dstDataBytes" : 48,
             "dstGEO" : "US",
             "dstIp" : "66.59.111.182",
             "dstMac" : [
@@ -529,7 +529,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS11590 Cumberland Technologies International",
             "srcBytes" : 114,
-            "srcDataBytes" : 106,
+            "srcDataBytes" : 48,
             "srcGEO" : "US",
             "srcIp" : "66.59.111.190",
             "srcMac" : [
@@ -550,7 +550,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
-            "totDataBytes" : 212,
+            "totDataBytes" : 96,
             "totPackets" : 2
          },
          "header" : {
@@ -565,7 +565,7 @@
             "communityId" : "1:KjznBxr7r/2kBYUhYhbnV4xMJmc=",
             "dstASN" : "AS10755 Dartmouth College",
             "dstBytes" : 114,
-            "dstDataBytes" : 106,
+            "dstDataBytes" : 48,
             "dstGEO" : "US",
             "dstIp" : "129.170.17.4",
             "dstMac" : [
@@ -620,7 +620,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS11590 Cumberland Technologies International",
             "srcBytes" : 114,
-            "srcDataBytes" : 106,
+            "srcDataBytes" : 48,
             "srcGEO" : "US",
             "srcIp" : "66.59.111.190",
             "srcMac" : [
@@ -641,7 +641,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 228,
-            "totDataBytes" : 212,
+            "totDataBytes" : 96,
             "totPackets" : 2
          },
          "header" : {

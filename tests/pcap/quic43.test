@@ -52,7 +52,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS7233 Yahoo",
             "srcBytes" : 1412,
-            "srcDataBytes" : 1404,
+            "srcDataBytes" : 1350,
             "srcGEO" : "US",
             "srcIp" : "2001:4998:effd:7801:0000:0000:0000:1058",
             "srcMac" : [
@@ -68,7 +68,7 @@
             "srcPort" : 51485,
             "timestamp" : "SET",
             "totBytes" : 1412,
-            "totDataBytes" : 1404,
+            "totDataBytes" : 1350,
             "totPackets" : 1
          },
          "header" : {

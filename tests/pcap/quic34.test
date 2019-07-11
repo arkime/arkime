@@ -52,7 +52,7 @@
             },
             "segmentCnt" : 1,
             "srcBytes" : 1396,
-            "srcDataBytes" : 1388,
+            "srcDataBytes" : 1350,
             "srcIp" : "10.0.0.4",
             "srcMac" : [
                "00:1b:17:00:02:30"
@@ -67,7 +67,7 @@
             "srcPort" : 54800,
             "timestamp" : "SET",
             "totBytes" : 1396,
-            "totDataBytes" : 1388,
+            "totDataBytes" : 1350,
             "totPackets" : 1,
             "vlan" : [
                300
