@@ -312,10 +312,11 @@ export default {
   viewIntersection: function (params, routeParams) {
     let clonedParams = JSON.parse(JSON.stringify(routeParams));
 
-    params.expression = clonedParams.expression;
     params.date = clonedParams.date;
-    params.startTime = clonedParams.startTime;
+    params.view = clonedParams.view;
     params.stopTime = clonedParams.stopTime;
+    params.startTime = clonedParams.startTime;
+    params.expression = clonedParams.expression;
 
     let url = `multiunique.txt?${qs.stringify(params)}`;
 
@@ -334,6 +335,7 @@ export default {
     let params = {
       exp: exp,
       counts: counts,
+      view: clonedParams.view,
       date: clonedParams.date,
       stopTime: clonedParams.stopTime,
       startTime: clonedParams.startTime,
