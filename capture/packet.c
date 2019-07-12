@@ -672,6 +672,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         session->tcp_flags |= tcphdr->th_flags;
         break;
     case IPPROTO_ICMP:
+    case IPPROTO_ICMPV6:
+        packet->direction = (dir)?0:1;
+        session->databytes[packet->direction] += (packet->pktlen -packet->payloadOffset);
+        break;
     case IPPROTO_ESP:
         packet->direction = (dir)?0:1;
         break;
