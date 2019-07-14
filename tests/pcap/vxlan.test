@@ -4,7 +4,7 @@
          "body" : {
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 592,
-            "dstDataBytes" : 0,
+            "dstDataBytes" : 256,
             "dstGEO" : "CA",
             "dstIp" : "10.0.0.2",
             "dstMac" : [
@@ -61,7 +61,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS0000 This is neat",
             "srcBytes" : 592,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 256,
             "srcGEO" : "RU",
             "srcIp" : "10.0.0.1",
             "srcMac" : [
@@ -101,7 +101,7 @@
             },
             "timestamp" : "SET",
             "totBytes" : 1184,
-            "totDataBytes" : 0,
+            "totDataBytes" : 512,
             "totPackets" : 8
          },
          "header" : {
