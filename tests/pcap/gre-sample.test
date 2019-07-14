@@ -3,7 +3,7 @@
       {
          "body" : {
             "dstBytes" : 742,
-            "dstDataBytes" : 0,
+            "dstDataBytes" : 394,
             "dstIp" : "172.28.2.3",
             "dstMac" : [
                "00:c0:ca:14:b0:52"
@@ -82,7 +82,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS11590 Cumberland Technologies International",
             "srcBytes" : 488,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 256,
             "srcGEO" : "US",
             "srcIp" : "66.59.111.190",
             "srcMac" : [
@@ -102,7 +102,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 1230,
-            "totDataBytes" : 0,
+            "totDataBytes" : 650,
             "totPackets" : 10
          },
          "header" : {
