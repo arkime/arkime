@@ -1,4 +1,4 @@
-use Test::More tests => 215;
+use Test::More tests => 219;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -21,12 +21,12 @@ my $json;
 my $hToken = getTokenCookie('huntuser');
 
 # Must have token to add a hunt
-  $json = viewerPost("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}');
+  $json = viewerPost("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}');
   my $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a token");
 
 # Must apply to sessions to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":0,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":0,"name":"test hunt 2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job that doesn't apply to sessions");
 
@@ -36,84 +36,92 @@ my $hToken = getTokenCookie('huntuser');
   is (@{$hunts->{data}}, 0, "Can't add a job without a name");
 
 # Must have a size to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a size");
 
 # Must have search text to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without search text");
 
 # Must have search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without search text type");
 
 # Must have a valid search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without search text type");
 
 # Must have a type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a type");
 
 # Must have a valid type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a type");
 
 # Must have src or dst to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw"}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 9","size":"50","search":"test search text","searchType":"ascii","type":"raw"}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a type");
 
 # Must have query to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 10","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a query");
 
 # Must have fully formed query to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 11","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a query stopTime");
 
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 0, "Can't add a job without a query starTime");
 
 # Add a valid hunt, and it should immediately run
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   $hunts = viewerGet("/hunt/list");
   is (exists $hunts->{runningJob}, 1, "Running hunt 1");
 
 # Make sure the hunt's name doesn't contain special chars
-  is ($json->{hunt}->{name}, "test hunt", "Strip special chars");
+  is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
   sleep(1);
+  esGet("/_refresh");
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
 # If the user is not an admin they can only delete their own hunts
   my $id1 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id1?molochRegressionUser=user2", $otherToken);
+  is ($json->{text}, "You cannot change another user's hunt unless you have admin privileges");
+
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
 
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
   my $id2 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
+  is ($json->{text}, "Deleted hunt item successfully");
+
+  sleep(1);
+  esGet("/_refresh");
+
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   my $id3 = $json->{hunt}->{id};
   $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
@@ -122,10 +130,20 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
+  $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
+  is ($json->{text}, "Deleted hunt item successfully");
+
+
 # Admin can delete any hunt
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
+  is ($json->{text}, "Deleted hunt item successfully");
+
+  sleep(1);
+  esGet("/_refresh");
+
+  $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
 
 # multiget should return an error
