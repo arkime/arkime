@@ -1,0 +1,116 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstASN" : "AS0001 Cool Beans!",
+            "dstBytes" : 592,
+            "dstDataBytes" : 0,
+            "dstGEO" : "CA",
+            "dstIp" : "10.0.0.2",
+            "dstMac" : [
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 4,
+            "dstPort" : 0,
+            "dstRIR" : "TEST",
+            "fileId" : [],
+            "firstPacket" : 1467818432676,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  8,
+                  0
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1467818435680,
+            "length" : 3004,
+            "node" : "test",
+            "packetLen" : [
+               164,
+               164,
+               164,
+               164,
+               164,
+               164,
+               164,
+               164
+            ],
+            "packetPos" : [
+               240,
+               404,
+               568,
+               732,
+               896,
+               1060,
+               1224,
+               1388
+            ],
+            "protocol" : [
+               "vxlan",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000 This is neat",
+            "srcBytes" : 592,
+            "srcDataBytes" : 0,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "08:00:27:ae:4d:62"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 4,
+            "srcPort" : 0,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "test" : {
+               "ASN" : [
+                  "AS0000 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:0,33554442:0"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1184,
+            "totDataBytes" : 0,
+            "totPackets" : 8
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160706",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -762,20 +762,24 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
             moloch_session_add_protocol(session, "gre");
         }
 
-        if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_PPPOE) {
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_PPPOE) {
             moloch_session_add_protocol(session, "pppoe");
         }
 
-        if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_PPP) {
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_PPP) {
             moloch_session_add_protocol(session, "ppp");
         }
 
-        if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_MPLS) {
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_MPLS) {
             moloch_session_add_protocol(session, "mpls");
         }
 
-        if (packet->tunnel &  MOLOCH_PACKET_TUNNEL_GTP) {
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GTP) {
             moloch_session_add_protocol(session, "gtp");
+        }
+
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_VXLAN) {
+            moloch_session_add_protocol(session, "vxlan");
         }
     }
 
@@ -1274,6 +1278,17 @@ LOCAL int moloch_packet_ip4_gtp(MolochPacketBatch_t *batch, MolochPacket_t * con
     return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
 }
 /******************************************************************************/
+LOCAL int moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 8) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    packet->tunnel |= MOLOCH_PACKET_TUNNEL_VXLAN;
+
+    return moloch_packet_ether(batch, packet, data+8, len-8);
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
@@ -1383,6 +1398,15 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
             uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
             if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
                 return moloch_packet_ip4_gtp(batch, packet, buf, rem);
+            }
+        }
+
+        // See if this is really VXLAN
+        if (udphdr->uh_dport == 0xb512 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
+            int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+            uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
+            if ((buf[0] & 0x77) == 0 && (buf[1] & 0xb7) == 0) {
+                return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
             }
         }
 
