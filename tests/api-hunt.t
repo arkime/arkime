@@ -93,7 +93,8 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
-  sleep(1);
+  sleep(2);
+  esGet("/_flush");
   esGet("/_refresh");
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
@@ -114,7 +115,8 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  sleep(1);
+  sleep(2);
+  esGet("/_flush");
   esGet("/_refresh");
 
   $hunts = viewerGet("/hunt/list");
@@ -140,7 +142,8 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  sleep(1);
+  sleep(2);
+  esGet("/_flush");
   esGet("/_refresh");
 
   $hunts = viewerGet("/hunt/list");
