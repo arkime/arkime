@@ -977,9 +977,10 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     case 0x88be:
         return moloch_packet_erspan(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
     default:
+        if (BIT_ISSET(type, config.etherSavePcap))
+            moloch_packet_save_unknown_packet(0, packet);
         return MOLOCH_PACKET_UNKNOWN;
     }
-
 }
 /******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
@@ -1687,6 +1688,8 @@ LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const 
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown ppp type %d", data[3]);
 #endif
+        if (BIT_ISSET(0x880b, config.etherSavePcap))
+            moloch_packet_save_unknown_packet(0, packet);
         return MOLOCH_PACKET_UNKNOWN;
     }
 }
@@ -1717,6 +1720,8 @@ LOCAL int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const
 #ifdef DEBUG_PACKET
                 LOG("BAD PACKET: Unknown mpls type %d", data[0] >> 4);
 #endif
+                if (BIT_ISSET(0x8847, config.etherSavePcap))
+                    moloch_packet_save_unknown_packet(0, packet);
                 return MOLOCH_PACKET_UNKNOWN;
             }
         }
