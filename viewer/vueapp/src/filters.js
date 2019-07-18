@@ -284,3 +284,27 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens) {
       }));
   });
 });
+
+/**
+ * Builds an expression for search.
+ * Stringifies necessary values and escapes necessary characters
+ *
+ * @example
+ * '{{ 'ip.dst' | buildExpression('10.0.0.1', '==') }}'
+ * this.$options.filters.buildExpression('ip.dst', '10.0.0.1', '==');
+ *
+ * @param {string} field  The field name
+ * @param {string} value  The field value
+ * @param {string} op     The relational operator
+ * @returns {string}      The fully built expression
+ */
+Vue.filter('buildExpression', function (field, value, op) {
+  // for values required to be strings in the search expression
+  const str = /[^(EXISTS!)-+a-zA-Z0-9_.@:*?/]+/.test(value);
+
+  // escape unescaped quotes
+  value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');
+  if (str) { value = `"${value}"`; }
+
+  return `${field} ${op} ${value}`;
+});

@@ -105,7 +105,7 @@
             </b-dropdown-item>
           </div>
           <!-- /clickable field menu -->
-        </span><!-- /normal parsed value -->
+        </span> <!-- /normal parsed value -->
 
         <!-- time value -->
         <span v-else
@@ -298,7 +298,7 @@ export default {
     fieldClick: function (field, value, op, andor) {
       this.isOpen = false; // close the dropdown
 
-      let fullExpression = this.buildExpression(field, value, op);
+      const fullExpression = this.$options.filters.buildExpression(field, value, op);
 
       this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
     },
@@ -332,7 +332,7 @@ export default {
     newTabSessions: function (field, value, op, root) {
       this.isOpen = false; // close the dropdown
 
-      let appendExpression = this.buildExpression(field, value, op);
+      const appendExpression = this.$options.filters.buildExpression(field, value, op);
 
       // build new expression
       let newExpression;
@@ -376,23 +376,6 @@ export default {
       } else {
         return { field: this.expr, category: [this.field.category], info: this.field };
       }
-    },
-    /**
-     * Builds an expression for search.
-     * Stringifies necessary values and escapes necessary characters
-     * @param {string} field  The field name
-     * @param {string} value  The field value
-     * @param {string} op     The relational operator
-     * @returns {string}      The fully built expression
-     */
-    buildExpression: function (field, value, op) {
-      // for values required to be strings in the search expression
-      let str = /[^-+a-zA-Z0-9_.@:*?/]+/.test(value);
-      // escape unescaped quotes
-      value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');
-      if (str) { value = `"${value}"`; }
-
-      return `${field} ${op} ${value}`;
     },
     /**
      * Gets Session object

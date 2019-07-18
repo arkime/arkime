@@ -302,6 +302,10 @@
                     @click="openSpiGraph(header.dbField)">
                     Open {{ header.friendlyName }} in SPI Graph
                   </b-dropdown-item>
+                  <b-dropdown-item
+                    @click="fieldExists(header.exp, '==')">
+                    Add {{ header.friendlyName }} EXISTS! to query
+                  </b-dropdown-item>
                 </template> <!-- /single field column -->
                 <!-- multiple field column -->
                 <template v-else-if="header.children && header.type !== 'seconds'">
@@ -331,6 +335,10 @@
                     <b-dropdown-item
                       @click="openSpiGraph(child.dbField)">
                       Open {{ child.friendlyName }} in SPI Graph
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="fieldExists(child.exp, '==')">
+                      Add {{ child.friendlyName }} EXISTS! to query
                     </b-dropdown-item>
                   </span>
                 </template> <!-- /multiple field column -->
@@ -1081,6 +1089,15 @@ export default {
      */
     exportUnique: function (exp, counts) {
       SessionsService.exportUniqueValues(exp, counts, this.$route.query);
+    },
+    /**
+     * Adds field == EXISTS! to the search expression
+     * @param {string} field  The field name
+     * @param {string} op     The relational operator
+     */
+    fieldExists: function (field, op) {
+      const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+      this.$store.commit('addToExpression', { expression: fullExpression });
     },
 
     /* helper functions ---------------------------------------------------- */

@@ -801,6 +801,15 @@ export default {
                */
               toggleInfoVis: function (fieldID) {
                 this.$parent.toggleInfoVis(fieldID);
+              },
+              /**
+               * Adds field == EXISTS! to the search expression
+               * @param {string} field  The field name
+               * @param {string} op     The relational operator
+               */
+              fieldExists: function (field, op) {
+                const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+                this.$store.commit('addToExpression', { expression: fullExpression });
               }
             },
             components: {
