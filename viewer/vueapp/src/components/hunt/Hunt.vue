@@ -643,7 +643,9 @@
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
               </td>
               <td>
-                {{ job.id }}
+                <span v-if="user.userId === job.userId || user.createEnabled">
+                  {{ job.id }}
+                </span>
               </td>
               <td>
                 <span v-if="user.userId === job.userId || user.createEnabled">
@@ -948,7 +950,9 @@
                 {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
               </td>
               <td>
-                {{ job.id }}
+                <span v-if="user.userId === job.userId || user.createEnabled">
+                  {{ job.id }}
+                </span>
               </td>
               <td>
                 <span v-if="user.userId === job.userId || user.createEnabled">
