@@ -880,7 +880,7 @@
         <transition-group name="list"
           tag="tbody">
           <!-- packet search jobs -->
-          <template v-for="job in historyResults.data">
+          <template v-for="(job, index) in historyResults.data">
             <tr :key="`${job.id}-row`">
               <td>
                 <toggle-btn
@@ -968,13 +968,13 @@
                   <button type="button"
                     @click="openSessions(job)"
                     v-if="job.matchedSessions"
-                    :id="`openresults${job.id}`"
+                    :id="`openresults${index}`"
                     class="ml-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw">
                     </span>
                   </button>
                   <b-tooltip v-if="job.matchedSessions"
-                    :target="`openresults${job.id}`">
+                    :target="`openresults${index}`">
                     Open results in a new Sessions tab.
                     <br>
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
@@ -1403,7 +1403,7 @@ export default {
           }
         }
 
-        this.historyResults = response.data;
+        this.$set(this, 'historyResults', response.data);
       }, (error) => {
         this.historyListLoadingError = error.text || error;
       });
