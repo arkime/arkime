@@ -6606,7 +6606,11 @@ function buildHuntOptions (hunt) {
   };
 
   if (hunt.searchType === 'regex' || hunt.searchType === 'hexregex') {
-    options.regex = new RegExp(hunt.search);
+    try {
+      options.regex = new RegExp(hunt.search);
+    } catch (e) {
+      pauseHuntJobWithError(hunt.huntId, hunt, { value: `Hunt error with regex: ${e}` });
+    }
   }
 
   return options;
