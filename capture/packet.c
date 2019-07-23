@@ -418,7 +418,7 @@ LOCAL int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacke
     td->dataOffset = packet->payloadOffset + 4*tcphdr->th_off;
 
 #ifdef DEBUG_PACKET
-    LOG("dir: %d seq: %u ack: %u len: %d diff0: %ld", packet->direction, seq, ack, len, diff);
+    LOG("dir: %d seq: %u ack: %u len: %d diff0: %lld", packet->direction, seq, ack, len, diff);
 #endif
 
     if (DLL_COUNT(td_, tcpData) == 0) {
@@ -1237,7 +1237,7 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
     return MOLOCH_PACKET_SUCCESS;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ip4_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL int moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 12) {
         return MOLOCH_PACKET_CORRUPT;
@@ -1402,7 +1402,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
             int rem = len - ip_hdr_len - sizeof(struct udphdr *);
             uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
             if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
-                return moloch_packet_ip4_gtp(batch, packet, buf, rem);
+                return moloch_packet_ip_gtp(batch, packet, buf, rem);
             }
         }
 
@@ -1495,6 +1495,9 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     packet->v6 = 1;
 
 
+#ifdef DEBUG_PACKET
+    LOG("Got ip6 header %p %d", packet, packet->pktlen);
+#endif
     int nxt = ip6->ip6_nxt;
     int done = 0;
     do {
@@ -1550,6 +1553,15 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+
+            // See if this is really GTP
+            if (udphdr->uh_dport == 0x6808 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
+                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+                const uint8_t *buf = (uint8_t *)udphdr + sizeof(struct udphdr *);
+                if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
+                    return moloch_packet_ip_gtp(batch, packet, buf, rem);
+                }
+            }
 
             packet->ses = SESSION_UDP;
             done = 1;
