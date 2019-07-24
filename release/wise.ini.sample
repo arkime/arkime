@@ -44,6 +44,10 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 #dbFile=/srv/opticlink/ts.db
 
 
+#[zeeklogs]
+#key=
+
+
 # Lets say you have a json file with ipam information.  Reload the url every 60 minutes.  The CIDR field in the JSON document is what to match against.  The shortcuts in the field definition are the JSON field names.
 #[url:ipam]
 #type = ip
