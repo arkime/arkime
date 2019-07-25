@@ -101,14 +101,16 @@ SimpleSource.prototype.load = function() {
   if (this.type === "ip") {
     newCache = {items: new HashTable(), trie: new iptrie.IPTrie()};
     setFunc  = (key, value) => {
-      var parts = key.split("/");
-      try {
-        newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), value);
-      } catch (e) {
-        console.log("ERROR adding", this.section, key, e);
-      }
-      newCache.items.put(key, value);
-      count++;
+      key.split(",").forEach((cidr) => {
+        var parts = cidr.split("/");
+        try {
+          newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), value);
+        } catch (e) {
+          console.log("ERROR adding", this.section, cidr, e);
+        }
+        newCache.items.put(cidr, value);
+        count++;
+      });
     };
   } else {
     newCache = new HashTable();
