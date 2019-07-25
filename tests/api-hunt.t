@@ -148,6 +148,7 @@ my $hToken = getTokenCookie('huntuser');
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
+  diag Dumper($hunts);
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");
