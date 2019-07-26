@@ -37,6 +37,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fixed ja3 mishandling of 11 extension types (thanks Norwegian Healthcare CERT)
   - capture - Added startsWith,contains,endsWith rule expression modifier
   - viewer - support ip == ipv4 and ip == ipv6 expressions
+  - capture - Initial ipv6 gtp support
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5

@@ -11,6 +11,7 @@
     "lint": "jshint *.js"
   },
   "devDependencies": {
-    "jshint": "^2.9.5"
+    "jshint": "^2.9.5",
+    "lodash": "^4.17.13"
   }
 }

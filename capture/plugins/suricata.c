@@ -337,11 +337,13 @@ LOCAL void suricata_process()
             item->flow_id = g_strndup(line + out[i+2], out[i+3]);
             item->flow_id_len = out[i+3];
         } else if (MATCH(line, "proto")) {
-            if (strncmp("TCP", line + out[i+2], 3) == 0)
+            // Match on prototol by name or by
+            // IANA number: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+            if (strncmp("TCP", line + out[i+2], 3) == 0 || strncmp("006", line + out[i+2], 3) == 0)
                 item->ses = SESSION_TCP;
-            else if (strncmp("UDP", line + out[i+2], 3) == 0)
+            else if (strncmp("UDP", line + out[i+2], 3) == 0 || strncmp("017", line + out[i+2], 3) == 0)
                 item->ses = SESSION_UDP;
-            else if (strncmp("ICMP", line + out[i+2], 3) == 0)
+            else if (strncmp("ICMP", line + out[i+2], 3) == 0 || strncmp("001", line + out[i+2], 3) == 0)
                 item->ses = SESSION_ICMP;
             else {
                 suricata_item_free(item);

@@ -35,7 +35,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 145,
-            "srcDataBytes" : 137,
+            "srcDataBytes" : 103,
             "srcIp" : "255.255.255.255",
             "srcMac" : [
                "78:fe:3d:11:21:f2"
@@ -50,7 +50,7 @@
             "srcPort" : 50759,
             "timestamp" : "SET",
             "totBytes" : 145,
-            "totDataBytes" : 137,
+            "totDataBytes" : 103,
             "totPackets" : 1
          },
          "header" : {

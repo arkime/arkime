@@ -27,7 +27,7 @@
             },
             "dstASN" : "AS15169 Google LLC",
             "dstBytes" : 268,
-            "dstDataBytes" : 260,
+            "dstDataBytes" : 146,
             "dstGEO" : "US",
             "dstIp" : "8.8.8.8",
             "dstMac" : [
@@ -83,7 +83,7 @@
             "protocolCnt" : 4,
             "segmentCnt" : 1,
             "srcBytes" : 197,
-            "srcDataBytes" : 189,
+            "srcDataBytes" : 71,
             "srcIp" : "172.16.44.3",
             "srcMac" : [
                "00:12:1e:f2:61:3d",
@@ -100,7 +100,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 465,
-            "totDataBytes" : 449,
+            "totDataBytes" : 217,
             "totPackets" : 2,
             "vlan" : [
                100

@@ -306,11 +306,11 @@ Pcap.prototype.icmp = function (buffer, obj, pos) {
     type:      buffer[0],
     code:      buffer[1],
     sum:       buffer.readUInt16BE(2),
-    id:        buffer.readUInt16BE(4),
-    sequence:  buffer.readUInt16BE(6)
+    // id:        buffer.readUInt16BE(4),
+    // sequence:  buffer.readUInt16BE(6)
   };
 
-  obj.icmp.data = buffer.slice(8);
+  obj.icmp.data = buffer;
 };
 
 Pcap.prototype.tcp = function (buffer, obj, pos) {

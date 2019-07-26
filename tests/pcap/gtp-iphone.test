@@ -71,7 +71,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 334,
-            "dstDataBytes" : 326,
+            "dstDataBytes" : 254,
             "dstIp" : "192.168.168.1",
             "dstPackets" : 1,
             "dstPayload8" : "d333818000010001",
@@ -99,7 +99,7 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 125,
-            "srcDataBytes" : 117,
+            "srcDataBytes" : 45,
             "srcIp" : "192.168.3.129",
             "srcPackets" : 1,
             "srcPayload8" : "d333010000010000",
@@ -107,7 +107,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 459,
-            "totDataBytes" : 443,
+            "totDataBytes" : 299,
             "totPackets" : 2
          },
          "header" : {
@@ -151,13 +151,13 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 100,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 8,
             "srcIp" : "fe80:0000:0000:0000:fd00:0183:0001:0001",
             "srcPackets" : 1,
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 100,
-            "totDataBytes" : 0,
+            "totDataBytes" : 8,
             "totPackets" : 1
          },
          "header" : {
@@ -201,13 +201,13 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 140,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 48,
             "srcIp" : "fe80:0000:0000:0000:018f:54ea:5196:2546",
             "srcPackets" : 1,
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 140,
-            "totDataBytes" : 0,
+            "totDataBytes" : 48,
             "totPackets" : 1
          },
          "header" : {
@@ -288,7 +288,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 334,
-            "dstDataBytes" : 326,
+            "dstDataBytes" : 254,
             "dstIp" : "192.168.168.1",
             "dstPackets" : 1,
             "dstPayload8" : "7442818000010001",
@@ -316,7 +316,7 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 125,
-            "srcDataBytes" : 117,
+            "srcDataBytes" : 45,
             "srcIp" : "192.168.3.129",
             "srcPackets" : 1,
             "srcPayload8" : "7442010000010000",
@@ -324,7 +324,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 459,
-            "totDataBytes" : 443,
+            "totDataBytes" : 299,
             "totPackets" : 2
          },
          "header" : {
@@ -369,14 +369,14 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 108,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 36,
             "srcIp" : "192.168.3.129",
             "srcPackets" : 1,
             "srcPort" : 0,
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 108,
-            "totDataBytes" : 0,
+            "totDataBytes" : 36,
             "totPackets" : 1
          },
          "header" : {
@@ -422,13 +422,13 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 376,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 176,
             "srcIp" : "fe80:0000:0000:0000:0045:f337:32b9:ac9b",
             "srcPackets" : 2,
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 376,
-            "totDataBytes" : 0,
+            "totDataBytes" : 176,
             "totPackets" : 2
          },
          "header" : {
@@ -603,7 +603,7 @@
          "body" : {
             "communityId" : "1:IJBdyTHm5HjzP+ZbQJKTvVS/E74=",
             "dstBytes" : 1103,
-            "dstDataBytes" : 1087,
+            "dstDataBytes" : 903,
             "dstIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
             "dstPackets" : 2,
             "dstPayload8" : "5349502f322e3020",
@@ -634,14 +634,14 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 1629,
-            "srcDataBytes" : 1613,
+            "srcDataBytes" : 1429,
             "srcIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
             "srcPackets" : 2,
             "srcPayload8" : "5355425343524942",
             "srcPort" : 5060,
             "timestamp" : "SET",
             "totBytes" : 2732,
-            "totDataBytes" : 2700,
+            "totDataBytes" : 2332,
             "totPackets" : 4
          },
          "header" : {
@@ -754,7 +754,7 @@
          "body" : {
             "communityId" : "1:vbXa6H6s9So2GdvW+RtdVE26Ixg=",
             "dstBytes" : 1822,
-            "dstDataBytes" : 1718,
+            "dstDataBytes" : 522,
             "dstIp" : "fd00:0183:0001:0001:1886:9040:8605:32b8",
             "dstPackets" : 13,
             "dstPayload8" : "80660000000000a0",
@@ -830,14 +830,14 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 2016,
-            "srcDataBytes" : 1904,
+            "srcDataBytes" : 616,
             "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
             "srcPackets" : 14,
             "srcPayload8" : "80e652d84bcad9ca",
             "srcPort" : 19956,
             "timestamp" : "SET",
             "totBytes" : 3838,
-            "totDataBytes" : 3622,
+            "totDataBytes" : 1138,
             "totPackets" : 27
          },
          "header" : {
@@ -918,7 +918,7 @@
                "statusCnt" : 1
             },
             "dstBytes" : 334,
-            "dstDataBytes" : 326,
+            "dstDataBytes" : 254,
             "dstIp" : "192.168.168.1",
             "dstPackets" : 1,
             "dstPayload8" : "c2b1818000010001",
@@ -946,7 +946,7 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "srcBytes" : 125,
-            "srcDataBytes" : 117,
+            "srcDataBytes" : 45,
             "srcIp" : "192.168.3.129",
             "srcPackets" : 1,
             "srcPayload8" : "c2b1010000010000",
@@ -954,7 +954,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 459,
-            "totDataBytes" : 443,
+            "totDataBytes" : 299,
             "totPackets" : 2
          },
          "header" : {
@@ -995,14 +995,14 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 412,
-            "srcDataBytes" : 388,
+            "srcDataBytes" : 112,
             "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
             "srcPackets" : 3,
             "srcPayload8" : "81c8000c6399bbc1",
             "srcPort" : 19957,
             "timestamp" : "SET",
             "totBytes" : 412,
-            "totDataBytes" : 388,
+            "totDataBytes" : 112,
             "totPackets" : 3
          },
          "header" : {
@@ -1050,13 +1050,13 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 526,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 250,
             "srcIp" : "fd01:0000:0000:0000:0000:0000:0000:0183",
             "srcPackets" : 3,
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 526,
-            "totDataBytes" : 0,
+            "totDataBytes" : 250,
             "totPackets" : 3
          },
          "header" : {

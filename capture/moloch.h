@@ -497,6 +497,7 @@ struct moloch_pcap_sf_pkthdr {
 #define MOLOCH_PACKET_TUNNEL_MPLS   0x04
 #define MOLOCH_PACKET_TUNNEL_PPP    0x08
 #define MOLOCH_PACKET_TUNNEL_GTP    0x10
+#define MOLOCH_PACKET_TUNNEL_VXLAN  0x20
 
 typedef struct molochpacket_t
 {
@@ -520,7 +521,7 @@ typedef struct molochpacket_t
     uint8_t        v6:1;           // v6 or not
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
-    uint8_t        tunnel:5;       // tunnel type
+    uint8_t        tunnel:6;       // tunnel type
 } MolochPacket_t;
 
 typedef struct

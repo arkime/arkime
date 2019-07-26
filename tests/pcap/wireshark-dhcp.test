@@ -53,7 +53,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 628,
-            "srcDataBytes" : 612,
+            "srcDataBytes" : 544,
             "srcIp" : "0.0.0.0",
             "srcMac" : [
                "00:0b:82:01:fc:42"
@@ -68,7 +68,7 @@
             "srcPort" : 68,
             "timestamp" : "SET",
             "totBytes" : 628,
-            "totDataBytes" : 612,
+            "totDataBytes" : 544,
             "totPackets" : 2
          },
          "header" : {
@@ -136,7 +136,7 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "srcBytes" : 684,
-            "srcDataBytes" : 668,
+            "srcDataBytes" : 600,
             "srcIp" : "192.168.0.1",
             "srcMac" : [
                "00:08:74:ad:f1:9b"
@@ -152,7 +152,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 684,
-            "totDataBytes" : 668,
+            "totDataBytes" : 600,
             "totPackets" : 2
          },
          "header" : {

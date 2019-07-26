@@ -27,7 +27,7 @@
             },
             "dstASN" : "AS46636 NatCoWeb Corp.",
             "dstBytes" : 73,
-            "dstDataBytes" : 65,
+            "dstDataBytes" : 31,
             "dstGEO" : "US",
             "dstIp" : "204.62.14.153",
             "dstMac" : [
@@ -64,7 +64,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS203476 GANDI SAS",
             "srcBytes" : 165,
-            "srcDataBytes" : 157,
+            "srcDataBytes" : 123,
             "srcGEO" : "FR",
             "srcIp" : "217.70.190.232",
             "srcMac" : [
@@ -83,7 +83,7 @@
             "srcRIR" : "RIPE",
             "timestamp" : "SET",
             "totBytes" : 238,
-            "totDataBytes" : 222,
+            "totDataBytes" : 154,
             "totPackets" : 2
          },
          "header" : {

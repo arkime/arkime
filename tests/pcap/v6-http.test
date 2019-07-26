@@ -101,7 +101,7 @@
             "protocolCnt" : 1,
             "segmentCnt" : 1,
             "srcBytes" : 2838,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 1056,
             "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
             "srcMac" : [
                "00:11:25:82:95:b5"
@@ -115,7 +115,7 @@
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 2838,
-            "totDataBytes" : 0,
+            "totDataBytes" : 1056,
             "totPackets" : 33
          },
          "header" : {
@@ -164,7 +164,7 @@
             "protocolCnt" : 1,
             "segmentCnt" : 1,
             "srcBytes" : 180,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 56,
             "srcIp" : "fe80:0000:0000:0000:02d0:09ff:fee3:e8de",
             "srcMac" : [
                "00:d0:09:e3:e8:de"
@@ -178,7 +178,7 @@
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 180,
-            "totDataBytes" : 0,
+            "totDataBytes" : 56,
             "totPackets" : 2
          },
          "header" : {
@@ -225,7 +225,7 @@
             "protocolCnt" : 1,
             "segmentCnt" : 1,
             "srcBytes" : 78,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 24,
             "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "00:d0:09:e3:e8:de"
@@ -239,7 +239,7 @@
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 78,
-            "totDataBytes" : 0,
+            "totDataBytes" : 24,
             "totPackets" : 1
          },
          "header" : {
@@ -315,7 +315,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS4589 EASYNET Easynet Global Services",
             "srcBytes" : 1782,
-            "srcDataBytes" : 1718,
+            "srcDataBytes" : 1286,
             "srcGEO" : "GB",
             "srcIp" : "2001:06f8:102d:0000:1033:0c4c:7e57:b19e",
             "srcMac" : [
@@ -331,7 +331,7 @@
             "srcPort" : 5353,
             "timestamp" : "SET",
             "totBytes" : 1782,
-            "totDataBytes" : 1718,
+            "totDataBytes" : 1286,
             "totPackets" : 8
          },
          "header" : {
@@ -378,7 +378,7 @@
             "protocolCnt" : 1,
             "segmentCnt" : 1,
             "srcBytes" : 110,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 56,
             "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
             "srcMac" : [
                "00:11:25:82:95:b5"
@@ -392,7 +392,7 @@
             "srcPort" : 0,
             "timestamp" : "SET",
             "totBytes" : 110,
-            "totDataBytes" : 0,
+            "totDataBytes" : 56,
             "totPackets" : 1
          },
          "header" : {

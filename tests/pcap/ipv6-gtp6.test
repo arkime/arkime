@@ -1,0 +1,163 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:mNf0yqDrqQxOfOhpjw7hkxjMLNA=",
+            "dns" : {
+               "ASN" : [
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---"
+               ],
+               "GEO" : [
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---",
+                  "---"
+               ],
+               "RIR" : [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+               ],
+               "host" : [
+                  "xxxxx7.x.xxxxxx8.com",
+                  "xxxxxx5.xxxxxxx6.com",
+                  "xxxxxxx9.xxxxxx8.com"
+               ],
+               "hostCnt" : 3,
+               "ip" : [
+                  "10.1.10.182",
+                  "10.1.224.70",
+                  "10.1.233.134",
+                  "10.1.9.134",
+                  "10.1.9.166",
+                  "10.1.10.134",
+                  "10.1.224.118",
+                  "10.1.10.166",
+                  "10.1.224.86",
+                  "10.1.233.150",
+                  "10.1.233.182",
+                  "10.1.9.150",
+                  "10.1.9.182",
+                  "10.1.10.150",
+                  "10.1.224.102"
+               ],
+               "ipCnt" : 15,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "A"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "1111:2222:3333:4444:5555:8888:a8ac:7bc0",
+            "dstMac" : [
+               "2c:21:72:00:00:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 57030,
+            "fileId" : [],
+            "firstPacket" : 1513078266494,
+            "ipProtocol" : 17,
+            "lastPacket" : 1513078266494,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               470
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "udp",
+               "gtp",
+               "dns"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 454,
+            "srcDataBytes" : 332,
+            "srcIp" : "1111:2222:3333:4444:5555:7777:0000:0000",
+            "srcMac" : [
+               "00:25:ba:00:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Alcatel-Lucent IPD"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "9d46818000010011",
+            "srcPort" : 53,
+            "timestamp" : "SET",
+            "totBytes" : 454,
+            "totDataBytes" : 332,
+            "totPackets" : 1,
+            "vlan" : [
+               2048
+            ],
+            "vlanCnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-171212",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

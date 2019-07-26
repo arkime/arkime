@@ -43,7 +43,7 @@
             "protocolCnt" : 1,
             "segmentCnt" : 1,
             "srcBytes" : 196,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 128,
             "srcIp" : "192.168.177.160",
             "srcMac" : [
                "00:21:28:05:29:ba"
@@ -58,7 +58,7 @@
             "srcRIR" : "ARIN",
             "timestamp" : "SET",
             "totBytes" : 196,
-            "totDataBytes" : 0,
+            "totDataBytes" : 128,
             "totPackets" : 2
          },
          "header" : {

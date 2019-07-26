@@ -5072,7 +5072,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     delete query.sort;
     delete query.aggregations;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
       query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
     } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
       query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
@@ -6610,7 +6610,11 @@ function buildHuntOptions (hunt) {
   };
 
   if (hunt.searchType === 'regex' || hunt.searchType === 'hexregex') {
-    options.regex = new RegExp(hunt.search);
+    try {
+      options.regex = new RegExp(hunt.search);
+    } catch (e) {
+      pauseHuntJobWithError(hunt.huntId, hunt, { value: `Hunt error with regex: ${e}` });
+    }
   }
 
   return options;

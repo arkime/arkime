@@ -4,7 +4,7 @@
          "body" : {
             "dstASN" : "AS35994 Akamai Technologies, Inc.",
             "dstBytes" : 328,
-            "dstDataBytes" : 0,
+            "dstDataBytes" : 160,
             "dstGEO" : "US",
             "dstIp" : "23.0.0.3",
             "dstMac" : [
@@ -71,7 +71,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS35994 Akamai Technologies, Inc.",
             "srcBytes" : 328,
-            "srcDataBytes" : 0,
+            "srcDataBytes" : 160,
             "srcGEO" : "US",
             "srcIp" : "23.0.0.2",
             "srcMac" : [
@@ -92,7 +92,7 @@
             "tagsCnt" : 1,
             "timestamp" : "SET",
             "totBytes" : 656,
-            "totDataBytes" : 0,
+            "totDataBytes" : 320,
             "totPackets" : 4
          },
          "header" : {

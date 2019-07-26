@@ -153,6 +153,7 @@ my $pwd = "*/pcap";
     ok($info->{success}, "column: delete found");
 
     sleep 1;
+    esGet("/_refresh");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");

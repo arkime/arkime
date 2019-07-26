@@ -219,7 +219,7 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   for(var i = 0; i < json.length; i++) {
     // Walk the key path
     let key = json[i];
-    for (var j = 0; key && j < keyColumn.length; j++) {
+    for (let j = 0; key && j < keyColumn.length; j++) {
       key = key[keyColumn[j]];
     }
 
@@ -229,10 +229,10 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
 
     var args = [];
     // Check each shortcut
-    for (var k = 0; k < shortcuts.length; k++) {
+    for (let k = 0; k < shortcuts.length; k++) {
       var obj = json[i];
       // Walk the shortcut path
-      for (var j = 0; obj && j < shortcuts[k].length; j++) {
+      for (let j = 0; obj && j < shortcuts[k].length; j++) {
         obj = obj[shortcuts[k][j]];
       }
       if (obj !== undefined && obj !== null) {

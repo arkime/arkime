@@ -57,7 +57,7 @@
             "segmentCnt" : 1,
             "srcASN" : "AS0000 This is neat",
             "srcBytes" : 74,
-            "srcDataBytes" : 66,
+            "srcDataBytes" : 28,
             "srcGEO" : "RU",
             "srcIp" : "10.0.0.1",
             "srcMac" : [
@@ -97,7 +97,7 @@
             },
             "timestamp" : "SET",
             "totBytes" : 74,
-            "totDataBytes" : 66,
+            "totDataBytes" : 28,
             "totPackets" : 1,
             "vlan" : [
                500
