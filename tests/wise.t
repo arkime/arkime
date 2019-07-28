@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 74;
+use Test::More tests => 79;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -39,6 +39,31 @@ eq_or_diff($wise, '[{field: "tags", len: 10, value: "ipwisecsv"}]
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.0.0.1")->content;
 eq_or_diff($wise, '[]
 ', "All 10.0.0.1");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:a9b3")->content;
+eq_or_diff($wise, '[{field: "tags", len: 13, value: "ipwise-array"},
+{field: "tags", len: 11, value: "ipwisejson"}]
+');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:0001")->content;
+eq_or_diff($wise, '[{field: "tags", len: 14, value: "ipwise-normal"},
+{field: "tags", len: 11, value: "ipwisejson"}]
+');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:0002")->content;
+eq_or_diff($wise, '[{field: "tags", len: 13, value: "ipwise-comma"},
+{field: "tags", len: 11, value: "ipwisejson"}]
+');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.20.30.50")->content;
+eq_or_diff($wise, '[{field: "tags", len: 13, value: "ipwise-array"},
+{field: "tags", len: 11, value: "ipwisejson"}]
+');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.20.30.51")->content;
+eq_or_diff($wise, '[{field: "tags", len: 13, value: "ipwise-comma"},
+{field: "tags", len: 11, value: "ipwisejson"}]
+');
 
 # IP File Dump
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content . "]";

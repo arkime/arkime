@@ -241,7 +241,13 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
       }
     }
 
-    setCb(key, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+    if (Array.isArray(key)) {
+      key.forEach((part) => {
+        setCb(part, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+      });
+    } else {
+      setCb(key, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+    }
   }
   endCb(null);
 };
