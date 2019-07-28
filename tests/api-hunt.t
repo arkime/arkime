@@ -111,11 +111,15 @@ my $hToken = getTokenCookie('huntuser');
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
+  sleep(1);
+  esGet("/_flush");
+  esGet("/_refresh");
+
   my $id2 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  sleep(2);
+  sleep(1);
   esGet("/_flush");
   esGet("/_refresh");
 

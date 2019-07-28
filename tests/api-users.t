@@ -149,6 +149,9 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
+    sleep 1;
+    esGet("/_refresh");
+
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");
 
