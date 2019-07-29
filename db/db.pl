@@ -1923,6 +1923,9 @@ sub dbCheck {
              );
         exit (1)
     }
+    if ($main::esVersion < 60800) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.x is recommended\n");
+    }
 
     if ($main::esVersion >= 70000) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which is experimental\n");
@@ -2790,6 +2793,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${PREFIX}sessions2_template", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}fields_v1", 1);
+    esDelete("/${PREFIX}fields_v2", 1);
     esDelete("/${PREFIX}fields_v3", 1);
     esDelete("/${PREFIX}history_v1-*", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
