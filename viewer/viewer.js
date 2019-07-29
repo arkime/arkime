@@ -3233,6 +3233,22 @@ app.get('/esindices/list', recordResponseTime, function(req, res) {
       findices = indices;
     }
 
+    // Add more fields from indicesSettings
+    for (const index of findices) {
+      if (!indicesSettings[index.index]) { continue; }
+
+      if (indicesSettings[index.index].settings['index.routing.allocation.require.molochtype']) {
+        index.molochtype = indicesSettings[index.index].settings['index.routing.allocation.require.molochtype'];
+      }
+
+      if (indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node']) {
+        index.shardsPerNode = indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node'];
+      }
+
+      index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
+      index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
+    }
+
     // sorting
     const sortField = req.query.sortField || 'index';
     if (sortField === 'index' || sortField === 'status' || sortField === 'health') {
@@ -3249,22 +3265,7 @@ app.get('/esindices/list', recordResponseTime, function(req, res) {
       }
     }
 
-    for (const index of findices) {
-      if (!indicesSettings[index.index]) { continue; }
-
-      if (indicesSettings[index.index].settings['index.routing.allocation.require.molochtype']) {
-        index.molochtype = indicesSettings[index.index].settings['index.routing.allocation.require.molochtype'];
-      }
-
-      if (indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node']) {
-        index.shardsPerNode = indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node'];
-      }
-
-      index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
-      index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
-    }
-
-
+    // send result
     return res.send({
       recordsTotal: indices.length,
       recordsFiltered: findices.length,
