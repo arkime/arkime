@@ -1,0 +1,14 @@
+[
+  {
+      "ip": "2001:16d8:ffce:0010:aca8:353c:291d:0001",
+      "tag": "ipwise-normal"
+  },
+  {
+      "ip": ["2001:16d8:ffce:0010:aca8:353c:291d:a9b3", "10.20.30.50"],
+      "tag": "ipwise-array"
+  },
+  {
+      "ip": "2001:16d8:ffce:0010:aca8:353c:291d:0002,10.20.30.51",
+      "tag": "ipwise-comma"
+  }
+]
