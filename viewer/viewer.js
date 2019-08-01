@@ -3700,15 +3700,15 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
       });
     }
 
-    if (req.query.sortField) {
-      if (req.query.sortField === 'nodeName') {
+    if (req.query.sortField && stats.length > 1) {
+      let field = req.query.sortField === 'nodeName'?'name':req.query.sortField;
+      if (typeof(stats[0][field]) === 'string') {
         if (req.query.desc === 'true') {
-          stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); });
+          stats = stats.sort(function(a,b){ return b[field].localeCompare(a[field]); });
         } else {
-          stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); });
+          stats = stats.sort(function(a,b){ return a[field].localeCompare(b[field]); });
         }
       } else {
-        var field = req.query.sortField;
         if (req.query.desc === 'true') {
           stats = stats.sort(function(a,b){ return b[field] - a[field]; });
         } else {
