@@ -478,6 +478,7 @@ void moloch_config_load()
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
     config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", " /data/moloch/parsers ; ./parsers ");
+    config.caTrustFile      = moloch_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = moloch_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);

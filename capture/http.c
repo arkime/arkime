@@ -208,6 +208,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
+    if (config.caTrustFile) {
+        curl_easy_setopt(easy, CURLOPT_CAINFO, config.caTrustFile);
+    }
+
     // Send client certs if so configured
     if(server->clientAuth) {
        curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
