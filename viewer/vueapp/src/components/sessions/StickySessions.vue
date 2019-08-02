@@ -83,8 +83,8 @@
                   <span class="fa fa-clock-o fa-fw">
                   </span>
                   <em>
-                    {{ session.firstPacket / 1000 | timezoneDateString(timezone, 'YYYY/MM/DD HH:mm:ss z') }} -
-                    {{ session.lastPacket / 1000 | timezoneDateString(timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                    {{ session.firstPacket | timezoneDateString(timezone, ms) }} -
+                    {{ session.lastPacket | timezoneDateString(timezone, ms) }}
                   </em>
                   <br>
                   <strong>{{ session.srcIp }}</strong>:{{ session.srcPort }} <strong>{{ session.srcGEO }}</strong> -
@@ -110,7 +110,7 @@ let oldLength = 1;
 
 export default {
   name: 'MolochStickySessions',
-  props: [ 'sessions', 'timezone' ],
+  props: [ 'sessions', 'timezone', 'ms' ],
   data: function () {
     return {
       open: false,

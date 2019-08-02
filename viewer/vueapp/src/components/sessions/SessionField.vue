@@ -215,9 +215,9 @@ export default {
           case 'seconds':
             qVal = val; // save original value as the query value
             val = this.$options.filters.timezoneDateString(
-              Math.floor(val / 1000),
+              val,
               this.timezone || this.$store.state.user.settings.timezone,
-              'YYYY/MM/DD HH:mm:ss z'
+              this.$store.state.user.settings.ms
             );
 
             if (this.expr !== 'starttime' && this.expr !== 'stoptime') {

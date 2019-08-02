@@ -176,7 +176,7 @@
                 <td class="no-wrap">
                   <div v-if="listUser.lastUsed"
                     class="cell-text">
-                    {{ listUser.lastUsed / 1000 | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                    {{ listUser.lastUsed | timezoneDateString(user.settings.timezone, user.settings.ms) }}
                   </div>
                   <div v-else
                     class="cell-text">

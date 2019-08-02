@@ -29,7 +29,7 @@
 
     <!-- loading overlay -->
     <moloch-loading
-      v-if="loading && !error">
+      v-if="loading">
     </moloch-loading> <!-- /loading overlay -->
 
     <!-- page error -->
@@ -41,7 +41,7 @@
 
     <!-- content -->
     <div class="settings-content row"
-       v-if="!loading && !error">
+       v-if="!loading && !error && settings">
 
       <!-- navigation -->
       <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
@@ -142,25 +142,37 @@
                     @change="updateTime"
                     v-model="settings.timezone">
                     <b-radio value="local"
-                      v-b-tooltip.hover
                       class="btn-radio">
                       Local
                     </b-radio>
                     <b-radio value="localtz"
-                      v-b-tooltip.hover
                       class="btn-radio">
                       Local + Timezone
                     </b-radio>
                     <b-radio value="gmt"
-                      v-b-tooltip.hover
                       class="btn-radio">
                       UTC
                     </b-radio>
                   </b-form-radio-group>
                 </b-form-group>
               </div>
+              <div class="btn-group">
+                <b-form-group>
+                  <b-form-checkbox
+                    button
+                    size="sm"
+                    v-b-tooltip.hover
+                    class="btn-checkbox"
+                    @change="updateTime"
+                    v-model="settings.ms"
+                    :active="settings.ms"
+                    title="(for session and packet timestamps only)">
+                    milliseconds
+                  </b-form-checkbox>
+                </b-form-group>
+              </div>
               <label class="ml-4 font-weight-bold text-theme-primary">
-                {{ date | timezoneDateString(settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                {{ date | timezoneDateString(settings.timezone, settings.ms) }}
               </label>
             </div>
           </div> <!-- /timezone -->
@@ -2247,47 +2259,6 @@ export default {
       .then((response) => {
         this.molochClusters = response;
       });
-
-    // get fields from field service then get sessionsNew state
-    FieldService.get(true)
-      .then((response) => {
-        this.fields = JSON.parse(JSON.stringify(response));
-        this.fieldsPlus = JSON.parse(JSON.stringify(response));
-        this.fieldsPlus.push({
-          dbField: 'ip.dst:port',
-          exp: 'ip.dst:port',
-          help: 'Destination IP:Destination Port',
-          group: 'general',
-          friendlyName: 'Dst IP:Dst Port'
-        });
-
-        // add custom columns to the fields array
-        for (let key in customCols) {
-          if (customCols.hasOwnProperty(key)) {
-            this.fields.push(customCols[key]);
-          }
-        }
-
-        // build fields map for quick lookup by dbField
-        this.fieldsMap = {};
-        for (let i = 0, len = this.fields.length; i < len; ++i) {
-          let field = this.fields[i];
-          this.fieldsMap[field.dbField] = field;
-        }
-
-        UserService.getState('sessionsNew')
-          .then((response) => {
-            this.setupColumns(response.data.visibleHeaders);
-            // if the sort column setting does not match any of the visible
-            // headers, set the sort column setting to last
-            if (response.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
-              this.settings.sortColumn = 'last';
-            }
-          })
-          .catch(() => {
-            this.setupColumns(['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']);
-          });
-      });
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -2334,7 +2305,6 @@ export default {
     /* updates the displayed date for the timzeone setting
      * triggered by the user changing the timezone setting */
     updateTime: function (newTimezone) {
-      this.settings.timezone = newTimezone;
       this.tick();
       this.update();
     },
@@ -2359,21 +2329,21 @@ export default {
       this.update();
     },
     spiGraphFieldSelected: function (field) {
-      this.spiGraphTypeahead = field.friendlyName;
-      this.settings.spiGraph = field.dbField;
-      this.spiGraphField = field;
+      this.$set(this, 'spiGraphField', field);
+      this.$set(this.settings, 'spiGraph', field.dbField);
+      this.$set(this, 'spiGraphTypeahead', field.friendlyName);
       this.update();
     },
     connSrcFieldSelected: function (field) {
-      this.connSrcFieldTypeahead = field.friendlyName;
-      this.settings.connSrcField = field.dbField;
-      this.connSrcField = field;
+      this.$set(this, 'connSrcField', field);
+      this.$set(this.settings, 'connSrcField', field.dbField);
+      this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
       this.update();
     },
     connDstFieldSelected: function (field) {
-      this.connDstFieldTypeahead = field.friendlyName;
-      this.settings.connDstField = field.dbField;
-      this.connDstField = field;
+      this.$set(this, 'connDstField', field);
+      this.$set(this.settings, 'connDstField', field.dbField);
+      this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
       this.update();
     },
     /* starts the clock for the timezone setting */
@@ -2385,7 +2355,7 @@ export default {
     },
     /* updates the date and format for the timezone setting */
     tick: function () {
-      this.date = Math.floor(new Date() / 1000);
+      this.date = new Date();
       if (this.settings.timezone === 'gmt') {
         this.dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\'';
       } else {
@@ -3065,31 +3035,31 @@ export default {
     getSettings: function () {
       UserService.getSettings(this.userId)
         .then((response) => {
-          // set defaults so that radio buttons show the default value
-          if (!response.timezone) { response.timezone = 'local'; }
-          if (!response.detailFormat) { response.detailFormat = 'last'; }
-          if (!response.numPackets) { response.numPackets = 'last'; }
-          if (!response.showTimestamps) { response.showTimestamps = 'last'; }
-          if (!response.manualQuery) { response.manualQuery = false; }
-
-          // dbField is saved in settings, but show the field's friendlyName
-          for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
-            let field = this.fieldsPlus[i];
-            if (response.spiGraph === field.dbField) {
-              this.spiGraphField = field;
-              this.spiGraphTypeahead = field.friendlyName;
-            }
-            if (response.connSrcField === field.dbField) {
-              this.connSrcField = field;
-              this.connSrcFieldTypeahead = field.friendlyName;
-            }
-            if (response.connDstField === field.dbField) {
-              this.connDstField = field;
-              this.connDstFieldTypeahead = field.friendlyName;
-            }
+          // set the user settings individually
+          for (let key in response) {
+            this.$set(this.settings, key, response[key]);
           }
 
-          this.settings = response;
+          // set defaults if a user setting doesn't exists
+          // so that radio buttons show the default value
+          if (!response.timezone) {
+            this.$set(this.settings, 'timezone', 'local');
+          }
+          if (!response.detailFormat) {
+            this.$set(this.settings, 'detailFormat', 'last');
+          }
+          if (!response.numPackets) {
+            this.$set(this.settings, 'numPackets', 'last');
+          }
+          if (!response.showTimestamps) {
+            this.$set(this.settings, 'showTimestamps', 'last');
+          }
+          if (!response.manualQuery) {
+            this.$set(this.settings, 'manualQuery', false);
+          }
+
+          this.getFields();
+
           this.loading = false;
 
           this.setTheme();
@@ -3106,6 +3076,72 @@ export default {
             this.error = error.text;
           }
           this.displayName = '';
+        });
+    },
+    /* retrieves moloch fields and visible column headers for sessions table
+     * adds custom columns to fields
+     * sets user settings for spigraph field & connections src/dst fields
+     * creates fields map for quick lookups
+     */
+    getFields: function () {
+      // get fields from field service then get sessionsNew state
+      FieldService.get(true)
+        .then((response) => {
+          this.fields = JSON.parse(JSON.stringify(response));
+          this.fieldsPlus = JSON.parse(JSON.stringify(response));
+          this.fieldsPlus.push({
+            dbField: 'ip.dst:port',
+            exp: 'ip.dst:port',
+            help: 'Destination IP:Destination Port',
+            group: 'general',
+            friendlyName: 'Dst IP:Dst Port'
+          });
+
+          // add custom columns to the fields array
+          for (let key in customCols) {
+            if (customCols.hasOwnProperty(key)) {
+              this.fields.push(customCols[key]);
+            }
+          }
+
+          // update the user settings for spigraph field & connections src/dst fields
+          // NOTE: dbField is saved in settings, but show the field's friendlyName
+          for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
+            let field = this.fieldsPlus[i];
+            if (this.settings.spiGraph === field.dbField) {
+              this.$set(this, 'spiGraphField', field);
+              this.$set(this, 'spiGraphTypeahead', field.friendlyName);
+            }
+            if (this.settings.connSrcField === field.dbField) {
+              this.$set(this, 'connSrcField', field);
+              this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
+            }
+            if (this.settings.connDstField === field.dbField) {
+              this.$set(this, 'connDstField', field);
+              this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
+            }
+          }
+
+          // build fields map for quick lookup by dbField
+          this.fieldsMap = {};
+          for (let i = 0, len = this.fields.length; i < len; ++i) {
+            let field = this.fields[i];
+            this.fieldsMap[field.dbField] = field;
+          }
+
+          // get the visible headers for the sessions table configuration
+          UserService.getState('sessionsNew')
+            .then((response) => {
+              this.setupColumns(response.data.visibleHeaders);
+              // if the sort column setting does not match any of the visible
+              // headers, set the sort column setting to last
+              if (response.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
+                this.settings.sortColumn = 'last';
+              }
+            })
+            .catch(() => {
+              this.setupColumns(['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']);
+            });
         });
     },
     /* retrieves the specified user's views */

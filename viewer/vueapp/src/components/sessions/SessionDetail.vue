@@ -974,9 +974,9 @@ export default {
               timeEl = timeEl.getElementsByClassName('ts-value');
               if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
                 let time = this.$options.filters.timezoneDateString(
-                  Math.floor(value / 1000),
+                  parseInt(value),
                   this.user.settings.timezone,
-                  'YYYY/MM/DD HH:mm:ss.sss z'
+                  this.user.settings.ms
                 );
                 timeEl[0].innerHTML = time;
               }
