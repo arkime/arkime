@@ -154,7 +154,7 @@ Vue.filter('humanReadableNumber', (num) => {
 Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
   let format = 'YYYY/MM/DD HH:mm:ss z';
 
-  if (showMs) { format = 'YYYY/MM/DD HH:mm:ss:SSS z'; }
+  if (showMs) { format = 'YYYY/MM/DD HH:mm:ss.SSS z'; }
 
   if (timezone === 'gmt') {
     return moment.tz(ms, 'utc').format(format);
