@@ -807,6 +807,10 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
+    if (config.caTrustFile) {
+        curl_easy_setopt(request->easy, CURLOPT_CAINFO, config.caTrustFile);
+    }
+
     // Send client certs if so configured
     if(server->clientAuth) {
        curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
