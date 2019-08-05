@@ -122,7 +122,7 @@ LOCAL MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct i
 }
 
 /******************************************************************************/
-LOCAL void moloch_db_js0n_str(BSB * _Nonnull bsb, unsigned char * _Nonnull in, gboolean utf8)
+LOCAL void moloch_db_js0n_str(BSB * bsb, unsigned char * in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
