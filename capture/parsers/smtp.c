@@ -598,7 +598,6 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 int cpos = colon - line->str + 1;
                 moloch_field_string_add(headerField, session, lower, colon - line->str, TRUE);
                 smtp_email_add_value(session, (long)headerValue, line->str + cpos , line->len - cpos);
-                is_header_value_consumed = TRUE;
             }
 
             if (pluginsCbs & MOLOCH_PLUGIN_SMTP_OH) {

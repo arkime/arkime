@@ -32,7 +32,7 @@ do {                                              \
 
 #define BSB_EXPORT_u08(b, x)                      \
 do {                                              \
-    if ((b).ptr + 1 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 1 <= (b).end) {      \
         *(((b).ptr)++) = (unsigned char)x;        \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -40,7 +40,7 @@ do {                                              \
 
 #define BSB_EXPORT_u16(b, x)                      \
 do {                                              \
-    if ((b).ptr + 2 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
         uint16_t t = (uint16_t)x;                 \
         *(((b).ptr)++) = (t & 0xff00) >> 8;       \
         *(((b).ptr)++) = (t & 0x00ff);            \
@@ -50,7 +50,7 @@ do {                                              \
 
 #define BSB_EXPORT_u32(b, x)                      \
 do {                                              \
-    if ((b).ptr + 4 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
         uint32_t t = x;                           \
         *(((b).ptr)++) = (t & 0xff000000) >> 24;  \
         *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
@@ -149,7 +149,7 @@ do {                                              \
 
 #define BSB_IMPORT_u08(b, x)                      \
 do {                                              \
-    if ((b).ptr + 1 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 1 <= (b).end) {      \
         x = *(((b).ptr)++);                       \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -157,7 +157,7 @@ do {                                              \
 
 #define BSB_IMPORT_u16(b, x)                      \
 do {                                              \
-    if ((b).ptr + 2 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
         x = ((uint16_t)((b).ptr)[0]) << 8 |       \
             ((uint16_t)((b).ptr)[1]);             \
         (b).ptr += 2;                             \
@@ -167,7 +167,7 @@ do {                                              \
 
 #define BSB_IMPORT_u24(b, x)                      \
 do {                                              \
-    if ((b).ptr + 3 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 3 <= (b).end) {      \
         x = ((uint32_t)((b).ptr)[0]) << 16 |      \
             ((uint32_t)((b).ptr)[1]) << 8  |      \
             ((uint32_t)((b).ptr)[2]);             \
@@ -178,7 +178,7 @@ do {                                              \
 
 #define BSB_IMPORT_u32(b, x)                      \
 do {                                              \
-    if ((b).ptr + 4 <= (b).end) {                 \
+    if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
         x = ((uint32_t)((b).ptr)[0]) << 24 |      \
             ((uint32_t)((b).ptr)[1]) << 16 |      \
             ((uint32_t)((b).ptr)[2]) << 8  |      \
