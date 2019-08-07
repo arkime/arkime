@@ -42,6 +42,7 @@
         <moloch-sticky-sessions
           class="sticky-sessions"
           v-if="stickySessions.length"
+          :ms="user.settings.ms"
           :sessions="stickySessions"
           :timezone="user.settings.timezone"
           @closeSession="closeSession"

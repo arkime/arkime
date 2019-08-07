@@ -208,6 +208,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
+    if (config.caTrustFile) {
+        curl_easy_setopt(easy, CURLOPT_CAINFO, config.caTrustFile);
+    }
+
     // Send client certs if so configured
     if(server->clientAuth) {
        curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
@@ -801,6 +805,10 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     if (config.insecure) {
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
+    if (config.caTrustFile) {
+        curl_easy_setopt(request->easy, CURLOPT_CAINFO, config.caTrustFile);
     }
 
     // Send client certs if so configured

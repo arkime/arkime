@@ -122,7 +122,7 @@ LOCAL MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct i
 }
 
 /******************************************************************************/
-LOCAL void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
+LOCAL void moloch_db_js0n_str(BSB * bsb, unsigned char * in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
@@ -157,19 +157,16 @@ LOCAL void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
             } else if (utf8) {
                 if ((*in & 0xf0) == 0xf0) {
                     if (!in[1] || !in[2] || !in[3]) goto end;
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *in);
+                    BSB_EXPORT_ptr(*bsb, in, 4);
+                    in += 3;
                 } else if ((*in & 0xf0) == 0xe0) {
                     if (!in[1] || !in[2]) goto end;
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *in);
+                    BSB_EXPORT_ptr(*bsb, in, 3);
+                    in += 2;
                 } else if ((*in & 0xf0) == 0xd0) {
                     if (!in[1]) goto end;
-                    BSB_EXPORT_u08(*bsb, *(in++));
-                    BSB_EXPORT_u08(*bsb, *in);
+                    BSB_EXPORT_ptr(*bsb, in, 2);
+                    in += 1;
                 } else {
                     BSB_EXPORT_u08(*bsb, *in);
                 }

@@ -440,7 +440,7 @@ export default {
       this.initializeColResizable();
     },
     zeroColValues: function (column) {
-      this.$set(this.zeroedAt, column.id, Math.floor(new Date().getTime() / 1000));
+      this.$set(this.zeroedAt, column.id, new Date().getTime());
       this.$set(this.zeroMap, column.id, []);
       for (let i = 0; i < this.data.length; i++) {
         let data = this.data[i];

@@ -829,10 +829,11 @@ export default {
           if ((srcFieldIsTime && dataNode.type === 1) ||
             (dstFieldIsTime && dataNode.type === 2)) {
             dataNode.id = this.$options.filters.timezoneDateString(
-              Math.floor(dataNode.id / 1000),
+              dataNode.id,
               this.settings.timezone ||
                 this.$store.state.user.settings.timezone,
-              'YYYY/MM/DD HH:mm:ss z'
+              this.settings.ms ||
+                this.$store.state.user.settings.ms
             );
           }
         }

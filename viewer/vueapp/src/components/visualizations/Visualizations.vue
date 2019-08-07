@@ -532,8 +532,12 @@ export default {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
-            let val = this.$options.filters.commaString(Math.round(item.series.data[item.dataIndex][1] * 100) / 100);
-            let d = this.$options.filters.timezoneDateString(item.datapoint[0].toFixed(0) / 1000, this.timezone || 'local');
+            const val = this.$options.filters.commaString(
+              Math.round(item.series.data[item.dataIndex][1] * 100) / 100
+            );
+            const d = this.$options.filters.timezoneDateString(
+              item.datapoint[0].toFixed(0), this.timezone || 'local', false
+            );
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                 <strong>${type || ''}</strong>
@@ -599,9 +603,7 @@ export default {
           max: this.graphData.xmax || null,
           tickFormatter: (v, axis) => {
             return this.$options.filters.timezoneDateString(
-              Math.floor(v / 1000),
-              this.timezone,
-              'YYYY/MM/DD HH:mm:ss z'
+              v, this.timezone, false
             );
           }
         },

@@ -430,7 +430,7 @@
                       </span>&nbsp;
                       Created:
                       <strong>
-                        {{ runningJob.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                        {{ runningJob.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </strong>
                     </div>
                   </div>
@@ -441,7 +441,7 @@
                       </span>&nbsp;
                       Last Updated:
                       <strong>
-                        {{ runningJob.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                        {{ runningJob.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </strong>
                     </div>
                   </div>
@@ -490,9 +490,9 @@
                       <span class="fa fa-clock-o fa-fw">
                       </span>&nbsp;
                       The sessions query time range was from
-                      <strong>{{ runningJob.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                      <strong>{{ runningJob.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                       to
-                      <strong>{{ runningJob.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                      <strong>{{ runningJob.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                     </div>
                   </div>
                   <div v-if="runningJob.errors"
@@ -503,7 +503,7 @@
                       <span class="fa fa-exclamation-triangle">
                       </span>&nbsp;
                       <span v-if="error.time">
-                        {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </span>
                       <span v-if="error.node">
                         ({{ error.node }} node)
@@ -640,7 +640,7 @@
                 {{ job.notifier }}
               </td>
               <td>
-                {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
               </td>
               <td>
                 <span v-if="user.userId === job.userId || user.createEnabled">
@@ -708,7 +708,7 @@
                   <div class="col-12">
                     This hunt was last updated at:
                     <strong>
-                      {{ job.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      {{ job.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
                     </strong>
                   </div>
                 </div>
@@ -746,9 +746,9 @@
                 <div class="row">
                   <div class="col-12">
                     The sessions query time range was from
-                    <strong>{{ job.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    <strong>{{ job.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                     to
-                    <strong>{{ job.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                   </div>
                 </div>
                 <div v-if="job.errors"
@@ -759,7 +759,7 @@
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
                     <span v-if="error.time">
-                      {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
                     </span>
                     <span v-if="error.node">
                       ({{ error.node }} node)
@@ -947,7 +947,7 @@
                 {{ job.notifier }}
               </td>
               <td>
-                {{ job.created | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
               </td>
               <td>
                 <span v-if="user.userId === job.userId || user.createEnabled">
@@ -1005,7 +1005,7 @@
                   <div class="col-12">
                     This hunt was last updated at:
                     <strong>
-                      {{ job.lastUpdated | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      {{ job.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
                     </strong>
                   </div>
                 </div>
@@ -1043,9 +1043,9 @@
                 <div class="row">
                   <div class="col-12">
                     The sessions query time range was from
-                    <strong>{{ job.query.startTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    <strong>{{ job.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                     to
-                    <strong>{{ job.query.stopTime | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}</strong>
+                    <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                   </div>
                 </div>
                 <div v-if="job.errors"
@@ -1056,7 +1056,7 @@
                     <span class="fa fa-exclamation-triangle">
                     </span>&nbsp;
                     <span v-if="error.time">
-                      {{ error.time | timezoneDateString(user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z') }}
+                      {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
                     </span>
                     <span v-if="error.node">
                       ({{ error.node }} node)

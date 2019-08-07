@@ -103,7 +103,7 @@ export default {
       columns: [ // node stats table columns
         // default columns
         { id: 'nodeName', name: 'Node', sort: 'nodeName', width: 120, default: true, doStats: false },
-        { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.currentTime, this.user.settings.timezone, 'YYYY/MM/DD HH:mm:ss z'); } },
+        { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } },
         { id: 'monitoring', name: 'Sessions', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.monitoring); } },
         { id: 'freeSpaceM', name: 'Free Space', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + this.$options.filters.round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000); } },
         { id: 'cpu', name: 'CPU', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.round(item.cpu / 100.0, 1) + '%'; } },
