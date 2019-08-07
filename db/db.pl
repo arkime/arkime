@@ -1135,6 +1135,8 @@ sub queriesUpdate
 }
 
 ################################################################################
+# Create the template sessions use and update mapping of current sessions.
+# Not all fields need to be here, but the index will be created quicker if more are.
 sub sessions2Update
 {
     my $mapping = '
@@ -1180,118 +1182,906 @@ sub sessions2Update
         }
       }
     ],
-    "properties": {
-      "timestamp": {
-        "type": "date"
+    "properties" : {
+      "asset" : {
+        "type" : "keyword"
       },
-      "firstPacket": {
-        "type": "date"
+      "assetCnt" : {
+        "type" : "long"
       },
-      "lastPacket": {
-        "type": "date"
-      },
-      "packetPos": {
-        "type": "long",
-        "index": false
-      },
-      "packetLen": {
-        "type": "integer",
-        "index": false
-      },
-      "cert": {
-        "type": "object",
-        "properties": {
-          "notBefore": {
-            "type": "date"
+      "cert" : {
+        "properties" : {
+          "alt" : {
+            "type" : "keyword"
           },
-          "notAfter": {
-            "type": "date"
+          "altCnt" : {
+            "type" : "long"
+          },
+          "hash" : {
+            "type" : "keyword"
+          },
+          "issuerCN" : {
+            "type" : "keyword"
+          },
+          "issuerON" : {
+            "type" : "keyword"
+          },
+          "notAfter" : {
+            "type" : "date"
+          },
+          "notBefore" : {
+            "type" : "date"
+          },
+          "remainingDays" : {
+            "type" : "long"
+          },
+          "serial" : {
+            "type" : "keyword"
+          },
+          "subjectCN" : {
+            "type" : "keyword"
+          },
+          "subjectON" : {
+            "type" : "keyword"
+          },
+          "validDays" : {
+            "type" : "long"
           }
         }
       },
-      "dhcp": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "dhcp.hostTokens"
+      "certCnt" : {
+        "type" : "long"
+      },
+      "communityId" : {
+        "type" : "keyword"
+      },
+      "dhcp" : {
+        "properties" : {
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "dhcp.hostTokens"
+            ]
+          },
+          "hostCnt" : {
+            "type" : "long"
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "id" : {
+            "type" : "keyword"
+          },
+          "idCnt" : {
+            "type" : "long"
+          },
+          "mac" : {
+            "type" : "keyword"
+          },
+          "macCnt" : {
+            "type" : "long"
+          },
+          "oui" : {
+            "type" : "keyword"
+          },
+          "ouiCnt" : {
+            "type" : "long"
+          },
+          "type" : {
+            "type" : "keyword"
+          },
+          "typeCnt" : {
+            "type" : "long"
           }
         }
       },
-      "dns": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "dns.hostTokens"
+      "dns" : {
+        "properties" : {
+          "ASN" : {
+            "type" : "keyword"
+          },
+          "GEO" : {
+            "type" : "keyword"
+          },
+          "RIR" : {
+            "type" : "keyword"
+          },
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "dns.hostTokens"
+            ]
+          },
+          "hostCnt" : {
+            "type" : "long"
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "ip" : {
+            "type" : "ip"
+          },
+          "ipCnt" : {
+            "type" : "long"
+          },
+          "opcode" : {
+            "type" : "keyword"
+          },
+          "opcodeCnt" : {
+            "type" : "long"
+          },
+          "puny" : {
+            "type" : "keyword"
+          },
+          "punyCnt" : {
+            "type" : "long"
+          },
+          "qc" : {
+            "type" : "keyword"
+          },
+          "qcCnt" : {
+            "type" : "long"
+          },
+          "qt" : {
+            "type" : "keyword"
+          },
+          "qtCnt" : {
+            "type" : "long"
+          },
+          "status" : {
+            "type" : "keyword"
+          },
+          "statusCnt" : {
+            "type" : "long"
           }
         }
       },
-      "email": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "email.hostTokens"
-          }
-        }
+      "dstASN" : {
+        "type" : "keyword"
       },
-      "http": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "http.hostTokens"
+      "dstBytes" : {
+        "type" : "long"
+      },
+      "dstDataBytes" : {
+        "type" : "long"
+      },
+      "dstGEO" : {
+        "type" : "keyword"
+      },
+      "dstIp" : {
+        "type" : "ip"
+      },
+      "dstMac" : {
+        "type" : "keyword"
+      },
+      "dstMacCnt" : {
+        "type" : "long"
+      },
+      "dstOui" : {
+        "type" : "keyword"
+      },
+      "dstOuiCnt" : {
+        "type" : "long"
+      },
+      "dstPackets" : {
+        "type" : "long"
+      },
+      "dstPayload8" : {
+        "type" : "keyword"
+      },
+      "dstPort" : {
+        "type" : "long"
+      },
+      "dstRIR" : {
+        "type" : "keyword"
+      },
+      "email" : {
+        "properties" : {
+          "bodyMagic" : {
+            "type" : "keyword"
+          },
+          "bodyMagicCnt" : {
+            "type" : "long"
+          },
+          "contentType" : {
+            "type" : "keyword"
+          },
+          "contentTypeCnt" : {
+            "type" : "long"
+          },
+          "dst" : {
+            "type" : "keyword"
+          },
+          "dstCnt" : {
+            "type" : "long"
+          },
+          "filename" : {
+            "type" : "keyword"
+          },
+          "filenameCnt" : {
+            "type" : "long"
+          },
+          "header" : {
+            "type" : "keyword"
+          },
+          "header-chad" : {
+            "type" : "keyword"
+          },
+          "header-chadCnt" : {
+            "type" : "long"
+          },
+          "headerCnt" : {
+            "type" : "long"
+          },
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "email.hostTokens"
+            ]
+          },
+          "hostCnt" : {
+            "type" : "long"
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "id" : {
+            "type" : "keyword"
+          },
+          "idCnt" : {
+            "type" : "long"
+          },
+          "md5" : {
+            "type" : "keyword"
+          },
+          "md5Cnt" : {
+            "type" : "long"
+          },
+          "mimeVersion" : {
+            "type" : "keyword"
+          },
+          "mimeVersionCnt" : {
+            "type" : "long"
+          },
+          "src" : {
+            "type" : "keyword"
+          },
+          "srcCnt" : {
+            "type" : "long"
+          },
+          "subject" : {
+            "type" : "keyword"
+          },
+          "subjectCnt" : {
+            "type" : "long"
           },
           "useragent" : {
+            "type" : "keyword"
+          },
+          "useragentCnt" : {
+            "type" : "long"
+          }
+        }
+      },
+      "fileId" : {
+        "type" : "long"
+      },
+      "firstPacket" : {
+        "type" : "date"
+      },
+      "http" : {
+        "properties" : {
+          "authType" : {
+            "type" : "keyword"
+          },
+          "authTypeCnt" : {
+            "type" : "long"
+          },
+          "bodyMagic" : {
+            "type" : "keyword"
+          },
+          "bodyMagicCnt" : {
+            "type" : "long"
+          },
+          "clientVersion" : {
+            "type" : "keyword"
+          },
+          "clientVersionCnt" : {
+            "type" : "long"
+          },
+          "cookieKey" : {
+            "type" : "keyword"
+          },
+          "cookieKeyCnt" : {
+            "type" : "long"
+          },
+          "cookieValue" : {
+            "type" : "keyword"
+          },
+          "cookieValueCnt" : {
+            "type" : "long"
+          },
+          "host" : {
             "type" : "keyword",
-            "copy_to": "http.useragentTokens"
+            "copy_to" : [
+              "http.hostTokens"
+            ]
+          },
+          "hostCnt" : {
+            "type" : "long"
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "key" : {
+            "type" : "keyword"
+          },
+          "keyCnt" : {
+            "type" : "long"
+          },
+          "md5" : {
+            "type" : "keyword"
+          },
+          "md5Cnt" : {
+            "type" : "long"
+          },
+          "method" : {
+            "type" : "keyword"
+          },
+          "methodCnt" : {
+            "type" : "long"
+          },
+          "path" : {
+            "type" : "keyword"
+          },
+          "pathCnt" : {
+            "type" : "long"
+          },
+          "request-authorization" : {
+            "type" : "keyword"
+          },
+          "request-authorizationCnt" : {
+            "type" : "long"
+          },
+          "request-chad" : {
+            "type" : "keyword"
+          },
+          "request-chadCnt" : {
+            "type" : "long"
+          },
+          "request-content-type" : {
+            "type" : "keyword"
+          },
+          "request-content-typeCnt" : {
+            "type" : "long"
+          },
+          "request-origin" : {
+            "type" : "keyword"
+          },
+          "request-referer" : {
+            "type" : "keyword"
+          },
+          "request-refererCnt" : {
+            "type" : "long"
+          },
+          "requestBody" : {
+            "type" : "keyword"
+          },
+          "requestHeader" : {
+            "type" : "keyword"
+          },
+          "requestHeaderCnt" : {
+            "type" : "long"
+          },
+          "response-content-type" : {
+            "type" : "keyword"
+          },
+          "response-content-typeCnt" : {
+            "type" : "long"
+          },
+          "response-location" : {
+            "type" : "keyword"
+          },
+          "response-server" : {
+            "type" : "keyword"
+          },
+          "responseHeader" : {
+            "type" : "keyword"
+          },
+          "responseHeaderCnt" : {
+            "type" : "long"
+          },
+          "serverVersion" : {
+            "type" : "keyword"
+          },
+          "serverVersionCnt" : {
+            "type" : "long"
+          },
+          "statuscode" : {
+            "type" : "long"
+          },
+          "statuscodeCnt" : {
+            "type" : "long"
           },
           "uri" : {
             "type" : "keyword",
-            "copy_to": "http.uriTokens"
-          }
-        }
-      },
-      "quic": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "quic.hostTokens"
+            "copy_to" : [
+              "http.uriTokens"
+            ]
+          },
+          "uriCnt" : {
+            "type" : "long"
+          },
+          "uriTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "user" : {
+            "type" : "keyword"
+          },
+          "userCnt" : {
+            "type" : "long"
           },
           "useragent" : {
             "type" : "keyword",
-            "copy_to": "quic.useragentTokens"
+            "copy_to" : [
+              "http.useragentTokens"
+            ]
+          },
+          "useragentCnt" : {
+            "type" : "long"
+          },
+          "useragentTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "value" : {
+            "type" : "keyword"
+          },
+          "valueCnt" : {
+            "type" : "long"
+          },
+          "xffASN" : {
+            "type" : "keyword"
+          },
+          "xffGEO" : {
+            "type" : "keyword"
+          },
+          "xffIp" : {
+            "type" : "ip"
+          },
+          "xffIpCnt" : {
+            "type" : "long"
+          },
+          "xffRIR" : {
+            "type" : "keyword"
           }
         }
       },
-      "smb": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "smb.hostTokens"
+      "icmp" : {
+        "properties" : {
+          "code" : {
+            "type" : "long"
+          },
+          "type" : {
+            "type" : "long"
           }
         }
       },
-      "socks": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "socks.hostTokens"
+      "initRTT" : {
+        "type" : "long"
+      },
+      "ipProtocol" : {
+        "type" : "long"
+      },
+      "irc" : {
+        "properties" : {
+          "channel" : {
+            "type" : "keyword"
+          },
+          "channelCnt" : {
+            "type" : "long"
+          },
+          "nick" : {
+            "type" : "keyword"
+          },
+          "nickCnt" : {
+            "type" : "long"
           }
         }
       },
-      "oracle": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "keyword",
-            "copy_to": "oracle.hostTokens"
+      "krb5" : {
+        "properties" : {
+          "cname" : {
+            "type" : "keyword"
+          },
+          "cnameCnt" : {
+            "type" : "long"
+          },
+          "realm" : {
+            "type" : "keyword"
+          },
+          "realmCnt" : {
+            "type" : "long"
+          },
+          "sname" : {
+            "type" : "keyword"
+          },
+          "snameCnt" : {
+            "type" : "long"
           }
         }
+      },
+      "lastPacket" : {
+        "type" : "date"
+      },
+      "ldap" : {
+        "properties" : {
+          "authtype" : {
+            "type" : "keyword"
+          },
+          "authtypeCnt" : {
+            "type" : "long"
+          },
+          "bindname" : {
+            "type" : "keyword"
+          },
+          "bindnameCnt" : {
+            "type" : "long"
+          }
+        }
+      },
+      "length" : {
+        "type" : "long"
+      },
+      "mysql" : {
+        "properties" : {
+          "user" : {
+            "type" : "keyword"
+          },
+          "version" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "node" : {
+        "type" : "keyword"
+      },
+      "oracle" : {
+        "properties" : {
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "oracle.hostTokens"
+            ]
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "service" : {
+            "type" : "keyword"
+          },
+          "user" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "packetLen" : {
+        "type" : "integer",
+        "index" : false
+      },
+      "packetPos" : {
+        "type" : "long",
+        "index" : false
+      },
+      "postgresql" : {
+        "properties" : {
+          "app" : {
+            "type" : "keyword"
+          },
+          "db" : {
+            "type" : "keyword"
+          },
+          "user" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "protocol" : {
+        "type" : "keyword"
+      },
+      "protocolCnt" : {
+        "type" : "long"
+      },
+      "quic" : {
+        "properties" : {
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "quic.hostTokens"
+            ]
+          },
+          "hostCnt" : {
+            "type" : "long"
+          },
+          "hostTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "useragent" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "quic.useragentTokens"
+            ]
+          },
+          "useragentCnt" : {
+            "type" : "long"
+          },
+          "useragentTokens" : {
+            "type" : "text",
+            "norms" : false,
+            "analyzer" : "wordSplit"
+          },
+          "version" : {
+            "type" : "keyword"
+          },
+          "versionCnt" : {
+            "type" : "long"
+          }
+        }
+      },
+      "radius" : {
+        "properties" : {
+          "framedASN" : {
+            "type" : "keyword"
+          },
+          "framedGEO" : {
+            "type" : "keyword"
+          },
+          "framedIp" : {
+            "type" : "ip"
+          },
+          "framedIpCnt" : {
+            "type" : "long"
+          },
+          "framedRIR" : {
+            "type" : "keyword"
+          },
+          "mac" : {
+            "type" : "keyword"
+          },
+          "macCnt" : {
+            "type" : "long"
+          },
+          "user" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "rootId" : {
+        "type" : "keyword"
+      },
+      "segmentCnt" : {
+        "type" : "long"
+      },
+      "smb" : {
+        "properties" : {
+          "filename" : {
+            "type" : "keyword"
+          },
+          "filenameCnt" : {
+            "type" : "long"
+          },
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "smb.hostTokens"
+            ]
+          }
+        }
+      },
+      "socks" : {
+        "properties" : {
+          "ASN" : {
+            "type" : "keyword"
+          },
+          "GEO" : {
+            "type" : "keyword"
+          },
+          "RIR" : {
+            "type" : "keyword"
+          },
+          "host" : {
+            "type" : "keyword",
+            "copy_to" : [
+              "socks.hostTokens"
+            ]
+          },
+          "ip" : {
+            "type" : "ip"
+          },
+          "port" : {
+            "type" : "long"
+          },
+          "user" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "srcASN" : {
+        "type" : "keyword"
+      },
+      "srcBytes" : {
+        "type" : "long"
+      },
+      "srcDataBytes" : {
+        "type" : "long"
+      },
+      "srcGEO" : {
+        "type" : "keyword"
+      },
+      "srcIp" : {
+        "type" : "ip"
+      },
+      "srcMac" : {
+        "type" : "keyword"
+      },
+      "srcMacCnt" : {
+        "type" : "long"
+      },
+      "srcOui" : {
+        "type" : "keyword"
+      },
+      "srcOuiCnt" : {
+        "type" : "long"
+      },
+      "srcPackets" : {
+        "type" : "long"
+      },
+      "srcPayload8" : {
+        "type" : "keyword"
+      },
+      "srcPort" : {
+        "type" : "long"
+      },
+      "srcRIR" : {
+        "type" : "keyword"
+      },
+      "ssh" : {
+        "properties" : {
+          "hassh" : {
+            "type" : "keyword"
+          },
+          "hasshCnt" : {
+            "type" : "long"
+          },
+          "hasshServer" : {
+            "type" : "keyword"
+          },
+          "hasshServerCnt" : {
+            "type" : "long"
+          },
+          "key" : {
+            "type" : "keyword"
+          },
+          "keyCnt" : {
+            "type" : "long"
+          },
+          "version" : {
+            "type" : "keyword"
+          },
+          "versionCnt" : {
+            "type" : "long"
+          }
+        }
+      },
+      "tags" : {
+        "type" : "keyword"
+      },
+      "tagsCnt" : {
+        "type" : "long"
+      },
+      "tcpflags" : {
+        "properties" : {
+          "ack" : {
+            "type" : "long"
+          },
+          "dstZero" : {
+            "type" : "long"
+          },
+          "fin" : {
+            "type" : "long"
+          },
+          "psh" : {
+            "type" : "long"
+          },
+          "rst" : {
+            "type" : "long"
+          },
+          "srcZero" : {
+            "type" : "long"
+          },
+          "syn" : {
+            "type" : "long"
+          },
+          "syn-ack" : {
+            "type" : "long"
+          },
+          "urg" : {
+            "type" : "long"
+          }
+        }
+      },
+      "timestamp" : {
+        "type" : "date"
+      },
+      "tls" : {
+        "properties" : {
+          "cipher" : {
+            "type" : "keyword"
+          },
+          "cipherCnt" : {
+            "type" : "long"
+          },
+          "dstSessionId" : {
+            "type" : "keyword"
+          },
+          "ja3" : {
+            "type" : "keyword"
+          },
+          "ja3Cnt" : {
+            "type" : "long"
+          },
+          "ja3s" : {
+            "type" : "keyword"
+          },
+          "ja3sCnt" : {
+            "type" : "long"
+          },
+          "srcSessionId" : {
+            "type" : "keyword"
+          },
+          "version" : {
+            "type" : "keyword"
+          },
+          "versionCnt" : {
+            "type" : "long"
+          }
+        }
+      },
+      "totBytes" : {
+        "type" : "long"
+      },
+      "totDataBytes" : {
+        "type" : "long"
+      },
+      "totPackets" : {
+        "type" : "long"
+      },
+      "user" : {
+        "type" : "keyword"
+      },
+      "userCnt" : {
+        "type" : "long"
+      },
+      "vlan" : {
+        "type" : "long"
+      },
+      "vlanCnt" : {
+        "type" : "long"
       }
     }
   }
