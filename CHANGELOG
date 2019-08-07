@@ -1,7 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
-  * Moloch >= 2.0.0  supports ES >= 6.6.0, not 7.x or later
+  * Moloch >= 2.0.0  supports ES >= 6.7.0, 7.x is experimental
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
@@ -16,8 +16,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.0.0 2019/05/xx
-  - NOTICE: This versions requires ES 6.6.x or later
+2.0.0 2019/06/xx
+  - NOTICE: This versions requires ES 6.7.x or later
   - release - cyberchef 8.30.0, node 10.15.3
   - viewer - Can display pcap retention in Capture Stats tab
   - all - Fix some elasticsearch deprecation warnings

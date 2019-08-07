@@ -2654,6 +2654,10 @@ function buildSessionQuery (req, buildCb) {
                query: {bool: {filter: []}}
               };
 
+  if (query.from === 0) {
+    delete query.from;
+  }
+
   if (req.query.strictly === "true") {
     req.query.bounding = "both";
   }

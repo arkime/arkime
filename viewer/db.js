@@ -84,8 +84,8 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(6.[0-5]|[0-5]|7)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 6.6.x or later required.");
+    if (data.version.number.match(/^(6.[0-6]|[0-5]|8)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 6.7.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
@@ -167,7 +167,7 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index), type: type, body: query};
+  var params = {index: fixIndex(index), type: type, body: query, rest_total_hits_as_int: true};
   exports.merge(params, options);
   return internals.elasticSearchClient.search(params, cb);
 };
@@ -245,7 +245,7 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   }
 
   // ALW - FIXME - 6.1+ has removed primary_first :(
-  var params = {preference: "_primary_first", ignore_unavailable: "true"};
+  var params = {preference: "primaries", ignore_unavailable: "true"};
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
 };
@@ -258,7 +258,7 @@ exports.msearch = function (index, type, queries, cb) {
     body.push(queries[i]);
   }
 
-  return internals.elasticSearchClient.msearch({body: body}, cb);
+  return internals.elasticSearchClient.msearch({body: body, rest_total_hits_as_int: true}, cb);
 };
 
 exports.scroll = function (params, callback) {
@@ -552,7 +552,7 @@ exports.flushCache = function () {
   delete internals.aliasesCache;
 };
 exports.searchUsers = function(query, cb) {
-  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query}, cb);
+  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query, rest_total_hits_as_int: true}, cb);
 };
 
 exports.getUser = function (name, cb) {
@@ -610,7 +610,7 @@ exports.historyIt = function(doc, cb) {
   return internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh: true}, cb);
 };
 exports.searchHistory = function(query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query, rest_total_hits_as_int: true}, cb);
 };
 exports.numberOfLogs = function(cb) {
   return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
@@ -623,7 +623,7 @@ exports.createHunt = function (doc, cb) {
   return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: "wait_for"}, cb);
 };
 exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query, rest_total_hits_as_int: true}, cb);
 };
 exports.numberOfHunts = function(cb) {
   return internals.elasticSearchClient.count({index:fixIndex('hunts'), type:'hunt'}, cb);
@@ -636,7 +636,7 @@ exports.setHunt = function (id, doc, cb) {
 };
 
 exports.searchLookups = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query}, cb);
+  return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query, rest_total_hits_as_int: true}, cb);
 };
 exports.createLookup = function (doc, username, cb) {
   internals.lookupsCache = {};
@@ -732,7 +732,7 @@ exports.healthCache = function (cb) {
       return cb(err, null);
     }
 
-    internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
+    internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta", include_type_name: true}, (err, doc) => {
       if (err) {
         return cb(null, health);
       }
@@ -953,7 +953,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     });
   });
 
-  internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta"}, (err, doc) => {
+  internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta", include_type_name: true}, (err, doc) => {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
@@ -969,7 +969,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
         process.exit(1);
       }
     } catch (e) {
-      console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?");
+      console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
       process.exit(0);
     }
   });

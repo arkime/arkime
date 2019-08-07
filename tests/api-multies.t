@@ -13,22 +13,22 @@ my $json;
     is ($json->{tagline}, "You Know, for Search", "ES tagline");
     ok (!exists $json->{status} || $json->{status} == 200, "ES no status or 200 status");
 
-    $json = mesGet("/_template/MULTIPREFIX_sessions2_template?filter_path=**._meta");
+    $json = mesGet("/_template/MULTIPREFIX_sessions2_template?filter_path=**._meta&include_type_name=true");
     cmp_ok($json->{MULTIPREFIX_sessions2_template}->{mappings}->{session}->{_meta}->{molochDbVersion}, '>=', 50, "dstats version is at least 50");
 
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
     is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
-    is (exists $json->{indices}->{MULTIPREFIX_stats_v3}, 1, "Correct stats/_stats index");
+    is (exists $json->{indices}->{MULTIPREFIX_stats_v4}, 1, "Correct stats/_stats index");
 
     $json = mesGet("/MULTIPREFIX_files/_stats");
-    cmp_ok($json->{indices}->{MULTIPREFIX_files_v5}->{total}->{docs}->{count}, '>=', 60, "files count is at least 60");
+    cmp_ok($json->{indices}->{MULTIPREFIX_files_v6}->{total}->{docs}->{count}, '>=', 60, "files count is at least 60");
 
     $json = mesGet("/MULTIPREFIX_sequence/_stats");
-    cmp_ok($json->{indices}->{MULTIPREFIX_sequence_v2}->{total}->{docs}->{count}, '>=', 1, "sequence count is at least 1");
+    cmp_ok($json->{indices}->{MULTIPREFIX_sequence_v3}->{total}->{docs}->{count}, '>=', 1, "sequence count is at least 1");
 
     $json = mesGet("/MULTIPREFIX_dstats/_stats");
-    cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v3}->{total}->{docs}->{count}, '>=', 1, "dstats count is at least 1");
+    cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v4}->{total}->{docs}->{count}, '>=', 1, "dstats count is at least 1");
 
 # _count
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
@@ -67,20 +67,20 @@ my $json;
 
 # _search
 
-    $json = mesGet("/MULTIPREFIX_stats/stat/_search");
+    $json = mesGet("/MULTIPREFIX_stats/stat/_search?rest_total_hits_as_int=true");
     cmp_ok($json->{hits}->{total}, '>=', 1, "stats/search count is at least 1");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v3", "Correct stats index name");
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v4", "Correct stats index name");
 
-    $json = mesPost("/MULTIPREFIX_stats/stat/_search", "{}");
+    $json = mesPost("/MULTIPREFIX_stats/stat/_search?rest_total_hits_as_int=true", "{}");
     cmp_ok($json->{hits}->{total}, '>=', 1, "stats/search count is at least 1");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v3", "Correct stats index name");
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v4", "Correct stats index name");
 
-    $json = mesPost("/MULTIPREFIX_fields/field/_search", "{\"size\":1000}");
+    $json = mesPost("/MULTIPREFIX_fields/field/_search?rest_total_hits_as_int=true", "{\"size\":1000}");
     cmp_ok($json->{hits}->{total}, '>=', 190, "fields count is at least 190");
     cmp_ok($json->{hits}->{total}, '<',  400, "fields count is less then 400");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v2", "Correct fields index name");
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v3", "Correct fields index name");
 
-    $json = mesGet("/MULTIPREFIX_sessions2-141015/session/_search?preference=_primary_first&ignore_unavailable=true");
+    $json = mesGet("/MULTIPREFIX_sessions2-141015/session/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions2-141015", "Correct sessions index name");
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 

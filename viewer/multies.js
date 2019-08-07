@@ -141,7 +141,7 @@ function simpleGather(req, res, bodies, doneCb) {
       pres.on('end', () => {
         if (result.length) {
           result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions2|sessions|stats|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
-          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v[12])\"", "g"), "$1\"MULTIPREFIX_$2\"");
+          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v[1-4])\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
           result = {};
@@ -464,7 +464,8 @@ function fixQuery(node, body, doneCb) {
   if (body.size) {
     body.size = (+body.size) + ((+body.from) || 0);
   }
-  body.from = 0;
+
+  delete body.from;
 
   var outstanding = 0;
   var finished = 0;
