@@ -57,7 +57,7 @@
 # 60 - users time query limit
 # 61 - shortcuts
 # 62 - hunt error timestamp and node
-# 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v6, dstats_v4, stats_v4, hunts_v2
+# 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v7, dstats_v4, stats_v4, hunts_v2
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -2396,9 +2396,9 @@ sub usersCreate
   }
 }';
 
-    logmsg "Creating users_v6 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v6", $settings);
-    esAlias("add", "users_v6", "users");
+    logmsg "Creating users_v7 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v7", $settings);
+    esAlias("add", "users_v7", "users");
     usersUpdate();
 }
 ################################################################################
@@ -2497,8 +2497,8 @@ sub usersUpdate
   }
 }';
 
-    logmsg "Setting users_v6 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v6/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+    logmsg "Setting users_v7 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}users_v7/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
 }
 ################################################################################
 sub setPriority
@@ -2822,7 +2822,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2", 1);
+    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2", 1);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -3304,6 +3304,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "fields_v2");
     printIndex($status, "files_v6");
     printIndex($status, "files_v5");
+    printIndex($status, "users_v7");
     printIndex($status, "users_v6");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
@@ -3593,6 +3594,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v5", 1);
         esDelete("/${PREFIX}users_v6", 1);
+        esDelete("/${PREFIX}users_v7", 1);
         esDelete("/${PREFIX}users", 1);
         esDelete("/${PREFIX}queries", 1);
         esDelete("/${PREFIX}queries_v1", 1);
@@ -3687,6 +3689,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}users_v4", 1);
     esDelete("/${PREFIX}users_v5", 1);
     esDelete("/${PREFIX}users_v6", 1);
+    esDelete("/${PREFIX}users_v7", 1);
     esDelete("/${PREFIX}users", 1);
     esDelete("/${PREFIX}queries", 1);
     esDelete("/${PREFIX}queries_v1", 1);
@@ -3820,7 +3823,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         createNewAliasesFromOld("fields", "fields_v3", "fields_v2", \&fieldsCreate);
         createNewAliasesFromOld("queries", "queries_v3", "queries_v2", \&queriesCreate);
         createNewAliasesFromOld("files", "files_v6", "files_v5", \&filesCreate);
-        createNewAliasesFromOld("users", "users_v6", "users_v5", \&usersCreate);
+        createNewAliasesFromOld("users", "users_v7", "users_v6", \&usersCreate);
         createNewAliasesFromOld("dstats", "dstats_v4", "dstats_v3", \&dstatsCreate);
         createNewAliasesFromOld("stats", "stats_v4", "stats_v3", \&statsCreate);
         createNewAliasesFromOld("hunts", "hunts_v2", "hunts_v1", \&huntsCreate);
@@ -3846,9 +3849,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v6,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";
