@@ -315,7 +315,7 @@ sub esCopy
     my $status = esGet("/_stats/docs", 1);
     logmsg "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
 
-    esPost("/_reindex", to_json({"source" => {"index" => $PREFIX.$srci}, "dest" => {"index" => $PREFIX.$dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
+    esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $PREFIX.$srci}, "dest" => {"index" => $PREFIX.$dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
     my $status = esGet("/${PREFIX}${dsti}/_refresh", 1);
     my $status = esGet("/_stats/docs", 1);
@@ -369,9 +369,9 @@ sub esAlias
     my ($cmd, $index, $alias, $dontaddprefix) = @_;
     logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     if (!$dontaddprefix){ # append PREFIX
-    esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
+    esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
     } else { # do not append PREFIX
-        esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
     }
 }
 
@@ -413,7 +413,7 @@ sub sequenceCreate
 }';
 
     logmsg "Creating sequence_v3 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v3", $settings, 1);
+    esPut("/${PREFIX}sequence_v3?master_timeout=${ESTIMEOUT}s", $settings, 1);
     esAlias("add", "sequence_v3", "sequence");
     sequenceUpdate();
 }
@@ -451,7 +451,9 @@ sub sequenceUpgrade
     return if ($results->{hits}->{total} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?version_type=external&version=$hit->{_version}", "{}", 1);
+        if ($hit->{_id} =~ /^fn-/) {
+            esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?master_timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
+        }
     }
     esDelete("/${PREFIX}sequence_v2");
     $main::userAgent->timeout($ESTIMEOUT + 5);
@@ -470,7 +472,7 @@ sub filesCreate
 }';
 
     logmsg "Creating files_v6 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v6", $settings);
+    esPut("/${PREFIX}files_v6?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "files_v6", "files");
     filesUpdate();
 }
@@ -535,7 +537,7 @@ sub statsCreate
 }';
 
     logmsg "Creating stats index\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v4", $settings);
+    esPut("/${PREFIX}stats_v4?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "stats_v4", "stats");
     statsUpdate();
 }
@@ -590,7 +592,7 @@ sub dstatsCreate
 }';
 
     logmsg "Creating dstats_v4 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v4", $settings);
+    esPut("/${PREFIX}dstats_v4?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "dstats_v4", "dstats");
     dstatsUpdate();
 }
@@ -654,7 +656,7 @@ sub fieldsCreate
 }';
 
     logmsg "Creating fields index\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v3", $settings);
+    esPut("/${PREFIX}fields_v3?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "fields_v3", "fields");
     fieldsUpdate();
 }
@@ -662,7 +664,7 @@ sub fieldsCreate
 # Not the fix I want, but it works for now
 sub fieldsIpDst
 {
-    esPost("/${PREFIX}fields_v3/field/ip.dst", '{
+    esPost("/${PREFIX}fields_v3/field/ip.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst IP",
       "group": "general",
       "help": "Destination IP",
@@ -698,7 +700,7 @@ sub fieldsUpdate
     logmsg "Setting fields_v3 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v3/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 
-    esPost("/${PREFIX}fields_v3/field/ip", '{
+    esPost("/${PREFIX}fields_v3/field/ip?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All IP fields",
       "group": "general",
       "help": "Search all ip fields",
@@ -708,7 +710,7 @@ sub fieldsUpdate
       "portField": "portall",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/port", '{
+    esPost("/${PREFIX}fields_v3/field/port?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All port fields",
       "group": "general",
       "help": "Search all port fields",
@@ -717,7 +719,7 @@ sub fieldsUpdate
       "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir", '{
+    esPost("/${PREFIX}fields_v3/field/rir?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All rir fields",
       "group": "general",
       "help": "Search all rir fields",
@@ -726,7 +728,7 @@ sub fieldsUpdate
       "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/country", '{
+    esPost("/${PREFIX}fields_v3/field/country?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All country fields",
       "group": "general",
       "help": "Search all country fields",
@@ -735,7 +737,7 @@ sub fieldsUpdate
       "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn", '{
+    esPost("/${PREFIX}fields_v3/field/asn?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
@@ -744,7 +746,7 @@ sub fieldsUpdate
       "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/host", '{
+    esPost("/${PREFIX}fields_v3/field/host?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
@@ -753,7 +755,7 @@ sub fieldsUpdate
       "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/ip.src", '{
+    esPost("/${PREFIX}fields_v3/field/ip.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src IP",
       "group": "general",
       "help": "Source IP",
@@ -764,7 +766,7 @@ sub fieldsUpdate
       "portField2": "srcPort",
       "category": "ip"
     }');
-    esPost("/${PREFIX}fields_v3/field/port.src", '{
+    esPost("/${PREFIX}fields_v3/field/port.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Port",
       "group": "general",
       "help": "Source Port",
@@ -773,7 +775,7 @@ sub fieldsUpdate
       "dbField2": "srcPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn.src", '{
+    esPost("/${PREFIX}fields_v3/field/asn.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
@@ -783,7 +785,7 @@ sub fieldsUpdate
       "rawField": "rawas1",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v3/field/country.src", '{
+    esPost("/${PREFIX}fields_v3/field/country.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
@@ -792,7 +794,7 @@ sub fieldsUpdate
       "dbField2": "srcGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir.src", '{
+    esPost("/${PREFIX}fields_v3/field/rir.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src RIR",
       "group": "general",
       "help": "Source RIR",
@@ -802,7 +804,7 @@ sub fieldsUpdate
       "category": "rir"
     }');
     fieldsIpDst();
-    esPost("/${PREFIX}fields_v3/field/port.dst", '{
+    esPost("/${PREFIX}fields_v3/field/port.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
@@ -811,7 +813,7 @@ sub fieldsUpdate
       "dbField2": "dstPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn.dst", '{
+    esPost("/${PREFIX}fields_v3/field/asn.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
@@ -821,7 +823,7 @@ sub fieldsUpdate
       "rawField": "rawas2",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v3/field/country.dst", '{
+    esPost("/${PREFIX}fields_v3/field/country.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
@@ -830,7 +832,7 @@ sub fieldsUpdate
       "dbField2": "dstGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir.dst", '{
+    esPost("/${PREFIX}fields_v3/field/rir.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst RIR",
       "group": "general",
       "help": "Destination RIR",
@@ -839,7 +841,7 @@ sub fieldsUpdate
       "dbField2": "dstRIR",
       "category": "rir"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes", '{
+    esPost("/${PREFIX}fields_v3/field/bytes?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
@@ -847,7 +849,7 @@ sub fieldsUpdate
       "dbField": "by",
       "dbField2": "totBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes.src", '{
+    esPost("/${PREFIX}fields_v3/field/bytes.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
@@ -855,7 +857,7 @@ sub fieldsUpdate
       "dbField": "by1",
       "dbField2": "srcBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes.dst", '{
+    esPost("/${PREFIX}fields_v3/field/bytes.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
@@ -863,7 +865,7 @@ sub fieldsUpdate
       "dbField": "by2",
       "dbField2": "dstBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes", '{
+    esPost("/${PREFIX}fields_v3/field/databytes?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
@@ -871,7 +873,7 @@ sub fieldsUpdate
       "dbField": "db",
       "dbField2": "totDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes.src", '{
+    esPost("/${PREFIX}fields_v3/field/databytes.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
@@ -879,7 +881,7 @@ sub fieldsUpdate
       "dbField": "db1",
       "dbField2": "srcDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes.dst", '{
+    esPost("/${PREFIX}fields_v3/field/databytes.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
@@ -887,7 +889,7 @@ sub fieldsUpdate
       "dbField": "db2",
       "dbField2": "dstDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets", '{
+    esPost("/${PREFIX}fields_v3/field/packets?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
@@ -895,7 +897,7 @@ sub fieldsUpdate
       "dbField": "pa",
       "dbField2": "totPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets.src", '{
+    esPost("/${PREFIX}fields_v3/field/packets.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
@@ -903,7 +905,7 @@ sub fieldsUpdate
       "dbField": "pa1",
       "dbField2": "srcPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets.dst", '{
+    esPost("/${PREFIX}fields_v3/field/packets.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
@@ -911,7 +913,7 @@ sub fieldsUpdate
       "dbField": "pa2",
       "dbField2": "dstPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/ip.protocol", '{
+    esPost("/${PREFIX}fields_v3/field/ip.protocol?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "IP Protocol",
       "group": "general",
       "help": "IP protocol number or friendly name",
@@ -920,7 +922,7 @@ sub fieldsUpdate
       "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
-    esPost("/${PREFIX}fields_v3/field/id", '{
+    esPost("/${PREFIX}fields_v3/field/id?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Moloch ID",
       "group": "general",
       "help": "Moloch ID for the session",
@@ -930,7 +932,7 @@ sub fieldsUpdate
       "noFacet": "true"
 
     }');
-    esPost("/${PREFIX}fields_v3/field/rootId", '{
+    esPost("/${PREFIX}fields_v3/field/rootId?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Moloch Root ID",
       "group": "general",
       "help": "Moloch ID of the first session in a multi session stream",
@@ -938,7 +940,7 @@ sub fieldsUpdate
       "dbField": "ro",
       "dbField2": "rootId"
     }');
-    esPost("/${PREFIX}fields_v3/field/node", '{
+    esPost("/${PREFIX}fields_v3/field/node?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Moloch Node",
       "group": "general",
       "help": "Moloch node name the session was recorded on",
@@ -946,7 +948,7 @@ sub fieldsUpdate
       "dbField": "no",
       "dbField2": "node"
     }');
-    esPost("/${PREFIX}fields_v3/field/file", '{
+    esPost("/${PREFIX}fields_v3/field/file?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Filename",
       "group": "general",
       "help": "Moloch offline pcap filename",
@@ -954,7 +956,7 @@ sub fieldsUpdate
       "dbField": "fileand",
       "dbField2": "fileand"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.src.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.src.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Src Hex",
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
@@ -963,7 +965,7 @@ sub fieldsUpdate
       "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.src.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.src.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Src UTF8",
       "group": "general",
       "help": "First 8 bytes of source payload in utf8",
@@ -973,7 +975,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.dst.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.dst.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Dst Hex",
       "group": "general",
       "help": "First 8 bytes of destination payload in hex",
@@ -982,7 +984,7 @@ sub fieldsUpdate
       "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.dst.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.dst.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Dst UTF8",
       "group": "general",
       "help": "First 8 bytes of destination payload in utf8",
@@ -992,7 +994,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.hex", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Hex",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -1001,7 +1003,7 @@ sub fieldsUpdate
       "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.utf8", '{
+    esPost("/${PREFIX}fields_v3/field/payload8.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload UTF8",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -1010,7 +1012,7 @@ sub fieldsUpdate
       "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
-    esPost("/${PREFIX}fields_v3/field/scrubbed.by", '{
+    esPost("/${PREFIX}fields_v3/field/scrubbed.by?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Scrubbed By",
       "group": "general",
       "help": "SPI data was scrubbed by",
@@ -1018,7 +1020,7 @@ sub fieldsUpdate
       "dbField": "scrubby",
       "dbField2": "scrubby"
     }');
-    esPost("/${PREFIX}fields_v3/field/view", '{
+    esPost("/${PREFIX}fields_v3/field/view?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "View Name",
       "group": "general",
       "help": "Moloch view name",
@@ -1027,7 +1029,7 @@ sub fieldsUpdate
       "dbField2": "viewand",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/starttime", '{
+    esPost("/${PREFIX}fields_v3/field/starttime?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Start Time",
       "group": "general",
       "help": "Session Start Time",
@@ -1036,7 +1038,7 @@ sub fieldsUpdate
       "dbField": "fp",
       "dbField2": "firstPacket"
     }');
-    esPost("/${PREFIX}fields_v3/field/stoptime", '{
+    esPost("/${PREFIX}fields_v3/field/stoptime?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Stop Time",
       "group": "general",
       "help": "Session Stop Time",
@@ -1045,7 +1047,7 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
-    esPost("/${PREFIX}fields_v3/field/huntId", '{
+    esPost("/${PREFIX}fields_v3/field/huntId?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Hunt ID",
       "group": "general",
       "help": "The ID of the packet search job that matched this session",
@@ -1053,7 +1055,7 @@ sub fieldsUpdate
       "dbField": "huntId",
       "dbField2": "huntId"
     }');
-    esPost("/${PREFIX}fields_v3/field/huntName", '{
+    esPost("/${PREFIX}fields_v3/field/huntName?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Hunt Name",
       "group": "general",
       "help": "The name of the packet search job that matched this session",
@@ -1077,7 +1079,7 @@ sub queriesCreate
 }';
 
     logmsg "Creating queries index\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v3", $settings);
+    esPut("/${PREFIX}queries_v3?master_timeout=${ESTIMEOUT}s", $settings);
     queriesUpdate();
 }
 ################################################################################
@@ -2236,7 +2238,7 @@ sub huntsCreate
 }';
 
   logmsg "Creating hunts_v2 index\n" if ($verbose > 0);
-  esPut("/${PREFIX}hunts_v2", $settings);
+  esPut("/${PREFIX}hunts_v2?master_timeout=${ESTIMEOUT}s", $settings);
   esAlias("add", "hunts_v2", "hunts");
   huntsUpdate();
 }
@@ -2340,7 +2342,7 @@ sub lookupsCreate
 }';
 
   logmsg "Creating lookups_v1 index\n" if ($verbose > 0);
-  esPut("/${PREFIX}lookups_v1", $settings);
+  esPut("/${PREFIX}lookups_v1?master_timeout=${ESTIMEOUT}s", $settings);
   esAlias("add", "lookups_v1", "lookups");
   lookupsUpdate();
 }
@@ -2397,7 +2399,7 @@ sub usersCreate
 }';
 
     logmsg "Creating users_v7 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v7", $settings);
+    esPut("/${PREFIX}users_v7?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "users_v7", "users");
     usersUpdate();
 }
@@ -3713,7 +3715,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             delete $data->{$index[0]}->{settings}->{index}->{uuid};
             delete $data->{$index[0]}->{settings}->{index}->{version};
             my $settings = to_json($data->{$index[0]});
-            esPut("/$index[0]", $settings);
+            esPut("/$index[0]?master_timeout=${ESTIMEOUT}s", $settings);
             close($fh);
         }
     }
