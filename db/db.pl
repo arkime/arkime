@@ -452,7 +452,7 @@ sub sequenceUpgrade
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if ($hit->{_id} =~ /^fn-/) {
-            esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?master_timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
+            esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
         }
     }
     esDelete("/${PREFIX}sequence_v2");
@@ -2915,6 +2915,8 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
+
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 if ($CLIENTCERT ne "") {
