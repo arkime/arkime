@@ -35,7 +35,7 @@ var internals = {fileId2File: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
                  qInProgress: 0,
-                 apiVersion: "6.6",
+                 apiVersion: "6.7",
                  q: []};
 
 exports.initialize = function (info, cb) {
