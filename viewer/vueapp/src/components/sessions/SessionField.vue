@@ -215,7 +215,7 @@ export default {
           case 'seconds':
             qVal = val; // save original value as the query value
             val = this.$options.filters.timezoneDateString(
-              val,
+              parseInt(val),
               this.timezone || this.$store.state.user.settings.timezone,
               this.$store.state.user.settings.ms
             );
