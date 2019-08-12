@@ -132,7 +132,7 @@
 
     <div class="spiview-content mr-1 ml-1">
 
-    <!-- session visualizations -->
+      <!-- session visualizations -->
       <div class="spiview-visualizations">
         <moloch-visualizations
           v-if="mapData && graphData"
@@ -295,6 +295,10 @@
                     <b-dropdown-item
                       @click="openSpiGraph(value.field.dbField)">
                       Open {{ value.field.friendlyName }} SPI Graph
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="pivot(value)">
+                      Pivot on {{ value.field.friendlyName }}
                     </b-dropdown-item>
                   </b-dropdown> <!-- spiview field label button -->
                   <!-- spiview field data -->
@@ -657,6 +661,31 @@ export default {
      */
     openSpiGraph: function (fieldID) {
       SessionsService.openSpiGraph(fieldID, this.$route.query);
+    },
+    /**
+     * Opens a new sessions page with a list of values as the search expression
+     * @param {object} bucket The bucket of data
+     */
+    pivot: function (bucket) {
+      const fieldExp = bucket.field.exp;
+
+      let values = [];
+      for (let val of bucket.value.buckets) {
+        values.push(val.key);
+      }
+
+      const valueStr = `[${values.join(',')}]`;
+      const expression = this.$options.filters.buildExpression(fieldExp, valueStr, '==');
+
+      const routeData = this.$router.resolve({
+        path: '/sessions',
+        query: {
+          ...this.$route.query,
+          expression: expression
+        }
+      });
+
+      window.open(routeData.href, '_blank');
     },
     /* Saves a custom spiview fields configuration */
     saveFieldConfiguration: function () {
