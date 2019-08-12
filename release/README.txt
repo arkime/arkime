@@ -35,4 +35,4 @@ See https://molo.ch/faq#moloch-is-not-working for issues
 
 Additional information can be found at:
   * https://molo.ch/faq
-  * https://github.com/aol/moloch/wiki/Settings
+  * https://molo.ch/settings

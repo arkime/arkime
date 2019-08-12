@@ -1,4 +1,4 @@
-# WISE Service Config - https://github.com/aol/moloch/wiki/WISE
+# WISE Service Config - https://molo.ch/wise
 [wiseService]
 port = 8081
 

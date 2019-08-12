@@ -1,4 +1,4 @@
-# Latest settings documentation: https://github.com/aol/moloch/wiki/Settings
+# Latest settings documentation: https://molo.ch/settings
 #
 # Moloch uses a tiered system for configuration variables.  This allows Moloch
 # to share one config file for many machines.  The ordering of sections in this
@@ -276,7 +276,7 @@ logFileCreation = true
 
 
 ### High Performance settings
-# https://github.com/aol/moloch/wiki/Settings#High_Performance_Settings
+# https://molo.ch/settings#high-performance-settings
 # magicMode=basic
 # pcapReadMethod=tpacketv3
 # tpacketv3NumThreads=2

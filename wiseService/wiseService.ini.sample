@@ -1,5 +1,5 @@
 # Configuration for WISE and the data sources are contained in this file.
-# See https://github.com/aol/moloch/wiki/WISE
+# See https://molo.ch/wise
 
 
 # Configuration for the wiseService itself.
