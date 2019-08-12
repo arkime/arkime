@@ -329,7 +329,7 @@ interface = eth4
 #10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is an ASN
 
 ##############################################################################
-# It is now possible to define in the config file extra http/email headers
+# It is possible to define in the config file extra http/email headers
 # to index.  They are accessed using the expression http.<fieldname> and
 # email.<fieldname> with optional .cnt expressions
 #
@@ -339,16 +339,22 @@ interface = eth4
 #  unique:<boolean>                    = only record unique items (default true)
 
 # headers-http-request is used to configure request headers to index
-#[headers-http-request]
-#referer=type:string;count:true;unique:true
+[headers-http-request]
+referer=type:string;count:true;unique:true
+authorization=type:string;count:true
+content-type=type:string;count:true
+origin=type:string
 
 # headers-http-response is used to configure http response headers to index
-#[headers-http-response]
-#location=type:string;count:true
+[headers-http-response]
+location=type:string
+server=type:string
+content-type=type:string;count:true
 
 # headers-email is used to configure email headers to index
-#[headers-email]
-#x-priority=type:integer
+[headers-email]
+x-priority=type:integer
+authorization=type:string
 
 
 ##############################################################################
