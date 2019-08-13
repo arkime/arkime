@@ -16,28 +16,43 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.0.0 2019/06/xx
-  - NOTICE: This versions requires ES 6.7.x or later
-  - release - cyberchef 8.30.0, node 10.15.3
-  - viewer - Can display pcap retention in Capture Stats tab
+2.0.0 2019/08/xx
+  - NOTICE: This versions requires ES 6.7.x (6.8.2+/7.3+ recommended) or later
+  - NOTICE: db.pl upgrade is required, see https://molo.ch/faq#how_do_i_upgrade_to_moloch_2
+  - release - cyberchef 8.30.0, node 10.16.2, yara 3.10.0
+  - release - include sample headers parsing and turn them on by default
+  - release - easybutton supports osx
   - all - Fix some elasticsearch deprecation warnings
+  - all - elasticsearch 7 support
+  - db - backup command now saves meta data so restore can do a rollback (thanks codesniffer)
+  - db - improve optimize to deal with connection closed better
+  - parliament - Can configure multiple of each type of notifier
+  - viewer - Can display pcap retention in Capture Stats tab
   - viewer - Added uploadFileSizeLimit
   - viewer - Can interact with users in multiES if usersElasticsearch is set
-  - capture - no longer send packet lengths to ES by default (enablePacketLen)
-  - parliament - Can configure multiple of each type of notifier
   - viewer - Can just delete SPI
-  - db - backup command now saves meta data so restore can do a rollback
-         (thanks codesniffer)
-  - capture - add truncated-pcap tag to sessions where all pcap isn't written
-  - suricata - support timezones better
-  - db - improve optimize to deal with connection closed better
-  - viewer - Added shortcuts
-  - capture - fixed ja3s mishandling of 10/11 extension types (thanks Norwegian Healthcare CERT)
+  - viewer - Added shortcuts feature
   - viewer - add bytes as a graphing choice
+  - viewer - support ip == ipv4 and ip == ipv6 expressions
+  - viewer - pivot dropdown option in spiview (issue #1135)
+  - viewer - optional milisecond display
+  - viewer - Support view parameter for unique/multiunique
+  - viewer - Support ES client auth and insecure better (thanks Scott)
+  - viewer - Lots of stats summing, avg, sorting fixes
+  - capture - Initial ipv6 gtp support
+  - capture - no longer send packet lengths to ES by default (enablePacketLen)
+  - capture - add truncated-pcap tag to sessions where all pcap isn't written
+  - capture - fixed ja3s mishandling of 10/11 extension types (thanks Norwegian Healthcare CERT)
   - capture - fixed ja3 mishandling of 11 extension types (thanks Norwegian Healthcare CERT)
   - capture - Added startsWith,contains,endsWith rule expression modifier
-  - viewer - support ip == ipv4 and ip == ipv6 expressions
-  - capture - Initial ipv6 gtp support
+  - capture - honor the caTrustFile directive (thanks Matt)
+  - capture - fix data bytes calulations for icmp/udp (thanks Brian)
+  - capture - initial vxlan support
+  - capture - Myricom/AFPacket improvements (thanks Scott)
+  - capture - updates to classifiers: telnet, mpls
+  - suricata - support timezones and slashes in signatures better
+  - suricata - support huge alert lines
+  - wise - support arrays for json elements
 
 1.8.0 2019/04/03
   - NOTICE: This will be the last version to support ES 5
