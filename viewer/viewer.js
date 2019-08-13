@@ -4299,17 +4299,21 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           });
         }
       }, function () {
-        var r = {recordsTotal: total.count,
-                 recordsFiltered: (results?results.total:0),
-                 graph: graph,
-                 health: health,
-                 map: map,
-                 data: (results?results.results:[])};
-        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-        try {
-          res.send(r);
-        } catch (c) {
-        }
+
+        setTimeout(() => { // TODO ECR REMOVE
+          var r = {recordsTotal: total.count,
+                   recordsFiltered: (results?results.total:0),
+                   graph: graph,
+                   health: health,
+                   map: map,
+                   data: (results?results.results:[])};
+          res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
+          try {
+            res.send(r);
+          } catch (c) {
+          }
+        }, 5000);
+
       });
     }).catch ((err) => {
       console.log("ERROR - /sessions.json error", err);

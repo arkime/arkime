@@ -449,7 +449,8 @@
 
       <!-- loading overlay -->
       <moloch-loading
-        v-if="loading && !error">
+        v-if="loading && !error"
+        :cancel="cancelPendingQuery">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -474,6 +475,8 @@
 </template>
 
 <script>
+import Vue from 'vue';
+
 import UserService from '../users/UserService';
 import MolochSearch from '../search/Search';
 import FieldService from '../search/FieldService';
@@ -522,6 +525,9 @@ const defaultColWidths = {
   'node': 100,
   'info': 250
 };
+
+// save a pending promise to be able to cancel it
+let pendingPromise;
 
 export default {
   name: 'Sessions',
@@ -633,6 +639,20 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /* SESSIONS DATA */
+    /* Cancels the pending session query (if it's still pending) */
+    cancelPendingQuery: function () {
+      if (pendingPromise) {
+        pendingPromise.source.cancel();
+        pendingPromise = null;
+        this.loading = false;
+        if (!this.sessions.data) {
+          // show a page error if there is no data on the page
+          this.error = 'Request cancelled';
+        }
+      }
+    },
+
     /* SESSION DETAIL */
     /**
      * Toggles the display of the session detail for each session
@@ -1241,41 +1261,45 @@ export default {
         }
       }
 
-      SessionsService.get(this.query)
-        .then((response) => {
-          this.stickySessions = []; // clear sticky sessions
-          this.error = '';
-          this.loading = false;
-          this.sessions = response.data;
-          this.mapData = response.data.map;
-          this.graphData = response.data.graph;
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = SessionsService.get(this.query, source.token);
 
-          if (updateTable) { this.reloadTable(); }
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source };
 
-          if (parseInt(this.$route.query.openAll) === 1) {
-            this.openAll();
-          } else { // open the previously opened sessions
-            for (let sessionId of expandedSessions) {
-              for (let session of this.sessions.data) {
-                if (session.id === sessionId) {
-                  session.expanded = true;
-                  this.stickySessions.push(session);
-                }
+      cancellablePromise.then((response) => {
+        this.stickySessions = []; // clear sticky sessions
+        this.error = '';
+        this.loading = false;
+        this.sessions = response.data;
+        this.mapData = response.data.map;
+        this.graphData = response.data.graph;
+
+        if (updateTable) { this.reloadTable(); }
+
+        if (parseInt(this.$route.query.openAll) === 1) {
+          this.openAll();
+        } else { // open the previously opened sessions
+          for (let sessionId of expandedSessions) {
+            for (let session of this.sessions.data) {
+              if (session.id === sessionId) {
+                session.expanded = true;
+                this.stickySessions.push(session);
               }
             }
           }
+        }
 
-          // initialize resizable columns now that there is data
-          if (!colResizeInitialized) { this.initializeColResizable(); }
+        // initialize resizable columns now that there is data
+        if (!colResizeInitialized) { this.initializeColResizable(); }
 
-          // initialize sortable table
-          if (!colDragDropInitialized) { this.initializeColDragDrop(); }
-        })
-        .catch((error) => {
-          this.sessions.data = undefined;
-          this.error = error.text || error;
-          this.loading = false;
-        });
+        // initialize sortable table
+        if (!colDragDropInitialized) { this.initializeColDragDrop(); }
+      }).catch((error) => {
+        this.sessions.data = undefined;
+        this.error = error.text || error;
+        this.loading = false;
+      });
     },
     /**
      * Saves the table state
@@ -1518,6 +1542,11 @@ export default {
     componentInitialized = false;
     colResizeInitialized = false;
     colDragDropInitialized = false;
+
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
+    }
 
     if (timeout) { clearTimeout(timeout); }
 
