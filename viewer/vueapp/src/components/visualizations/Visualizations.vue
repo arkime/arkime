@@ -536,7 +536,7 @@ export default {
               Math.round(item.series.data[item.dataIndex][1] * 100) / 100
             );
             const d = this.$options.filters.timezoneDateString(
-              item.datapoint[0].toFixed(0), this.timezone || 'local', false
+              parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
